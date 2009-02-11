@@ -22,6 +22,9 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
@@ -37,7 +40,15 @@ public class JmeColladaCellServerState extends CellServerState implements Serial
     /* The URI of the static model file */
     @XmlElement(name="model")
     public String model = null;
-    
+
+    /* The translation for the geometry -- really should be done on the cell level */
+    @XmlElement(name="geometry-translation")
+    public PositionComponentServerState.Origin geometryTranslation = null;
+
+    /* The rotation for the geometry -- really should be done on the cell level */
+    @XmlElement(name="geometry-rotation")
+    public PositionComponentServerState.Rotation geometryRotation = null;
+
     /** Default constructor */
     public JmeColladaCellServerState() {
     }
@@ -60,7 +71,24 @@ public class JmeColladaCellServerState extends CellServerState implements Serial
     public void setModel(String model) {
         this.model = model;
     }
+
+    @XmlTransient public Rotation getGeometryRotation() {
+        return geometryRotation;
+    }
+
+    public void setGeometryRotation(Rotation geometryRotation) {
+        this.geometryRotation = geometryRotation;
+    }
+
+    @XmlTransient public Origin getGeometryTranslation() {
+        return geometryTranslation;
+    }
+
+    public void setGeometryTranslation(Origin geometryTranslation) {
+        this.geometryTranslation = geometryTranslation;
+    }
     
+    @Override
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.JmeColladaCellMO";
     }

@@ -43,6 +43,8 @@ import javax.swing.JList;
 
 import java.util.logging.Logger;
 
+import java.awt.Point;
+
 /**
  *
  * @author  jprovino
@@ -83,6 +85,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 	caller = cell.getCellCache().getViewCell().getIdentity().getUsername();
 
 	callerText.setText(caller);
+	callerText.setEnabled(false);
 
 	chatGroupText.setText(caller);
 
@@ -109,6 +112,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 	caller = cell.getCellCache().getViewCell().getIdentity().getUsername();
 
 	callerText.setText(caller);
+	callerText.setEnabled(false);
 
 	chatGroupText.setText(caller);
 
@@ -356,24 +360,25 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     
     stopFlasher();
 
+    String caller = callerText.getText();
     String chatters = chatterText.getText();
 
-    chatters.replaceAll(" " + cellID, "");
-    chatters = chatters.replaceAll(cellID.toString(), "");
+    chatters.replaceAll(" " + caller, "");
+    chatters = chatters.replaceAll(caller, "");
 
     String chatGroup = chatGroupText.getText();
 
     if (chatGroup.length() == 0) {
-        chatGroup = cellID.toString();
+        chatGroup = caller + "-" + cellID.toString();
     }
 
-    logger.warning("JOIN chatGroup " + chatGroup + " chatters "
-        + chatters + " chatType " + chatType);
+    logger.warning("JOIN chatGroup " + chatGroup + " caller " + caller
+	+ " chatters " + chatters + " chatType " + chatType);
 
     statusLabel.setText(chatType + " Chat");
 
     VoiceChatMessage chatMessage = new VoiceChatJoinMessage(
-        chatGroup, cellID.toString(), chatters, chatType);
+        chatGroup, caller, chatters, chatType);
 
     session.send(client, chatMessage);
 
@@ -409,7 +414,9 @@ private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     session.send(client, chatMessage);
 
-    updater.done();
+    if (updater != null) {
+        updater.done();
+    }
 
     dialogs.remove(chatGroup);
     setVisible(false);
@@ -437,7 +444,7 @@ private void busyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_busyButtonActionPerformed
 
 private void usersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usersButtonActionPerformed
-    session.send(client, new GetUserListMessage());
+    session.send(client, new GetUserListMessage(new Point((int) (getLocation().getX() + getWidth()), 0)));
 }//GEN-LAST:event_usersButtonActionPerformed
 
     private void stopFlasher() {

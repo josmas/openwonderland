@@ -28,7 +28,12 @@ import javax.swing.JFrame;
  */
 public class TestPanel extends javax.swing.JPanel {
     
+    public interface Container {
+        public void validate();
+    }
+
     private JFrame frame;
+    private Container container;
 
     /** Creates new form TestPanel */
     public TestPanel() {
@@ -37,6 +42,10 @@ public class TestPanel extends javax.swing.JPanel {
 
     public void setFrame (JFrame frame) {
 	this.frame = frame;
+    }
+
+    public void setContainer (Container container) {
+        this.container = container;
     }
 
     /** This method is called from within the constructor to
@@ -193,6 +202,10 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     // In the standalone test TestTestPanel, we have a frame that we must repack
     if (frame != null) {
 	frame.pack();
+    }
+
+    if (container != null) {
+        container.validate();
     }
 
     sliderShown = ! sliderShown;

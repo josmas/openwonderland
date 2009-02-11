@@ -270,6 +270,9 @@ of the cell.
 
         void setWindowSwing(WindowSwing windowSwing) {
             this.windowSwing = windowSwing;
+            synchronized (this) {
+                notifyAll();
+            }
         }
 
         WindowSwing getWindowSwing () {
@@ -282,12 +285,13 @@ of the cell.
     
         @Override
         protected void sizeChanged(Dimension oldSize, Dimension newSize) {
-	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> Size changed");
-	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> oldSize = " + oldSize);
-	    System.err.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> newSize = " + newSize);
-	    if (windowSwing != null) {
-		windowSwing.setSize(newSize.width, newSize.height);
-	    }
+            synchronized (this) {
+                while (windowSwing == null) {
+                    try { wait(); } catch (InterruptedException ex) {}
+                }
+            }
+
+            windowSwing.setWindowSize(newSize.width, newSize.height);
         }
 
 	private void paintOnWindow (final WindowSwing window,

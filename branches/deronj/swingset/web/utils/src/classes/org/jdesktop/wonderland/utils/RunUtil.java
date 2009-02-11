@@ -24,9 +24,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -288,7 +291,41 @@ public class RunUtil {
         
         base.delete();
     }
-    
+
+    /**
+     * Closes a writer stream. Checks whether the writer is null, and does
+     * nothing if so. Catching any exception and simply logs the error. This
+     * is designed to be invoked from a finally clause.
+     *
+     * @param writer The writer to close
+     */
+    public static void close(Writer writer) {
+        if (writer != null) {
+            try {
+                writer.close();
+            } catch (java.io.IOException excp) {
+                logger.log(Level.WARNING, "Failed to close writer", excp);
+            }
+        }
+    }
+
+    /**
+     * Closes a reader stream. Checks whether the reader is null, and does
+     * nothing if so. Catching any exception and simply logs the error. This
+     * is designed to be invoked from a finally clause.
+     *
+     * @param reader The reader to close
+     */
+    public static void close(Reader reader) {
+        if (reader != null) {
+            try {
+                reader.close();
+            } catch (java.io.IOException excp) {
+                logger.log(Level.WARNING, "Failed to close reader", excp);
+            }
+        }
+    }
+
     /**
      * Schedule a file to be cleaned up when the system exits.  If the file
      * does not exist at exit time, it will be ignored.  Directories will

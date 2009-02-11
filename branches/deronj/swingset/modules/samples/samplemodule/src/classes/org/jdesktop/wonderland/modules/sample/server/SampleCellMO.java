@@ -17,20 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.sample.server;
 
-import com.jme.bounding.BoundingBox;
-import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-
 
 /**
  * A sample cell
@@ -44,22 +38,6 @@ public class SampleCellMO extends CellMO {
 
     /** Default constructor, used when cell is created via WFS */
     public SampleCellMO() {
-        addComponent(new MovableComponentMO(this));
-        SampleCellComponentMO component = new SampleCellComponentMO(this);
-        SampleCellComponentServerState state = new SampleCellComponentServerState();
-        state.setInfo("My component info");
-        component.setServerState(state);
-        addComponent(component);
-    }
-
-    public SampleCellMO(Vector3f center, float size) {
-        super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
-        addComponent(new MovableComponentMO(this));
-        SampleCellComponentMO component = new SampleCellComponentMO(this);
-        SampleCellComponentServerState state = new SampleCellComponentServerState();
-        state.setInfo("My component info");
-        component.setServerState(state);
-        addComponent(component);
     }
 
     @Override
@@ -84,7 +62,6 @@ public class SampleCellMO extends CellMO {
     @Override
     public void setServerState(CellServerState serverState) {
         shapeType = ((SampleCellServerState)serverState).getShapeType();
-        logger.warning("Setting server shape type " + shapeType);
         super.setServerState(serverState);
     }
 

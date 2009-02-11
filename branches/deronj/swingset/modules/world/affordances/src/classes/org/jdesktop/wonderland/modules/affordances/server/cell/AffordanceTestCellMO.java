@@ -25,8 +25,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
-import org.jdesktop.wonderland.modules.affordances.common.cell.config.AffordanceTestCellConfig;
+import org.jdesktop.wonderland.modules.affordances.common.cell.state.AffordanceTestCellClientState;
+import org.jdesktop.wonderland.modules.affordances.common.cell.state.AffordanceTestCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
@@ -38,8 +38,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ExperimentalAPI
 public class AffordanceTestCellMO extends CellMO {
     
-    private AffordanceTestCellConfig.Shape shape;
-    private MaterialJME materialJME = null;
+    private String shape;
+
     
     /** Default constructor, used when cell is created via WFS */
     public AffordanceTestCellMO() {
@@ -47,18 +47,12 @@ public class AffordanceTestCellMO extends CellMO {
     }
 
     public AffordanceTestCellMO(Vector3f center, float size) {
-        this(center, size, AffordanceTestCellConfig.Shape.BOX);
+        this(center, size, "BOX");
     }
 
-    public AffordanceTestCellMO(Vector3f center, float size, AffordanceTestCellConfig.Shape shape) {
-        this(center, size, shape, null);
-    }
-
-    public AffordanceTestCellMO(Vector3f center, float size, AffordanceTestCellConfig.Shape shape, MaterialJME materialJME) {
+    public AffordanceTestCellMO(Vector3f center, float size, String shape) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
         this.shape = shape;
-        this.materialJME = materialJME;
-
         addComponent(new MovableComponentMO(this));
     }
     
@@ -70,13 +64,27 @@ public class AffordanceTestCellMO extends CellMO {
     @Override
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
-            cellClientState = new AffordanceTestCellConfig(shape, materialJME);
+            cellClientState = new AffordanceTestCellClientState();
         }
+        ((AffordanceTestCellClientState)cellClientState).setShape(shape);
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
     public void setServerState(CellServerState setup) {
+        if (setup == null) {
+            setup = new AffordanceTestCellServerState();
+        }
+        shape = ((AffordanceTestCellServerState)setup).getShapeType();
         super.setServerState(setup);
+    }
+
+    @Override
+    public CellServerState getServerState(CellServerState setup) {
+        if (setup == null) {
+            setup = new AffordanceTestCellServerState();
+        }
+        ((AffordanceTestCellServerState)setup).setShapeType(shape);
+        return super.getServerState(setup);
     }
 }

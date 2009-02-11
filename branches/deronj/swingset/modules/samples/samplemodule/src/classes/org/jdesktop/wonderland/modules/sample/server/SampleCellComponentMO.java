@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.sample.server;
 
+import com.sun.sgs.app.ManagedReference;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -25,6 +27,7 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentClientSt
 import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentServerState;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -34,8 +37,12 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  */
 public class SampleCellComponentMO extends CellComponentMO {
 
+    private static Logger logger = Logger.getLogger(SampleCellComponentMO.class.getName());
     private String info = null;
 
+    @UsesCellComponentMO(SampleCellSubComponentMO.class)
+    private ManagedReference<SampleCellSubComponentMO> subComponentRef;
+    
     public SampleCellComponentMO(CellMO cell) {
         super(cell);
     }
@@ -44,6 +51,13 @@ public class SampleCellComponentMO extends CellComponentMO {
     protected String getClientClass() {
         return "org.jdesktop.wonderland.modules.sample.client.SampleCellComponent";
     }
+
+    @Override
+    protected void setLive(boolean live) {
+        super.setLive(live);
+        logger.warning("Setting SampleCellComponentMO to live = " + live);
+    }
+
 
     @Override
     public CellComponentClientState getClientState(CellComponentClientState state, WonderlandClientID clientID, ClientCapabilities capabilities) {

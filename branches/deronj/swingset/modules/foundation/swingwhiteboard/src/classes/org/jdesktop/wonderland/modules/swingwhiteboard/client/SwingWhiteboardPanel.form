@@ -25,7 +25,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="buttonPanel" alignment="0" max="32767" attributes="0"/>
+          <Component id="buttonPanel" alignment="0" pref="417" max="32767" attributes="0"/>
           <Component id="drawingPanel" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
@@ -39,6 +39,9 @@
           </Border>
         </Property>
         <Property name="name" type="java.lang.String" value="buttonPanel" noResource="true"/>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[74, 768]"/>
+        </Property>
       </Properties>
 
       <Layout>

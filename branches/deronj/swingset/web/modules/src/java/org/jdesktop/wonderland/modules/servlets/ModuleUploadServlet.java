@@ -147,10 +147,9 @@ public class ModuleUploadServlet extends HttpServlet {
         manager.installAll();
         
         /* If we have reached here, then post a simple message */
-        logger.info("[MODULE] UPLOAD Added module successfuly");
-        writer.print("Module added successfully. Please hit Back on your browswer ");
-        writer.print("and refresh the page to see the updates. (Better UI coming ");
-        writer.print("here soon!)");
+        logger.info("[MODULE] UPLOAD Added module successfully");
+        writer.print("Module added successfully. Press the ");
+        writer.print("Back button on your browser and refresh the page to see the updates.<br><br>");
     }
     
     /** 

@@ -20,9 +20,8 @@ package org.jdesktop.wonderland.modules.affordances.client.cell;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.affordances.client.jme.cellrenderer.AffordanceTestCellRenderer;
-import org.jdesktop.wonderland.modules.affordances.common.cell.config.AffordanceTestCellConfig;
+import org.jdesktop.wonderland.modules.affordances.common.cell.state.AffordanceTestCellClientState;
 
 /**
  * A test cell for affordances.
@@ -31,8 +30,7 @@ import org.jdesktop.wonderland.modules.affordances.common.cell.config.Affordance
  */
 public class AffordanceTestCell extends Cell {
 
-    private AffordanceTestCellConfig.Shape shape;
-    private MaterialJME materialJME;
+    private String shape;
 
     /**
      * Mass of zero will result in a static rigid body, non zero will be dynamic
@@ -46,11 +44,9 @@ public class AffordanceTestCell extends Cell {
     @Override
     public void setClientState(CellClientState configData) {
         super.setClientState(configData);
-        AffordanceTestCellConfig c = (AffordanceTestCellConfig) configData;
+        AffordanceTestCellClientState c = (AffordanceTestCellClientState) configData;
         this.shape = c.getShape();
-        this.materialJME = c.getMaterialJME();
     }
-
     
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
@@ -60,11 +56,7 @@ public class AffordanceTestCell extends Cell {
         return super.createCellRenderer(rendererType);
     }
 
-    public AffordanceTestCellConfig.Shape getShape() {
+    public String getShape() {
         return shape;
-    }
-
-    public MaterialJME getMaterialJME() {
-        return materialJME;
     }
 }

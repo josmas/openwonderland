@@ -34,7 +34,10 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-public class SwingTestWindow extends WindowSwing  {
+public class SwingTestWindow 
+    extends WindowSwing  
+    implements TestPanel.Container 
+{
 
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(SwingTestWindow.class.getName());
@@ -52,15 +55,21 @@ public class SwingTestWindow extends WindowSwing  {
         throws InstantiationException
     {
 	super(app, width, height, topLevel, pixelScale);
-	setSize(width, height);
-	initializeSurface();
 
 	setTitle("Swing Test");
 	
-	JPanel testPanel = new TestPanel();
+	TestPanel testPanel = new TestPanel();
 	// Note: this seems to only be required for the swing set, but do it here for safety
 	// TODO: test without
        	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
+
+        testPanel.setContainer(this);
+
 	setComponent(testPanel);
+
+        /* Test Force a the preferred size
+        System.err.println("test panel size = " + width + ", " + height);
+        setSize(width, height);
+        */
     }
 }

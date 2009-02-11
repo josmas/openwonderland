@@ -19,14 +19,9 @@ package org.jdesktop.wonderland.server.cell.view;
 
 import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingVolume;
-import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.server.UserMO;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * ViewCell defines the view into the virtual world for a specific window
@@ -46,26 +41,11 @@ public abstract class ViewCellMO extends CellMO {
     }
     
     /**
-     * Return the transform of the camera for this view
-     * @return
-     */
-//    public abstract CellTransform getWorldTransform();
-    
-    /**
      * Get the user who owns this view
      * @return
      */
     public abstract UserMO getUser();
     
-    /**
-     * Return the client state
-     */
-    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
-	    ClientCapabilities capabilities) {
-
-	return super.getClientState(cellClientState, clientID, capabilities);
-    }
-
     /**
      * Return the cell cache managed object for this view, or null if there
      * is no associated cache.
@@ -74,11 +54,4 @@ public abstract class ViewCellMO extends CellMO {
      */
     public abstract ViewCellCacheMO getCellCache();
     
-    /**
-     * Convenience method, simply calls moveableComponent.localMoveRequest
-     * @param transform
-     */
-//    public void localMoveRequest(CellTransform transform) {
-//        movableComp.localMoveRequest(transform);
-//    }
 }

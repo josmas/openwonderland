@@ -19,15 +19,23 @@ package org.jdesktop.wonderland.modules.palette.client;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * A special properties editor panel that edits the transform of the cell. It
@@ -37,6 +45,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 public class PositionJPanel extends javax.swing.JPanel {
 
+    private static Logger logger = Logger.getLogger(PositionJPanel.class.getName());
     private Cell cell = null;
     private CellPropertiesEditor editor = null;
     private MovableComponent movableComponent = null;
@@ -97,6 +106,38 @@ public class PositionJPanel extends javax.swing.JPanel {
             scaleXTF.setEnabled(false);
             scaleYTF.setEnabled(false);
             scaleZTF.setEnabled(false);
+        }
+
+        // Listen for changes, if there is a movable component added or removed
+        // update the state of the fields
+        cell.addComponentChangeListener(new ComponentChangeListener() {
+
+            public void componentChanged(Cell cell, ChangeType type, CellComponent component) {
+                if (type == ChangeType.ADDED && component instanceof MovableComponent) {
+                    movableComponent = (MovableComponent)component;
+                    translationXTF.setEnabled(true);
+                    translationYTF.setEnabled(true);
+                    translationZTF.setEnabled(true);
+                    rotationXTF.setEnabled(true);
+                    rotationYTF.setEnabled(true);
+                    rotationZTF.setEnabled(true);
+                    scaleXTF.setEnabled(true);
+                    scaleYTF.setEnabled(true);
+                    scaleZTF.setEnabled(true);
+                }
+            }
+        });
+
+        // If it does not exist, attempt to add the movable component. Create
+        // a suitable message using only the server-side movable component
+        // class name and send over the cell channel.
+        String className = "org.jdesktop.wonderland.server.cell.MovableComponentMO";
+        CellServerComponentMessage cscm = CellServerComponentMessage.newAddMessage(cell.getCellID(), className);
+        ResponseMessage response = cell.sendCellMessageAndWait(cscm);
+        if (response instanceof ErrorMessage) {
+            logger.log(Level.WARNING, "Unable to add movable component " +
+                    "for Cell " + cell.getName() + " with ID " +
+                    cell.getCellID(), ((ErrorMessage) response).getErrorCause());
         }
 
         // Listen for changes to the cell transform that may be done by other

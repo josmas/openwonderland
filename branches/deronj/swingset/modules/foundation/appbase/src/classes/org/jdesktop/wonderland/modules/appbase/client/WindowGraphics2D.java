@@ -86,6 +86,17 @@ public class WindowGraphics2D extends Window2D {
         return surface;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public void setSize (int width, int height) {
+        super.setSize(width, height);
+        if (surface != null) {
+            surface.setTexture(texture);
+            surface.setSize(width, height);
+        }
+    }
+
     protected void paint(Graphics2D g) {
     }
 

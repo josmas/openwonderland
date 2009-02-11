@@ -89,7 +89,7 @@
     
     <target name="avatargui" depends="jar">
         <!--<java classname="imi.tests.GUITest" fork="true">-->
-        <java classname="imi.tests.COLLADA_CharacterTest" fork="true" dir="../modules/world/avatarbase/art">
+        <java classname="imi.tests.GUITest" fork="true" dir="../modules/world/avatarbase/art">
         <!--<java classname="imi.tests.MusicalChairs" fork="true">-->
             <jvmarg value="-Xmx512m"/>
             <jvmarg value="-Djava.library.path=${core.lib.os.native.dir}"/>
@@ -121,7 +121,9 @@
     <target name="deploy" depends="dist, -core-deploy"/>
 
     <!-- clean -->
-    <target name="clean" depends="-core-clean" description="Clean core directories"/>
+    <target name="clean" depends="-core-clean" description="Clean core directories">
+        <delete dir="cache"/>
+    </target>
     
     <!-- remove libraries too -->
     <target name="scrub" depends="-core-clean, -core-scrub-libs"/>

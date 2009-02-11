@@ -17,11 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.colladaloader.client.jme.cellrenderer;
 
+import com.jme.bounding.BoundingBox;
 import org.jdesktop.wonderland.modules.colladaloader.client.cell.*;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.scene.Geometry;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.util.resource.ResourceLocatorTool;
 import imi.environments.ColladaEnvironment;
 import imi.loaders.collada.ColladaLoaderParams;
@@ -39,6 +42,8 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -79,6 +84,21 @@ public class ColladaRenderer extends BasicRenderer {
             addRenderState(rootNode);
 
             addDefaultComponents(environment, rootNode);
+
+            // Make sure all the geometry has model bounds
+            TreeScan.findNode(rootNode, Geometry.class, new ProcessNodeInterface() {
+
+                public boolean processNode(Spatial node) {
+                    Geometry g = (Geometry)node;
+                    if (g.getModelBound()==null) {
+                        g.setModelBound(new BoundingBox());
+                        g.updateModelBound();
+                    }
+
+                    return true;
+                }
+
+            }, false, true);
 
             logger.warning("ColladaREnderer not applying geometry offsets yet....");
             // Adjust model origin wrt to cell

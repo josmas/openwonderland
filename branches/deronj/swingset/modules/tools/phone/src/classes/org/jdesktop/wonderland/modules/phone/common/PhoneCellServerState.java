@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.phone.common;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -34,99 +33,29 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * @author jprovino
  */
 @XmlRootElement(name="phone-cell")
-public class PhoneCellServerState extends CellServerState
-        implements Serializable, CellServerStateSPI {
+public class PhoneCellServerState extends CellServerState implements CellServerStateSPI {
 
-    @XmlElement(name="locked")
-    private boolean locked;
+    @XmlElement(name="phone-info")
+    private PhoneInfo phoneInfo;
 
-    @XmlElement(name="simulateCalls")
-    private boolean simulateCalls;
-
-    @XmlElement(name="phoneNumber")
-    private String phoneNumber;
-
-    @XmlElement(name="password")
-    private String password;
-
-    @XmlElement(name="phoneLocation")
-    private String phoneLocation;
-
-    @XmlElement(name="zeroVolumeRadius")
-    private double zeroVolumeRadius;
-
-    @XmlElement(name="fullVolumeRadius")
-    private double fullVolumeRadius;
-
-    /** Default constructor */
     public PhoneCellServerState() {
     }
-    
+
+    public PhoneCellServerState(PhoneInfo phoneInfo) {
+	this.phoneInfo = phoneInfo;
+    }
+
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.phone.server.cell.PhoneCellMO";
     }
 
     @XmlTransient
-    public boolean getLocked() {
-  	return locked;
+    public PhoneInfo getPhoneInfo() {
+  	return phoneInfo;
     }
 
-    public void setLocked(boolean locked) {
-	this.locked = locked;
-    }
-
-    @XmlTransient
-    public boolean getSimulateCalls() {
- 	return simulateCalls;
-    }
-
-    public void setSimulateCalls(boolean simulateCalls) {
-	this.simulateCalls = simulateCalls;
-    }
-
-    @XmlTransient
-    public String getPhoneNumber() {
-	return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-	this.phoneNumber = phoneNumber;
-    }
-
-    @XmlTransient
-    public String getPassword() {
-	return password;
-    }
-
-    public void setPassword(String password) {
-	this.password = password;
-    }
-
-    @XmlTransient
-    public String getPhoneLocation() {
-	return phoneLocation;
-    }
-
-    public void setPhoneLocation(String phoneLocation) {
-	this.phoneLocation = phoneLocation;
-    }
-
-    @XmlTransient
-    public double getZeroVolumeRadius() {
-	return zeroVolumeRadius;
-    }
-
-    public void setZeroVolumeRadius(double zeroVolumeRadius) {
-	this.zeroVolumeRadius = zeroVolumeRadius;
-    }
-
-    @XmlTransient
-    public double getFullVolumeRadius() {
-        return fullVolumeRadius;
-    }
-
-    public void setFullVolumeRadius(double fullVolumeRadius) {
-        this.fullVolumeRadius = fullVolumeRadius;
+    public void setPhoneInfo(PhoneInfo phoneInfo) {
+	this.phoneInfo = phoneInfo;
     }
 
 }
