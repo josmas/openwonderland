@@ -234,9 +234,9 @@ public class ImportSessionFrame extends javax.swing.JFrame
         centerP = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         targetServerSelector = new javax.swing.JComboBox();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
+        modelListL = new javax.swing.JLabel();
+        targetNameL = new javax.swing.JLabel();
+        descriptionL = new javax.swing.JLabel();
         descriptionTF = new javax.swing.JTextField();
         targetModuleTF = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -247,6 +247,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         saveAsModuleB = new javax.swing.JButton();
         okB = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         loadImportGroupMI = new javax.swing.JMenuItem();
@@ -327,20 +328,24 @@ public class ImportSessionFrame extends javax.swing.JFrame
                 .add(editB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(removeB)
-                .addContainerGap(227, Short.MAX_VALUE))
+                .addContainerGap(218, Short.MAX_VALUE))
         );
 
         getContentPane().add(eastP, java.awt.BorderLayout.EAST);
+
+        centerP.setOpaque(false);
+        centerP.setPreferredSize(new java.awt.Dimension(600, 362));
+        centerP.setVerifyInputWhenFocusTarget(false);
 
         jLabel5.setText("Target Server :");
 
         targetServerSelector.setRenderer(new LoginManagerRenderer());
 
-        jLabel1.setText("Model List");
+        modelListL.setText("Model List");
 
-        jLabel3.setText("Target Name :");
+        targetNameL.setText("Target Name :");
 
-        jLabel7.setText("Description :");
+        descriptionL.setText("Description :");
 
         targetModuleTF.setText("MyModule");
         targetModuleTF.addActionListener(new java.awt.event.ActionListener() {
@@ -378,49 +383,48 @@ public class ImportSessionFrame extends javax.swing.JFrame
         centerP.setLayout(centerPLayout);
         centerPLayout.setHorizontalGroup(
             centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, centerPLayout.createSequentialGroup()
-                .add(508, 508, 508)
+            .add(centerPLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(centerPLayout.createSequentialGroup()
-                        .add(jLabel5)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 242, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(245, 245, 245))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, centerPLayout.createSequentialGroup()
-                        .add(6, 6, 6)
                         .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel1)
                             .add(centerPLayout.createSequentialGroup()
-                                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel3)
-                                    .add(jLabel7))
+                                .add(targetNameL)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 259, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(centerPLayout.createSequentialGroup()
+                                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(jLabel5)
+                                    .add(descriptionL))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
-                                    .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 154, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 571, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap())))
+                                    .add(targetServerSelector, 0, 260, Short.MAX_VALUE)
+                                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))))
+                        .add(264, 264, 264))
+                    .add(centerPLayout.createSequentialGroup()
+                        .add(modelListL)
+                        .addContainerGap(555, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)))
         );
         centerPLayout.setVerticalGroup(
             centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(centerPLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(modelListL)
+                .add(12, 12, 12)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel3)
+                    .add(targetNameL)
                     .add(targetModuleTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel7))
-                .add(18, 18, 18)
+                    .add(descriptionL)
+                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel5)
                     .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .add(39, 39, 39))
         );
 
         getContentPane().add(centerP, java.awt.BorderLayout.CENTER);
@@ -467,18 +471,18 @@ public class ImportSessionFrame extends javax.swing.JFrame
         southP.setLayout(southPLayout);
         southPLayout.setHorizontalGroup(
             southPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, southPLayout.createSequentialGroup()
-                .addContainerGap(69, Short.MAX_VALUE)
+            .add(southPLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(deployToServerB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(saveAsSrcB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(saveAsModuleB)
-                .add(35, 35, 35)
+                .add(55, 55, 55)
                 .add(okB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cancelButton)
-                .addContainerGap())
+                .addContainerGap(78, Short.MAX_VALUE))
         );
         southPLayout.setVerticalGroup(
             southPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -494,6 +498,21 @@ public class ImportSessionFrame extends javax.swing.JFrame
         );
 
         getContentPane().add(southP, java.awt.BorderLayout.SOUTH);
+
+        jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 0, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 351, Short.MAX_VALUE)
+        );
+
+        getContentPane().add(jPanel1, java.awt.BorderLayout.WEST);
 
         jMenu1.setText("File");
 
@@ -1013,26 +1032,26 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel centerP;
     private javax.swing.JButton deployToServerB;
+    private javax.swing.JLabel descriptionL;
     private javax.swing.JTextField descriptionTF;
     private javax.swing.JPanel eastP;
     private javax.swing.JButton editB;
     private javax.swing.JMenuItem editPMI;
     private javax.swing.JButton importModelB;
     private javax.swing.JTable importTable;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JList jList1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JMenuItem loadImportGroupMI;
     private javax.swing.JPanel loadingDialogPanel;
+    private javax.swing.JLabel modelListL;
     private javax.swing.JButton okB;
     private javax.swing.JButton removeB;
     private javax.swing.JMenuItem removePMI;
@@ -1043,6 +1062,7 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     private javax.swing.JPanel southP;
     private javax.swing.JPopupMenu tablePopupMenu;
     private javax.swing.JTextField targetModuleTF;
+    private javax.swing.JLabel targetNameL;
     private javax.swing.JComboBox targetServerSelector;
     // End of variables declaration//GEN-END:variables
    
