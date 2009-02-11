@@ -86,6 +86,6 @@ public class ViewCell extends Cell {
      */
     public void localMoveRequest(CellTransform transform) {
         if (movableComp!=null)
-            movableComp.localMoveRequest(transform, -1, false, null);
+            movableComp.localMoveRequest(transform, MovableAvatarComponent.NO_TRIGGER, false, null);
     }
 }
