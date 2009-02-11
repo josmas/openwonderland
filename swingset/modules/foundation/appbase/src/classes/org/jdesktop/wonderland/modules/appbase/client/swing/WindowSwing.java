@@ -30,6 +30,7 @@ import java.awt.Point;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -116,7 +117,20 @@ public class WindowSwing extends WindowGraphics2D {
 	addWorldEventListener(new MyEventListener());
     }
 
-    /** Specify the Swing component displayed in this window */
+    /** 
+     * Specify the Swing component displayed in this window. The component is validated (that is it
+     * is layed out).
+     *
+     * Note: After you call <code>setComponent</code> the window will be in "preferred size" mode, 
+     * that is, it the window will be sized according to the Swing component's preferred sizes and 
+     * the component's layout manager. If you call <code>WindowSwing.setSize(int width, int height)</code> or 
+     * <code>WindowSwing.setSize(Dimension dims)</code> with a non-null <code>dims</code> the window will be 
+     * in "forced size" mode. This means that the window will always be the size you specify and this
+     * will constrain the sizes of the contained component. To switch back into preferred size mode
+     * call <code>WindowSwing.setSize(null)</code>.
+     *
+     * @param component The component to be displayed.
+     */
     public void setComponent(Component component) {
         if (this.component == component) {
             return;
@@ -134,15 +148,15 @@ public class WindowSwing extends WindowGraphics2D {
         }
 
 	// TODO: Uncomment this to demonstrate the embedded component enter/exit bug
-	component.addMouseListener(new MyAwtEnterListener());
+	//component.addMouseListener(new MyAwtEnterListener());
 
        	addWorldEventListener(new MySwingEnterExitListener());
 
-	setSize(size);
+        embeddedPeer.validate();
         embeddedPeer.repaint();
     }
 
-    // TODO: I'm leaving this hear to illustrate a bug
+    /* TODO: I'm leaving this hear to illustrate a bug
     private class MyAwtEnterListener extends MouseAdapter {
 	public void mouseEntered(MouseEvent e) {
 	    if (e.getID() == MouseEvent.MOUSE_ENTERED) {
@@ -152,6 +166,7 @@ public class WindowSwing extends WindowGraphics2D {
 	    }
 	}
     }
+    */
 
     private static class MySwingEnterExitListener extends EventClassListener {
 	public Class[] eventClassesToConsume () {
@@ -239,50 +254,63 @@ public class WindowSwing extends WindowGraphics2D {
         }
     }
 
+    /**
+     * Specify the size of the window only (not the embedded peer).
+     */
+    void setWindowSize (int width, int height) {
+        super.setSize(width, height);
+    }
+
+    /**
+     * Specify the size of this WindowSwing. This switches the window from "preferred size" mode
+     * to "forced size" mode?
+     */
+    public void setSize (int width, int height) {
+        setSize(new Dimension(width, height));
+    }
+
+    /**
+     * Specify the size of this WindowSwing. If dims is non-null, the window is switched
+     * into "forced size" mode--the window will be always be the size you specify. If dims is null,
+     * the window is switched into "preferred size" mode--the window will size will be determined
+     * by the size and layout of the embedded Swing component.
+     */
+    public void setSize (Dimension dims) {
+        if (embeddedPeer == null) {
+            throw new RuntimeException("You must first set a component for this WindowSwing.");
+        }
+        embeddedPeer.setSize(dims);
+        embeddedPeer.validate();
+        embeddedPeer.repaint();
+    }
+
+    /**
+     * Re-lay out the contents of this window. This should be called whenever you make changes which
+     * affect the layout of the contained component.
+     */
+    public void validate () {
+        if (embeddedPeer == null) {
+            throw new RuntimeException("You must first set a component for this WindowSwing.");
+        }
+        embeddedPeer.validate();
+        embeddedPeer.repaint();
+    }
+
+    /**
+     * Repaint out the contents of this window.
+     */
+    public void repaint () {
+        if (embeddedPeer == null) {
+            throw new RuntimeException("You must first set a component for this WindowSwing.");
+        }
+        embeddedPeer.repaint();
+    }
+     
     public final EmbeddedPeer getEmbeddedPeer () {
 	return embeddedPeer;
     }
 
-    public void setSize(int width, int height) {
-        setSize(new Dimension(width, height));
-    }
-
-    public void setSize(Dimension size) {
-	this.size = size;
-	/* TODO: Igor says: this is wrong. Can cause infinite recursion
-	if (component != null) {
-	    component.setSize(size);
-	}
-	*/
-        if (embeddedPeer != null) {
-            embeddedPeer.setSize(size);
-            embeddedPeer.validate();
-        }
-    }
-
-    protected void paint(Graphics2D g) {
-	/* TODO: obsolete
-	if (drawingSurface != null) {
-	    drawingSurface.paint(g);
-	}
-	*/
-    }
-
-    /* TODO
-    public final Rectangle2D getBounds(AffineTransform transform) {
-        checkContainer();
-        if (embeddedPeer == null) {
-            return new Rectangle2D.Float();
-        }
-        embeddedPeer.validate();
-        Rectangle2D bounds = 
-            new Rectangle(0, 0, component.getWidth(), component.getHeight());
-        if (transform != null && !transform.isIdentity()) {
-            bounds = transform.createTransformedShape(bounds).getBounds2D();
-        }
-        return bounds;
-    }
-    */
+    protected void paint(Graphics2D g) {}
 
     /** 
      * Set the input enable for this window. By default, input for a WindowSwing is enabled.

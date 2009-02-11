@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.server.spatial.UniverseKernelRunnable;
 import org.jdesktop.wonderland.server.spatial.UniverseService;
 
 /**
- * A Darkstar task used to notify the TransformChangeListeners that an update
+ * A Darkstar task used to notify the ProximityListeners that an update
  * has occured to a cells transform
  * 
  * @author paulby

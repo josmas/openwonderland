@@ -709,6 +709,10 @@ public class DarkstarRunner extends BaseRunner {
             } catch (IOException ioe) {
                 throw new RunnerException(ioe);
             }
+            
+            // make sure coldstart is false, otherwise we'll overwrite
+            // the database before taking the snapshot
+            props.remove("sgs.coldstart");
 
             // now run
             super.start(props);

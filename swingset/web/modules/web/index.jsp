@@ -75,7 +75,7 @@
         <tr class="header">
             <td width="15%" class="installed"><b>Module Name</b></td>
             <td width="15%" class="installed"><b>Module Version</b></td>
-            <td width="70%" class="installed"><b>Descrption</b></td>
+            <td width="70%" class="installed"><b>Description</b></td>
         </tr>
         <%
         Map<String, ModuleInfo> uninstall = manager.getUninstallModuleInfos();
@@ -95,7 +95,7 @@
     <br>
     <h3>Install a New Module</h3>
     <p>
-        Select a new module JAR to install and click INSTALL. If successfull
+        Select a new module JAR to install and click INSTALL. If successful
         the module will be installed during the next restart.
     </p>
     <form method="post" enctype="multipart/form-data" action="ModuleUploadServlet">

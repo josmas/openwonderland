@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,7 +47,8 @@ public class ModuleJarWriter {
     private ModuleRequires moduleRequires = null;
     private ModuleRepository moduleRepository = null;
     private Map<String, File> moduleArt = null;
-    
+    private Set<File> directories = null;
+
     public ModuleJarWriter() {
     }
 
@@ -83,6 +85,26 @@ public class ModuleJarWriter {
     
     public Map<String, File> getArtFiles() {
         return moduleArt;
+    }
+
+    /**
+     * Add a directory and all it's children (recursively) to the module
+     * 
+     * @param dir
+     */
+    public void addDirectory(File dir) {
+        if (directories==null)
+            directories = new HashSet();
+        directories.add(dir);
+    }
+
+    /**
+     * Remove the directory and all it's children
+     *
+     * @param dir
+     */
+    public void removeDirectory(File dir) {
+        directories.remove(dir);
     }
     
     public void removeArtFile(String path) {
@@ -130,7 +152,33 @@ public class ModuleJarWriter {
                 FileUtils.copyFile(new FileInputStream(mapEntry.getValue()), jos);
             }
         }
+
+        if (directories!=null) {
+            for(File dir : directories) {
+                writeDirectoryTree(jos, dir, dir.getParent().toString().length()+1, writtenPaths);
+            }
+        }
+
         jos.close();
+    }
+
+    private void writeDirectoryTree(JarOutputStream jos, File dir, int parentTrimStart, Set<String> written) throws IOException {
+        String dirName = dir.getAbsolutePath().substring(parentTrimStart, dir.getAbsolutePath().length());
+        jos.putNextEntry(new JarEntry(dirName+"/"));
+
+        File[] files = dir.listFiles();
+        if (files==null)
+            return;
+        for(File f : files) {
+
+            if (f.isDirectory()) {
+                writeDirectoryTree(jos, f, parentTrimStart, written);
+            } else {
+                String path = f.getAbsolutePath().substring(parentTrimStart, f.getAbsolutePath().length());
+                jos.putNextEntry(new JarEntry(path));
+                FileUtils.copyFile(new FileInputStream(f), jos);
+            }
+        }
     }
     
     private void writeDirectory(JarOutputStream jos, String path, Set<String> written) throws IOException {

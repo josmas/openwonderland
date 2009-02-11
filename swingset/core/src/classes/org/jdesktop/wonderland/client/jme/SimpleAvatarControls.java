@@ -300,7 +300,7 @@ public class SimpleAvatarControls extends ProcessorComponent {
     public void commit(ProcessorArmingCollection collection) {
         if (state!=STOPPED || updateRotations) {
 //            System.err.println("localMoveRequest "+position+"  "+this);
-            movableComponent.localMoveRequest(new CellTransform(quaternion, position), -1, false, null);
+            movableComponent.localMoveRequest(new CellTransform(quaternion, position));
         }
     }
     

@@ -39,72 +39,18 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  */
 public class PhoneCellClientState extends CellClientState {
 
-    private boolean locked;
-    private boolean simulateCalls;
-    private String phoneNumber;
-    private String password;
-    private String phoneLocation;
-    private double zeroVolumeRadius;
-    private double fullVolumeRadius;
+    private PhoneInfo phoneInfo;
 
     /** Default constructor */
     public PhoneCellClientState() {
     }
     
-    public boolean getLocked() {
-  	return locked;
+    public PhoneInfo getPhoneInfo() {
+  	return phoneInfo;
     }
 
-    public void setLocked(boolean locked) {
-	this.locked = locked;
-    }
-
-    public boolean getSimulateCalls() {
- 	return simulateCalls;
-    }
-
-    public void setSimulateCalls(boolean simulateCalls) {
-	this.simulateCalls = simulateCalls;
-    }
-
-    public String getPhoneNumber() {
-	return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-	this.phoneNumber = phoneNumber;
-    }
-
-    public void setPassword(String password) {
-	this.password = password;
-    }
-
-    public String getPassword() {
-	return password;
-    }
-
-    public void setPhoneLocation(String phoneLocation) {
-	this.phoneLocation = phoneLocation;
-    }
-
-    public String getPhoneLocation() {
-	return phoneLocation;
-    }
-
-    public double getZeroVolumeRadius() {
-	return zeroVolumeRadius;
-    }
-
-    public void setZeroVolumeRadius(double zeroVolumeRadius) {
-	this.zeroVolumeRadius = zeroVolumeRadius;
-    }
-
-    public double getFullVolumeRadius() {
-        return fullVolumeRadius;
-    }
-
-    public void setFullVolumeRadius(double fullVolumeRadius) {
-        this.fullVolumeRadius = fullVolumeRadius;
+    public void setPhoneInfo(PhoneInfo phoneInfo) {
+	this.phoneInfo = phoneInfo;
     }
 
 }

@@ -48,10 +48,10 @@ public class ModuleSourceManager {
      */
     public void createModule(String moduleName, String moduleDescription, File parentDirectory, boolean includeArt, boolean includeClient, boolean includeServer) {
         File moduleDir = new File(parentDirectory.getAbsolutePath()+File.separatorChar+moduleName);
-        if (moduleDir.exists())
-            throw new RuntimeException("Module Directory already exists "+moduleDir.getAbsolutePath());
-
-        moduleDir.mkdir();
+//        if (moduleDir.exists())
+//            throw new RuntimeException("Module Directory already exists "+moduleDir.getAbsolutePath());
+//
+//        moduleDir.mkdir();
 
         String srcPkg = "org.jdesktop.wonderland.modules."+moduleName;
 

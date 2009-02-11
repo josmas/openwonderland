@@ -30,18 +30,52 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 @ExperimentalAPI
 public class CellComponent {
     protected Cell cell;
-    protected CellStatus status;
+    protected CellStatus status = CellStatus.DISK;
     
     public CellComponent(Cell cell) {
         this.cell = cell;
     }
+
+    /**
+     * Returns the current state of the component
+     *
+     * @return The current state of the component
+     */
+//    public CellStatus getStatus() {
+//        return this.status;
+//    }
     
     /**
-     * Set the status of the component.
-     * @param status
+     * Set the status of the component. This method is overridden by subclasses
+     * of cell component. However, if you wish to set the status of a cell
+     * component, invoke setComponentStatus() instead.
+     *
+     * @param status The new status of the component
      */
     public void setStatus(CellStatus status) {
         this.status = status;
+    }
+
+    /**
+     * Sets the component status. This method should be called by anyone who
+     * wishes to set the component status. This method makes sure that all
+     * intermediate statuses are set.
+     *
+     * @param status The new status of the component
+     */
+    final void setComponentStatus(CellStatus status) {
+        int currentStatus = this.status.ordinal();
+        int requiredStatus = status.ordinal();
+
+        if (currentStatus == requiredStatus)
+            return;
+
+        int dir = (requiredStatus > currentStatus ? 1 : -1);
+
+        while (currentStatus != requiredStatus) {
+            currentStatus += dir;
+            setStatus(CellStatus.values()[currentStatus]);
+        }
     }
 
     /**

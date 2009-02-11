@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import org.jdesktop.wonderland.server.cell.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

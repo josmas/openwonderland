@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 //import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellServerState;
+import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
 import com.jme.math.Vector3f;
 import java.awt.Image;
 
@@ -39,12 +40,8 @@ public class PhoneCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState() {
         // Create a setup with some default values
         PhoneCellServerState cellServerState = new PhoneCellServerState();
-        cellServerState.setLocked(true);
-        cellServerState.setSimulateCalls(false);
-	cellServerState.setPhoneNumber("100");
-	cellServerState.setPhoneLocation("Unknown location");
-	cellServerState.setZeroVolumeRadius(.2);
-	cellServerState.setFullVolumeRadius(.1);
+        cellServerState.setPhoneInfo(new PhoneInfo(false, "100", "foo",
+	    "Unknown location", .2, .1, true, true));
 
         Vector3f axis = new Vector3f((float) 1, (float) 0, (float) 0);
         /*

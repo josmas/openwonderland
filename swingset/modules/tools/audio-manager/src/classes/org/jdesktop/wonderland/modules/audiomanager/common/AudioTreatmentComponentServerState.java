@@ -17,13 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 /**
  * The component server state
@@ -47,8 +46,8 @@ public class AudioTreatmentComponentServerState extends CellComponentServerState
     @XmlElement(name="zeroVolumeRadius")
     public double zeroVolumeRadius;
 
-    @XmlElement(name="spatialize")
-    public boolean spatialize;
+    @XmlElement(name="useFullVolumeSpatializer")
+    public boolean useFullVolumeSpatializer;
 
     public AudioTreatmentComponentServerState() {
     }
@@ -85,13 +84,13 @@ public class AudioTreatmentComponentServerState extends CellComponentServerState
 	return zeroVolumeRadius;
     }
 
-    public void setSpatialize(boolean spatialize) {
-	this.spatialize = spatialize;
+    public void setUseFullVolumeSpatializer(boolean userFullVolumeSpatializer) {
+	this.useFullVolumeSpatializer = userFullVolumeSpatializer;
     }
 
     @XmlTransient
-    public boolean getSpatialize() {
-	return spatialize;
+    public boolean getUseFullVolumeSpatializer() {
+	return useFullVolumeSpatializer;
     }
 
     public String getServerComponentClassName() {

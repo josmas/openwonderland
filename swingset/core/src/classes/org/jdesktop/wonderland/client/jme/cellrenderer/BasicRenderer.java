@@ -236,8 +236,13 @@ public abstract class BasicRenderer implements CellRendererJME {
         }
 
         if (rootNode!=null) {
-            RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
-            entity.addComponent(RenderComponent.class, rc);
+            // Some subclasses (like the imi collada renderer) already add
+            // a render component
+            RenderComponent rc = entity.getComponent(RenderComponent.class);
+            if (rc==null) {
+                rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
+                entity.addComponent(RenderComponent.class, rc);
+            }
 
             WonderlandSession session = cell.getCellCache().getSession();
             CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(LoginManager.find(session), "Default");
@@ -259,6 +264,8 @@ public abstract class BasicRenderer implements CellRendererJME {
 //                    entity.addComponent(PhysicsComponent.class, pc);
 //                }
 //            }
+        } else {
+            logger.warning("**** BASIC RENDERER - ROOT NODE WAS NULL !");
         }
 
     }
@@ -346,7 +353,18 @@ public abstract class BasicRenderer implements CellRendererJME {
      * @param worldTransform
      */
     public void cellTransformUpdate(CellTransform worldTransform) {
-        if (moveProcessor!=null) {
+        // The fast-path case is if the move processor already exists, in
+        // which case, we move the cell
+        if (moveProcessor != null) {
+            moveProcessor.cellMoved(worldTransform);
+            return;
+        }
+
+        // Otherwise, the move processor is null so we will attempt to add it
+        // but only if there is a movable component on the cell.
+        if (cell.getComponent(MovableComponent.class) != null && rootNode != null) {
+            moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
+            getEntity().addComponent(MoveProcessor.class, moveProcessor);
             moveProcessor.cellMoved(worldTransform);
         }
     }
