@@ -89,21 +89,21 @@ public class TestWorldCellMO extends CellMO {
 
             addChild(c2);
             addChild(c3);
-
-            addChild(new JmeColladaCellMO(new Vector3f(0,0,0), 15,
-                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
-                            null,
-                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
-
-            addChild(new JmeColladaCellMO(new Vector3f(15,0,0), 15,
-                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
-                            null,
-                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
-
-            addChild(new JmeColladaCellMO(new Vector3f(0,0,10), 15,
-                            "wla://jmecolladaloader/OutsideFloor10x10/models/OutsideFloor10x10.dae",
-                            null,
-                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
+//
+//            addChild(new JmeColladaCellMO(new Vector3f(0,0,0), 15,
+//                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
+//                            null,
+//                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
+//
+//            addChild(new JmeColladaCellMO(new Vector3f(15,0,0), 15,
+//                            "wla://jmecolladaloader/RoomLow10x15/models/RoomLow10x15.dae",
+//                            null,
+//                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
+//
+//            addChild(new JmeColladaCellMO(new Vector3f(0,0,10), 15,
+//                            "wla://jmecolladaloader/OutsideFloor10x10/models/OutsideFloor10x10.dae",
+//                            null,
+//                            new Quaternion(new float[]{-(float)Math.PI/2, 0f, 0f})));
 
         } catch (Exception ex) {
             Logger.getLogger(CellManagerMO.class.getName()).log(Level.SEVERE, null, ex);

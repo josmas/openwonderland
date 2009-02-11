@@ -62,8 +62,16 @@ public class JmeColladaRenderer extends BasicRenderer {
     @Override
     protected Node createSceneGraph(Entity entity) {
         try {
-            Node ret = loadColladaAsset(cell.getCellID().toString(), getAssetURL(((JmeColladaCell) cell).getModelURI()));
-            
+            // We need to handle null model uri's better!
+            Node ret = new Node();
+            if (((JmeColladaCell)cell).getModelURI() != null) {
+                ret = loadColladaAsset(cell.getCellID().toString(), getAssetURL(((JmeColladaCell) cell).getModelURI()));
+            }
+            else {
+                model = new Node();
+                ret.attachChild(model);
+            }
+
             // Adjust model origin wrt to cell
             if (((JmeColladaCell)cell).getGeometryTranslation()!=null)
                 model.setLocalTranslation(((JmeColladaCell)cell).getGeometryTranslation());
