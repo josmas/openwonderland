@@ -25,7 +25,7 @@ import java.util.HashMap;
 
 /**
  *
- * Overload AvatarContext so we can install our own WlAvatarController
+ * Overload AvatarContext to add playAnimation
  *
  * @author paulby
  */
@@ -42,11 +42,10 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
         }
     }
 
-    @Override
-    protected imi.character.avatar.AvatarController instantiateController() {
-        return new WlAvatarController(getavatar());
-    }
-
+    /**
+     * Return the names of the animations available to this character
+     * @return
+     */
     Iterable<String> getAnimationNames() {
         return actionMap.keySet();
     }
@@ -56,6 +55,20 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
         ActionState action = (ActionState) gameStates.get(CycleActionState.class);
         action.setAnimationSetBoolean(false);
         currentActionInfo.apply(action);
-        setCurrentState(action);
+
+        // Force the trigger, note that this transition is so fast that the
+        // state machine may not actually change state. Therefore in triggerAlert
+        // we check for the trigger and force the state change.
+        triggerReleased(TriggerNames.MiscAction.ordinal());
+        triggerPressed(TriggerNames.MiscAction.ordinal());
+        triggerReleased(TriggerNames.MiscAction.ordinal());
+    }
+
+    @Override
+    protected void triggerAlert(int trigger, boolean pressed) {
+        if (pressed && trigger==TriggerNames.MiscAction.ordinal()) {
+            // Force animation to play if this is a Misc trigger
+            setCurrentState((ActionState) gameStates.get(CycleActionState.class));
+        }
     }
 }
