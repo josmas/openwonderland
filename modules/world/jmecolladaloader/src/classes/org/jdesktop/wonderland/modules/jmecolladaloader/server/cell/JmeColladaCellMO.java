@@ -86,10 +86,10 @@ public class JmeColladaCellMO extends CellMO {
         this.modelURI = ((JmeColladaCellServerState)setup).getModel();
 
         // Override model URI if there is a property set for it
-        String model = setup.getProperty("model");
-        if (model != null) {
-            this.modelURI = model;
-        }
+        //String model = setup.getProperty("model");
+        //if (model != null) {
+        //    this.modelURI = model;
+        //}
         
         JmeColladaCellServerState jccss = (JmeColladaCellServerState)setup;
         if (jccss.getGeometryTranslation() != null) {
