@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Spatial;
 import java.awt.event.ComponentEvent;
@@ -405,8 +406,8 @@ public class ViewManager {
      *
      * @return The camera position
      */
-    public Vector3f getCameraPosition() {
-        return getCameraTransform().getTranslation(null);
+    public Vector3f getCameraPosition(Vector3f v3f) {
+        return getCameraTransform().getTranslation(v3f);
     }
 
     /**
@@ -416,11 +417,14 @@ public class ViewManager {
      *
      * @return The camera look direction
      */
-    public Vector3f getCameraLookDirection() {
-        CellTransform cameraTransform = getCameraTransform();
-        cameraTransform.invert();
-        Vector3f v = new Vector3f(0, 0, -1);
-        cameraTransform.transform(v);
+    public Vector3f getCameraLookDirection(Vector3f v) {
+        Quaternion rot = cameraNode.getWorldRotation();
+        rot.inverse();
+        if (v==null)
+            v = new Vector3f(0,0,-1);
+        else
+            v.set(0, 0, -1);
+        rot.multLocal(v);
         v.normalizeLocal();
         return v;
     }
@@ -455,6 +459,7 @@ public class ViewManager {
                 for(CameraListener cameraL : cameraListeners)
                     cameraL.cameraMoved(worldTranform);
             }
+            System.err.println(getCameraLookDirection(null));
         }
     }
 
