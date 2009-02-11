@@ -91,7 +91,7 @@ class ViewCache {
         return viewCell;
     }
 
-    private void viewCellMoved(CellTransform worldTransform) {
+    private void viewCellMoved(final CellTransform worldTransform) {
         if (lastSpaceValidationPoint==null ||
             lastSpaceValidationPoint.distanceSquared(worldTransform.getTranslation(null))>REVAL_DISTANCE_SQUARED) {
 
@@ -99,10 +99,21 @@ class ViewCache {
             lastSpaceValidationPoint = worldTransform.getTranslation(null);
         }
 
-        synchronized(viewUpdateListeners) {
-            for(ViewUpdateListenerContainer cont : viewUpdateListeners)
-                cont.notifyListeners(worldTransform);
-        }
+        UniverseImpl.getUniverse().scheduleTransaction(
+                new KernelRunnable() {
+
+            public String getBaseTaskType() {
+                return KernelRunnable.class.getName();
+            }
+
+            public void run() throws Exception {
+                synchronized(viewUpdateListeners) {
+                    for(ViewUpdateListenerContainer cont : viewUpdateListeners)
+                        cont.notifyListeners(worldTransform);
+                }
+            }
+        }, identity);
+
     }
 
     void login() {
@@ -534,7 +545,7 @@ class ViewCache {
             }
         }
 
-        public void notifyListeners(CellTransform viewWorldTransform) {
+        public void notifyListeners(final CellTransform viewWorldTransform) {
             viewUpdateListener.viewTransformChanged(cellID, viewCell.getCellID(), viewWorldTransform);
         }
 

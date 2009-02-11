@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.jme;
 
 import com.jme.math.Vector3f;
 import com.jme.scene.Spatial;
+import java.awt.event.ComponentEvent;
 import org.jdesktop.mtgame.Entity;
 import com.jme.scene.CameraNode;
 import com.jme.scene.GeometricUpdateListener;
@@ -41,6 +42,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import imi.scene.processors.JSceneEventProcessor;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.event.ComponentListener;
 import java.util.HashSet;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.RenderBuffer;
@@ -134,6 +136,25 @@ public class ViewManager {
         canvas.setBounds(0, 0, width, height);
 
         panel.add(canvas, BorderLayout.CENTER);
+
+        panel.addComponentListener(new ComponentListener() {
+            public void componentResized(ComponentEvent e) {
+//                System.err.println("Resizing "+e);
+                int width = e.getComponent().getWidth();
+                int height = e.getComponent().getHeight();
+                cameraComponent.setViewport(width, height);
+                cameraComponent.setAspectRatio(((float)width/(float)height));
+            }
+
+            public void componentMoved(ComponentEvent e) {
+            }
+
+            public void componentShown(ComponentEvent e) {
+            }
+
+            public void componentHidden(ComponentEvent e) {
+            }
+        });
 
         createCameraEntity(ClientContextJME.getWorldManager());
         listener = new CellListener();

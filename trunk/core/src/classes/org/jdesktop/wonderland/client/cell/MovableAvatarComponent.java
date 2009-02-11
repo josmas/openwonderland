@@ -17,10 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
-import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
@@ -39,6 +36,8 @@ public class MovableAvatarComponent extends MovableComponent {
     private int trigger;
     private boolean pressed;
 
+    public final static int NO_TRIGGER = -1;
+
     public MovableAvatarComponent(Cell cell) {
         super(cell);
     }
@@ -46,13 +45,13 @@ public class MovableAvatarComponent extends MovableComponent {
 
     @Override
     public void localMoveRequest(CellTransform transform) {
-        localMoveRequest(transform, -1, false, null);
+        localMoveRequest(transform, NO_TRIGGER, false, null);
     }
 
     @Override
     public void localMoveRequest(CellTransform transform,
                                  final CellMoveModifiedListener listener) {
-        localMoveRequest(transform, -1, false, listener);
+        localMoveRequest(transform, NO_TRIGGER, false, listener);
     }
 
 
@@ -64,7 +63,16 @@ public class MovableAvatarComponent extends MovableComponent {
         synchronized(this) {
             this.trigger = trigger;
             this.pressed = pressed;
-            super.localMoveRequest(transform, null);
+            if (trigger==NO_TRIGGER) {
+                // Just a transform update, so it can be throttled
+                super.localMoveRequest(transform, null);
+            } else {
+                // State change, so no throttling
+                channelComp.send(createMoveRequestMessage(transform));
+
+                // As we don't call super, make sure we update the cell transform
+                applyLocalTransformChange(transform, TransformChangeListener.ChangeSource.LOCAL);
+            }
         }
     }
 
@@ -91,11 +99,8 @@ public class MovableAvatarComponent extends MovableComponent {
     protected void serverMoveRequest(MovableMessage msg) {
         super.serverMoveRequest(msg);
 
-            ((AvatarCell)cell).triggerAction(1, true);
-
-
         MovableAvatarMessage mam = (MovableAvatarMessage) msg;
-        if (mam.getTrigger()!=-1) {
+        if (mam.getTrigger()!=NO_TRIGGER) {
             ((AvatarCell)cell).triggerAction(mam.getTrigger(), mam.isPressed());
         }
     }
