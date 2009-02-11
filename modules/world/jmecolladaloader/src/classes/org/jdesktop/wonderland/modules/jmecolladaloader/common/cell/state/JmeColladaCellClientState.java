@@ -66,6 +66,14 @@ public class JmeColladaCellClientState extends CellClientState {
         return geometryTranslation;
     }
 
+    public void setGeometryRotation(Quaternion geometryRotation) {
+        this.geometryRotation = geometryRotation;
+    }
+
+    public void setGeometryTranslation(Vector3f geometryTranslation) {
+        this.geometryTranslation = geometryTranslation;
+    }
+
     public Quaternion getGeometryRotation() {
         return geometryRotation;
     }
