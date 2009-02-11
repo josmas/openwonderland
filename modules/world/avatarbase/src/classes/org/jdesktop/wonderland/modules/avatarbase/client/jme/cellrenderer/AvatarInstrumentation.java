@@ -48,8 +48,6 @@ public class AvatarInstrumentation extends javax.swing.JFrame {
         vertexDefB = new javax.swing.JCheckBox();
         poseToGpuCB = new javax.swing.JCheckBox();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
         jLabel1.setText("Enabled Subsystems");
 
         animationCB.setSelected(true);
