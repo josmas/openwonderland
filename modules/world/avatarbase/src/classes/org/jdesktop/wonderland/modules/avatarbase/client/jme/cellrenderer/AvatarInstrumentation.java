@@ -84,33 +84,33 @@ public class AvatarInstrumentation extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(animationCB)
-                    .addComponent(jLabel1)
-                    .addComponent(texturingCB)
-                    .addComponent(vertexDefB)
-                    .addComponent(poseToGpuCB))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(animationCB)
+                    .add(jLabel1)
+                    .add(texturingCB)
+                    .add(vertexDefB)
+                    .add(poseToGpuCB))
                 .addContainerGap(231, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(18, 18, 18)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(animationCB)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(texturingCB)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(vertexDefB)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(poseToGpuCB)
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(18, 18, 18)
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(animationCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(texturingCB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(vertexDefB)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(poseToGpuCB)
                 .addContainerGap(150, Short.MAX_VALUE))
         );
 
