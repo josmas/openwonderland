@@ -53,8 +53,6 @@ public class SwingSetTestWindow extends WindowSwing  {
         throws InstantiationException
     {
 	super(app, width, height, topLevel, pixelScale);
-	setSize(width, height);
-	initializeSurface();
 
 	setTitle("SwingSet2 Test");
 	
@@ -67,5 +65,7 @@ public class SwingSetTestWindow extends WindowSwing  {
 	// TODO: test without
        	JmeClientMain.getFrame().getCanvas3DPanel().add(swingset);
 	setComponent(swingset);
+
+	setSize(width, height);
     }
 }
