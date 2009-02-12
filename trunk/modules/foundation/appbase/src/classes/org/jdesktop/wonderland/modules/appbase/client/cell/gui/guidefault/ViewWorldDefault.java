@@ -21,10 +21,12 @@ import com.jme.bounding.BoundingBox;
 import com.jme.image.Image;
 import com.jme.image.Texture;
 import com.jme.math.Matrix4f;
+import com.jme.math.Quaternion;
 import com.jme.math.Ray;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import java.awt.Button;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -39,12 +41,14 @@ import com.jme.scene.state.TextureState;
 import java.nio.FloatBuffer;
 import com.jme.util.geom.BufferUtils;
 import com.jme.scene.TexCoords;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.LinkedList;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
@@ -63,14 +67,18 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     private static final Logger logger = Logger.getLogger(ViewWorldDefault.class.getName());
     /** The vector offset from the center of the cell to the center of the window */
     protected Vector3f translation = new Vector3f();
-    /** The width of the view (excluding the frame) */
+    /** The current width of the view (excluding the frame). */
     protected float width;
-    /** The height of the view (excluding the frame) */
+    /** The current height of the view (excluding the frame). */
     protected float height;
     /** The textured 3D object in which displays the window contents */
     protected ViewGeometryObject geometryObj;
-    /** The view's geometry is connected to its cell */
+    /** Whether the view's entity tree is connected to its cell */
     protected boolean connectedToCell;
+    /** The current cell to which this view is attached. */
+    protected AppCell currentCell;
+    /** Whether the view's entity tree is attached to the HUD */
+    protected boolean attachedToHud;
     /** 
      * The root of the view subgraph. This contains all geometry and is 
      * connected to the local scene graph of the cell.
@@ -79,11 +87,11 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * The view's entity.
      */
-    protected Entity entity;
+    private HudableEntity entity;
     /** The control arbitrator of the window */
     protected ControlArb controlArb;
-    /** The frame of the view's window (if it is top-level) */
-    protected FrameWorldDefault frame;
+    /** The frame displayed for this view when it is in world mode. */
+    protected FrameWorldDefault worldFrame;
     /** The visibility of the view itself */
     private boolean viewVisible;
     /** 
@@ -136,6 +144,18 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /** The entity components which should be attached to this view while the view is attached to its cell. */
     private LinkedList<EntityComponentEntry> entityComponents = new LinkedList<EntityComponentEntry>();
 
+    /** Whether the view is in the HUD. */
+    private boolean inHud;
+
+    /** The location of the view when it is in the HUD. */
+    private Point hudLocation;
+
+    /** The size of the view when it is in the HUD. */
+    private Dimension hudSize;
+
+    /** TODO: temp */
+    private int hudZOrder;
+
     /**
      * Create a new instance of ViewWorldDefault.
      *
@@ -147,11 +167,14 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
         controlArb = window.getApp().getControlArb();
 
-        entity = new Entity("View Entity");
+        entity = new HudableEntity("View Entity");
         baseNode = new Node("View Base Node");
         RenderComponent rc =
                 ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(baseNode);
         entity.addComponent(RenderComponent.class, rc);
+
+        hudLocation = new Point(0, 0);
+        hudSize = new Dimension(window.getWidth(), window.getHeight());
     }
 
     /**
@@ -168,9 +191,9 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         if (controlArb != null) {
             controlArb = null;
         }
-        if (frame != null) {
-            frame.cleanup();
-            frame = null;
+        if (worldFrame != null) {
+            worldFrame.cleanup();
+            worldFrame = null;
         }
         detachEventListeners(entity);
         if (gui != null) {
@@ -178,14 +201,30 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
             gui = null;
         }
         if (entity != null) {
+            if (inHud) {
+                moveToWorld();
+            }
             if (connectedToCell) {
                 detachFromCell((AppCell) getCell());
+                connectedToCell = false;
+                currentCell = null;
             }
             Entity parentEntity = entity.getParent();
             if (parentEntity != null) {
                 parentEntity.removeEntity(entity);
             }
             entity.removeComponent(RenderComponent.class);
+            
+            // Make sure that entity listeners and components are really gone
+            // There is a case with movement into or out of the HUD where these
+            // might get stuck on the entity
+            for (EventListener listener : eventListeners) {
+                listener.removeFromEntity(entity);
+            }
+            for (EntityComponentEntry entry : entityComponents) {
+                detachEntityComponent(entry.clazz);
+            }
+            
             baseNode = null;
             entity = null;
         }
@@ -256,10 +295,12 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
+    /* TODO: I think this is not needed
     public void setSize(float width, float height) {
         this.width = width;
         this.height = height;
     }
+    */
 
     /**
      * {@inheritDoc}
@@ -280,7 +321,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      */
     FrameWorldDefault getFrame() {
         update(CHANGED_TOP_LEVEL);
-        return frame;
+        return worldFrame;
     }
 
     /**
@@ -303,13 +344,13 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
         if ((changeMask & CHANGED_TOP_LEVEL) != 0) {
             if (topLevel) {
-                if (frame == null) {
-                    frame = (FrameWorldDefault) window.getApp().getDisplayer().getGui2DFactory().createFrame(this);
+                if (worldFrame == null) {
+                    worldFrame = (FrameWorldDefault) window.getApp().getDisplayer().getGui2DFactory().createFrame(this);
                 }
             } else {
-                if (frame != null) {
-                    frame.cleanup();
-                    frame = null;
+                if (worldFrame != null) {
+                    worldFrame.cleanup();
+                    worldFrame = null;
                 }
             }
         }
@@ -332,8 +373,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         }
 
         if ((changeMask & CHANGED_TITLE) != 0) {
-            if (frame != null) {
-                frame.setTitle(((Window2D) window).getTitle());
+            if (worldFrame != null) {
+                worldFrame.setTitle(((Window2D) window).getTitle());
             }
         }
     }
@@ -341,15 +382,20 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /** Update the view's geometry (for a size change) */
     protected void updateGeometrySize() throws InstantiationException {
 
-        Window2D window2D = (Window2D) window;
-        Vector2f pixelScale = window2D.getPixelScale();
-        width = pixelScale.x * (float) window2D.getWidth();
-        height = pixelScale.y * (float) window2D.getHeight();
+        // Calculate view size appropriate for the current Hud mode
+        if (inHud) {
+            width = (float) hudSize.getWidth();
+            height = (float) hudSize.getHeight();
+        } else {
+            Window2D window2D = (Window2D) window;
+            Vector2f pixelScale = window2D.getPixelScale();
+            width = pixelScale.x * (float) window2D.getWidth();
+            height = pixelScale.y * (float) window2D.getHeight();
+        }
 
         if (geometryObj == null) {
 
             // Geometry first time creation
-
             setGeometry(new ViewGeometryObjectDefault(this));
 
         } else {
@@ -358,8 +404,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
             geometryObj.updateSize();
         }
 
-        if (frame != null) {
-            frame.update();
+        if (worldFrame != null) {
+            worldFrame.update();
         }
     }
 
@@ -372,7 +418,21 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
     /** Update the view's transform */
     protected void updateTransform() {
-        baseNode.setLocalTranslation(translation);
+        if (inHud) {
+            // Get rid of any non-zero rotation or non-unity scale that the node may have
+            baseNode.setLocalRotation(new Quaternion());
+            baseNode.setLocalScale(1.0f);
+            // TODO: is this from the center or not?
+            /* TODO
+            baseNode.setLocalTranslation(new Vector3f((float)hudLocation.getX(),
+                                                      (float)hudLocation.getY(),
+                                                      0f));
+            */
+            baseNode.setLocalTranslation(new Vector3f(400f, 400f, 0f));
+        } else {
+            // TODO: this is all we have for world mode now (no rotation)
+            baseNode.setLocalTranslation(translation);
+        }
     }
 
     /**
@@ -413,10 +473,18 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
         visible = viewVisible && window.isVisible();
 
-        if (visible && !connectedToCell) {
-            attachToCell(cell);
-        } else if (!visible && connectedToCell) {
-            detachFromCell(cell);
+        if (inHud) {
+            if (visible && !attachedToHud) {
+                attachToHud();
+            } else if (!visible && attachedToHud) {
+                detachFromHud();
+            }
+        } else {
+            if (visible && !connectedToCell) {
+                attachToCell(cell);
+            } else if (!visible && connectedToCell) {
+                detachFromCell(cell);
+            }
         }
     }
 
@@ -669,6 +737,11 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
             Vector3f p = ray.getDirection().mult(t).add(ray.getOrigin());
             return p;
         }
+
+        /**
+         *  Set the HUD Z order for the geometry.
+         */
+         public abstract void setHudZOrder (int zOrder);
     }
 
     /** 
@@ -704,6 +777,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         /**
          * {@inheritDoc}
          */
+        @Override
         public void cleanup() {
             super.cleanup();
             if (quad != null) {
@@ -784,6 +858,16 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         public TextureState getTextureState() {
             return quad.getTextureState();
         }
+
+        /**
+         *  {inheritDoc}
+         */
+         public void setHudZOrder (int zOrder) {
+             if (quad != null) {
+                 quad.setZOrder(zOrder);
+             }
+         }
+
     }
 
     /**
@@ -932,6 +1016,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         }
     }
 
+    @Override
     public void forceTextureIdAssignment() {
         if (geometryObj == null) {
             setGeometry(new ViewGeometryObjectDefault(this));
@@ -967,8 +1052,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         if (gui != null) {
             ((Gui2D) gui).attachEventListeners(entity);
         }
-        if (frame != null) {
-            frame.attachEventListeners(entity);
+        if (worldFrame != null) {
+            worldFrame.attachEventListeners(entity);
         }
     }
 
@@ -982,8 +1067,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         if (gui != null) {
             ((Gui2D) gui).detachEventListeners(entity);
         }
-        if (frame != null) {
-            frame.detachEventListeners(entity);
+        if (worldFrame != null) {
+            worldFrame.detachEventListeners(entity);
         }
     }
 
@@ -993,6 +1078,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     private void attachToCell(AppCell cell) {
 
         cell.attachView(this, RendererType.RENDERER_JME);
+        currentCell = cell;
         attachEventListeners(getEntity());
 
         // For debug
@@ -1005,6 +1091,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         }
 
         // Attach this view's entity components to the view entity
+        // TODO: are these still used?
         for (EntityComponentEntry entry : entityComponents) {
             attachEntityComponent(entry.clazz, entry.comp);
         }
@@ -1018,6 +1105,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     private void detachFromCell(AppCell cell) {
 
         cell.detachView(this, RendererType.RENDERER_JME);
+        currentCell = null;
         detachEventListeners(getEntity());
 
         // Detach this view's event listeners
@@ -1189,5 +1277,197 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
             }
         }
     }
-}
 
+    /**
+     * {@inheritDoc}
+     */
+    public void setHud (boolean inHud) {
+        if (this.inHud == inHud) return;
+
+        this.inHud = inHud;
+        if (inHud) {
+            moveToHud();
+        } else {
+            moveToWorld();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isHud () {
+        return inHud;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void setHudLocation (int x, int y) {
+        hudLocation = new Point(x, y);
+        if (inHud) {
+            update(CHANGED_SIZE);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int getHudX () {
+        return hudLocation.x;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int getHudY () {
+        return hudLocation.y;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setHudSize(int width, int height) {
+        hudSize = new Dimension(width, height);
+        if (inHud) {
+            update(CHANGED_SIZE);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int getHudWidth () {
+        return hudSize.width;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public int getHudHeight () {
+        return hudSize.height;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setHudConfiguration(int x, int y, int width, int height) {
+        hudLocation = new Point(x, y);
+        hudSize = new Dimension(width, height);
+        if (inHud) {
+            update(CHANGED_TRANSFORM | CHANGED_SIZE);
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public void setHudZOrder (int zOrder) {
+        hudZOrder = zOrder;
+        if (inHud) {
+            updateHudState();
+        }
+    }
+
+    /**
+     * Moves this view into the HUD.
+     */
+    private void moveToHud () {
+
+        // Detach entity from cell (without removing listeners or components!) and attach it to the HUD
+        if (connectedToCell) {
+            currentCell.detachView(this, RendererType.RENDERER_JME);
+            connectedToCell = false;
+        }
+        if (visible) {
+            attachToHud();
+        }
+        
+        // Update HUD state for all entities
+        updateHudState();
+
+        // Finally, the view's render component must be in ortho mode
+        entity.getComponent(RenderComponent.class).setOrtho(true);
+    }
+
+    /**
+     * Moves this view back into the world.
+     */
+    private void moveToWorld () {
+
+        // Detach entity from HUD and reattach entity to the cell
+        if (visible) {
+            detachFromHud();
+            if (!connectedToCell) {
+                currentCell.attachView(this, RendererType.RENDERER_JME);
+                connectedToCell = true;
+            }
+        }
+
+        // Update HUD state for all entities
+        updateHudState();
+
+        // Finally, the view's render component must be in perspective mode
+        entity.getComponent(RenderComponent.class).setOrtho(true);
+    }
+
+    /**
+     * Update HUD state for all entities of this view.
+     */
+    private void updateHudState () {
+        updateHudStateForEntityAndChildren(entity);
+    }
+
+    /**
+     * Updates the HUD state of the given entity and its children.
+     * (This is done safely, within the render loop.
+     */
+    private void updateHudStateForEntityAndChildren (HudableEntity entity) {
+        ClientContextJME.getWorldManager().addRenderUpdater(entity, this);
+        for (int i=0; i<entity.numEntities(); i++) {
+            updateHudStateForEntityAndChildren((HudableEntity)entity.getEntity(i));
+        }
+    }
+
+    /** 
+     * Attach the view's entity to the HUD entity.
+     */
+    private void attachToHud () {
+        if (attachedToHud) return;
+        // TODO: currently we don't have an entity from the HUD, so for now just add it to the world
+        ClientContextJME.getWorldManager().addEntity(entity);
+        attachedToHud = true;
+    }
+
+    /** 
+     * Detach the view's entity to the HUD entity.
+     */
+    private void detachFromHud () {
+        if (!attachedToHud) return;
+        // TODO: currently we don't have an entity from the HUD, so for now just add it to the world
+        ClientContextJME.getWorldManager().removeEntity(entity);
+        attachedToHud = false;
+    }
+
+    /**
+     * An entity which we can move in and out of the HUD.
+     */
+    private class HudableEntity extends Entity implements RenderUpdater {
+
+        public HudableEntity (String name) {
+            super(name);
+        }
+
+        public void update(Object o) {
+
+            // Position and size the view appropriately
+            ((ViewWorldDefault)o).update(CHANGED_TRANSFORM | CHANGED_SIZE);
+
+            if (inHud) {
+                geometryObj.setZOrder(hudZOrder);
+                baseNode.setCullHint(Spatial.CullHint.Never);
+            } else {
+                baseNode.setCullHint(Spatial.CullHint.Inherit);
+            }
+        }
+    }
+}
