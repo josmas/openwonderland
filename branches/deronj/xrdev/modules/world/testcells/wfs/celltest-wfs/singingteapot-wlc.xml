@@ -1,0 +1,19 @@
+<singing-teapot-cell>
+
+  <position-component>
+    <origin>
+	<x>-5</x>
+        <y>0.0</y>
+        <z>10</z>
+    </origin>
+  </position-component>
+
+    <audio-treatment-component>
+  	<treatment>wls://testcells/singing_teapot.au</treatment>
+	<groupId>singing_teapot</groupId>
+	<useFullVolumeSpatializer>false</useFullVolumeSpatializer>
+	<fullVolumeRadius>0</fullVolumeRadius>
+	<zeroVolumeRadius>6</zeroVolumeRadius> 
+    </audio-treatment-component>
+
+</singing-teapot-cell>
