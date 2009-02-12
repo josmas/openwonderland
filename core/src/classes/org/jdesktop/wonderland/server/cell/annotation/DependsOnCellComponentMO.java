@@ -28,38 +28,20 @@ import java.lang.annotation.Target;
  *
  * An example usage would be
  *
+ * @DependsOnCellComponentMO(AudioTreatmentComponentMO.class, ProximityComponentMO.class)
  * public class FooMO extends CellComponentMO {
- *
- *  @UsesCellComponentMO(ChannelComponentMO.class)
- *  private ManagedReference<ChannelComponentMO> channelCompRef;
- *
- *  public FooMO() {
- *  }
- *
- *  public void setLive(boolean isLive) {
- *      super.setStatus(isLive);
- *
- *      channelCompRef.getForUpdate().addMessageListener(.....)
- *  }
  *
  * }
  *
- * In this example the annotation @UsesCellComponentMO(ChannelComponentMO.class)
- * informs the system that the cell FooMO uses that component. The system
- * will guarantee that ChannelComponentMO is installed and that the channelCompRef
- * references points to the component before the call to setLive.
- *
- * Thus in setLive we can simply use the channel component.
- *
- * This annotation complements @DependsOnCellComponentMO, the difference is
- * that this annotation creates a reference to the component, where the @DependsOnCellComponentMO
- * just ensures the component is added to the cell. You don't need to specify @DependsOnCellComponentMO
- * for components that you specifiy with @UsesCellComponentMO, but you can if you wish.
+ * In this example the annotation DependsOnCellComponentMO(AudioTreatmentComponentMO.class, ProximityComponentMO.class)
+ * informs the system that the cell FooMO depends on both the AudioTreatmentComponentMO
+ * and the ProximityComponentMO. The system will automatically instantite and add
+ * those components to the cell during setLive.
  *
  * @author paulby
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface UsesCellComponentMO {
-    Class value();
+@Target(ElementType.TYPE)
+public @interface DependsOnCellComponentMO {
+    Class[] value();
 }
