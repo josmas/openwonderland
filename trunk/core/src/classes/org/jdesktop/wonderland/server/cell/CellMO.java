@@ -57,6 +57,7 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.OKMessage;
+import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -467,6 +468,18 @@ public abstract class CellMO implements ManagedObject, Serializable {
     }
     private void resolveAnnotations(Class clazz, ManagedReference<? extends ManagedObject> o) {
 
+        // Resolve @DependsOnCellComponentMO on class
+        DependsOnCellComponentMO dependsOn = (DependsOnCellComponentMO) clazz.getAnnotation(DependsOnCellComponentMO.class);
+        if (dependsOn!=null) {
+            Class[] dependClasses = dependsOn.value();
+            if (dependClasses!=null) {
+                for(Class c : dependClasses) {
+                    checkComponentFromAnnotation(c);
+                }
+            }
+        }
+
+        // Resolve @UsesCellComponentMO annotation on fields
         Field[] fields = clazz.getDeclaredFields();
         for(Field f : fields) {
             UsesCellComponentMO a = f.getAnnotation(UsesCellComponentMO.class);
@@ -474,29 +487,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 if (logger.isLoggable(Level.FINE))
                     logger.fine("****** GOT ANNOTATION for field "+f.getName());
 
-                Class componentClazz = a.value();
-                CellComponentMO comp = getComponent(componentClazz);
-                if (comp==null) {
-                    try {
-                        // Create the component and add it to the map. We must
-                        // also recursively create the component's dependencies
-                        // too!
-                        comp = (CellComponentMO) (componentClazz.getConstructor(CellMO.class).newInstance(this));
-                        addComponent(comp);
-                    } catch (InstantiationException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IllegalAccessException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IllegalArgumentException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (InvocationTargetException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (NoSuchMethodException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (SecurityException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+                CellComponentMO comp = checkComponentFromAnnotation(a.value());
 
                 try {
                     f.setAccessible(true);
@@ -508,6 +499,38 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 }
             }
         }
+    }
+
+    /**
+     * Check if the component is already added to the cell, if not create and add it
+     * @param componentClazz class of component
+     * @return the component object
+     */
+    private CellComponentMO checkComponentFromAnnotation(Class componentClazz) {
+        CellComponentMO comp = getComponent(componentClazz);
+        if (comp==null) {
+
+            try {
+                // Create the component and add it to the map. We must
+                // also recursively create the component's dependencies
+                // too!
+                comp = (CellComponentMO) (componentClazz.getConstructor(CellMO.class).newInstance(this));
+                addComponent(comp);
+            } catch (InstantiationException ex) {
+                Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, "Error instantiating component "+componentClazz, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchMethodException ex) {
+                Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SecurityException ex) {
+                Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return comp;
     }
 
     /**
