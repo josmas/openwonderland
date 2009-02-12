@@ -44,7 +44,6 @@ public class DragTestMO extends SimpleShapeCellMO {
 
     public DragTestMO (Vector3f center, float size) {
         super(center, size);
-        System.err.println("DRAG TEST **************************");
     }
     
     @Override 
