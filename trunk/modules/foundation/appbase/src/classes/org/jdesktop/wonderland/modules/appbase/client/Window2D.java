@@ -38,8 +38,11 @@ import java.awt.Point;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.appbase.client.gui.GuiFactory;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DView;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DViewWorld;
 
-// TODO: for debug
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
  * class are created by the createWindow methods of App2D subclasses.
@@ -52,7 +55,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public abstract class Window2D extends Window {
 
-    /** The XY (planar) translation of the window within the cell. */
+    private static final Logger logger = Logger.getLogger(Window2D.class.getName());
+
+    /** The XY (planar) translation of the window. */
     protected Vector2f xyTranslation;
     /** The width of the window (in pixels) */
     protected int width;
@@ -82,7 +87,7 @@ public abstract class Window2D extends Window {
     protected Vector3f userDisplacement = new Vector3f();
     /** The angle of rotation around the local Y axis (in radians) specified by the user */
     protected float rotY;
-    /** The local (cell relative) Z depth */
+    /** The local Z depth */
     protected float depth = 0f;
 
     /**
@@ -98,6 +103,7 @@ public abstract class Window2D extends Window {
     public Window2D(App app, int width, int height, boolean topLevel, Vector2f pixelScale)
             throws InstantiationException {
         super(app);
+
         this.width = width;
         this.height = height;
         this.topLevel = topLevel;
@@ -121,6 +127,7 @@ public abstract class Window2D extends Window {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void cleanup() {
         super.cleanup();
 
@@ -300,6 +307,7 @@ public abstract class Window2D extends Window {
      *
      * @param visible Whether the window should be visible.
      */
+    @Override
     public void setVisible(boolean visible) {
         if (this.visible == visible) {
             return;
@@ -385,8 +393,14 @@ public abstract class Window2D extends Window {
      * @return The view created. Null indicates that this window type doesn't support the given spaceName.
      */
     public Window2DView createView(String spaceName) {
-        Window2DView view = (Window2DView) guiFactory.createView(this, spaceName);
-        if (view == null) {
+        GuiFactory gui2DFactory = app.getDisplayer().getGui2DFactory();
+        if (gui2DFactory == null) {
+            logger.warning("Cannot create view because there is no GUI factory.");
+            return null;
+        }
+
+        Window2DView view = (Window2DView) gui2DFactory.createView(this, spaceName);
+        if (view == null || views == null) {
             return null;
         }
         views.add(view);
@@ -399,6 +413,9 @@ public abstract class Window2D extends Window {
      * @param view The view to destroy.
      */
     public void destroyView(Window2DView view) {
+        if (view == null || views == null) {
+            return;
+        }
         views.remove(view);
         view.cleanup();
     }
@@ -665,6 +682,9 @@ public abstract class Window2D extends Window {
      * Returns an iterator over all the views of this window.
      */
     protected Iterator<Window2DView> getViewIterator() {
+        if (views == null) {
+            return null;
+        }
         return views.iterator();
     }
 
@@ -740,10 +760,11 @@ public abstract class Window2D extends Window {
     }
 
     public void forceTextureIdAssignment() {
-        if (views.size() <= 0) {
-            System.err.println("Trying to assign texture ID before view has been created.");
-            System.exit(1);
+        if (views == null || views.size() <= 0) {
+            logger.warning("Cannot assign texture ID because there are no views");
+            return;
         }
+
         for (Window2DView view : views) {
             view.forceTextureIdAssignment();
         }

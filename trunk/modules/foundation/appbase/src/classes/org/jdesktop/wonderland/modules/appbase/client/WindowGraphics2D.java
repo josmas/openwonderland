@@ -33,7 +33,7 @@ public class WindowGraphics2D extends Window2D {
 
     private static final Logger logger = Logger.getLogger(WindowGraphics2D.class.getName());
     /** The surface the client on which subclasses should draw */
-    private DrawingSurface surface;
+    protected DrawingSurface surface;
 
     /**
      * Create a Window2D instance and its "World" view.
@@ -64,10 +64,24 @@ public class WindowGraphics2D extends Window2D {
      */
     public void cleanup() {
         if (surface != null) {
+            surface.setUpdateEnable(false);
             surface.cleanup();
             surface = null;
         }
         super.cleanup();
+    }
+
+    /**
+     * {@inheritDoc}
+     * Note: the arguments do NOT include the borderWidth.
+     */
+    @Override
+    public void setSize(int width, int height) {
+        super.setSize(width, height);
+        if (surface != null) {
+            surface.setTexture(texture);
+            surface.setSize(width, height);
+        }
     }
 
     /**
@@ -84,17 +98,6 @@ public class WindowGraphics2D extends Window2D {
      */
     public DrawingSurface getSurface() {
         return surface;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setSize (int width, int height) {
-        super.setSize(width, height);
-        if (surface != null) {
-            surface.setTexture(texture);
-            surface.setSize(width, height);
-        }
     }
 
     protected void paint(Graphics2D g) {

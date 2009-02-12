@@ -28,6 +28,9 @@ import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsReporter;
 
+/**
+ * Code which is shared between the master and slaves.
+ */
 public class ClientSocket {
 
     private static Logger logger = Logger.getLogger(ClientSocket.class.getName());
@@ -67,15 +70,15 @@ public class ClientSocket {
     private ClientSocketListener listener;
     private Socket socket;
     protected boolean master;
-    BigInteger myClientID = null;
-    BigInteger otherClientID = null;
+    private BigInteger myClientID = null;
+    private BigInteger otherClientID = null;
     private Thread readSocketThread = null;
     private Thread writeSocketThread = null;
     private boolean stopReading = false;
     private boolean stopWriting = false;
     private DataOutputStream dos = null;
     private DataInputStream dis = null;
-    private final LinkedList<ClientSocket.Message> writeQueue = new LinkedList<ClientSocket.Message>();
+    private final LinkedList<Message> writeQueue = new LinkedList<Message>();
     private long writeQueueSize = 0;
     private long numBytesRead;
     protected StatisticsReporter statReporter;
@@ -96,23 +99,26 @@ public class ClientSocket {
         return enable;
     }
 
+    /**
+     * Returns the Wonderland client ID of the client on the other end.
+     */
     public BigInteger getOtherClientID() {
         return otherClientID;
     }
 
-    long getNumBytesRead() {
+    synchronized long getNumBytesRead() {
         return numBytesRead;
     }
 
-    void setNumBytesRead(long n) {
+    synchronized void setNumBytesRead(long n) {
         numBytesRead = n;
     }
 
-    long getNumBytesWritten() {
+    synchronized long getNumBytesWritten() {
         return numBytesWritten;
     }
 
-    void setNumBytesWritten(long n) {
+    synchronized void setNumBytesWritten(long n) {
         numBytesWritten = n;
     }
 
@@ -140,6 +146,11 @@ public class ClientSocket {
     }
     /**/
 
+    /**
+     * Perform initial handshake. We write our client ID and expect to read the 
+     * other client's ID. Then start the read and write threads. Note: this handshake
+     * is slightly different than 0.4.
+     */
     public boolean initialize() {
         try {
             dos = new DataOutputStream(socket.getOutputStream());
@@ -149,18 +160,19 @@ public class ClientSocket {
             return false;
         }
 
-        if (otherClientID == null) {
-            if ((otherClientID = readClientID()) == null) {
-                logger.warning("Failed to read remote session id");
-                return false;
-            }
-        } else {
-            if (!writeClientID(myClientID)) {
-                logger.warning("Failed to write my session id");
-                return false;
-            }
+        // Write our client ID (blocking)
+        if (!writeClientID(myClientID)) {
+            logger.warning("Failed to write my session id");
+            return false;
         }
 
+        // Read the others ID (blocking)
+        if ((otherClientID = readClientID()) == null) {
+            logger.warning("Failed to read remote client ID");
+            return false;
+        }
+
+        // Start the read thread
         readSocketThread = new Thread(new Runnable() {
 
             public void run() {
@@ -169,6 +181,7 @@ public class ClientSocket {
         });
         readSocketThread.setName("-readThread");
 
+        // Start the write thread
         writeSocketThread = new Thread(new Runnable() {
 
             public void run() {
@@ -189,12 +202,9 @@ public class ClientSocket {
         writeSocketThread.start();
     }
 
-    public void close() {
+    public void close () {
         enable = false;
-        close(true);
-    }
 
-    public void close(boolean remove) {
         if (!socket.isClosed()) {
             logger.info("CLOSING socket");
             try {
@@ -204,9 +214,12 @@ public class ClientSocket {
             }
         }
 
-        if (remove) {
-            listener.slaveLeft(otherClientID);
+        // Wake up any waiters on the write queue
+        synchronized (writeQueue) {
+            writeQueue.notifyAll();
         }
+
+        listener.otherClientHasLeft(otherClientID);
 
         if (ENABLE_STATS) {
             statReporter.stop();
@@ -232,6 +245,13 @@ public class ClientSocket {
         return buf;
     }
 
+    /**
+     * Wait until the size of the write queue changes. (Note that this
+     * might be either because something was added to it or something was removed).
+     * Must be called inside a synchronized (writeQueue) block.
+     * Note: this method must be called in a loop.
+     * @return true if the socket is closed.
+     */
     private boolean writeQueueWait() {
         if (socket.isClosed()) {
             return true;
@@ -245,73 +265,54 @@ public class ClientSocket {
         return socket.isClosed();
     }
 
+    /**
+     * Send the entire contents of the given byte array to the client on the other side. 
+     * Do not block; just enqueue buffer to be written out later by write loop.
+     * @param buf The byte array to send.
+     */
     public void send(byte[] buf) throws IOException {
-        send(buf, true);
+        send(buf, buf.length);
     }
 
-    public void send(byte[] buf, boolean blocking) throws IOException {
-        send(buf, buf.length, blocking);
-    }
-
-    public void send(byte[] buf, int len, boolean blocking) throws IOException {
+    /**
+     * Send the entire contents of the given byte array to the client on the other side. 
+     * Do not block; just enqueue buffer to be written out later by write loop.
+     * @param buf The byte array to send.
+     * @param len The number of bytes to send.
+     */
+    public void send(byte[] buf, int len) throws IOException {
         if (master && !enable) {
             return;
         }
 
-        if (blocking) {
-            writeBlocking(buf, len);
-        } else {
-            writeNonblocking(buf, len);
-        }
-    }
-
-    private void writeBlocking(byte[] buf, int len) throws IOException {
         synchronized (writeQueue) {
-            while (writeQueue.size() > 0) {
-                if (writeQueueWait()) {
-                    return;
-                }
-            }
-
-            if (DEBUG) {
-                dos.writeInt(++msgCountSent);
-                logger.fine("Wrote message " + msgCountSent);
-            }
-
-            dos.writeInt(len);
-            dos.write(buf, 0, len);
-
-            if (DEBUG_IO) {
-                logger.fine("SENT: " + len + " bytes");
-                print10bytes(buf);
-            }
-        }
-    }
-
-    private void writeNonblocking(byte[] buf, int len) throws IOException {
-        synchronized (writeQueue) {
-            // TODO: This might blow up the memory if too many messages
-            //	 get backed up. Use ArrayBlockingQueue<E> of fixed capacity
-            //	 or better still, keep track of total bytes backed up and limit it.
+            // TODO: krishna note: This might blow up the memory if too many messages
+            // get backed up. Use ArrayBlockingQueue<E> of fixed capacity
+            // or better still, keep track of total bytes backed up and limit it.
             if (maxWriteQueueSize > 0) {
                 while (writeQueueSize >= maxWriteQueueSize) {
                     logger.finer("Waiting for socket to drain:\n" +
                             "     writeQueueSize = " + writeQueueSize + "\n" +
                             "     maxWriteQueueSize = " + maxWriteQueueSize);
 
-                    if (writeQueueWait()) {
+                    boolean socketIsClosed = writeQueueWait();
+                    if (socketIsClosed) {
                         return;
                     }
                 }
             }
 
             writeQueue.add(new Message(buf, len));
-            writeQueue.notifyAll();
-
             writeQueueSize += len;
+            // Notify waiters that the size of the write queue has changed
+            writeQueue.notifyAll();
         }
     }
 
+    /**
+     * Performs a blocking write of the given client ID.
+     * @param clientID The client ID to write.
+     */
     private boolean writeClientID(BigInteger clientID) {
         try {
             byte[] buf = clientID.toByteArray();
@@ -323,6 +324,11 @@ public class ClientSocket {
         return true;
     }
 
+    /**
+     * Performs a blocking read of the client ID sent by the initial handshake of the 
+     * client on the other end.
+     * @return The client ID read.
+     */
     private BigInteger readClientID() {
         try {
             byte[] buf = readMessage();
@@ -357,21 +363,20 @@ public class ClientSocket {
 
             } catch (SocketException e) {
                 if (!socket.isClosed()) {
-                    e.printStackTrace();
+                    logger.info("SocketException during reading occurred but socket is still open. Exception = " + e);
                 } else {
-                    logger.info("Socket closed on the other side. Closing and cleaning up...");
+                    logger.info("Socket closed on the other side during reading. Closing and cleaning up...");
                 }
-
                 close();
                 break;
+
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.info("Exception occurred during reading. Exception = " + e);
                 close();
                 break;
             }
         }
-        logger.info("EXIT client socket read thread\n" +
-                "  remote ClientID = " + otherClientID);
+        logger.info("EXIT client socket read thread\n" + " otherClientID = " + otherClientID);
     }
 
     public void writeLoop() {
@@ -388,6 +393,7 @@ public class ClientSocket {
                 if (!closed && (writeQueue.size() > 0)) {
                     msg = writeQueue.remove(0);
                     writeQueueSize -= msg.len;
+                    // Notify waiters that the size of the write queue has changed
                     writeQueue.notifyAll();
                 }
             }
@@ -416,7 +422,7 @@ public class ClientSocket {
                 " remote ClientID = " + otherClientID);
     }
 
-    protected final boolean writeMessageBuf(byte[] buf, int len) {
+    private final boolean writeMessageBuf(byte[] buf, int len) {
         try {
             dos.writeInt(len);
             dos.write(buf, 0, len);
@@ -424,7 +430,7 @@ public class ClientSocket {
             close();
             return false;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info("Exception occurred during writing. Exception = " + e);
             close();
             return false;
         }

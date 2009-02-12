@@ -27,12 +27,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.utils.SmallIntegerAllocator;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.utils.net.NetworkAddress;
 import org.jdesktop.wonderland.modules.appbase.client.MonitoredProcess;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.modules.xremwin.client.wm.X11WindowManager;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
 
 /**
  * A Master Xremwin app. This is the AppXrw subclass used on the client machine
@@ -40,8 +39,8 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
  *
  * @author deronj
  */
-@ExperimentalAPI
-class AppXrwMaster
+@InternalAPI
+public class AppXrwMaster
         extends AppXrw
         implements X11WindowManager.WindowTitleListener, WindowSystemXrw.ExitListener {
     /* An allocator for instance numbers */
@@ -72,13 +71,11 @@ class AppXrwMaster
      * @param session This app's Wonderland session.
      * @throws InstantiationException Could not launch app
      */
-    AppXrwMaster(AppTypeXrw appType, String appName, String command, Vector2f pixelScale,
+    public AppXrwMaster(AppTypeXrw appType, String appName, String command, Vector2f pixelScale,
             ProcessReporter reporter, WonderlandSession session)
             throws InstantiationException {
 
-        // TODO: temporary
-        //super(appType, appName, new ControlArbXrw(), pixelScale);
-        super(appType, appName, new ControlArbAlways(), pixelScale);
+        super(appType, appName, new ControlArbXrw(), pixelScale);
         AppXrw.logger.severe("AppXrwMaster: appType = " + appType);
         AppXrw.logger.severe("appName = " + appName);
         controlArb.setApp(this);
@@ -115,9 +112,7 @@ class AppXrwMaster
         int portNum = serverSocket.getLocalPort();
         connectionInfo = new AppXrwConnectionInfo(publicMasterHost, portNum);
 
-        // Create the Xremwin protocol client and start its interpreter loop running.
-        // However, the loop doesn't start completely free running until the
-        // corresponding master cell is created and attached to the app
+        // Create the Xremwin protocol client.
         client = null;
         try {
             client = new ClientXrwMaster(this, (ControlArbXrw) controlArb, session, masterHost, serverSocket,
@@ -198,6 +193,7 @@ class AppXrwMaster
     /**
      * Clean up resources.
      */
+    @Override
     public void cleanup() {
         super.cleanup();
 
@@ -224,6 +220,7 @@ class AppXrwMaster
     /** 
      * This method is called when the window system has exitted.
      */
+    @Override
     public void windowSystemExitted() {
         cleanup();
     }
@@ -271,6 +268,7 @@ class AppXrwMaster
      * @param wid The X window ID of the window.
      * @param String The new window title.
      */
+    @Override
     public void setWindowTitle(int wid, String windowTitle) {
         // Relay window title to master client
         ((ClientXrwMaster) client).setWindowTitle(wid, windowTitle);

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client;
 
 import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
 
 /**
  * The generic app window superclass.
@@ -32,9 +33,6 @@ public abstract class Window {
     /** The app to which this window belongs */
     protected App app;
 
-    /** The object which is used to create user-visible objects for this window */
-    protected GuiFactory guiFactory;
-
     /** Is the window visible? (that is, is it showing?) */
     protected boolean visible;
 
@@ -45,7 +43,6 @@ public abstract class Window {
      */
     public Window (App app) {
 	this.app = app;
-	guiFactory = app.getAppType().getGuiFactory();
 	app.windowAdd(this);
     }
 
@@ -58,7 +55,6 @@ public abstract class Window {
 	    app = null;
 	}
 
-	guiFactory = null;
 	visible = false;
     }
 
@@ -86,10 +82,10 @@ public abstract class Window {
     }
 
     /**
-     * Returns the cell of the window's app.
+     * Returns the display environment of the window's app.
      */
-    public AppCell getCell () {
-	return app.getCell();
+    public Displayer getDisplayer () {
+	return app.getDisplayer();
     }
  
     /**

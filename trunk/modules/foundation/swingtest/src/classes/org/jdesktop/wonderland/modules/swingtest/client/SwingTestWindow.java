@@ -22,7 +22,6 @@ import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
 import javax.swing.JPanel;
-import org.jdesktop.wonderland.modules.swingtest.client.TestPanel;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -32,13 +31,11 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class SwingTestWindow 
     extends WindowSwing  
     implements TestPanel.Container 
 {
-
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(SwingTestWindow.class.getName());
 
@@ -57,7 +54,7 @@ public class SwingTestWindow
 	super(app, width, height, topLevel, pixelScale);
 
 	setTitle("Swing Test");
-	
+
 	TestPanel testPanel = new TestPanel();
 	// Note: this seems to only be required for the swing set, but do it here for safety
 	// TODO: test without
@@ -66,6 +63,8 @@ public class SwingTestWindow
         testPanel.setContainer(this);
 
 	setComponent(testPanel);
+        setTitle("Swing Test");
+
 
         /* Test Force a the preferred size
         System.err.println("test panel size = " + width + ", " + height);

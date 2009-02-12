@@ -33,9 +33,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public class WhiteboardApp extends AppGraphics2D  {
     
-    /** The single window created by this app */
-    private WhiteboardWindow window;
-
     /**
      * Create a new instance of WhiteboardApp. This in turn creates
      * and makes visible the single window used by the app.
@@ -47,19 +44,11 @@ public class WhiteboardApp extends AppGraphics2D  {
      * (in world meters per pixel).
      * @param commComponent The communications component for communicating with the server.
      */
-    public WhiteboardApp (AppType appType, int width, int height, Vector2f pixelScale,
-			  WhiteboardComponent commComponent) {
+    public WhiteboardApp (AppType appType, Vector2f pixelScale) {
 
 	// configWorld can be null because the server cell is already configured
 	super(appType, new ControlArbMulti(), pixelScale);
 	controlArb.setApp(this);
-
-	// This app has only one window, so it is always top-level 
-        try {
-            window = new WhiteboardWindow(this, width, height, true, pixelScale, commComponent);
-        } catch (InstantiationException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     /** 
@@ -67,26 +56,5 @@ public class WhiteboardApp extends AppGraphics2D  {
      */
     public void cleanup () {
 	super.cleanup();
-	if (window != null) {
-	    window.setVisible(false);
-	    window.cleanup();
-	    window = null;
-	}
-    }
-
-    /**
-     * Returns the app's window.
-     */
-    public WhiteboardWindow getWindow () {
-	return window;
-    }
-
-    /**
-     * Change the visibility of the app.
-     *
-     * @param visible Whether the application is visible.
-     */
-    public void setVisible (boolean visible) {
-	window.setVisible(visible);
     }
 }

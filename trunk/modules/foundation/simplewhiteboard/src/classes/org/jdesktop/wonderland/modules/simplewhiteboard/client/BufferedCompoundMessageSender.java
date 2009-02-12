@@ -22,10 +22,10 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
-import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCellMessage;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCellMessage;
 
 /**
  * A buffered message sender that coalesces similar messages before

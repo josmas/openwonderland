@@ -28,22 +28,21 @@ import org.jdesktop.wonderland.modules.swingtest.common.SwingTestTypeName;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class SwingTestAppTypeMO extends AppTypeMO {
 
     /**
      * {@inheritDoc}
      */
-    public String getName () {
-	return SwingTestTypeName.SWING_TEST_APP_TYPE_NAME;
+    public String getName() {
+        return SwingTestTypeName.SWING_TEST_APP_TYPE_NAME;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public AppLaunchMethods getLaunchMethods () {
-	return new SwingTestLaunchMethods();
+    public AppLaunchMethods getLaunchMethods() {
+        return new SwingTestLaunchMethods();
     }
 }

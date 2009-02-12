@@ -17,8 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import java.nio.ByteBuffer;
 import com.jme.math.Vector2f;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.awt.image.WritableRaster;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -42,10 +45,13 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public abstract class WindowConventional extends WindowGraphics2D {
 
+    private static final Logger logger = Logger.getLogger(WindowConventional.class.getName());
     /** The app to which the window belongs */
     protected AppConventional appConventional;
     /** The border width of the window */
     protected int borderWidth;
+    /** An intermediate buffer used by displayPixels. */
+    private BufferedImage tempImage;
 
     /** 
      * Create a new instance of WindowConventional.
@@ -75,12 +81,10 @@ public abstract class WindowConventional extends WindowGraphics2D {
     }
 
     /**
-     * Resize the window. Note that window contents will be lost when the window is resized.
-     * The visual representations of the window are updated accordingly.
-     *
-     * @param width The new width of the window. This does NOT include the borderWidth.
-     * @param height The new height of the window. This does NOT include the borderWidth
+     * {@inheritDoc}
+     * Note: the arguments do NOT include the borderWidth.
      */
+    @Override
     public void setSize(int width, int height) {
         super.setSize(width + 2 * borderWidth, height + 2 * borderWidth);
     }
@@ -108,6 +112,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
 
@@ -134,8 +139,48 @@ public abstract class WindowConventional extends WindowGraphics2D {
      * @param h The height of the image subrectangle which is to be changed.
      * @param pixels An array which contains the pixels. It must be of length w x h.
      */
-    public void displayPixels(int x, int y, int w, int h, ByteBuffer pixels) {
-        //TODO	((ViewWorldConventional)(viewWorld)).displayPixels(x, y, w, h, pixels);
+    public void displayPixels(final int x, final int y, final int w, final int h, int[] pixels) {
+        if (pixels == null) {
+            return;
+        }
+
+        // Grow temp image if necessary
+        if (tempImage == null ||
+                tempImage.getWidth() < w || tempImage.getHeight() < h) {
+            tempImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        }
+
+        // Put pixel buffer into tempImage
+        int dstWidth = tempImage.getWidth();
+        WritableRaster ras = tempImage.getRaster();
+        DataBufferInt dataBuf = (DataBufferInt) ras.getDataBuffer();
+        int[] dstPixels = dataBuf.getData();
+        if (dstPixels == null) {
+            return;
+        }
+        int srcIdx = 0;
+        //        int dstIdx = y * dstWidth + x;
+        int dstIdx = 0;
+        int dstNextLineIdx = dstIdx;
+        for (int srcY = 0; srcY < h; srcY++) {
+            dstNextLineIdx += dstWidth;
+            System.err.println("dstNextLineIdx = " + dstNextLineIdx);
+            for (int srcX = 0; srcX < w; srcX++) {
+                dstPixels[dstIdx++] = pixels[srcIdx++];
+            }
+            dstIdx = dstNextLineIdx;
+        }
+
+        final DrawingSurfaceBufferedImage.DirtyTrackingGraphics gDst =
+                (DrawingSurfaceBufferedImage.DirtyTrackingGraphics) surface.getGraphics();
+        gDst.setClip(x, y, w, h);
+        gDst.executeAtomic(new Runnable() {
+
+            public void run() {
+                gDst.drawImage(tempImage, x, y, w, h, null);
+                gDst.addDirtyRectangle(x, y, w, h);
+            }
+        });
     }
 
     /**
@@ -151,7 +196,38 @@ public abstract class WindowConventional extends WindowGraphics2D {
      * @param dstX The X coordinate of the top left corner of the destination subrectangle.
      * @param dstY The Y coordinate of the top left corner of the destination subrectangle.
      */
-    public void copyArea(int srcX, int srcY, int width, int height, int dstX, int dstY) {
-        // TODO getSurface.getGraphics().copyArea(srcX, srcY, width, height, dstX, dstY);
+    public void copyArea(final int srcX, final int srcY, final int width, final int height, 
+                         final int dstX, final int dstY) {
+        final DrawingSurfaceBufferedImage.DirtyTrackingGraphics gDst =
+                (DrawingSurfaceBufferedImage.DirtyTrackingGraphics) surface.getGraphics();
+        gDst.setClip(dstX, dstY, width, height);
+        gDst.executeAtomic(new Runnable() {
+
+            public void run() {
+                gDst.copyArea(srcX, srcY, width, height, dstX, dstY);
+                gDst.addDirtyRectangle(dstX, dstY, width, height);
+            }
+        });
+    }
+
+    /**
+     * Extracts the pixels in a given subrectangle and places them as bytes in a byte array.
+     * @param pixelBytes The byte array in which the pixels are returned.
+     * @param x The x coordinate of the origin of the subrectangle.
+     * @param y The y coordinate of the origin of the subrectangle.
+     * @param width The width of the subrectangle.
+     * @param height The height of the subrectangle.
+     */
+    public void getPixelBytes (final byte[] pixelBytes, final int x, final int y, 
+                               final int width, final int height) {
+
+        final DrawingSurfaceBufferedImage.DirtyTrackingGraphics gDst =
+                (DrawingSurfaceBufferedImage.DirtyTrackingGraphics) surface.getGraphics();
+        gDst.executeAtomic(new Runnable() {
+
+            public void run() {
+                ((DrawingSurfaceBufferedImage)surface).getPixelBytes(pixelBytes, x, y, width, height);
+            }
+        });
     }
 }

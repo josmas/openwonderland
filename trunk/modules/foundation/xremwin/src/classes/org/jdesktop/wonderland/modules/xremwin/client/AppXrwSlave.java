@@ -20,10 +20,9 @@ package org.jdesktop.wonderland.modules.xremwin.client;
 import com.jme.math.Vector2f;
 import java.io.Serializable;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
 
 /**
  * A Slave Xremwin app. This is the AppXrw subclass used on a client machine
@@ -31,8 +30,8 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
  *
  * @author deronj
  */
-@ExperimentalAPI
-class AppXrwSlave extends AppXrw {
+@InternalAPI
+public class AppXrwSlave extends AppXrw {
 
     /**
      * Create a new instance of AppXrwSlave.
@@ -43,12 +42,10 @@ class AppXrwSlave extends AppXrw {
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master and slave.
      * @param session This app's Wonderland session.
      */
-    AppXrwSlave(AppTypeConventional appType, String appName, Vector2f pixelScale, ProcessReporter reporter,
+    public AppXrwSlave(AppTypeConventional appType, String appName, Vector2f pixelScale, ProcessReporter reporter,
             Serializable connectionInfo, WonderlandSession session) {
 
-        // TODO: temporary
-        //super(appType, appName, new ControlArbXrw(), pixelScale);
-        super(appType, appName, new ControlArbAlways(), pixelScale);
+        super(appType, appName, new ControlArbXrw(), pixelScale);
         controlArb.setApp(this);
 
         // Create the Xremwin protocol client and start its interpreter loop running.
@@ -66,6 +63,7 @@ class AppXrwSlave extends AppXrw {
     /**
      * {inheritDoc}
      */
+    @Override
     int getTransientForWid(int wid) {
         // TODO: If the slave really needs to know this we need to
         // create a protocol for it to ask the master.
