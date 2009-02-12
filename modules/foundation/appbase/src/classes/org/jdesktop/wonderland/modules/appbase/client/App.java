@@ -24,14 +24,17 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
 
 /**
  * The generic application superclass. All apps in Wonderland have this
  * root class. 
  * <br><br>
- * Before an app can become visible in the world it must be associated with an AppCell
- * using <code>setCell</code>. <code>setCell</code> may be called only once for the app. Once called the app 
- * remains permanently associated with that cell until the app or cell is cleaned up.
+ * Before an app can become visible in the world it must be associated with a Displayer which
+ * provides for the display of the app, such as an app cell in the world or the HUD.  
+ * The displayer is configured using <code>setDisplayer</code>. <code>setDisplayer</code> 
+ * may be called only once for the app. Once called, the app remains permanently associated 
+ * with that displayer until the app or the displayer is destroyed.
  *
  * When you are done with this app you should call <code>cleanup</code> to clean up its resources.
  * (This is optional).
@@ -49,14 +52,15 @@ public class App {
     protected AppType appType;
     /** The control arbiter for this app. null means that all users can control the app at the same time */
     protected ControlArb controlArb;
-    /** The world cell to which the app belongs */
-    protected AppCell cell;
+    /** The displayer which renders the app. May be null if the app is not displayed in this client. */
+    protected Displayer displayer;
 
     /**
      * Create a new instance of App.
      *
      * @param appType The type of app to create.
-     * @param controlArb The control arbiter to use. null means that all users can control the app at the same time.
+     * @param controlArb The control arbiter to use. null means that all users can control the app 
+     * at the same time.
      */
     public App(AppType appType, ControlArb controlArb) {
         this.appType = appType;
@@ -78,7 +82,7 @@ public class App {
             controlArb = null;
         }
 
-        cell = null;
+        displayer = null;
 
         if (windows != null) {
             for (Window window : windows) {
@@ -107,13 +111,6 @@ public class App {
     }
 
     /**
-     * Returns the cell of this app.
-     */
-    public AppCell getCell() {
-        return cell;
-    }
-
-    /**
      * Returns an iterator over all the windows of this app.
      */
     public Iterator<Window> getWindowIterator() {
@@ -128,7 +125,7 @@ public class App {
     synchronized void windowAdd(Window window) {
         windows.add(window);
 
-    /* TODO
+    /* TODO: control
     Just call window.initControl(controlArb) if controlArb not null?
 
     if (controlArb != null && controlArb.hasControl()) {
@@ -148,7 +145,7 @@ public class App {
     synchronized void windowRemove(Window window) {
         windows.remove(window);
 
-    /* TODO
+    /* TODO: control
     window.setControllingUser(null);
     if (controlArb != null) {
     controlArb.removeListener(window);
@@ -171,77 +168,33 @@ public class App {
     }
 
     /**
-     * Used to associate this app with the given cell.  May only be called one time.
+     * Returns the displayer of this app.
+     */
+    public Displayer getDisplayer() {
+        return displayer;
+    }
+
+    /**
+     * Used to associate this app with the given displayer.  May only be called one time.
      *
-     * @param cell The world cell containing the app.
-     * @throws IllegalArgumentException If the cell already is associated
+     * @param displayer The world displayer containing the app.
+     * @throws IllegalArgumentException If the displayer already is associated
      * with an app.
      * @throws IllegalStateException If the app is already associated 
-     * with a cell.
+     * with a displayer.
      */
-    public void setCell(AppCell cell)
+    public void setDisplayer(Displayer displayer)
             throws IllegalArgumentException, IllegalStateException {
-        if (cell == null) {
+        if (displayer == null) {
             throw new NullPointerException();
         }
-        if (this.cell != null) {
-            throw new IllegalStateException("App already has a cell");
+        if (this.displayer != null) {
+            throw new IllegalStateException("App already has a displayer.");
         }
 
-        this.cell = cell;
+        this.displayer = displayer;
     }
 
-    /** 
-     * Launch an instance of the given app type. This creates the server cell for the app and associated
-     * client cells.
-     * @param appTypeName The name of the app type.
-     * @param appName The name of the application instance (Note: doesn't need to be unique).
-     * @param command The command (with arguments) to execute on the master machine.
-     * @param bestView If true the bounds and transform are configured to place the app in front of the 
-     * launching user at a "good" distance.
-     * @param bounds The bounding object of the app cell (only used if bestView is false).
-     * @param transform The center of the the app cell in World coordinates (not used if bestView is true).
-     * @param pixelScale The size of app window pixels (in world coordinates).
-     */
-    /* TODO
-    public static void userLaunchLocalApp (String appTypeName, String appName, String command, boolean bestView,
-    BoundingVolume bounds, CellTransform transform, Vector2f pixelScale) {
-
-    AppType appType = findAppType(appTypeName);
-    if (appType == null) {
-    reportLaunchError("Cannot find app type to launch: " + appTypeName);
-    return;
-    }
-
-    AppLaunchMethods lm = appType.getLaunchMethods();
-    if (lm == null) {
-    reportLaunchError("Cannot determine permitted launch modes for app type " + appTypeName);
-    return;
-    }
-
-    if (!lm.containsLauncher(AppLaunchMethods.Launcher.USER)) {
-    reportLaunchError("Instances of app type " + appTypeName + " cannot be launched by the user");
-    return;
-    }
-
-    switch (lm.getStyle()) {
-
-    case WONDERLAND:
-    //TODO
-    break;
-
-    case CONVENTIONAL:
-    AppLaunchMethodsConventional lmc = (AppLaunchMethodsConventional) lm;
-    AppTypeConventional act = (AppTypeConventional) appType;
-    if (lmc.containsExecutionSite(AppLaunchMethodsConventional.ExecutionSite.LOCAL)) {
-    AppConventional.userLaunchApp(act, appName, command, bestView, bounds, transform, pixelScale);
-    } else {
-    reportLaunchError("Instances of app type " + appTypeName + " cannot be launched on the local machine");
-    }
-    break;
-    }
-    }
-     */
     protected static void reportLaunchError(String message) {
         JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
     }

@@ -63,7 +63,11 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
     static final int MASTER_CLIENT_ID = 0;
     private static final int CREATE_WINDOW_MESSAGE_SIZE = 20;
     private static final int DESTROY_WINDOW_MESSAGE_SIZE = 8;
-    private static final int SHOW_WINDOW_MESSAGE_SIZE = 12;
+
+    // TODO: 0.4 protocol: temporarily change
+    //private static final int SHOW_WINDOW_MESSAGE_SIZE = 12;
+    private static final int SHOW_WINDOW_MESSAGE_SIZE = 8;
+
     private static final int CONFIGURE_WINDOW_MESSAGE_SIZE = 28;
     private static final int POSITION_WINDOW_MESSAGE_SIZE = 16;
     private static final int RESTACK_WINDOW_MESSAGE_SIZE = 16;
@@ -310,12 +314,16 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
 
             curBuf.setBuffer(showWindowBuf, 1);
             msgArgs.show = curBuf.nextByte() != 0;
+
+            // TODO: 0.4 protocol: skip transient and pad (ignore transient for now)
+            // TODO: 0.5 protocol: skip pad
             curBuf.skip(2);
+
             msgArgs.wid = curBuf.nextInt();
-            /* TODO: 0.4 protocol:
-            msgArgs.transientFor = curBuf.nextInt();
-             */
-            curBuf.nextInt();  // Ignore
+
+            // TODO: 0.5 protocol: not yet
+            //msgArgs.transientFor = curBuf.nextInt();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -741,8 +749,8 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         sf.broadcastSend(setPopupParentBuf);
     }
 
-    public void writeSlaveSyncPixels(BigInteger slaveID, byte[] pixelBuf) {
-        sf.unicastSend(slaveID, pixelBuf);
+    public void writeSlaveSyncPixels(BigInteger slaveID, byte[] pixelBytes) {
+        sf.unicastSend(slaveID, pixelBytes);
     }
 
     /* For Debug

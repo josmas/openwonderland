@@ -103,7 +103,7 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
     /**
      * Clean up resources held.
      */
-    public void cleanup() {
+    public synchronized void cleanup() {
         setUpdateEnable(false);
         imageGraphics = null;
         texture = null;
@@ -142,7 +142,7 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
     /**
      * Initialize the contents of the surface.
      */
-    public void initializeSurface() {
+    public synchronized void initializeSurface() {
         initSurface(imageGraphics);
     }
 
@@ -175,7 +175,7 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
     /**
      * Returns a Graphics2D to draw on the surface.
      */
-    public Graphics2D getGraphics() {
+    public synchronized Graphics2D getGraphics() {
         return imageGraphics;
     }
 
@@ -204,14 +204,14 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
     /**
      * Return this surface's associated texture.
      */
-    public Texture getTexture() {
+    public synchronized Texture getTexture() {
         return texture;
     }
 
     /**
      * Enable or disabling the updating of the texture.
      */
-    // TODO: must tie processor enable in with setvisible. 
+    // TODO: perf: must tie processor enable in with setvisible. 
     public synchronized void setUpdateEnable(boolean enable) {
         if (enable == updateEnable) {
             return;
@@ -223,14 +223,14 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
     /**
      * Return whether texture updating is enabled.
      */
-    public boolean getUpdateEnable() {
+    public synchronized boolean getUpdateEnable() {
         return updateEnable;
     }
 
     /**
      * Check whether or not updating should be activated.
      */
-    private void updateUpdating() {
+    private synchronized void updateUpdating() {
         if (updateEnable && imageGraphics != null && texture != null) {
             if (updateProcessor == null) {
                 updateProcessor = createUpdateProcessor();
@@ -262,7 +262,7 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
         /**
          * Initialze the processor to be called once per frame.
          */
-        // TODO: don't enable until the window is visible
+        // TODO: perf: don't enable until the window is visible
         public void initialize() {
             start();
         }

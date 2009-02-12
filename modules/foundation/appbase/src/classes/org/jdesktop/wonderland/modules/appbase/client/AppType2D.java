@@ -17,25 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import org.jdesktop.wonderland.modules.appbase.client.gui.guidefault.Gui2DFactory;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The client-side description of a type of Wonderland or Conventional 2D application. For example,
  * a share-aware PDF app or X11 window. 
- * <br><br>
- * Note: Unless the getGuiFactory method is overridden by a subclass windows of this app type use the default
- * GUI factory (app.base.gui.default.GuiFactory).
  *
  * @author deronj
  */
 @ExperimentalAPI
 public abstract class AppType2D extends AppType {
-
-    /**
-     * {@inheritDoc}
-     */
-    public GuiFactory getGuiFactory() {
-        return Gui2DFactory.getFactory();
-    }
+    /// TODO: obsolete?
 }

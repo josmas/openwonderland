@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
  * @author deronj
  */
 @InternalAPI
-class AppXrwConnectionInfo implements Serializable {
+public class AppXrwConnectionInfo implements Serializable {
 
     /** The name of the host to which the slave should connect. */
     private String hostName;

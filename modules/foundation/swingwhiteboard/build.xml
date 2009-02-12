@@ -8,8 +8,11 @@
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.swingwhiteboard"/>
     <property name="module.jarname" value="swingwhiteboard"/>
     
-    <property name="module-common.classpath" value="${current.dir}/../appbase/build/client/appbase-client.jar"/>
-    <property name="module-client.classpath" value="${current.dir}/../appbase/build/client/appbase-client.jar"/>
+    <pathconvert property="module-common.classpath">
+      <path location="${current.dir}/../appbase/build/client/appbase-client.jar"/>
+      <path location="${current.dir}/../appbase/build/client/appbase-client-cell.jar"/>
+    </pathconvert>
+    <property name="module-client.classpath" value="${module-common.classpath}"/>
     <property name="module-server.classpath" value="${current.dir}/../appbase/build/server/appbase-server.jar"/>
 
     <!-- import common build file -->

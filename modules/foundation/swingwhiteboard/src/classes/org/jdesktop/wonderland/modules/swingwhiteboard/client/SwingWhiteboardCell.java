@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
-import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.SwingWhiteboardCellClientState;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardAction.Action;
@@ -94,24 +94,32 @@ public class SwingWhiteboardCell extends App2DCell {
 
             // The cell is now visible
             case ACTIVE:
-                setApp(new SwingWhiteboardApp(getAppType(), clientState.getPreferredWidth(),
-                        clientState.getPreferredHeight(),
-                        clientState.getPixelScale(), commComponent));
+
+                SwingWhiteboardApp swaApp = new SwingWhiteboardApp(getAppType(), 
+                                                                   clientState.getPixelScale(), 
+                                                                   commComponent);
+                setApp(swaApp);
 
                 // Associate the app with this cell (must be done before making it visible)
-                app.setCell(this);
+                app.setDisplayer(this);
 
-                // Get the window the app created
-                whiteboardWin = ((SwingWhiteboardApp) app).getWindow();
+                // This app has only one window, so it is always top-level 
+                try {
+                    whiteboardWin = new SwingWhiteboardWindow(swaApp, clientState.getPreferredWidth(), 
+                                                              clientState.getPreferredHeight(), true, 
+                                                              pixelScale, commComponent);
+                } catch (InstantiationException ex) {
+                    throw new RuntimeException(ex);
+                }
 
                 // Make the app window visible
-                ((SwingWhiteboardApp) app).setVisible(true);
+                whiteboardWin.setVisible(true);
 
                 break;
 
             // The cell is no longer visible
             case DISK:
-                ((SwingWhiteboardApp) app).setVisible(false);
+                whiteboardWin.setVisible(false);
                 removeComponent(SwingWhiteboardComponent.class);
                 commComponent = null;
                 break;

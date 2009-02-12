@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.AppCell;
+import org.jdesktop.wonderland.modules.appbase.client.cell.AppCell;
 
 /**
  *
@@ -34,30 +34,17 @@ import org.jdesktop.wonderland.modules.appbase.client.AppCell;
 @ExperimentalAPI
 public class JEditorTestApp extends AppGraphics2D  {
     
-    /** The single window created by this app */
-    private JEditorTestWindow window;
-
     /**
-     * Create a new instance of JEditorTestApp. This in turn creates
-     * and makes visible the single window used by the app.
+     * Create a new instance of JEditorTestApp. 
      *
      * @param appType The type of app (should be JEditorTestAppType).
-     * @param width The width (in pixels) of the window.
-     * @param height The height (in pixels) of the window.
      * @param pixelScale The horizontal and vertical pixel sizes (in world meters per pixel).
      */
-    public JEditorTestApp (AppType appType, int width, int height, Vector2f pixelScale) {
+    public JEditorTestApp (AppType appType, Vector2f pixelScale) {
 
 	// configWorld can be null because the server cell is already configured
 	super(appType, new ControlArbMulti(), pixelScale);
 	controlArb.setApp(this);
-
-	// This app has only one window, so it is always top-level 
-        try {
-            window = new JEditorTestWindow(this, width, height, /*TODO: until debugged: true*/false, pixelScale);
-        } catch (InstantiationException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     /** 
@@ -65,26 +52,5 @@ public class JEditorTestApp extends AppGraphics2D  {
      */
     public void cleanup () {
 	super.cleanup();
-	if (window != null) {
-	    window.setVisible(false);
-	    window.cleanup();
-	    window = null;
-	}
-    }
-
-    /**
-     * Returns the app's window.
-     */
-    public JEditorTestWindow getWindow () {
-	return window;
-    }
-
-    /**
-     * Change the visibility of the app.
-     *
-     * @param visible Whether the application is visible.
-     */
-    public void setVisible (boolean visible) {
-	window.setVisible(visible);
     }
 }

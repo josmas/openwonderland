@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.wm.X11IntegrationModule;
  * @author deronj
  */
 @ExperimentalAPI
-class WindowSystemXrw
+public class WindowSystemXrw
         implements X11WindowManager.ExitListener {
 
     /**
@@ -121,12 +121,22 @@ class WindowSystemXrw
         displayNum = allocDisplayNum();
         displayName = ":" + displayNum;
 
-        String topDirPath = determineXremwinTopDirPath();
+        String topDir = System.getProperty("user.dir");
 
         String[] cmdAndArgs = new String[3];
-        cmdAndArgs[0] = determineRunxremwinExecutable(topDirPath);
+        cmdAndArgs[0] = topDir + "/bin/runxremwin";
         cmdAndArgs[1] = displayName;
-        cmdAndArgs[2] = determineXvfbDirectory(topDirPath);
+        if ("SunOS".equals(System.getProperty("os.name"))) {
+            // Solaris
+            cmdAndArgs[2] = topDir + "/bin/solaris";
+        } else {
+            // Linux
+            cmdAndArgs[2] = topDir + "/bin/linux";
+        }
+        AppXrw.logger.severe("cmdAndArgs for " + appInstanceName);
+        AppXrw.logger.severe("cmdAndArgs[0] = " + cmdAndArgs[0]);
+        AppXrw.logger.severe("cmdAndArgs[1] = " + cmdAndArgs[1]);
+        AppXrw.logger.severe("cmdAndArgs[2] = " + cmdAndArgs[2]);
 
         String processName = "Xremwin server for " + appInstanceName;
         xServerReporter = ProcessReporterFactory.getFactory().create(processName);
@@ -231,71 +241,6 @@ class WindowSystemXrw
      */
     private static void deallocDisplayNum(int displayNum) {
         displayNumAllocator.free(displayNum);
-    }
-
-    /**
-     * Returns true if the Wonderland client is being run via Java webstart.
-     */
-    private static boolean usingWebStart() {
-        try {
-            Class clazz = Class.forName("javax.jnlp.BasicService");
-            return true;
-        } catch (Exception ex) {
-            return false;
-        }
-    }
-
-    /**
-     * Find the directory in which the files for running the Xremwin
-     * server can be found. For webstarted clients, the necessary
-     * files will be in a system property. For all other situations, 
-     * "." (meaning the current working directory) is returned.
-     *
-     * Note: for now we can assume that WL is always run in the 
-     * top level wonderland directory.
-     */
-    private static String determineXremwinTopDirPath() {
-        String xremwinWebStartDirPath = System.getProperty(XREMWIN_WEBSTART_DIR_PROP);
-        System.err.println("xremwinWebStartDirPath = " + xremwinWebStartDirPath);
-        if (xremwinWebStartDirPath == null) {
-            // Note: Assumes that the wonderland client is always run
-            // with current working directory = lg3d-wonderland top-level.
-            return ".";
-        }
-
-        return xremwinWebStartDirPath;
-    }
-
-    private static String determineRunxremwinExecutable(String topDirPath) {
-        String xremwinWebStartDirPath = System.getProperty(XREMWIN_WEBSTART_DIR_PROP);
-        if (xremwinWebStartDirPath == null) {
-            // Non-webstart case (release or workspace)
-            String scriptDir = System.getProperty("wonderland.scripts.dir");
-            return scriptDir + "/runxremwin";
-        } else {
-            return topDirPath + "/runxremwin";
-        }
-    }
-
-    private static String determineXvfbDirectory(String topDirPath) {
-        String xremwinWebStartDirPath = System.getProperty(XREMWIN_WEBSTART_DIR_PROP);
-        if (xremwinWebStartDirPath == null) {
-
-            // Non-webstart case (release or workspace)
-            String xvfbDir = System.getProperty("wonderland.xvfb.dir");
-            return xvfbDir;
-
-        } else {
-
-            // Webstart case
-            if ("SunOS".equals(System.getProperty("os.name"))) {
-                // Solaris
-                return topDirPath + "/solaris/bin";
-            } else {
-                // Linux
-                return topDirPath + "/linux/bin";
-            }
-        }
     }
 
     /**

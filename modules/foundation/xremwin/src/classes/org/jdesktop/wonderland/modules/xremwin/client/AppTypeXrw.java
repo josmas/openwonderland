@@ -19,8 +19,6 @@ package org.jdesktop.wonderland.modules.xremwin.client;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
-import org.jdesktop.wonderland.modules.appbase.client.GuiFactory;
-import org.jdesktop.wonderland.modules.appbase.client.gui.guidefault.Gui2DFactoryConventional;
 import org.jdesktop.wonderland.modules.appbase.common.AppLaunchMethods;
 import org.jdesktop.wonderland.modules.xremwin.common.AppLaunchMethodsXrw;
 import org.jdesktop.wonderland.modules.xremwin.common.AppTypeNameXrw;
@@ -43,14 +41,8 @@ public class AppTypeXrw extends AppTypeConventional {
     /**
      * {@inheritDoc}
      */
+    @Override
     public AppLaunchMethods getLaunchMethods() {
         return new AppLaunchMethodsXrw();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public GuiFactory getGuiFactory() {
-        return Gui2DFactoryConventional.getFactory();
     }
 }

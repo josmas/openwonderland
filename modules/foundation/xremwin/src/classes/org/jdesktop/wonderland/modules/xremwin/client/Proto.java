@@ -132,6 +132,7 @@ public class Proto {
         public int hAndBorder;
         public int borderWidth;
 
+        @Override
         public String toString() {
             String str = "wid = " + wid;
             str += ", decorated = " + decorated;
@@ -146,6 +147,7 @@ public class Proto {
 
         public int wid;
 
+        @Override
         public String toString() {
             return "wid = " + wid;
         }
@@ -156,6 +158,7 @@ public class Proto {
         public int clientId;
         public int wid;
 
+        @Override
         public String toString() {
             return "wid = " + wid;
         }
@@ -170,6 +173,7 @@ public class Proto {
          */
         public boolean isTransient;
 
+        @Override
         public String toString() {
             /* TODO: 0.4 protocol:
             return "wid = " + wid + ", show = " + show + ", transientFor = " + transientFor;
@@ -189,6 +193,7 @@ public class Proto {
         public int hAndBorder;
         public int sibid;
 
+        @Override
         public String toString() {
             String str = "clientId = " + clientId;
             str += ", wid = " + wid;
@@ -206,6 +211,7 @@ public class Proto {
         public short x;
         public short y;
 
+        @Override
         public String toString() {
             String str = "clientId = " + clientId;
             str += ", wid = " + wid;
@@ -220,6 +226,7 @@ public class Proto {
         public int wid;
         public int sibid;
 
+        @Override
         public String toString() {
             String str = "clientId = " + clientId;
             str += ", wid = " + wid;
@@ -233,6 +240,7 @@ public class Proto {
         public int wid;
         public boolean decorated;
 
+        @Override
         public String toString() {
             return "wid = " + wid + ", decorated = " + decorated;
         }
@@ -243,6 +251,7 @@ public class Proto {
         public int wid;
         public int borderWidth;
 
+        @Override
         public String toString() {
             return "wid = " + wid + ", bw = " + borderWidth;
         }
@@ -254,6 +263,7 @@ public class Proto {
         public int wid;
         public Vector3f userDispl;
 
+        @Override
         public String toString() {
             return "clientId = " + clientId + "wid = " + wid + ", userDispl = " + userDispl;
         }
@@ -265,6 +275,7 @@ public class Proto {
         public int wid;
         public float roty;
 
+        @Override
         public String toString() {
             return "clientId = " + clientId + "wid = " + wid +
                     ", roty = " + roty;
@@ -277,6 +288,7 @@ public class Proto {
         public int x,  y,  w,  h;
         public PixelEncoding encoding;
 
+        @Override
         public String toString() {
             String str = "wid = " + wid;
             str += ", x = " + x;
@@ -298,6 +310,7 @@ public class Proto {
         public int width,  height;
         public int dstX,  dstY;
 
+        @Override
         public String toString() {
             String str = "wid = " + wid;
             str += ", srcXY = " + srcX + ", " + srcY;
@@ -312,6 +325,7 @@ public class Proto {
         public ControllerStatus status;
         public int clientId;
 
+        @Override
         public String toString() {
             String str = "status = " + status;
             str += ", clientId = " + clientId;
@@ -324,6 +338,7 @@ public class Proto {
         public int wid;
         public String title;
 
+        @Override
         public String toString() {
             return "wid = " + wid + ", title = " + title;
         }
@@ -333,6 +348,7 @@ public class Proto {
 
         public String userName;
 
+        @Override
         public String toString() {
             return "userName = " + userName;
         }
@@ -343,6 +359,7 @@ public class Proto {
         public int wid;
         public int parentWid;
 
+        @Override
         public String toString() {
             String str = "wid = " + wid;
             str += ", parentWid = " + parentWid;
@@ -359,6 +376,7 @@ public class Proto {
         public int yhot;
         public int[] pixels;
 
+        @Override
         public String toString() {
             String str = "wh = " + width + ", " + height;
             str += ", xyhot = " + xhot + ", " + yhot;
@@ -373,6 +391,7 @@ public class Proto {
         public int x;
         public int y;
 
+        @Override
         public String toString() {
             String str = "wid = " + wid;
             str += ", xy = " + x + ", " + y;
@@ -385,6 +404,7 @@ public class Proto {
 
         public boolean show;
 
+        @Override
         public String toString() {
             return "show = " + show;
         }

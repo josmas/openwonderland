@@ -43,9 +43,9 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.UserNameMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetPopupParentMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SlaveCloseWindowMsgArgs;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientSocketListener;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.SlaveClientSocket;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 // TODO: 0.4 protocol
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs;
@@ -62,14 +62,12 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.ShowCursorMsgArgs;
 class ServerProxySlave implements ServerProxy {
 
     interface DisconnectListener {
-
         public void disconnected();
     }
+
     private static final boolean debugIO = true;
     private static final int BUTTON4_MASK = 0x08;
     private static final int BUTTON5_MASK = 0x10;
-    /** The cell of the client to which this belongs. */
-    private AppCellXrw cell;
     /** This app's Wonderland session. */
     protected WonderlandSession session;
     private SlaveClientSocket slaveSocket;
@@ -102,16 +100,15 @@ class ServerProxySlave implements ServerProxy {
     /**
      * Create a new instance of ServerProxySlave.
      * @param client The slave client.
-     * @param cell The cell of the client to which this belongs.
      * @param session This app's Wonderland session.
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master and slave.
      * @param disconnectListener The listener to call when the slave is disconnected.
      */
-    public ServerProxySlave(ClientXrwSlave client, AppCellXrw cell, WonderlandSession session,
-            AppXrwConnectionInfo connectionInfo, DisconnectListener disconnectListener) {
-        this.session = session;
+    public ServerProxySlave(ClientXrwSlave client, WonderlandSession session,
+                            AppXrwConnectionInfo connectionInfo, DisconnectListener disconnectListener) {
         this.client = client;
-        this.cell = cell;
+        this.session = session;
+        this.connectionInfo = connectionInfo;
         this.disconnectListener = disconnectListener;
     }
 
@@ -153,7 +150,7 @@ class ServerProxySlave implements ServerProxy {
 
         private boolean welcomeReceived = false;
 
-        public void receivedMessage(BigInteger sender, byte[] message) {
+        public void receivedMessage(BigInteger otherClientID, byte[] message) {
 
             // Ignore all messages until the welcome message is received
             if (welcomeReceived) {
@@ -165,8 +162,9 @@ class ServerProxySlave implements ServerProxy {
             }
         }
 
-        public void slaveLeft(BigInteger slave) {
-            // TODO: anything to do here?
+        public void otherClientHasLeft(BigInteger otherClientID) {
+            cleanup();
+            AppXrw.logger.info("Master has disconnected: " + otherClientID);
         }
     }
 
@@ -364,12 +362,15 @@ class ServerProxySlave implements ServerProxy {
 
     public void getData(ShowWindowMsgArgs msgArgs) {
         msgArgs.show = (bufQueue.nextByte() != 0);
-        bufQueue.nextShort(); // Skip 2 bytes of pad
+
+        // TODO: 0.4 protocol: skip 2 bytes of transient and pad (ignore transient for now)
+        // TODO: 0.5 protocol: skip 2 bytes of pad
+        bufQueue.nextShort(); 
+
         msgArgs.wid = bufQueue.nextInt();
-        /* TODO: 0.4 protocol:
-        msgArgs.transientFor = bufQueue.nextInt();
-         */
-        bufQueue.nextInt();
+
+        // TODO: 0.5 protocol: not yet
+        //msgArgs.transientFor = bufQueue.nextInt();
     }
 
     public void getData(ConfigureWindowMsgArgs msgArgs) {
@@ -875,7 +876,6 @@ class ServerProxySlave implements ServerProxy {
         int n = 0;
 
         toFrontBuf[n++] = (byte) Proto.ClientMessageType.WINDOW_TO_FRONT.ordinal();
-        ;
         toFrontBuf[n++] = 0; // Pad
         toFrontBuf[n++] = 0; // Pad
         toFrontBuf[n++] = 0; // Pad

@@ -58,7 +58,7 @@ abstract public class ControlArbSingle extends ControlArb {
      * Returns the user that is currently in control.
      * (null if there currently isn't a controller).
      */
-    public String getController() {
+    public synchronized String getController() {
         return controller;
     }
 

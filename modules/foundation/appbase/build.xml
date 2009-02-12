@@ -23,8 +23,16 @@
             <client dir="${current.dir}/lib">
                 <clientjar name="appbase-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
-                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/client/gui/**"/>
+                    <include name="${module.src}/client/swing/**"/>
+                    <include name="${module.src}/client/utils/**"/>
                     <include name="${module.src}/common/**"/>
+                    <exclude name="${module.src}/client/cell/**"/>
+                    <exclude name="${module.src}/common/cell/**"/>
+                </clientjar>
+                <clientjar name="appbase-client-cell" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/cell/**"/>
+                    <include name="${module.src}/common/cell/**"/>
                 </clientjar>
             </client> 
                 

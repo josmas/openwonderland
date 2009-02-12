@@ -17,17 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.xremwin.server;
 
-import java.util.UUID;
 import java.util.logging.Logger;
-import com.jme.math.Vector2f;
-import com.jme.bounding.BoundingVolume;
-import java.io.Serializable;
 import org.jdesktop.wonderland.modules.xremwin.common.AppLaunchMethodsXrw;
 import org.jdesktop.wonderland.modules.xremwin.common.AppTypeNameXrw;
-import org.jdesktop.wonderland.modules.appbase.server.AppConventionalCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeConventionalMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.common.AppLaunchMethods;
 
 /**
@@ -51,6 +45,7 @@ public class AppTypeMOXrw extends AppTypeConventionalMO {
     /**
      * {@inheritDoc}
      */
+    @Override
     public AppLaunchMethods getLaunchMethods() {
         return new AppLaunchMethodsXrw();
     }
@@ -66,5 +61,3 @@ public class AppTypeMOXrw extends AppTypeConventionalMO {
     }
      */
 }
-
-

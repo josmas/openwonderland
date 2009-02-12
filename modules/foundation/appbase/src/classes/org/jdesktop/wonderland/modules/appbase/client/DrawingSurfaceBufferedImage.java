@@ -34,8 +34,10 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
+import java.awt.image.DataBufferInt;
 import java.awt.image.ImageObserver;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.awt.image.renderable.RenderableImage;
 import java.text.AttributedCharacterIterator;
 import java.util.Map;
@@ -102,7 +104,8 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
      * {@inheritDoc}
      */
     @Override
-    public void cleanup() {
+    public synchronized void cleanup() {
+        super.cleanup();
         bufImage = null;
         g = null;
     }
@@ -114,21 +117,34 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
     public synchronized void setSize(int width, int height) {
         super.setSize(width, height);
 
-        if (bufImage == null ||
-                width != bufImage.getWidth() || height != bufImage.getHeight()) {
-            bufImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        // Any change?
+        if (bufImage != null && width == bufImage.getWidth() && height == bufImage.getHeight()) {
+            return;
         }
 
-        // Create a dirty-tracking Graphics2D which renders onto this buffered image
-        g = new DirtyTrackingGraphics((Graphics2D) bufImage.getGraphics());
-        g.setClip(0, 0, width, height);
+        // Create new image of new size
+        BufferedImage bufImageNew = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        // Create new graphics for the new image
+        DirtyTrackingGraphics gNew = new DirtyTrackingGraphics((Graphics2D) bufImageNew.getGraphics());
+        gNew.setClip(0, 0, width, height);
 
         // Erase the buffered image to all white
-        Color bkgdSave = g.getBackground();
-        g.setBackground(Color.WHITE);
-        g.clearRect(0, 0, width, height);
-        g.setBackground(bkgdSave);
-        g.addDirtyRectangle(0, 0, width, height);
+        // TODO: change this to 50% gray?
+        Color bkgdSave = gNew.getBackground();
+        gNew.setBackground(Color.WHITE);
+        gNew.clearRect(0, 0, width, height);
+        gNew.setBackground(bkgdSave);
+
+        // Copy the old image into the new
+        gNew.drawImage(bufImage, 0, 0, null);
+
+        // Dirty the entire new image
+        gNew.addDirtyRectangle(0, 0, width, height);
+
+        // Make the new image current
+        bufImage = bufImageNew;
+        g = gNew;
     }
 
     /**
@@ -150,6 +166,39 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
     logger.warning("imageGraphics.drawImage returned false! Skipping image rendering.");
     }
      */
+    }
+
+    /**
+     * Extracts the pixels in a given subrectangle and places them as bytes in a byte array.
+     * @param pixelBytes The byte array in which the pixels are returned.
+     * @param x The x coordinate of the origin of the subrectangle.
+     * @param y The y coordinate of the origin of the subrectangle.
+     * @param width The width of the subrectangle.
+     * @param height The height of the subrectangle.
+     */
+    public synchronized void getPixelBytes(final byte[] pixelBytes, final int x, final int y,
+                                           final int width, final int height) {
+
+        WritableRaster srcRas = bufImage.getRaster();
+        DataBufferInt srcDataBuf = (DataBufferInt) srcRas.getDataBuffer();
+        int[] srcPixels = srcDataBuf.getData();
+        int srcLineWidth = bufImage.getWidth();
+
+        int dstIdx = 0;
+        int srcIdx = y * srcLineWidth + x;
+        int srcNextLineIdx = srcIdx;
+
+        for (int srcY = 0; srcY < height; srcY++) {
+            srcNextLineIdx += srcLineWidth;
+            for (int srcX = 0; srcX < width; srcX++) {
+                int pixel = srcPixels[srcIdx++];
+                pixelBytes[dstIdx++] = (byte) ((pixel >> 24) & 0xff);
+                pixelBytes[dstIdx++] = (byte) ((pixel >> 16) & 0xff);
+                pixelBytes[dstIdx++] = (byte) ((pixel >> 8) & 0xff);
+                pixelBytes[dstIdx++] = (byte) (pixel & 0xff);
+            }
+            srcIdx = srcNextLineIdx;
+        }
     }
 
     /**
@@ -288,11 +337,11 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
             return new Rectangle(x0, y0, x1 - x0, y1 - y0);
         }
 
-        public Rectangle getDirtyRectangle() {
+        public synchronized Rectangle getDirtyRectangle() {
             return dirtyRect;
         }
 
-        public void clearDirty() {
+        public synchronized void clearDirty() {
             dirtyRect = null;
         }
 
