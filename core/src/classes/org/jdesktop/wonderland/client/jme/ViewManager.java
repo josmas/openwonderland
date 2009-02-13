@@ -458,7 +458,6 @@ public class ViewManager {
                 for(CameraListener cameraL : cameraListeners)
                     cameraL.cameraMoved(worldTranform);
             }
-            System.err.println(getCameraLookDirection(null));
         }
     }
 
