@@ -260,15 +260,20 @@ public class Gui2D extends Gui {
          */
 
         // Is this the Take Control or Release Control event?
+        System.err.println("In determineIfMiscAction");
         if (isChangeControlEvent(me)) {
+
+            System.err.println("Is change control event!");
 
             // Ignore any enter/exit events that LG generates for the click event
             if (me3d instanceof MouseEnterExitEvent3D) {
                 return null;
             }
 
+        System.err.println("Exit determineIfMiscAction 1");
             return new Action(ActionType.TOGGLE_CONTROL);
         }
+        System.err.println("Exit determineIfMiscAction 2");
 
         return null;
     }
@@ -312,6 +317,9 @@ public class Gui2D extends Gui {
              */
 
             case TOGGLE_CONTROL:
+                logger.severe("Received toggle control event");
+                logger.severe("controlArb = " + controlArb);
+                logger.severe("hasControl = " + controlArb.hasControl());
                 if (controlArb.hasControl()) {
                     controlArb.releaseControl();
                 } else {
