@@ -182,10 +182,6 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buttonsPanel = new javax.swing.JPanel();
-        okButton = new javax.swing.JButton();
-        applyButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
         mainPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         mainSplitPane = new javax.swing.JSplitPane();
@@ -194,9 +190,49 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         propertyPanel = new javax.swing.JPanel();
         addCapabilityButton = new javax.swing.JButton();
         removeCapabilityButton = new javax.swing.JButton();
+        buttonsPanel = new javax.swing.JPanel();
+        okButton = new javax.swing.JButton();
+        applyButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Cell Property Editor");
+
+        jLabel1.setText("Capabilities:");
+
+        mainSplitPane.setDividerLocation(200);
+        mainSplitPane.setDividerSize(15);
+
+        capabilityList.setBackground(new java.awt.Color(204, 204, 255));
+        capabilityList.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        capabilityList.setFont(new java.awt.Font("Lucida Grande", 1, 12));
+        capabilityList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        capabilityListScrollPane.setViewportView(capabilityList);
+
+        mainSplitPane.setLeftComponent(capabilityListScrollPane);
+
+        propertyPanel.setBackground(new java.awt.Color(255, 255, 255));
+        propertyPanel.setLayout(new java.awt.GridLayout(1, 1));
+        mainSplitPane.setRightComponent(propertyPanel);
+
+        addCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        addCapabilityButton.setText("+");
+        addCapabilityButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        addCapabilityButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addCapabilityButtonActionPerformed(evt);
+            }
+        });
+
+        removeCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        removeCapabilityButton.setEnabled(false);
+        removeCapabilityButton.setLabel("-");
+        removeCapabilityButton.setMargin(new java.awt.Insets(2, 4, 2, 4));
+        removeCapabilityButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeCapabilityButtonActionPerformed(evt);
+            }
+        });
 
         buttonsPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
 
@@ -226,42 +262,6 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         });
         buttonsPanel.add(cancelButton);
 
-        jLabel1.setText("Capabilities:");
-
-        mainSplitPane.setDividerLocation(200);
-        mainSplitPane.setDividerSize(15);
-
-        capabilityList.setBackground(new java.awt.Color(204, 204, 255));
-        capabilityList.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        capabilityList.setFont(new java.awt.Font("Lucida Grande", 1, 12));
-        capabilityList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        capabilityListScrollPane.setViewportView(capabilityList);
-
-        mainSplitPane.setLeftComponent(capabilityListScrollPane);
-
-        propertyPanel.setBackground(new java.awt.Color(255, 255, 255));
-        propertyPanel.setLayout(new java.awt.GridLayout(1, 1));
-        mainSplitPane.setRightComponent(propertyPanel);
-
-        addCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14));
-        addCapabilityButton.setText("+");
-        addCapabilityButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
-        addCapabilityButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addCapabilityButtonActionPerformed(evt);
-            }
-        });
-
-        removeCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        removeCapabilityButton.setEnabled(false);
-        removeCapabilityButton.setLabel("-");
-        removeCapabilityButton.setMargin(new java.awt.Insets(2, 4, 2, 4));
-        removeCapabilityButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeCapabilityButtonActionPerformed(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout mainPanelLayout = new org.jdesktop.layout.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
@@ -269,26 +269,29 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
             .add(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(mainSplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE)
                     .add(jLabel1)
                     .add(mainPanelLayout.createSequentialGroup()
                         .add(addCapabilityButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(removeCapabilityButton)))
+                        .add(removeCapabilityButton))
+                    .add(mainSplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 683, Short.MAX_VALUE)
+                    .add(buttonsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 683, Short.MAX_VALUE))
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(mainPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(20, Short.MAX_VALUE)
                 .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mainSplitPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 635, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(6, 6, 6)
+                .add(mainSplitPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 441, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addCapabilityButton)
                     .add(removeCapabilityButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buttonsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -296,14 +299,10 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(buttonsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 831, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 718, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(buttonsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(mainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
@@ -548,8 +547,10 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
      * the GUI to indicate its presence
      */
     private void addComponent(CellComponentFactorySPI spi) {
-        // Fetch the default server state for the factory, and cell id
+        // Fetch the default server state for the factory, and cell id. Make
+        // sure we make it dynamically added
         CellComponentServerState state = spi.getDefaultCellComponentServerState();
+        state.setStatic(false);
         CellID cellID = cell.getCellID();
 
         // Send a ADD component message on the cell channel. Wait for a
