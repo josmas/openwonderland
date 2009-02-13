@@ -17,12 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.affordances.client.cell;
 
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemoveEvent;
+import org.jdesktop.wonderland.modules.affordances.client.jme.Affordance;
 
 /**
  * A client-side cell component base class for affordance components.
@@ -30,12 +33,24 @@ import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemove
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public abstract class AffordanceCellComponent extends CellComponent {
+    protected static Logger logger = Logger.getLogger(AffordanceCellComponent.class.getName());
     private AffordanceCloseListener listener = null;
     private float size = 1.5f;
+    protected Affordance affordance = null;
 
     public AffordanceCellComponent(Cell cell) {
         super(cell);
         InputManager.inputManager().addGlobalEventListener(listener = new AffordanceCloseListener());
+    }
+
+    @Override
+    public void setStatus(CellStatus status) {
+        // If we are making this component active, then create the affordance,
+        // if the first time through.
+        super.setStatus(status);
+        if (status == CellStatus.ACTIVE) {
+            affordance.addAffordanceToScene();
+        }
     }
 
     /**
@@ -46,6 +61,7 @@ public abstract class AffordanceCellComponent extends CellComponent {
      */
     public void setSize(float size) {
         this.size = size;
+        affordance.setSize(size);
     }
 
     /**

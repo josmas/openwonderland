@@ -41,7 +41,6 @@ import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -50,6 +49,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceException;
 
 /**
  * Visual affordance (manipulator) to resize a cell in the world.
@@ -87,10 +87,9 @@ public class ResizeAffordance extends Affordance {
     private GeometricUpdateListener updateListener = null;
 
     /**
-     * Private constructor, use the addToCell() method instead.
-     * @param cell
+     * TBD
      */
-    private ResizeAffordance(Cell cell) {
+    public ResizeAffordance(Cell cell) throws AffordanceException {
         super("Resize", cell);
 
         // Figure out the bounds of the root entity of the cell and create a
@@ -133,35 +132,6 @@ public class ResizeAffordance extends Affordance {
                 ClientContextJME.getWorldManager().addToUpdateList(nodeArray[0]);
             }
         });
-    }
-
-    /**
-     * Adds a resize affordance to a given cell.
-     *
-     * @param cell The cell to which to add the affordance
-     * @return The affordance object, or null upon error
-     */
-    public static ResizeAffordance addToCell(Cell cell) {
-        Logger logger = Logger.getLogger(TranslateAffordance.class.getName());
-
-        // First check to see if the cell has the moveable component. If not,
-        // then do not add the affordance
-        if (cell.getComponent(MovableComponent.class) == null) {
-            logger.warning("[AFFORDANCE] Cell " + cell.getName() + " does not " +
-                    "have the moveable component.");
-            return null;
-        }
-
-        // Create the translate affordance entity and add it to the scene graph.
-        // Since we are updating the scene graph, we need to put this in a
-        // special update thread.
-        ResizeAffordance affordance = new ResizeAffordance(cell);
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                ClientContextJME.getWorldManager().addEntity((Entity)arg0);
-                ClientContextJME.getWorldManager().addToUpdateList(((ResizeAffordance)arg0).rootNode);
-            }}, affordance);
-        return affordance;
     }
 
     /**
@@ -213,36 +183,6 @@ public class ResizeAffordance extends Affordance {
                 resizeEntity = null;
             }}, null);
     }
-
-    /**
-     * Creates and returns a Node that contains a sphere that represents the
-     * resize affordance
-     */
-//    private Node createSphereNode(String name) {
-//        // Create the new node and sphere primitive
-//        Node sphereNode = new Node();
-//        Sphere sphere = new Sphere(name, 50, 50, radius);
-//        sphereNode.attachChild(sphere);
-//
-//        // Set the color to black and the transparency
-//        sphere.setSolidColor(ColorRGBA.black);
-//        sphereNode.setRenderState(zbuf);
-//        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-//        MaterialState matState = (MaterialState) rm.createRendererState(RenderState.RS_MATERIAL);
-//        matState.setDiffuse(ColorRGBA.black);
-//        sphereNode.setRenderState(matState);
-//        matState.setEnabled(true);
-//
-//        // Make the sphere wireframe so we can see through it
-//        WireframeState wiState = (WireframeState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
-//        wiState.setEnabled(true);
-//        sphereNode.setRenderState(wiState);
-//
-//        // Set the bound so this node can be pickable
-//        sphere.setModelBound(new BoundingSphere());
-//        sphere.updateModelBound();
-//        return sphereNode;
-//    }
 
     /**
      * Creates and returns a Node that contains a sphere that represents the

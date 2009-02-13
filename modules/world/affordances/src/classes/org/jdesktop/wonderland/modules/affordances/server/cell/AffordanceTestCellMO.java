@@ -53,7 +53,7 @@ public class AffordanceTestCellMO extends CellMO {
     public AffordanceTestCellMO(Vector3f center, float size, String shape) {
         super(new BoundingBox(new Vector3f(), size, size, size), new CellTransform(null, center));
         this.shape = shape;
-        addComponent(new MovableComponentMO(this));
+//        addComponent(new MovableComponentMO(this));
     }
     
     @Override
