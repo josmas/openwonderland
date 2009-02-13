@@ -550,7 +550,7 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         // Fetch the default server state for the factory, and cell id. Make
         // sure we make it dynamically added
         CellComponentServerState state = spi.getDefaultCellComponentServerState();
-        state.setStatic(false);
+        //state.setStatic(false);
         CellID cellID = cell.getCellID();
 
         // Send a ADD component message on the cell channel. Wait for a
