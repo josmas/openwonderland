@@ -72,7 +72,7 @@ public class ModuleUtils {
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH MODULE INFO Failed", excp);
-            return new ModuleList();
+            return null;
         }
     }
     
