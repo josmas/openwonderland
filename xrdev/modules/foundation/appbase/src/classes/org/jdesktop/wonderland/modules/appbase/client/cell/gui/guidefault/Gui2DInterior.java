@@ -128,27 +128,29 @@ public class Gui2DInterior extends Gui2D {
             // When user has control all events over the interior are sent to the app.
             // First send it to the app's view for conversion to a 2D event.
             try {
+
                 if (getControlArb().hasControl()) {
                     ((Window2DView) view).deliverEvent((Window2D) window, me3d);
                     return;
                 }
+
+                MouseEvent me = (MouseEvent) me3d.getAwtEvent();
+
+                // Handle miscellaneous events over interior when user doesn't have control
+                Action action = determineIfMiscAction(me, me3d);
+                if (action != null) {
+                    performMiscAction(action, me, me3d);
+                    return;
+                }
+
+                super.commitEvent(event);
+
             } finally {
                 // Linux-specific workaround: Reacquire the lock if necessary.
                 if (glContext != null) {
                     glContext.makeCurrent();
                 }
             }
-
-            MouseEvent me = (MouseEvent) me3d.getAwtEvent();
-
-            // Handle miscellaneous events over interior when user doesn't have control
-            Action action = determineIfMiscAction(me, me3d);
-            if (action != null) {
-                performMiscAction(action, me, me3d);
-                return;
-            }
-
-            super.commitEvent(event);
         }
     }
 
