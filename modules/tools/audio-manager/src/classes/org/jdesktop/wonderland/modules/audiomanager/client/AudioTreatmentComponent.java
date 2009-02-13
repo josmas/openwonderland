@@ -101,14 +101,7 @@ public class AudioTreatmentComponent extends CellComponent implements VolumeChan
 	    volumeControlJFrame = new VolumeControlJFrame(this, cell.getName());
 	} 
 
-	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-
-	if (cell.getCellID().toString().equals(sc.getCallID())) {
-	    volumeControlJFrame.setTitle("Master Volume for " + cell.getName());
-	} else {
-	    volumeControlJFrame.setTitle("Volume Control for " + cell.getName());
-	}
-
+	volumeControlJFrame.setTitle("Volume Control for " + cell.getName());
 	volumeControlJFrame.setVisible(true);
     }
 
