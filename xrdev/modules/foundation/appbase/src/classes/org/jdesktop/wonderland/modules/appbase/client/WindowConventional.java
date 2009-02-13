@@ -146,7 +146,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
 
         // Grow temp image if necessary
         if (tempImage == null ||
-                tempImage.getWidth() < w || tempImage.getHeight() < h) {
+            tempImage.getWidth() != w || tempImage.getHeight() != h) {
             tempImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         }
 
@@ -159,12 +159,10 @@ public abstract class WindowConventional extends WindowGraphics2D {
             return;
         }
         int srcIdx = 0;
-        //        int dstIdx = y * dstWidth + x;
         int dstIdx = 0;
         int dstNextLineIdx = dstIdx;
         for (int srcY = 0; srcY < h; srcY++) {
             dstNextLineIdx += dstWidth;
-            System.err.println("dstNextLineIdx = " + dstNextLineIdx);
             for (int srcX = 0; srcX < w; srcX++) {
                 dstPixels[dstIdx++] = pixels[srcIdx++];
             }
