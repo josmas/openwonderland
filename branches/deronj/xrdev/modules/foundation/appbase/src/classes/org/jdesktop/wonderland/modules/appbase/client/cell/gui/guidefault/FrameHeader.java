@@ -150,6 +150,7 @@ public class FrameHeader extends FrameSide {
      */
     @Override
     protected void attachEventListeners() {
+        super.attachEventListeners();
         if (title != null) {
             title.attachEventListeners();
         }
@@ -166,6 +167,7 @@ public class FrameHeader extends FrameSide {
      */
     @Override
     protected void detachEventListeners() {
+        super.detachEventListeners();
         if (title != null) {
             title.detachEventListeners();
         }
