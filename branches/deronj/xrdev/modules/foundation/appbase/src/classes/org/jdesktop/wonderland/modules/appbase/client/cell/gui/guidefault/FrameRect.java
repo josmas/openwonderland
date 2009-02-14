@@ -152,12 +152,14 @@ public class FrameRect extends FrameComponent {
      * {@inheritDoc}
      */
     public void setColor(ColorRGBA color) {
+        //System.err.println("Enter FR.setColor");
         if (quad != null) {
             MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
             if (ms == null) {
                 ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
                 quad.setRenderState(ms);
             }
+            //System.err.println("set ms colors, color = " + color);
             ms.setAmbient(new ColorRGBA(color));
             ms.setDiffuse(new ColorRGBA(color));
         }

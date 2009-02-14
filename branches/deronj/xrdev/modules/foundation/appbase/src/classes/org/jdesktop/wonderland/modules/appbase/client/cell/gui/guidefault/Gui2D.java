@@ -260,7 +260,6 @@ public class Gui2D extends Gui {
          */
 
         // Is this the Take Control or Release Control event?
-        System.err.println("In determineIfMiscAction");
         if (isChangeControlEvent(me)) {
 
             System.err.println("Is change control event!");
@@ -270,10 +269,8 @@ public class Gui2D extends Gui {
                 return null;
             }
 
-        System.err.println("Exit determineIfMiscAction 1");
             return new Action(ActionType.TOGGLE_CONTROL);
         }
-        System.err.println("Exit determineIfMiscAction 2");
 
         return null;
     }
