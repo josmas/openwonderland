@@ -229,12 +229,11 @@ public class FrameWorldDefault extends Window2DFrame {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void updateControl(ControlArb controlArb) {
-        if (view == null || ((ViewWorldDefault) view).getActuallyVisible()) {
+        if (view == null || !((ViewWorldDefault) view).getActuallyVisible()) {
             return;
         }
-
+        
         // Sometimes some of these are null during debugging
         if (header != null) {
             header.updateControl(controlArb);

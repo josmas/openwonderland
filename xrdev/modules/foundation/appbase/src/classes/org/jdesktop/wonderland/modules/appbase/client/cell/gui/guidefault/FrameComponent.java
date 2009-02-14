@@ -228,10 +228,6 @@ public abstract class FrameComponent {
      * Update the component color based on whether the user has control of the app.
      */
     protected void updateColor() {
-        //System.err.println("Enter FC.updateColor");
-        //System.err.println("this = " + this);
-        //System.err.println("controlArb = " + controlArb);
-        //System.err.println("hasControl = " + controlArb.hasControl());
         if (controlArb == null || controlArb.hasControl()) {
             setColor(HAS_CONTROL_COLOR);
         } else {
