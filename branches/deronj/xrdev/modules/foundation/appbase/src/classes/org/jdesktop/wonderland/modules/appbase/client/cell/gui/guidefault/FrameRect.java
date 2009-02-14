@@ -50,9 +50,11 @@ public class FrameRect extends FrameComponent {
     protected float height;
     /** The quad geometry for the rect. */
     protected Quad quad;
+    /** The color of this rectangle. */
+    protected ColorRGBA color;
 
     /** 
-     * Create a new instance of <code>FrameRect</code> a default name and with the specified size.
+     * Create a new instance of <code>FrameRect</code> with a default name and with the specified size.
      *
      * @param view The view the frame encloses.
      * @param gui The event handler.
@@ -61,15 +63,6 @@ public class FrameRect extends FrameComponent {
      */
     public FrameRect(WindowView view, Gui2D gui, float width, float height) {
         this("FrameRect", view, gui, width, height);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void cleanup() {
-        super.cleanup();
-        quad = null;
     }
 
     /** 
@@ -97,15 +90,28 @@ public class FrameRect extends FrameComponent {
      * {@inheritDoc}
      */
     @Override
+    public void cleanup() {
+        super.cleanup();
+        quad = null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void update() throws InstantiationException {
         updateLayout();
 
         if (quad == null) {
-            quad = new Quad("FrameRect-Quad", width, height);
+            quad = new Quad("Quad for " + name, width, height);
             quad.setModelBound(new BoundingBox());
+            if (color != null) {
+                setColor(color);
+            }
         } else {
             quad.resize(width, height);
         }
+
         quad.updateModelBound();
         localToCellNode.attachChild(quad);
 
@@ -152,14 +158,13 @@ public class FrameRect extends FrameComponent {
      * {@inheritDoc}
      */
     public void setColor(ColorRGBA color) {
-        //System.err.println("Enter FR.setColor");
+        this.color = color;
         if (quad != null) {
             MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
             if (ms == null) {
                 ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
                 quad.setRenderState(ms);
             }
-            //System.err.println("set ms colors, color = " + color);
             ms.setAmbient(new ColorRGBA(color));
             ms.setDiffuse(new ColorRGBA(color));
         }

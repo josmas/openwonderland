@@ -41,9 +41,9 @@ public abstract class ControlArb {
     private static final Logger logger = Logger.getLogger(ControlArb.class.getName());
 
     /** A list of controllers in the Wonderland client session */
-    protected static LinkedList<ControlArb> controlArbs = new LinkedList<ControlArb>();
+    protected static final LinkedList<ControlArb> controlArbs = new LinkedList<ControlArb>();
     /** A list of components to notify of a state change in the control arb */
-    protected LinkedList<ControlChangeListener> listeners = new LinkedList<ControlChangeListener>();
+    protected final LinkedList<ControlChangeListener> listeners = new LinkedList<ControlChangeListener>();
     /** The application controlled by this arbiter */
     protected App app;
     /** Has the user enabled app control? */
@@ -64,24 +64,21 @@ public abstract class ControlArb {
         public void updateControl(ControlArb controlArb);
     }
 
-    /** What do the pointer and keyboard currently drive: the world or apps? */
-    public enum EventMode { WORLD, APP };
-
-    private static EventMode eventMode = EventMode.WORLD;
-
     /** 
      * Create a new instance of ControlArb.
      */
     public ControlArb() {
-        controlArbs.add(this);
+        synchronized (this) {
+            controlArbs.add(this);
+        }
     }
 
     /**
      * Clean up resources held.
      */
-    public void cleanup() {
+    public synchronized void cleanup() {
         controlArbs.remove(this);
-        listeners = null;
+        listeners.clear();
         app = null;
     }
 
@@ -111,26 +108,18 @@ public abstract class ControlArb {
      * to lose it.
      */
     public void takeControl() {
-        logger.severe("Enter CA.takeControl");
         if (!hasControl()) {
-// TODO	    InputManager3D.getInputManager().setEventMode(InputManager3D.EventMode.APP);
             appControl = true;
-            logger.severe("appControl=true");
             updateControl();
         } 
-        // Debug
-        else logger.severe("Already have control");
     }
 
     /**
      * Tell the arbiter that you are releasing control of the app.
      */
     public void releaseControl() {
-        logger.severe("Enter CA.releaseControl");
-        if (!hasControl()) {
-//TODO	    InputManager3D.getInputManager().setEventMode(InputManager3D.EventMode.WORLD);
+        if (hasControl()) {
             appControl = false;
-            logger.severe("appControl=true");
             updateControl();
         }
     }
@@ -138,7 +127,7 @@ public abstract class ControlArb {
     /**
      * Release control of all applications in the Wonderland client session.
      */
-    public static void releaseControlAll() {
+    public synchronized static void releaseControlAll() {
         for (ControlArb controlArb : controlArbs) {
             controlArb.releaseControl();
         }
@@ -158,7 +147,7 @@ public abstract class ControlArb {
      * 
      * @param listener The control change listener.
      */
-    public void addListener(ControlChangeListener listener) {
+    public synchronized void addListener(ControlChangeListener listener) {
         listeners.add(listener);
     }
 
@@ -167,14 +156,14 @@ public abstract class ControlArb {
      * 
      * @param listener The control change listener.
      */
-    public void removeListener(ControlChangeListener listener) {
+    public synchronized void removeListener(ControlChangeListener listener) {
         listeners.remove(listener);
     }
 
     /**
      * Returns an iterator over all control change listeners.
      */
-    public Iterator<ControlChangeListener> getListeners() {
+    public synchronized Iterator<ControlChangeListener> getListeners() {
         return listeners.iterator();
     }
 
@@ -201,15 +190,10 @@ public abstract class ControlArb {
         return appControl;
     }
 
-    public static void setEventMode(EventMode mode) {
-        eventMode = mode;
-        updateControlAll();
-    }
-
     /**
      * Informs the control change listeners that the control arb state has been updated.
      */
-    protected void updateControl() {
+    protected synchronized void updateControl() {
         for (ControlChangeListener listener : listeners) {
             listener.updateControl(this);
         }
@@ -218,7 +202,7 @@ public abstract class ControlArb {
     /**
      * Informs the control change listeners of all control arbs that the state has been updated.
      */
-    protected static void updateControlAll() {
+    protected synchronized static void updateControlAll() {
         for (ControlArb controlArb : controlArbs) {
             controlArb.updateControl();
         }
