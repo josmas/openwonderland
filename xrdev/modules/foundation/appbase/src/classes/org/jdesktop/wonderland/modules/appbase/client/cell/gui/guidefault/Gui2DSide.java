@@ -69,8 +69,6 @@ class Gui2DSide extends Gui2D {
         public void commitEvent(Event event) {
             Action action;
 
-            System.err.println("Event received by side = " + event);
-
             MouseEvent3D me3d = (MouseEvent3D) event;
             MouseEvent me = (MouseEvent) me3d.getAwtEvent();
 

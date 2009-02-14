@@ -60,6 +60,10 @@ public abstract class FrameComponent {
      * to attach point of the parent entity when the cell goes live.
      */
     protected Node localToCellNode;
+    /**
+     * Whether this component's event listeners are attached to its entity.
+     */
+    protected boolean eventListenersAttached;
 
     /** 
      * Create a new instance of <code>FrameComponent</code>.
@@ -106,7 +110,7 @@ public abstract class FrameComponent {
         initSceneGraph();
 
         // Attach event listeners for this component
-        attachEventListeners(entity);
+        attachEventListeners();
 
         attachToParentEntity();
     }
@@ -116,7 +120,7 @@ public abstract class FrameComponent {
      */
     protected void cleanupEntity() {
         detachFromParentEntity();
-        detachEventListeners(entity);
+        detachEventListeners();
         cleanupSceneGraph();
         entity = null;
     }
@@ -224,6 +228,10 @@ public abstract class FrameComponent {
      * Update the component color based on whether the user has control of the app.
      */
     protected void updateColor() {
+        //System.err.println("Enter FC.updateColor");
+        //System.err.println("this = " + this);
+        //System.err.println("controlArb = " + controlArb);
+        //System.err.println("hasControl = " + controlArb.hasControl());
         if (controlArb == null || controlArb.hasControl()) {
             setColor(HAS_CONTROL_COLOR);
         } else {
@@ -253,20 +261,22 @@ public abstract class FrameComponent {
     }
 
     /**
-     * Attach this component's event listeners to the givenentity.
+     * Attach this component's event listeners to its entity.
      */
-    protected void attachEventListeners(Entity entity) {
-        if (gui != null) {
+    protected void attachEventListeners() {
+        if (!eventListenersAttached && gui != null) {
             gui.attachEventListeners(entity);
+            eventListenersAttached = true;
         }
     }
 
     /**
-     * Detach this component's event listeners from the given entity.
+     * Detach this component's event listeners from its entity.
      */
-    protected void detachEventListeners(Entity entity) {
-        if (gui != null) {
+    protected void detachEventListeners() {
+        if (eventListenersAttached && gui != null) {
             gui.detachEventListeners(entity);
+            eventListenersAttached = false;
         }
     }
 

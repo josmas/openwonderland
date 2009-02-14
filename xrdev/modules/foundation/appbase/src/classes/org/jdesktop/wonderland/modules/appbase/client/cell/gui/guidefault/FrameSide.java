@@ -112,7 +112,9 @@ public class FrameSide extends FrameComponent {
      * {@inheritDoc}
      */
     public void setColor(ColorRGBA color) {
+        //System.err.println("Enter FrameSide.setColor: " + color);
         if (rect != null) {
+            //System.err.println("Call rect.setColor");
             rect.setColor(color);
         }
     }

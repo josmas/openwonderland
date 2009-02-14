@@ -258,19 +258,19 @@ public class FrameWorldDefault extends Window2DFrame {
      */
     void attachEventListeners(Entity entity) {
         if (header != null) {
-            header.attachEventListeners(entity);
+            header.attachEventListeners();
         }
         if (leftSide != null) {
-            leftSide.attachEventListeners(entity);
+            leftSide.attachEventListeners();
         }
         if (rightSide != null) {
-            rightSide.attachEventListeners(entity);
+            rightSide.attachEventListeners();
         }
         if (bottomSide != null) {
-            bottomSide.attachEventListeners(entity);
+            bottomSide.attachEventListeners();
         }
         if (resizeCorner != null) {
-            resizeCorner.attachEventListeners(entity);
+            resizeCorner.attachEventListeners();
         }
     }
 
@@ -279,19 +279,19 @@ public class FrameWorldDefault extends Window2DFrame {
      */
     void detachEventListeners(Entity entity) {
         if (header != null) {
-            header.detachEventListeners(entity);
+            header.detachEventListeners();
         }
         if (leftSide != null) {
-            leftSide.detachEventListeners(entity);
+            leftSide.detachEventListeners();
         }
         if (rightSide != null) {
-            rightSide.detachEventListeners(entity);
+            rightSide.detachEventListeners();
         }
         if (bottomSide != null) {
-            bottomSide.detachEventListeners(entity);
+            bottomSide.detachEventListeners();
         }
         if (resizeCorner != null) {
-            resizeCorner.detachEventListeners(entity);
+            resizeCorner.detachEventListeners();
         }
     }
 }
