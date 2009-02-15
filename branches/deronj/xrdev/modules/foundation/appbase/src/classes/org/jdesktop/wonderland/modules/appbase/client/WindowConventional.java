@@ -90,6 +90,24 @@ public abstract class WindowConventional extends WindowGraphics2D {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void configure(int width, int height, Window2D sibWin) {
+        setSize(width, height);
+        super.configure(width, height, sibWin);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected int configureNoUpdate(int width, int height, Window2D sibWin) {
+        setSize(width, height);
+        return super.configureNoUpdate(width, height, sibWin);
+    }
+
+    /**
      * Specify a new border width.
      * The visual representations of the window are updated accordingly.
      *
