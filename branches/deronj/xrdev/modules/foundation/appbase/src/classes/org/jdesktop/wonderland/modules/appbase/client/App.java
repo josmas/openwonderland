@@ -23,7 +23,9 @@ import java.util.logging.Logger;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import javax.swing.JOptionPane;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
 
 /**
@@ -54,6 +56,8 @@ public class App {
     protected ControlArb controlArb;
     /** The displayer which renders the app. May be null if the app is not displayed in this client. */
     protected Displayer displayer;
+    /** The focus entity of the app. */
+    protected Entity focusEntity;
 
     /**
      * Create a new instance of App.
@@ -66,6 +70,7 @@ public class App {
         this.appType = appType;
         this.controlArb = controlArb;
         appType.appAdd(this);
+        focusEntity = new Entity("App focus entity");
     }
 
     /**
@@ -98,6 +103,14 @@ public class App {
      */
     public AppType getAppType() {
         return appType;
+    }
+
+    /**
+     * Returns the focus entity of the app.
+     */
+    @InternalAPI
+    public Entity getFocusEntity () {
+        return focusEntity;
     }
 
     /**

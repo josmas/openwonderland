@@ -22,17 +22,19 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
- * The Xremwin ControlArb class. This currently doesn't implement
- * polite control arbitration--control is simply stolen.
+ * The Xremwin ControlArb class. 
+ *
+ * TODO: someday: This currently doesn't implement polite control 
+ * arbitration--control is simply stolen.
  *
  * @author deronj
  */
 @ExperimentalAPI
-public class ControlArbXrw extends ControlArbSingle {
+public class ControlArbXrw extends ControlArbAppFocus {
 
     /** The default take control politeness mode */
     private static boolean TAKE_CONTROL_IMPOLITE = true;

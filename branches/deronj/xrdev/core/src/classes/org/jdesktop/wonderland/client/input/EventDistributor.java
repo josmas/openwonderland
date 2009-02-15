@@ -466,7 +466,7 @@ public abstract class EventDistributor implements Runnable {
      * @param event The event to be delivered.
      * @param entity The entity to check if it is in the focus set.
      */
-    private static boolean entityHasFocus (Event event, Entity entity) {
+    static boolean entityHasFocus (Event event, Entity entity) {
         EventFocusComponent focusComp = (EventFocusComponent) entity.getComponent(EventFocusComponent.class);
         if (focusComp == null) return false;
         return focusComp.containsClassOrSuperclass(event.getClass());
