@@ -80,7 +80,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     /** The parameters given to the client. */
     AppConventionalCellClientState clientState;
     /** The app conventional connection handler */
-    private static AppConventionalConnectionHandler connectionHandler;
+    private AppConventionalConnectionHandler connectionHandler;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
     protected Serializable connectionInfo;
 

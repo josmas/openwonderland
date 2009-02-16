@@ -88,7 +88,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
         characterMotionListener = new CharacterMotionListener() {
                 public void transformUpdate(Vector3f translation, PMatrix rotation) {
-                    ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation), currentTrigger, currentPressed, null);
+                    ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
                 }
             };
 
@@ -137,7 +137,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
     void changeAvatar(WlAvatarCharacter newAvatar) {
         WorldManager wm = ClientContextJME.getWorldManager();
-        System.err.println("Removing entity "+avatarCharacter);
         wm.removeEntity(avatarCharacter);
 
         avatarCharacter = newAvatar;
@@ -198,7 +197,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         attributes.setBaseURL(baseURL);
 
         URL avatarConfigURL = ((AvatarCell)cell).getAvatarConfigURL();
-        System.err.println("AvatarConfigURL "+avatarConfigURL);
+//        System.err.println("AvatarConfigURL "+avatarConfigURL);
 
         // Force to null for testing
 //        avatarConfigURL = null;
@@ -207,7 +206,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         // TODO this will change to take the config
         if (avatarConfigURL==null) {
             File defaultConfig = AvatarConfigFrame.getDefaultAvatarConfigFile();
-            System.err.println("LOOKING FOR DEFAULT FILE "+defaultConfig);
             if (defaultConfig.exists()) {
                 try {
                     avatarCharacter = new WlAvatarCharacter(defaultConfig.toURI().toURL(), ClientContextJME.getWorldManager(), baseURL);

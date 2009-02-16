@@ -22,6 +22,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.util.Map;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -86,10 +87,13 @@ public class JmeColladaCellMO extends CellMO {
         this.modelURI = ((JmeColladaCellServerState)setup).getModel();
 
         // Override model URI if there is a property set for it
-        //String model = setup.getProperty("model");
-        //if (model != null) {
-        //    this.modelURI = model;
-        //}
+        Map<String, String> metadata = setup.getMetaData();
+        if (metadata != null) {
+            String model = metadata.get("palette-model-uri");
+            if (model != null) {
+                this.modelURI = model;
+            }
+        }
         
         JmeColladaCellServerState jccss = (JmeColladaCellServerState)setup;
         if (jccss.getGeometryTranslation() != null) {

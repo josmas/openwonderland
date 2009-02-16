@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.affordances.client.cell;
 
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.affordances.client.jme.TranslateAffordance;
 
 /**
@@ -28,35 +27,16 @@ import org.jdesktop.wonderland.modules.affordances.client.jme.TranslateAffordanc
  */
 public class TranslateAffordanceCellComponent extends AffordanceCellComponent {
 
-    private TranslateAffordance translateAffordance = null;
-
-    public TranslateAffordanceCellComponent(Cell cell) {
+    public TranslateAffordanceCellComponent(Cell cell) throws AffordanceException {
         super(cell);
-    }
-
-    @Override
-    public void setStatus(CellStatus status) {
-        // If we are making this component active, then create the affordance,
-        // if the first time through.
-        super.setStatus(status);
-        if (status == CellStatus.ACTIVE) {
-            if (translateAffordance == null) {
-                translateAffordance = TranslateAffordance.addToCell(cell);
-            }
-        }
-    }
-
-    @Override
-    public void setSize(float size) {
-        super.setSize(size);
-        translateAffordance.setSize(size);
+        affordance = new TranslateAffordance(cell);
     }
 
     @Override
     public void remove() {
         super.remove();
-        translateAffordance.remove();
+        affordance.remove();
         cell.removeComponent(TranslateAffordanceCellComponent.class);
-        translateAffordance = null;
+        affordance = null;
     }
 }

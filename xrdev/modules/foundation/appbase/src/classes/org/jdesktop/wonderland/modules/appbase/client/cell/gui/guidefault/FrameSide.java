@@ -150,17 +150,17 @@ public class FrameSide extends FrameComponent {
                 break;
 
             case LEFT:
-                logger.fine("innerWidth = " + innerWidth);
-                logger.fine("innerHeight = " + innerHeight);
-                logger.fine("sideThickness = " + sideThickness);
+                logger.warning("innerWidth = " + innerWidth);
+                logger.warning("innerHeight = " + innerHeight);
+                logger.warning("sideThickness = " + sideThickness);
                 x = -innerWidth / 2f - sideThickness / 2f;
                 y = 0;
                 width = sideThickness;
                 height = innerHeight;
-                logger.fine("x = " + x);
-                logger.fine("y = " + y);
-                logger.fine("w = " + width);
-                logger.fine("h = " + height);
+                logger.warning("x = " + x);
+                logger.warning("y = " + y);
+                logger.warning("w = " + width);
+                logger.warning("h = " + height);
                 break;
 
             case RIGHT:
@@ -171,18 +171,18 @@ public class FrameSide extends FrameComponent {
                 break;
 
             case BOTTOM:
-                logger.fine("FrameWorldDefault.RESIZE_CORNER_WIDTH = " + FrameWorldDefault.RESIZE_CORNER_WIDTH);
-                logger.fine("sideThickness = " + sideThickness);
-                logger.fine("innerHeight = " + innerHeight);
-                logger.fine("innerWidth = " + innerWidth);
+                logger.warning("FrameWorldDefault.RESIZE_CORNER_WIDTH = " + FrameWorldDefault.RESIZE_CORNER_WIDTH);
+                logger.warning("sideThickness = " + sideThickness);
+                logger.warning("innerHeight = " + innerHeight);
+                logger.warning("innerWidth = " + innerWidth);
                 x = -FrameWorldDefault.RESIZE_CORNER_WIDTH / 2f - sideThickness / 2f;
                 y = -innerHeight / 2f - sideThickness / 2f;
                 width = innerWidth + sideThickness - FrameWorldDefault.RESIZE_CORNER_WIDTH;
                 height = sideThickness;
-                logger.fine("x = " + x);
-                logger.fine("y = " + y);
-                logger.fine("width = " + width);
-                logger.fine("height = " + height);
+                logger.warning("x = " + x);
+                logger.warning("y = " + y);
+                logger.warning("width = " + width);
+                logger.warning("height = " + height);
                 break;
         }
     }
@@ -221,7 +221,7 @@ public class FrameSide extends FrameComponent {
     @Override
     protected Spatial[] getSpatials() {
         if (rect == null) {
-            rect = new FrameRect("FrameRect for " + name, view, gui, width, height);
+            rect = new FrameRect(view, gui, width, height);
         }
         return rect.getSpatials();
     }

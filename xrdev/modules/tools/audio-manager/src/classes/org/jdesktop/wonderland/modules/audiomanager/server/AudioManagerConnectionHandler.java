@@ -213,40 +213,16 @@ public class AudioManagerConnectionHandler
             cp.setJoinConfirmationTimeout(0);
 	    cp.setCallAnsweredTreatment(null);
 
-	    Call call;
-
-            try {
-                call = vm.createCall(callID, setup);
-            } catch (IOException e) {
-                logger.warning("Unable to create call " + cp + ": " + e.getMessage());
-		return;
-            }
-
-	    callID = call.getId();
-
 	    senderCallIDMap.put(sender, callID);
 
-            PlayerSetup ps = new PlayerSetup();
-            ps.x = (double) msg.getX();
-            ps.y = (double) msg.getY();
-            ps.z = (double) msg.getZ();
-            ps.orientation = msg.getDirection();
-            ps.isLivePlayer = true;
+	    try {
+	        setupCall(callID, setup, msg.getX(), 
+		    msg.getY(), msg.getZ(), msg.getDirection());
+	    } catch (IOException e) {
+		logger.warning("Unable to place call " + cp + " " + e.getMessage());
+		senderCallIDMap.remove(sender);
+	    }
 
-            Player player = vm.createPlayer(callID, ps);
-
-            call.setPlayer(player);
-            player.setCall(call);
-
-            vm.getDefaultLivePlayerAudioGroup().addPlayer(player,
-                new AudioGroupPlayerInfo(true, AudioGroupPlayerInfo.ChatType.PUBLIC));
-
-            AudioGroupPlayerInfo info = new AudioGroupPlayerInfo(false,
-                AudioGroupPlayerInfo.ChatType.PUBLIC);
-
-            info.defaultSpeakingAttenuation = 0;
-
-            vm.getDefaultStationaryPlayerAudioGroup().addPlayer(player, info);
 	    return;
 	}
 
@@ -305,6 +281,50 @@ public class AudioManagerConnectionHandler
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    private void setupCall(String callID, CallSetup setup, double x, 
+	    double y, double z, double direction) throws IOException {
+
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	Call call;
+
+        call = vm.createCall(callID, setup);
+
+	callID = call.getId();
+
+	Player p = vm.getPlayer(callID);
+
+        PlayerSetup ps = new PlayerSetup();
+
+	if (p == null) {
+            ps.x = x;
+            ps.y = y;
+            ps.z = z;
+	} else {
+	    ps.x = p.getSetup().x;
+	    ps.y = p.getSetup().y;
+	    ps.z = p.getSetup().z;
+	}
+
+        ps.orientation = direction;
+        ps.isLivePlayer = true;
+
+	Player player = vm.createPlayer(callID, ps);
+
+        call.setPlayer(player);
+        player.setCall(call);
+
+        vm.getDefaultLivePlayerAudioGroup().addPlayer(player,
+            new AudioGroupPlayerInfo(true, AudioGroupPlayerInfo.ChatType.PUBLIC));
+
+        AudioGroupPlayerInfo info = new AudioGroupPlayerInfo(false,
+            AudioGroupPlayerInfo.ChatType.PUBLIC);
+
+        info.defaultSpeakingAttenuation = 0;
+
+        vm.getDefaultStationaryPlayerAudioGroup().addPlayer(player, info);
+    }
+
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
 //        throw new UnsupportedOperationException("Not supported yet.");
 
@@ -349,9 +369,11 @@ public class AudioManagerConnectionHandler
 
 	WonderlandClientSender sender = cm.getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
 	switch (code) {
 	case CallStatus.ESTABLISHED:
-	    Call call = AppContext.getManager(VoiceManager.class).getCall(callId);
+	    Call call = vm.getCall(callId);
 
 	    if (call == null) {
 		logger.warning("Couldn't find call for " + callId);
@@ -365,10 +387,8 @@ public class AudioManagerConnectionHandler
 		return;
 	    }
 
-	    /*
-	     * XXX Fix me.  This is just to force the private mixes to be recalulated.
-	     */
-	    player.setCall(call);
+	    vm.dump("all");
+	    player.setPrivateMixes(true);
 	    break;
 
         case CallStatus.STARTEDSPEAKING:
@@ -391,7 +411,36 @@ public class AudioManagerConnectionHandler
                 logger.fine("Restoring private mixes...");
 
 		// XXX need a way to tell the voice manager to reset all of the private mixes.
-            }
+            } else {
+		Call c = vm.getCall(callId);
+
+		if (c == null) {
+		    logger.warning("No call for " + callId);
+		    break;
+		}
+
+		Player p = c.getPlayer();
+
+		if (p == null) {
+		    logger.warning("No player for " + callId);
+		    break;
+		}
+
+		try {
+		    c.end(true);
+		} catch (IOException e) {
+		    logger.warning("Unable to end call " + callId);
+		}
+
+		try {
+		    setupCall(callId, c.getSetup(), -p.getX(), p.getY(), p.getZ(), 
+		        p.getOrientation());
+		} catch (IOException e) {
+		    logger.warning("Unable to setupCall " + c + " "
+			+ e.getMessage());
+		}
+	    }
+
             break;
         }
     }

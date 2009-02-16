@@ -48,6 +48,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceException;
 
 /**
  * Visual affordance (manipulator) to move a cell around in the world.
@@ -99,10 +100,13 @@ public class TranslateAffordance extends Affordance {
     private TranslateDragListener xListener = null, yListener = null, zListener = null;
 
     /**
-     * Private constructor, use the addToCell() method instead.
+     * Creates a new translate affordance given the cell to  which it is going
+     * to be added. Also adds the movable component if not already present
+     *
      * @param cell
+     * @throw AffordanceException Upon error creating the affordance
      */
-    private TranslateAffordance(Cell cell) {
+    public TranslateAffordance(Cell cell) throws AffordanceException {
         super("Translate", cell);
 
         // Figure out the bounds of the root entity of the cell and create an
@@ -171,35 +175,6 @@ public class TranslateAffordance extends Affordance {
                 ClientContextJME.getWorldManager().addToUpdateList(nodeArray[0]);
             }
         });
-    }
-
-    /**
-     * Adds a translation affordance to a given cell.
-     *
-     * @param cell The cell to which to add the affordance
-     * @return The affordance object, or null upon error
-     */
-    public static TranslateAffordance addToCell(Cell cell) {
-        Logger logger = Logger.getLogger(TranslateAffordance.class.getName());
-
-        // First check to see if the cell has the moveable component. If not,
-        // then do not add the affordance
-        if (cell.getComponent(MovableComponent.class) == null) {
-            logger.warning("[AFFORDANCE] Cell " + cell.getName() + " does not " +
-                    "have the moveable component.");
-            return null;
-        }
-
-        // Create the translate affordance entity and add it to the scene graph.
-        // Since we are updating the scene graph, we need to put this in a
-        // special update thread.
-        TranslateAffordance affordance = new TranslateAffordance(cell);
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                ClientContextJME.getWorldManager().addEntity((Entity)arg0);
-                ClientContextJME.getWorldManager().addToUpdateList(((TranslateAffordance)arg0).rootNode);
-            }}, affordance);
-        return affordance;
     }
 
     /**

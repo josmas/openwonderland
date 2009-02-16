@@ -55,6 +55,9 @@ public class PaletteClientPlugin implements ClientPlugin {
     /* The single instance of the cell palette dialog */
     private WeakReference<CellPalette> cellPaletteFrameRef = null;
 
+    /* The single instance of the module palette dialog */
+    private WeakReference<ModulePalette> modulePaletteFrameRef = null;
+
     public void initialize(ServerSessionManager loginInfo) {
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
@@ -79,6 +82,28 @@ public class PaletteClientPlugin implements ClientPlugin {
         paletteMenu.add(item);
         JmeClientMain.getFrame().addToToolMenu(paletteMenu);
 
+        // Add the Palette menu and the Cell submenu and dialog that lets users
+        // create new cells.
+        JMenuItem moduleItem = new JMenuItem("Module Art Palette");
+        moduleItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ModulePalette modulePaletteFrame;
+                if (modulePaletteFrameRef == null || modulePaletteFrameRef.get() == null) {
+                    modulePaletteFrame = new ModulePalette();
+                    modulePaletteFrameRef = new WeakReference(modulePaletteFrame);
+                }
+                else {
+                    modulePaletteFrame = modulePaletteFrameRef.get();
+                }
+
+                if (modulePaletteFrame.isVisible() == false) {
+                    modulePaletteFrame.setVisible(true);
+                }
+            }
+        });
+        paletteMenu.add(moduleItem);
+        JmeClientMain.getFrame().addToToolMenu(paletteMenu);
+        
         // Add the "Properties" item to the context menu. Display a CellEditFrame
         // when selected.
         ContextMenu contextMenu = ContextMenu.getContextMenu();

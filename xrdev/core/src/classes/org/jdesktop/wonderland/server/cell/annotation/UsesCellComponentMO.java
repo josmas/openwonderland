@@ -51,6 +51,11 @@ import java.lang.annotation.Target;
  *
  * Thus in setLive we can simply use the channel component.
  *
+ * This annotation complements @DependsOnCellComponentMO, the difference is
+ * that this annotation creates a reference to the component, where the @DependsOnCellComponentMO
+ * just ensures the component is added to the cell. You don't need to specify @DependsOnCellComponentMO
+ * for components that you specifiy with @UsesCellComponentMO, but you can if you wish.
+ *
  * @author paulby
  */
 @Retention(RetentionPolicy.RUNTIME)

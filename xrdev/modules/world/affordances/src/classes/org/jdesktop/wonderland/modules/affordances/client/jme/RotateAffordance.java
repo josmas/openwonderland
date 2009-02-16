@@ -49,6 +49,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceException;
 
 /**
  * Affordance to rotate a cell along each major axis.
@@ -100,10 +101,9 @@ public class RotateAffordance extends Affordance {
     private RotationDragListener xListener = null, yListener = null, zListener = null;
 
     /**
-     * Private constructor, use the addToCell() method instead.
-     * @param cell
+     * TBD
      */
-    private RotateAffordance(Cell cell) {
+    public RotateAffordance(Cell cell) throws AffordanceException {
         super("Rotate", cell);
         
         // Figure out the bounds of the root entity of the cell and create a
@@ -240,33 +240,6 @@ public class RotateAffordance extends Affordance {
                 xListener = yListener = zListener = null;
                 xEntity = yEntity = zEntity = null;
             }}, null);
-    }
-
-    /**
-     * Adds a translation affordance to a given cell.
-     *
-     * @param cell The cell to which to add the affordance
-     * @return The affordance object, or null upon error
-     */
-    public static RotateAffordance addToCell(Cell cell) {
-        // First check to see if the cell has the moveable component. If not,
-        // then do not add the affordance
-        if (cell.getComponent(MovableComponent.class) == null) {
-            Logger logger = Logger.getLogger(TranslateAffordance.class.getName());
-            logger.warning("[AFFORDANCE] Cell " + cell.getName() + " does not " +
-                    "have the moveable component.");
-            return null;
-        }
-
-        // Create the rotate affordance entity and add it to the scene graph
-        RotateAffordance affordance = new RotateAffordance(cell);
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                ClientContextJME.getWorldManager().addEntity((Entity)arg0);
-                ClientContextJME.getWorldManager().addToUpdateList(((RotateAffordance)arg0).rootNode);
-            }}, affordance);
-
-        return affordance;
     }
 
     /**

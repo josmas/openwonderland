@@ -89,4 +89,69 @@ public abstract class Window2DView extends WindowView {
     // TODO: temporary until ImageGraphics can be fixed to allocated texture id when necessary
     public void forceTextureIdAssignment() {
     }
+
+    /**
+     * Enables/disables hud mode. When in hud mode the size, position, and stacking of the view
+     * are determined by the methods setHudLocation, setHudSize, setHudConfiguration and
+     * setHudZOrder. When in perspective mode the size, position and stacking are determined 
+     * by the view's parent window and containing cell attributes.
+     *
+     * The default is enable = false.
+     *
+     * TODO: Temporary only. Will later be obsoleted by WindowView.addToHUD/removeFromHUD.
+     *
+     * @param enable If true the view is in hud mode, otherwise it is in perspective (world) mode.
+     */
+    public abstract void setHud (boolean enable);
+    
+    /**
+     * Specifies the location of the view when it is hud mode. The units are pixels.
+     *
+     * TODO: for dev3 x and y specify the top left corner of the view relative to the top left corner
+     * of the Wonderland client main window. Later, this will become relative to a particular HUD.
+     *
+     * @param x The x location.
+     * @param y The y location.
+     */
+    public abstract void setHudLocation (int x, int y);
+
+    /**
+     * Returns the X location of the view when it is in hud mode.
+     */
+    public abstract int getHudX ();
+
+    /**
+     * Returns the X location of the view when it is in hud mode.
+     */
+    public abstract int getHudY ();
+
+    /**
+     * Specifies the size of the view in pixels when it is in hud mode. 
+     * @param width The width of the view.
+     * @param height The height of the view.
+     */
+    public abstract void setHudSize(int width, int height);
+
+    /**
+     * Returns the width of the view when it is in hud mode.
+     */
+    public abstract int getHudWidth ();
+
+    /**
+     * Returns the height of the view when it is in hud mode.
+     */
+    public abstract int getHudHeight ();
+
+    /**
+     * Effectively the same as setHudLocation(x, y) followed by setHudSize(width, height) except
+     * that the change happens atomically with respect to rendering.
+     */
+    public abstract void setHudConfiguration(int x, int y, int width, int height);
+    
+    /**
+     * Specify the hud Z order of the view when it is in hud mode.
+     *
+     * TODO: temporary: this will be obsoleted by the HUD stack.
+     */
+    public abstract void setHudZOrder (int zOrder);
 }

@@ -53,7 +53,9 @@ public interface Window2DViewWorld {
      * @param width The new width of the window.
      * @param height The new height of the window.
      */
+    /* TODO: I don't think this is used anymore.
     public void setSize(float width, float height);
+    */
 
     /**
      * Returns the width of the window.
@@ -140,4 +142,23 @@ public interface Window2DViewWorld {
      * Returns the given component of the view's entity.
      */
     public EntityComponent getEntityComponent(Class clazz);
+
+    /**
+     * Enables/disables HUD mode. When in HUD mode the size, position, and stacking of the view
+     * are determined by the methods setHudLocation, setHudSize, setHudConfiguration and
+     * setHudZOrder. When in perspective mode the size, position and stacking are determined 
+     * by the view's parent window and containing cell attributes.
+     *
+     * The default is enable = false.
+     *
+     * TODO: Temporary only. Will later be obsoleted by WindowView.addToHUD/removeFromHUD.
+     *
+     * @param enable If true the view is in hud mode, otherwise it is in perspective (world) mode.
+     */
+    public abstract void setHud (boolean enable);
+    
+    /**
+     * Return whether this view is in HUD mode.
+     */
+    public abstract boolean isHud ();
 }
