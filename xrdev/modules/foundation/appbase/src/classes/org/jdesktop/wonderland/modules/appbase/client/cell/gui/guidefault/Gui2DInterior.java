@@ -87,7 +87,6 @@ public class Gui2DInterior extends Gui2D {
      */
     @Override
     protected void attachMouseListener(Entity entity) {
-        logger.severe("&&&&&&& entity = " + entity);
         mouseListener = new InteriorMouseListener();
         mouseListener.addToEntity(entity);
     }
@@ -114,18 +113,22 @@ public class Gui2DInterior extends Gui2D {
 
         @Override
         public boolean consumesEvent(Event event) {
-            if (app.getControlArb().hasControl()) {
-                // When the app has control only consume if app has focus.
-                return InputManager3D.entityHasFocus(event, appFocusEntity);
-            } else {
-                // When the app doesn't have control consume events of this class
-                return super.consumesEvent(event);
+            if (!super.consumesEvent(event)) {
+                // Not meant for us
+                return false;
             }
+
+            if (!app.getControlArb().hasControl()) {
+                return false;
+            }
+
+            // When the app has control only consume if app has focus.
+            return InputManager3D.entityHasFocus(event, appFocusEntity);
         }
 
         @Override
         public void commitEvent(Event event) {
-            logger.fine("event = " + event);
+            logger.fine("Interior mouse commitEvent, event = " + event);
             MouseEvent3D me3d = (MouseEvent3D) event;
 
             // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
@@ -212,17 +215,23 @@ public class Gui2DInterior extends Gui2D {
 
         @Override
         public boolean consumesEvent(Event event) {
-            if (app.getControlArb().hasControl()) {
-                // When the app has control only consume if app has focus.
-                return InputManager3D.entityHasFocus(event, appFocusEntity);
-            } else {
-                // When the app doesn't have control consume events of this class
-                return super.consumesEvent(event);
+            if (!super.consumesEvent(event)) {
+                // Not meant for us
+                return false;
             }
+
+
+            if (!app.getControlArb().hasControl()) {
+                return false;
+            }
+
+            // When the app has control only consume if app has focus.
+            return InputManager3D.entityHasFocus(event, appFocusEntity);
         }
 
         @Override
         public void commitEvent(Event event) {
+            logger.fine("Interior key commitEvent, event = " + event);
             KeyEvent3D ke3d = (KeyEvent3D) event;
             KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
 
