@@ -174,11 +174,11 @@ public class FrameResizeCorner extends FrameComponent {
      */
     public void setColor (ColorRGBA color) {
 	if (horizBar != null) {
-	    logger.fine("horiz color = " + color);
+	    logger.warning("horiz color = " + color);
 	    horizBar.setColor(color);
 	}
 	if (vertBar != null) {
-	    logger.fine("vert color = " + color);
+	    logger.warning("vert color = " + color);
 	    vertBar.setColor(color);
 	}
     }

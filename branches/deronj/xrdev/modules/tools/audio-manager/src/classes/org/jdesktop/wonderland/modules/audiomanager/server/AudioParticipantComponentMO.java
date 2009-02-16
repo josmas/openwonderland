@@ -22,11 +22,20 @@ import java.util.logging.Logger;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 
+import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
+
+import org.jdesktop.wonderland.server.WonderlandContext;
 
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
+
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.mpk20.voicelib.app.Player;
@@ -56,7 +65,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
     public AudioParticipantComponentMO(CellMO cellMO) {
         super(cellMO);
 
-	//System.out.println("Adding AudioParticpantComponent to " + cellMO.getName());
+	logger.info("Adding AudioParticpantComponent to " + cellMO.getName());
     }
 
     @Override
@@ -68,6 +77,9 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    }
 	    return;
 	}
+
+        ChannelComponentMO channelComponent = (ChannelComponentMO)
+            cellRef.get().getComponent(ChannelComponentMO.class);
 
 	myTransformChangeListener = new MyTransformChangeListener();
 
@@ -84,7 +96,29 @@ public class AudioParticipantComponentMO extends CellComponentMO
     }
 
     public void callStatusChanged(CallStatus status) {
-	//System.out.println("AudioParticipantComponent go call status:  " + status);
+	logger.finer("AudioParticipantComponent go call status:  " + status);
+
+	WonderlandClientSender sender = 
+	    WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
+
+	String callId = status.getCallId();
+
+	if (callId == null) {
+	    logger.warning("No callId in status:  " + status);
+	    return;
+	}
+
+	CellID cellID = cellRef.get().getCellID();
+
+	switch (status.getCode()) {
+        case CallStatus.STARTEDSPEAKING:
+	    sender.send(new AudioParticipantSpeakingMessage(cellID, true));
+            break;
+
+        case CallStatus.STOPPEDSPEAKING:
+	    sender.send(new AudioParticipantSpeakingMessage(cellID, false));
+            break;
+	}
     }
 
     static class MyTransformChangeListener implements TransformChangeListenerSrv {

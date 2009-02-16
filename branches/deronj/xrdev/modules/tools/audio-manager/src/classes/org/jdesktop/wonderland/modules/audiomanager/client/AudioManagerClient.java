@@ -318,7 +318,7 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof SpeakingMessage) {
 	    SpeakingMessage msg = (SpeakingMessage) message;
 
-	    logger.fine("CallId " + msg.getCallID() 
+	    logger.info("CallId " + msg.getCallID() 
 		+ (msg.isSpeaking() ? " Started Speaking" : " Stopped Speaking"));
 	} else if (message instanceof GetUserListMessage) {
 	    if (userListJFrame == null) {

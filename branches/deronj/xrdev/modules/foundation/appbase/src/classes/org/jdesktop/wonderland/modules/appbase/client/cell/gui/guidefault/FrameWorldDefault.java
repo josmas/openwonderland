@@ -229,11 +229,12 @@ public class FrameWorldDefault extends Window2DFrame {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void updateControl(ControlArb controlArb) {
-        if (view == null || !((ViewWorldDefault) view).getActuallyVisible()) {
+        if (view == null || ((ViewWorldDefault) view).getActuallyVisible()) {
             return;
         }
-        
+
         // Sometimes some of these are null during debugging
         if (header != null) {
             header.updateControl(controlArb);
@@ -257,19 +258,19 @@ public class FrameWorldDefault extends Window2DFrame {
      */
     void attachEventListeners(Entity entity) {
         if (header != null) {
-            header.attachEventListeners();
+            header.attachEventListeners(entity);
         }
         if (leftSide != null) {
-            leftSide.attachEventListeners();
+            leftSide.attachEventListeners(entity);
         }
         if (rightSide != null) {
-            rightSide.attachEventListeners();
+            rightSide.attachEventListeners(entity);
         }
         if (bottomSide != null) {
-            bottomSide.attachEventListeners();
+            bottomSide.attachEventListeners(entity);
         }
         if (resizeCorner != null) {
-            resizeCorner.attachEventListeners();
+            resizeCorner.attachEventListeners(entity);
         }
     }
 
@@ -278,19 +279,19 @@ public class FrameWorldDefault extends Window2DFrame {
      */
     void detachEventListeners(Entity entity) {
         if (header != null) {
-            header.detachEventListeners();
+            header.detachEventListeners(entity);
         }
         if (leftSide != null) {
-            leftSide.detachEventListeners();
+            leftSide.detachEventListeners(entity);
         }
         if (rightSide != null) {
-            rightSide.detachEventListeners();
+            rightSide.detachEventListeners(entity);
         }
         if (bottomSide != null) {
-            bottomSide.detachEventListeners();
+            bottomSide.detachEventListeners(entity);
         }
         if (resizeCorner != null) {
-            resizeCorner.detachEventListeners();
+            resizeCorner.detachEventListeners(entity);
         }
     }
 }

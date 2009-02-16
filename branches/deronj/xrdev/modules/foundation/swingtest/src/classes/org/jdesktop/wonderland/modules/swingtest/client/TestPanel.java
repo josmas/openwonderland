@@ -30,6 +30,7 @@ public class TestPanel extends javax.swing.JPanel {
     
     public interface Container {
         public void validate();
+        public void setHud(boolean enable);
     }
 
     private JFrame frame;
@@ -84,8 +85,8 @@ public class TestPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         add(jLabel1, gridBagConstraints);
 
-        jButton1.setText("jButton1");
-	jButton1.setToolTipText("This button prints a message to stdout");
+        jButton1.setText("Move to HUD");
+	jButton1.setToolTipText("This button moves the window into the HUD");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -177,9 +178,25 @@ public class TestPanel extends javax.swing.JPanel {
         //System.out.println("Panel focus Gained");
     }//GEN-LAST:event_formFocusGained
 
+    private boolean inHud = false;
+
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        System.out.println("******** button press");
+        if (inHud) {
+            jButton2.setText("Move to World");
+            jButton2.setToolTipText("This button moves the window into the world.");
+        } else {
+            jButton2.setText("Move to HUD");
+            jButton2.setToolTipText("This button moves the window into the HUD.");
+        }
+
+        jPanel1.invalidate();
+
+        inHud = ! inHud;
+
+        if (container != null) {
+            container.setHud(inHud);
+        }
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private boolean sliderShown = false;

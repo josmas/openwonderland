@@ -60,10 +60,6 @@ public abstract class FrameComponent {
      * to attach point of the parent entity when the cell goes live.
      */
     protected Node localToCellNode;
-    /**
-     * Whether this component's event listeners are attached to its entity.
-     */
-    protected boolean eventListenersAttached;
 
     /** 
      * Create a new instance of <code>FrameComponent</code>.
@@ -110,7 +106,7 @@ public abstract class FrameComponent {
         initSceneGraph();
 
         // Attach event listeners for this component
-        attachEventListeners();
+        attachEventListeners(entity);
 
         attachToParentEntity();
     }
@@ -120,7 +116,7 @@ public abstract class FrameComponent {
      */
     protected void cleanupEntity() {
         detachFromParentEntity();
-        detachEventListeners();
+        detachEventListeners(entity);
         cleanupSceneGraph();
         entity = null;
     }
@@ -257,22 +253,20 @@ public abstract class FrameComponent {
     }
 
     /**
-     * Attach this component's event listeners to its entity.
+     * Attach this component's event listeners to the givenentity.
      */
-    protected void attachEventListeners() {
-        if (!eventListenersAttached && gui != null) {
+    protected void attachEventListeners(Entity entity) {
+        if (gui != null) {
             gui.attachEventListeners(entity);
-            eventListenersAttached = true;
         }
     }
 
     /**
-     * Detach this component's event listeners from its entity.
+     * Detach this component's event listeners from the given entity.
      */
-    protected void detachEventListeners() {
-        if (eventListenersAttached && gui != null) {
+    protected void detachEventListeners(Entity entity) {
+        if (gui != null) {
             gui.detachEventListeners(entity);
-            eventListenersAttached = false;
         }
     }
 

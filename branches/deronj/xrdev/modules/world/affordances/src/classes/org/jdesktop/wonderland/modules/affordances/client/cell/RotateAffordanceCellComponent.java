@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.affordances.client.cell;
 
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.affordances.client.jme.RotateAffordance;
 
 /**
@@ -28,35 +27,16 @@ import org.jdesktop.wonderland.modules.affordances.client.jme.RotateAffordance;
  */
 public class RotateAffordanceCellComponent extends AffordanceCellComponent {
 
-    private RotateAffordance rotateAffordance = null;
-
-    public RotateAffordanceCellComponent(Cell cell) {
+    public RotateAffordanceCellComponent(Cell cell) throws AffordanceException {
         super(cell);
-    }
-
-    @Override
-    public void setStatus(CellStatus status) {
-        // If we are making this component active, then create the affordance,
-        // if the first time through.
-        super.setStatus(status);
-        if (status == CellStatus.ACTIVE) {
-            if (rotateAffordance == null) {
-                rotateAffordance = RotateAffordance.addToCell(cell);
-            }
-        }
-    }
-
-    @Override
-    public void setSize(float size) {
-        super.setSize(size);
-        rotateAffordance.setSize(size);
+        affordance = new RotateAffordance(cell);
     }
 
     @Override
     public void remove() {
         super.remove();
-        rotateAffordance.remove();
+        affordance.remove();
         cell.removeComponent(RotateAffordanceCellComponent.class);
-        rotateAffordance = null;
+        affordance = null;
     }
 }
