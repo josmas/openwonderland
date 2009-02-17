@@ -181,17 +181,18 @@ public class TestPanel extends javax.swing.JPanel {
     private boolean inHud = false;
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+
+        inHud = ! inHud;
+
         if (inHud) {
-            jButton2.setText("Move to World");
-            jButton2.setToolTipText("This button moves the window into the world.");
+            jButton1.setText("Move to World");
+            jButton1.setToolTipText("This button moves the window into the world.");
         } else {
-            jButton2.setText("Move to HUD");
-            jButton2.setToolTipText("This button moves the window into the HUD.");
+            jButton1.setText("Move to HUD");
+            jButton1.setToolTipText("This button moves the window into the HUD.");
         }
 
         jPanel1.invalidate();
-
-        inHud = ! inHud;
 
         if (container != null) {
             container.setHud(inHud);
