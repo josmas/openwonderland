@@ -21,6 +21,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import com.jme.image.Texture;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import java.awt.Rectangle;
 
 /**
  * A window view is a visual representation of a window. A window can
@@ -91,21 +92,26 @@ public abstract class Window2DView extends WindowView {
     }
 
     /**
-     * Enables/disables hud mode. When in hud mode the size, position, and stacking of the view
-     * are determined by the methods setHudLocation, setHudSize, setHudConfiguration and
-     * setHudZOrder. When in perspective mode the size, position and stacking are determined 
+     * Enables/disables HUD mode. When in HUD mode the size, position, and stacking of the view
+     * are determined by the methods setHUDLocation, setHUDSize, setHUDBounds and
+     * setHUDZOrder. When in perspective mode the size, position and stacking are determined 
      * by the view's parent window and containing cell attributes.
      *
      * The default is enable = false.
      *
      * TODO: Temporary only. Will later be obsoleted by WindowView.addToHUD/removeFromHUD.
      *
-     * @param enable If true the view is in hud mode, otherwise it is in perspective (world) mode.
+     * @param enable If true the view is in HUD mode, otherwise it is in perspective (world) mode.
      */
-    public abstract void setHud (boolean enable);
+    public abstract void setOnHUD (boolean onHUD);
+
+    /**
+     * Returns whether this view is on the HUD.
+     */
+    public abstract boolean isOnHUD ();
     
     /**
-     * Specifies the location of the view when it is hud mode. The units are pixels.
+     * Specifies the location of the view when it is HUD mode. The units are pixels.
      * The origin of the HUD is the lower-left corner of the client window's drawing subwindow.
      * the width and height of the HUD plane are the same as the width and height of the subwindow.
      * Furthermore, (x, y) specifies the position of the CENTER of the view relative to HUD origin.
@@ -113,45 +119,45 @@ public abstract class Window2DView extends WindowView {
      * @param x The x location.
      * @param y The y location.
      */
-    public abstract void setHudLocation (int x, int y);
+    public abstract void setHUDLocation (int x, int y);
 
     /**
-     * Returns the X location of the view when it is in hud mode.
+     * Returns the X location of the view when it is in HUD mode.
      */
-    public abstract int getHudX ();
+    public abstract int getHUDX ();
 
     /**
-     * Returns the X location of the view when it is in hud mode.
+     * Returns the Y location of the view when it is in HUD mode.
      */
-    public abstract int getHudY ();
+    public abstract int getHUDY ();
 
     /**
-     * Specifies the size of the view in pixels when it is in hud mode. 
+     * Specifies the size of the view in pixels when it is in HUD mode. 
      * @param width The width of the view.
      * @param height The height of the view.
      */
-    public abstract void setHudSize(int width, int height);
+    public abstract void setHUDSize(int width, int height);
 
     /**
-     * Returns the width of the view when it is in hud mode.
+     * Returns the width of the view when it is in HUD mode.
      */
-    public abstract int getHudWidth ();
+    public abstract int getHUDWidth ();
 
     /**
-     * Returns the height of the view when it is in hud mode.
+     * Returns the height of the view when it is in HUD mode.
      */
-    public abstract int getHudHeight ();
+    public abstract int getHUDHeight ();
 
     /**
-     * Effectively the same as setHudLocation(x, y) followed by setHudSize(width, height) except
+     * Effectively the same as setHUDLocation(x, y) followed by setHUDSize(width, height) except
      * that the change happens atomically with respect to rendering.
      */
-    public abstract void setHudConfiguration(int x, int y, int width, int height);
+    public abstract void setHUDBounds(Rectangle bounds);
     
     /**
-     * Specify the hud Z order of the view when it is in hud mode.
+     * Specify the HUD Z order of the view when it is in HUD mode.
      *
      * TODO: temporary: this will be obsoleted by the HUD stack.
      */
-    public abstract void setHudZOrder (int zOrder);
+    public abstract void setHUDZOrder (int zOrder);
 }

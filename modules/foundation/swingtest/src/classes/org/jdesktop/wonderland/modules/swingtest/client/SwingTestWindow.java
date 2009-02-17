@@ -72,14 +72,14 @@ public class SwingTestWindow
         */
     }
 
-    public void setHud (boolean enable) {
+    public void setHud (boolean onHUD) {
         // TODO: eventually this will involve specifying a specific destination HUD
         Window2DViewWorld view = getPrimaryView();
-        view.setHudLocation(300, 300);
+        view.setHUDLocation(300, 300);
 
         // Test
-        //view.setHudSize(500, 200);
+        //view.setHUDSize(500, 200);
 
-        view.setHud(enable);
+        view.setOnHUD(onHUD);
     }
 }

@@ -28,6 +28,7 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import java.awt.Button;
+import java.awt.Rectangle;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DView;
@@ -145,7 +146,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     private LinkedList<EntityComponentEntry> entityComponents = new LinkedList<EntityComponentEntry>();
 
     /** Whether the view is in the HUD. */
-    private boolean inHud;
+    private boolean onHud;
 
     /** The location of the view when it is in the HUD. */
     private Point hudLocation;
@@ -200,7 +201,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
             gui = null;
         }
         if (entity != null) {
-            if (inHud) {
+            if (onHud) {
                 moveToWorld();
             }
             if (connectedToCell) {
@@ -372,9 +373,9 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     protected void updateGeometrySize() throws InstantiationException {
 
         // Calculate view size appropriate for the current Hud mode
-        if (inHud) {
-            width = (float) getHudWidth();
-            height = (float) getHudHeight();
+        if (onHud) {
+            width = (float) getHUDWidth();
+            height = (float) getHUDHeight();
         } else {
             Window2D window2D = (Window2D) window;
             Vector2f pixelScale = window2D.getPixelScale();
@@ -407,7 +408,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
     /** Update the view's transform */
     protected void updateTransform() {
-        if (inHud) {
+        if (onHud) {
             // Get rid of any non-zero rotation or non-unity scale that the node may have
             baseNode.setLocalRotation(new Quaternion());
             baseNode.setLocalScale(1.0f);
@@ -458,7 +459,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
         visible = viewVisible && window.isVisible();
 
-        if (inHud) {
+        if (onHud) {
             if (visible && !attachedToHud) {
                 attachToHud();
             } else if (!visible && attachedToHud) {
@@ -1266,11 +1267,11 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
-    public void setHud (boolean inHud) {
-        if (this.inHud == inHud) return;
+    public void setOnHUD (boolean onHUD) {
+        if (this.onHud == onHUD) return;
 
-        this.inHud = inHud;
-        if (inHud) {
+        this.onHud = onHUD;
+        if (onHud) {
             moveToHud();
         } else {
             moveToWorld();
@@ -1280,16 +1281,16 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
-    public boolean isHud () {
-        return inHud;
+    public boolean isOnHUD () {
+        return onHud;
     }
     
     /**
      * {@inheritDoc}
      */
-    public void setHudLocation (int x, int y) {
+    public void setHUDLocation (int x, int y) {
         hudLocation = new Point(x, y);
-        if (inHud) {
+        if (onHud) {
             update(CHANGED_SIZE);
         }
     }
@@ -1297,23 +1298,23 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
-    public int getHudX () {
+    public int getHUDX () {
         return hudLocation.x;
     }
 
     /**
      * {@inheritDoc}
      */
-    public int getHudY () {
+    public int getHUDY () {
         return hudLocation.y;
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setHudSize(int width, int height) {
+    public void setHUDSize(int width, int height) {
         hudSize = new Dimension(width, height);
-        if (inHud) {
+        if (onHud) {
             update(CHANGED_SIZE);
         }
     }
@@ -1321,7 +1322,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
-    public int getHudWidth () {
+    public int getHUDWidth () {
         // If the caller hasn't specified a width, use the current window width 
         if (hudSize != null) {
             return hudSize.width;
@@ -1333,7 +1334,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
-    public int getHudHeight () {
+    public int getHUDHeight () {
         // If the caller hasn't specified a height, use the current window height 
         if (hudSize != null) {
             return hudSize.height;
@@ -1345,10 +1346,10 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
-    public void setHudConfiguration(int x, int y, int width, int height) {
-        hudLocation = new Point(x, y);
-        hudSize = new Dimension(width, height);
-        if (inHud) {
+    public void setHUDBounds (Rectangle bounds) {
+        hudLocation = new Point(bounds.x, bounds.y);
+        hudSize = new Dimension(bounds.width, bounds.height);
+        if (onHud) {
             update(CHANGED_TRANSFORM | CHANGED_SIZE);
         }
     }
@@ -1356,9 +1357,9 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
-    public void setHudZOrder (int zOrder) {
+    public void setHUDZOrder (int zOrder) {
         hudZOrder = zOrder;
-        if (inHud) {
+        if (onHud) {
             updateHudState();
         }
     }
@@ -1457,7 +1458,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
             // Position and size the view appropriately
             ((ViewWorldDefault)o).update(CHANGED_TRANSFORM | CHANGED_SIZE);
 
-            if (inHud) {
+            if (onHud) {
                 geometryObj.setZOrder(hudZOrder);
                 baseNode.setCullHint(Spatial.CullHint.Never);
             } else {
