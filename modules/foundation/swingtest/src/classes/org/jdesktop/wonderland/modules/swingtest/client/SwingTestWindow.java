@@ -21,9 +21,9 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
-import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DViewWorld;
 
 /**
  *
@@ -74,6 +74,12 @@ public class SwingTestWindow
 
     public void setHud (boolean enable) {
         // TODO: eventually this will involve specifying a specific destination HUD
-        getPrimaryView().setHud(enable);
+        Window2DViewWorld view = getPrimaryView();
+        view.setHudLocation(300, 300);
+
+        // Test
+        //view.setHudSize(500, 200);
+
+        view.setHud(enable);
     }
 }

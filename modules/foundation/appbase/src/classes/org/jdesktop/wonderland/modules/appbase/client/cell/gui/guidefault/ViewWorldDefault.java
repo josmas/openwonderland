@@ -150,7 +150,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /** The location of the view when it is in the HUD. */
     private Point hudLocation;
 
-    /** The size of the view when it is in the HUD. */
+    /** The caller-specified size of the view when it is in the HUD. */
     private Dimension hudSize;
 
     /** TODO: temp */
@@ -174,7 +174,6 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         entity.addComponent(RenderComponent.class, rc);
 
         hudLocation = new Point(0, 0);
-        hudSize = new Dimension(window.getWidth(), window.getHeight());
     }
 
     /**
@@ -295,16 +294,6 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
     /**
      * {@inheritDoc}
      */
-    /* TODO: I think this is not needed
-    public void setSize(float width, float height) {
-        this.width = width;
-        this.height = height;
-    }
-    */
-
-    /**
-     * {@inheritDoc}
-     */
     public float getWidth() {
         return width;
     }
@@ -384,8 +373,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
 
         // Calculate view size appropriate for the current Hud mode
         if (inHud) {
-            width = (float) hudSize.getWidth();
-            height = (float) hudSize.getHeight();
+            width = (float) getHudWidth();
+            height = (float) getHudHeight();
         } else {
             Window2D window2D = (Window2D) window;
             Vector2f pixelScale = window2D.getPixelScale();
@@ -422,13 +411,9 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
             // Get rid of any non-zero rotation or non-unity scale that the node may have
             baseNode.setLocalRotation(new Quaternion());
             baseNode.setLocalScale(1.0f);
-            // TODO: is this from the center or not?
-            /* TODO
             baseNode.setLocalTranslation(new Vector3f((float)hudLocation.getX(),
                                                       (float)hudLocation.getY(),
                                                       0f));
-            */
-            baseNode.setLocalTranslation(new Vector3f(400f, 400f, 0f));
         } else {
             // TODO: this is all we have for world mode now (no rotation)
             baseNode.setLocalTranslation(translation);
@@ -1337,14 +1322,24 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      * {@inheritDoc}
      */
     public int getHudWidth () {
-        return hudSize.width;
+        // If the caller hasn't specified a width, use the current window width 
+        if (hudSize != null) {
+            return hudSize.width;
+        } else {
+            return ((Window2D)window).getWidth();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public int getHudHeight () {
-        return hudSize.height;
+        // If the caller hasn't specified a height, use the current window height 
+        if (hudSize != null) {
+            return hudSize.height;
+        } else {
+            return ((Window2D)window).getHeight();
+        }
     }
 
     /**
