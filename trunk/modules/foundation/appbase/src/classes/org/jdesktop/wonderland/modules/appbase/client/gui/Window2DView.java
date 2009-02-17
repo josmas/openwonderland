@@ -106,9 +106,9 @@ public abstract class Window2DView extends WindowView {
     
     /**
      * Specifies the location of the view when it is hud mode. The units are pixels.
-     *
-     * TODO: for dev3 x and y specify the top left corner of the view relative to the top left corner
-     * of the Wonderland client main window. Later, this will become relative to a particular HUD.
+     * The origin of the HUD is the lower-left corner of the client window's drawing subwindow.
+     * the width and height of the HUD plane are the same as the width and height of the subwindow.
+     * Furthermore, (x, y) specifies the position of the CENTER of the view relative to HUD origin.
      *
      * @param x The x location.
      * @param y The y location.

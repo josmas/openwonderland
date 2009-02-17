@@ -161,4 +161,55 @@ public interface Window2DViewWorld {
      * Return whether this view is in HUD mode.
      */
     public abstract boolean isHud ();
+
+    /**
+     * Specifies the location of the view when it is hud mode. The units are pixels.
+     * The origin of the HUD is the lower-left corner of the client window's drawing subwindow.
+     * the width and height of the HUD plane are the same as the width and height of the subwindow.
+     * Furthermore, (x, y) specifies the position of the CENTER of the view relative to HUD origin.
+     *
+     * @param x The x location.
+     * @param y The y location.
+     */
+    public abstract void setHudLocation (int x, int y);
+
+    /**
+     * Returns the X location of the view when it is in hud mode.
+     */
+    public abstract int getHudX ();
+
+    /**
+     * Returns the X location of the view when it is in hud mode.
+     */
+    public abstract int getHudY ();
+
+    /**
+     * Specifies the size of the view in pixels when it is in hud mode. 
+     * @param width The width of the view.
+     * @param height The height of the view.
+     */
+    public abstract void setHudSize(int width, int height);
+
+    /**
+     * Returns the width of the view when it is in hud mode.
+     */
+    public abstract int getHudWidth ();
+
+    /**
+     * Returns the height of the view when it is in hud mode.
+     */
+    public abstract int getHudHeight ();
+
+    /**
+     * Effectively the same as setHudLocation(x, y) followed by setHudSize(width, height) except
+     * that the change happens atomically with respect to rendering.
+     */
+    public abstract void setHudConfiguration(int x, int y, int width, int height);
+    
+    /**
+     * Specify the hud Z order of the view when it is in hud mode.
+     *
+     * TODO: temporary: this will be obsoleted by the HUD stack.
+     */
+    public abstract void setHudZOrder (int zOrder);
 }
