@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportResult;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.RecordingCreationListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.SnapshotCreationListener;
 
 /**
@@ -202,6 +203,23 @@ public class CellExportService extends AbstractService {
         ctxFactory.joinTransaction().add(cs);
     }
 
+    public void createRecording(String name, Set<CellID> cells, RecordingCreationListener listener) {
+        if (!(listener instanceof ManagedObject)) {
+            listener = new ManagedRecordingCreationWrapper(listener);
+        }
+
+        // create a reference to the listener
+        ManagedReference<RecordingCreationListener> scl =
+                dataService.createReference(listener);
+
+        // now add the recording request to the transaction.  On commit
+        // this request will be passed on to the executor for long-running
+        // tasks
+        CreateRecording cr = new CreateRecording(name, cells, scl.getId());
+        ctxFactory.joinTransaction().add(cr);
+    }
+
+
     public void exportCells(WorldRoot worldRoot,
                             Set<CellID> cellIDs,
                             CellExportListener listener)
@@ -254,6 +272,42 @@ public class CellExportService extends AbstractService {
             // notify the listener
             NotifySnapshotListener notify =
                     new NotifySnapshotListener(listenerID, root, ex);
+            try {
+                transactionScheduler.runTask(notify, taskOwner);
+            } catch (Exception ex2) {
+                logger.logThrow(Level.WARNING, ex2, "Error calling listener");
+            }
+        }
+    }
+
+    /**
+     * A task that creates a new recording, and then notifies the recording
+     * creation listener identified by managed reference id.
+     */
+    private class CreateRecording implements Runnable {
+        private String name;
+        private Set<CellID> cells;
+        private BigInteger listenerID;
+
+        public CreateRecording(String name, Set<CellID> cells, BigInteger listenerID) {
+            this.name = name;
+            this.cells = cells;
+            this.listenerID = listenerID;
+        }
+
+        public void run() {
+            WorldRoot root = null;
+            Exception ex = null;
+
+            try {
+                root = CellExporterUtils.createRecording(name);
+            } catch (Exception ex2) {
+                ex = ex2;
+            }
+
+            // notify the listener
+            NotifyRecordingListener notify =
+                    new NotifyRecordingListener(listenerID, root, cells, ex);
             try {
                 transactionScheduler.runTask(notify, taskOwner);
             } catch (Exception ex2) {
@@ -496,6 +550,49 @@ public class CellExportService extends AbstractService {
     }
 
     /**
+     * A task to notify a RecordingCreationListener
+     */
+    private class NotifyRecordingListener implements KernelRunnable {
+        private BigInteger listenerID;
+        private WorldRoot root;
+        private Set<CellID> cells;
+        private Exception ex;
+
+        public NotifyRecordingListener(BigInteger listenerID, WorldRoot root, Set<CellID> cells,
+                                      Exception ex)
+        {
+            this.listenerID = listenerID;
+            this.root = root;
+            this.cells = cells;
+            this.ex = ex;
+        }
+
+        public String getBaseTaskType() {
+            return NAME + ".RECORDING_LISTENER";
+        }
+
+        public void run() throws Exception {
+            ManagedReference<?> lr =
+                    dataService.createReferenceForId(listenerID);
+            RecordingCreationListener l =
+                    (RecordingCreationListener) lr.get();
+
+            try {
+                if (ex == null) {
+                    l.recordingCreated(root, cells);
+                } else {
+                    l.recordingFailed(ex.getMessage(), ex);
+                }
+            } finally {
+                // clean up
+                if (l instanceof ManagedRecordingCreationWrapper) {
+                    dataService.removeObject(l);
+                }
+            }
+        }
+    }
+
+    /**
      * A task to notify a CellExportListener
      */
     private class NotifyCellExportListener implements KernelRunnable {
@@ -550,6 +647,29 @@ public class CellExportService extends AbstractService {
 
         public void snapshotFailed(String reason, Throwable cause) {
             wrapped.snapshotFailed(reason, cause);
+        }
+    }
+
+    /**
+     * A wrapper around the RecordingCreationListener as a managed object.
+     * This assumes a serializable RecordingCreationListener
+     */
+    private static class ManagedRecordingCreationWrapper
+            implements RecordingCreationListener, ManagedObject, Serializable
+    {
+        private RecordingCreationListener wrapped;
+
+        public ManagedRecordingCreationWrapper(RecordingCreationListener listener)
+        {
+            wrapped = listener;
+        }
+
+        public void recordingFailed(String reason, Throwable cause) {
+            wrapped.recordingFailed(reason, cause);
+        }
+
+        public void recordingCreated(WorldRoot worldRoot, Set<CellID> cells) {
+            wrapped.recordingCreated(worldRoot, cells);
         }
     }
 
