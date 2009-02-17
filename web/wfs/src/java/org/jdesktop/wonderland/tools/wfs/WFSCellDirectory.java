@@ -222,10 +222,10 @@ public class WFSCellDirectory extends WFSObject {
         this.loadChildCells();
         
         /*
-         * Check if the cell name already exists, if so, return null
+         * Check if the cell name already exists, if so, return the cell
          */
-        if (this.children.containsKey(cellName) == true) {
-            return null;
+        if (this.children.containsKey(cellName)) {
+            return children.get(cellName);
         }
         
         /* Call the implementation to create the cell */
