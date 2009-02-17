@@ -25,6 +25,7 @@ import javax.xml.bind.JAXBException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.wfs.CellDescriptor;
@@ -57,6 +58,22 @@ public class CellExporterUtils {
     {
         String query = (name == null) ? "" : "?name=" + name;
         URL url = new URL(getWebServerURL(), WFS_PREFIX + "create/snapshot" + query);
+        return WorldRoot.decode(new InputStreamReader(url.openStream()));
+    }
+
+    /**
+     * Creates a new recording, returns a WorldRoot object representing the
+     * new WFS or null upon failure
+     * @param name the name of the recording to create, or null to use the
+     * default name
+     */
+    public static WorldRoot createRecording(String name)
+            throws IOException, JAXBException
+    {
+        String encodedName = URLEncoder.encode(name, "UTF-8");
+        String query = (name == null) ? "" : "?name=" + encodedName;
+        URL url = new URL(getWebServerURL(), WFS_PREFIX + "create/recording" + query);
+
         return WorldRoot.decode(new InputStreamReader(url.openStream()));
     }
 
