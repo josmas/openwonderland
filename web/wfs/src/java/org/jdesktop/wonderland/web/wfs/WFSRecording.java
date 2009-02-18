@@ -32,7 +32,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.tools.wfs.WFS;
-import org.jdesktop.wonderland.tools.wfs.WFSFactory;
 
 /**
  * @author Jordan Slott <jslott@dev.java.net>
@@ -98,7 +97,7 @@ public class WFSRecording extends WFSRoot {
     /**
      * Set the name of this recording.  This will rename the directory, so
      * be careful
-     * @param name the new name for this recording
+     * @param newName the new name for this recording
      * @throws IOException if there is an error renaming
      */
     public void setName(String newName) throws IOException {
@@ -259,7 +258,7 @@ public class WFSRecording extends WFSRoot {
             try {
                 recording = (WFSRecording) WFSRecording.unmarshaller.unmarshal(r);
             } catch (JAXBException je) {
-                IOException ioe = new IOException("Error reading snapshot " +
+                IOException ioe = new IOException("Error reading recording " +
                         " description from " + recordingDesc);
                 ioe.initCause(je);
                 throw ioe;
@@ -282,14 +281,14 @@ public class WFSRecording extends WFSRoot {
      * @throw IOException Upon error writing the XML file
      */
     public void save() throws IOException {
-        File snapshotDesc = new File(getDirectory(), RECORDING_DESC);
-        FileWriter fw = new FileWriter(snapshotDesc);
+        File recordingDesc = new File(getDirectory(), RECORDING_DESC);
+        FileWriter fw = new FileWriter(recordingDesc);
 
         try {
             WFSRecording.marshaller.marshal(this, fw);
         } catch (JAXBException je) {
-            IOException ioe = new IOException("Error writing snapshot to " +
-                                              snapshotDesc);
+            IOException ioe = new IOException("Error writing recording to " +
+                                              recordingDesc);
             ioe.initCause(je);
             throw ioe;
         }
