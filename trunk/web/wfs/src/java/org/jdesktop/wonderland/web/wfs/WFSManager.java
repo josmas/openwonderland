@@ -31,13 +31,13 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jdesktop.wonderland.tools.wfs.WFS;
-import org.jdesktop.wonderland.tools.wfs.WFSFactory;
 import org.jdesktop.wonderland.utils.RunUtil;
 
 /**
  *TBD
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Bernard Horan
  */
 public class WFSManager {
 
@@ -124,7 +124,7 @@ public class WFSManager {
      * null if it does not exist. Examples of world root paths include
      * "worlds/default-wfs" and "snapshots/<date>/world-wfs".
      * 
-     * @param worldPath The path to the wfs world
+     * @param worldRoot The path to the wfs world
      * @return the WFS object
      */
     public WFS getWFS(WorldRoot worldRoot) {
@@ -171,8 +171,19 @@ public class WFSManager {
     }
 
     /**
+     * Get a particular WFS recording by name
+     * @param name the name of the recording
+     * @return a recording with the given name, or null if no recording exists
+     * with the given name
+     */
+    public WFSRecording getWFSRecording(String name) {
+        return wfsRecordings.get(name);
+    }
+
+    /**
      * Create a new snapshot wfs given its date. This method assumes the snapshot
      * does not already exist
+     * @param name the name of the snapshot
      */
     public WFSSnapshot createWFSSnapshot(String name) {
         File snapshotDir = new File(snapshotFile, name);
