@@ -17,10 +17,6 @@
  */
 package org.jdesktop.wonderland.web.wfs.resources;
 
-import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -29,15 +25,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
-import org.jdesktop.wonderland.tools.wfs.WFS;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.web.wfs.WFSRecording;
-import org.jdesktop.wonderland.web.wfs.WFSSnapshot;
 
 /**
- * Handles Jersey RESTful requests to create a wfs "recording" (a backup of a
- * wfs). Creates the recording in the pre-determined directory according to the
- * current date and time. Returns an XML representation of the WorldRoot class
+ * Handles Jersey RESTful requests to create a wfs "recording"
+ * Creates the recording in the pre-determined directory according to the
+ * name provided. Returns an XML representation of the WorldRoot class
  * given the unique path of the wfs for later reference.
  * <p>
  * URI: http://<machine>:<port>/wonderland-web-wfs/wfs/create/recording
@@ -49,10 +43,11 @@ import org.jdesktop.wonderland.web.wfs.WFSSnapshot;
 public class CreateWFSRecordingResource {
 
     /**
-     * Creates a new recording, using the current date on the server. Adds a
+     * Creates a new recording on the server. Adds a
      * new WFS object and creates the entry on disk. Returns a WorldRoot object
      * that represents the new recording
      * 
+     * @param name the name of the recording
      * @return A Recording object
      */
     @GET
@@ -62,11 +57,6 @@ public class CreateWFSRecordingResource {
         Logger logger = Logger.getLogger(CreateWFSRecordingResource.class.getName());
         WFSManager manager = WFSManager.getWFSManager();
         
-        // if no name is given, use the current date
-        if (name == null) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-            name = df.format(new Date());
-        }
 
         // Create the WFS check return value is not null (error if so)
         WFSRecording recording = manager.createWFSRecording(name);
@@ -76,7 +66,7 @@ public class CreateWFSRecordingResource {
             return rb.build();
         }
         
-        // Form the root path of the wfs: "recordings/<date>/world-wfs"
+        // Form the root path of the wfs: "recordings/<name>/world-wfs"
         WorldRoot worldRoot = new WorldRoot(recording.getRootPath());
         
         // Formulate the response and return the world root object
