@@ -234,6 +234,8 @@ class SlaveForwarder {
             // the window this may block until the next frame tick.
             win.syncSlavePixels(slaveID);
 
+            // It is safe to write to a slave socket only when the master has enqueued 
+            // all welcome message buffers.
             socketSet.setEnable(slaveID, true);
         }
     }
