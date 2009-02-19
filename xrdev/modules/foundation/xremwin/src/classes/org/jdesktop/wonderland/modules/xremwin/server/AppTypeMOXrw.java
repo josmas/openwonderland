@@ -49,15 +49,4 @@ public class AppTypeMOXrw extends AppTypeConventionalMO {
     public AppLaunchMethods getLaunchMethods() {
         return new AppLaunchMethodsXrw();
     }
-    /**
-     * {@inheritDoc}
-     */
-    /* TODO: I'm not sure this is used anymore.
-    public AppConventionalCellMO createServerCell (String masterHost, String appName, UUID appId, 
-    boolean bestView, BoundingVolume bounds,
-    CellTransform transform, Vector2f pixelScale,
-    Serializable connectionInfo) {
-    return new AppCellMOXrw(bounds, transform, bestView, pixelScale, masterHost, appName, appId, connectionInfo);
-    }
-     */
 }

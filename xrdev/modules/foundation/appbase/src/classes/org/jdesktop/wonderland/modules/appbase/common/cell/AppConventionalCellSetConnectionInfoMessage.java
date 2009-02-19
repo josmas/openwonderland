@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.common.cell;
 
-import java.io.Serializable;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -33,7 +32,7 @@ public class AppConventionalCellSetConnectionInfoMessage extends Message {
     /** The ID of the cell whose connection info is to be changed. */
     private CellID cellID;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
-    private Serializable connectionInfo;
+    private String connectionInfo;
 
     /** The default constructor */
     public AppConventionalCellSetConnectionInfoMessage() {
@@ -46,7 +45,7 @@ public class AppConventionalCellSetConnectionInfoMessage extends Message {
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between 
      * master and slave.
      */
-    public AppConventionalCellSetConnectionInfoMessage(CellID cellID, Serializable connectionInfo) {
+    public AppConventionalCellSetConnectionInfoMessage(CellID cellID, String connectionInfo) {
         this.cellID = cellID;
         this.connectionInfo = connectionInfo;
     }
@@ -68,14 +67,14 @@ public class AppConventionalCellSetConnectionInfoMessage extends Message {
     /**
      * Sets the subclass data of the message.
      */
-    public void setConnectionInfo(Serializable connInfo) {
+    public void setConnectionInfo(String connInfo) {
         connectionInfo = connInfo;
     }
 
     /**
      * Returns the subclass data.
      */
-    public Serializable getConnectionInfo() {
+    public String getConnectionInfo() {
         return connectionInfo;
     }
 }

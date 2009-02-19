@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.xremwin.client;
 
 import com.jme.math.Vector2f;
-import java.io.Serializable;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
@@ -39,11 +38,13 @@ public class AppXrwSlave extends AppXrw {
      * @param appType The type of app to create.
      * @param appName The name of the app.
      * @param pixelScale The size of the window pixels.
-     * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master and slave.
+     * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master 
+     * and slave.
      * @param session This app's Wonderland session.
      */
-    public AppXrwSlave(AppTypeConventional appType, String appName, Vector2f pixelScale, ProcessReporter reporter,
-            Serializable connectionInfo, WonderlandSession session) {
+    public AppXrwSlave(AppTypeConventional appType, String appName, Vector2f pixelScale, 
+                       ProcessReporter reporter, AppXrwConnectionInfo connectionInfo, 
+                       WonderlandSession session) {
 
         super(appType, appName, new ControlArbXrw(), pixelScale);
         controlArb.setApp(this);
@@ -51,8 +52,7 @@ public class AppXrwSlave extends AppXrw {
         // Create the Xremwin protocol client and start its interpreter loop running.
         client = null;
         try {
-            client = new ClientXrwSlave(this, (ControlArbXrw) controlArb, session,
-                    (AppXrwConnectionInfo) connectionInfo, reporter);
+            client = new ClientXrwSlave(this, (ControlArbXrw) controlArb, session, connectionInfo, reporter);
         } catch (InstantiationException ex) {
             ex.printStackTrace();
             reportLaunchError("Cannot create Xremwin protocol client for " + appName);

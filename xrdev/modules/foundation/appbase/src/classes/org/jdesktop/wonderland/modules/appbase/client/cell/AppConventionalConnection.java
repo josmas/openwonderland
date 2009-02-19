@@ -80,6 +80,14 @@ public class AppConventionalConnection extends BaseConnection {
     /**
      * {@inheritDoc}
      */
+    @Override
+    public void send(Message message) {
+        super.send(message);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void handleMessage (Message message) {
         if (!(message instanceof AppConventionalCellSetConnectionInfoMessage)) {
             logger.warning("Invalid message type, message type = " + message.getClass());

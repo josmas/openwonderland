@@ -93,7 +93,7 @@ public class SasServer implements ManagedObject, Serializable, AppConventionalCe
     /**
      * {@inheritDoc}
      */
-    public Serializable appLaunch (CellID cellID, String executionCapability, String appName, 
+    public String appLaunch (CellID cellID, String executionCapability, String appName, 
                                    String command) {
         logger.severe("***** appLaunch, command = " + command);
 
@@ -113,7 +113,7 @@ public class SasServer implements ManagedObject, Serializable, AppConventionalCe
 
         // TODO: for now, just try only the first provider
         ProviderProxy provider = providers.getFirst();
-        Serializable connectionInfo = provider.tryLaunch(cellID, executionCapability, appName, command);
+        String connectionInfo = provider.tryLaunch(cellID, executionCapability, appName, command);
         if (connectionInfo == null) {
             // Provider cannot launch. Launch must pend.
             logger.warning("SAS provider launch failed for command = " + command);
@@ -153,7 +153,7 @@ public class SasServer implements ManagedObject, Serializable, AppConventionalCe
 
             // TODO: for now, just try only the first provider
             ProviderProxy provider = providers.getFirst();
-            Serializable connectionInfo = provider.tryLaunch(req.cellID, req.executionCapability, 
+            String connectionInfo = provider.tryLaunch(req.cellID, req.executionCapability, 
                                                              req.appName, req.command);
             if (connectionInfo != null) {
                 // TODO: add to noLongerPendingList
