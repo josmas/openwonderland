@@ -20,7 +20,11 @@ public class UserListJFrame extends javax.swing.JFrame {
     public UserListJFrame(Point location) {
         initComponents();
 
-	setLocation(location);
+	setTitle("Users");
+
+	if (location != null) {
+	    setLocation(location);
+	}
     }
 
     /** This method is called from within the constructor to
@@ -58,7 +62,20 @@ public class UserListJFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    public void setSpeaking(String id, boolean isSpeaking) {
+	System.out.println("UserList " + id + ":  " 
+	    + (isSpeaking ? "Started Speaking" : "Stopped Speaking"));
+    }
+
+    public void setMute(String id, boolean isMuted) {
+	System.out.println("UserList " + id + ":  " 
+	    + (isMuted ? "Muted" : "Unmuted"));
+    }
+
+    String[] listData;
+
     public void setListData(String[] listData) {
+	this.listData = listData;
 	userList.setListData(listData);
     }
 

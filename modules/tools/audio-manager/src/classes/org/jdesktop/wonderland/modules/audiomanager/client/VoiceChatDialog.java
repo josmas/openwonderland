@@ -61,7 +61,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 
     private Flasher flasher;
 
-    private Updater updater;
+    private ChatGroupUpdater chatGroupUpdater;
 
     private VoiceChatMessage.ChatType chatType = 
 	VoiceChatMessage.ChatType.PRIVATE;
@@ -386,9 +386,9 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     dialogs.put(chatGroup, this);
 
-    if (updater == null) {
-        updater = new Updater(chatGroup);
-        updater.start();
+    if (chatGroupUpdater == null) {
+        chatGroupUpdater = new ChatGroupUpdater(chatGroup);
+        chatGroupUpdater.start();
     }
 }//GEN-LAST:event_joinButtonActionPerformed
 
@@ -414,8 +414,8 @@ private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     session.send(client, chatMessage);
 
-    if (updater != null) {
-        updater.done();
+    if (chatGroupUpdater != null) {
+        chatGroupUpdater.done();
     }
 
     dialogs.remove(chatGroup);
@@ -490,13 +490,13 @@ private void usersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     }
 
-    class Updater extends Thread {
+    class ChatGroupUpdater extends Thread {
 
 	private String chatGroup;
 
 	private boolean done;
 
-	public Updater(String chatGroup) {
+	public ChatGroupUpdater(String chatGroup) {
 	    this.chatGroup = chatGroup;
 	}
 
@@ -511,7 +511,7 @@ private void usersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                 session.send(client, chatMessage);
 
 	        try {
-		    Thread.sleep(1000);
+		    Thread.sleep(2000);
 	        } catch (InterruptedException e) {
 	        }
 	    }

@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.EventListener;
 
 import org.jdesktop.wonderland.common.messages.Message;
@@ -49,6 +49,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellID
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
@@ -185,7 +186,9 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void mute(boolean isMuted) {
-	SoftphoneControlImpl.getInstance().mute(isMuted);
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+	sc.mute(isMuted);
+	session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
     }
 
     public void voiceChat() {
@@ -320,10 +323,16 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    logger.info("CallId " + msg.getCallID() 
 		+ (msg.isSpeaking() ? " Started Speaking" : " Stopped Speaking"));
+
+	    if (userListJFrame != null) {
+		userListJFrame.setSpeaking(msg.getCallID(), msg.isSpeaking());
+	    }
 	} else if (message instanceof GetUserListMessage) {
 	    if (userListJFrame == null) {
 	    	userListJFrame = 
 		    new UserListJFrame(((GetUserListMessage) message).getLocation());
+
+		new UserListUpdater(this);
 	    }
 
 	    ArrayList<String> userList = ((GetUserListMessage) message).getUserList();
@@ -334,8 +343,15 @@ public class AudioManagerClient extends BaseConnection implements
 		s += user + " ";
 	    }
 
+	    userList.remove("servermanager");  // not a real user.
 	    userListJFrame.setListData(userList.toArray(new String[0]));
 	    userListJFrame.setVisible(true);
+	} else if (message instanceof MuteCallMessage) {
+	    MuteCallMessage msg = (MuteCallMessage) message;
+
+	    if (userListJFrame != null) {
+		userListJFrame.setMute(msg.getCallID(), msg.isMuted());
+	    }
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}
@@ -349,11 +365,39 @@ public class AudioManagerClient extends BaseConnection implements
 	//System.out.println("Got event " + event);
     }
 
+    class UserListUpdater extends Thread {
+	
+	private AudioManagerClient client;
+
+	private boolean done;
+
+	public UserListUpdater(AudioManagerClient client) {
+	    this.client = client;
+	    start();
+	}
+
+	public void done() {
+	    done = true;
+	}
+
+	public void run() {
+	    while (!done) {
+	        try {
+		    Thread.sleep(2000);
+	        } catch (InterruptedException e) {
+	        }
+
+	        session.send(client, new GetUserListMessage(null));
+	    }
+	}
+
+    }
+
     /**
      * Global mouse listener for selection events. Reports back to the Selection
      * Manager on any updates.
      */
-    class MouseEventListener extends EventClassListener {
+    class MouseEventListener extends EventClassFocusListener {
         @Override
         public Class[] eventClassesToConsume() {
             return new Class[] { MouseEvent3D.class };
