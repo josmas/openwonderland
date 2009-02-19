@@ -27,6 +27,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
+import org.jdesktop.wonderland.modules.appbase.client.gui.GuiFactory;
 
 /**
  * The generic application superclass. All apps in Wonderland have this
@@ -58,6 +59,22 @@ public class App {
     protected Displayer displayer;
     /** The focus entity of the app. */
     protected Entity focusEntity;
+    /** The global default appbase 2D GUI factory.*/
+    private static GuiFactory gui2DFactory;
+
+    /**
+     * Set the 2D GUI factory to be used for all apps in this client. (Called by AppClientPlugin.initialize).
+     */
+    static void setGui2DFactory (GuiFactory guiFactory) {
+        gui2DFactory = guiFactory;
+    }
+
+    /**
+     * Return the 2D GUI factory to be used all apps in this client. (Called by AppClientPlugin.initialize).
+     */
+    public static GuiFactory getGui2DFactory () {
+        return gui2DFactory;
+    }
 
     /**
      * Create a new instance of App.

@@ -22,7 +22,11 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.App;
+import org.jdesktop.wonderland.modules.appbase.client.gui.WindowView;
 
 /**
  * The generic 2D application superclass. It's only extra attribute is the
@@ -72,6 +76,54 @@ public abstract class App2DCell extends AppCell {
      */
     public Vector2f getPixelScale() {
         return pixelScale;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        System.err.println("****************** Enter App2DCell.createCellRenderer");
+        CellRenderer ret = null;
+        switch (rendererType) {
+            case RENDERER_2D:
+                // No 2D Renderer yet
+                break;
+            case RENDERER_JME:
+                ret = ((GuiFactoryCell)App.getGui2DFactory()).createCellRenderer(this);
+                break;
+        }
+
+        return ret;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    public void attachView(WindowView view, RendererType rendererType) {
+        switch (rendererType) {
+            case RENDERER_JME:
+                System.err.println("getCellRenderer(rendererType) = " + getCellRenderer(rendererType));
+                ((AppCellRenderer) getCellRenderer(rendererType)).attachView(view);
+                break;
+            default:
+                throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    public void detachView(WindowView view, RendererType rendererType) {
+        switch (rendererType) {
+            case RENDERER_JME:
+                ((AppCellRenderer) getCellRenderer(rendererType)).detachView(view);
+                break;
+            default:
+                throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
+        }
     }
 
     /**
