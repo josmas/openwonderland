@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusCh
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
@@ -226,6 +227,13 @@ public class AudioManagerConnectionHandler
 	    return;
 	}
 
+	if (message instanceof MuteCallMessage) {
+	    MuteCallMessage msg = (MuteCallMessage) message;
+
+	    sender.send(new MuteCallMessage(msg.getCallID(), msg.isMuted()));
+	    return;
+	}
+	
 	if (message instanceof TransferCallMessage) {
 	    TransferCallMessage msg = (TransferCallMessage) message;
 
@@ -401,19 +409,17 @@ public class AudioManagerConnectionHandler
 
 	case CallStatus.BRIDGE_OFFLINE:
             logger.info("Bridge offline: " + status);
-
-            /*
-             * After the last bridge_offline call (callID=''),
-             * we have to tell the voice manager to restore
-             * all the pm's for live players.
-             */
-            if (callId.length() == 0) {
-                logger.fine("Restoring private mixes...");
-
 		// XXX need a way to tell the voice manager to reset all of the private mixes.
-            } else {
 		Call c = vm.getCall(callId);
 
+	    if (callId == null || callId.length() == 0) {
+                /*
+                 * After the last BRIDGE_OFFLINE notification
+                 * we have to tell the voice manager to restore
+                 * all the pm's for live players.
+                 */
+                logger.fine("Restoring private mixes...");
+	    } else {
 		if (c == null) {
 		    logger.warning("No call for " + callId);
 		    break;
