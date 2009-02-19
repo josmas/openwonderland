@@ -17,21 +17,16 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.cell;
 
-import java.lang.reflect.Constructor;
 import org.jdesktop.wonderland.modules.appbase.client.*;
 import java.util.ArrayList;
-import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
 import org.jdesktop.wonderland.modules.appbase.client.gui.GuiFactory;
 import org.jdesktop.wonderland.modules.appbase.client.gui.WindowView;
-import org.jdesktop.wonderland.common.annotation.Plugin;
 
 /**
  * The generic application cell superclass. Created with a subclass-specific constructor.
@@ -39,15 +34,7 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  * @author deronj
  */
 @ExperimentalAPI
-//TODO: @Plugin - Is this needed?
-public abstract class AppCell extends Cell implements Displayer /* TODO: , ClientPlugin*/ {
-
-    /** The default GUI factory to use. */
-    private static final String GUI_FACTORY_CLASS_DEFAULT = 
-        "org.jdesktop.wonderland.modules.appbase.client.cell.gui.guidefault.Gui2DFactory";
-
-    /** The global default appbase 2D GUI factory.*/
-    private static GuiFactoryCell gui2DFactory;
+public abstract class AppCell extends Cell implements Displayer {
 
     /** A list of all app cells in existence */
     private static final ArrayList<AppCell> appCells = new ArrayList<AppCell>();
@@ -57,54 +44,6 @@ public abstract class AppCell extends Cell implements Displayer /* TODO: , Clien
      * If null, this is a slave cell.
      */
     protected App app;
-
-    /**
-     * Statically initialize the appbase cell package (in a user client only). 
-     */
-    public void initialize(ServerSessionManager loginInfo) {
-        // TODO: initGuiFactoryFromClientPlugin();
-    }
-
-    // TODO: temporary: will break SAS!
-    static {
-        initGuiFactoryStatically();
-    }
-
-    /* TODO
-    public static void initGuiFactoryFromClientPlugin () {
-
-        // TODO: later on we might allow the default gui factory to be overridden by the user. 
-
-        ClassLoader classLoader = getClass().getClassLoader();
-        try {
-            Class clazz = Class.forName(GUI_FACTORY_CLASS_DEFAULT, true, classLoader);
-            Constructor constructor = clazz.getConstructor();
-            gui2DFactory = (GuiFactoryCell) constructor.newInstance();
-        } catch(Exception e) {
-            logger.severe("Error instantiating app GUI factory "+ GUI_FACTORY_CLASS_DEFAULT+
-                        ", Exception = " + e);
-        }
-    }
-    */
-
-    // TODO: temporary: will break SAS!
-    static {
-        initGuiFactoryStatically();
-    }
-
-    // TODO: temporary
-    public static void initGuiFactoryStatically () {
-
-        ClassLoader classLoader = AppCell.class.getClassLoader();
-        try {
-            Class clazz = Class.forName(GUI_FACTORY_CLASS_DEFAULT, true, classLoader);
-            Constructor constructor = clazz.getConstructor();
-            gui2DFactory = (GuiFactoryCell) constructor.newInstance();
-        } catch(Exception e) {
-            logger.severe("Error instantiating app GUI factory "+ GUI_FACTORY_CLASS_DEFAULT+
-                        ", Exception = " + e);
-        }
-    }
 
     /**
      * Create an instance of AppCell.
@@ -177,38 +116,12 @@ public abstract class AppCell extends Cell implements Displayer /* TODO: , Clien
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected CellRenderer createCellRenderer(RendererType rendererType) {
-        CellRenderer ret = null;
-        switch (rendererType) {
-            case RENDERER_2D:
-                // No 2D Renderer yet
-                break;
-            case RENDERER_JME:
-                ret = gui2DFactory.createCellRenderer(this);
-                break;
-        }
-
-        return ret;
-    }
-
-    /**
      * Attach the given view to the specified renderer of this cell.
      * <br>
      * INTERNAL ONLY.
      */
     @InternalAPI
-    public void attachView(WindowView view, RendererType rendererType) {
-               switch (rendererType) {
-            case RENDERER_JME:
-                ((AppCellRenderer) getCellRenderer(rendererType)).attachView(view);
-                break;
-            default:
-                throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
-        }
-    }
+    public abstract void attachView(WindowView view, RendererType rendererType);
 
     /**
      * Detach the given view from the specified renderer of this cell.
@@ -216,21 +129,13 @@ public abstract class AppCell extends Cell implements Displayer /* TODO: , Clien
      * INTERNAL ONLY.
      */
     @InternalAPI
-    public void detachView(WindowView view, RendererType rendererType) {
-        switch (rendererType) {
-            case RENDERER_JME:
-                ((AppCellRenderer) getCellRenderer(rendererType)).detachView(view);
-                break;
-            default:
-                throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
-        }
-    }
+    public abstract void detachView(WindowView view, RendererType rendererType);
 
     /**
      * {@inheritDoc}
      */
     public GuiFactory getGui2DFactory () {
-        return gui2DFactory;
+        return App.getGui2DFactory();
     }
 
     /**

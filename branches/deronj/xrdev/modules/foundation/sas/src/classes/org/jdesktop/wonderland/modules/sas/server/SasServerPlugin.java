@@ -23,11 +23,13 @@ import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * Plugin to support the SAS.
+ * Server Plugin to initialize the SAS on the server.
  * @author deronj
  */
+@ExperimentalAPI
 @Plugin
 public class SasServerPlugin implements ServerPlugin {
 
