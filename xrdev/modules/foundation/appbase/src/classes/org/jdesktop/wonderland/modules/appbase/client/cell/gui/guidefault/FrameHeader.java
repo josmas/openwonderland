@@ -146,32 +146,36 @@ public class FrameHeader extends FrameSide {
     }
 
     /**
-     * Attach this component's event listeners to the given entity.
+     * {@inheritDoc}
      */
-    protected void attachEventListeners(Entity entity) {
+    @Override
+    protected void attachEventListeners() {
+        super.attachEventListeners();
         if (title != null) {
-            title.attachEventListeners(entity);
+            title.attachEventListeners();
         }
         if (controller != null) {
-            controller.attachEventListeners(entity);
+            controller.attachEventListeners();
         }
         if (closeButton != null) {
-            closeButton.attachEventListeners(entity);
+            closeButton.attachEventListeners();
         }
     }
 
     /**
-     * Detach this component's event listeners from the given entity.
+     * {@inheritDoc}
      */
-    protected void detachEventListeners(Entity entity) {
+    @Override
+    protected void detachEventListeners() {
+        super.detachEventListeners();
         if (title != null) {
-            title.detachEventListeners(entity);
+            title.detachEventListeners();
         }
         if (controller != null) {
-            controller.detachEventListeners(entity);
+            controller.detachEventListeners();
         }
         if (closeButton != null) {
-            closeButton.detachEventListeners(entity);
+            closeButton.detachEventListeners();
         }
     }
 }

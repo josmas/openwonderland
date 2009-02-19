@@ -71,9 +71,4 @@ public class SwingTestWindow
         setSize(width, height);
         */
     }
-
-    public void setHud (boolean enable) {
-        // TODO: eventually this will involve specifying a specific destination HUD
-        getPrimaryView().setHud(enable);
-    }
 }

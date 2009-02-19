@@ -57,8 +57,8 @@ public abstract class AppConventionalCell extends App2DCell {
         super(cellID, cellCache);
         session = cellCache.getSession();
 
-        /* TODO: notyet
         // The first cell of this type for this session creates the connection
+        /* TODO: notyet
         connection = (AppConventionalConnection) session.getConnection(AppConventionalConnection.getConnectionTypeStatic());
         if (connection == null) {
             connection = new AppConventionalConnection(session);

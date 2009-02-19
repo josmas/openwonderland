@@ -279,6 +279,9 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
         public void commit(ProcessorArmingCollection collection) {
             synchronized (DrawingSurfaceImageGraphics.this) {
                 // TODO: doug: okay to be doing a lock and this much work in a commit?
+                if (texture == null) {
+                    return;
+                }
                 if (texture.getTextureId() == 0) {
                     if (window == null) {
                         return;

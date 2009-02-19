@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
  * @author deronj
  */
 @ExperimentalAPI
-public class Window2DFrame
+public abstract class Window2DFrame
         extends WindowFrame
         implements ControlArb.ControlChangeListener {
     /* TODO: planned: Frame2DHUD, Frame2DDock */
@@ -55,17 +55,30 @@ public class Window2DFrame
         public void close();
     }
 
+    // For debug
+    //static int frameCountStatic = 1;
+    //protected int frameCount
+
     /** 
      * Create a new instance of Window2DFrame.
      * @param view The window the frame wraps.
      */
     public Window2DFrame(Window2DView view) {
+
+        // For debug
+        //frameCount = frameCountStatic++;
+
         this.view = view;
         controlArb = view.getWindow().getApp().getControlArb();
         if (controlArb != null) {
             controlArb.addListener(this);
         }
     }
+
+    // For debug
+    //public String toString () {
+    //    return "Frame " + frameCount;
+    //}
 
     /**
      * Clean up resources.
@@ -135,8 +148,5 @@ public class Window2DFrame
      *
      * @param controlArb The app's control arb.
      */
-    public void updateControl(ControlArb controlArb) {
-        // TODO: change highlight
-        // TODO: Change controlling user
-    }
+    public abstract void updateControl(ControlArb controlArb);
 }

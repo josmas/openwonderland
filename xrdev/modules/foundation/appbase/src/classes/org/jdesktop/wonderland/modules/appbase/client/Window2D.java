@@ -117,7 +117,7 @@ public abstract class Window2D extends Window {
         if (viewWorld == null) {
             throw new InstantiationException("Cannot create world view of window");
         }
-        // TODO: I don't think this is used: viewWorld.setSize(widthWorld, heightWorld);
+        viewWorld.setSize(widthWorld, heightWorld);
         viewWorld.setTopLevel(topLevel);
         viewWorld.setVisible(true);
 
@@ -380,9 +380,9 @@ public abstract class Window2D extends Window {
     }
 
     /** 
-     * Returns the primary (world) view of this window.
+     * Returns the primary world view of this window
      */
-    public Window2DViewWorld getPrimaryView() {
+    public Window2DViewWorld getPrimaryWorldView() {
         return viewWorld;
     }
 
@@ -392,9 +392,7 @@ public abstract class Window2D extends Window {
      * @param spaceName The name of the space in which the view  will reside.
      * @return The view created. Null indicates that this window type doesn't support the given spaceName.
      */
-    // TODO: eventually delete space argument. Also rename to create secondary view and
-    // delete the call from the constructor
-    private Window2DView createView(String spaceName) {
+    public Window2DView createView(String spaceName) {
         GuiFactory gui2DFactory = app.getDisplayer().getGui2DFactory();
         if (gui2DFactory == null) {
             logger.warning("Cannot create view because there is no GUI factory.");
@@ -414,7 +412,6 @@ public abstract class Window2D extends Window {
      *
      * @param view The view to destroy.
      */
-    /* TODO: not yet
     public void destroyView(Window2DView view) {
         if (view == null || views == null) {
             return;
@@ -422,14 +419,12 @@ public abstract class Window2D extends Window {
         views.remove(view);
         view.cleanup();
     }
-    */
 
     /**
      * Destroy all views in the given space.
      *
      * @param spaceName The name of the space whose views should be destroyed.
      */
-    /* TODO: notyet
     public void destroyViews(String spaceName) {
         for (Window2DView view : views) {
             if (view.getSpaceName().equals(spaceName)) {
@@ -438,18 +433,15 @@ public abstract class Window2D extends Window {
         }
     // TODO: >>>> Window should go away when all the views are closed
     }
-    */
 
     /**
      * Destroy all views of the window.
      */
-    /* TODO: notyet
     public void destroyViews() {
         for (Window2DView view : views) {
             destroyView(view);
         }
     }
-    */
 
     /**
      * Returns an array containing all views of this window in the named space.
@@ -457,7 +449,6 @@ public abstract class Window2D extends Window {
      * @param spaceName The name of the space. 
      * @return An array of views. Null indicates that this window doesn't have any views in this space.
      */
-    /* TODO: notyet
     public Window2DView[] getView(String spaceName) {
         int numInSpace = 0;
         for (Window2DView view : views) {
@@ -478,7 +469,6 @@ public abstract class Window2D extends Window {
         }
         return ary;
     }
-    */
 
     /**
      * Deliver the given key event to this window.
