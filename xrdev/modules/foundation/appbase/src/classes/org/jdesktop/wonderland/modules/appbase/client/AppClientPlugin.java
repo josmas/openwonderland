@@ -33,8 +33,7 @@ import java.util.logging.Logger;
 @Plugin
 public class AppClientPlugin implements ClientPlugin {
 
-    /** The logger for app.base */
-    static final Logger logger = Logger.getLogger("wl.app.base");
+    private static final Logger logger = Logger.getLogger(AppClientPlugin.class.getName());
 
     /** The default 2D GUI factory to use. */
     private final String GUI_2D_FACTORY_CLASS_DEFAULT = 
@@ -46,10 +45,10 @@ public class AppClientPlugin implements ClientPlugin {
     /**
      * This is executed at the start up of all user clients. 
      * <br><br>
-     * Note: it is *NOT* executed by the SAS provider client because this client is set up to ignore all client plugins.
+     * Note: it is *NOT* executed by the SAS provider client because this client is set up to 
+     * ignore all client plugins.
      */
     public void initialize(ServerSessionManager loginInfo) {
-        System.err.println("*************** Initializing app base for user client");
         initAppBaseUserClient();
     }
 

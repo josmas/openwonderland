@@ -217,20 +217,6 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
         super.setLive(live);
 
-        // For both user and server cells
-        if (live) {
-            // Register the connection handler when the first cell is created
-            if (connectionHandler == null) {
-                connectionHandler = new AppConventionalConnectionHandler();
-                WonderlandContext.getCommsManager().registerClientHandler(connectionHandler);
-            }
-        } else {
-            if (connectionHandler != null) {
-                WonderlandContext.getCommsManager().unregisterClientHandler(connectionHandler);
-                connectionHandler = null;
-            }
-        }
-
         if (!"server".equalsIgnoreCase(serverState.launchLocation)) {
             return;
         }
