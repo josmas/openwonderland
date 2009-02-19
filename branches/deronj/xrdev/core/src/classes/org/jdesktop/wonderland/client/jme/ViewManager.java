@@ -419,10 +419,11 @@ public class ViewManager {
      */
     public Vector3f getCameraLookDirection(Vector3f v) {
         Quaternion rot = cameraNode.getWorldRotation();
+        rot.inverse();
         if (v==null)
-            v = new Vector3f(0,0,1);
+            v = new Vector3f(0,0,-1);
         else
-            v.set(0, 0, 1);
+            v.set(0, 0, -1);
         rot.multLocal(v);
         v.normalizeLocal();
         return v;
@@ -458,6 +459,7 @@ public class ViewManager {
                 for(CameraListener cameraL : cameraListeners)
                     cameraL.cameraMoved(worldTranform);
             }
+            System.err.println(getCameraLookDirection(null));
         }
     }
 

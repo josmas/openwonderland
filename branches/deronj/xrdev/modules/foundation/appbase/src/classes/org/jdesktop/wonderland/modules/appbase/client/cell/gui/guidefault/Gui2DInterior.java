@@ -31,6 +31,8 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DView;
 import javax.media.opengl.GLContext;
+import org.jdesktop.wonderland.client.jme.input.InputManager3D;
+import org.jdesktop.wonderland.modules.appbase.client.App;
 
 /**
  * The event handler code which handles the 2D window interior. It supports sending 
@@ -49,7 +51,6 @@ public class Gui2DInterior extends Gui2D {
     private static boolean isLinux = System.getProperty("os.name").equals("Linux");
     private static Method isAWTLockHeldByCurrentThreadMethod;
 
-
     static {
         if (isLinux) {
             try {
@@ -64,6 +65,12 @@ public class Gui2DInterior extends Gui2D {
     /** A listener for keys pressed and released */
     protected InteriorKeyListener keyListener;
 
+    /** This Gui's app. */
+    private App app;
+
+    /** The focus entity of this Gui's app. */
+    private Entity appFocusEntity;
+
     /**
      * Create a new instance of Gui2DInterior.
      *
@@ -71,6 +78,8 @@ public class Gui2DInterior extends Gui2D {
      */
     public Gui2DInterior(Window2DView view) {
         super(view);
+        app = view.getWindow().getApp();
+        appFocusEntity = app.getFocusEntity();
     }
 
     /**
@@ -78,7 +87,6 @@ public class Gui2DInterior extends Gui2D {
      */
     @Override
     protected void attachMouseListener(Entity entity) {
-        logger.severe("&&&&&&& entity = " + entity);
         mouseListener = new InteriorMouseListener();
         mouseListener.addToEntity(entity);
     }
@@ -104,8 +112,23 @@ public class Gui2DInterior extends Gui2D {
     protected class InteriorMouseListener extends Gui2D.MouseListener {
 
         @Override
+        public boolean consumesEvent(Event event) {
+            if (!super.consumesEvent(event)) {
+                // Not meant for us
+                return false;
+            }
+
+            if (!app.getControlArb().hasControl()) {
+                return false;
+            }
+
+            // When the app has control only consume if app has focus.
+            return InputManager3D.entityHasFocus(event, appFocusEntity);
+        }
+
+        @Override
         public void commitEvent(Event event) {
-            logger.fine("event = " + event);
+            logger.fine("Interior mouse commitEvent, event = " + event);
             MouseEvent3D me3d = (MouseEvent3D) event;
 
             // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
@@ -128,27 +151,29 @@ public class Gui2DInterior extends Gui2D {
             // When user has control all events over the interior are sent to the app.
             // First send it to the app's view for conversion to a 2D event.
             try {
+
                 if (getControlArb().hasControl()) {
                     ((Window2DView) view).deliverEvent((Window2D) window, me3d);
                     return;
                 }
+
+                MouseEvent me = (MouseEvent) me3d.getAwtEvent();
+
+                // Handle miscellaneous events over interior when user doesn't have control
+                Action action = determineIfMiscAction(me, me3d);
+                if (action != null) {
+                    performMiscAction(action, me, me3d);
+                    return;
+                }
+
+                super.commitEvent(event);
+
             } finally {
                 // Linux-specific workaround: Reacquire the lock if necessary.
                 if (glContext != null) {
                     glContext.makeCurrent();
                 }
             }
-
-            MouseEvent me = (MouseEvent) me3d.getAwtEvent();
-
-            // Handle miscellaneous events over interior when user doesn't have control
-            Action action = determineIfMiscAction(me, me3d);
-            if (action != null) {
-                performMiscAction(action, me, me3d);
-                return;
-            }
-
-            super.commitEvent(event);
         }
     }
 
@@ -189,7 +214,24 @@ public class Gui2DInterior extends Gui2D {
         }
 
         @Override
+        public boolean consumesEvent(Event event) {
+            if (!super.consumesEvent(event)) {
+                // Not meant for us
+                return false;
+            }
+
+
+            if (!app.getControlArb().hasControl()) {
+                return false;
+            }
+
+            // When the app has control only consume if app has focus.
+            return InputManager3D.entityHasFocus(event, appFocusEntity);
+        }
+
+        @Override
         public void commitEvent(Event event) {
+            logger.fine("Interior key commitEvent, event = " + event);
             KeyEvent3D ke3d = (KeyEvent3D) event;
             KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
 

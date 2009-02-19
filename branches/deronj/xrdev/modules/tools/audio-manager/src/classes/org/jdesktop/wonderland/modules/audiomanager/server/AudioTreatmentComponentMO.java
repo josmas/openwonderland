@@ -156,14 +156,12 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     public void setLive(boolean live) {
 	super.setLive(live);
 
-	ChannelComponentMO channelComponent = (ChannelComponentMO) 
-	    cellRef.get().getComponent(ChannelComponentMO.class);
-
 	if (live == false) {
-	    channelComponent.removeMessageReceiver(AudioTreatmentMessage.class);
-	    channelComponent.removeMessageReceiver(AudioVolumeMessage.class);
 	    return;
 	}
+
+	ChannelComponentMO channelComponent = (ChannelComponentMO) 
+	    cellRef.get().getComponent(ChannelComponentMO.class);
 
 	ComponentMessageReceiverImpl receiver = 
 	    new ComponentMessageReceiverImpl(cellRef, this);
@@ -420,12 +418,13 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         String callId = callStatus.getCallId();
 
         switch (callStatus.getCode()) {
-	case CallStatus.ESTABLISHED:
-            break;
+            case CallStatus.ESTABLISHED:
+                break;
 
-        case CallStatus.TREATMENTDONE:
-            break;
+            case CallStatus.TREATMENTDONE:
+                break;
         }
+
     }
 
     /**
