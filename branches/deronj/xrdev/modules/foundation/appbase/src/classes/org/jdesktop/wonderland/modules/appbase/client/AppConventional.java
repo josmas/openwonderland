@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client;
 
 import javax.swing.JOptionPane;
 import com.jme.math.Vector2f;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -30,15 +30,13 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public abstract class AppConventional extends App2D {
 
+    private static final Logger logger = Logger.getLogger(AppConventional.class.getName());
+
     /** The name of the app */
     protected String appName;
     /** Should the first window made visible be moved to the best view position? (Master only) */
     private boolean initInBestView;
-    /** The app conventional connection to the server */
-    // TODO: notyet protected static AppConventionalConnection connection;
-    /** The session of the Wonderland server with which the app is associated */
-    protected static WonderlandSession session;
-
+    
     /**
      * Create a new instance of AppConventional.
      *

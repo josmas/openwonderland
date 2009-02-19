@@ -47,8 +47,8 @@ import org.jdesktop.wonderland.modules.appbase.client.gui.GuiFactory;
 @ExperimentalAPI
 public class App {
 
-    /** The logger for app.base */
-    static final Logger logger = Logger.getLogger("wl.app.base");
+    private static final Logger logger = Logger.getLogger(App.class.getName());
+
     /** The list of all windows created by this app */
     protected LinkedList<Window> windows = new LinkedList<Window>();
     /** The type of this app */
