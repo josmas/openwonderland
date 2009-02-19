@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.cell;
 
-import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -26,7 +25,10 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.messages.OKMessage;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellClientState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
 
 /**
  * The client-side cell for an 2D conventional application.
@@ -41,7 +43,7 @@ public abstract class AppConventionalCell extends App2DCell {
     /** The user-visible app name */
     protected String appName;
     /** The connection info. */
-    protected Serializable connectionInfo;
+    protected String connectionInfo;
     /** The App Conventional connection to the server. */
     private static AppConventionalConnection connection;
     /** The current primary session. */
@@ -129,18 +131,21 @@ public abstract class AppConventionalCell extends App2DCell {
                 // TODO: what else to do? Delete the cell? If so, how?
                 return;
             }
+            logger.severe/*info*/("AppConventional cellID " + getCellID() + " connectionInfo = " + connectionInfo);
 
-            /* TODO: notyet
             // Notify server and clients of the new connection info.
             AppConventionalCellSetConnectionInfoMessage msg =
                 new AppConventionalCellSetConnectionInfoMessage(getCellID(), connectionInfo);
+            /* TODO: until we can figure out why we aren't receiving the OK message
             Message response = connection.sendAndWait(msg);
+            System.err.println("response = " + response);
             if (!(response instanceof OKMessage)) {
                 logger.warning("Cannot notify others of connection info for app + " + appName);
                 // TODO: what else to do? Delete the cell? If so, how?
                 return;
             }
             */
+            connection.send(msg);
 
         } else {
 
@@ -169,7 +174,7 @@ public abstract class AppConventionalCell extends App2DCell {
     /**
      * This is called when the server sends the connection info.
      */
-    synchronized void setConnectionInfo (Serializable connInfo) {
+    synchronized void setConnectionInfo (String connInfo) {
         
         // If we already know the connection info then we can skip this.
         // Note: this will happen if we are the master, or if this cell was created after
@@ -193,12 +198,12 @@ public abstract class AppConventionalCell extends App2DCell {
      * based on the viewer position at the time of client cell creation.
      * @return Subclass-specific data for making a peer-to-peer connection between master and slave.
      */
-    protected abstract Serializable startMaster(String appName, String command, boolean initInBestView);
+    protected abstract String startMaster(String appName, String command, boolean initInBestView);
 
     /** 
      * Launch a slave client.
      * @parem connectionInfo Subclass-specific data for making a peer-to-peer connection between 
      * master and slave.
      */
-    protected abstract void startSlave(Serializable connectionInfo);
+    protected abstract void startSlave(String connectionInfo);
 }

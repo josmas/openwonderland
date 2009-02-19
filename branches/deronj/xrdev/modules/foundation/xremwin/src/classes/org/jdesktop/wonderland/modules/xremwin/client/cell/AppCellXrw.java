@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.xremwin.client.cell;
 
-import java.io.Serializable;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -64,7 +63,7 @@ public class AppCellXrw extends AppConventionalCell {
     /**
      * {@inheritDoc}
      */
-    protected Serializable startMaster(String appName, String command, boolean initInBestView) {
+    protected String startMaster(String appName, String command, boolean initInBestView) {
         try {
             app = new AppXrwMaster((AppTypeXrw) getAppType(), appName, command,
                     pixelScale, ProcessReporterFactory.getFactory().create(appName), session);
@@ -74,16 +73,16 @@ public class AppCellXrw extends AppConventionalCell {
 
         ((AppConventional) app).setInitInBestView(initInBestView);
         app.setDisplayer(this);
-        return ((AppXrwMaster) app).getConnectionInfo();
+        return ((AppXrwMaster)app).getConnectionInfo().toString();
     }
 
     /**
      * {@inheritDoc}
      */
-    protected void startSlave(Serializable connectionInfo) {
+    protected void startSlave(String connectionInfo) {
         app = new AppXrwSlave((AppTypeConventional) getAppType(), appName, pixelScale,
                 ProcessReporterFactory.getFactory().create(appName),
-                (AppXrwConnectionInfo) connectionInfo, session);
+                new AppXrwConnectionInfo(connectionInfo), session);
         app.setDisplayer(this);
     }
 }

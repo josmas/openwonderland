@@ -87,7 +87,7 @@ public class SasProviderConnection extends BaseConnection {
         }
 
         System.err.println("################### Attempting to launch X app");
-        Serializable connInfo = listener.launch(msg.getAppName(), msg.getCommand(), 
+        String connInfo = listener.launch(msg.getAppName(), msg.getCommand(), 
                                                 new Vector2f(0.01f, 0.01f)/*TODO: msg.getPixelScale()*/);
         if (connInfo != null) {
             respondSuccess(connInfo);
@@ -107,7 +107,7 @@ public class SasProviderConnection extends BaseConnection {
     /**
      * Respond with a success message which contains the given connection info.
      */
-    private void respondSuccess (Serializable connInfo) {
+    private void respondSuccess (String connInfo) {
         // TODO
         System.err.println("****** Respond success.");
     }

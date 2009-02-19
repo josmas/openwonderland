@@ -46,6 +46,6 @@ public abstract class AppTypeConventionalMO extends AppTypeMO {
     public abstract AppConventionalCellMO createServerCell (String masterHost, String appName, UUID appId, 
 							    boolean bestView, BoundingVolume bounds, 
 							    CellTransform transform, Vector2f pixelScale,
-							    Serializable connectionInfo);
+							    String connectionInfo);
     */
 }
