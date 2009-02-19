@@ -161,6 +161,14 @@ public class WFSManager {
     }
 
     /**
+     * Get all WFS recordings
+     * @return a list of all WFS recordings
+     */
+    public List<WFSRecording> getWFSRecordings() {
+        return new ArrayList<WFSRecording>(wfsRecordings.values());
+    }
+
+    /**
      * Get a particular WFS snapshot by name
      * @param name the name of the snapshot
      * @return a snapshot with the given name, or null if no snapshot exists
