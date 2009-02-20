@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporterFactory;
 import org.jdesktop.wonderland.modules.appbase.client.cell.AppConventionalCell;
 import org.jdesktop.wonderland.modules.xremwin.client.AppTypeXrw;
+import org.jdesktop.wonderland.modules.xremwin.client.AppXrw;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwMaster;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwSlave;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwConnectionInfo;
@@ -73,6 +74,10 @@ public class AppCellXrw extends AppConventionalCell {
 
         ((AppConventional) app).setInitInBestView(initInBestView);
         app.setDisplayer(this);
+
+        // Now it is safe to enable the master client loop
+        ((AppXrw)app).getClient().enable();
+
         return ((AppXrwMaster)app).getConnectionInfo().toString();
     }
 
@@ -82,7 +87,6 @@ public class AppCellXrw extends AppConventionalCell {
     protected void startSlave(String connectionInfo) {
         app = new AppXrwSlave((AppTypeConventional) getAppType(), appName, pixelScale,
                 ProcessReporterFactory.getFactory().create(appName),
-                new AppXrwConnectionInfo(connectionInfo), session);
-        app.setDisplayer(this);
+                new AppXrwConnectionInfo(connectionInfo), session, this);
     }
 }

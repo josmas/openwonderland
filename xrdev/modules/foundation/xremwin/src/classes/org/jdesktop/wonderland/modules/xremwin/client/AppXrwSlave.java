@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
 
 /**
  * A Slave Xremwin app. This is the AppXrw subclass used on a client machine
@@ -41,13 +42,17 @@ public class AppXrwSlave extends AppXrw {
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master 
      * and slave.
      * @param session This app's Wonderland session.
+     * @param displayer The environment in which the app is going to be displayed.
      */
     public AppXrwSlave(AppTypeConventional appType, String appName, Vector2f pixelScale, 
                        ProcessReporter reporter, AppXrwConnectionInfo connectionInfo, 
-                       WonderlandSession session) {
+                       WonderlandSession session, Displayer displayer) {
 
         super(appType, appName, new ControlArbXrw(), pixelScale);
         controlArb.setApp(this);
+        
+        // The displaye must be set early on. The client sync from the master requires this.
+        setDisplayer(displayer);
 
         // Create the Xremwin protocol client and start its interpreter loop running.
         client = null;
@@ -58,6 +63,9 @@ public class AppXrwSlave extends AppXrw {
             reportLaunchError("Cannot create Xremwin protocol client for " + appName);
             cleanup();
         }
+
+        // Finally, enable the client
+        client.enable();
     }
 
     /**
