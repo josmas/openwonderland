@@ -266,6 +266,10 @@ class ServerProxySlave implements ServerProxy {
 
         // Make sure window is ready to receive data on creation
         win = client.createWindow(crtMsgArgs);
+        if (win == null) {
+            AppXrw.logger.warning("Cannot create slave window for " + crtMsgArgs.wid);
+            return;
+        }
 
         /* TODO: window config 
         win.setRotateY(rotY);
@@ -292,7 +296,7 @@ class ServerProxySlave implements ServerProxy {
                 pixels[srcLineOffset + x] = bufQueue.nextInt();
             }
         }
-        // TODO: win.displayPixels(0, 0, srcWidth, srcHeight, pixels);
+        win.displayPixels(0, 0, srcWidth, srcHeight, pixels);
 
         /* TODO: 0.4 protocol:
         WindowXrw winTransientFor = client.lookupWindow(transientFor);
