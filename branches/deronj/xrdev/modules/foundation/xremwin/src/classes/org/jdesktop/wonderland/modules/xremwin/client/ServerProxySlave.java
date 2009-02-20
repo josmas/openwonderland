@@ -156,6 +156,7 @@ class ServerProxySlave implements ServerProxy {
                 bufQueue.enqueue(message);
             } else {
                 if (message[0] == ServerMessageType.WELCOME.ordinal()) {
+                    bufQueue.enqueue(message);
                     welcomeReceived = true;
                 }
             }
@@ -322,8 +323,9 @@ class ServerProxySlave implements ServerProxy {
     }
 
     public Proto.ServerMessageType getMessageType() {
-        //System.err.println("Enter ServerProxySlave.getMessageByte");
-        return Proto.ServerMessageType.values()[(int) bufQueue.nextByte()];
+        int msgCode = (int) bufQueue.nextByte();
+        Proto.ServerMessageType msgType = Proto.ServerMessageType.values()[msgCode];
+        return msgType;
     }
 
     public void getData(CreateWindowMsgArgs msgArgs) {
@@ -908,5 +910,15 @@ class ServerProxySlave implements ServerProxy {
         slaveCloseWindowBuf[n++] = (byte) (wid & 0xff);
 
         slaveSocket.send(slaveCloseWindowBuf);
+    }
+
+
+    // For Debug
+    private static void print10bytes(byte[] bytes) {
+        int n = (bytes.length > 10) ? 10 : bytes.length;
+        for (int i = 0; i < n; i++) {
+            System.err.print(Integer.toHexString(bytes[i] & 0xff) + " ");
+        }
+        System.err.println();
     }
 }
