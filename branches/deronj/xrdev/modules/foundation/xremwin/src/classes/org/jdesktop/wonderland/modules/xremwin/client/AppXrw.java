@@ -100,7 +100,8 @@ public class AppXrw extends AppConventional {
     /**
      * Returns the client.
      */
-    ClientXrw getClient() {
+    @InternalAPI
+    public ClientXrw getClient() {
         return client;
     }
 
@@ -115,19 +116,6 @@ public class AppXrw extends AppConventional {
     int getTransientForWid(int wid) {
         // TODO: implement
         return 0;
-    }
-
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setDisplayer(Displayer displayer) throws IllegalArgumentException, IllegalStateException {
-        super.setDisplayer(displayer);
-
-        // Once we have the displayer we can enable the client loop.
-        client.enable();
     }
 }
 
