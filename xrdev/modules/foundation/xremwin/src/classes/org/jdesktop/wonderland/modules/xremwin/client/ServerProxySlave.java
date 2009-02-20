@@ -256,6 +256,8 @@ class ServerProxySlave implements ServerProxy {
         int transientFor = bufQueue.nextInt();
         System.err.println("transientFor = " + transientFor);
          */
+        // TODO: 0.4 protocol: skip isTransient
+        int transientFor = bufQueue.nextInt();
 
         crtMsgArgs.decorated = (bufQueue.nextByte() == 1) ? true : false;
         System.err.println("client = " + client);
