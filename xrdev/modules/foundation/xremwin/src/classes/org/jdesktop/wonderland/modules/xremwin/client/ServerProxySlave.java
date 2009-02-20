@@ -82,7 +82,6 @@ class ServerProxySlave implements ServerProxy {
     private DataBufferQueue bufQueue = new DataBufferQueue();
     /** Which user is currently controlling the app */
     private String controllingUserName = null;
-    private byte[] helloBuf = new byte[Proto.HELLO_MESSAGE_SIZE];
     private byte[] keyEventBuf = new byte[Proto.KEY_EVENT_MESSAGE_SIZE];
     private byte[] pointerEventBuf = new byte[Proto.POINTER_EVENT_MESSAGE_SIZE];
     private byte[] takeControlBuf = new byte[Proto.TAKE_CONTROL_MESSAGE_SIZE];
@@ -170,35 +169,24 @@ class ServerProxySlave implements ServerProxy {
 
     private void initialHandshake() {
 
-        System.err.println("In slave initialHandshake");
-
         String userName = session.getUserID().getUsername();
         int strLen = userName.length();
 
         // Inform the server  that we have connected by sending a hello message
         // with the name of this user
-        int n = 0;
-        helloBuf[n++] = (byte) Proto.ClientMessageType.HELLO.ordinal();
-        helloBuf[n++] = (byte) 0; // pad
-        helloBuf[n++] = (byte) ((strLen >> 8) & 0xff);
-        helloBuf[n++] = (byte) (strLen & 0xff);
-
-        // Send the hello header (command and user name string length)
+        byte[] helloBuf = new byte[Proto.HELLO_MESSAGE_SIZE + strLen];
+        helloBuf[0] = (byte) Proto.ClientMessageType.HELLO.ordinal();
+        helloBuf[1] = (byte) 0; // pad
+        helloBuf[2] = (byte) ((strLen >> 8) & 0xff);
+        helloBuf[3] = (byte) (strLen & 0xff);
+        System.arraycopy(userName.getBytes(), 0, helloBuf, 4, strLen);
         try {
             slaveSocket.send(helloBuf);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
 
-        // Then send the user name string
-        byte[] strBytes = userName.getBytes();
-        try {
-            slaveSocket.send(strBytes);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-
-        System.err.println("Broadcast slave Hello message");
+        AppXrw.logger.info("Broadcast slave Hello message for user " + userName);
 
         // Get the welcome message from the server. This contains the client id
         // Note: because the master hub broadcasts to all slaves, there is a chance
@@ -214,12 +202,9 @@ class ServerProxySlave implements ServerProxy {
 
         ServerMessageType type = null;
         do {
-            System.err.println("Waiting for a message");
             type = getMessageType();
-            System.err.println("type = " + type);
         } while (type != ServerMessageType.WELCOME);
         // TODO: eventually we should add a timeout
-        System.err.println("Received WELCOME from slave");
 
         // Skip 3 bytes of pad
         bufQueue.nextByte();

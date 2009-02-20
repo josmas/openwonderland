@@ -46,4 +46,13 @@ public class SlaveClientSocket extends ClientSocket {
             statReporter.stop();
         }
     }
+
+    @Override
+    public boolean initialize () {
+        boolean ret = super.initialize();
+        if (ret) {
+            start();
+        }
+        return ret;
+    }
 }

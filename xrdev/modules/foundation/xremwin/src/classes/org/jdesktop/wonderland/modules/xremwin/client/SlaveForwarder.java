@@ -126,9 +126,6 @@ class SlaveForwarder {
         public void run() {
             int clientId = allocateClientId(userName);
 
-            System.err.print("Welcome slave " + userName + ", ");
-            System.err.println("clientId = " + clientId);
-
             int n = 0;
             welcomeBuf[n++] = (byte) Proto.ServerMessageType.WELCOME.ordinal();
             welcomeBuf[n++] = 0;
@@ -264,11 +261,19 @@ class SlaveForwarder {
     private class MyListener implements ClientSocketListener {
 
         public void receivedMessage(BigInteger otherClientID, byte[] message) {
+            System.err.println("Received slave message, message = " + message);
 
-            // First part of Hello message from slave: request type and string length
+            // See this is the hello message from the slave
             if (message[0] == (byte) Proto.ClientMessageType.HELLO.ordinal()) {
-                // TODO
-                String userName = new String(message);
+                int strLen = (int)(message[2] << 8) | (int)message[3];
+                if (strLen <= 0) {
+                    AppXrw.logger.warning("Invalid slave user name string length");
+                    return;
+                }
+                byte[] userNameBuf = new byte[strLen];
+                System.arraycopy(message, 4, userNameBuf, 0, strLen);
+                String userName = new String(userNameBuf);
+
                 serverProxy.addIncomingSlaveHelloMessage(otherClientID, userName);
                 return;
             }
