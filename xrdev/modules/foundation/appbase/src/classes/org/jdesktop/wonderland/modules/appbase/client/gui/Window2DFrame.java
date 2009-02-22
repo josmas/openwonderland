@@ -31,7 +31,6 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 public abstract class Window2DFrame
         extends WindowFrame
         implements ControlArb.ControlChangeListener {
-    /* TODO: planned: Frame2DHUD, Frame2DDock */
 
     /** List of listeners to notify when the frame is closed */
     protected LinkedList<CloseListener> closeListeners = new LinkedList();
