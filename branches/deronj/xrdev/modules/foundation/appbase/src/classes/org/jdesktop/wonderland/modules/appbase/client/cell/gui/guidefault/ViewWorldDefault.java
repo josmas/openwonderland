@@ -257,6 +257,11 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      * {@inheritDoc}
      */
     public void setSize(float width, float height) {
+
+        // Note: AWT doesn't like zero image sizes
+        width = (width < 1) ? 1 : width;
+        height = (height < 1) ? 1 : height;
+
         this.width = width;
         this.height = height;
     }
