@@ -215,7 +215,7 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         propertyPanel.setLayout(new java.awt.GridLayout(1, 1));
         mainSplitPane.setRightComponent(propertyPanel);
 
-        addCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        addCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         addCapabilityButton.setText("+");
         addCapabilityButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         addCapabilityButton.addActionListener(new java.awt.event.ActionListener() {
@@ -254,7 +254,7 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         });
         buttonsPanel.add(applyButton);
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText("Close");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
