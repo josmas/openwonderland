@@ -131,13 +131,15 @@ public class PositionJPanel extends javax.swing.JPanel {
         // If it does not exist, attempt to add the movable component. Create
         // a suitable message using only the server-side movable component
         // class name and send over the cell channel.
-        String className = "org.jdesktop.wonderland.server.cell.MovableComponentMO";
-        CellServerComponentMessage cscm = CellServerComponentMessage.newAddMessage(cell.getCellID(), className);
-        ResponseMessage response = cell.sendCellMessageAndWait(cscm);
-        if (response instanceof ErrorMessage) {
-            logger.log(Level.WARNING, "Unable to add movable component " +
-                    "for Cell " + cell.getName() + " with ID " +
-                    cell.getCellID(), ((ErrorMessage) response).getErrorCause());
+        if (movableComponent == null) {
+            String className = "org.jdesktop.wonderland.server.cell.MovableComponentMO";
+            CellServerComponentMessage cscm = CellServerComponentMessage.newAddMessage(cell.getCellID(), className);
+            ResponseMessage response = cell.sendCellMessageAndWait(cscm);
+            if (response instanceof ErrorMessage) {
+                logger.log(Level.WARNING, "Unable to add movable component " +
+                        "for Cell " + cell.getName() + " with ID " +
+                        cell.getCellID(), ((ErrorMessage) response).getErrorCause());
+            }
         }
 
         // Listen for changes to the cell transform that may be done by other
