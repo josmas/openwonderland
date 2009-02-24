@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -68,6 +69,10 @@ public class MovableAvatarComponent extends MovableComponent {
                 super.localMoveRequest(transform, null);
             } else {
                 // State change, so no throttling
+                // first clear any messages in the throttle thread
+                if (throttle!=null)
+                    throttle.send(null);
+                // Now send the current change
                 channelComp.send(createMoveRequestMessage(transform));
 
                 // As we don't call super, make sure we update the cell transform
