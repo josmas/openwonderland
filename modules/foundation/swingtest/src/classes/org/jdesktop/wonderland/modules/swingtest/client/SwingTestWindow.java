@@ -82,4 +82,12 @@ public class SwingTestWindow
 
         view.setOnHUD(onHUD);
     }
+
+    /* TODO: for testing view.setVisible hack: uncomment the following
+    public void setVisibleHack (boolean visible) {
+        Window2DViewWorld view = getPrimaryView();
+        System.err.println("************** Set view visible = " + visible);
+        view.setVisible(visible);
+    }
+    */
 }

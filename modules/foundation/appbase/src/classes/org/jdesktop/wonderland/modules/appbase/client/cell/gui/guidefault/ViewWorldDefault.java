@@ -242,6 +242,8 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
      */
     public void setVisible(boolean visible) {
         viewVisible = visible;
+        // TODO: TEMPORARY HACK: also call setVisible on the underlying window.
+        window.setVisible(visible);
     }
 
     /**
