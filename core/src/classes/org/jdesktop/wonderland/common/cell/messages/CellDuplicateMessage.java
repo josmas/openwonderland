@@ -29,15 +29,19 @@ import org.jdesktop.wonderland.common.cell.CellID;
 public class CellDuplicateMessage extends CellEditMessage {
     /** The ID of the cell to duplicate */
     private CellID cellID;
-    
+
+    /** The new name of the duplicated cell */
+    private String cellName = "";
+
     /**
      * Create a new cell delete message for the given cellID.
      * 
      * @param cellID the id of the cell
      */
-    public CellDuplicateMessage(CellID cellID) {
+    public CellDuplicateMessage(CellID cellID, String cellName) {
         super(EditType.DUPLICATE_CELL);
         this.cellID = cellID;
+        this.cellName = cellName;
     }
     
     /**
@@ -47,5 +51,14 @@ public class CellDuplicateMessage extends CellEditMessage {
      */
     public CellID getCellID() {
         return this.cellID;
+    }
+
+    /**
+     * Returns the desired name of the new cell.
+     *
+     * @return The name of the new (duplicated) cell
+     */
+    public String getCellName() {
+        return cellName;
     }
 }
