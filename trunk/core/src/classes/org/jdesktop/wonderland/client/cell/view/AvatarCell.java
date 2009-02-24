@@ -70,7 +70,6 @@ public class AvatarCell extends ViewCell {
 
         try {
             String str = ((AvatarCellClientState) cellClientState).getAvatarConfigURL();
-            System.err.println("******* setClientState "+str);
             if (str!=null) {
                 WonderlandSession session = getCellCache().getSession();
                 ServerSessionManager manager = LoginManager.find(session);
