@@ -209,10 +209,13 @@ public class PaletteClientPlugin implements ClientPlugin {
                     return;
                 }
 
+                // Create a new name for the cell, based upon the old name.
+                String cellName = cell.getName() + " Copy";
+
                 // If we want to delete, send a message to the server as such
                 WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
                 CellEditChannelConnection connection = (CellEditChannelConnection) session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-                CellDuplicateMessage msg = new CellDuplicateMessage(cell.getCellID());
+                CellDuplicateMessage msg = new CellDuplicateMessage(cell.getCellID(), cellName);
                 connection.send(msg);
 
                 // Really should receive an OK/Error response from the server!
