@@ -4,7 +4,7 @@
    
     <!-- embedded glassfish v3 -->
     <pathconvert property="web.glassfish.classpath">
-        <path location="${web.glassfish.dir}/glassfish-embedded-api-10.0-SNAPSHOT-with-full-v3.jar"/>
+        <path location="${web.glassfish.dir}/glassfish-embedded-custom-v3-prelude-b11-02_21_2009.jar"/>
     </pathconvert>
    
     <!-- apache commons -->
