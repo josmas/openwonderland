@@ -356,12 +356,13 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                     return true;
 
                 Texture t = ts.getTexture();
-                String tFile = t.getImageLocation();
-                if (textureSet.add(tFile))
-                    model.addRow(new Object[] {new String(tFile),
-                                               "not implemented",
-                                               "not implemented" });
-
+                if (t!=null) {
+                    String tFile = t.getImageLocation();
+                    if (textureSet.add(tFile))
+                        model.addRow(new Object[] {new String(tFile),
+                                                   "not implemented",
+                                                   "not implemented" });
+                }
                 return true;
             }
         }, false, true);
