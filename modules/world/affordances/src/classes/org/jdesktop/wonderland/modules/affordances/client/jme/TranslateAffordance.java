@@ -70,7 +70,7 @@ public class TranslateAffordance extends Affordance {
     private float currentScale = LENGTH_SCALE;
 
     /* The original extent of the object, before it was modified */
-    private float xExtent = 0.0f, yExtent = 0.0f, zExtent = 0.0f;
+    private float extent = 0.0f;
 
     /* The root of the scene graph of the cell */
     private Node sceneRoot = null;
@@ -114,12 +114,13 @@ public class TranslateAffordance extends Affordance {
         sceneRoot = getSceneGraphRoot();
         BoundingVolume bounds = sceneRoot.getWorldBound();
         if (bounds instanceof BoundingSphere) {
-            xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius;
+            extent = ((BoundingSphere)bounds).radius;
         }
         else if (bounds instanceof BoundingBox) {
-            xExtent = ((BoundingBox)bounds).xExtent;
-            yExtent = ((BoundingBox)bounds).yExtent;
-            zExtent = ((BoundingBox)bounds).zExtent;
+            float xExtent = ((BoundingBox)bounds).xExtent;
+            float yExtent = ((BoundingBox)bounds).yExtent;
+            float zExtent = ((BoundingBox)bounds).zExtent;
+            extent = Math.max(xExtent, Math.max(yExtent, zExtent));
         }
         
         // Fetch the world translation for the root node of the cell and set
@@ -131,7 +132,7 @@ public class TranslateAffordance extends Affordance {
         // pointed in the +y direction, so we rotate around the -z axis to
         // orient the arrow properly.
         xEntity = new Entity("Entity X");
-        xNode = createArrow("Arrow X", xExtent + LENGTH_OFFSET, THICKNESS, ColorRGBA.red);
+        xNode = createArrow("Arrow X", extent + LENGTH_OFFSET, THICKNESS, ColorRGBA.red);
         Quaternion xRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(0, 0, -1));
         xNode.setLocalRotation(xRotation);
         xNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
@@ -142,7 +143,7 @@ public class TranslateAffordance extends Affordance {
         // Create a green arrow in the +y direction. We arrow we get back is
         // pointed in the +y direction.
         yEntity = new Entity("Entity Y");
-        yNode = createArrow("Arrow Y", yExtent + LENGTH_OFFSET, THICKNESS, ColorRGBA.green);
+        yNode = createArrow("Arrow Y", extent + LENGTH_OFFSET, THICKNESS, ColorRGBA.green);
         yNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
         yNode.setRenderState(zbuf);
         addSubEntity(yEntity, yNode);
@@ -152,7 +153,7 @@ public class TranslateAffordance extends Affordance {
         // pointed in the +y direction, so we rotate around the +x axis to
         // orient the arrow properly.
         zEntity = new Entity("Entity Z");
-        zNode = createArrow("Arrow Z", zExtent + LENGTH_OFFSET, THICKNESS, ColorRGBA.blue);
+        zNode = createArrow("Arrow Z", extent + LENGTH_OFFSET, THICKNESS, ColorRGBA.blue);
         Quaternion zRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(1, 0, 0));
         zNode.setLocalRotation(zRotation);
         zNode.setRenderState(zbuf);
@@ -189,17 +190,14 @@ public class TranslateAffordance extends Affordance {
         BoundingVolume bounds = sceneRoot.getWorldBound();
         if (bounds instanceof BoundingSphere) {
             float newExtent = ((BoundingSphere)bounds).radius;
-            xScale = (newExtent / xExtent) * currentScale;
-            yScale = (newExtent / yExtent) * currentScale;
-            zScale = (newExtent / zExtent) * currentScale;
+            xScale = yScale = zScale = (newExtent / extent) * currentScale;
         }
         else if (bounds instanceof BoundingBox) {
             float newXExtent = ((BoundingBox)bounds).xExtent;
             float newYExtent = ((BoundingBox)bounds).yExtent;
             float newZExtent = ((BoundingBox)bounds).zExtent;
-            xScale = (newXExtent / xExtent) * currentScale;
-            yScale = (newYExtent / yExtent) * currentScale;
-            zScale = (newZExtent / zExtent) * currentScale;
+            float newExtent = Math.max(newXExtent, Math.max(newYExtent, newZExtent));
+            xScale = yScale = zScale = (newExtent / extent) * currentScale;
         }
 
         // In order to set the size of the arrows, we just set the scaling. Note
