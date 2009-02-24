@@ -62,6 +62,13 @@ public abstract class MouseEvent3D extends InputEvent3D {
         this.pickDetails = pickDetails;
     }
 
+    public Node getNode () {
+	if (pickDetails == null) return null;
+	CollisionComponent cc = pickDetails.getCollisionComponent();
+	if (cc == null) return null;
+	return cc.getNode();
+    }
+
     /**
      * Returns the original pick details of the event. 
      */

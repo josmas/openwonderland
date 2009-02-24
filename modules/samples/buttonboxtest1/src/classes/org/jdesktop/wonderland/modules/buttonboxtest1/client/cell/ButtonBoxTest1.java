@@ -122,7 +122,8 @@ public class ButtonBoxTest1 extends SimpleShapeCell {
 		buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
 		    
 		// For now, just print name of the clicked entity
-		System.out.println("Left mouse button click on " + event.getEntity().getName());
+		System.out.println("Left mouse button click on " + 
+				   ((MouseEvent3D)event).getNode().getName());
 	    }
 	}
     }
