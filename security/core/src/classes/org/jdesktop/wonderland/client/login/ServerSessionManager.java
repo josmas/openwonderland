@@ -216,11 +216,8 @@ public class ServerSessionManager {
                 new WonderlandServerInfo(ds.getHostname(), ds.getPort());
 
         // use the session creator to create a new session
-        T session = creator.createSession(serverInfo,
+        T session = creator.createSession(this, serverInfo,
                                           loginControl.getClassLoader());
-
-        // Register this session with LoginManager
-        LoginManager.addSession(session, this);
 
         // log in to the session
         session.login(loginControl.getLoginParameters());
@@ -663,10 +660,11 @@ public class ServerSessionManager {
     public static class DefaultSessionCreator
             implements SessionCreator<WonderlandSession>
     {
-        public WonderlandSession createSession(WonderlandServerInfo serverInfo,
+        public WonderlandSession createSession(ServerSessionManager manager,
+                                               WonderlandServerInfo serverInfo,
                                                ClassLoader loader)
         {
-            return new WonderlandSessionImpl(serverInfo, loader);
+            return new WonderlandSessionImpl(manager, serverInfo, loader);
         }
     }
 }

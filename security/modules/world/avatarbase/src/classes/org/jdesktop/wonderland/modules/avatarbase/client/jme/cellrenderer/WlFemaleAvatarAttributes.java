@@ -34,7 +34,7 @@ public class WlFemaleAvatarAttributes extends FemaleAvatarAttributes {
         // Animations are setup in the super class
 
         WonderlandSession session = cell.getCellCache().getSession();
-        ServerSessionManager manager = LoginManager.find(session);
+        ServerSessionManager manager = session.getSessionManager();
         String serverHostAndPort = manager.getServerNameAndPort();
 
         setBaseURL("wla://avatarbase@"+serverHostAndPort+"/");
