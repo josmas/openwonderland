@@ -26,8 +26,6 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import imi.character.CharacterAttributes;
 import imi.character.CharacterMotionListener;
-import imi.character.avatar.Avatar;
-import imi.character.avatar.AvatarContext.TriggerNames;
 import imi.character.avatar.FemaleAvatarAttributes;
 import imi.character.avatar.MaleAvatarAttributes;
 import imi.character.statemachine.GameContextListener;
@@ -163,12 +161,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         if (!selectedForInput && avatarCharacter!=null) {
             Vector3f pos = transform.getTranslation(null);
             Vector3f dir = new Vector3f(0,0,-1);
-            dir = transform.transform(dir);
+            transform.getRotation(null).multLocal(dir);
             PMatrix local = avatarCharacter.getController().getModelInstance().getTransform().getLocalMatrix(true);
-            Vector3f currentPosition = local.getTranslation();
-            float currentDistance = currentPosition.distance(pos);
-            if ( currentDistance < positionMaxDistanceForPull )
-                pos.set(currentPosition);
+//            Vector3f currentPosition = local.getTranslation();
+//            float currentDistance = currentPosition.distance(pos);
+//            if ( currentDistance < positionMaxDistanceForPull )
+//                pos.set(currentPosition);
             PMatrix look = PMathUtils.lookAt(pos.add(dir), pos, Vector3f.UNIT_Y);
             avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(look);
         }
