@@ -103,10 +103,10 @@ public class ClientContext {
         return inputManager;
     }
 
-    public static ServerSessionManager getLoginManager(String serverURL)
+    public static ServerSessionManager getSessionManager(String serverURL)
         throws IOException
     {
-        return LoginManager.getInstance(serverURL);
+        return LoginManager.getSessionManager(serverURL);
     }
 
     /**

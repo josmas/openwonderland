@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.comms.ProtocolVersion;
@@ -80,7 +81,10 @@ public class WonderlandSessionImpl implements WonderlandSession {
     
     /** the current status */
     private Status status;
-    
+
+    /** the session manager that created this session */
+    private ServerSessionManager sessionManager;
+
     /** the server to connect to */
     private WonderlandServerInfo server;
     
@@ -111,22 +115,28 @@ public class WonderlandSessionImpl implements WonderlandSession {
     
     /**
      * Create a new client to log in to the given server
+     * @param sessionManager the session manager that created this session
      * @param server the server to connect to
      */
-    public WonderlandSessionImpl(WonderlandServerInfo server) {
-        this (server, null);
+    public WonderlandSessionImpl(ServerSessionManager sessionManager,
+                                 WonderlandServerInfo server)
+    {
+        this (sessionManager, server, null);
     }
     
     /**
      * Create a new client to log in to the given server.  Use the provided
      * classloader to resolve the class of any messages that are received.
+     * @param sessionManager the session manager that created this session
      * @param server the server to connect to
      * @param classloader the classloader to resolve messages with,
      * or null to use the system classloader.
      */
-    public WonderlandSessionImpl(WonderlandServerInfo server,
+    public WonderlandSessionImpl(ServerSessionManager sessionManager,
+                                 WonderlandServerInfo server,
                                  ClassLoader classLoader) 
     {
+        this.sessionManager = sessionManager;
         this.server = server;
         this.classLoader = classLoader;
         
@@ -156,7 +166,11 @@ public class WonderlandSessionImpl implements WonderlandSession {
         // the internal client is always connected
         internal.connected(this);
     }
-    
+
+    public ServerSessionManager getSessionManager() {
+        return sessionManager;
+    }
+
     public WonderlandServerInfo getServerInfo() {
         return server;
     }

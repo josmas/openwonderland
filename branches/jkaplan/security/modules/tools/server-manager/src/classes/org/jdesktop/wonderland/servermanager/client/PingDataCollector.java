@@ -253,15 +253,17 @@ public class PingDataCollector
     protected void connectTo(DarkstarRunner dr) {
         // TODO: connect to a particular Darkstar server
         try {
-            ServerSessionManager lm = LoginManager.getInstance(ServerInfo.getServerURL());
+            ServerSessionManager lm = LoginManager.getSessionManager(ServerInfo.getServerURL());
             ServerManagerSession session = lm.createSession(
                     new SessionCreator<ServerManagerSession>()
             {
                 public ServerManagerSession createSession(
-                        WonderlandServerInfo serverInfo, ClassLoader loader)
+                        ServerSessionManager manager,
+                        WonderlandServerInfo serverInfo,
+                        ClassLoader loader)
                 {
                     // use our classloader
-                    return new ServerManagerSession(serverInfo,
+                    return new ServerManagerSession(manager, serverInfo,
                                                    getClass().getClassLoader());
                 }
             });
@@ -320,10 +322,11 @@ public class PingDataCollector
     class ServerManagerSession extends WonderlandSessionImpl {
         private ServerManagerConnection smc;
         
-        public ServerManagerSession(WonderlandServerInfo server,
+        public ServerManagerSession(ServerSessionManager manager,
+                                    WonderlandServerInfo server,
                                     ClassLoader classLoader) 
         {
-            super (server, classLoader);
+            super (manager, server, classLoader);
         }
 
         @Override

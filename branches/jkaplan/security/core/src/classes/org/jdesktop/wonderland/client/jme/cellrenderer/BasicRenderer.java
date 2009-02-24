@@ -240,7 +240,7 @@ public abstract class BasicRenderer implements CellRendererJME {
             entity.addComponent(RenderComponent.class, rc);
 
             WonderlandSession session = cell.getCellCache().getSession();
-            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(LoginManager.find(session), "Default");
+            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Default");
 
             rootNode.updateWorldBound();
 
@@ -367,7 +367,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         // annotate wla URIs with the server name and port
         if (serverHostAndPort == null) {
             WonderlandSession session = cell.getCellCache().getSession();
-            ServerSessionManager manager = LoginManager.find(session);
+            ServerSessionManager manager = session.getSessionManager();
             if (manager==null) {
                 logger.severe("Unable to find manager for session "+session);
                 return null;

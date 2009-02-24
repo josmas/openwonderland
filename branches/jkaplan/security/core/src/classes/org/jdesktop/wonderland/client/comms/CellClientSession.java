@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellCacheConnection;
 import org.jdesktop.wonderland.client.cell.CellChannelConnection;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  * An extension of WonderlandSession that attaches all the relevant
@@ -39,12 +40,17 @@ public class CellClientSession extends WonderlandSessionImpl {
     private CellEditChannelConnection cellEditChannelConnection;
     private CellCache cellCache;
     
-    public CellClientSession(WonderlandServerInfo serverInfo) {
-        this (serverInfo, null);
+    public CellClientSession(ServerSessionManager manager, 
+                             WonderlandServerInfo serverInfo)
+    {
+        this (manager, serverInfo, null);
     }
     
-    public CellClientSession(WonderlandServerInfo serverInfo, ClassLoader loader) {
-        super (serverInfo, loader);
+    public CellClientSession(ServerSessionManager manager,
+                             WonderlandServerInfo serverInfo,
+                             ClassLoader loader)
+    {
+        super (manager, serverInfo, loader);
         
         localAvatar = new LocalAvatar(this);
  

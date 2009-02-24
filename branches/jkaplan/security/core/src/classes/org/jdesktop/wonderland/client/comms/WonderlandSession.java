@@ -21,6 +21,7 @@ import com.sun.sgs.client.simple.SimpleClient;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Properties;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -45,7 +46,13 @@ public interface WonderlandSession {
      * @return the server
      */
     public WonderlandServerInfo getServerInfo();
-    
+
+    /**
+     * Get the session manager that handles login for this session.
+     * @return the session manager
+     */
+    public ServerSessionManager getSessionManager();
+
     /**
      * Get the status of this client.
      * @return the current status of the client
