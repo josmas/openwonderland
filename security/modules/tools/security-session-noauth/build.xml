@@ -12,6 +12,10 @@
     <pathconvert property="module-web.classpath">
         <path location="${current.dir}/../security/build/lib/weblib/wonderland-security-weblib.jar"/>
         <path location="${current.dir}/../security-group/build/lib/weblib/wonderland-security-groups-weblib.jar"/>
+        <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
+        <path location="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
+        <path location="${core.dir}/build/lib/wonderland-common.jar"/>
+        <path location="${core.dir}/build/lib/wonderland-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-weblib.classpath">

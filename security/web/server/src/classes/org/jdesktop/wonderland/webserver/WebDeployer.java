@@ -264,8 +264,7 @@ public class WebDeployer implements ModuleDeployerSPI {
         try {
             // undeploy the app
             if (remove.getAppName() != null) {
-                throw new EmbeddedException("No undeploy!");
-                //RunAppServer.getAppServer().getDeployer().undeploy(remove.getAppName());
+                RunAppServer.getAppServer().getDeployer().undeploy(remove.getAppName());
             }
         } catch (EmbeddedException ee) {
             logger.log(Level.WARNING, "Error undeploying " + remove, ee);
@@ -402,7 +401,7 @@ public class WebDeployer implements ModuleDeployerSPI {
         @Override
         public String toString() {
             return "[ module: " + moduleName + ", war: " + warName +
-                   "  app: " + ((appName == null)?"no":"yes") + " ]";
+                   "  app: " + appName + " ]";
         }
     }
 }
