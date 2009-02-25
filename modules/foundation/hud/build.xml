@@ -37,9 +37,6 @@
                 <include name="*.jar"/>
 
                 <clientjar name="hud-client" basedir="${build.classes.dir}">
-                    <cellfactory>
-                        <provider classname="org.jdesktop.wonderland.modules.hud.client.WonderlandHUDFactory"/>
-                    </cellfactory>
                     <include name="${module.src}/client/**"/>
                     <fileset dir="${current.dir}/src/classes">
                         <include name="${module.src}/client/resources/**/*.png"/>
