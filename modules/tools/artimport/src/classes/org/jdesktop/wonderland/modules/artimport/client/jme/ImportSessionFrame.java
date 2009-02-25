@@ -640,7 +640,11 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         try {
             File tmpDir = File.createTempFile("wlart", null);
-            tmpDir.delete();
+            if (tmpDir.isDirectory()) {
+                deleteDirContents(tmpDir);
+            } else {
+                tmpDir.delete();
+            }
             tmpDir.mkdir();
             tmpDir = new File(tmpDir, targetModuleTF.getText());
 
@@ -684,6 +688,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
 }//GEN-LAST:event_deployToServerBActionPerformed
 
+
     private void saveImportGroupMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveImportGroupMIActionPerformed
         File sessionFile = new File(ClientContext.getUserDirectory("config"), "import_session");
         saveImportSession(sessionFile);
@@ -697,6 +702,8 @@ public class ImportSessionFrame extends javax.swing.JFrame
         
         imports.clear();
         tableModel.setRowCount(0);
+        importTable.repaint();
+        
         loadImportSession(sessionFile);
         for(ImportedModel m : imports) {
             addToTable(m);
@@ -717,6 +724,7 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
         imports.clear();
         tableModel.setRowCount(0);
+        importTable.repaint();
 
 }//GEN-LAST:event_cancelButtonActionPerformed
 
@@ -796,8 +804,16 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     tableModel.setRowCount(0);
 }//GEN-LAST:event_okBActionPerformed
 
+    /**
+     * Recursively delete the content of the supplied directory
+     * @param dir
+     */
     private void deleteDirContents(File dir) {
-        logger.warning("delteDirContents not implemented");
+        for(File content : dir.listFiles()) {
+            if (content.isDirectory())
+                deleteDirContents(content);
+            content.delete();
+        }
     }
 
 
