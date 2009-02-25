@@ -939,13 +939,15 @@ public class ModelImporterFrame extends javax.swing.JFrame {
      * appear in the dialog.
      */
     private void calcModelBounds( Node bg ) {
-        System.err.println("Model Node "+bg);
+//        System.err.println("Model Node "+bg);
 
         if (bg==null) {
             return;
         }
 
-        System.err.println("Model Bounds "+bg.getWorldBound());
+        // Make JME calculate the bounds
+        bg.updateWorldBound();
+//        System.err.println("Model Bounds "+bg.getWorldBound());
         
         BoundingVolume bounds = bg.getWorldBound();
         if (bounds instanceof BoundingSphere) {
