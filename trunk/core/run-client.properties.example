@@ -4,8 +4,8 @@ sgs.server=http://localhost:8080/
 #auth.username=username
 #auth.fullname=Users Name
 
-# The level of detail of the avatar
-avatar.detail=low
+# The level of detail of the avatar; low, high
+avatar.detail=high
 
 # Desired frame rate for client
 wonderland.client.fps = 30   
@@ -14,5 +14,8 @@ wonderland.client.fps = 30
 wonderland.client.windowSize = 1024x768
 
 # Set the user directory for the client, useful for running multiple clients on one machine
+# An easy way to use this setting is to copy this file to create a number of
+# users and use ant -Drun-client.properties.file=<property file> run to launch
+# clients for each property file
 #wonderland.user.dir=/tmp/.wltest
 
