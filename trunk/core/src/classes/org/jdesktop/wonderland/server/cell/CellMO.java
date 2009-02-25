@@ -948,7 +948,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param clientID An optional client-side if the message is in response
      * @param message The CellMessage
      */
-    private void sendCellMessage(WonderlandClientID clientID, CellMessage message) {
+    public void sendCellMessage(WonderlandClientID clientID, CellMessage message) {
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         if (channel == null) {
             logger.severe("Unable to find channel on cell id " + getCellID() +
