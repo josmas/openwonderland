@@ -9,7 +9,7 @@
         <LoadingInstructions>assets/models/collada/Clothing/MaleClothing/Slacks.dae</LoadingInstructions>
         <LoadingInstructions>assets/models/collada/Avatars/MaleAvatar/Male_Hands.dae</LoadingInstructions>
         <LoadingInstructions>assets/models/collada/Clothing/MaleClothing/MaleTShirt.dae</LoadingInstructions>
-        <LoadingInstructions>assets/models/collada/Hair/MaleHair/HairPlaceable.dae</LoadingInstructions>
+        <!--<LoadingInstructions>assets/models/collada/Hair/MaleHair/HairPlaceable.dae</LoadingInstructions>-->
         <AdditionInstructions>
             <SkinnedMeshName>CowBoyBootsShape</SkinnedMeshName>
             <SubGroupName>Feet</SubGroupName>
