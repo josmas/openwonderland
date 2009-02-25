@@ -17,9 +17,9 @@
  */
 package org.jdesktop.wonderland.front.admin;
 
-import org.jdesktop.wonderland.client.login.AuthenticationInfo;
 import org.jdesktop.wonderland.client.login.DarkstarServer;
 import org.jdesktop.wonderland.client.login.ServerDetails;
+import org.jdesktop.wonderland.common.login.AuthenticationInfo;
 import org.jdesktop.wonderland.utils.Constants;
 
 /**

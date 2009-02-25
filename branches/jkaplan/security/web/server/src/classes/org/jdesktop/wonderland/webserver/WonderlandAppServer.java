@@ -71,8 +71,7 @@ public class WonderlandAppServer extends Server {
         try {
             ArchiveFactory af = bootstrap.getHabitat().getComponent(ArchiveFactory.class);
             ReadableArchive ra = af.openArchive(file);
-            deploy(ra, props);
-            return ra.getName();
+            return deploy(ra, props);
         } catch (IOException ioe) {
             ioe.printStackTrace();
             throw new EmbeddedException(ioe);
@@ -86,8 +85,7 @@ public class WonderlandAppServer extends Server {
     public String deploy(ReadableArchive a, Properties params)
             throws EmbeddedException
     {
-        getDeployer().deploy(a, params);
-        return a.getName();
+        return getDeployer().deploy(a, params);
     }
 
     static class WonderlandBootstrap extends EmbeddedBootstrap {

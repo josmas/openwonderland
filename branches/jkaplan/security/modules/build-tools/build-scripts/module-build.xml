@@ -30,6 +30,10 @@
         <property name="module-client.classpath" value=""/>
         <property name="module-server.classpath" value=""/>
         <property name="module-web.classpath" value=""/>
+
+        <!-- set defaults for other properties.  May be overridden by
+             subclasses -->
+        <property name="module.jarname" value="${module.name}"/>
     </target>
    
     <!-- include the module ant task -->
