@@ -17,14 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.phone.common;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  * The PhoneCellServerState class is the cell that renders a phone cell in
@@ -33,7 +31,8 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * @author jprovino
  */
 @XmlRootElement(name="phone-cell")
-public class PhoneCellServerState extends CellServerState implements CellServerStateSPI {
+@ServerState
+public class PhoneCellServerState extends CellServerState {
 
     @XmlElement(name="phone-info")
     private PhoneInfo phoneInfo;

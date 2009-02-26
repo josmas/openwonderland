@@ -20,17 +20,20 @@ package org.jdesktop.wonderland.modules.phone.client.cell;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-//import org.jdesktop.wonderland.common.cell.state.CellServerState.Rotation;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellServerState;
 import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
 import com.jme.math.Vector3f;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 
 /**
  * The cell factory for the sample cell.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@CellFactory
 public class PhoneCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
@@ -58,15 +61,8 @@ public class PhoneCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-//        try {
-////        URL url = ConeOfSilenceCellPaletteInfo.class.getResource("resources/sample_preview.jpg");
-////        Logger.getLogger(ConeOfSilenceCellPaletteInfo.class.getName()).warning("INFO " + url.toString());
-//            URL url = new URL("file:///Users/jordanslott/Desktop/sample_preview.jpg");
-//            return Toolkit.getDefaultToolkit().createImage(url);
-//        } catch (MalformedURLException ex) {
-//            Logger.getLogger(ConeOfSilenceCellPaletteInfo.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return null;
+//        URL url = PhoneCellFactory.class.getResource("resources/virtualphone_preview.png");
+//        return Toolkit.getDefaultToolkit().createImage(url);
         return null;
     }
 }
