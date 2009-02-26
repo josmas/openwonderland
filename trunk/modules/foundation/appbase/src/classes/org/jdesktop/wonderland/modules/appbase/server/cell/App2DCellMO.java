@@ -70,6 +70,6 @@ public abstract class App2DCellMO extends AppCellMO {
         state.setPixelScaleX(pixelScale.getX());
         state.setPixelScaleY(pixelScale.getY());
 
-        return stateToFill;
+        return super.getServerState(stateToFill);
     }
 }
