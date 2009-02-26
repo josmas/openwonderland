@@ -30,7 +30,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.xml.bind.JAXBException;
-import org.jdesktop.wonderland.modules.securitygroups.common.CredentialManager;
+import org.jdesktop.wonderland.common.login.CredentialManager;
 import org.jdesktop.wonderland.modules.securitygroups.common.GroupDTO;
 import org.jdesktop.wonderland.modules.securitygroups.common.GroupUtils;
 
@@ -39,11 +39,13 @@ import org.jdesktop.wonderland.modules.securitygroups.common.GroupUtils;
  * @author jkaplan
  */
 public class GroupManagerFrame extends JFrame implements ListSelectionListener {
+    private String baseUrl;
     private CredentialManager cm;
     private DefaultTableModel tableModel;
 
     /** Creates new form GroupManagerFrame */
     public GroupManagerFrame(String serverUrl, CredentialManager cm) {
+        this.baseUrl = serverUrl;
         this.cm = cm;
 
         initComponents();
@@ -61,10 +63,10 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
         String filter = filterTF.getText();
         try {
             if (filter.trim().length() == 0) {
-                groups = GroupUtils.getGroupsForUser(cm.getUsername(),
+                groups = GroupUtils.getGroupsForUser(baseUrl, cm.getUsername(),
                                                      false, cm);
             } else {
-                groups = GroupUtils.getGroups(filter, false, cm);
+                groups = GroupUtils.getGroups(baseUrl, filter, false, cm);
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -119,8 +121,6 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
         editButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         groupTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -254,7 +254,7 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void showGroupEditor(GroupDTO group) {
-        GroupEditorFrame gef = new GroupEditorFrame(group, cm);
+        GroupEditorFrame gef = new GroupEditorFrame(baseUrl, group, cm);
         gef.addWindowStateListener(new WindowStateListener() {
 
             public void windowStateChanged(WindowEvent e) {
@@ -276,7 +276,7 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
         GroupDTO selected = getSelectedGroup();
         if (selected != null) {
             try {
-                GroupUtils.removeGroup(selected.getId(), cm);
+                GroupUtils.removeGroup(baseUrl, selected.getId(), cm);
                 loadGroups();
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -285,7 +285,7 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
-        System.exit(0);
+        setVisible(false);
     }//GEN-LAST:event_closeButtonActionPerformed
 
     private GroupDTO getSelectedGroup() {

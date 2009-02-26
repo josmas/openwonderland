@@ -25,6 +25,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Set;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.common.login.CredentialManager;
 
 /**
  *
@@ -32,15 +33,16 @@ import javax.xml.bind.JAXBException;
  */
 public class GroupUtils {
     private static final String GROUPS_PATH =
-            "security-groups/security-groups/resources/groups";
+            "/security-groups/security-groups/resources/groups";
     
-    public static GroupDTO getGroup(String groupName,
+    public static GroupDTO getGroup(String baseUrl,
+                                    String groupName,
                                     CredentialManager cm)
         throws IOException, JAXBException
     {
-        URL u = new URL(cm.getBaseURL() + GROUPS_PATH + "/" + groupName);
+        URL u = new URL(baseUrl + GROUPS_PATH + "/" + groupName);
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
-        cm.secureConnection(uc);
+        cm.secureURLConnection(uc);
 
         if (uc.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
             // group doesn't exist
@@ -50,11 +52,11 @@ public class GroupUtils {
         return GroupDTO.decode(new InputStreamReader(uc.getInputStream()));
     }
 
-    public static Set<GroupDTO> getGroups(String filter, boolean members,
-                                          CredentialManager cm)
+    public static Set<GroupDTO> getGroups(String baseUrl, String filter,
+                                          boolean members, CredentialManager cm)
         throws IOException, JAXBException
     {
-        String urlStr = cm.getBaseURL() + GROUPS_PATH + "?members=" + members;
+        String urlStr = baseUrl + GROUPS_PATH + "?members=" + members;
         if (filter != null) {
             urlStr += "&pattern=" + URLEncoder.encode(filter, "UTF-8");
         }
@@ -62,11 +64,12 @@ public class GroupUtils {
         return getGroups(urlStr, cm);
     }
 
-    public static Set<GroupDTO> getGroupsForUser(String userId, boolean members,
+    public static Set<GroupDTO> getGroupsForUser(String baseUrl, String userId,
+                                                 boolean members,
                                                  CredentialManager cm)
         throws IOException, JAXBException
     {
-        String urlStr = cm.getBaseURL() + GROUPS_PATH + "?members=" + members;
+        String urlStr = baseUrl + GROUPS_PATH + "?members=" + members;
         urlStr += "&user=" + userId;
 
         return getGroups(urlStr, cm);
@@ -75,24 +78,27 @@ public class GroupUtils {
     private static Set<GroupDTO> getGroups(String url, CredentialManager cm)
         throws IOException, JAXBException
     {
+        System.out.println("Get groups: " + url);
+
         URL u = new URL(url);
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
-        cm.secureConnection(uc);
+        cm.secureURLConnection(uc);
 
         GroupsDTO groups = GroupsDTO.decode(new InputStreamReader(uc.getInputStream()));
         return groups.getGroups();
     }
 
-    public static void updateGroup(GroupDTO group, CredentialManager cm)
+    public static void updateGroup(String baseUrl, GroupDTO group,
+                                   CredentialManager cm)
         throws IOException, JAXBException
     {
         // create the URL for the group
-        URL u = new URL(cm.getBaseURL() + GROUPS_PATH + "/" + group.getId());
+        URL u = new URL(baseUrl + GROUPS_PATH + "/" + group.getId());
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
         uc.setRequestMethod("POST");
         uc.setDoOutput(true);
         uc.setDoInput(true);
-        cm.secureConnection(uc);
+        cm.secureURLConnection(uc);
 
         // write the XML to the output stream
         group.encode(new OutputStreamWriter(uc.getOutputStream()));
@@ -104,13 +110,14 @@ public class GroupUtils {
         }
     }
 
-    public static void removeGroup(String groupName, CredentialManager cm)
+    public static void removeGroup(String baseUrl, String groupName,
+                                   CredentialManager cm)
             throws IOException
     {
-        URL u = new URL(cm.getBaseURL() + GROUPS_PATH + "/" + groupName);
+        URL u = new URL(baseUrl + GROUPS_PATH + "/" + groupName);
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
         uc.setRequestMethod("DELETE");
-        cm.secureConnection(uc);
+        cm.secureURLConnection(uc);
 
         if (uc.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new IOException("Error updating group " + groupName +

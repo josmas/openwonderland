@@ -42,6 +42,13 @@
             
             <requires name="security" version="1"/>
 
+            <client>
+                <clientjar name="securitygroups-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                </clientjar>
+            </client>
+
             <part name="web">
                 <jar name="security-groups.war">
                     <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
