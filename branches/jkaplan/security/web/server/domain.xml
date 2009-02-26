@@ -10,7 +10,7 @@
         <jdbc-resource jndi-name="jdbc/userpool" pool-name="userpool"/>
         
         <jdbc-connection-pool datasource-classname="org.apache.derby.jdbc.EmbeddedDataSource" name="wonderlandpool">
-            <property name="databaseName" value="${com.sun.aas.instanceRoot}/wonderlanddb"/>
+            <property name="databaseName" value="${wonderland.run.dir}/wonderlanddb"/>
             <property name="connectionAttributes" value=";create=true"/>
         </jdbc-connection-pool>
         <jdbc-resource jndi-name="jdbc/wonderlanddb" pool-name="wonderlandpool"/>

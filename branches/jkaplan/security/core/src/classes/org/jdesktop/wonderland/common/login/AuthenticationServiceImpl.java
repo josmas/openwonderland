@@ -77,8 +77,15 @@ class AuthenticationServiceImpl implements AuthenticationService {
 
     public void secureURLConnection(HttpURLConnection conn) {
         // add the cookie to the request
-        StringBuffer cookieBuf = 
-                new StringBuffer(conn.getRequestProperty("Cookie"));
+        StringBuffer cookieBuf;
+
+        // make sure we're not overwriting other cookies
+        String existingCookies = conn.getRequestProperty("Cookie");
+        if (existingCookies == null) {
+            cookieBuf = new StringBuffer();
+        } else {
+            cookieBuf = new StringBuffer(existingCookies);
+        }
         
         // add our cookie
         try {

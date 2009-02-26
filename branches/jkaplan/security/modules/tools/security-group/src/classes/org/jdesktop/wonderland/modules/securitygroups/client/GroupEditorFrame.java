@@ -25,7 +25,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.xml.bind.JAXBException;
-import org.jdesktop.wonderland.modules.securitygroups.common.CredentialManager;
+import org.jdesktop.wonderland.common.login.CredentialManager;
 import org.jdesktop.wonderland.modules.securitygroups.common.GroupDTO;
 import org.jdesktop.wonderland.modules.securitygroups.common.GroupUtils;
 import org.jdesktop.wonderland.modules.securitygroups.common.MemberDTO;
@@ -35,12 +35,16 @@ import org.jdesktop.wonderland.modules.securitygroups.common.MemberDTO;
  * @author jkaplan
  */
 public class GroupEditorFrame extends JFrame implements ListSelectionListener {
+    private String baseUrl;
     private CredentialManager cm;
     private DefaultTableModel tableModel;
     private boolean isAdd;
 
     /** Creates new form GroupEditorFrame */
-    public GroupEditorFrame(GroupDTO group, CredentialManager cm) {
+    public GroupEditorFrame(String baseUrl, GroupDTO group,
+                            CredentialManager cm)
+    {
+        this.baseUrl = baseUrl;
         this.cm = cm;
 
         initComponents();
@@ -65,7 +69,7 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
     protected void populateTable(GroupDTO group) {
         try {
             // get the full data (including members) for this group
-            group = GroupUtils.getGroup(group.getId(), cm);
+            group = GroupUtils.getGroup(baseUrl, group.getId(), cm);
 
             // now add each member to the table
             for (MemberDTO member : group.getMembers()) {
@@ -225,7 +229,8 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
             // if we are adding a group, check to see if we are overwriting
             // an existing group
             if (isAdd) {
-                GroupDTO existing = GroupUtils.getGroup(groupnameTF.getText(),
+                GroupDTO existing = GroupUtils.getGroup(baseUrl,
+                                                        groupnameTF.getText(),
                                                         cm);
                 if (existing != null) {
                     String message = "Group " + groupnameTF.getText() +
@@ -238,7 +243,7 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
                 }
             }
 
-            GroupUtils.updateGroup(toGroup(), cm);
+            GroupUtils.updateGroup(baseUrl, toGroup(), cm);
             dispose();
         } catch (IOException ioe) {
             ioe.printStackTrace();

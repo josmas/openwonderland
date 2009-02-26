@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Handle logins for the Wonderland system. Keeps track of the relationship
@@ -38,6 +40,10 @@ public class LoginManager {
     /** the managers we have created, mapped by server URL */
     private static final Map<String, ServerSessionManager> managers =
             Collections.synchronizedMap(new HashMap<String, ServerSessionManager>());
+
+    /** listeners to notify when the primary login manager changes */
+    private static final Set<PrimaryServerListener> listeners =
+            new CopyOnWriteArraySet<PrimaryServerListener>();
 
     /** the primary manager */
     private static ServerSessionManager primaryLoginManager;
@@ -79,9 +85,9 @@ public class LoginManager {
     }
 
     /**
-     * Get the login manager for a particular server URL
-     * @param serverURL the serverURL to get a login manager for
-     * @return the login manager
+     * Get the session manager for a particular server URL
+     * @param serverURL the serverURL to get a session manager for
+     * @return the session manager
      * @throws IOException if there is an error connecting to the given
      * server URL
      */
@@ -100,26 +106,48 @@ public class LoginManager {
     }
 
     /**
-     * Get all login managers
-     * @return a list of all known login manager
+     * Get all session managers
+     * @return a list of all known session managers
      */
     public static Collection<ServerSessionManager> getAll() {
         return managers.values();
     }
 
     /**
-     * Get the primary login manager
-     * @return the primary login manager, if one has been set
+     * Get the primary session manager
+     * @return the primary session manager, if one has been set
      */
     public synchronized static ServerSessionManager getPrimary() {
         return primaryLoginManager;
     }
 
     /**
-     * Get the primary login manager
-     * @return the primary login manager, if one has been set
+     * Set the primary session manager
+     * @param primary the primary session manager, or null if the client no
+     * longer has a primary server
      */
     public synchronized static void setPrimary(ServerSessionManager primary) {
         LoginManager.primaryLoginManager = primary;
+
+        // notify listeners
+        for (PrimaryServerListener l : listeners) {
+            l.primaryServer(primary);
+        }
+    }
+
+    /**
+     * Add a primary server listener
+     * @param listener the listener to add
+     */
+    public static void addPrimaryServerListener(PrimaryServerListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Remove a primary server listener
+     * @param listener the listener to remove
+     */
+    public static void removePrimaryServerListener(PrimaryServerListener listener) {
+        listeners.remove(listener);
     }
 }
