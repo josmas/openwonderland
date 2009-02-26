@@ -70,14 +70,13 @@ public class ButtonBoxTest1 extends SimpleShapeCell {
 	    // The cell is now visible
             case ACTIVE:
 		// Make the button box mouse input sensitive when it becomes visible
-                cellRenderer.addEventListeners(new MyMouseListener(), 
-					       new MyMouseListener());
+                cellRenderer.addEventListener(new MyMouseListener());
                 break;
 
 	    // The cell is no longer visible
             case DISK:
 		// The button box no longer needs to be input sensitive because it is no longer visible
-                cellRenderer.removeEventListeners();
+                cellRenderer.removeEventListener();
                 break;
         }
 
@@ -98,20 +97,6 @@ public class ButtonBoxTest1 extends SimpleShapeCell {
 	}
 
 	/**
-	 * This specifies whether listeners attached to parent entities of the "event hit entity"
-	 * should be also notified of the event. The event hit entity is the entity which owns
-	 * the geometry which is under the mouse cursor when the input event occurs.
-	 */
-	public boolean propagatesToParent (Event event) {
-
-	    // Initially, don't let the base see events which land on the buttons
-	    return false;
-
-	    // EXPERIMENT: Let base see events which land on the buttons
-	    // return true;
-	}
-
-	/**
 	 * This will be called when a mouse event occurs over one of the components of the button box.
 	 */
 	public void computeEvent (Event event) {
@@ -121,7 +106,7 @@ public class ButtonBoxTest1 extends SimpleShapeCell {
 	    if (buttonEvent.isClicked() && 
 		buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
 		    
-		// For now, just print name of the clicked entity
+		// For now, just print name of the clicked node
 		System.out.println("Left mouse button click on " + 
 				   ((MouseEvent3D)event).getNode().getName());
 	    }
