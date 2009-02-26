@@ -1406,7 +1406,7 @@ public class ViewWorldDefault extends Window2DView implements Window2DViewWorld 
         updateHudState();
 
         // Finally, the view's render component must be in perspective mode
-        entity.getComponent(RenderComponent.class).setOrtho(true);
+        entity.getComponent(RenderComponent.class).setOrtho(false);
     }
 
     /**
