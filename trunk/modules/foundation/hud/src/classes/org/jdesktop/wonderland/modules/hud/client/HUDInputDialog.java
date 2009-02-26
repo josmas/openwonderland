@@ -65,13 +65,13 @@ public class HUDInputDialog extends HUDComponent2D {
                 window = new WindowSwing(app, dialogImpl.getWidth(), dialogImpl.getHeight(),
                         false, new Vector2f(0.02f, 0.02f));
                 window.setComponent(dialogImpl.getContentPane());
-
                 view = window.getPrimaryView();
                 HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
                 mainHUD.addComponent(this);
                 this.setLocation(500, 300);
                 this.setSize(dialogImpl.getWidth(), dialogImpl.getHeight() - 20);
                 window.setVisible(true);
+                this.setVisible(true);
             } catch (Exception e) {
                 logger.log(Level.WARNING, "failed to create HUD dialog: " + e);
             }
