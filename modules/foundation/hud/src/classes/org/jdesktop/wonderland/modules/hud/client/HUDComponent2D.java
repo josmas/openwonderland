@@ -187,9 +187,7 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public void setVisible(boolean visible) {
-        if (visible && !view.isOnHUD()) {
-            view.setOnHUD(true);
-        }
+        view.setOnHUD(visible);
         view.setVisible(visible);
         notifyListeners((visible == true) ? ComponentEventType.APPEARED
                 : ComponentEventType.DISAPPEARED);
@@ -199,7 +197,7 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public boolean isVisible() {
-        return (view.isOnHUD() && view.getVisible());
+        return view.getVisible();
     }
 
     /**
