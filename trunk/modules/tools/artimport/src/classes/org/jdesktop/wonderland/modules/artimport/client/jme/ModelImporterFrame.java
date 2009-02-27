@@ -292,7 +292,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         avatarMoveCB.setSelected(false);
         populateTextureList(model.getRootBG());
         
-        calcModelBounds(model.getModelBG());
+        processBounds(model.getModelBG());
     }
     
     /**
@@ -316,7 +316,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             public void loadComplete(Entity entity) {
                 transformProcessor = (TransformProcessorComponent) entity.getComponent(TransformProcessorComponent.class);
 
-                calcModelBounds(importedModel.getModelBG());
+                processBounds(importedModel.getModelBG());
 
                 String dir = origFile.getAbsolutePath();
                 dir = dir.substring(0,dir.lastIndexOf(File.separatorChar));
@@ -934,11 +934,9 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     }
     
     /**
-     * Extract Geometry statistics from all the branch groups
-     * If any of the graphs are compiled then Not Available (N/A) will
-     * appear in the dialog.
+     * Process the bounds of the graph, updating the UI.
      */
-    private void calcModelBounds( Node bg ) {
+    private void processBounds( Node bg ) {
 //        System.err.println("Model Node "+bg);
 
         if (bg==null) {
@@ -951,7 +949,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
         if (bounds==null) {
             bounds = new BoundingBox();
-            combineBounds(bg, bounds);
+            calcBounds(bg, bounds);
         }
 
         if (bounds instanceof BoundingSphere) {
@@ -970,7 +968,6 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             boundsCenterYTF.setText(Double.toString(center.y));
             boundsCenterZTF.setText(Double.toString(center.z));
             
-            
             double max = Math.max(box.xExtent, box.yExtent);
             max = Math.max(max, box.xExtent);
             boundsSizeXTF.setText(Double.toString(max));
@@ -982,11 +979,11 @@ public class ModelImporterFrame extends javax.swing.JFrame {
      * @param n
      * @param bv
      */
-    private void combineBounds(Spatial n, BoundingVolume bv) {
+    private void calcBounds(Spatial n, BoundingVolume bv) {
         bv.mergeLocal(n.getWorldBound());
         if (n instanceof Node && ((Node)n).getQuantity()>0) {
             for(Spatial child : ((Node)n).getChildren()) {
-                combineBounds(child, bv);
+                calcBounds(child, bv);
             }
         }
     }
