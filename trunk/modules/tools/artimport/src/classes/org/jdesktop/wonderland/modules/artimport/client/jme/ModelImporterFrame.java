@@ -945,11 +945,15 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             return;
         }
 
-        // Make JME calculate the bounds
-        bg.updateWorldBound();
 //        System.err.println("Model Bounds "+bg.getWorldBound());
         
         BoundingVolume bounds = bg.getWorldBound();
+
+        if (bounds==null) {
+            bounds = new BoundingBox();
+            combineBounds(bg, bounds);
+        }
+
         if (bounds instanceof BoundingSphere) {
             BoundingSphere sphere = (BoundingSphere)bounds;
             Vector3f center = new Vector3f();
@@ -970,9 +974,23 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             double max = Math.max(box.xExtent, box.yExtent);
             max = Math.max(max, box.xExtent);
             boundsSizeXTF.setText(Double.toString(max));
-        } 
+        }
     }
-    
+
+    /**
+     * Traverse the graph, combining all the world bounds into bv
+     * @param n
+     * @param bv
+     */
+    private void combineBounds(Spatial n, BoundingVolume bv) {
+        bv.mergeLocal(n.getWorldBound());
+        if (n instanceof Node && ((Node)n).getQuantity()>0) {
+            for(Spatial child : ((Node)n).getChildren()) {
+                combineBounds(child, bv);
+            }
+        }
+    }
+
     /**
      * Convert the float to a string and trim it to the
      * specified number of decimalPlaces
