@@ -30,7 +30,7 @@ import java.util.HashMap;
  */
 class SpaceManagerGridImpl implements SpaceManager {
 
-    static final int SPACE_SIZE = 25; // Radius
+    static final int SPACE_SIZE = 250; // Radius
 
     private HashMap<String, Space> spaces = new HashMap();
  
