@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
 import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
@@ -75,6 +76,21 @@ public class HUDInputDialog extends HUDComponent2D {
             } catch (Exception e) {
                 logger.log(Level.WARNING, "failed to create HUD dialog: " + e);
             }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setVisible(boolean visible) {
+        if (visible == false) {
+            // hack to make the view go away
+            view.setVisible(false);
+            view.setOnHUD(false);
+            window.setVisible(false);
+        } else {
+            super.setVisible(visible);
         }
     }
 

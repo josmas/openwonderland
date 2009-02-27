@@ -145,10 +145,10 @@ public class HUDInputDialogImpl extends javax.swing.JDialog {
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("OptionPane.background"));
 
-        valueLabel.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
+        valueLabel.setFont(new java.awt.Font("Dialog", 1, 13));
         valueLabel.setText("Enter the value:");
 
-        valueTextField.setFont(new java.awt.Font("DialogInput", 0, 13)); // NOI18N
+        valueTextField.setFont(new java.awt.Font("DialogInput", 0, 13));
         valueTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 valueTextFieldActionPerformed(evt);
@@ -214,6 +214,7 @@ public class HUDInputDialogImpl extends javax.swing.JDialog {
 }//GEN-LAST:event_valueTextFieldActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        listeners.firePropertyChange("cancel", new String(""), null);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**
