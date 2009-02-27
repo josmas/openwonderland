@@ -23,6 +23,7 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,6 +117,8 @@ public class WFSManager {
      */
     public WFS getWFS(String rootPath) {
         loadWFSs();
+        loadSnapshots();
+        loadRecordings();
         return wfsMap.get(rootPath);
     }
     
@@ -157,6 +160,7 @@ public class WFSManager {
      * @return a list of all WFS snapshots
      */
     public List<WFSSnapshot> getWFSSnapshots() {
+        loadSnapshots();
         return new ArrayList<WFSSnapshot>(wfsSnapshots.values());
     }
 
@@ -165,6 +169,7 @@ public class WFSManager {
      * @return a list of all WFS recordings
      */
     public List<WFSRecording> getWFSRecordings() {
+        loadRecordings();
         return new ArrayList<WFSRecording>(wfsRecordings.values());
     }
 
@@ -175,6 +180,7 @@ public class WFSManager {
      * with the given name
      */
     public WFSSnapshot getWFSSnapshot(String name) {
+        loadSnapshots();
         return wfsSnapshots.get(name);
     }
 
@@ -185,6 +191,7 @@ public class WFSManager {
      * with the given name
      */
     public WFSRecording getWFSRecording(String name) {
+        loadRecordings();
         return wfsRecordings.get(name);
     }
 
@@ -299,8 +306,14 @@ public class WFSManager {
      * to the internal list.
      */
     private void loadWFSs() {
-        /* Clear out the existing list */
-        this.wfsRoots.clear();
+        // clear out the existing list -- make sure to clean up both
+        // wfsRoots and the wfsMap.  Use an iterator here to avoid concurrent
+        // modification problems
+        for (Iterator<WFSRoot> i = wfsRoots.values().iterator(); i.hasNext();) {
+            WFSRoot root = i.next();
+            i.remove();
+            wfsMap.remove(root.getRootPath());
+        }
         
         for (File rootDir : this.getWFSRootDirectories()) {
             try {
@@ -318,7 +331,17 @@ public class WFSManager {
      * Loads in all of the snapshots of wfs. Adds to the internal list
      */
     private void loadSnapshots() {
-        //XXX when do we clear out the existing lists?
+        // clear out the existing list -- make sure to clean up both
+        // wfsSnapshotss and the wfsMap.  Use an iterator here to avoid
+        // concurrent modification problems
+        for (Iterator<WFSSnapshot> i = wfsSnapshots.values().iterator();
+             i.hasNext();)
+        {
+            WFSSnapshot snapshot = i.next();
+            i.remove();
+            wfsMap.remove(snapshot.getRootPath());
+        }
+
         for (File root : this.getSnapshotDirectories()) {
             try {
                 WFSSnapshot snapshot = WFSSnapshot.getInstance(root);
@@ -335,7 +358,17 @@ public class WFSManager {
      * Loads in all of the recordings of wfs. Adds to the internal list
      */
     private void loadRecordings() {
-        //XXX when do we clear out the existing lists?
+        // clear out the existing list -- make sure to clean up both
+        // wfsRecordings and the wfsMap.  Use an iterator here to avoid
+        // concurrent modification problems
+        for (Iterator<WFSRecording> i = wfsRecordings.values().iterator();
+             i.hasNext();)
+        {
+            WFSRecording recording = i.next();
+            i.remove();
+            wfsMap.remove(recording.getRootPath());
+        }
+
         for (File root : this.getRecordingDirectories()) {
             try {
                 WFSRecording recording = WFSRecording.getInstance(root);
