@@ -78,6 +78,7 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
@@ -631,6 +632,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
             connection.send(msg);
         }
 
+        tableModel.setRowCount(0);
     }
 
     private File createModuleJar(ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo, File targetDir) {
@@ -878,8 +880,6 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
         
         model.setModelBG(modelBG);
         model.setRootBG(rootBG);
-        rootBG.setModelBound(new BoundingBox());
-        rootBG.updateModelBound();
         
         WorldManager wm = ClientContextJME.getWorldManager();
         
@@ -977,10 +977,9 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
             Vector3f rot = imp.getOrientation();
             tg.setLocalRotation(calcRotationMatrix(rot.x, rot.y, rot.z));
             tg.setLocalTranslation(imp.getTranslation());
-        } else {
-//            JmeClientMain.getWorldManager().removeEntity(model.getEntity());
-            System.err.println("ImportSessionFrame.loadCancelled - TODO needs WorldManager.removeEntity");
         }
+
+        ClientContextJME.getWorldManager().removeEntity(model.getEntity());
     }
     
     void addToTable(ImportedModel config) {
@@ -1117,10 +1116,10 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
         }
         
         public URL locateResource(String resource) {
-            System.out.println("*************** Looking for texture "+resource);
+//            System.out.println("*************** Looking for texture "+resource);
             try {
                 URL ret = new URL(baseURL + "/" + removePath(resource));
-                System.out.println("Resource URL "+ret.toExternalForm());
+//                System.out.println("Resource URL "+ret.toExternalForm());
                 
                 return ret;
             } catch (MalformedURLException ex) {
