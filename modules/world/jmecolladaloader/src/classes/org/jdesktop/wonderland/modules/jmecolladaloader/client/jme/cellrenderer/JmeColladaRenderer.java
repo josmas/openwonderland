@@ -37,6 +37,7 @@ import com.jmex.model.collada.ColladaImporter;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.zip.GZIPInputStream;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.shader.DiffuseMap;
@@ -95,7 +96,13 @@ public class JmeColladaRenderer extends BasicRenderer {
         
         try {
             logger.warning("URL: " + url);
-            InputStream input = url.openStream();
+            InputStream input;
+            
+            if (url.getFile().endsWith(".gz")) {
+                input = new GZIPInputStream(url.openStream());
+            } else {
+                input = url.openStream();
+            }
             System.out.println("Resource stream "+input);
 
             ResourceLocatorTool.addResourceLocator(
