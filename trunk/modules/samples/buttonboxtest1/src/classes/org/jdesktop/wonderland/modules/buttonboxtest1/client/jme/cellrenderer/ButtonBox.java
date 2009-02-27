@@ -32,6 +32,7 @@ import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.mtgame.RenderUpdater;
 
 /**
  * A ButtonBox is a 3D component which provides a configurable number of 3D box
@@ -143,7 +144,6 @@ public class ButtonBox {
 			  baseWidth/2f, baseHeight/2f, baseDepth/2f);
         baseBox.setModelBound(new BoundingBox());
         baseBox.updateModelBound();
-        setBoxColor(baseBox, baseColor);
 
         // Create the button geometries and ensure their bounds are initialized
         buttonBoxes = new Box[numButtons];
@@ -155,7 +155,6 @@ public class ButtonBox {
                     buttonWidth/2f, buttonHeight/2f, buttonDepth/2f);
             buttonBoxes[i].setModelBound(new BoundingBox());
             buttonBoxes[i].updateModelBound();
-            setBoxColor(buttonBoxes[i], baseColor);
             buttonX += buttonWidth + buttonSpacing;
         }
     }
@@ -166,6 +165,7 @@ public class ButtonBox {
     private void createBaseNode() {
         baseNode = new Node("Base Node");
         baseNode.attachChild(baseBox);
+        setBoxColor(baseNode, baseBox, baseColor);
     }
 
     /** 
@@ -191,6 +191,7 @@ public class ButtonBox {
             collisionSystem.addReportingNode(buttonNodes[i], cc);
             buttonNodes[i].attachChild(buttonBoxes[i]);
             baseNode.attachChild(buttonNodes[i]);
+            setBoxColor(buttonNodes[i], buttonBoxes[i], baseColor);
         }
     }
 
@@ -231,7 +232,7 @@ public class ButtonBox {
      */
     public void setBaseColor(ColorRGBA color) {
         baseColor = color;
-        setBoxColor(baseBox, color);
+        setBoxColor(baseNode, baseBox, color);
     }
 
     /**
@@ -248,20 +249,28 @@ public class ButtonBox {
             buttonColors = new ColorRGBA[numButtons];
         }
         buttonColors[buttonIndex] = color;
-        setBoxColor(buttonBoxes[buttonIndex], color);
+        setBoxColor(buttonNodes[buttonIndex], buttonBoxes[buttonIndex], color);
     }
 
     /**
      * Set the color of the given box.
      */
-    private static void setBoxColor(Box box, ColorRGBA color) {
-        MaterialState ms = (MaterialState) box.getRenderState(RenderState.RS_MATERIAL);
-        if (ms == null) {
-            ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
-            box.setRenderState(ms);
-        }
-        ms.setAmbient(new ColorRGBA(color));
-        ms.setDiffuse(new ColorRGBA(color));
+    private static void setBoxColor(final Node node, final Box box, final ColorRGBA color) {
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                MaterialState ms = (MaterialState) box.getRenderState(RenderState.RS_MATERIAL);
+                if (ms == null) {
+                    ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
+                    box.setRenderState(ms);
+                }
+                ms.setAmbient(new ColorRGBA(color));
+                ms.setDiffuse(new ColorRGBA(color));
+                if (node != null) {
+                    ClientContextJME.getWorldManager().addToUpdateList(node);
+                }
+            }
+        }, null);
     }
 
     /**
