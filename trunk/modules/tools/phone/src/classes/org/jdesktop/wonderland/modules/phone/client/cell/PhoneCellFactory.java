@@ -61,8 +61,7 @@ public class PhoneCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-//        URL url = PhoneCellFactory.class.getResource("resources/virtualphone_preview.png");
-//        return Toolkit.getDefaultToolkit().createImage(url);
-        return null;
+        URL url = PhoneCellFactory.class.getResource("resources/virtualphone_preview.png");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
