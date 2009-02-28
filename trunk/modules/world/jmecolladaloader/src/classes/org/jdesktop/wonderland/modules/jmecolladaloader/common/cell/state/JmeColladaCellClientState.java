@@ -32,16 +32,22 @@ public class JmeColladaCellClientState extends CellClientState {
     private String modelURI = null;
     private Vector3f geometryTranslation;
     private Quaternion geometryRotation;
+    private Vector3f geometryScale=null;
     
     /** Default constructor */
     public JmeColladaCellClientState() {
     }
     
     /** Constructor, takes the model URI */
-    public JmeColladaCellClientState(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation) {
+//    public JmeColladaCellClientState(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation) {
+//        this(modelURI, geometryTranslation, geometryRotation, null);
+//    }
+
+    public JmeColladaCellClientState(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation, Vector3f geometryScale) {
         this.modelURI = modelURI;
         this.geometryRotation = geometryRotation;
         this.geometryTranslation = geometryTranslation;
+        this.geometryScale = geometryScale;
     }
     
     /**
@@ -77,4 +83,13 @@ public class JmeColladaCellClientState extends CellClientState {
     public Quaternion getGeometryRotation() {
         return geometryRotation;
     }
+
+    public Vector3f getGeometryScale() {
+        return geometryScale;
+    }
+
+    public void setGeometryScale(Vector3f geometryScale) {
+        this.geometryScale = geometryScale;
+    }
+
 }

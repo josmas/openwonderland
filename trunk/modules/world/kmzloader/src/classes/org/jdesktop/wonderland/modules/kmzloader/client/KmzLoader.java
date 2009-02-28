@@ -17,8 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.kmzloader.client;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.math.Quaternion;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jmex.model.collada.ColladaImporter;
@@ -47,11 +49,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
@@ -155,12 +156,12 @@ class KmzLoader implements ModelLoader {
         ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, zipResource);
         WlzipManager.getWlzipManager().removeZip(zipHost, zipFile);
 
-        // Correctly orient model
+        // Correctly orient model - TODO get initial orientation from KML
         rootNode.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
 
         return rootNode;
     }
-    
+
     /**
      * Search kmz folders adding any ModelTypes found to the models list
      * @param models
@@ -210,11 +211,18 @@ class KmzLoader implements ModelLoader {
             // from here.
             JmeColladaCellServerState setup = new JmeColladaCellServerState();
             setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
+            setup.setGeometryRotation(new Rotation(rootNode.getLocalRotation()));
+            setup.setGeometryScale(new Scale(rootNode.getLocalScale()));
 
             PositionComponentServerState position = new PositionComponentServerState();
             position.setOrigin(new Origin(rootNode.getLocalTranslation()));
-            position.setRotation(new Rotation(rootNode.getLocalRotation()));
-            position.setScaling(new Scaling(rootNode.getLocalScale()));
+
+            // The cell bounds already have the rotation and scale applied, so these
+            // values must not go in the Cell transform. Instead they go in the
+            // JME cell setup so that the model is correctly oriented and thus
+            // matches the bounds in the cell.
+            position.setBounds(rootNode.getWorldBound());
+
             setup.addComponentServerState(position);
 
             ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();

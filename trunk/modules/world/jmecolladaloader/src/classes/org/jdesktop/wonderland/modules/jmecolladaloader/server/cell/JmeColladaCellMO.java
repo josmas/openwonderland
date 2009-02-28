@@ -45,6 +45,7 @@ public class JmeColladaCellMO extends CellMO {
     private String modelURI = null;
     private Vector3f geometryTranslation = new Vector3f();
     private Quaternion geometryRotation = new Quaternion();
+    private Vector3f geometryScale = new Vector3f();
     	
     /** Default constructor, used when cell is created via WFS */
     public JmeColladaCellMO() {
@@ -77,6 +78,7 @@ public class JmeColladaCellMO extends CellMO {
         ((JmeColladaCellClientState)cellClientState).setModelURI(modelURI);
         ((JmeColladaCellClientState)cellClientState).setGeometryTranslation(geometryTranslation);
         ((JmeColladaCellClientState)cellClientState).setGeometryRotation(geometryRotation);
+        ((JmeColladaCellClientState)cellClientState).setGeometryScale(geometryScale);
 
         return super.getClientState(cellClientState, clientID, capabilities);
     }
@@ -111,6 +113,13 @@ public class JmeColladaCellMO extends CellMO {
                     (float) jccss.getGeometryRotation().y,
                     (float) jccss.getGeometryRotation().z));
         }
+
+        if (jccss.getGeometryScale() != null) {
+            this.geometryScale = new Vector3f(
+                    (float) jccss.getGeometryScale().x,
+                    (float) jccss.getGeometryScale().y,
+                    (float) jccss.getGeometryScale().z);
+        }
     }
 
     @Override
@@ -122,15 +131,15 @@ public class JmeColladaCellMO extends CellMO {
             ret = (JmeColladaCellServerState) state;
         }
 
-        System.err.println("**************************************");
-        System.err.println(modelURI);
-
         ret.setModel(modelURI);
         if (geometryTranslation != null) {
             ret.setGeometryTranslation(new PositionComponentServerState.Origin(geometryTranslation));
         }
         if (geometryRotation != null) {
             ret.setGeometryRotation(new PositionComponentServerState.Rotation(geometryRotation));
+        }
+        if (geometryScale != null) {
+            ret.setGeometryScale(new PositionComponentServerState.Scale(geometryScale));
         }
         return super.getServerState(ret);
     }
