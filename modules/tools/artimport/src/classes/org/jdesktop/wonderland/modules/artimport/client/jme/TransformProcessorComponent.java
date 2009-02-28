@@ -21,6 +21,7 @@ import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import org.jdesktop.mtgame.NewFrameCondition;
+import org.jdesktop.mtgame.PostEventCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
@@ -65,6 +66,7 @@ public class TransformProcessorComponent extends ProcessorComponent {
 
         @Override
         public void initialize() {
+            // TODO this should be a post condition
             setArmingCondition(new NewFrameCondition(this));
         }
 

@@ -24,6 +24,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.image.Texture;
 import com.jme.light.PointLight;
 import com.jme.math.Matrix3f;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
@@ -633,6 +634,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         }
 
         tableModel.setRowCount(0);
+        imports.clear();
     }
 
     private File createModuleJar(ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo, File targetDir) {
@@ -727,7 +729,7 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         imports.clear();
         tableModel.setRowCount(0);
         importTable.repaint();
-
+        setVisible(false);
 }//GEN-LAST:event_cancelButtonActionPerformed
 
 private void targetModuleTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetModuleTFActionPerformed
@@ -875,7 +877,17 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
 
         model.setModelLoader(modelLoader);
         modelBG = modelLoader.importModel(modelFile);
-        
+
+//        Quaternion modelRot = modelBG.getLocalRotation();
+//        Vector3f modelTrans = modelBG.getLocalTranslation();
+//
+//        System.err.println("Original rootBG rot "+rootBG.getLocalRotation().toAngleAxis(null));
+//        rootBG.setLocalRotation(modelRot);
+//        Quaternion noRot = new Quaternion();
+//        noRot.fromAngles(0,0,0);
+//        modelBG.setLocalRotation(noRot);
+//        System.err.println("New rootBG rot "+rootBG.getLocalRotation().toAngleAxis(null));
+
         rootBG.attachChild(modelBG);
         
         model.setModelBG(modelBG);
@@ -896,7 +908,6 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
                         
         Entity entity = new Entity(model.getOrigModel());
         RenderComponent scene = wm.getRenderManager().createRenderComponent(rootBG);
-//        scene.getSceneRoot().attachChild(rootBG);
         entity.addComponent(RenderComponent.class,scene);
         
         model.setEntity(entity);
@@ -957,8 +968,9 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
                 TextureState ts = (TextureState) node.getRenderState(TextureState.RS_TEXTURE);
                 if (ts!=null) {
                     Texture t = ts.getTexture();
-                    if (t!=null)
-                        System.out.println("Texture "+t.getImageLocation());
+                    if (t!=null) {
+//                        System.out.println("Texture "+t.getImageLocation());
+                    }
                 }
                 return true;
             }

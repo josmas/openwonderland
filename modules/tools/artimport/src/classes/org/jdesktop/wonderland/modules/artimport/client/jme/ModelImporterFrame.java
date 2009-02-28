@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
+import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.bounding.BoundingBox;
@@ -57,7 +58,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
@@ -85,7 +88,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     private ImportedModel importedModel=null;
     private Entity entity;
     private TransformProcessorComponent transformProcessor;
-    
+
     /** Creates new form ModelImporterFrame */
     public ModelImporterFrame(ImportSessionFrame session, File lastModelDir) {
         this.lastModelDir = lastModelDir;
@@ -150,9 +153,6 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                     y!=currentTranslation.y ||
                     z!=currentTranslation.z) {
                     currentTranslation.set(x,y,z);
-//                    rootBG.setLocalRotation(currentRotation);
-//                    rootBG.setLocalTranslation(currentTranslation);
-//                    rootBG.setLocalScale(1f);
                     if (transformProcessor!=null)
                         transformProcessor.setTransform(currentRotation, currentTranslation);
                 }
@@ -171,10 +171,6 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                     z!=currentRotationValues.z) {
                     currentRotationValues.set(x,y,z);
                     calcCurrentRotationMatrix();
-                    
-//                    rootBG.setLocalRotation(currentRotation);
-//                    rootBG.setLocalTranslation(currentTranslation);
-//                    rootBG.setLocalScale(1f);
                     if (transformProcessor!=null)
                         transformProcessor.setTransform(currentRotation, currentTranslation);
                 }
@@ -194,9 +190,6 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 
                 if (x!=currentScale.x ) {
                     currentScale.set(x,x,x);
-//                    rootBG.setLocalRotation(currentRotation);
-//                    rootBG.setLocalTranslation(currentTranslation);
-//                    rootBG.setLocalScale(1f);
                     if (transformProcessor!=null)
                         transformProcessor.setTransform(currentRotation, currentTranslation, currentScale);
                 }
@@ -222,7 +215,6 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         float[] angles = quat.toAngles(new float[3]);
         Vector3f scale = node.getLocalScale();
 
-
         translationXTF.setValue(translation.x);
         translationYTF.setValue(translation.y);
         translationZTF.setValue(translation.z);
@@ -230,6 +222,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         rotationXTF.setValue((float)Math.toDegrees(angles[0]));
         rotationYTF.setValue((float)Math.toDegrees(angles[1]));
         rotationZTF.setValue((float)Math.toDegrees(angles[2]));
+
     }
     
     private void calcCurrentRotationMatrix() {
@@ -238,9 +231,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 (float)Math.toRadians(currentRotationValues.y),
                 (float)Math.toRadians(currentRotationValues.z));
     }
-    
-
-    
+        
     void chooseFile() {
         texturePrefixTF.setText("");
         modelNameTF.setText("");
@@ -315,16 +306,14 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
             public void loadComplete(Entity entity) {
                 transformProcessor = (TransformProcessorComponent) entity.getComponent(TransformProcessorComponent.class);
+                setSpinners(importedModel.getModelBG());
 
-                processBounds(importedModel.getModelBG());
-
+                entity.addComponent(LoadCompleteProcessor.class, new LoadCompleteProcessor(entity));
+                
                 String dir = origFile.getAbsolutePath();
                 dir = dir.substring(0,dir.lastIndexOf(File.separatorChar));
                 dir = dir.substring(dir.lastIndexOf(File.separatorChar)+1);
                 texturePrefixTF.setText(dir);
-
-                populateTextureList(importedModel.getModelBG());
-                setSpinners(importedModel.getModelBG());
 
                 String filename = origFile.getAbsolutePath();
                 filename = filename.substring(filename.lastIndexOf(File.separatorChar)+1);
@@ -335,11 +324,11 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         //            AvatarControlBehavior.getAvatarControlBehavior().addUserMoveListener(userMotionListener);
                     System.err.println("AvatarControlBehavior listeners not implemented");
                 }
-                    }
-            });
+            }
+        });
         
     }
-        
+
     private void populateTextureList(Node bg) {
         final DefaultTableModel model = (DefaultTableModel)textureTable.getModel();
         while(model.getRowCount()!=0)
@@ -422,6 +411,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         jLabel26 = new javax.swing.JLabel();
         geometryStatsB = new javax.swing.JButton();
         jLabel30 = new javax.swing.JLabel();
+        boundsSizeYTF = new javax.swing.JTextField();
+        boundsSizeZTF = new javax.swing.JTextField();
 
         setTitle("Model Import");
 
@@ -612,7 +603,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                         .add(okB1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cancelB1)))
-                .addContainerGap(101, Short.MAX_VALUE))
+                .addContainerGap(135, Short.MAX_VALUE))
         );
         basicPanelLayout.setVerticalGroup(
             basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -694,7 +685,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
         jLabel25.setText("Bounds Center :");
 
-        jLabel27.setFont(new java.awt.Font("Lucida Grande", 0, 10));
+        jLabel27.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
         jLabel27.setText("X");
 
         boundsCenterYTF.setColumns(12);
@@ -704,23 +695,23 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
         boundsCenterXTF.setColumns(12);
         boundsCenterXTF.setEditable(false);
-        boundsCenterXTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
+        boundsCenterXTF.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
         boundsCenterXTF.setText("jTextField1");
 
-        jLabel28.setFont(new java.awt.Font("Lucida Grande", 0, 10));
+        jLabel28.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
         jLabel28.setText("Y");
 
-        jLabel29.setFont(new java.awt.Font("Lucida Grande", 0, 10));
+        jLabel29.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
         jLabel29.setText("Z");
 
         boundsCenterZTF.setColumns(12);
         boundsCenterZTF.setEditable(false);
-        boundsCenterZTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
+        boundsCenterZTF.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
         boundsCenterZTF.setText("jTextField1");
 
         boundsSizeXTF.setColumns(12);
         boundsSizeXTF.setEditable(false);
-        boundsSizeXTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
+        boundsSizeXTF.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
         boundsSizeXTF.setText("jTextField1");
 
         jLabel26.setText("Bounds Size :");
@@ -735,6 +726,16 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         });
 
         jLabel30.setText("Texture Details");
+
+        boundsSizeYTF.setColumns(12);
+        boundsSizeYTF.setEditable(false);
+        boundsSizeYTF.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        boundsSizeYTF.setText("jTextField1");
+
+        boundsSizeZTF.setColumns(12);
+        boundsSizeZTF.setEditable(false);
+        boundsSizeZTF.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        boundsSizeZTF.setText("jTextField1");
 
         org.jdesktop.layout.GroupLayout advancedPanelLayout = new org.jdesktop.layout.GroupLayout(advancedPanel);
         advancedPanel.setLayout(advancedPanelLayout);
@@ -754,28 +755,30 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                         .addContainerGap()
                         .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(advancedPanelLayout.createSequentialGroup()
-                                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jLabel25)
-                                    .add(jLabel26))
+                                .add(jLabel25)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(advancedPanelLayout.createSequentialGroup()
                                         .add(jLabel27)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(boundsCenterYTF))
                                     .add(advancedPanelLayout.createSequentialGroup()
-                                        .add(jLabel28)
+                                        .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                            .add(jLabel29)
+                                            .add(jLabel28))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(boundsCenterXTF))
-                                    .add(advancedPanelLayout.createSequentialGroup()
-                                        .add(jLabel29)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(boundsCenterZTF))
-                                    .add(advancedPanelLayout.createSequentialGroup()
-                                        .add(14, 14, 14)
-                                        .add(boundsSizeXTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 133, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                                        .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(boundsCenterXTF)
+                                            .add(boundsCenterZTF))))
+                                .add(18, 18, 18)
+                                .add(jLabel26)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(boundsSizeZTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 133, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(boundsSizeYTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 133, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(boundsSizeXTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 133, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                             .add(jLabel30))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 341, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 130, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedPanelLayout.createSequentialGroup()
                         .add(123, 123, 123)
                         .add(okB)
@@ -800,25 +803,25 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel27)
                     .add(jLabel25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(boundsCenterYTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel28)
-                    .add(boundsCenterXTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(4, 4, 4)
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel29)
-                    .add(boundsCenterZTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(boundsCenterYTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel26)
                     .add(boundsSizeXTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(27, 27, 27)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(boundsCenterXTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel28)
+                    .add(boundsSizeYTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(boundsCenterZTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel29)
+                    .add(boundsSizeZTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(89, 89, 89)
                 .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(okB)
                     .add(cancelB)
                     .add(geometryStatsB))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Advanced", advancedPanel);
@@ -854,11 +857,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         importedModel.setTexturePrefix(texturePrefixTF.getText());
         
         sessionFrame.loadCompleted(importedModel);
-        
-
 }//GEN-LAST:event_okBActionPerformed
-
-
 
     
     private void cancelBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBActionPerformed
@@ -952,6 +951,14 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             calcBounds(bg, bounds);
         }
 
+        // Remove the rotation from the bounds because it will be reapplied by the cell
+//        Quaternion rot = bg.getWorldRotation();
+//        rot.inverseLocal();
+//        bounds = bounds.transform(rot, new Vector3f(), new Vector3f(1,1,1), bounds);
+//
+//        System.err.println("ROTATED "+bounds);
+//        System.err.println(rot.toAngleAxis(null));
+
         if (bounds instanceof BoundingSphere) {
             BoundingSphere sphere = (BoundingSphere)bounds;
             Vector3f center = new Vector3f();
@@ -960,6 +967,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             boundsCenterYTF.setText(Double.toString(center.y));
             boundsCenterZTF.setText(Double.toString(center.z));
             boundsSizeXTF.setText(Double.toString(sphere.getRadius()));
+            boundsSizeYTF.setText("N/A Sphere");
+            boundsSizeZTF.setText("N/A Sphere");
        } else if (bounds instanceof BoundingBox) {
             BoundingBox box = (BoundingBox)bounds;
             Vector3f center = new Vector3f();
@@ -968,9 +977,9 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             boundsCenterYTF.setText(Double.toString(center.y));
             boundsCenterZTF.setText(Double.toString(center.z));
             
-            double max = Math.max(box.xExtent, box.yExtent);
-            max = Math.max(max, box.xExtent);
-            boundsSizeXTF.setText(Double.toString(max));
+            boundsSizeXTF.setText(Float.toString(box.xExtent));
+            boundsSizeYTF.setText(Float.toString(box.yExtent));
+            boundsSizeZTF.setText(Float.toString(box.zExtent));
         }
     }
 
@@ -1011,6 +1020,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     private javax.swing.JTextField boundsCenterYTF;
     private javax.swing.JTextField boundsCenterZTF;
     private javax.swing.JTextField boundsSizeXTF;
+    private javax.swing.JTextField boundsSizeYTF;
+    private javax.swing.JTextField boundsSizeZTF;
     private javax.swing.JButton cancelB;
     private javax.swing.JButton cancelB1;
     private javax.swing.JButton geometryStatsB;
@@ -1092,4 +1103,34 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         
     }
     
+    class LoadCompleteProcessor extends ProcessorComponent {
+
+        private Entity entity;
+
+        public LoadCompleteProcessor(Entity entity) {
+            this.entity = entity;
+
+        }
+
+        @Override
+        public void compute(ProcessorArmingCollection arg0) {
+            processBounds(importedModel.getModelBG());
+
+            populateTextureList(importedModel.getModelBG());
+
+            entity.removeComponent(LoadCompleteProcessor.class);
+            setArmingCondition(null);
+        }
+
+        @Override
+        public void commit(ProcessorArmingCollection arg0) {
+        }
+
+        @Override
+        public void initialize() {
+            setArmingCondition(new NewFrameCondition(this));
+        }
+
+    }
+
 }

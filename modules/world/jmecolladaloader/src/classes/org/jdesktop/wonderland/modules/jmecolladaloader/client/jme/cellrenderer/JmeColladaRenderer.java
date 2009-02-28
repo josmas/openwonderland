@@ -22,14 +22,9 @@ import java.net.MalformedURLException;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import com.jme.scene.Geometry;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
-import com.jme.scene.state.LightState;
-import com.jme.scene.state.MaterialState;
 import com.jme.util.export.SavableString;
 import com.jme.util.geom.TangentBinormalGenerator;
 import com.jme.util.resource.ResourceLocatorTool;
@@ -78,6 +73,8 @@ public class JmeColladaRenderer extends BasicRenderer {
                 model.setLocalTranslation(((JmeColladaCell)cell).getGeometryTranslation());
             if (((JmeColladaCell)cell).getGeometryRotation()!=null)
                 model.setLocalRotation(((JmeColladaCell)cell).getGeometryRotation());
+            if (((JmeColladaCell)cell).getGeometryScale()!=null)
+                model.setLocalScale(((JmeColladaCell)cell).getGeometryScale());
             return ret;
         } catch (MalformedURLException ex) {
             Logger.getLogger(JmeColladaRenderer.class.getName()).log(Level.SEVERE, null, ex);
@@ -95,7 +92,6 @@ public class JmeColladaRenderer extends BasicRenderer {
         Node node = new Node();
         
         try {
-            logger.warning("URL: " + url);
             InputStream input;
             
             if (url.getFile().endsWith(".gz")) {
@@ -103,7 +99,6 @@ public class JmeColladaRenderer extends BasicRenderer {
             } else {
                 input = url.openStream();
             }
-            System.out.println("Resource stream "+input);
 
             ResourceLocatorTool.addResourceLocator(
                     ResourceLocatorTool.TYPE_TEXTURE,

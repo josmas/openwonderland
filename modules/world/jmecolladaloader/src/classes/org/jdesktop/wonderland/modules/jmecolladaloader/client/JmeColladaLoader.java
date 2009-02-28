@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.JmeColladaRenderer;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
 
@@ -114,7 +114,8 @@ class JmeColladaLoader implements ModelLoader {
             PositionComponentServerState position = new PositionComponentServerState();
             position.setOrigin(new Origin(rootNode.getLocalTranslation()));
             position.setRotation(new Rotation(rootNode.getLocalRotation()));
-            position.setScaling(new Scaling(rootNode.getLocalScale()));
+            position.setScaling(new Scale(rootNode.getLocalScale()));
+            position.setBounds(rootNode.getWorldBound());
             setup.addComponentServerState(position);
 
             ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();
