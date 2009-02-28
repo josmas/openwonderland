@@ -18,23 +18,17 @@
 package org.jdesktop.wonderland.server.spatial.impl;
 
 import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
-import com.jme.math.Matrix4f;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.DataService;
-import com.sun.sgs.service.TransactionProxy;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ThreadManager;
@@ -47,6 +41,7 @@ import org.jdesktop.wonderland.server.cell.ViewCellCacheMO;
 import org.jdesktop.wonderland.server.spatial.ViewUpdateListener;
 
 /**
+ * The server side view cache for a specific view. 
  *
  * @author paulby
  */
@@ -77,6 +72,8 @@ class ViewCache {
 
     private LinkedList<ViewUpdateListenerContainer> viewUpdateListeners = new LinkedList();
 
+    private Vector3f v3f = new Vector3f();      // Temporary vector
+
     public ViewCache(SpatialCellImpl cell, SpaceManager spaceManager, Identity identity, BigInteger cellCacheId) {
         this.viewCell = cell;
         this.spaceManager = spaceManager;
@@ -92,11 +89,17 @@ class ViewCache {
     }
 
     private void viewCellMoved(final CellTransform worldTransform) {
+        worldTransform.getTranslation(v3f);
+
         if (lastSpaceValidationPoint==null ||
-            lastSpaceValidationPoint.distanceSquared(worldTransform.getTranslation(null))>REVAL_DISTANCE_SQUARED) {
+            lastSpaceValidationPoint.distanceSquared(v3f)>REVAL_DISTANCE_SQUARED) {
 
             revalidateSpaces();
-            lastSpaceValidationPoint = worldTransform.getTranslation(null);
+            
+            if (lastSpaceValidationPoint==null)
+                lastSpaceValidationPoint = new Vector3f(v3f);
+            else
+                lastSpaceValidationPoint.set(v3f);
         }
 
         UniverseImpl.getUniverse().scheduleTransaction(
@@ -216,9 +219,16 @@ class ViewCache {
             Iterable<Space> newSpaces = spaceManager.getEnclosingSpace(proximityBounds);
 //            System.err.println("ViewCell Bounds "+proximityBounds);
 //            StringBuffer buf = new StringBuffer("View in spaces ");
+
+            StringBuffer logBuf = null;
+            if (logger.isLoggable(Level.FINE))
+                logBuf = new StringBuffer();
+
             for(Space sp : newSpaces) {
 //                buf.append(sp.getName()+", ");
                 if (spaces.add(sp)) {
+                    if (logBuf!=null)
+                        logBuf.append(sp.getName()+":"+sp.getRootCells().size()+" ");
                     // Entered a new space
                     synchronized(pendingCacheUpdates) {
                         pendingCacheUpdates.add(new CacheUpdate(sp, true));
@@ -228,14 +238,25 @@ class ViewCache {
                 oldSpaces.remove(sp);
             }
 
+            if (logBuf!=null && logBuf.length()>0) {
+                logBuf.insert(0,"View Entering spaces ");
+                logger.fine(logBuf.toString());
+                logBuf.setLength(0);
+            }
+//
 //            System.err.println(buf.toString());
-
-    //        System.out.println("Old spaces cut "+oldSpaces.size());
-    //        buf = new StringBuffer("View leavoing spaces ");
+//
+//            System.out.println("Old spaces cut "+oldSpaces.size());
+//            buf = new StringBuffer("View leavoing spaces ");
             for(Space sp : oldSpaces) {
-    //            buf.append(sp.getName()+", ");
+//                buf.append(sp.getName()+", ");
                 sp.removeViewCache(this);
                 spaces.remove(sp);
+
+                if (logBuf!=null) {
+                    logBuf.append(sp.getName()+" ");
+                }
+
                 // We don't remove the space cells immediately in case the user
                 // is moving along the border of the space
 
@@ -249,13 +270,19 @@ class ViewCache {
                     pendingCacheUpdates.add(new CacheUpdate(sp,false));
                 }
             }
-    //        System.err.println(buf.toString());
 
-    //        System.out.print("ViewCell moved, current spaces ");
-    //        for(Space sp : spaces) {
-    //            System.out.print(sp.getName()+", ");
-    //        }
-    //        System.out.println();
+            if (logBuf!=null && logBuf.length()>0) {
+                logBuf.insert(0, "View Leaving spaces ");
+                logger.fine(logBuf.toString());
+            }
+
+//            System.err.println(buf.toString());
+//
+//            System.out.print("ViewCell moved, current spaces ");
+//            for(Space sp : spaces) {
+//                System.out.print(sp.getName()+":"+sp.getRootCells().size()+" ");
+//            }
+//            System.out.println();
             } finally {
             viewCell.releaseRootReadLock();
         }
@@ -448,6 +475,8 @@ class ViewCache {
             } else
                 refCount++;
 
+//            System.err.println("Adding "+root.getCellID()+" ref count "+refCount);
+
             rootCells.put(root, refCount);
         }
 
@@ -475,6 +504,9 @@ class ViewCache {
                 refCount--;
                 rootCells.put(root, refCount);
             }
+
+//            System.err.println("Removing "+root.getCellID()+" ref count "+refCount);
+
         }
 
         private void processChildCells(ArrayList<CellDescription> cells, SpatialCellImpl parent, CellStatus status) {
