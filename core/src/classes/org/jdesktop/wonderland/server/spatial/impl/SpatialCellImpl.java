@@ -304,6 +304,12 @@ public class SpatialCellImpl implements SpatialCell {
                     spaces.add(s);
                 }
             }
+
+//            StringBuffer buf = new StringBuffer("Cell "+getCellID()+" in spaces ");
+//            for(Space sp : spaces) {
+//                buf.append(sp.getName()+" ");
+//            }
+//            System.err.println(buf.toString());
         }
     }
 

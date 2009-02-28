@@ -30,7 +30,7 @@ import java.util.HashMap;
  */
 class SpaceManagerGridImpl implements SpaceManager {
 
-    static final int SPACE_SIZE = 250; // Radius
+    static final int SPACE_SIZE = 50; // Radius
 
     private HashMap<String, Space> spaces = new HashMap();
  
@@ -73,23 +73,28 @@ class SpaceManagerGridImpl implements SpaceManager {
         
         retList.add(sp);
 
+        int xStep;
+        int yStep;
+        int zStep;
+
         // Now get all the other spaces within the volume
-        float radius;
         if (volume instanceof BoundingBox) {
-            radius = ((BoundingBox)volume).xExtent;
+            xStep = (int) (((BoundingBox)volume).xExtent / (SPACE_SIZE * 2));
+            yStep = (int) (((BoundingBox)volume).yExtent / (SPACE_SIZE * 2));
+            zStep = (int) (((BoundingBox)volume).zExtent / (SPACE_SIZE * 2));
         } else if (volume instanceof BoundingSphere) {
-            radius = ((BoundingSphere)volume).getRadius();
+            xStep = yStep = zStep = (int) (((BoundingSphere)volume).getRadius() / (SPACE_SIZE * 2));
         } else
             throw new RuntimeException("Bounds not supported "+volume.getClass().getName());
 
-        int step = (int) (radius / (SPACE_SIZE * 2));
 //        System.out.println("RADIUS "+radius+"  step "+step);
+//        System.err.println("Bounds "+volume);
 //        System.out.println("Current "+x+", "+y+", "+z);
-//        System.err.println("In space "+getSpaceBindingName(x, y, z)+"   step="+step);
+//        System.err.println("In space "+getSpaceBindingName(x, y, z)+"   step="+xStep+", "+yStep+", "+zStep);
         // TODO this is brute force, is there a better way ?
-        for(int xs=-step; xs<=step; xs++) {
-            for(int ys=-step; ys<=step; ys++) {
-                for(int zs=-step; zs<=step; zs++) {
+        for(int xs=-xStep; xs<=xStep; xs++) {
+            for(int ys=-yStep; ys<=yStep; ys++) {
+                for(int zs=-zStep; zs<=zStep; zs++) {
 //                    System.out.println("Checking "+(x+xs)+", "+(y+ys)+", "+(z+zs));
                     sp = getEnclosingSpaceImpl(x+xs, y+ys, z+zs);
                     if (sp==null){
@@ -97,7 +102,9 @@ class SpaceManagerGridImpl implements SpaceManager {
                         sp = createSpace(x+xs, y+ys, z+zs);
 //                        System.out.println("Creating "+(x+xs)+", "+(y+ys)+", "+(z+zs)+"  "+sp.getWorldBounds());
                     }
-                    if (sp!=null && sp.getWorldBounds().intersects(volume)) {
+
+//                    System.err.println(sp.getName()+"  "+sp.getWorldBounds()+"  "+sp.getWorldBounds().intersects(volume));
+                    if (sp.getWorldBounds().intersects(volume)) {
                         retList.add(sp);
                     }
                 }
