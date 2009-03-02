@@ -9,19 +9,21 @@
             <z>250.0</z>
         </origin>
         <bounds>
-            <type>SPHERE</type>
-            <radius>1000.0</radius>
+            <type>BOX</type>
+            <x>139.67999267578125</x>
+            <y>13.69999885559082</y>
+            <z>247.0800018310547</z>
         </bounds>
         <scale>
-            <x>0.08</x>
-            <y>0.08</y>
-            <z>0.08</z>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
         </scale>
         <rotation>
-            <x>-1.0</x>
+            <x>1.0</x>
             <y>0.0</y>
             <z>0.0</z>
-            <angle>1.570796251296997</angle>
+            <angle>0.0</angle>
         </rotation>
     </position-component>
     <model>wla://garden-arches/walled_garden_2_noexplode.kmz/models/walled_garden_2_noexplode.dae.gz</model>
@@ -30,10 +32,15 @@
         <y>0.0</y>
         <z>0.0</z>
     </geometry-translation>
+    <geometry-scale>
+        <x>0.08</x>
+        <y>0.08</y>
+        <z>0.08</z>
+    </geometry-scale>
     <geometry-rotation>
-        <x>1.0</x>
+        <x>-1.0</x>
         <y>0.0</y>
         <z>0.0</z>
-        <angle>0.0</angle>
+        <angle>1.570796251296997</angle>
     </geometry-rotation>
 </jme-collada-cell>
