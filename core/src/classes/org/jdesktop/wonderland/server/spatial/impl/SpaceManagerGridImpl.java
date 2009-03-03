@@ -23,6 +23,7 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 /**
  *
@@ -34,10 +35,6 @@ class SpaceManagerGridImpl implements SpaceManager {
 
     private HashMap<String, Space> spaces = new HashMap();
  
-    // The spaces must overlap slightly so that the view does not land between 2 spaces
-    // Fudge is only required during debugging, remove once the debug test in getEnclosingSpace is removed
-    private static final float fudge = 1.0001f;
-
     public void initialize() {
     }
     
@@ -51,25 +48,37 @@ class SpaceManagerGridImpl implements SpaceManager {
 
         Vector3f point = volume.getCenter();
 
-        int x = (int) (point.x / (SPACE_SIZE*2));
-        int y = (int) (point.y / (SPACE_SIZE*2));
-        int z = (int) (point.z / (SPACE_SIZE*2));
-        
-        if (point.x<0) x-=1;
-        if (point.y<0) y-=1;
-        if (point.z<0) z-=1;
+        float xf = ((point.x+SPACE_SIZE) / (SPACE_SIZE*2));
+        float yf = ((point.y+SPACE_SIZE) / (SPACE_SIZE*2));
+        float zf = ((point.z+SPACE_SIZE) / (SPACE_SIZE*2));
+
+        int x,y,z;
+
+        if (xf>0)
+            x = (int) Math.floor(xf);
+        else
+            x = (int) Math.ceil(xf);
+        if (yf>0)
+            y = (int) Math.floor(yf);
+        else
+            y = (int) Math.ceil(yf);
+        if (zf>0)
+            z = (int) Math.floor(zf);
+        else
+            z = (int) Math.ceil(zf);
 
         // Get the space that encloses the center of the volume
         Space sp = getEnclosingSpaceImpl(x,y,z);
         
         if (sp==null) {
             sp = createSpace(x, y, z);
-//            System.err.println("Created space "+sp.getName());
+//            System.err.println("Created space "+point+"  "+sp.getName()+" "+sp);
+//
         }
 
-        // Debug test
-        if (!sp.getWorldBounds().contains(point))
-            throw new RuntimeException("BAD ENCLOSING SPACE "+sp.getWorldBounds()+"  does not contain "+point+"   name "+getSpaceBindingName(x, y, z));
+        // Debug test. TODO REMOVE
+//        if (!sp.getWorldBounds().contains(point))
+//            Logger.getLogger(SpaceManagerGridImpl.class.getName()).warning("BAD ENCLOSING SPACE "+sp.getWorldBounds()+"  does not contain "+point+"   name "+getSpaceBindingName(x, y, z));
         
         retList.add(sp);
 
@@ -79,33 +88,38 @@ class SpaceManagerGridImpl implements SpaceManager {
 
         // Now get all the other spaces within the volume
         if (volume instanceof BoundingBox) {
-            xStep = (int) (((BoundingBox)volume).xExtent / (SPACE_SIZE * 2));
-            yStep = (int) (((BoundingBox)volume).yExtent / (SPACE_SIZE * 2));
-            zStep = (int) (((BoundingBox)volume).zExtent / (SPACE_SIZE * 2));
+            xStep = 1+(int) (((BoundingBox)volume).xExtent / (SPACE_SIZE));
+            yStep = 1+(int) (((BoundingBox)volume).yExtent / (SPACE_SIZE));
+            zStep = 1+(int) (((BoundingBox)volume).zExtent / (SPACE_SIZE));
         } else if (volume instanceof BoundingSphere) {
-            xStep = yStep = zStep = (int) (((BoundingSphere)volume).getRadius() / (SPACE_SIZE * 2));
+            xStep = yStep = zStep = 1+(int) (((BoundingSphere)volume).getRadius() / (SPACE_SIZE));
         } else
             throw new RuntimeException("Bounds not supported "+volume.getClass().getName());
 
+        yStep = 0;
+
 //        System.out.println("RADIUS "+radius+"  step "+step);
-//        System.err.println("Bounds "+volume);
-//        System.out.println("Current "+x+", "+y+", "+z);
-//        System.err.println("In space "+getSpaceBindingName(x, y, z)+"   step="+xStep+", "+yStep+", "+zStep);
+        System.err.println("Bounds "+volume);
+        System.err.println("Current "+x+", "+y+", "+z);
+        System.err.println("In space "+getSpaceBindingName(x, y, z)+"   step="+xStep+", "+yStep+", "+zStep);
         // TODO this is brute force, is there a better way ?
         for(int xs=-xStep; xs<=xStep; xs++) {
             for(int ys=-yStep; ys<=yStep; ys++) {
                 for(int zs=-zStep; zs<=zStep; zs++) {
-//                    System.out.println("Checking "+(x+xs)+", "+(y+ys)+", "+(z+zs));
                     sp = getEnclosingSpaceImpl(x+xs, y+ys, z+zs);
                     if (sp==null){
                         // Create the space
                         sp = createSpace(x+xs, y+ys, z+zs);
-//                        System.out.println("Creating "+(x+xs)+", "+(y+ys)+", "+(z+zs)+"  "+sp.getWorldBounds());
+                        System.out.println("Creating "+sp.getName()+"  "+sp.getWorldBounds());
                     }
+//                    System.err.print("Checking "+(x+xs)+", "+(y+ys)+", "+(z+zs)+" "+sp.getWorldBounds());
 
 //                    System.err.println(sp.getName()+"  "+sp.getWorldBounds()+"  "+sp.getWorldBounds().intersects(volume));
                     if (sp.getWorldBounds().intersects(volume)) {
+//                        System.err.println("  +");
                         retList.add(sp);
+                    } else {
+//                        System.err.println();
                     }
                 }
             }
@@ -116,13 +130,13 @@ class SpaceManagerGridImpl implements SpaceManager {
 
     private Space createSpace(int x, int y, int z) {
         
-        Vector3f center = new Vector3f((x * SPACE_SIZE*2)+SPACE_SIZE, 
-                                       (y * SPACE_SIZE*2)+SPACE_SIZE, 
-                                       (z * SPACE_SIZE*2)+SPACE_SIZE);
+        Vector3f center = new Vector3f(((x) * SPACE_SIZE*2),
+                                       ((y) * SPACE_SIZE*2),
+                                       ((z) * SPACE_SIZE*2));
         BoundingBox gridBounds = new BoundingBox(center, 
-                                                 SPACE_SIZE * fudge, 
-                                                 SPACE_SIZE * fudge, 
-                                                 SPACE_SIZE * fudge);
+                                                 SPACE_SIZE, 
+                                                 SPACE_SIZE, 
+                                                 SPACE_SIZE);
 
         String bindingName = getSpaceBindingName(x, y, z);
         Space space = new Space(gridBounds, bindingName);
