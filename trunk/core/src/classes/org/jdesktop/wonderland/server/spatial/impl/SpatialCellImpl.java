@@ -295,6 +295,8 @@ public class SpatialCellImpl implements SpatialCell {
         worldTransform.transform(worldBounds);
 
         if (isRoot) {
+            HashSet<Space> oldSpaces = (HashSet<Space>) spaces.clone();
+
             // Root cell
             // Check which spaces the bounds intersect with
             Iterable<Space> it = UniverseImpl.getUniverse().getSpaceManager().getEnclosingSpace(worldBounds);
@@ -302,7 +304,16 @@ public class SpatialCellImpl implements SpatialCell {
                 if (!spaces.contains(s)) {
                     s.addRootSpatialCell(this);
                     spaces.add(s);
+                } else {
+                    oldSpaces.remove(s);
                 }
+            }
+
+            // Remove this cell from spaces it no longer intersects with
+            for(Space s : oldSpaces) {
+//                System.err.println("Removing cell from space "+s.getName());
+                s.removeRootSpatialCell(this);
+                spaces.remove(s);
             }
 
 //            StringBuffer buf = new StringBuffer("Cell "+getCellID()+" in spaces ");
@@ -424,6 +435,7 @@ public class SpatialCellImpl implements SpatialCell {
     void addViewCache(Collection<ViewCache> caches, Space space) {
         synchronized(viewCache) {
             for(ViewCache c : caches) {
+            System.err.println("ADD VIEW CACHE "+c+"  "+space.getName());
                 HashSet<Space> s = viewCache.get(c);
                 if (s==null) {
                     s = new HashSet();
@@ -450,6 +462,7 @@ public class SpatialCellImpl implements SpatialCell {
     void removeViewCache(Collection<ViewCache> caches, Space space) {
         synchronized(viewCache) {
             for(ViewCache c : caches) {
+            System.err.println("REMOVE VIEW CACHE "+c+"  "+space.getName());
                 HashSet<Space> s = viewCache.get(c);
                 if (s==null) {
                     throw new RuntimeException("ERROR, cache not in set");
@@ -462,6 +475,8 @@ public class SpatialCellImpl implements SpatialCell {
                 }
             }
         }
+
+        System.err.println("VIEW CACHES REMAINING "+viewCache.size());
 
         // Notify all cells in the graph that caches have
         // been added. TODO this could be optimized to only notify
