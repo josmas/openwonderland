@@ -45,7 +45,7 @@ public class JmeColladaCellMO extends CellMO {
     private String modelURI = null;
     private Vector3f geometryTranslation = new Vector3f();
     private Quaternion geometryRotation = new Quaternion();
-    private Vector3f geometryScale = new Vector3f();
+    private Vector3f geometryScale = new Vector3f(1.0f, 1.0f, 1.0f);
     	
     /** Default constructor, used when cell is created via WFS */
     public JmeColladaCellMO() {
