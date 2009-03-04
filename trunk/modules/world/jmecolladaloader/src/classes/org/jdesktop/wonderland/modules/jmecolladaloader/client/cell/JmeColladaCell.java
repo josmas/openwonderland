@@ -58,6 +58,9 @@ public class JmeColladaCell extends Cell {
         this.geometryTranslation = colladaConfig.getGeometryTranslation();
         this.geometryScale = colladaConfig.getGeometryScale();
         logger.info("[CELL] JME COLLADA CELL " + this.modelURI);
+        Vector3f axis = new Vector3f();
+        float angle = geometryRotation.toAngleAxis(axis);
+        System.err.println("JME CELL "+geometryTranslation+"  "+angle+"  "+axis);
     }
     
     @Override

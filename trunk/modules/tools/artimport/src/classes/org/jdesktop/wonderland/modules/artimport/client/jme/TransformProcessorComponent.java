@@ -36,12 +36,14 @@ public class TransformProcessorComponent extends ProcessorComponent {
         private Matrix3f rotation;
         private Vector3f translation;
         private Vector3f scale = new Vector3f(1,1,1);
-        private Node node;
+        private Node modelBG;
+        private Node rootBG;
         private WorldManager worldManager;
         private boolean updatePending = false;
         
-        public TransformProcessorComponent(WorldManager worldManager, Node node) {
-            this.node = node;
+        public TransformProcessorComponent(WorldManager worldManager, Node modelBG, Node rootBG) {
+            this.modelBG = modelBG;
+            this.rootBG = rootBG;
             this.worldManager = worldManager;
         }
         
@@ -54,14 +56,14 @@ public class TransformProcessorComponent extends ProcessorComponent {
         public void commit(ProcessorArmingCollection conditions) {
             synchronized(this) {
                 if (updatePending) {
-                    node.setLocalRotation(rotation);
-                    node.setLocalTranslation(translation);
-                    node.setLocalScale(scale);
+                    modelBG.setLocalRotation(rotation);
+                    rootBG.setLocalTranslation(translation);
+                    modelBG.setLocalScale(scale);
                     updatePending = false;
                 }
 
             }
-            worldManager.addToUpdateList(node);
+            worldManager.addToUpdateList(modelBG);
         }
 
         @Override

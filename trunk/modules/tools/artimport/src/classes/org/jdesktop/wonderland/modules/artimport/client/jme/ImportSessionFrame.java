@@ -21,6 +21,7 @@ import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingVolume;
 import com.jme.image.Texture;
 import com.jme.light.PointLight;
 import com.jme.math.Matrix3f;
@@ -607,6 +608,13 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         File moduleJar = createModuleJar(deploymentInfo, null);
 
+        final JDialog uploadingDialog = new JDialog(this);
+        uploadingDialog.setLayout(new BorderLayout());
+        uploadingDialog.add(loadingDialogPanel, BorderLayout.CENTER);
+        uploadingDialog.pack();
+        uploadingDialog.setSize(200,100);
+        uploadingDialog.setVisible(true);
+        uploadingDialog.setAlwaysOnTop(true);
         // Now deploy to server
         try {
             ModuleUploader uploader = new ModuleUploader(new URL(targetServer.getServerURL()));
@@ -617,6 +625,9 @@ public class ImportSessionFrame extends javax.swing.JFrame
         } catch(IOException e) {
             Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, e);
             return;
+        } finally {
+            uploadingDialog.setVisible(false);
+            uploadingDialog.dispose();
         }
 
         // Remove entities, once we create the cells on the server we
@@ -654,7 +665,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
             for(ImportedModel model : imports) {
                 try {
-                    deploymentInfo.add(model.getModelLoader().deployToModule(tmpDir));
+                    deploymentInfo.add(model.getModelLoader().deployToModule(tmpDir, model));
                 } catch (IOException ex) {
                     Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOrigModel(), ex);
                 }
@@ -783,7 +794,7 @@ private void saveAsSrcBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             // Compile the target module
         for(ImportedModel model : imports) {
             try {
-                deploymentInfo.add(model.getModelLoader().deployToModule(srcDir));
+                deploymentInfo.add(model.getModelLoader().deployToModule(srcDir, model));
             } catch (IOException ex) {
                 Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOrigModel(), ex);
             }
@@ -856,8 +867,8 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
         Vector3f rot = model.getOrientation();
 
         Node rootBG = new Node();
-        rootBG.setLocalRotation(calcRotationMatrix(rot.x, rot.y, rot.z));
-        rootBG.setLocalTranslation(model.getTranslation());
+//        rootBG.setLocalRotation(calcRotationMatrix(rot.x, rot.y, rot.z));
+//        rootBG.setLocalTranslation(model.getTranslation());
         
         File dir = new File(model.getOrigModel()).getParentFile();
         
@@ -878,16 +889,6 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
         model.setModelLoader(modelLoader);
         modelBG = modelLoader.importModel(modelFile);
 
-//        Quaternion modelRot = modelBG.getLocalRotation();
-//        Vector3f modelTrans = modelBG.getLocalTranslation();
-//
-//        System.err.println("Original rootBG rot "+rootBG.getLocalRotation().toAngleAxis(null));
-//        rootBG.setLocalRotation(modelRot);
-//        Quaternion noRot = new Quaternion();
-//        noRot.fromAngles(0,0,0);
-//        modelBG.setLocalRotation(noRot);
-//        System.err.println("New rootBG rot "+rootBG.getLocalRotation().toAngleAxis(null));
-
         rootBG.attachChild(modelBG);
         
         model.setModelBG(modelBG);
@@ -903,16 +904,14 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
 //        matState.setDiffuse(color);
         rootBG.setRenderState(matState);
         rootBG.setRenderState(buf);
-        rootBG.setLocalTranslation(0f,0f,0f);
 
-                        
         Entity entity = new Entity(model.getOrigModel());
         RenderComponent scene = wm.getRenderManager().createRenderComponent(rootBG);
         entity.addComponent(RenderComponent.class,scene);
         
         model.setEntity(entity);
         
-        entity.addComponent(TransformProcessorComponent.class, new TransformProcessorComponent(wm, modelBG));
+        entity.addComponent(TransformProcessorComponent.class, new TransformProcessorComponent(wm, modelBG, rootBG));
         
         wm.addEntity(entity);
         sgViewFrame.addEntity(entity);

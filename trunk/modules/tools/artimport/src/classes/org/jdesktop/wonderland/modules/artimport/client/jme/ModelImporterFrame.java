@@ -82,7 +82,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     private Vector3f currentRotationValues = new Vector3f();
     private Vector3f currentScale = new Vector3f();
     private Matrix3f currentRotation = new Matrix3f();
-    
+
     private ImportSessionFrame sessionFrame;
     
     private ImportedModel importedModel=null;
@@ -209,11 +209,11 @@ public class ModelImporterFrame extends javax.swing.JFrame {
      * Set the spinners to the rotation, translation and scale local coords of this node
      * @param node
      */
-    private void setSpinners(Node node) {
-        Vector3f translation = node.getLocalTranslation();
-        Quaternion quat = node.getLocalRotation();
+    private void setSpinners(Node modelBG, Node rootBG) {
+        Vector3f translation = rootBG.getLocalTranslation();
+        Quaternion quat = modelBG.getLocalRotation();
         float[] angles = quat.toAngles(new float[3]);
-        Vector3f scale = node.getLocalScale();
+        Vector3f scale = modelBG.getLocalScale();
 
         translationXTF.setValue(translation.x);
         translationYTF.setValue(translation.y);
@@ -224,7 +224,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         rotationZTF.setValue((float)Math.toDegrees(angles[2]));
 
     }
-    
+
     private void calcCurrentRotationMatrix() {
         currentRotation = sessionFrame.calcRotationMatrix(
                 (float)Math.toRadians(currentRotationValues.x),
@@ -298,7 +298,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         importedModel = new ImportedModel(origFile.getAbsolutePath(),
                                                 null,
                                                 null,
-                                                new Vector3f(50,0,50),
+                                                new Vector3f(0,0,0),
                                                 new Vector3f(),
                                                 null, 
                                                 null);
@@ -306,7 +306,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
             public void loadComplete(Entity entity) {
                 transformProcessor = (TransformProcessorComponent) entity.getComponent(TransformProcessorComponent.class);
-                setSpinners(importedModel.getModelBG());
+                setSpinners(importedModel.getModelBG(), importedModel.getRootBG());
 
                 entity.addComponent(LoadCompleteProcessor.class, new LoadCompleteProcessor(entity));
                 
@@ -942,13 +942,10 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             return;
         }
 
-//        System.err.println("Model Bounds "+bg.getWorldBound());
-        
         BoundingVolume bounds = bg.getWorldBound();
 
         if (bounds==null) {
-            bounds = new BoundingBox();
-            calcBounds(bg, bounds);
+            bounds = calcBounds(bg);
         }
 
         // Remove the rotation from the bounds because it will be reapplied by the cell
@@ -988,27 +985,34 @@ public class ModelImporterFrame extends javax.swing.JFrame {
      * @param n
      * @param bv
      */
-    private void calcBounds(Spatial n, BoundingVolume bv) {
-        bv.mergeLocal(n.getWorldBound());
+    BoundingVolume calcBounds(Spatial n) {
+        BoundingVolume bounds=null;
+
+        if (n instanceof Geometry) {
+            bounds = new BoundingBox();
+            bounds.computeFromPoints(((Geometry)n).getVertexBuffer());
+
+            bounds.transform(n.getLocalRotation(), n.getLocalTranslation(), n.getLocalScale());
+        } 
+
         if (n instanceof Node && ((Node)n).getQuantity()>0) {
             for(Spatial child : ((Node)n).getChildren()) {
-                calcBounds(child, bv);
+                BoundingVolume childB = calcBounds(child);
+                if (bounds==null)
+                    bounds = childB;
+                else
+                    bounds.mergeLocal(childB);
             }
         }
-    }
 
-    /**
-     * Convert the float to a string and trim it to the
-     * specified number of decimalPlaces
-     */
-    private String floatToString( float number, int decimalPlaces ) {
-        String str = Float.toString( number );
+        if (bounds!=null)
+            bounds.transform(n.getLocalRotation(), n.getLocalTranslation(), n.getLocalScale(), bounds);
+//        Vector3f axis = new Vector3f();
+//        float angle = n.getLocalRotation().toAngleAxis(axis);
+//        System.err.println("Applying transform "+n.getLocalTranslation()+"  "+angle+"  "+axis);
+//        System.err.println("BOunds "+bounds);
         
-        int dot = str.lastIndexOf('.');
-        if (dot==-1 || dot>=str.length()-decimalPlaces)
-            return str;
-        
-        return str.substring( 0, dot+decimalPlaces+1 );
+        return bounds;
     }
     
     
