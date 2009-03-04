@@ -217,7 +217,7 @@ class ViewCache {
             proximityBounds.setCenter(viewCell.getWorldTransform().getTranslation(null));
 
             Iterable<Space> newSpaces = spaceManager.getEnclosingSpace(proximityBounds);
-            System.err.println("ViewCell Bounds "+proximityBounds);
+//            System.err.println("ViewCell Bounds "+proximityBounds);
 //            StringBuffer buf = new StringBuffer("View in spaces ");
 
             StringBuffer logBuf = null;
@@ -269,7 +269,7 @@ class ViewCache {
                 synchronized(pendingCacheUpdates) {
                     pendingCacheUpdates.add(new CacheUpdate(sp,false));
                 }
-            }
+                }
 
             if (logBuf!=null && logBuf.length()>0) {
                 logBuf.insert(0, "View Leaving spaces ");
@@ -278,12 +278,12 @@ class ViewCache {
 
 //            System.err.println(buf.toString());
 
-            System.out.print("ViewCell moved, current spaces ");
-            for(Space sp : spaces) {
-                System.out.print(sp.getName()+":"+sp.getRootCells().size()+" ");
-            }
-            System.out.println();
-            } finally {
+//            System.out.print("ViewCell moved, current spaces ");
+//            for(Space sp : spaces) {
+//                System.out.print(sp.getName()+":"+sp.getRootCells().size()+" ");
+//            }
+//            System.out.println();
+        } finally {
             viewCell.releaseRootReadLock();
         }
     }
