@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jme.util.resource.SimpleResourceLocator;
@@ -36,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
@@ -59,7 +62,7 @@ class JmeColladaLoader implements ModelLoader {
     
 //    private ArrayList<String> modelFiles = new ArrayList();
 
-    private Node rootNode = null;
+    private Node modelNode = null;
 
     private HashMap<URL, String> resourceSet = new HashMap();
 
@@ -69,7 +72,7 @@ class JmeColladaLoader implements ModelLoader {
      * @return
      */
     public Node importModel(File file) throws IOException {
-        rootNode = null;
+        modelNode = null;
         origFile = file;
 
         SimpleResourceLocator resourceLocator = new RecordingResourceLocator(file.toURI());
@@ -81,16 +84,16 @@ class JmeColladaLoader implements ModelLoader {
         logger.info("Loading MODEL " + file.getName());
         BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
 
-        rootNode = JmeColladaRenderer.loadModel(in, file.getName());
+        modelNode = JmeColladaRenderer.loadModel(in, file.getName());
         in.close();
         
         ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
-        return rootNode;
+        return modelNode;
     }
 
 
-    public ModelDeploymentInfo deployToModule(File moduleRootDir) throws IOException {
+    public ModelDeploymentInfo deployToModule(File moduleRootDir, ImportedModel model) throws IOException {
         try {
             String modelName = origFile.getName();
             
@@ -108,14 +111,35 @@ class JmeColladaLoader implements ModelLoader {
 //                logger.warning("Multiple models not supported during deploy");
 //            }
 
+            // XXX There should not be a direct reference to another module
+            // from here.
             JmeColladaCellServerState setup = new JmeColladaCellServerState();
             setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelName);
+            setup.setGeometryRotation(new Rotation(modelNode.getLocalRotation()));
+            setup.setGeometryScale(new Scale(modelNode.getLocalScale()));
 
+            Vector3f offset = model.getRootBG().getLocalTranslation();
             PositionComponentServerState position = new PositionComponentServerState();
-            position.setOrigin(new Origin(rootNode.getLocalTranslation()));
-            position.setRotation(new Rotation(rootNode.getLocalRotation()));
-            position.setScaling(new Scale(rootNode.getLocalScale()));
-            position.setBounds(rootNode.getWorldBound());
+            Vector3f boundsCenter = model.getRootBG().getWorldBound().getCenter();
+
+            offset.subtractLocal(boundsCenter);
+
+            setup.setGeometryTranslation(new Origin(offset));
+
+//            System.err.println("BOUNDS CENTER "+boundsCenter);
+//            System.err.println("OFfset "+offset);
+//            System.err.println("Cell origin "+boundsCenter);
+            position.setOrigin(new Origin(boundsCenter));
+
+            // The cell bounds already have the rotation and scale applied, so these
+            // values must not go in the Cell transform. Instead they go in the
+            // JME cell setup so that the model is correctly oriented and thus
+            // matches the bounds in the cell.
+
+            // Center the worldBounds on the cell (ie 0,0,0)
+            BoundingVolume worldBounds = modelNode.getWorldBound();
+            worldBounds.setCenter(new Vector3f(0,0,0));
+            position.setBounds(worldBounds);
             setup.addComponentServerState(position);
 
             ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();
