@@ -4,9 +4,9 @@
     <metadata/>
     <position-component>
         <origin>
-            <x>-140.0</x>
-            <y>0.0</y>
-            <z>250.0</z>
+            <x>-9.680023193359375</x>
+            <y>13.699996948242188</y>
+            <z>19.000015258789062</z>
         </origin>
         <bounds>
             <type>BOX</type>
@@ -28,9 +28,9 @@
     </position-component>
     <model>wla://garden-arches/walled_garden_2_noexplode.kmz/models/walled_garden_2_noexplode.dae.gz</model>
     <geometry-translation>
-        <x>0.0</x>
-        <y>0.0</y>
-        <z>0.0</z>
+        <x>-130.31997680664062</x>
+        <y>-13.699996948242188</y>
+        <z>230.99998474121094</z>
     </geometry-translation>
     <geometry-scale>
         <x>0.08</x>
@@ -38,7 +38,7 @@
         <z>0.08</z>
     </geometry-scale>
     <geometry-rotation>
-        <x>-1.0</x>
+        <x>-1</x>
         <y>0.0</y>
         <z>0.0</z>
         <angle>1.570796251296997</angle>
