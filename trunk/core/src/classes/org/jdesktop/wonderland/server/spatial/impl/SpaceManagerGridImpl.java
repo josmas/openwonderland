@@ -99,9 +99,9 @@ class SpaceManagerGridImpl implements SpaceManager {
         yStep = 0;
 
 //        System.out.println("RADIUS "+radius+"  step "+step);
-        System.err.println("Bounds "+volume);
-        System.err.println("Current "+x+", "+y+", "+z);
-        System.err.println("In space "+getSpaceBindingName(x, y, z)+"   step="+xStep+", "+yStep+", "+zStep);
+//        System.err.println("Bounds "+volume);
+//        System.err.println("Current "+x+", "+y+", "+z);
+//        System.err.println("In space "+getSpaceBindingName(x, y, z)+"   step="+xStep+", "+yStep+", "+zStep);
         // TODO this is brute force, is there a better way ?
         for(int xs=-xStep; xs<=xStep; xs++) {
             for(int ys=-yStep; ys<=yStep; ys++) {
@@ -110,7 +110,7 @@ class SpaceManagerGridImpl implements SpaceManager {
                     if (sp==null){
                         // Create the space
                         sp = createSpace(x+xs, y+ys, z+zs);
-                        System.out.println("Creating "+sp.getName()+"  "+sp.getWorldBounds());
+//                        System.out.println("Creating "+sp.getName()+"  "+sp.getWorldBounds());
                     }
 //                    System.err.print("Checking "+(x+xs)+", "+(y+ys)+", "+(z+zs)+" "+sp.getWorldBounds());
 

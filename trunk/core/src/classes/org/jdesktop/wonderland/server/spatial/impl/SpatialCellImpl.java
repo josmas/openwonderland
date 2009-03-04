@@ -435,7 +435,6 @@ public class SpatialCellImpl implements SpatialCell {
     void addViewCache(Collection<ViewCache> caches, Space space) {
         synchronized(viewCache) {
             for(ViewCache c : caches) {
-            System.err.println("ADD VIEW CACHE "+c+"  "+space.getName());
                 HashSet<Space> s = viewCache.get(c);
                 if (s==null) {
                     s = new HashSet();
@@ -462,7 +461,6 @@ public class SpatialCellImpl implements SpatialCell {
     void removeViewCache(Collection<ViewCache> caches, Space space) {
         synchronized(viewCache) {
             for(ViewCache c : caches) {
-            System.err.println("REMOVE VIEW CACHE "+c+"  "+space.getName());
                 HashSet<Space> s = viewCache.get(c);
                 if (s==null) {
                     throw new RuntimeException("ERROR, cache not in set");
@@ -475,8 +473,6 @@ public class SpatialCellImpl implements SpatialCell {
                 }
             }
         }
-
-        System.err.println("VIEW CACHES REMAINING "+viewCache.size());
 
         // Notify all cells in the graph that caches have
         // been added. TODO this could be optimized to only notify
