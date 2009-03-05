@@ -23,8 +23,6 @@ import com.sun.sgs.app.ClientSessionListener;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -36,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.comms.SessionInternalConnectionType;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
-import org.jdesktop.wonderland.common.messages.ExtractMessageException;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
@@ -148,7 +145,10 @@ public class ProtocolSessionListener
             
             // all set -- set the wrapped session
             wrapped = cp.createSessionListener(session, psm.getProtocolVersion());
-            
+            if (wrapped instanceof ManagedObject) {
+                wrapped = new ManagedClientSessionWrapper(wrapped);
+            }
+
             // TODO: is this the right thing to do, or should we only
             // do this automatically for the Wonderland protocol?
             WonderlandClientID clientID = new WonderlandClientID(session);
@@ -407,5 +407,23 @@ public class ProtocolSessionListener
     static class ProtocolClientSet extends HashSet<ManagedReference<ClientSession>>
             implements ManagedObject, Serializable
     {
+    }
+
+    static class ManagedClientSessionWrapper 
+            implements ClientSessionListener, Serializable
+    {
+        private ManagedReference<ClientSessionListener> listenerRef;
+
+        public ManagedClientSessionWrapper(ClientSessionListener listener) {
+            listenerRef = AppContext.getDataManager().createReference(listener);
+        }
+
+        public void receivedMessage(ByteBuffer message) {
+            listenerRef.get().receivedMessage(message);
+        }
+
+        public void disconnected(boolean graceful) {
+            listenerRef.get().disconnected(graceful);
+        }
     }
 }

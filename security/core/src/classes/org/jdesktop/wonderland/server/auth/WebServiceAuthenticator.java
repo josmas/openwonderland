@@ -21,10 +21,6 @@ import com.sun.sgs.auth.Identity;
 import com.sun.sgs.auth.IdentityAuthenticator;
 import com.sun.sgs.auth.IdentityCredentials;
 import com.sun.sgs.impl.auth.NamePasswordCredentials;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
@@ -34,8 +30,6 @@ import javax.security.auth.login.CredentialException;
 import javax.security.auth.login.LoginException;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.login.AuthenticationException;
-import org.jdesktop.wonderland.common.login.AuthenticationInfo;
-import org.jdesktop.wonderland.common.login.AuthenticationManager;
 import org.jdesktop.wonderland.common.login.AuthenticationService;
 
 /**
@@ -44,54 +38,18 @@ import org.jdesktop.wonderland.common.login.AuthenticationService;
  * but the user's name is filled in based on the passed in data.
  * @author jkaplan
  */
-public class WebServiceAuth implements IdentityAuthenticator {
+public class WebServiceAuthenticator implements IdentityAuthenticator {
     // logger
     private static final Logger logger =
-            Logger.getLogger(WebServiceAuth.class.getName());
-
-    // properties we read
-    private static final String AUTH_URL_PROP = "wonderland.authentication.url";
-    private static final String SERVER_URL_PROP = "wonderland.web.server.url";
-    private static final String AUTH_SERVICE_PATH =
-            "security-session-noauth/security-session-noauth/identity";
-
-    private static final String DARKSTAR_USERNAME = "sgs.auth.username";
-    private static final String DARKSTAR_USERNAME_DEFAULT = "darkstar";
-    private static final String DARKSTAR_PASSWORD_FILE = "sgs.password.file";
-
+            Logger.getLogger(WebServiceAuthenticator.class.getName());
 
     // authentication service
     private AuthenticationService auth;
     
-    public WebServiceAuth(Properties prop) {
+    public WebServiceAuthenticator(Properties prop) {
         logger.info("Loading WebServie authenticator");
 
-        // get the authentication URL
-        String authUrl = System.getProperty(AUTH_URL_PROP);
-        if (authUrl == null) {
-            // fall back to the default, based on the web server URL
-            authUrl = System.getProperty(SERVER_URL_PROP);
-            authUrl += AUTH_SERVICE_PATH;
-        }
-
-        // the login username
-        String username = System.getProperty(DARKSTAR_USERNAME,
-                                             DARKSTAR_USERNAME_DEFAULT);
-
-        // get the login password file.  If this is null, we will do
-        // a login with no authentication
-        String passwordFile = System.getProperty(DARKSTAR_PASSWORD_FILE);
-
-        try {
-            if (passwordFile == null) {
-                auth = noAuthLogin(authUrl, username);
-            } else {
-                auth = authLogin(authUrl, username, passwordFile);
-            }
-        } catch (AuthenticationException ae) {
-            throw new IllegalStateException("Error authenticating Darkstar " +
-                                            "server", ae);
-        }
+        auth = ServerAuthentication.getAuthenticationService();
     }
 
     public String[] getSupportedCredentialTypes() {
@@ -165,43 +123,5 @@ public class WebServiceAuth implements IdentityAuthenticator {
             ce.initCause(ne);
             throw ce;
         }
-    }
-
-    /**
-     * Log in with no credentials
-     * @param username the username
-     */
-    protected AuthenticationService noAuthLogin(String authUrl, String username)
-        throws AuthenticationException
-    {
-        AuthenticationInfo info = new AuthenticationInfo(
-                AuthenticationInfo.Type.NONE, authUrl);
-        return AuthenticationManager.login(info, username, "Darkstar server");
-    }
-
-    /**
-     * Log in with the given username and password
-     * @param username the username to log in with
-     * @param password the password to log in with
-     */
-    protected AuthenticationService authLogin(String authUrl, String username,
-                                              String passwordFile)
-            throws AuthenticationException
-    {
-        String password;
-
-        // read the password from the password file
-        try {
-            File f = new File(passwordFile);
-            BufferedReader br = new BufferedReader(new FileReader(f));
-            password = br.readLine();
-        } catch (IOException ioe) {
-            throw new AuthenticationException("Error reading password file " +
-                                              passwordFile, ioe);
-        }
-
-        AuthenticationInfo info = new AuthenticationInfo(
-                AuthenticationInfo.Type.WEB_SERVICE, authUrl);
-        return AuthenticationManager.login(info, username, password);
     }
 }
