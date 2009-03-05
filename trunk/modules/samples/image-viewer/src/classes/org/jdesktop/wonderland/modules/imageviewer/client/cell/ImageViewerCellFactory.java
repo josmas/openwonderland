@@ -37,12 +37,11 @@ public class ImageViewerCellFactory implements CellFactorySPI {
 
     public <T extends CellServerState> T getDefaultCellServerState() {
        ImageViewerCellServerState state = new ImageViewerCellServerState();
-       state.setImageURI("wla://imageviewer/MountainPicture.png");
        return (T)state;
     }
 
     public String getDisplayName() {
-        return "Image Viewer";
+        return null;
     }
 
     public Image getPreviewImage() {
