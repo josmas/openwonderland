@@ -53,6 +53,11 @@ import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
+import org.jdesktop.wonderland.server.security.ActionMap;
+import org.jdesktop.wonderland.server.security.Resource;
+import org.jdesktop.wonderland.server.security.ResourceMap;
+import org.jdesktop.wonderland.server.security.SecureTask;
+import org.jdesktop.wonderland.server.security.SecurityManager;
 
 /**
  * This is the default session listener is used by Wonderland clients.
@@ -72,7 +77,7 @@ import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
  */
 @ExperimentalAPI
 public class WonderlandSessionListener
-        implements ClientSessionListener, Serializable {
+        implements ClientSessionListener, ManagedObject, Serializable {
     
     /** a logger */
     private static final Logger logger =
@@ -336,26 +341,96 @@ public class WonderlandSessionListener
      * @param type the type of client to attach
      * @param properties the message properties
      */
-    protected void handleAttach(MessageID messageID, ConnectionType type,
-                                Properties properties) 
+    protected void handleAttach(MessageID messageID,
+                                ConnectionType type,
+                                Properties properties)
     {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Session " + getSession().getName() + " attach " +
                         "client type " + type);
         }
-        
-        ClientSession session = getSession();
-        
+
+        // make sure properties is not null
+        if (properties == null) {
+            properties = new Properties();
+        }
+
         // get the handler for this type
-        ClientHandlerRef ref = getHandlerStore().getHandlerRef(type);
+        final ClientHandlerRef ref = getHandlerStore().getHandlerRef(type);
         if (ref == null) {
-            logger.fine("Session " + session.getName() + " no handler for " +
-                        "client type " + type);
+            logger.fine("Session " + getSession().getName() + " no handler " +
+                        "for client type " + type);
             sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
                       "No handler for " + type);
             return;
         }
-        
+
+        // determine if security is needed
+        Resource resource = null;
+        if (ref.get() instanceof SecureClientConnectionHandler) {
+            SecureClientConnectionHandler sec =
+                    (SecureClientConnectionHandler) ref.get();
+            resource = sec.checkConnect(getWonderlandClientID(), properties);
+        }
+
+        // if the resource is not null, we need to query the connect capability
+        // and only connect if it succeeds
+        if (resource != null) {
+            attachSecure(resource, messageID, type, properties, ref);
+        } else {
+            // no security, just finish the connection
+            finishAttach(messageID, type, properties, ref);
+        }
+    }
+
+    private void attachSecure(final Resource resource,
+                              final MessageID messageID,
+                              final ConnectionType type,
+                              final Properties properties,
+                              final ClientHandlerRef ref)
+    {
+        // get the security manager
+        SecurityManager security = AppContext.getManager(SecurityManager.class);
+
+        // create a request
+        ActionMap am = new ActionMap(resource, ConnectAction.getInstance());
+        ResourceMap request = new ResourceMap();
+        request.put(resource.getId(), am);
+
+        // create a binding for the listener so we can retrieve it in the
+        // SecureTask
+        final String bindingName = getSession().getName() + ".secureAttach." +
+                                   type.toString();
+        AppContext.getDataManager().setBinding(bindingName, this);
+
+        // perform the security check
+        security.doSecure(request, new SecureTask() {
+            public void run(ResourceMap granted) {
+                ActionMap am = granted.get(resource.getId());
+                
+                // get the binding we created earlier
+                WonderlandSessionListener listener = (WonderlandSessionListener)
+                        AppContext.getDataManager().getBinding(bindingName);
+                AppContext.getDataManager().removeBinding(bindingName);
+
+                if (am.containsKey(ConnectAction.getInstance().getName())) {
+                    // request was accepted -- continue processing
+                    listener.finishAttach(messageID, type, properties, ref);
+                } else {
+                    logger.fine("Session " + listener.getSession().getName() +
+                                " permission denied for client type " + type);
+                    listener.sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
+                                       "Permission denied for " + type);
+                }
+            }
+        });
+    }
+
+    private void finishAttach(MessageID messageID, ConnectionType type,
+                              Properties properties, ClientHandlerRef ref)
+    {
+        ClientSession session = getSession();
+
         // get the ID for this type
         WonderlandClientSenderImpl sender = getHandlerStore().getSender(type);
         short clientID = sender.getClientID();
@@ -383,11 +458,6 @@ public class WonderlandSessionListener
         // with this cell.  Store the channel locally since it is used in
         // every call to messageReceived()
         senders.put(clientID, sender);
-        
-        // make sure properties aren't null
-        if (properties == null) {
-            properties = new Properties();
-        }
         
         // notify the handler
         ref.get().clientConnected(sender, getWonderlandClientID(), properties);
@@ -625,14 +695,14 @@ public class WonderlandSessionListener
      */
     static class SessionInternalConnectionHandler implements ClientConnectionHandler, Serializable {
         /** the listener to call back to */
-        private WonderlandSessionListener listener;
+        private ManagedReference<WonderlandSessionListener> listener;
         
         /**
          * Set the session listener
          * @param listener the session listener
          */
         public void setListener(WonderlandSessionListener listener) {
-            this.listener = listener;
+            this.listener = AppContext.getDataManager().createReference(listener);
         }
         
         public ConnectionType getConnectionType() {
@@ -662,11 +732,12 @@ public class WonderlandSessionListener
         {
             if (message instanceof AttachClientMessage) {
                 AttachClientMessage acm = (AttachClientMessage) message;
-                listener.handleAttach(acm.getMessageID(), acm.getClientType(),
-                                      acm.getProperties());
+                listener.get().handleAttach(acm.getMessageID(),
+                                            acm.getClientType(),
+                                            acm.getProperties());
             } else if (message instanceof DetachClientMessage) {
                 DetachClientMessage dcm = (DetachClientMessage) message;
-                listener.handleDetach(dcm.getClientID());
+                listener.get().handleDetach(dcm.getClientID());
             }
         }
     }
@@ -679,7 +750,7 @@ public class WonderlandSessionListener
         private static final String DS_KEY = HandlerStore.class.getName();
         
         /** the handlers, mapped by ConnectionType */
-        private Map<ConnectionType, HandlerRecord> handlers = 
+        private final Map<ConnectionType, HandlerRecord> handlers =
                 new HashMap<ConnectionType, HandlerRecord>();
         
         /** The next client ID to assign */

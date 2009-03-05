@@ -169,8 +169,8 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
                     String value = URLDecoder.decode(cookie.getValue(), "UTF-8");
                     String userId = sessionManager.getUserId(value);
 
-                    logger.fine("User id for token " + value + " is " +
-                                userId);
+                    logger.warning("User id for token " + value + " is " +
+                                   userId);
 
                     if (userId != null) {
                         return userId;

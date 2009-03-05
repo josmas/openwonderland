@@ -37,7 +37,26 @@
                 moduleDescription="${module.description}"
                 jarfile="${module.dist.dir}/${module.name}.jar"
                 builddir="${build.lib.dir}">
-            
+
+            <client>
+                <clientjar name="security-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                </clientjar>
+            </client>
+
+            <server>
+                <serverjar name="security-server" basedir="${build.classes.dir}">
+                    <service type="com.sun.sgs.service.Service"
+                             provider="org.jdesktop.wonderland.modules.security.server.service.SecurityService"/>
+                    <service type="com.sun.sgs.service.Manager"
+                             provider="org.jdesktop.wonderland.modules.security.server.service.SecurityManagerImpl"/>
+
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server>
+
             <part name="weblib">
                 <jar name="wonderland-security-weblib.jar">
                     <zipfileset dir="${build.classes.dir}">

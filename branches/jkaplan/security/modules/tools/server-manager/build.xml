@@ -22,6 +22,10 @@
         <path path="${web.classpath}"/>
     </pathconvert>
 
+    <pathconvert property="module-server.classpath">
+        <path location="${current.dir}/../security/build/lib/server/security-server.jar"/>
+    </pathconvert>
+
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client"/>

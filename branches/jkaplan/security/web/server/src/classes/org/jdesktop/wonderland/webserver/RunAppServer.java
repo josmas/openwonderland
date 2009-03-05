@@ -47,6 +47,7 @@ import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.modules.service.ModuleManager.TaggedModule;
 import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.FileListUtil;
+import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
  *
@@ -151,6 +152,11 @@ public class RunAppServer {
         // output the derby log file to a sensible location
         System.setProperty("derby.stream.error.file",
                            new File(RunUtil.getRunDir(), "derby.log").getPath());
+
+        // set the run directory to the subsituted value, so that it can
+        // be used in domain.xml
+        System.setProperty(Constants.RUN_DIR_PROP,
+                           SystemPropertyUtil.getProperty(Constants.RUN_DIR_PROP));
     }
 
     /**
@@ -409,6 +415,10 @@ public class RunAppServer {
         efs.setInstanceRoot(instance_dir);
         efs.setDomainXmlSource(RunUtil.extract(RunAppServer.class,
                 "/domain.xml", install_dir));
+
+        File logDir = new File(SystemPropertyUtil.getProperty("wonderland.log.dir"));
+        File logFile = new File(logDir, "webserver.log");
+        efs.setLogFile(logFile);
 
         // setup and launch
         appServer = new WonderlandAppServer(info);

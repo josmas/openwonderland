@@ -13,6 +13,10 @@
         <path location="${current.dir}/../security/build/lib/weblib/wonderland-security-weblib.jar"/>
     </pathconvert>
 
+    <pathconvert property="module-server.classpath">
+        <path location="${current.dir}/../security/build/lib/server/security-server.jar"/>
+    </pathconvert>
+
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client,
@@ -48,6 +52,13 @@
                     <include name="${module.src}/common/**"/>
                 </clientjar>
             </client>
+
+            <server>
+                <serverjar name="securitygroups-server" basedir="${build.classes.dir}">
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server>
 
             <part name="web">
                 <jar name="security-groups.war">
