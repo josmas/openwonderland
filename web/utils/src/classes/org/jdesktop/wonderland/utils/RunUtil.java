@@ -112,6 +112,21 @@ public class RunUtil {
         }
         return baseDir;
     }
+
+    /**
+     * Get the content directory, create it if necessary. The default content
+     * directory is found beneath the run directory, the subdirectory that is
+     * defined by the wonderland.webserver.content.dir proeprty.
+     */
+    public synchronized static File getContentDir() {
+        String contentSubdir = System.getProperty(Constants.WEBSERVER_CONTENT_DIR_PROP);
+        if (contentSubdir == null) {
+            contentSubdir = "content";
+        }
+        File contentDir = new File(RunUtil.getRunDir(), contentSubdir);
+        contentDir.mkdirs();
+        return contentDir;
+    }
     
     /**
      * Extract the given file available as a resource in the current
@@ -140,7 +155,7 @@ public class RunUtil {
         File out = new File(destDir, fileName);    
         return writeToFile(is, out);
     }
-    
+   
     /**
      * Extract the given jar file available as a resource in the current
      * classloader.  This method extracts the contents of the jar file

@@ -53,8 +53,7 @@ public class WebdavContextListener implements ServletContextListener {
 
         // replace docroot
         if (orig.getDirContext() instanceof BaseDirContext) {
-            File contentDir = new File(RunUtil.getRunDir(), "content");
-            contentDir.mkdir();
+            File contentDir = RunUtil.getContentDir();
 
             logger.info("Setting document base to " + contentDir.getPath());
 
