@@ -58,9 +58,6 @@ import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer.DeployedAsset;
 public class RunnerChecksums {
     private static final Logger logger =
             Logger.getLogger(RunnerChecksums.class.getName());
-    
-    private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
-    private static final String ASSET_GET = "/asset/get/";
 
     /* A list of checksum entries */
     @XmlElements({
@@ -243,7 +240,9 @@ public class RunnerChecksums {
                                      String assetPath)
         throws MalformedURLException
     {
-        builder.replacePath(ASSET_PREFIX + moduleName + ASSET_GET + assetPath);
+        // Should we fetch the context prefix from a property? XXX -jslott
+        String assetPrefix = "webdav/content/modules/installed/";
+        builder.replacePath(assetPrefix + moduleName + "/" + assetPath);
 
         return builder.build().toURL();
     }

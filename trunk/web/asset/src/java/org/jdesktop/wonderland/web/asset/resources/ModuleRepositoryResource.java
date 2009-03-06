@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.common.modules.ModuleRepository;
 import org.jdesktop.wonderland.common.modules.ModuleRepository.Repository;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
+import org.jdesktop.wonderland.utils.Constants;
 
 /**
  * The ModuleRepositoryResource class is a Jersey RESTful service that returns
@@ -80,9 +81,14 @@ public class ModuleRepositoryResource {
          * If there are any entries with %WL_SERVER%, then replace with the
          * server path to the asset.
          */
-        UriBuilder uriBuilder = context.getBaseUriBuilder().path(moduleName).path("/asset/get");
-        String hostname = uriBuilder.build().toString();
-        
+//        UriBuilder uriBuilder = context.getBaseUriBuilder().path(moduleName).path("/asset/get");
+//        String hostname = uriBuilder.build().toString();
+
+        // For the base URL of assets within a module, use the server URL and
+        // point it to the webdav repository
+        String hostname = System.getProperty(Constants.WEBSERVER_URL_PROP) + "webdav/content/modules/installed/" + moduleName;
+        logger.warning("USING REPOSITORY " + hostname);
+
         /* Fetch the module repository, return an error if it does not exist */
         ModuleRepository mr = module.getRepository();
         if (mr == null || mr.getResources() == null || mr.getResources().length == 0) {

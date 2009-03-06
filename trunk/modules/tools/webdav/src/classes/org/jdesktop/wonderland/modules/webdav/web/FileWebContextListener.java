@@ -41,12 +41,13 @@ public class FileWebContextListener implements ServletContextListener {
         ServletContext sc = sce.getServletContext();
 
         // make sure base repository directories exist
-        File contentDir = new File(RunUtil.getRunDir(), "content");
+        File contentDir = RunUtil.getContentDir();
         File systemDir = new File(contentDir, "system");
         systemDir.mkdirs();
         File usersDir = new File(contentDir, "users");
         usersDir.mkdirs();
 
+        // XXX Do we need to get the "/content/" part from a property? -jslott
         String baseURLStr = System.getProperty(Constants.WEBSERVER_URL_PROP);
         baseURLStr += "/webdav/content/";
         URL baseURL = null;
