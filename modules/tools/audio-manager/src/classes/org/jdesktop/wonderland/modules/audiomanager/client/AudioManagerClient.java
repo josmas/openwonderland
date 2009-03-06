@@ -391,7 +391,6 @@ public class AudioManagerClient extends BaseConnection implements
 	    KeyEvent3D e = (KeyEvent3D) event;
 
 	    if (e.isPressed() && e.getKeyChar() == '[') {
-		lastEventTime = now;
 		toggleMute();		
 	    }
 	}
