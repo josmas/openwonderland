@@ -6,6 +6,10 @@
 
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
+
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+
 import java.util.ArrayList;
 
 import java.awt.Point;
@@ -16,15 +20,17 @@ import java.awt.Point;
  */
 public class UserListJFrame extends javax.swing.JFrame {
 
+    private WonderlandSession session;
+    private AudioManagerClient client;
+
     /** Creates new form UserListJFrame */
-    public UserListJFrame(Point location) {
+    public UserListJFrame(WonderlandSession session, AudioManagerClient client) {
+	this.session = session;
+	this.client = client;
+
         initComponents();
 
 	setTitle("Users");
-
-	if (location != null) {
-	    setLocation(location);
-	}
     }
 
     /** This method is called from within the constructor to
@@ -62,32 +68,22 @@ public class UserListJFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    public void setSpeaking(String id, boolean isSpeaking) {
-	System.out.println("UserList " + id + ":  " 
-	    + (isSpeaking ? "Started Speaking" : "Stopped Speaking"));
+    public void done() {
+	setVisible(false);
     }
 
-    public void setMute(String id, boolean isMuted) {
-	System.out.println("UserList " + id + ":  " 
-	    + (isMuted ? "Muted" : "Unmuted"));
+    public void setUserList(ArrayList<String> userData) {
+	userList.setListData(userData.toArray(new String[0]));
     }
 
-    String[] listData;
-
-    public void setListData(String[] listData) {
-	this.listData = listData;
-	userList.setListData(listData);
+    public void setSpeaking(String callID, String username, boolean isSpeaking) {
+	//System.out.println("Got message for " + callID + " username " + username
+	//    + (isSpeaking ? " Started Speaking" : " Stopped Speaking"));
     }
 
-    /**
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new UserListJFrame(new Point(0, 0)).setVisible(true);
-            }
-        });
+    public void muteCall(String callID, String username, boolean isMuted) {
+	//System.out.println("callID " + callID + " username '" + username + "' "
+	//    + (isMuted ? "Muted" : "Unmuted"));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

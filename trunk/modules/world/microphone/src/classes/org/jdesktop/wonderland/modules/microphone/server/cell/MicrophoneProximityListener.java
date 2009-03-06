@@ -151,8 +151,8 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
 
         audioGroup.removePlayer(player);
 
-        if (audioGroup.getPlayers().size() == 0) {
-            vm.removeAudioGroup(name);
+        if (audioGroup.getNumberOfPlayers() == 0) {
+            vm.removeAudioGroup(audioGroup);
         }
 
         player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,

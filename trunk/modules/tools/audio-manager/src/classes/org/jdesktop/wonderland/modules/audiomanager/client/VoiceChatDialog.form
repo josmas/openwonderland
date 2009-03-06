@@ -48,23 +48,24 @@
                       </Group>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
+                              <EmptySpace min="-2" pref="52" max="-2" attributes="0"/>
                               <Component id="secretRadioButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="privateRadioButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="publicRadioButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="29" max="32767" attributes="0"/>
                           </Group>
-                          <Group type="102" attributes="0">
-                              <Component id="usersButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="105" max="-2" attributes="0"/>
-                              <Component id="busyButton" min="-2" pref="73" max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
+                              <Component id="updateJButton" min="-2" pref="71" max="-2" attributes="0"/>
+                              <EmptySpace pref="99" max="32767" attributes="0"/>
+                              <Component id="busyButton" min="-2" pref="73" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="51" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace pref="29" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="leaveButton" alignment="0" max="32767" attributes="1"/>
                           <Component id="joinButton" alignment="0" pref="71" max="32767" attributes="1"/>
@@ -105,8 +106,8 @@
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="leaveButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="usersButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="busyButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="updateJButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="27" max="32767" attributes="0"/>
           </Group>
@@ -184,6 +185,7 @@
         <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
           <ComponentRef name="buttonGroup1"/>
         </Property>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" value="Private"/>
         <Property name="name" type="java.lang.String" value="privateRadioButton" noResource="true"/>
       </Properties>
@@ -206,6 +208,7 @@
     <Component class="javax.swing.JButton" name="leaveButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Leave"/>
+        <Property name="enabled" type="boolean" value="false"/>
         <Property name="name" type="java.lang.String" value="leaveButton" noResource="true"/>
       </Properties>
       <Events>
@@ -215,19 +218,20 @@
     <Component class="javax.swing.JButton" name="busyButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Busy"/>
+        <Property name="enabled" type="boolean" value="false"/>
         <Property name="name" type="java.lang.String" value="busyButton" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="busyButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="usersButton">
+    <Component class="javax.swing.JButton" name="updateJButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Show Users"/>
-        <Property name="name" type="java.lang.String" value="usersButton" noResource="true"/>
+        <Property name="text" type="java.lang.String" value="Update"/>
+        <Property name="name" type="java.lang.String" value="updateJButton" noResource="true"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="usersButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="updateJButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

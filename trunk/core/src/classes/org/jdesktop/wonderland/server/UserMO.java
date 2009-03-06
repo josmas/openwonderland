@@ -126,6 +126,13 @@ public class UserMO implements ManagedObject, Serializable {
     }
     
     /**
+     * Temporary method for voice chat until presence API is implemented.
+     */
+    public Map<WonderlandClientID, Map<String, ManagedReference<AvatarCellMO>>> getAvatars() {
+	return avatars;
+    }
+
+    /**
      * Put the avatarRef and the name in the set of avatars for this user. Each
      * ClientSession can have a set of avatars.
      * 

@@ -242,7 +242,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 		    	        AudioGroup.DEFAULT_LISTEN_ATTENUATION);
 		        }
 
-	                vm.removeAudioGroup(audioGroupId);
+	                vm.removeAudioGroup(audioGroup);
 		    }
 		}
             } else {

@@ -40,6 +40,7 @@ import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.ManagedCallBeginEndListener;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
 
 import com.sun.voip.CallParticipant;
 
@@ -245,7 +246,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
 	setup.cp = new CallParticipant();	
 	setup.cp.setCallId(callId);
-	setup.cp.setConferenceId(vm.getConferenceId());
+	setup.cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
 	setup.cp.setPhoneNumber(status.getCallInfo());
 
 	Call call;
@@ -624,8 +625,9 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 		call.setPlayer(externalPlayer);
 		externalPlayer.setCall(call);
 
-                AudioGroup defaultLivePlayerAudioGroup =
-                    vm.getDefaultLivePlayerAudioGroup();
+		VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
+
+                AudioGroup defaultLivePlayerAudioGroup = parameters.livePlayerAudioGroup;
 
                 AudioGroupPlayerInfo groupInfo = new AudioGroupPlayerInfo(true,
                     AudioGroupPlayerInfo.ChatType.PUBLIC);
@@ -634,8 +636,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
                 defaultLivePlayerAudioGroup.addPlayer(externalPlayer, groupInfo);
 
-		AudioGroup defaultStationaryPlayerAudioGroup =
-                    vm.getDefaultStationaryPlayerAudioGroup();
+		AudioGroup defaultStationaryPlayerAudioGroup = parameters.stationaryPlayerAudioGroup;
 
                 defaultStationaryPlayerAudioGroup.addPlayer(externalPlayer,
                     new AudioGroupPlayerInfo(false,
@@ -643,8 +644,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
                 call.mute(false);
 
-		call.transferToConference(
-		    AppContext.getManager(VoiceManager.class).getConferenceId());
+		call.transferToConference(parameters.conferenceId);
 		
 		String s;
 

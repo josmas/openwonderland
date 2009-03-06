@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbStartCallMessage;
 
 import org.jdesktop.wonderland.client.comms.CellClientSession;
@@ -82,6 +83,7 @@ public class OrbMessageHandler {
         channelComp.addMessageReceiver(OrbStartCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbEndCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbMuteCallMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(OrbSpeakingMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbSetVolumeMessage.class, msgReceiver);
     }
 
@@ -89,6 +91,7 @@ public class OrbMessageHandler {
 	channelComp.removeMessageReceiver(OrbStartCallMessage.class);
 	channelComp.removeMessageReceiver(OrbEndCallMessage.class);
 	channelComp.removeMessageReceiver(OrbMuteCallMessage.class);
+        channelComp.removeMessageReceiver(OrbSpeakingMessage.class);
 	channelComp.removeMessageReceiver(OrbSetVolumeMessage.class);
     }
 

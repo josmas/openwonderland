@@ -43,6 +43,7 @@ import com.sun.mpk20.voicelib.app.Player;
 import com.jme.math.Vector3f;
 
 import com.sun.voip.client.connector.CallStatus;
+import com.sun.voip.client.connector.CallStatusListener;
 
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 
@@ -93,6 +94,22 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
     protected String getClientClass() {
 	return "org.jdesktop.wonderland.modules.audiomanager.client.AudioParticipantComponent";
+    }
+
+    public void addCallStatusListener(CallStatusListener listener) {
+        addCallStatusListener(listener, null);
+    }
+
+    public void addCallStatusListener(CallStatusListener listener, String callID) {
+        AppContext.getManager(VoiceManager.class).addCallStatusListener(listener, callID);
+    }
+
+    public void removeCallStatusListener(CallStatusListener listener) {
+        removeCallStatusListener(listener, null);
+    }
+
+    public void removeCallStatusListener(CallStatusListener listener, String callID) {
+        AppContext.getManager(VoiceManager.class).removeCallStatusListener(listener, callID);
     }
 
     public void callStatusChanged(CallStatus status) {

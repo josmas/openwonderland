@@ -31,16 +31,21 @@ import org.jdesktop.wonderland.common.cell.CellID;
 public class SpeakingMessage extends Message {
 
     private String callID;
-
+    private String username;
     private boolean isSpeaking;
 
-    public SpeakingMessage(String callID, boolean isSpeaking) {
+    public SpeakingMessage(String callID, String username, boolean isSpeaking) {
 	this.callID = callID;
+	this.username = username;
 	this.isSpeaking = isSpeaking;
     }
 
     public String getCallID() {
 	return callID;
+    }
+
+    public String getUsername() {
+	return username;
     }
 
     public boolean isSpeaking() {
