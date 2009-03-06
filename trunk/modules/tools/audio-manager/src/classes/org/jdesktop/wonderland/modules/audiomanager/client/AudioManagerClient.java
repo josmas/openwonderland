@@ -386,17 +386,11 @@ public class AudioManagerClient extends BaseConnection implements
         return AudioManagerConnectionType.CONNECTION_TYPE;
     }
 
-    private long lastEventTime;
-
     private void inputEvent(Event event) {
 	if (event instanceof KeyEvent3D) {
-	    if (((KeyEvent3D) event).getKeyChar() == '[') {
-		long now = System.currentTimeMillis();
+	    KeyEvent3D e = (KeyEvent3D) event;
 
-		if (now - lastEventTime < 250) {
-		    return;	// ignore duplicate events
-		}
-
+	    if (e.isPressed() && e.getKeyChar() == '[') {
 		lastEventTime = now;
 		toggleMute();		
 	    }
