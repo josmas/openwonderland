@@ -22,9 +22,9 @@ import org.jdesktop.wonderland.common.comms.ProtocolVersion;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 
-import java.awt.Point;
+import java.util.ArrayList;
 
 /**
  * Get the list of users
@@ -33,16 +33,10 @@ import java.awt.Point;
  */
 @ExperimentalAPI
 public class GetUserListMessage extends Message {
+
     private ArrayList<String> userList;
 
-    private Point location;
-
-    public GetUserListMessage(Point location) {
-	this.location = location;
-    }
-
-    public Point getLocation() {
-	return location;
+    public GetUserListMessage() {
     }
 
     public void setUserList(ArrayList<String> userList) {

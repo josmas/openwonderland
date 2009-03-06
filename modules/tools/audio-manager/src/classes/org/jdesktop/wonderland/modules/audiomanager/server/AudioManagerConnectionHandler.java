@@ -54,7 +54,9 @@ import java.util.logging.Logger;
 import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import com.sun.sgs.app.AppContext;
@@ -66,6 +68,7 @@ import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.BridgeInfo;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
+import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
@@ -73,7 +76,6 @@ import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.voip.CallParticipant;
 
 import com.sun.voip.client.connector.CallStatus;
-import com.sun.voip.client.connector.CallStatusListener;
 
 import java.io.IOException;
 
@@ -86,7 +88,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author jprovino
  */
 public class AudioManagerConnectionHandler 
-        implements ClientConnectionHandler, Serializable, CallStatusListener
+        implements ClientConnectionHandler, Serializable, ManagedCallStatusListener
 {
     private static final Logger logger =
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
@@ -94,6 +96,12 @@ public class AudioManagerConnectionHandler
     private VoiceChatHandler voiceChatHandler = new VoiceChatHandler();
 
     private ConcurrentHashMap<WonderlandClientSender, String> senderCallIDMap = 
+	new ConcurrentHashMap();
+
+    private static ConcurrentHashMap<String, String> callIDUsernameMap = 
+	new ConcurrentHashMap();
+
+    private static ConcurrentHashMap<String, String> usernameCallIDMap = 
 	new ConcurrentHashMap();
 
     public AudioManagerConnectionHandler() {
@@ -113,6 +121,14 @@ public class AudioManagerConnectionHandler
 
         //throw new UnsupportedOperationException("Not supported yet.");
 	logger.fine("client connected...");
+    }
+
+    public static String getUsername(String callID) {
+	return callIDUsernameMap.get(callID);
+    }
+
+    public static String getCallID(String username) {
+	return usernameCallIDMap.get(username);
     }
 
     public void messageReceived(WonderlandClientSender sender, 
@@ -162,22 +178,7 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof GetUserListMessage) {
-	    GetUserListMessage msg = (GetUserListMessage) message;
-
-	    UserManager userManager = UserManager.getUserManager();
-
-	    Iterator<ManagedReference<UserMO>> it = userManager.getAllUsers().iterator();
-	    
-	    ArrayList<String> userList = new ArrayList();
-
-	    while (it.hasNext()) {
-		UserMO userMO = it.next().get();
-
-		userList.add(userMO.getIdentity().getUsername());
-	    }
-
-	    msg.setUserList(userList);
-	    sender.send(clientID, msg);
+	    sendUserList(sender);
 	    return;
 	}
 
@@ -191,10 +192,12 @@ public class AudioManagerConnectionHandler
 	    CallParticipant cp = new CallParticipant();
 
 	    setup.cp = cp;
-	    setup.listener = this;
+	    //setup.listener = this;
 
 	    String callID = msg.getSoftphoneCallID();
-
+	
+	    vm.addCallStatusListener(this, callID);
+	
 	    logger.fine("callID " + callID);
 
 	    if (callID == null) {
@@ -203,10 +206,16 @@ public class AudioManagerConnectionHandler
 		return;
 	    }
 
+	    
+	    String username = UserManager.getUserManager().getUser(clientID).getUsername();
+
+	    callIDUsernameMap.put(callID, username);
+	    usernameCallIDMap.put(username, callID);
+
 	    cp.setCallId(callID);
-	    cp.setName(UserManager.getUserManager().getUser(clientID).getUsername());
+	    cp.setName(username);
             cp.setPhoneNumber(msg.getSipURL());
-            cp.setConferenceId(vm.getConferenceId());
+            cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
             cp.setVoiceDetection(true);
             cp.setDtmfDetection(true);
             cp.setVoiceDetectionWhileMuted(true);
@@ -222,15 +231,38 @@ public class AudioManagerConnectionHandler
 	    } catch (IOException e) {
 		logger.warning("Unable to place call " + cp + " " + e.getMessage());
 		senderCallIDMap.remove(sender);
+		callIDUsernameMap.remove(callID);
 	    }
 
+	    sendUserList(sender, username + " (Invited)");
 	    return;
 	}
 
 	if (message instanceof MuteCallMessage) {
 	    MuteCallMessage msg = (MuteCallMessage) message;
 
-	    sender.send(new MuteCallMessage(msg.getCallID(), msg.isMuted()));
+	    //sender.send(new MuteCallMessage(msg.getCallID(), getUsername(msg.getCallID()), 
+	    //	msg.isMuted()));
+	    Call call = vm.getCall(msg.getCallID());
+
+	    if (call == null) {
+		logger.warning("Unable to mute/unmute call " + call.getId());
+		return;
+	    }	
+
+	    try {
+	        call.mute(msg.isMuted());
+	    } catch (IOException e) {
+		logger.warning("Unable to mute/unmute call " + call.getId() + ": "
+		    + e.getMessage());
+	    }
+
+	    String username = call.getSetup().cp.getName();
+
+	    if (msg.isMuted()) {
+		username = "[" + username + "]";
+	    }
+	    sendUserList(sender, username);
 	    return;
 	}
 	
@@ -289,18 +321,101 @@ public class AudioManagerConnectionHandler
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    private void sendUserList(WonderlandClientSender sender) {
+	sendUserList(sender, null);
+    }
+
+    private void sendUserList(WonderlandClientSender sender, String user) {
+	ArrayList<String> userList = getUserList(user);
+
+        GetUserListMessage message = new GetUserListMessage();
+	message.setUserList(getUserList(user));
+	sender.send(message);
+    }
+
+    private ArrayList<String> getUserList() {
+	return getUserList(null);
+    }
+
+    private ArrayList<String> getUserList(String user) {
+	UserManager userManager = UserManager.getUserManager();
+
+	Iterator<ManagedReference<UserMO>> it = userManager.getAllUsers().iterator();
+	    
+	ArrayList<String> userList= new ArrayList();
+
+	while (it.hasNext()) {
+	    UserMO userMO = it.next().get();
+
+	    String username = userMO.getIdentity().getUsername();
+
+	    if (user != null && user.indexOf(username) >= 0) {
+		userList.add(user);
+		continue;
+	    }
+
+	    String callID = getCallID(username);
+
+	    if (callID != null) {
+		Call call = AppContext.getManager(VoiceManager.class).getCall(callID);
+
+		if (call != null && call.isMuted()) {
+		    username = "[" + username + "]";
+		}
+	    }
+
+	    userList.add(username);
+	}
+
+	addOutworlders(userList);
+	userList.remove("servermanager");  // not a real user.
+	return userList;
+    }
+
+    private void addOutworlders(ArrayList<String> userList) {
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	Player[] players = vm.getPlayers();
+
+	for (int i = 0; i < players.length; i++) {
+	    Player p = players[i];
+
+	    if (p.getSetup().isLivePlayer == false) {
+		continue;
+	    }
+	    
+	    if (p.getSetup().isOutworlder== false) {
+		continue;
+	    }
+	    
+	    Call call = p.getCall();
+
+	    if (call == null) {
+		continue;
+	    }
+
+	    String name = call.getSetup().cp.getName();
+
+	    if (userList.contains(name)) {
+		return;
+	    }
+
+	    userList.add(name + " (Outworlder)");
+	}
+    }
+
     private void setupCall(String callID, CallSetup setup, double x, 
 	    double y, double z, double direction) throws IOException {
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	Player p = vm.getPlayer(callID);
 
 	Call call;
 
         call = vm.createCall(callID, setup);
 
 	callID = call.getId();
-
-	Player p = vm.getPlayer(callID);
 
         PlayerSetup ps = new PlayerSetup();
 
@@ -322,15 +437,17 @@ public class AudioManagerConnectionHandler
         call.setPlayer(player);
         player.setCall(call);
 
-        vm.getDefaultLivePlayerAudioGroup().addPlayer(player,
-            new AudioGroupPlayerInfo(true, AudioGroupPlayerInfo.ChatType.PUBLIC));
+        vm.getVoiceManagerParameters().livePlayerAudioGroup.addPlayer(player,
+            new AudioGroupPlayerInfo(true, 
+	    AudioGroupPlayerInfo.ChatType.PUBLIC));
 
         AudioGroupPlayerInfo info = new AudioGroupPlayerInfo(false,
             AudioGroupPlayerInfo.ChatType.PUBLIC);
 
         info.defaultSpeakingAttenuation = 0;
 
-        vm.getDefaultStationaryPlayerAudioGroup().addPlayer(player, info);
+        vm.getVoiceManagerParameters().stationaryPlayerAudioGroup.addPlayer(
+	    player, info);
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
@@ -344,6 +461,7 @@ public class AudioManagerConnectionHandler
 	}
 
 	senderCallIDMap.remove(sender);
+	callIDUsernameMap.remove(callID);
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -397,16 +515,30 @@ public class AudioManagerConnectionHandler
 
 	    vm.dump("all");
 	    player.setPrivateMixes(true);
+	    sendUserList(sender);
 	    break;
 
         case CallStatus.STARTEDSPEAKING:
-	    sender.send(new SpeakingMessage(callId, true));
+	    sender.send(new SpeakingMessage(callId, getUsername(callId), true));
+	    sendUserList(sender, getUsername(callId) + "...");
             break;
 
         case CallStatus.STOPPEDSPEAKING:
-	    sender.send(new SpeakingMessage(callId, false));
+	    sender.send(new SpeakingMessage(callId, getUsername(callId), false));
+	    sendUserList(sender, getUsername(callId));
             break;
 
+	case CallStatus.ENDED:
+	    ArrayList<String> userList = getUserList();
+
+	    userList.remove(getUsername(callId));
+
+            GetUserListMessage message = new GetUserListMessage();
+
+	    message.setUserList(userList);
+	    sender.send(message);
+            break;
+	  
 	case CallStatus.BRIDGE_OFFLINE:
             logger.info("Bridge offline: " + status);
 		// XXX need a way to tell the voice manager to reset all of the private mixes.

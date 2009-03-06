@@ -202,8 +202,10 @@ public class ChannelComponentImplMO extends ChannelComponentMO {
             return;
         }
         
-        recvRef.get().messageReceived(sender, clientID, message);
-        recvRef.get().recordMessage(sender, clientID, message);
+        ComponentMessageReceiver receiver = recvRef.get();
+
+        receiver.messageReceived(sender, clientID, message);
+        receiver.recordMessage(sender, clientID, message);
     }
     
 }

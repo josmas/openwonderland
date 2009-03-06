@@ -20,8 +20,12 @@ package org.jdesktop.wonderland.modules.audiomanager.server;
 import java.lang.reflect.Method;
 
 
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,6 +48,7 @@ import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 
+import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -53,6 +58,8 @@ import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 
@@ -66,8 +73,6 @@ import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerSetup;
 import com.sun.mpk20.voicelib.app.VirtualPlayer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
-
-
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -99,7 +104,17 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	}
 
 	if (message instanceof VoiceChatBusyMessage) {
-	    sendVoiceChatBusyMessage(sender, clientID, (VoiceChatBusyMessage) message);
+	    VoiceChatBusyMessage msg = (VoiceChatBusyMessage) message;
+
+            WonderlandClientID id = getClientID(msg.getCaller());
+
+            if (id == null) {
+                logger.warning("No WonderlandClientID for caller "
+                    + msg.getCaller());
+                return;
+            }
+
+	    sendVoiceChatBusyMessage(sender, id, msg);
 	    return;
 	}
 
@@ -120,7 +135,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    if (player == null) {
 		logger.warning("No player for " + msg.getCaller());
 
-	        if (audioGroup.getPlayers().size() == 0) {
+	        if (audioGroup.getNumberOfPlayers() == 0) {
 		    endVoiceChat(vm, audioGroup);  // cleanup
 	        }
 		return;
@@ -128,7 +143,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    
 	    removePlayerFromAudioGroup(audioGroup, player);
 
-	    if (audioGroup.getPlayers().size() == 0) {
+	    if (audioGroup.getNumberOfPlayers() == 0) {
 		endVoiceChat(vm, audioGroup);
 	    }
 
@@ -161,45 +176,58 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    audioGroup = vm.createAudioGroup(group, setup);
 	}
 
-	String callerID = getID(msg.getCaller());
+	String callerCallID = AudioManagerConnectionHandler.getCallID(msg.getCaller());
 
-	if (callerID == null) {
-	    System.out.println("Invalid caller:  " + msg.getCaller());
+	if (callerCallID == null) {
+	    logger.warning("No callID for " + msg.getCaller());
 	    endVoiceChat(vm, audioGroup);
 	    return;
 	}
 
-	String[] playerID = msg.getCalleeList().split(" ");
+	String[] playerUsername = msg.getCalleeList().split(" ");
 
-	for (int i = 0; i < playerID.length; i++) {
-	    String p = getID(playerID[i]);
+	boolean added = addPlayerToChatGroup(vm, audioGroup, msg.getCaller(), callerCallID, 
+	    msg.getChatType());
 
-	    if (p == null) {
-		System.out.println("Invalid callee:  " + playerID[i]);
-	    }
-
-	    playerID[i] = p;
-	}
-
-	boolean added = addPlayerToChatGroup(vm, audioGroup, callerID, msg.getChatType());
-
-	if (added == false && playerID.length == 0) {
+	if (added == false && playerUsername.length == 0) {
 	    endVoiceChat(vm, audioGroup);
 	    return;
 	}
 
-	System.out.println("AudioGroup " + group + " caller " + msg.getCaller()
+	logger.info("AudioGroup " + group + " caller " + msg.getCaller()
 	    + " callees '" + msg.getCalleeList() + "'");
 
-	for (int i = 0; i < playerID.length; i++) {
-	    if (playerID[i] == null || playerID[i].length() == 0) {
+	for (int i = 0; i < playerUsername.length; i++) {
+	    String username = playerUsername[i];
+
+	    if (username == null || username.length() == 0) {
 		continue;
 	    }
 
-	    Player player = vm.getPlayer(playerID[i]);
+	    String callID = AudioManagerConnectionHandler.getCallID(username);
+
+	    if (callID == null) {
+		logger.warning("No callID for " + username);
+		continue;
+	    }
+
+	    Player player = vm.getPlayer(callID);
+
+	    if (player == null) {
+		logger.warning("No player for callID " + callID);
+		continue;
+	    }
+
+	    WonderlandClientID id = getClientID(username);
+
+	    if (id == null) {
+		logger.warning("No WonderlandClientID for call " 
+		    + callID + " username " + username);
+		continue;
+	    }
 
 	    if (audioGroup.getPlayerInfo(player) != null) {
-		logger.fine("Player " + playerID[i] 
+		logger.fine("Player " + username 
 		    + " is already in audio group " + audioGroup);
 		continue;
 	    }
@@ -215,26 +243,78 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 		}
 	    }
 
-	    logger.fine("Asking " + playerID[i] + " to join audio group " 
+	    logger.info("Asking " + username + " to join audio group " 
 		+ group + " chatType " + msg.getChatType());
 
-	    requestPlayerJoinAudioGroup(sender, clientID, group, msg.getCaller(),
-		msg.getCalleeList(), msg.getChatType());
+	    requestPlayerJoinAudioGroup(sender, id, group, msg.getCaller(),
+		username, msg.getChatType());
 	}
 
 	vm.dump("all");
 	return;
     }
 
-    private String getID(String username) {
-	return username;
+    /*
+     * XXX There must be a better way to get the WonderlandClientID from a username!
+     */
+    private WonderlandClientID getClientID(String username) {
+        UserManager userManager = UserManager.getUserManager();
+
+        Iterator<ManagedReference<UserMO>> it = userManager.getAllUsers().iterator();
+
+        while (it.hasNext()) {
+            UserMO userMO = it.next().get();
+
+            if (userMO.getUsername().equals(username) == false) {
+                continue;
+            }
+
+	    WonderlandClientID clientID = getClientID(userMO);
+
+	    if (clientID != null) {
+		return clientID;
+	    }
+	}
+
+	return null;
     }
 
-    private boolean addPlayerToChatGroup(VoiceManager vm, AudioGroup audioGroup,
-	    String callID, VoiceChatMessage.ChatType chatType) {
+    private WonderlandClientID getClientID(UserMO userMO) {
+	Map<WonderlandClientID, Map<String, ManagedReference<AvatarCellMO>>> avatars = userMO.getAvatars();
 
-	ConcurrentHashMap<Player, AudioGroupPlayerInfo> players = 
-	    audioGroup.getPlayers();
+        Iterator<WonderlandClientID> it = avatars.keySet().iterator();
+
+        while (it.hasNext()) {
+	    WonderlandClientID clientID = it.next();
+
+            if (getClientID(userMO.getUsername(), avatars.get(clientID)) == true) {
+		return clientID;
+	    }
+        }
+
+        return null;
+    }
+
+    private boolean getClientID(String username, Map<String, ManagedReference<AvatarCellMO>> map) {
+        Iterator<ManagedReference<AvatarCellMO>> it = map.values().iterator();
+
+        while (it.hasNext()) {
+             AvatarCellMO cellMO = it.next().get();
+
+             UserMO userMO = cellMO.getUser();
+
+             if (userMO.getUsername().equals(username)) {
+                return true;
+             }
+        }
+
+        return false;
+    }
+
+    private ConcurrentHashMap<String, String> playerMap = new ConcurrentHashMap();
+
+    private boolean addPlayerToChatGroup(VoiceManager vm, AudioGroup audioGroup,
+	    String username, String callID, VoiceChatMessage.ChatType chatType) {
 
 	Player player = vm.getPlayer(callID);
 
@@ -261,23 +341,24 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	 * Maybe a virtual player listener is needed.
 	 */
 
+	Player[] players = audioGroup.getPlayers();
+
 	/*
 	 * If this is a public chat, we need to create virtual players
 	 */
-	Enumeration<Player> pe = players.keys();
+	for (int i = 0; i < players.length; i++) {
+	    Player p = players[i];
 
-	while (pe.hasMoreElements()) {
-	    player = pe.nextElement();
-
-	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
+	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(p);
 
 	    if (info.chatType == AudioGroupPlayerInfo.ChatType.PUBLIC) {
 	        createVirtualPlayers(audioGroup);
 	    } else {
-	        removeVirtualPlayers(audioGroup, player);
+	        removeVirtualPlayers(audioGroup, p);
 	    }
 	}
 
+	playerMap.put(callID, username);
 	return true;
     }
 
@@ -313,15 +394,34 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	AudioGroup audioGroup = vm.getAudioGroup(group);
 
 	if (audioGroup != null) {
-	    ConcurrentHashMap<Player, AudioGroupPlayerInfo> players =
-	        audioGroup.getPlayers();
+	    Player[] players = audioGroup.getPlayers();
 
-	    Enumeration<Player> pk = players.keys();
+	    for (int i = 0; i < players.length; i++) {
+		//UserMO userMO = WonderlandContext.getUserManager().getUser(clientID);
 
-            while (pk.hasMoreElements()) {
-                Player player = pk.nextElement();
+		//WonderlandIdentity identity = userMO.getIdentity();
 
-	        chatInfo += player.getId() + " ";
+		/*
+		 * XXX This won't work because getId() is the player ID and not the user name.
+		 */
+		//UserMO userMO = WonderlandContext.getUserManager().getUserMO(players[i].getId());
+
+		//if (userMO == null) {
+		//    System.out.println("No UserMO for " + players[i].getId());
+		//    continue;
+		//}
+
+	        //chatInfo += userMO.getUsername() + " ";
+
+		String callID = playerMap.get(players[i].getId());
+	
+		if (callID == null) {
+		    logger.warning("Unable to map callID " + players[i].getId()
+			+ " to username");
+		    continue;
+		}
+		
+	        chatInfo += callID + " ";
 	    }
 	}
 
@@ -360,13 +460,10 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     }
 
     private void createVirtualPlayers(AudioGroup audioGroup) {
-	ConcurrentHashMap<Player, AudioGroupPlayerInfo> players = 
-	    audioGroup.getPlayers();
+	Player[] players = audioGroup.getPlayers();
 
-	Enumeration<Player> pe = players.keys();
-
-	while (pe.hasMoreElements()) {
-	    Player p = pe.nextElement();
+	for (int i = 0; i < players.length; i++) {
+	    Player p = players[i];
 
 	    if (p.getSetup().isLivePlayer == false) {
 		continue;
@@ -386,13 +483,10 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     private void createVirtualPlayer(AudioGroup audioGroup, Player player) {
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	ConcurrentHashMap<Player, AudioGroupPlayerInfo> players = 
-	    audioGroup.getPlayers();
+	Player[] players = audioGroup.getPlayers();
 
-	Enumeration<Player> pe = players.keys();
-
-	while (pe.hasMoreElements()) {
-	    Player p = pe.nextElement();
+	for (int i = 0; i < players.length; i++) {
+            Player p = players[i];
 
 	    if (player.equals(p)) {
 		continue;
@@ -422,7 +516,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    Call call = player.getCall();
 
 	    PlayerSetup setup = new PlayerSetup();
-	    double scale = vm.getScale();
+	    double scale = vm.getVoiceManagerParameters().scale;
 	    setup.x = p.getX() * scale;
 	    setup.y = p.getY() * scale;
 	    setup.z = p.getZ() * scale;
@@ -436,7 +530,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    vp.setCall(call);
 
-	    vm.getDefaultLivePlayerAudioGroup().addPlayer(vp, 
+	    vm.getVoiceManagerParameters().livePlayerAudioGroup.addPlayer(vp, 
 		new AudioGroupPlayerInfo(true, AudioGroupPlayerInfo.ChatType.PUBLIC));
 
 	    String phoneNumber = call.getSetup().cp.getPhoneNumber();
@@ -450,16 +544,15 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     }
 
     private void removeVirtualPlayers(AudioGroup audioGroup, Player player) {
-	VirtualPlayer[] virtualPlayersToRemove = 
-	    player.getVirtualPlayers().toArray(new VirtualPlayer[0]);
+	VirtualPlayer[] virtualPlayersToRemove = player.getVirtualPlayers();
 
 	removeOrbs(virtualPlayersToRemove);
 
 	for (int i = 0; i < virtualPlayersToRemove.length; i++) {
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	    vm.removePlayer(virtualPlayersToRemove[i].player.getId());
-	    vm.getDefaultLivePlayerAudioGroup().removePlayer(
+	    vm.removePlayer(virtualPlayersToRemove[i].player);
+	    vm.getVoiceManagerParameters().livePlayerAudioGroup.removePlayer(
 		virtualPlayersToRemove[i].player);
 	    player.removeVirtualPlayer(virtualPlayersToRemove[i]);
 	}
@@ -469,32 +562,29 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	 */
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	CopyOnWriteArrayList<VirtualPlayer> othersToRemove = new CopyOnWriteArrayList();
+	ArrayList<VirtualPlayer> othersToRemove = new ArrayList();
 
-	ConcurrentHashMap<Player, AudioGroupPlayerInfo> players = 
-	    audioGroup.getPlayers();
+	Player[] players = audioGroup.getPlayers();
 
-	Enumeration<Player> keys = players.keys();
-
-	while (keys.hasMoreElements()) {
-	    Player p = keys.nextElement();
+	for (int i = 0; i < players.length; i++) {
+	    Player p = players[i];
 
 	    if (p.equals(player)) {
 		continue;
 	    }
 
-	    VirtualPlayer[] virtualPlayers = p.getVirtualPlayers().toArray(new VirtualPlayer[0]);
+	    VirtualPlayer[] virtualPlayers = p.getVirtualPlayers();
 
-	    for (int i = 0; i < virtualPlayers.length; i++) {
-		VirtualPlayer virtualPlayer = virtualPlayers[i];
+	    for (int j = 0; j < virtualPlayers.length; j++) {
+		VirtualPlayer virtualPlayer = virtualPlayers[j];
 
-		logger.fine("possible vp for " + virtualPlayers[i] + " at " + player
+		logger.fine("possible vp for " + virtualPlayers[j] + " at " + player
 		    + " vp.call " + virtualPlayer.realPlayer);
 
 		if (virtualPlayer.realPlayer.equals(player)) {
 		    othersToRemove.add(virtualPlayer);
 		    p.removeVirtualPlayer(virtualPlayer);
-		    vm.removePlayer(virtualPlayer.player.getId());
+		    vm.removePlayer(virtualPlayer.player);
 		}
 	    }
 	}
@@ -506,7 +596,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
     private Method getAvatarOrbCellGLOMethod(String methodName) {
         String cellType =
-            "com.sun.labs.mpk20.avatarorb.server.cell.AvatarOrbCellGLO";
+            "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
 
 	Class avatarOrbCellGLOClass = null;
 
@@ -531,10 +621,10 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     }
 
     private void removeOrbs(VirtualPlayer[] virtualPlayers) {
-	Method callEnded = getAvatarOrbCellGLOMethod("callEnded");
+	Method endCall = getAvatarOrbCellGLOMethod("endCall");
 
-	if (callEnded == null) {
-	    logger.warning("can't find callEnded() in avatarOrbCellGLO class!");
+	if (endCall == null) {
+	    logger.warning("can't find endCall() in avatarOrbCellGLO class!");
 	    return;
 	}
 	
@@ -548,7 +638,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    //vm.removeCallStatusListener((ManagedCallStatusListener) cellGLO);
 
 	    //try {
-	    //	callEnded.invoke(cellGLO);
+	    //	endCall.invoke(cellGLO);
 	    //} catch (Exception e) {
 	    //	logger.fine("Can't tell orb to end call:  " + e.getMessage());
 	    //} 
@@ -558,40 +648,35 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     }
 
     private void endVoiceChat(VoiceManager vm, AudioGroup audioGroup) {
-	ConcurrentHashMap<Player, AudioGroupPlayerInfo> players = 
-	    audioGroup.getPlayers();
+	Player[] players = audioGroup.getPlayers();
 
-	Enumeration<Player> keys = players.keys();
-
-	while (keys.hasMoreElements()) {
-	    Player player = keys.nextElement();
+	for (int i = 0; i < players.length; i++) {
+	    Player player = players[i];
 	    
 	    removePlayerFromAudioGroup(audioGroup, player);
 	}
 
-	vm.removeAudioGroup(audioGroup.getId());
+	vm.removeAudioGroup(audioGroup);
     }
 
     private void moveVirtualPlayers(Player player, double x, double y, double z, 
 	    double direction) {
 
-	CopyOnWriteArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+	AudioGroup[] audioGroups = player.getAudioGroups().toArray(new AudioGroup[0]);
 
-	for (AudioGroup audioGroup : audioGroups) {
-	    ConcurrentHashMap<Player, AudioGroupPlayerInfo> players = audioGroup.getPlayers();
+	for (int i = 0 ; i < audioGroups.length; i++) {
 
-	    Enumeration<Player> pe = players.keys();
+	    Player[] players = audioGroups[i].getPlayers();
 
-	    while (pe.hasMoreElements()) {
-	        Player p = pe.nextElement();
+	    for (int j = 0; j < players.length; j++) {
+	        Player p = players[j];
 
-		VirtualPlayer[] virtualPlayers = p.getVirtualPlayers().toArray(
-		    new VirtualPlayer[0]);
+		VirtualPlayer[] virtualPlayers = p.getVirtualPlayers();
 	
-		for (int i = 0; i < virtualPlayers.length; i++) {
-		    if (virtualPlayers[i].realPlayer.equals(player)) {
-			logger.fine("Moving " + virtualPlayers[i] + " to " + player);
-			moveVirtualPlayer(virtualPlayers[i], x, y, z, direction);
+		for (int k = 0; k < virtualPlayers.length; k++) {
+		    if (virtualPlayers[k].realPlayer.equals(player)) {
+			logger.fine("Moving " + virtualPlayers[k] + " to " + player);
+			moveVirtualPlayer(virtualPlayers[k], x, y, z, direction);
 		    }
 		}
 	    }

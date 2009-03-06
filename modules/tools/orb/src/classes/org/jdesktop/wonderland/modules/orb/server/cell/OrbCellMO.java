@@ -125,4 +125,9 @@ public class OrbCellMO extends CellMO {
         }
         return super.getServerState(cellServerState);
     }
+
+    public void endCall() {
+	orbMessageHandlerRef.get().done();
+    }
+
 }
