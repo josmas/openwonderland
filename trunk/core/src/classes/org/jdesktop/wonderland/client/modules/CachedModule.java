@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.client.modules;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.modules.ModuleArtList;
-import org.jdesktop.wonderland.common.modules.ModuleChecksums;
+import org.jdesktop.wonderland.common.checksums.ChecksumList;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.common.modules.ModuleRepository;
 
@@ -43,7 +43,7 @@ public class CachedModule {
     
     private ModuleInfo       moduleInfo       = null; /* Basic module info   */
     private ModuleArtList    moduleArt        = null; /* List of module art  */
-    private ModuleChecksums  moduleChecksums  = null; /* Module checksums    */
+    private ChecksumList  moduleChecksums  = null; /* Module checksums    */
     private ModuleRepository moduleRepository = null; /* Module repository   */
     
     /* The error logger */
@@ -83,7 +83,7 @@ public class CachedModule {
      *
      * @return The module checksum information
      */
-    public synchronized ModuleChecksums getModuleChecksums() {
+    public synchronized ChecksumList getModuleChecksums() {
         if (this.moduleChecksums == null) {
             this.moduleChecksums = ModuleUtils.fetchModuleChecksums(serverURL, moduleName);
         }

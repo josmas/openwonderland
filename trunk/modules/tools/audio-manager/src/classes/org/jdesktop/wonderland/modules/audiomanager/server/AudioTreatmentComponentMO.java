@@ -42,9 +42,6 @@ import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 
-import org.jdesktop.wonderland.common.modules.Checksum;
-import org.jdesktop.wonderland.common.modules.ModuleChecksums;
-
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
@@ -64,6 +61,8 @@ import com.sun.mpk20.voicelib.app.VoiceManager;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
+import org.jdesktop.wonderland.common.checksums.Checksum;
+import org.jdesktop.wonderland.common.checksums.ChecksumList;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -220,26 +219,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
                 } catch (MalformedURLException e) {
                     logger.warning("bad url:  " + e.getMessage());
                     continue;
-                }
-
-                ModuleChecksums mc = fetchAssetChecksums(serverURL, moduleName,
-                        "audio");
-
-                if (mc == null) {
-                    logger.warning("ModuleChecksums is null");
-                } else {
-                    Map<String, Checksum> checksums = mc.getChecksums();
-
-                    Iterator<String> it = checksums.keySet().iterator();
-
-                    if (it.hasNext() == false) {
-                        logger.warning("There are no checksums!");
-                    } else {
-                        while (it.hasNext()) {
-                            String s = it.next();
-                            logger.fine("Checksum:  " + s + ":" + checksums.get(s).getChecksum());
-                        }
-                    }
                 }
             }
 
@@ -425,7 +404,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
      * @param assetType The name of the asset type (art, audio, client, etc.)
      * @return The checksum information for a module
      */
-    public static ModuleChecksums fetchAssetChecksums(String serverURL,
+    public static ChecksumList fetchAssetChecksums(String serverURL,
             String moduleName, String assetType) {
 
         try {
@@ -433,7 +412,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             String uriPart = moduleName + "/checksums/get/" + assetType;
             URL url = new URL(new URL(serverURL), ASSET_PREFIX + uriPart);
             logger.fine("fetchAssetChecksums:  " + url.toString());
-            return ModuleChecksums.decode(new InputStreamReader(url.openStream()));
+            return ChecksumList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception e) {
             /* Log an error and return null */
             logger.warning("[MODULES] FETCH CHECKSUMS Failed " + e.getMessage());

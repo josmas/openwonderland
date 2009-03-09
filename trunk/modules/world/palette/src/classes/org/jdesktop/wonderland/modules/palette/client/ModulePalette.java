@@ -41,8 +41,8 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
-import org.jdesktop.wonderland.common.modules.Checksum;
-import org.jdesktop.wonderland.common.modules.ModuleChecksums;
+import org.jdesktop.wonderland.common.checksums.Checksum;
+import org.jdesktop.wonderland.common.checksums.ChecksumList;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.common.modules.ModuleList;
 
@@ -237,8 +237,8 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         // Fetch the list of modules art assets. If the map contains entries
         // then add to the map of module names and return true.
         String serverURL = System.getProperty(JmeClientMain.SERVER_URL_PROP);
-        ModuleChecksums checksums = ModuleUtils.fetchAssetChecksums(serverURL, moduleName, "art");
-        Map<String, Checksum> checksumMap = checksums.getChecksums();
+        ChecksumList checksums = ModuleUtils.fetchAssetChecksums(serverURL, moduleName, "art");
+        Map<String, Checksum> checksumMap = checksums.getChecksumMap();
         if (checksumMap != null && checksumMap.isEmpty() == false) {
             // For each asset name, string off the "art/" prefix
             Set<String> strippedNameSet = new HashSet();

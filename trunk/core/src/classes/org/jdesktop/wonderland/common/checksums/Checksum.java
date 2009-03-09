@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.common.modules;
+package org.jdesktop.wonderland.common.checksums;
 
 import java.io.Reader;
 import java.io.Writer;
@@ -29,8 +29,8 @@ import javax.xml.bind.annotation.XmlTransient;
 /**
  * The Checksum class represents an individual checksum for a resource. A checksum
  * consists of a hex-encoded checksum string, the date the file on disk was
- * last modified (milliseconds since the epoch), and the relative name of the
- * resource within the repository.
+ * last modified (milliseconds since the epoch), and the relative path of the
+ * asset.
  * <p>
  * This class can also be encoded/decoded to/from XML via JAXB, suitable for
  * storing on disk or serializing across a network.
