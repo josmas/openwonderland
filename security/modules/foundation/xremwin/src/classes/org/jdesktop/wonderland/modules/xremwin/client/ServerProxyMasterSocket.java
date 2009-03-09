@@ -121,7 +121,7 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
         this.clientId = clientId;
     }
 
-    protected void establishConnection() {
+    protected synchronized void establishConnection() {
         try {
             sock = new Socket(masterHost, portBase + wsDisplayNum);
             sock.setSoTimeout(SOCKET_TIMEOUT);
@@ -601,7 +601,6 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
         AppXrw.logger.fine("Send take control, steal = " + steal);
 
         takeControlBuf[n++] = (byte) Proto.ClientMessageType.TAKE_CONTROL.ordinal();
-        ;
         takeControlBuf[n++] = (byte) (steal ? 1 : 0);
         takeControlBuf[n++] = (byte) 0;
         takeControlBuf[n++] = (byte) 0;
@@ -618,7 +617,6 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
         AppXrw.logger.fine("Send release control = ");
 
         releaseControlBuf[n++] = (byte) Proto.ClientMessageType.RELEASE_CONTROL.ordinal();
-        ;
         releaseControlBuf[n++] = (byte) 0;
         releaseControlBuf[n++] = (byte) 0;
         releaseControlBuf[n++] = (byte) 0;
@@ -635,7 +633,6 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
 
         /* First send header */
         setWindowTitleBuf[n++] = (byte) Proto.ClientMessageType.SET_WINDOW_TITLE.ordinal();
-        ;
         setWindowTitleBuf[n++] = 0; // Pad
         setWindowTitleBuf[n++] = 0; // Pad
         setWindowTitleBuf[n++] = 0; // Pad
@@ -661,7 +658,6 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
         int iz = Float.floatToRawIntBits(userDispl.z);
 
         setUserDisplBuf[n++] = (byte) Proto.ClientMessageType.WINDOW_SET_USER_DISPLACEMENT.ordinal();
-        ;
         setUserDisplBuf[n++] = 0; // Pad
         setUserDisplBuf[n++] = 0; // Pad
         setUserDisplBuf[n++] = 0; // Pad
@@ -693,7 +689,6 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
         int n = 0;
 
         setSizeBuf[n++] = (byte) Proto.ClientMessageType.WINDOW_SET_SIZE.ordinal();
-        ;
         setSizeBuf[n++] = 0; // Pad
         setSizeBuf[n++] = 0; // Pad
         setSizeBuf[n++] = 0; // Pad
@@ -722,7 +717,6 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
         int irotY = Float.floatToRawIntBits(rotY);
 
         setRotateYBuf[n++] = (byte) Proto.ClientMessageType.WINDOW_SET_ROTATE_Y.ordinal();
-        ;
         setRotateYBuf[n++] = 0; // Pad
         setRotateYBuf[n++] = 0; // Pad
         setRotateYBuf[n++] = 0; // Pad
@@ -746,7 +740,6 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
         int n = 0;
 
         toFrontBuf[n++] = (byte) Proto.ClientMessageType.WINDOW_TO_FRONT.ordinal();
-        ;
         toFrontBuf[n++] = 0; // Pad
         toFrontBuf[n++] = 0; // Pad
         toFrontBuf[n++] = 0; // Pad

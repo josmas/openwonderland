@@ -23,28 +23,29 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- * A response message giving the setup class for a cell. This message is always
- * sent when a query is made for the cell setup.
+ * A response message giving the cell server state. This message is always
+ * sent when a query is made to get the cell server state with the "GET"
+ * CellServerStateMessage.
  * 
  * @author Jordasn Slott <jslott@dev.java.net>
  */
 @InternalAPI
 public class CellServerStateResponseMessage extends ResponseMessage {
 
-    private CellServerState cellSetup;
+    private CellServerState serverState;
     
     /**
-     * Constructor, takes the ID of the message and the cell setup class.
+     * Constructor, takes the ID of the message and the cell server state.
      *
      * @param messageID the id of the message to which we are responding
      * @param viewCellID the id of the view cell
      */
-    public CellServerStateResponseMessage(MessageID messageID, CellServerState cellSetup) {
+    public CellServerStateResponseMessage(MessageID messageID, CellServerState serverState) {
         super (messageID);
-        this.cellSetup = cellSetup;
+        this.serverState = serverState;
     }
 
     public CellServerState getCellServerState() {
-        return cellSetup;
+        return serverState;
     }
 }

@@ -30,6 +30,11 @@
                     <target>javadoc</target>
                 </action>
             </ide-actions>
+            <export>
+                <type>folder</type>
+                <location>dist</location>
+                <build-target>release</build-target>
+            </export>
             <view>
                 <items>
                     <source-folder style="packages">
@@ -49,6 +54,10 @@
                         <label>Run Server</label>
                         <target>run-server</target>
                     </action>
+                    <action>
+                        <label>Debug Server</label>
+                        <target>debug-server</target>
+                    </action>
                 </context-menu>
             </view>
             <subprojects/>
@@ -56,6 +65,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>core/src/classes</package-root>
+                <built-to>dist</built-to>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

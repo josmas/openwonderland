@@ -28,7 +28,15 @@ import javax.swing.JFrame;
  */
 public class TestPanel extends javax.swing.JPanel {
     
+    public interface Container {
+        public void validate();
+        public void setHud(boolean enable);
+        // TODO: for testing view.setVisible hack
+        //public void setVisibleHack (boolean visible);
+    }
+
     private JFrame frame;
+    private Container container;
 
     /** Creates new form TestPanel */
     public TestPanel() {
@@ -37,6 +45,10 @@ public class TestPanel extends javax.swing.JPanel {
 
     public void setFrame (JFrame frame) {
 	this.frame = frame;
+    }
+
+    public void setContainer (Container container) {
+        this.container = container;
     }
 
     /** This method is called from within the constructor to
@@ -75,8 +87,8 @@ public class TestPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         add(jLabel1, gridBagConstraints);
 
-        jButton1.setText("jButton1");
-	jButton1.setToolTipText("This button prints a message to stdout");
+        jButton1.setText("Move to HUD");
+	jButton1.setToolTipText("This button moves the window into the HUD");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -87,6 +99,8 @@ public class TestPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         add(jButton1, gridBagConstraints);
 
+        // TODO: for testing view.setVisible hack
+        //jButton2.setText("Make invisible");
         jButton2.setText("Add Slider");
 	jButton2.setToolTipText("This button adds a slider to the window");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -168,14 +182,32 @@ public class TestPanel extends javax.swing.JPanel {
         //System.out.println("Panel focus Gained");
     }//GEN-LAST:event_formFocusGained
 
+    private boolean inHud = false;
+
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-        System.out.println("******** button press");
+
+        inHud = ! inHud;
+
+        if (inHud) {
+            jButton1.setText("Move to World");
+            jButton1.setToolTipText("This button moves the window into the world.");
+        } else {
+            jButton1.setText("Move to HUD");
+            jButton1.setToolTipText("This button moves the window into the HUD.");
+        }
+
+        jPanel1.invalidate();
+
+        if (container != null) {
+            container.setHud(inHud);
+        }
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private boolean sliderShown = false;
 
 private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    /* TODO: for testing view.setVisible hack: comment this out */
     if (sliderShown) {
 	// Remove slider
 	remove(jSlider1);
@@ -195,8 +227,19 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 	frame.pack();
     }
 
-    sliderShown = ! sliderShown;
+    if (container != null) {
+        container.validate();
+    }
 
+    sliderShown = ! sliderShown;
+    /* TODO: for testing view.setVisible hack: comment the above out out */
+
+    /* TODO: for testing view.setVisible hack: uncomment the following
+    if (container != null) {
+        container.setVisibleHack(false);
+    }
+    */
+    
 }//GEN-LAST:event_jButton2ActionPerformed
     
     

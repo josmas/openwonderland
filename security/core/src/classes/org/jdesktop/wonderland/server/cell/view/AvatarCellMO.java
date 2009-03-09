@@ -21,20 +21,15 @@ import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jmex.model.collada.schema.rotateType;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
-import java.io.Serializable;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.view.ViewCellClientState;
+import org.jdesktop.wonderland.common.cell.view.AvatarCellClientState;
 import org.jdesktop.wonderland.server.UserMO;
-import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO.CellTransformChangeListener;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -47,6 +42,7 @@ public class AvatarCellMO extends ViewCellMO {
     
     private ManagedReference<ViewCellCacheMO> avatarCellCacheRef;
     private ManagedReference<UserMO> userRef;
+    private String avatarConfigURL="test.xml";
 
     public AvatarCellMO(UserMO user) {
         super(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()),
@@ -64,8 +60,7 @@ public class AvatarCellMO extends ViewCellMO {
     
     @Override 
     protected String getClientCellClassName(WonderlandClientID clientID,
-                                            ClientCapabilities capabilities)
-    {
+                                            ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.client.cell.view.AvatarCell";
     }
     
@@ -73,11 +68,11 @@ public class AvatarCellMO extends ViewCellMO {
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
-	if (cellClientState == null) {
-	    cellClientState = new ViewCellClientState(userRef.get().getIdentity());
-	}
+        if (cellClientState == null) {
+            cellClientState = new AvatarCellClientState(userRef.get().getIdentity(), avatarConfigURL);
+        }
 
-	return super.getClientState(cellClientState, clientID, capabilities);
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     /**

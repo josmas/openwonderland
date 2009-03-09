@@ -20,12 +20,11 @@ package org.jdesktop.wonderland.modules.xremwin.client;
 import com.jme.math.Vector2f;
 import java.util.HashMap;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.AppCell;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.AppConventional;
-import org.jdesktop.wonderland.modules.appbase.client.AppConventionalCell;
 import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
 
 /**
  * An X11 app which receives its window contents from the Xremwin server.
@@ -33,8 +32,8 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
  *
  * @author deronj
  */
-@ExperimentalAPI
-class AppXrw extends AppConventional {
+@InternalAPI
+public class AppXrw extends AppConventional {
 
     /** The logger for app.modules.xremwin */
     static final Logger logger = Logger.getLogger("wl.app.modules.xremwin");
@@ -69,8 +68,7 @@ class AppXrw extends AppConventional {
     public WindowXrw createWindow(int x, int y, int width, int height, int borderWidth, boolean decorated, int wid) {
         WindowXrw window = null;
         try {
-            window = new WindowXrw(this, x, y, width, height, borderWidth, decorated,
-                    ((AppConventionalCell) cell).getPixelScale(), wid);
+            window = new WindowXrw(this, x, y, width, height, borderWidth, decorated, getPixelScale(), wid);
             return window;
         } catch (InstantiationException ex) {
             return null;
@@ -80,6 +78,7 @@ class AppXrw extends AppConventional {
     /**
      * Clean up resources.
      */
+    @Override
     public void cleanup() {
         super.cleanup();
 
@@ -106,16 +105,6 @@ class AppXrw extends AppConventional {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized void setCell(AppCell cell)
-            throws IllegalArgumentException, IllegalStateException {
-        client.setCell((AppCellXrw) cell);
-        super.setCell(cell);
-    }
-
-    /**
      * Get the window this window is a transient for.
      * Returns 0 if the window isn't a transient.
      *
@@ -126,6 +115,19 @@ class AppXrw extends AppConventional {
     int getTransientForWid(int wid) {
         // TODO: implement
         return 0;
+    }
+
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setDisplayer(Displayer displayer) throws IllegalArgumentException, IllegalStateException {
+        super.setDisplayer(displayer);
+
+        // Once we have the displayer we can enable the client loop.
+        client.enable();
     }
 }
 

@@ -18,16 +18,15 @@
 package org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer;
 
 import com.jme.scene.Spatial;
+import java.net.MalformedURLException;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Geometry;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
-import com.jme.scene.state.LightState;
-import com.jme.scene.state.MaterialState;
+import com.jme.scene.shape.Box;
 import com.jme.util.export.SavableString;
 import com.jme.util.geom.TangentBinormalGenerator;
 import com.jme.util.resource.ResourceLocatorTool;
@@ -35,6 +34,7 @@ import com.jmex.model.collada.ColladaImporter;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.zip.GZIPInputStream;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.shader.DiffuseMap;
@@ -51,13 +51,38 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.JmeColladaCe
  */
 public class JmeColladaRenderer extends BasicRenderer {
 
+    private Node model;
+
     public JmeColladaRenderer(Cell cell) {
         super(cell);
     }
     
     @Override
     protected Node createSceneGraph(Entity entity) {
-        return loadColladaAsset(cell.getCellID().toString());        
+        try {
+            // We need to handle null model uri's better!
+            Node ret = new Node();
+            if (((JmeColladaCell)cell).getModelURI() != null) {
+                ret = loadColladaAsset(cell.getCellID().toString(), getAssetURL(((JmeColladaCell) cell).getModelURI()));
+            }
+            else {
+                model = new Node();
+                ret.attachChild(model);
+            }
+
+            // Adjust model origin wrt to cell
+            if (((JmeColladaCell)cell).getGeometryTranslation()!=null)
+                model.setLocalTranslation(((JmeColladaCell)cell).getGeometryTranslation());
+            if (((JmeColladaCell)cell).getGeometryRotation()!=null)
+                model.setLocalRotation(((JmeColladaCell)cell).getGeometryRotation());
+            if (((JmeColladaCell)cell).getGeometryScale()!=null)
+                model.setLocalScale(((JmeColladaCell)cell).getGeometryScale());
+            return ret;
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(JmeColladaRenderer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return null;
     }
 
     /**
@@ -65,15 +90,17 @@ public class JmeColladaRenderer extends BasicRenderer {
      *
      * @param name the name to put in the returned node
      */
-    public Node loadColladaAsset(String name) {        
+    public Node loadColladaAsset(String name, URL url) {
         Node node = new Node();
-        Node model=null;
         
         try {
-            URL url = getAssetURL(((JmeColladaCell)cell).getModelURI());
-            logger.warning("URL: " + url);
-            InputStream input = url.openStream();
-//            System.out.println("Resource stream "+input);
+            InputStream input;
+            
+            if (url.getFile().endsWith(".gz")) {
+                input = new GZIPInputStream(url.openStream());
+            } else {
+                input = url.openStream();
+            }
 
             ResourceLocatorTool.addResourceLocator(
                     ResourceLocatorTool.TYPE_TEXTURE,
@@ -81,11 +108,6 @@ public class JmeColladaRenderer extends BasicRenderer {
 
             model = loadModel(input, name);
             
-            // Adjust model origin wrt to cell
-            if (((JmeColladaCell)cell).getGeometryTranslation()!=null)
-                model.setLocalTranslation(((JmeColladaCell)cell).getGeometryTranslation());
-            if (((JmeColladaCell)cell).getGeometryRotation()!=null)
-                model.setLocalRotation(((JmeColladaCell)cell).getGeometryRotation());
             node.attachChild(model);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error loading Collada file "+((JmeColladaCell)cell).getModelURI(), e);

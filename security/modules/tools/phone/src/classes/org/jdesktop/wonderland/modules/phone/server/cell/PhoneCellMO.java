@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellClientState;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellServerState;
+import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
 
 /**
  * A server cell that provides conference phone functionality
@@ -49,15 +50,7 @@ public class PhoneCellMO extends CellMO {
     private String modelFileName;
     private final static double PRIVATE_DAMPING_COEFFICIENT = 0.5;
 
-    private boolean locked;
-    private boolean simulateCalls;
-    private String phoneNumber;
-    private String password;
-    private String phoneLocation;
-    private double zeroVolumeRadius;
-    private double fullVolumeRadius;
-    private boolean keepUnlocked = true;
-    private int callNumber = 0;
+    private PhoneInfo phoneInfo;
 
     private ManagedReference<PhoneMessageHandler> phoneMessageHandlerRef;
 
@@ -84,6 +77,8 @@ public class PhoneCellMO extends CellMO {
 
 	addComponent(new MovableComponentMO(this));
 
+	IncomingCallHandler.getInstance().addPhone(getCellID(), phoneInfo);
+
 	phoneMessageHandlerRef = AppContext.getDataManager().createReference(
             new PhoneMessageHandler(this));
     }
@@ -103,13 +98,7 @@ public class PhoneCellMO extends CellMO {
 	    cellClientState = new PhoneCellClientState();
         }
 
-        ((PhoneCellClientState)cellClientState).setLocked(locked);
-        ((PhoneCellClientState)cellClientState).setSimulateCalls(simulateCalls);
-        ((PhoneCellClientState)cellClientState).setPhoneNumber(phoneNumber);
-        ((PhoneCellClientState)cellClientState).setPassword(password);
-        ((PhoneCellClientState)cellClientState).setPhoneLocation(phoneLocation);
-        ((PhoneCellClientState)cellClientState).setZeroVolumeRadius(zeroVolumeRadius);
-        ((PhoneCellClientState)cellClientState).setFullVolumeRadius(fullVolumeRadius);
+        ((PhoneCellClientState)cellClientState).setPhoneInfo(phoneInfo);
 
         return super.getClientState(cellClientState, clientID, capabilities);
     }
@@ -120,16 +109,11 @@ public class PhoneCellMO extends CellMO {
 
         PhoneCellServerState phoneCellServerState = (PhoneCellServerState) cellServerState;
 
-        locked = phoneCellServerState.getLocked();
-        simulateCalls = phoneCellServerState.getSimulateCalls();
-        phoneNumber = phoneCellServerState.getPhoneNumber();
-        password = phoneCellServerState.getPassword();
-        phoneLocation = phoneCellServerState.getPhoneLocation();
-        zeroVolumeRadius = phoneCellServerState.getZeroVolumeRadius();
+        phoneInfo = phoneCellServerState.getPhoneInfo();
     }
 
     /**
-     * Return a new CellServerState Java bean class that represents the current
+     * Return a new CellServerState object that represents the current
      * state of the cell.
      *
      * @return CellServerState representing the current state
@@ -139,67 +123,18 @@ public class PhoneCellMO extends CellMO {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
             cellServerState = new PhoneCellServerState();
-	    ((PhoneCellServerState) cellServerState).setLocked(locked);
-	    ((PhoneCellServerState) cellServerState).setSimulateCalls(simulateCalls);
-	    ((PhoneCellServerState) cellServerState).setPhoneNumber(phoneNumber);
-	    ((PhoneCellServerState) cellServerState).setPassword(password);
-	    ((PhoneCellServerState) cellServerState).setPhoneLocation(phoneLocation);
-	    ((PhoneCellServerState) cellServerState).setZeroVolumeRadius(zeroVolumeRadius);
+
+	    ((PhoneCellServerState) cellServerState).setPhoneInfo(phoneInfo);
         }
         return super.getServerState(cellServerState);
     }
 
-    public boolean getLocked() {
-        return locked;
+    public PhoneInfo getPhoneInfo() {
+        return phoneInfo;
     }
 
-    public void setLocked(boolean locked) {
-        this.locked = locked;
+    public void setPhoneInfo(PhoneInfo phoneInfo)  {
+        this.phoneInfo = phoneInfo;
     }
 
-    public boolean getSimulateCalls() {
-        return simulateCalls;
-    }
-
-    public void setSimulateCalls(boolean simulateCalls) {
-        this.simulateCalls = simulateCalls;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getPhoneLocation() {
-        return phoneLocation;
-    }
-
-    public double getZeroVolumeRadius() {
-        return zeroVolumeRadius;
-    }
-
-    public double getFullVolumeRadius() {
-        return fullVolumeRadius;
-    }
-
-    public boolean getKeepUnlocked() {
-        return keepUnlocked;
-    }
-
-    public void setKeepUnlocked(boolean keepUnlocked) {
-        this.keepUnlocked = keepUnlocked;
-    }
-
-    protected void addParentCell(ManagedReference parent) {
-        IncomingCallHandler incomingCallHandler = IncomingCallHandler.getInstance();
-
-    //vector3f translation = new Vector3f();
-    //getOriginWorld().get(translation);
-
-    //incomingCallHandler.addPhone(getCellID(), translation, phoneNumber,
-    //    phoneLocation, zeroVolumeRadius, fullVolumeRadius);
-    }
 }

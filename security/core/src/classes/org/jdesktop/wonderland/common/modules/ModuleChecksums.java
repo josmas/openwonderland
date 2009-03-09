@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -54,6 +56,9 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @XmlRootElement(name="repository-checksums")
 public class ModuleChecksums {
+    /* The error logger */
+    private static final Logger logger = Logger.getLogger(ModuleChecksums.class.getName());
+
     /* The SHA-1 checksum algorithm */
     public final static String SHA1_CHECKSUM_ALGORITHM = "SHA-1";
     
@@ -289,7 +294,9 @@ public class ModuleChecksums {
                         c.setChecksum(Checksum.toHexString(byteChecksum));
                         list.put(name, c);
                     } catch (java.io.IOException excp) {
-                        // ignore for now
+                        // Log an error, but continue
+                        logger.log(Level.WARNING, "Failed to generate checksum" +
+                                " for " + file.getAbsolutePath(), excp);
                     }
                 }
             }

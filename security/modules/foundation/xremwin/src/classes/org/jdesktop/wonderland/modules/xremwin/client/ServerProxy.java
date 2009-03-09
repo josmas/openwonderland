@@ -48,7 +48,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArg
  * @author deronj
  */
 @ExperimentalAPI
-interface ServerProxy {
+public interface ServerProxy {
 
     public void connect() throws IOException;
 

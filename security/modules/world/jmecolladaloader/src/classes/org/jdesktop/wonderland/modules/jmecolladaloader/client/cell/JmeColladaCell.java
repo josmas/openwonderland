@@ -36,6 +36,7 @@ public class JmeColladaCell extends Cell {
     private String modelURI = null;
     private Vector3f geometryTranslation;
     private Quaternion geometryRotation;
+    private Vector3f geometryScale;
     
     public JmeColladaCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -55,7 +56,11 @@ public class JmeColladaCell extends Cell {
         this.modelURI = colladaConfig.getModelURI();
         this.geometryRotation = colladaConfig.getGeometryRotation();
         this.geometryTranslation = colladaConfig.getGeometryTranslation();
+        this.geometryScale = colladaConfig.getGeometryScale();
         logger.info("[CELL] JME COLLADA CELL " + this.modelURI);
+        Vector3f axis = new Vector3f();
+        float angle = geometryRotation.toAngleAxis(axis);
+        System.err.println("JME CELL "+geometryTranslation+"  "+angle+"  "+axis);
     }
     
     @Override
@@ -90,5 +95,9 @@ public class JmeColladaCell extends Cell {
 
     public Quaternion getGeometryRotation() {
         return geometryRotation;
+    }
+
+    public Vector3f getGeometryScale() {
+        return geometryScale;
     }
 }

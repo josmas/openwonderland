@@ -17,8 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jme.util.resource.SimpleResourceLocator;
 import java.io.BufferedInputStream;
@@ -29,23 +30,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
+import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.JmeColladaRenderer;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
 
@@ -59,14 +57,14 @@ class JmeColladaLoader implements ModelLoader {
 
     private static final Logger logger = Logger.getLogger(JmeColladaLoader.class.getName());
         
-    private HashMap<URL, ZipEntry> textureFiles = new HashMap();
-    
     // The original file the user loaded
     private File origFile;
     
-    private ArrayList<String> modelFiles = new ArrayList();
+//    private ArrayList<String> modelFiles = new ArrayList();
 
-    private Node rootNode = null;
+    private Node modelNode = null;
+
+    private HashMap<URL, String> resourceSet = new HashMap();
 
     /**
      * Load a SketchUP KMZ file and return the graph root
@@ -74,11 +72,10 @@ class JmeColladaLoader implements ModelLoader {
      * @return
      */
     public Node importModel(File file) throws IOException {
-        rootNode = null;
+        modelNode = null;
         origFile = file;
-        
-//        ZipResourceLocator zipResource = new ZipResourceLocator(zipHost, zipFile);
-        SimpleResourceLocator resourceLocator = new SimpleResourceLocator(file.toURI());
+
+        SimpleResourceLocator resourceLocator = new RecordingResourceLocator(file.toURI());
         ResourceLocatorTool.addResourceLocator(
                 ResourceLocatorTool.TYPE_TEXTURE,
                 resourceLocator);
@@ -87,48 +84,67 @@ class JmeColladaLoader implements ModelLoader {
         logger.info("Loading MODEL " + file.getName());
         BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
 
-        rootNode = JmeColladaRenderer.loadModel(in, file.getName());
+        modelNode = JmeColladaRenderer.loadModel(in, file.getName());
         in.close();
         
         ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
-        return rootNode;
+        return modelNode;
     }
 
 
-    public ModelDeploymentInfo deployToModule(File moduleRootDir) throws IOException {
+    public ModelDeploymentInfo deployToModule(File moduleRootDir, ImportedModel model) throws IOException {
         try {
             String modelName = origFile.getName();
-            ZipFile zipFile = new ZipFile(origFile);
             
             // TODO replace getName with getModuleName(moduleRootDir)
             String moduleName = moduleRootDir.getName();
 
             String targetDirName = moduleRootDir.getAbsolutePath()+File.separator+"art"+ File.separator + modelName;
             File targetDir = new File(targetDirName);
-            targetDir.mkdir();
+            targetDir.mkdirs();
 
-            deployTextures(zipFile, targetDir);
-            deployModels(zipFile, targetDir);
+            deployTextures(targetDir);
+            deployModels(origFile.toURI().toURL(), targetDir);
 
-            if (modelFiles.size() > 1) {
-                logger.warning("Multiple models not supported during deploy");
-            }
+//            if (modelFiles.size() > 1) {
+//                logger.warning("Multiple models not supported during deploy");
+//            }
+
+            // XXX There should not be a direct reference to another module
+            // from here.
             JmeColladaCellServerState setup = new JmeColladaCellServerState();
-            setup.setModel("wla://"+moduleName+"/art/"+modelFiles.get(0));
+            setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelName);
+            setup.setGeometryRotation(new Rotation(modelNode.getLocalRotation()));
+            setup.setGeometryScale(new Scale(modelNode.getLocalScale()));
 
+            Vector3f offset = model.getRootBG().getLocalTranslation();
             PositionComponentServerState position = new PositionComponentServerState();
-            position.setOrigin(new Origin(rootNode.getLocalTranslation()));
-            position.setRotation(new Rotation(rootNode.getLocalRotation()));
-            position.setScaling(new Scaling(rootNode.getLocalScale()));
+            Vector3f boundsCenter = model.getRootBG().getWorldBound().getCenter();
+
+            offset.subtractLocal(boundsCenter);
+
+            setup.setGeometryTranslation(new Origin(offset));
+
+//            System.err.println("BOUNDS CENTER "+boundsCenter);
+//            System.err.println("OFfset "+offset);
+//            System.err.println("Cell origin "+boundsCenter);
+            position.setOrigin(new Origin(boundsCenter));
+
+            // The cell bounds already have the rotation and scale applied, so these
+            // values must not go in the Cell transform. Instead they go in the
+            // JME cell setup so that the model is correctly oriented and thus
+            // matches the bounds in the cell.
+
+            // Center the worldBounds on the cell (ie 0,0,0)
+            BoundingVolume worldBounds = modelNode.getWorldBound();
+            worldBounds.setCenter(new Vector3f(0,0,0));
+            position.setBounds(worldBounds);
             setup.addComponentServerState(position);
 
             ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();
             deploymentInfo.setCellSetup(setup);
             return deploymentInfo;            
-        } catch (ZipException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw new IOException("Zip error");
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
             throw ex;
@@ -140,32 +156,15 @@ class JmeColladaLoader implements ModelLoader {
      * models into the module
      * @param moduleArtRootDir
      */
-    private void deployModels(ZipFile zipFile, File targetDir) {
-        
-        // TODO update collada files with module relative texture paths
-        
+    private void deployModels(URL source, File targetDir) {
+        File targetFile = new File(targetDir, origFile.getName());
         try {
-            String targetDirName = targetDir.getAbsolutePath();
-            
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
-            while(entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                if (entry.getName().endsWith(".dae")) {
-                    File target = new File(targetDirName+File.separator+entry.getName());
-                    target.getParentFile().mkdirs();
-                    target.createNewFile();
-                    
-                    copyAsset(zipFile, entry, target);
-                }
-            }
-            
-            
-        } catch (ZipException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            targetFile.createNewFile();
+            copyAsset(source, targetFile); // TODO handle multiple dae files
         } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, "Unable to create file "+targetFile.getAbsolutePath(), ex);
         }
-        
+
     }
     
     /**
@@ -173,37 +172,51 @@ class JmeColladaLoader implements ModelLoader {
      * with the name of the original model.
      * @param moduleArtRootDir
      */
-    private void deployTextures(ZipFile zipFile, File targetDir) {
+    private void deployTextures(File targetDir) {
         try {
             // TODO generate checksums to check for image duplication
             String targetDirName = targetDir.getAbsolutePath();
 
-            for (Map.Entry<URL, ZipEntry> t : textureFiles.entrySet()) {
-                File target = new File(targetDirName + File.separator + t.getKey().getPath());
+            for (Map.Entry<URL, String> t : resourceSet.entrySet()) {
+                File target=null;
+                String targetFilename = t.getValue();
+                if (targetFilename.startsWith("/")) {
+                    targetFilename = targetFilename.substring(targetFilename.lastIndexOf(File.separatorChar));
+                    if (targetFilename==null) {
+                        targetFilename = t.getValue();
+                    }
+                } else {
+                    // Relative path
+                    if (targetFilename.startsWith("..")) {
+                        target = new File(targetDir.getParentFile(), targetFilename.substring(3));
+                    }
+                }
+
+                if (target==null)
+                    target = new File(targetDirName + File.separator + targetFilename);
+
+//                logger.fine("Texture file " + target.getAbsolutePath());
                 target.getParentFile().mkdirs();
                 target.createNewFile();
-//                logger.fine("Texture file " + target.getAbsolutePath());
-                copyAsset(zipFile, t.getValue(), target);
+                copyAsset(t.getKey(), target);
             }
-        } catch (ZipException ex) {
-            logger.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
-     * Copy the asset from the zipEntry to the target file
-     * @param zipFile the zipFile that contains the zipEntry
-     * @param zipEntry entry to copy from
+     * Copy the asset from the source url to the target file
+     * @param source the source file to copy from
      * @param target file to copy to
      */
-    private void copyAsset(ZipFile zipFile, ZipEntry zipEntry, File target) {
+    private void copyAsset(URL source, File targetFile) {
         InputStream in = null;
         OutputStream out = null;
         try {
-            in = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-            out = new BufferedOutputStream(new FileOutputStream(target));
+
+            in = new BufferedInputStream(source.openStream());
+            out = new BufferedOutputStream(new FileOutputStream(targetFile));
             
             org.jdesktop.wonderland.common.FileUtils.copyFile(in, out);
             
@@ -222,41 +235,97 @@ class JmeColladaLoader implements ModelLoader {
         }
     }
 
-    class ZipResourceLocator implements ResourceLocator {
-
-        private String zipHost;
-        private ZipFile zipFile;
-        
-        public ZipResourceLocator(String zipHost, ZipFile zipFile) {
-            this.zipHost = zipHost;
-            this.zipFile = zipFile;
-        }
-        
-        public URL locateResource(String filename) {
-            // Texture paths seem to be relative to the model directory....
-            if (filename.startsWith("../")) {
-                filename = filename.substring(3);
-            }
-            if (filename.startsWith("/")) {
-                filename = filename.substring(1);
-            }
-            
-            ZipEntry entry = zipFile.getEntry(filename);
-            if (entry==null) {
-                logger.severe("Unable to locate texture "+filename);
-                return null;
-            }
-            
-            try {
-                URL url = new URL("wlzip", zipHost, "/"+filename);
-                textureFiles.put(url, entry);
-                return url;
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            return null;
-        }
-    }
+//    class ZipResourceLocator implements ResourceLocator {
+//
+//        private String zipHost;
+//        private ZipFile zipFile;
+//
+//        public ZipResourceLocator(String zipHost, ZipFile zipFile) {
+//            this.zipHost = zipHost;
+//            this.zipFile = zipFile;
+//        }
+//
+//        public URL locateResource(String filename) {
+//            // Texture paths seem to be relative to the model directory....
+//            if (filename.startsWith("../")) {
+//                filename = filename.substring(3);
+//            }
+//            if (filename.startsWith("/")) {
+//                filename = filename.substring(1);
+//            }
+//
+//            ZipEntry entry = zipFile.getEntry(filename);
+//            if (entry==null) {
+//                logger.severe("Unable to locate texture "+filename);
+//                return null;
+//            }
+//
+//            try {
+//                URL url = new URL("wlzip", zipHost, "/"+filename);
+//                textureFiles.put(url, entry);
+//                return url;
+//            } catch (MalformedURLException ex) {
+//                Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//            return null;
+//        }
+//    }
     
 
+    class RecordingResourceLocator extends SimpleResourceLocator {
+        public RecordingResourceLocator(URI baseDir) {
+            super(baseDir);
+        }
+
+        public RecordingResourceLocator(URL baseDir) throws URISyntaxException {
+            super(baseDir);
+        }
+
+        @Override
+        public URL locateResource(String resourceName) {
+            URL ret = locateResourceImpl(resourceName);
+
+            if (!resourceSet.containsKey(ret)) {
+//                System.err.println("Looking for "+resourceName+"   found "+ret.toExternalForm());
+                resourceSet.put(ret, resourceName);
+            }
+
+            return ret;
+        }
+
+        // Copied directly from SimpleResourceLocator
+        public URL locateResourceImpl(String resourceName) {
+            // Trim off any prepended local dir.
+            while (resourceName.startsWith("./") && resourceName.length() > 2) {
+                resourceName = resourceName.substring(2);
+            }
+            while (resourceName.startsWith(".\\") && resourceName.length() > 2) {
+                resourceName = resourceName.substring(2);
+            }
+
+            // Try to locate using resourceName as is.
+            try {
+                String spec = URLEncoder.encode( resourceName, "UTF-8" );
+                //this fixes a bug in JRE1.5 (file handler does not decode "+" to spaces)
+                spec = spec.replaceAll( "\\+", "%20" );
+
+                URL rVal = new URL( baseDir.toURL(), spec );
+                // open a stream to see if this is a valid resource
+                // XXX: Perhaps this is wasteful?  Also, what info will determine validity?
+                rVal.openStream().close();
+                return rVal;
+            } catch (IOException e) {
+                // URL wasn't valid in some way, so try up a path.
+            } catch (IllegalArgumentException e) {
+                // URL wasn't valid in some way, so try up a path.
+            }
+
+            resourceName = trimResourceName(resourceName);
+            if (resourceName == null) {
+                return null;
+            } else {
+                return locateResourceImpl(resourceName);
+            }
+        }
+    }
 }

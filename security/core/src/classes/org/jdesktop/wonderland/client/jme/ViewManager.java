@@ -17,8 +17,10 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Spatial;
+import java.awt.event.ComponentEvent;
 import org.jdesktop.mtgame.Entity;
 import com.jme.scene.CameraNode;
 import com.jme.scene.GeometricUpdateListener;
@@ -41,6 +43,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import imi.scene.processors.JSceneEventProcessor;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.event.ComponentListener;
 import java.util.HashSet;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.RenderBuffer;
@@ -134,6 +137,25 @@ public class ViewManager {
         canvas.setBounds(0, 0, width, height);
 
         panel.add(canvas, BorderLayout.CENTER);
+
+        panel.addComponentListener(new ComponentListener() {
+            public void componentResized(ComponentEvent e) {
+//                System.err.println("Resizing "+e);
+                int width = e.getComponent().getWidth();
+                int height = e.getComponent().getHeight();
+                cameraComponent.setViewport(width, height);
+                cameraComponent.setAspectRatio(((float)width/(float)height));
+            }
+
+            public void componentMoved(ComponentEvent e) {
+            }
+
+            public void componentShown(ComponentEvent e) {
+            }
+
+            public void componentHidden(ComponentEvent e) {
+            }
+        });
 
         createCameraEntity(ClientContextJME.getWorldManager());
         listener = new CellListener();
@@ -375,6 +397,35 @@ public class ViewManager {
         if (cameraNode!=null)
             return new CellTransform(cameraNode.getWorldRotation(), cameraNode.getWorldTranslation(), cameraNode.getWorldScale());
         return new CellTransform(null, new Vector3f(0,0,0));
+    }
+
+    /**
+     * Convienence method to return the camera position as a vector.
+     *
+     * NOTE: THIS IS UNTESTED
+     *
+     * @return The camera position
+     */
+    public Vector3f getCameraPosition(Vector3f v3f) {
+        return getCameraTransform().getTranslation(v3f);
+    }
+
+    /**
+     * Returns the camera "look direction" as a vector.
+     *
+     * NOTE: THIS IS UNTESTED
+     *
+     * @return The camera look direction
+     */
+    public Vector3f getCameraLookDirection(Vector3f v) {
+        Quaternion rot = cameraNode.getWorldRotation();
+        if (v==null)
+            v = new Vector3f(0,0,1);
+        else
+            v.set(0, 0, 1);
+        rot.multLocal(v);
+        v.normalizeLocal();
+        return v;
     }
 
     /**

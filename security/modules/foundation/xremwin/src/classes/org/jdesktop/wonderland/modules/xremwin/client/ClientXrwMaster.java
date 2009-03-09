@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArg
  * @author deronj
  */
 @ExperimentalAPI
-class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener {
+public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener {
 
     private SlaveCloseWindowMsgArgs slaveCloseWindowMsgArgs = new SlaveCloseWindowMsgArgs();
     private SetWindowTitleMsgArgs setWindowTitleMsgArgs = new SetWindowTitleMsgArgs();
@@ -85,6 +85,7 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener 
     /**
      * Release held resources.
      */
+    @Override
     public void cleanup() {
         super.cleanup();
         winSys = null;
@@ -151,7 +152,7 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener 
                 break;
 
             case SET_WINDOW_TITLE:
-                // Ignore the message
+                // TODO: Ignore the message for now
                 break;
 
             default:
@@ -183,6 +184,7 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener 
     /**
      * Handle the ControllerStatus Message.
      */
+    @Override
     protected void processControllerStatus(ControllerStatusMsgArgs msgArgs) {
         super.processControllerStatus(msgArgs);
         if (msgArgs.status == ControllerStatus.GAINED) {
@@ -230,8 +232,7 @@ class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener 
         controlArb.releaseControl();
     }
 
-    public void writeSyncSlavePixels(BigInteger slaveID, int[] pixels, int w, int h) {
-        byte[] pixelBuf = intAryToByteAry(pixels, w, h);
-        ((ServerProxyMaster) serverProxy).writeSlaveSyncPixels(slaveID, pixelBuf);
+    public void writeSyncSlavePixels(BigInteger slaveID, byte[] pixelBytes) {
+        ((ServerProxyMaster) serverProxy).writeSlaveSyncPixels(slaveID, pixelBytes);
     }
 }

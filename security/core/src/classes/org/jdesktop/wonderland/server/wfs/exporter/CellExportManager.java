@@ -24,11 +24,12 @@ import org.jdesktop.wonderland.common.wfs.WorldRoot;
 
 /**
  * A service for exporting cells.  This service provides a set of
- * asynchronous mechanisms for creating cell snapshots, and writing a set
- * of cells to those snapshots.  Callers will be notified if the
+ * asynchronous mechanisms for creating cell snapshots and recordings, and writing a set
+ * of cells to those snapshots and recordings.  Callers will be notified if the
  * export succeeds or fails.
  *
  * @author jkaplan
+ * @author Bernard Horan
  */
 public interface CellExportManager {
     /**
@@ -41,6 +42,20 @@ public interface CellExportManager {
      * the result of this call
      */
     public void createSnapshot(String name, SnapshotCreationListener listener);
+
+    /**
+     * Create a new recording for writing cells to.  This method will contact
+     * the remote web service to create a new recording, and then call the
+     * given listener with the result of that call.
+     * @param name the name of the recording to create, or null to use the
+     * default name
+     * @param cells the set of cells to record
+     * @param listener a recording creation listener that will be notified of
+     * the result of this call
+     */
+    public void createRecording(String name, Set<CellID> cells, RecordingCreationListener listener);
+
+
 
     /**
      * Write a set of cells to the given snapshot.  This method will fetch the
@@ -81,8 +96,32 @@ public interface CellExportManager {
     }
 
     /**
+     * A listener that will be notified of the success or failure of
+     * creating a recording.  Implementations of RecordingCreationListener
+     * must be either a ManagedObject or Serializable.
+     */
+    public interface RecordingCreationListener {
+        /**
+         * Notification that a recording has been created successfully
+         * @param worldRoot the world root that was created
+         * @param cells the cells to be created
+         */
+        public void recordingCreated(WorldRoot worldRoot, Set<CellID> cells);
+
+        /**
+         * Notification that recording creation has failed.
+         * @param reason a String describing the reason for failure
+         * @param cause an exception that caused the failure.
+         */
+        public void recordingFailed(String reason, Throwable cause);
+
+    }
+
+
+
+    /**
      * A listener that will be notified of the result of exporting a set
-     * of cells to a snapshot.  Implementations of CellExportListener must
+     * of cells to a snapshot or a recording.  Implementations of CellExportListener must
      * be either a ManagedObject or Serializable
      */
     public interface CellExportListener {

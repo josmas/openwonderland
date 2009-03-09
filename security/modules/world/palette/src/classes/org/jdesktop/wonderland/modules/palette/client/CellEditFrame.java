@@ -29,22 +29,23 @@ import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.properties.CellComponentPropertiesManager;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesManager;
 import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
 import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
-import org.jdesktop.wonderland.common.cell.messages.CellGetServerStateMessage;
+import org.jdesktop.wonderland.client.cell.registry.CellComponentRegistry;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerStateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerStateResponseMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellSetServerStateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.messages.OKMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * A frame to allow the editing of properties for the cell.
@@ -100,7 +101,7 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         // Fetch the initial server state of the cell. If we cannot fetch it,
         // then flag and error and return -- since there is nothing more we
         // can do
-        cellServerState = getCellServerState();
+        cellServerState = fetchCellServerState();
         if (cellServerState == null) {
             logger.warning("Unable to fetch cell server state for " + cell.getName());
             throw new IllegalStateException("Unable to fetch cell server state");
@@ -139,17 +140,20 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         // panels
         updatePanelSet(cellServerState);
 
-        // Add a movable component, just for yuks
-//        ChannelComponent channel = cell.getComponent(ChannelComponent.class);
-//        if (channel != null) {
-//            channel.send(new CellAddComponentMessage(cell.getCellID(),
-//                    "org.jdesktop.wonderland.server.cell.MovableComponentMO"));
-//        }
-
         // Update the GUI to reflect the values in the cell
         updateGUI();
     }
-
+    
+    /**
+     * Returns a set of display names for each component that already exists
+     * on the properties panel.
+     *
+     * @param A Set of property panel display names
+     */
+    public Set<String> getComponentDisplayNames() {
+        return componentPropertiesMap.keySet();
+    }
+    
     /**
      * @inheritDoc()
      */
@@ -178,10 +182,6 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        buttonsPanel = new javax.swing.JPanel();
-        okButton = new javax.swing.JButton();
-        applyButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
         mainPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         mainSplitPane = new javax.swing.JSplitPane();
@@ -190,37 +190,13 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         propertyPanel = new javax.swing.JPanel();
         addCapabilityButton = new javax.swing.JButton();
         removeCapabilityButton = new javax.swing.JButton();
+        buttonsPanel = new javax.swing.JPanel();
+        okButton = new javax.swing.JButton();
+        applyButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Cell Property Editor");
-
-        buttonsPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
-
-        okButton.setText("OK");
-        okButton.setEnabled(false);
-        okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                okButtonActionPerformed(evt);
-            }
-        });
-        buttonsPanel.add(okButton);
-
-        applyButton.setText("Apply");
-        applyButton.setEnabled(false);
-        applyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                applyButtonActionPerformed(evt);
-            }
-        });
-        buttonsPanel.add(applyButton);
-
-        cancelButton.setText("Cancel");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
-        buttonsPanel.add(cancelButton);
 
         jLabel1.setText("Capabilities:");
 
@@ -248,10 +224,43 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
             }
         });
 
-        removeCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        removeCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         removeCapabilityButton.setEnabled(false);
         removeCapabilityButton.setLabel("-");
         removeCapabilityButton.setMargin(new java.awt.Insets(2, 4, 2, 4));
+        removeCapabilityButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeCapabilityButtonActionPerformed(evt);
+            }
+        });
+
+        buttonsPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+
+        okButton.setText("OK");
+        okButton.setEnabled(false);
+        okButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
+            }
+        });
+        buttonsPanel.add(okButton);
+
+        applyButton.setText("Apply");
+        applyButton.setEnabled(false);
+        applyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyButtonActionPerformed(evt);
+            }
+        });
+        buttonsPanel.add(applyButton);
+
+        cancelButton.setText("Close");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+        buttonsPanel.add(cancelButton);
 
         org.jdesktop.layout.GroupLayout mainPanelLayout = new org.jdesktop.layout.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -260,26 +269,29 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
             .add(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(mainSplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE)
                     .add(jLabel1)
                     .add(mainPanelLayout.createSequentialGroup()
                         .add(addCapabilityButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(removeCapabilityButton)))
+                        .add(removeCapabilityButton))
+                    .add(mainSplitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 683, Short.MAX_VALUE)
+                    .add(buttonsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 683, Short.MAX_VALUE))
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(mainPanelLayout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(20, Short.MAX_VALUE)
                 .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mainSplitPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 635, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(6, 6, 6)
+                .add(mainSplitPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 441, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addCapabilityButton)
                     .add(removeCapabilityButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buttonsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -287,14 +299,10 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(buttonsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 831, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 718, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(buttonsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(mainPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
@@ -319,10 +327,25 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void addCapabilityButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCapabilityButtonActionPerformed
-        // Create a new AddComponentDialog and display
-        AddComponentDialog dialog = new AddComponentDialog(this, true);
+        // Create a new AddComponentDialog and display. Wait for the dialog
+        // to close
+        AddComponentDialog dialog = new AddComponentDialog(this, true, cell);
         dialog.setVisible(true);
+
+        // If the OK button was pressed on the dialog and we can fetch a valid
+        // cell component factory, then try to add it on the server.
+        CellComponentFactorySPI spi = dialog.getCellComponentFactorySPI();
+        if (dialog.getReturnStatus() == AddComponentDialog.RET_OK && spi != null) {
+            addComponent(spi);
+        }
     }//GEN-LAST:event_addCapabilityButtonActionPerformed
+
+    private void removeCapabilityButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeCapabilityButtonActionPerformed
+        // Find out which component is selected and remove it
+        String selection = (String)capabilityList.getSelectedValue();
+        CellComponentPropertiesSPI spi = componentPropertiesMap.get(selection);
+        removeComponent(spi);
+    }//GEN-LAST:event_removeCapabilityButtonActionPerformed
 
     /**
      * Inner class to deal with selection on the capability list
@@ -336,38 +359,42 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
             }
             
             // Handles when an item has been selected in the list of capabilities
-            // Display the proper panel in such an instance
+            // Display the proper panel in such an instance. We also enable
+            // or disable the '-' sign to remove components depending upon
+            // what is selected
             String selection = (String) capabilityList.getSelectedValue();
             if (selection == null) {
                 propertyPanel.removeAll();
+                removeCapabilityButton.setEnabled(false);
             }
             else if (selection.equals("Basic") == true) {
                 propertyPanel.removeAll();
                 propertyPanel.add(basicPanel.getPropertiesJPanel(CellEditFrame.this));
+                removeCapabilityButton.setEnabled(false);
             }
             else if (selection.equals("Position") == true) {
                 propertyPanel.removeAll();
                 propertyPanel.add(positionPanel.getPropertiesJPanel(CellEditFrame.this));
+                removeCapabilityButton.setEnabled(false);
             }
             else if (cellProperties != null && cellProperties.getDisplayName().equals(selection) == true) {
                 propertyPanel.removeAll();
                 propertyPanel.add(cellProperties.getPropertiesJPanel(CellEditFrame.this));
+                removeCapabilityButton.setEnabled(false);
             }
             else if (componentPropertiesMap.containsKey(selection) == true) {
                 propertyPanel.removeAll();
                 propertyPanel.add(componentPropertiesMap.get(selection).getPropertiesJPanel(CellEditFrame.this));
+                removeCapabilityButton.setEnabled(true);
             }
             else {
                 propertyPanel.removeAll();
+                removeCapabilityButton.setEnabled(false);
             }
 
             // Invalidate the layout and repaint
             propertyPanel.revalidate();
             propertyPanel.repaint();
-
-            // If there is a selection then enable the '-' sign to remove the
-            // component, otherwise, disable the '-' sign
-            removeCapabilityButton.setEnabled(selection != null);
         }
     }
 
@@ -395,11 +422,7 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         
         // Tell the server-side cell to update itself. Send the message over
         // the cell channel, so fetch the channel component first.
-        CellSetServerStateMessage msg = new CellSetServerStateMessage(cell.getCellID(), cellServerState);
-        ChannelComponent channel = cell.getComponent(ChannelComponent.class);
-        if (channel != null) {
-            channel.send(msg);
-        }
+        cell.sendCellMessage(CellServerStateMessage.newSetMessage(cell.getCellID(), cellServerState));
 
         // XXX Probably should get a success/failed here!
 
@@ -409,33 +432,31 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         updateGUI();
     }
 
+    public CellServerState getCellServerState() {
+        return cellServerState;
+    }
+    
     /**
      * Asks the server for the server state of the cell; returns null upon
      * error
      */
-    private CellServerState getCellServerState() {
+    private CellServerState fetchCellServerState() {
         // Fetch the setup object from the Cell object. We send a message on
         // the cell channel, so we must fetch that first.
-        CellGetServerStateMessage message = new CellGetServerStateMessage(cell.getCellID());
-        ChannelComponent channel = cell.getComponent(ChannelComponent.class);
-        if (channel != null) {
-            try {
-                // Send the message on the cell channel and wait for the resonse.
-                // We need to remove the position component first as a special
-                // case since we do not want to update it after the cell is
-                // create
-                CellServerStateResponseMessage response = (CellServerStateResponseMessage) channel.sendAndWait(message);
-                CellServerState state = response.getCellServerState();
-                if (state != null) {
-                    state.removeComponentServerState(PositionComponentServerState.class);
-                }
-                return state;
-            } catch (InterruptedException ex) {
-                Logger.getLogger(CellEditFrame.class.getName()).log(Level.WARNING, null, ex);
-                return null;
-            }
+        ResponseMessage response = cell.sendCellMessageAndWait(CellServerStateMessage.newGetMessage(cell.getCellID()));
+        if (response == null) {
+            return null;
         }
-        return null;
+
+        // We need to remove the position component first as a special
+        // case since we do not want to update it after the cell is
+        // create
+        CellServerStateResponseMessage cssrm = (CellServerStateResponseMessage)response;
+        CellServerState state = cssrm.getCellServerState();
+        if (state != null) {
+            state.removeComponentServerState(PositionComponentServerState.class);
+        }
+        return state;
     }
 
     /**
@@ -484,6 +505,117 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
                     listModel.addElement(displayName);
                 }
             }
+        }
+    }
+
+    /**
+     * Adds an individual component panel to the set of panels, given the
+     * cell component factory and the component server state.
+     */
+    private void addComponentToPanelSet(CellComponentFactorySPI spi, CellComponentServerState state) {
+        // First, since this is a new panel since the server state was fetched,
+        // add the component server state to the cell server state.
+        cellServerState.addComponentServerState(state);
+
+        // Next, add the component display name to the list and to the maps
+        // of properties panels. We look up the properties in the manager of
+        // all component properties given the class name of the component
+        // server state.
+        CellComponentPropertiesManager manager = CellComponentPropertiesManager.getCellComponentPropertiesManager();
+        CellComponentPropertiesSPI propertiesSPI = manager.getCellComponentPropertiesByClass(state.getClass());
+        if (propertiesSPI != null) {
+            JPanel panel = propertiesSPI.getPropertiesJPanel(this);
+            if (panel != null) {
+                String displayName = propertiesSPI.getDisplayName();
+                componentPropertiesMap.put(displayName, propertiesSPI);
+                listModel.addElement(displayName);
+            }
+        }
+    }
+
+    /**
+     * Removes an individual component panel from the set of panels, given the
+     * display name of the component in the list
+     */
+    private void removeComponentFromPanelSet(String displayName) {
+        componentPropertiesMap.remove(displayName);
+        listModel.removeElement(displayName);
+    }
+
+    /**
+     * Given a component factory, adds the component to the server and upates
+     * the GUI to indicate its presence
+     */
+    private void addComponent(CellComponentFactorySPI spi) {
+        // Fetch the default server state for the factory, and cell id. Make
+        // sure we make it dynamically added
+        CellComponentServerState state = spi.getDefaultCellComponentServerState();
+        //state.setStatic(false);
+        CellID cellID = cell.getCellID();
+
+        // Send a ADD component message on the cell channel. Wait for a
+        // response. If OK, then update the GUI with the new component.
+        // Otherwise, display an error dialog box.
+        CellServerComponentMessage message = CellServerComponentMessage.newAddMessage(cellID, state);
+        ResponseMessage response = cell.sendCellMessageAndWait(message);
+        if (response == null) {
+            // log and error and post a dialog box
+            logger.warning("Received a null reply from cell with id " +
+                    cell.getCellID() + " with name " + cell.getName() +
+                    " adding component.");
+            return;
+        }
+
+        if (response instanceof OKMessage) {
+            // If successful, add the component to the GUI
+            addComponentToPanelSet(spi, state);
+        }
+        else if (response instanceof ErrorMessage) {
+            // Log an error. Eventually we should display a dialog
+            logger.log(Level.WARNING, "Unable to add component to the server",
+                    ((ErrorMessage) response).getErrorCause());
+        }
+    }
+
+    /**
+     * Given the component properties SPI, removes the component from the server
+     * and updates the GUI to indicate its absense
+     */
+    private void removeComponent(CellComponentPropertiesSPI spi) {
+        // Fetch the default server state for the factory and the various info
+        // we need to communicate with the server. We need to get to the class
+        // name of the server-side component. We first need to fetch the
+        // component factory using the properties object, and from that, get
+        // the class name. This can be cleaned up I think! XXX
+        CellComponentRegistry registry = CellComponentRegistry.getCellComponentRegistry();
+        Class clazz = spi.getServerCellComponentClass();
+        CellComponentFactorySPI factory = registry.getCellFactoryByStateClass(clazz);
+        CellID cellID = cell.getCellID();
+        String className = factory.getDefaultCellComponentServerState().getServerComponentClassName();
+
+        // Send a message to the server with the cell id and class name and
+        // wait for a response
+        CellServerComponentMessage cscm = CellServerComponentMessage.newRemoveMessage(cellID, className);
+        ResponseMessage response = cell.sendCellMessageAndWait(cscm);
+        if (response == null) {
+            logger.warning("Received a null reply from cell with id " +
+                    cell.getCellID() + " with name " + cell.getName() +
+                    " removing component.");
+            return;
+        }
+
+
+        // Send the message to the server. Wait for a response. If OK, then
+        // update the GUI with the new component. Otherwise, display an error
+        // dialog box.
+        if (response instanceof OKMessage) {
+            // If successful, add the component to the GUI
+            removeComponentFromPanelSet(spi.getDisplayName());
+        }
+        else if (response instanceof ErrorMessage) {
+            // Log an error. Eventually we should display a dialog
+            logger.log(Level.WARNING, "Unable to add component to the server",
+                    ((ErrorMessage) response).getErrorCause());
         }
     }
 

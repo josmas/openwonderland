@@ -55,6 +55,8 @@ import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.PlayTreatmentMessage;
 
+import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
+
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 import java.util.ArrayList;
@@ -127,16 +129,19 @@ public class PhoneMessageHandler {
 
     public void phoneSelected() {
 	if (phoneForm == null) {
-	    boolean locked = phoneCell.getLocked();
+	    PhoneInfo phoneInfo = phoneCell.getPhoneInfo();
+
+	    boolean locked = phoneInfo.locked;
+
 	    boolean passwordProtected = true;
 
-	    if (phoneCell.getPassword() == null || phoneCell.getPassword().length() == 0) {
+	    if (phoneInfo.password == null || phoneInfo.password.length() == 0) {
 		locked = false;
 		passwordProtected = false;
 	    }
 
 	    phoneForm = new PhoneForm(phoneCell.getCellID(), channelComp,
-		this, locked, phoneCell.getPhoneNumber(), passwordProtected);
+		this, locked, phoneInfo.phoneNumber, passwordProtected);
 	}
 
 	phoneForm.setVisible(true);

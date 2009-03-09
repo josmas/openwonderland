@@ -30,6 +30,7 @@ import java.awt.Point;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
@@ -65,34 +66,35 @@ import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 public class WindowSwing extends WindowGraphics2D {
 
     private static final Logger logger = Logger.getLogger(WindowSwing.class.getName());
-
     /** The Swing component which is displayed in this window */
     protected Component component;
-    
     /** The Swing Embedder object */
     protected WindowSwingEmbeddedPeer embeddedPeer;
-
     /** The size of the window */
     protected Dimension size;
-
     /** Is input enabled on this window? */
     protected boolean inputEnabled = true;
 
     /** The event listener for this window. */
     protected class MyEventListener extends EventListenerBaseImpl {
-	public boolean consumesEvent (Event event) {
-	    return inputEnabled;
-	}
-	public boolean propagatesToParent (Event event) {
-	    return false;
-	}
+
+        @Override
+        public boolean consumesEvent(Event event) {
+            return inputEnabled;
+        }
+
+        @Override
+        public boolean propagatesToParent(Event event) {
+            return false;
+        }
     }
 
     /** An entity component which provides a back pointer from the entity of a WindowSwing to the WindowSwing. */
     class WindowSwingReference extends EntityComponent {
-	WindowSwing getWindowSwing () {
-	    return WindowSwing.this;
-	}
+
+        WindowSwing getWindowSwing() {
+            return WindowSwing.this;
+        }
     }
 
     /** 
@@ -105,18 +107,30 @@ public class WindowSwing extends WindowGraphics2D {
      * @param surface The drawing surface on which the creator will draw
      * @throws InstantiationException if the windows world view cannot be created.
      */
-    public WindowSwing (App app, int width, int height, boolean topLevel, Vector2f pixelScale) 
-	throws InstantiationException 
-    {
-	super(app, width, height, topLevel, pixelScale, new DrawingSurfaceBufferedImage(width, height));
-	initializeSurface();
+    public WindowSwing(App app, int width, int height, boolean topLevel, Vector2f pixelScale)
+            throws InstantiationException {
+        super(app, width, height, topLevel, pixelScale, new DrawingSurfaceBufferedImage(width, height));
+        initializeSurface();
 
-	addWorldEntityComponent(InputManager.WindowSwingMarker.class, new WindowSwingMarker());
-	addWorldEntityComponent(WindowSwingReference.class, new WindowSwingReference());
-	addWorldEventListener(new MyEventListener());
+        addWorldEntityComponent(InputManager.WindowSwingMarker.class, new WindowSwingMarker());
+        addWorldEntityComponent(WindowSwingReference.class, new WindowSwingReference());
+        addWorldEventListener(new MyEventListener());
     }
 
-    /** Specify the Swing component displayed in this window */
+    /** 
+     * Specify the Swing component displayed in this window. The component is validated (that is it
+     * is layed out).
+     *
+     * Note: After you call <code>setComponent</code> the window will be in "preferred size" mode, 
+     * that is, it the window will be sized according to the Swing component's preferred sizes and 
+     * the component's layout manager. If you call <code>WindowSwing.setSize(int width, int height)</code> or 
+     * <code>WindowSwing.setSize(Dimension dims)</code> with a non-null <code>dims</code> the window will be 
+     * in "forced size" mode. This means that the window will always be the size you specify and this
+     * will constrain the sizes of the contained component. To switch back into preferred size mode
+     * call <code>WindowSwing.setSize(null)</code>.
+     *
+     * @param component The component to be displayed.
+     */
     public void setComponent(Component component) {
         if (this.component == component) {
             return;
@@ -129,79 +143,84 @@ public class WindowSwing extends WindowGraphics2D {
         if (component != null) {
             checkContainer();
 
-	    // TODO: may eventually need this
-            //FocusHandler.addNotify(this);
+        // TODO: may eventually need this
+        //FocusHandler.addNotify(this);
         }
 
 	// TODO: Uncomment this to demonstrate the embedded component enter/exit bug
-	component.addMouseListener(new MyAwtEnterListener());
+	//component.addMouseListener(new MyAwtEnterListener());
 
-       	addWorldEventListener(new MySwingEnterExitListener());
+        addWorldEventListener(new MySwingEnterExitListener());
 
-	setSize(size);
+        embeddedPeer.validate();
         embeddedPeer.repaint();
     }
 
-    // TODO: I'm leaving this hear to illustrate a bug
+    /* TODO: I'm leaving this hear to illustrate a bug
     private class MyAwtEnterListener extends MouseAdapter {
-	public void mouseEntered(MouseEvent e) {
-	    if (e.getID() == MouseEvent.MOUSE_ENTERED) {
-		System.err.println("********* MOUSE Entered Window Swing embedded component");
-	    } else {
-		System.err.println("********* MOUSE Entered Window Swing embedded component");
-	    }
-	}
+
+        public void mouseEntered(MouseEvent e) {
+            if (e.getID() == MouseEvent.MOUSE_ENTERED) {
+                System.err.println("********* MOUSE Entered Window Swing embedded component");
+            } else {
+                System.err.println("********* MOUSE Exited Window Swing embedded component");
+            }
+        }
     }
+    */
 
     private static class MySwingEnterExitListener extends EventClassListener {
-	public Class[] eventClassesToConsume () {
-	    return new Class[] { SwingEnterExitEvent3D.class };
-	}
 
-	public void commitEvent (Event event) {
-	    SwingEnterExitEvent3D seeEvent = (SwingEnterExitEvent3D) event;
-	    
-	    /* For debug
-	    StringBuffer sb = new StringBuffer();
-	    String typeStr = "SWING " + (seeEvent.isEntered() ? "ENTER" : "EXIT");
-	    sb.append(typeStr + ", entity = " + seeEvent.getEntity());
-	    System.err.println(sb.toString());
-	    */
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[]{SwingEnterExitEvent3D.class};
+        }
 
-	    if (seeEvent.isEntered()) {
-		Entity entity = seeEvent.getEntity();
-		EntityComponent comp = entity.getComponent(WindowSwing.WindowSwingReference.class);
-		assert comp != null;
-		WindowSwing windowSwing = ((WindowSwing.WindowSwingReference)comp).getWindowSwing();
-		assert windowSwing != null;
-		windowSwing.requestFocusInWindow();
-	    } else {
-		requestFocusInWindowForCanvas();
-	    }
-	}
+        @Override
+        public void commitEvent(Event event) {
+            SwingEnterExitEvent3D seeEvent = (SwingEnterExitEvent3D) event;
+
+            /* For debug
+            StringBuffer sb = new StringBuffer();
+            String typeStr = "SWING " + (seeEvent.isEntered() ? "ENTER" : "EXIT");
+            sb.append(typeStr + ", entity = " + seeEvent.getEntity());
+            System.err.println(sb.toString());
+             */
+
+            if (seeEvent.isEntered()) {
+                Entity entity = seeEvent.getEntity();
+                EntityComponent comp = entity.getComponent(WindowSwing.WindowSwingReference.class);
+                assert comp != null;
+                WindowSwing windowSwing = ((WindowSwing.WindowSwingReference) comp).getWindowSwing();
+                assert windowSwing != null;
+                windowSwing.requestFocusInWindow();
+            } else {
+                requestFocusInWindowForCanvas();
+            }
+        }
     }
 
     /** 
      * Request focus in the Wonderland client's canvas, provided that the top-level frame has focus.
      */
-    private static void requestFocusInWindowForCanvas () {
-	Canvas canvas = JmeClientMain.getFrame().getCanvas();
-	if (!canvas.requestFocusInWindow()) {
-	    logger.warning("Focus request for main canvas rejected.");
-	}
+    private static void requestFocusInWindowForCanvas() {
+        Canvas canvas = JmeClientMain.getFrame().getCanvas();
+        if (!canvas.requestFocusInWindow()) {
+            logger.warning("Focus request for main canvas rejected.");
+        }
     }
 
     /** 
      * Request focus in this window's embedded component, provided that the top-level frame has focus.
      */
-    private void requestFocusInWindow () {
-	if (!component.requestFocusInWindow()) {
-	    logger.warning("Focus request for embedded component rejected.");
-	}
+    private void requestFocusInWindow() {
+        if (!component.requestFocusInWindow()) {
+            logger.warning("Focus request for embedded component rejected.");
+        }
     }
 
     /** Returned the Swing component displayed in this window */
-    public final Component getComponent() { 
+    public final Component getComponent() {
         return component;
     }
 
@@ -214,13 +233,13 @@ public class WindowSwing extends WindowGraphics2D {
             }
             return;
         }
-	
-	MainFrame frame = JmeClientMain.getFrame();
-	JPanel embeddedParent = frame.getCanvas3DPanel();
-	if (embeddedParent == null) {
-	    logger.warning("Embedded parent is null");
-	    return;
-	}
+
+        MainFrame frame = JmeClientMain.getFrame();
+        JPanel embeddedParent = frame.getCanvas3DPanel();
+        if (embeddedParent == null) {
+            logger.warning("Embedded parent is null");
+            return;
+        }
 
         if (embeddedParent != null) {
             if (embeddedPeer != null && embeddedPeer.getParentComponent() != embeddedParent) {
@@ -228,83 +247,96 @@ public class WindowSwing extends WindowGraphics2D {
                 embeddedPeer = null;
             }
             if (embeddedPeer == null) {
-		WindowSwingEmbeddedToolkit embeddedToolkit = 
-		    WindowSwingEmbeddedToolkit.getWindowSwingEmbeddedToolkit();
+                WindowSwingEmbeddedToolkit embeddedToolkit =
+                        WindowSwingEmbeddedToolkit.getWindowSwingEmbeddedToolkit();
                 embeddedPeer = embeddedToolkit.embed(embeddedParent, component);
                 embeddedPeer.setWindowSwing(this);
 
-		// TODO: may eventually need this
-                //embeddedPeer.setFocusTraversalPolicy(FocusHandler.getFocusTraversalPolicy());
+            // TODO: may eventually need this
+            //embeddedPeer.setFocusTraversalPolicy(FocusHandler.getFocusTraversalPolicy());
             }
         }
     }
 
+    /**
+     * Specify the size of the window only (not the embedded peer).
+     */
+    void setWindowSize (int width, int height) {
+        super.setSize(width, height);
+    }
+
+    /**
+     * Specify the size of this WindowSwing. This switches the window from "preferred size" mode
+     * to "forced size" mode?
+     */
+    @Override
+    public void setSize (int width, int height) {
+        setSize(new Dimension(width, height));
+    }
+
+    /**
+     * Specify the size of this WindowSwing. If dims is non-null, the window is switched
+     * into "forced size" mode--the window will be always be the size you specify. If dims is null,
+     * the window is switched into "preferred size" mode--the window will size will be determined
+     * by the size and layout of the embedded Swing component.
+     */
+    public void setSize (Dimension dims) {
+        if (embeddedPeer == null) {
+            throw new RuntimeException("You must first set a component for this WindowSwing.");
+        }
+        embeddedPeer.setSize(dims);
+        embeddedPeer.validate();
+        embeddedPeer.repaint();
+    }
+
+    /**
+     * Re-lay out the contents of this window. This should be called whenever you make changes which
+     * affect the layout of the contained component.
+     */
+    public void validate () {
+        if (embeddedPeer == null) {
+            throw new RuntimeException("You must first set a component for this WindowSwing.");
+        }
+        embeddedPeer.validate();
+        embeddedPeer.repaint();
+    }
+
+    /**
+     * Repaint out the contents of this window.
+     */
+    public void repaint () {
+        if (embeddedPeer == null) {
+            throw new RuntimeException("You must first set a component for this WindowSwing.");
+        }
+        embeddedPeer.repaint();
+    }
     public final EmbeddedPeer getEmbeddedPeer () {
 	return embeddedPeer;
     }
 
-    public void setSize(int width, int height) {
-        setSize(new Dimension(width, height));
-    }
-
-    public void setSize(Dimension size) {
-	this.size = size;
-	/* TODO: Igor says: this is wrong. Can cause infinite recursion
-	if (component != null) {
-	    component.setSize(size);
-	}
-	*/
-        if (embeddedPeer != null) {
-            embeddedPeer.setSize(size);
-            embeddedPeer.validate();
-        }
-    }
-
-    protected void paint(Graphics2D g) {
-	/* TODO: obsolete
-	if (drawingSurface != null) {
-	    drawingSurface.paint(g);
-	}
-	*/
-    }
-
-    /* TODO
-    public final Rectangle2D getBounds(AffineTransform transform) {
-        checkContainer();
-        if (embeddedPeer == null) {
-            return new Rectangle2D.Float();
-        }
-        embeddedPeer.validate();
-        Rectangle2D bounds = 
-            new Rectangle(0, 0, component.getWidth(), component.getHeight());
-        if (transform != null && !transform.isIdentity()) {
-            bounds = transform.createTransformedShape(bounds).getBounds2D();
-        }
-        return bounds;
-    }
-    */
+    protected void paint(Graphics2D g) {}
 
     /** 
      * Set the input enable for this window. By default, input for a WindowSwing is enabled.
      */
-    public void setInputEnabled (boolean enabled) {
-	inputEnabled = enabled;
+    public void setInputEnabled(boolean enabled) {
+        inputEnabled = enabled;
     }
 
     /** 
      * Return the input enabled for this window.
      */
-    public boolean getInputEnabled () {
-	return inputEnabled;
+    public boolean getInputEnabled() {
+        return inputEnabled;
     }
 
-    public Point calcWorldPositionInPixelCoordinates (Point2D src, MouseEvent event, 
-						      Vector3f intersectionPointWorld,
-						      Point lastPressPointScreen) { 
-	if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
-	    return viewWorld.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
-	} else {
-	    return calcWorldPositionInPixelCoordinates(intersectionPointWorld, true);
-	}
+    public Point calcWorldPositionInPixelCoordinates(Point2D src, MouseEvent event,
+            Vector3f intersectionPointWorld,
+            Point lastPressPointScreen) {
+        if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
+            return viewWorld.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
+        } else {
+            return calcWorldPositionInPixelCoordinates(intersectionPointWorld, true);
+        }
     }
 }

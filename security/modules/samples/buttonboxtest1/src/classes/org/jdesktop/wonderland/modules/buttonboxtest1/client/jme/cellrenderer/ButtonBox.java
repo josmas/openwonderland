@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
 package org.jdesktop.wonderland.modules.buttonboxtest1.client.jme.cellrenderer;
 
@@ -19,6 +32,7 @@ import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.mtgame.RenderUpdater;
 
 /**
  * A ButtonBox is a 3D component which provides a configurable number of 3D box
@@ -35,10 +49,9 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
  * entity tree must be provided. This entity will become the parent of the button box 
  * entity.
  *
- * You can register two mouse event listeners with the button box. The first, 
- * <code>baseListener</code> will receive mouse events which occur when the mouse 
- * cursor is over the base box. The second, <code>buttonListener</code>, will receive 
- * events which occur when the mouse cursor is over one of the buttons.
+ * You can register a mouse event listener with the button box. The listener
+ * will receive mouse events which occur over any entity in the box. Individual objects may be
+ * distinguished by the node of the mouse event returned by <code>MouseEvent3D.getNode</code>.
  *
  * @author dj
  */
@@ -75,12 +88,12 @@ public class ButtonBox {
     private Node[] buttonNodes;
     /** The entity for the base. */
     private Entity baseEntity;
-    /** The entities for the buttons. */
-    private Entity[] buttonEntities;
-    /** The event listener for the base. */
-    private EventListener baseListener;
-    /** The event listener for buttons. */
-    private EventListener buttonListener;
+    /** The mouse event listener. */
+    private EventListener listener;
+    /** The JME collision system. */
+    JMECollisionSystem collisionSystem;
+    /** The collision component for the topmost node. */
+    CollisionComponent cc;
 
     /**
      * Create a new instance of ButtonBox. The width of the base depends on the width of the buttons,
@@ -111,8 +124,10 @@ public class ButtonBox {
 
         // Create all of the necessary objects and assemble them together
         createGeometries();
-        createNodes();
-        createEntities();
+        createBaseNode();
+        createCollisionComponent();
+        createButtonNodes();
+        baseEntity = createEntity("Base Entity", baseNode);
     }
 
     /**
@@ -129,7 +144,6 @@ public class ButtonBox {
 			  baseWidth/2f, baseHeight/2f, baseDepth/2f);
         baseBox.setModelBound(new BoundingBox());
         baseBox.updateModelBound();
-        setBoxColor(baseBox, baseColor);
 
         // Create the button geometries and ensure their bounds are initialized
         buttonBoxes = new Box[numButtons];
@@ -141,50 +155,43 @@ public class ButtonBox {
                     buttonWidth/2f, buttonHeight/2f, buttonDepth/2f);
             buttonBoxes[i].setModelBound(new BoundingBox());
             buttonBoxes[i].updateModelBound();
-            setBoxColor(buttonBoxes[i], baseColor);
             buttonX += buttonWidth + buttonSpacing;
         }
     }
 
     /**
-     * Create the scene graph nodes and attach the appropriate geometry to each node.
-     * Note: this routine does not connect the nodes together to form a scene graph.
-     * This is done later.
+     * Create the base scene graph node.
      */
-    private void createNodes() {
-
-        // Create the base scene graph node
+    private void createBaseNode() {
         baseNode = new Node("Base Node");
         baseNode.attachChild(baseBox);
+        setBoxColor(baseNode, baseBox, baseColor);
+    }
 
-        // Create a scene graph node for each button
-        buttonNodes = new Node[numButtons];
-        for (int i = 0; i < numButtons; i++) {
-            buttonNodes[i] = new Node("Button Node " + i);
-            buttonNodes[i].attachChild(buttonBoxes[i]);
-        }
+    /** 
+     * Creates the collision component for the topmost scene graph node.
+     */
+    private void createCollisionComponent () {
+        collisionSystem = (JMECollisionSystem) ClientContextJME.getWorldManager().getCollisionManager().
+            loadCollisionSystem(JMECollisionSystem.class);
+        cc = collisionSystem.createCollisionComponent(baseNode);
     }
 
     /**
-     * Create an entity for each input sensitive object (namely, the base and the buttons).
+     * Create the button nodes and attach them to the base node.
      */
-    private void createEntities() {
+    private void createButtonNodes() {
 
-        // Create the base entity
-        baseEntity = createEntity("Base Entity", baseNode);
-
-        // Create entities for each button. Arrange for the scene graphs of the buttons
-        // to be attached to the node of the base entity.
-        buttonEntities = new Entity[numButtons];
+        // Create a scene graph node for each button. And, because these nodes are not
+        // directly connected to the entity, we need to explicitly make them pickable.
+        // by adding them to the collision component of the topmost node.
+        buttonNodes = new Node[numButtons];
         for (int i = 0; i < numButtons; i++) {
-            buttonEntities[i] = createEntity("Button Entity " + i, buttonNodes[i]);
-
-	    // This will not only build the entity tree but it will also arrange
-	    // for the scene graphs (i.e. the nodes) of the entities to be connected
-	    // into a scene graph. This is done via the "attach point" feature of 
-	    // mtgame RenderComponent. Note that the nodes are not actually connected
-	    // now; they are connected later when the entities become visible.
-            BasicRenderer.entityAddChild(baseEntity, buttonEntities[i]);
+            buttonNodes[i] = new Node("Button Node " + i);
+            collisionSystem.addReportingNode(buttonNodes[i], cc);
+            buttonNodes[i].attachChild(buttonBoxes[i]);
+            baseNode.attachChild(buttonNodes[i]);
+            setBoxColor(buttonNodes[i], buttonBoxes[i], baseColor);
         }
     }
 
@@ -206,9 +213,6 @@ public class ButtonBox {
         entity.addComponent(RenderComponent.class, rc);
 
         // Make the entity pickable by attaching a collision component.
-        JMECollisionSystem collisionSystem = (JMECollisionSystem) ClientContextJME.getWorldManager().getCollisionManager().
-                loadCollisionSystem(JMECollisionSystem.class);
-        CollisionComponent cc = collisionSystem.createCollisionComponent(node);
         entity.addComponent(CollisionComponent.class, cc);
 
         return entity;
@@ -228,7 +232,7 @@ public class ButtonBox {
      */
     public void setBaseColor(ColorRGBA color) {
         baseColor = color;
-        setBoxColor(baseBox, color);
+        setBoxColor(baseNode, baseBox, color);
     }
 
     /**
@@ -245,55 +249,51 @@ public class ButtonBox {
             buttonColors = new ColorRGBA[numButtons];
         }
         buttonColors[buttonIndex] = color;
-        setBoxColor(buttonBoxes[buttonIndex], color);
+        setBoxColor(buttonNodes[buttonIndex], buttonBoxes[buttonIndex], color);
     }
 
     /**
      * Set the color of the given box.
      */
-    private static void setBoxColor(Box box, ColorRGBA color) {
-        MaterialState ms = (MaterialState) box.getRenderState(RenderState.RS_MATERIAL);
-        if (ms == null) {
-            ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
-            box.setRenderState(ms);
-        }
-        ms.setAmbient(new ColorRGBA(color));
-        ms.setDiffuse(new ColorRGBA(color));
-    }
+    private static void setBoxColor(final Node node, final Box box, final ColorRGBA color) {
 
-    /**
-     * Attach event listeners to the button box. This will allow the base and button components 
-     * to be mouse input sensitive when they are visible, that is, their listeners will receive 
-     * mouse events.
-     * @param baseListener The listener for events which happen when the cursor is over the base.
-     * @param buttonListener The listener of events which happen when the cursor is over a button.
-     */
-    public void addEventListeners (EventListener baseListener, EventListener buttonListener) {
-        this.baseListener = baseListener;
-        baseListener.addToEntity(baseEntity);
-
-        this.buttonListener = buttonListener;
-        for (int i=0; i<numButtons; i++) {
-            buttonListener.addToEntity(buttonEntities[i]);
-        }
-    }
-
-    /**
-     * Detaches both listeners from the button box. The button box will no longer be input sensitive.
-     */
-    public void removeEventListeners () {
-        if (baseListener != null) {
-            baseListener.removeFromEntity(baseEntity);
-            baseListener = null;
-        }
-
-        if (buttonListener != null) {
-            for (int i=0; i<numButtons; i++) {
-                buttonListener.removeFromEntity(buttonEntities[i]);
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                MaterialState ms = (MaterialState) box.getRenderState(RenderState.RS_MATERIAL);
+                if (ms == null) {
+                    ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
+                    box.setRenderState(ms);
+                }
+                ms.setAmbient(new ColorRGBA(color));
+                ms.setDiffuse(new ColorRGBA(color));
+                if (node != null) {
+                    ClientContextJME.getWorldManager().addToUpdateList(node);
+                }
             }
-            buttonListener = null;
-        }
+        }, null);
     }
+
+    /**
+     * Attach the event listener to the button box. This will allow the components of the box
+     * to be mouse input sensitive when they are visible, that is, the listener will receive 
+     * mouse events.
+     * @param listener The listener for mouse events on the box.
+     */
+    public void addEventListener (EventListener listener) {
+        this.listener = listener;
+        listener.addToEntity(baseEntity);
+    }
+
+    /**
+     * Detaches the mouse event listener from the button box. The button box will no longer 
+     * be input sensitive.
+     */
+    public void removeEventListener () {
+        if (listener != null) {
+            listener.removeFromEntity(baseEntity);
+            listener = null;
+        }
+     }
 }
 
 

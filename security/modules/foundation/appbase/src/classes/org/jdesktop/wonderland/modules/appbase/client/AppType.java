@@ -44,11 +44,6 @@ public abstract class AppType {
     public abstract String getName();
 
     /**
-     * Returns the factory object which creates user-visible objects for this type of app.
-     */
-    public abstract GuiFactory getGuiFactory();
-
-    /**
      * Used by an app to add itself app to this app type's list of apps.
      *
      * @param app The app to add to the list.

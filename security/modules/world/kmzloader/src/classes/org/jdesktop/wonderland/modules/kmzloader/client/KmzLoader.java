@@ -17,8 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.kmzloader.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jmex.model.collada.ColladaImporter;
@@ -45,13 +49,14 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import org.jdesktop.mtgame.processor.TransScaleProcessor;
+import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
@@ -77,7 +82,7 @@ class KmzLoader implements ModelLoader {
     
     private ArrayList<String> modelFiles = new ArrayList();
 
-    private Node rootNode = null;
+    private Node modelNode = null;
     
     /**
      * Load a SketchUP KMZ file and return the graph root
@@ -85,7 +90,7 @@ class KmzLoader implements ModelLoader {
      * @return
      */
     public Node importModel(File file) throws IOException {
-        rootNode = null;
+        modelNode = null;
         origFile = file;
         
         try {
@@ -110,11 +115,11 @@ class KmzLoader implements ModelLoader {
             }
             
             if (models.size()==1) {
-                rootNode = load(zipFile, models.get(0));
+                modelNode = load(zipFile, models.get(0));
             } else {
-                rootNode = new Node();
+                modelNode = new Node();
                 for(ModelType model : models) {
-                    rootNode.attachChild(load(zipFile, model));
+                    modelNode.attachChild(load(zipFile, model));
                 }
             }
             
@@ -129,7 +134,7 @@ class KmzLoader implements ModelLoader {
             throw new IOException("JAXB Error");
         }
         
-        return rootNode;
+        return modelNode;
     }
     
     private Node load(ZipFile zipFile, ModelType model) throws IOException {
@@ -148,19 +153,19 @@ class KmzLoader implements ModelLoader {
         BufferedInputStream in = new BufferedInputStream(zipFile.getInputStream(modelEntry));
         
         ColladaImporter.load(in, filename);
-        rootNode = ColladaImporter.getModel();
+        modelNode = ColladaImporter.getModel();
 
         ColladaImporter.cleanUp();
         
         ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, zipResource);
         WlzipManager.getWlzipManager().removeZip(zipHost, zipFile);
 
-        // Correctly orient model
-        rootNode.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
+        // Correctly orient model - TODO get initial orientation from KML
+        modelNode.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
 
-        return rootNode;
+        return modelNode;
     }
-    
+
     /**
      * Search kmz folders adding any ModelTypes found to the models list
      * @param models
@@ -187,7 +192,7 @@ class KmzLoader implements ModelLoader {
         }
     }
     
-    public ModelDeploymentInfo deployToModule(File moduleRootDir) throws IOException {
+    public ModelDeploymentInfo deployToModule(File moduleRootDir, ImportedModel model) throws IOException {
         try {
             String modelName = origFile.getName();
             ZipFile zipFile = new ZipFile(origFile);
@@ -210,11 +215,34 @@ class KmzLoader implements ModelLoader {
             // from here.
             JmeColladaCellServerState setup = new JmeColladaCellServerState();
             setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
+            setup.setGeometryRotation(new Rotation(modelNode.getLocalRotation()));
+            setup.setGeometryScale(new Scale(modelNode.getLocalScale()));
 
+            Vector3f offset = model.getRootBG().getLocalTranslation();
             PositionComponentServerState position = new PositionComponentServerState();
-            position.setOrigin(new Origin(rootNode.getLocalTranslation()));
-            position.setRotation(new Rotation(rootNode.getLocalRotation()));
-            position.setScaling(new Scaling(rootNode.getLocalScale()));
+            Vector3f boundsCenter = model.getRootBG().getWorldBound().getCenter();
+
+            offset.subtractLocal(boundsCenter);
+
+            setup.setGeometryTranslation(new Origin(offset));
+
+//            System.err.println("BOUNDS CENTER "+boundsCenter);
+//            System.err.println("OFfset "+offset);
+//            System.err.println("Cell origin "+boundsCenter);
+            position.setOrigin(new Origin(boundsCenter));
+
+            // The cell bounds already have the rotation and scale applied, so these
+            // values must not go in the Cell transform. Instead they go in the
+            // JME cell setup so that the model is correctly oriented and thus
+            // matches the bounds in the cell.
+            
+            // Center the worldBounds on the cell (ie 0,0,0)
+            BoundingVolume worldBounds = modelNode.getWorldBound();
+            worldBounds.setCenter(new Vector3f(0,0,0));
+            position.setBounds(worldBounds);
+
+//            System.err.println("Deploying with bounds "+worldBounds);
+
             setup.addComponentServerState(position);
 
             ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();

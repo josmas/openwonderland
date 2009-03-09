@@ -25,6 +25,7 @@ import java.awt.event.MouseEvent;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.PickDetails;
+import org.jdesktop.mtgame.JMEPickDetails;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.InputPicker;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -60,6 +61,13 @@ public abstract class MouseEvent3D extends InputEvent3D {
     public MouseEvent3D(MouseEvent awtEvent, PickDetails pickDetails) {
         super(awtEvent);
         this.pickDetails = pickDetails;
+    }
+
+    /**
+     * Returns the node which the pick hit.
+     */
+    public Node getNode () {
+        return ((JMEPickDetails)pickDetails).getReportedNode();
     }
 
     /**

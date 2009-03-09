@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.phone.server.cell;
 import com.sun.sgs.app.ManagedReference;
 
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
+import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
 
 import org.jdesktop.wonderland.modules.phone.common.messages.CallInvitedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
@@ -78,7 +79,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-//import org.jdesktop.wonderland.common.cell.state.CellServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 
 import org.jdesktop.wonderland.server.UserManager;
 
@@ -151,20 +152,22 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 	    boolean successful = true;
 
+	    PhoneInfo phoneInfo = phoneCellMO.getPhoneInfo();
+
 	    if (m.getPassword() != null) {
-		successful = m.getPassword().equals(phoneCellMO.getPassword());
+		successful = m.getPassword().equals(phoneInfo.password);
 	    }
 
 	    if (successful) {
-		phoneCellMO.setLocked(!phoneCellMO.getLocked());
-	        phoneCellMO.setKeepUnlocked(m.keepUnlocked());
+		phoneInfo.locked = !phoneInfo.locked;
+	        phoneInfo.keepUnlocked = m.keepUnlocked();
 	    }
 
-	    logger.fine("locked " + phoneCellMO.getLocked() + " successful " 
+	    logger.fine("locked " + phoneInfo.locked + " successful " 
 		+ successful + " pw " + m.getPassword());
 
             LockUnlockResponseMessage response = 
-		new LockUnlockResponseMessage(phoneCellMO.getCellID(), phoneCellMO.getLocked(), successful);
+		new LockUnlockResponseMessage(phoneCellMO.getCellID(), phoneInfo.locked, successful);
 
 	    sender.send(response);
 	    return;
@@ -374,14 +377,16 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
                     logger.fine("back from attenuate other groups");
                 }
             } else {
-                spawnOrb(externalCallID, listing.simulateCalls());
+                new Orb(externalCallID, phoneCellMO.getWorldBounds(), listing.simulateCalls());
 	    }
 
             if (listing.simulateCalls() == false) {
                 //Place the calls audio at the phones position
-                //translation = new vector3f();                
-                //getOriginWorld().get(translation);                
-                //externalPlayer.moved(translation.x, translation.y, translation.z, 0);
+           	Vector3f location = new Vector3f();
+
+                location = phoneCellMO.getWorldTransform(null).getTranslation(location);
+
+                externalPlayer.moved(location.x, location.y, location.z, 0);
             }
           
             /*
@@ -434,7 +439,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
             sender.send(clientID, new JoinCallResponseMessage(
 		phoneCellMO.getCellID(), listing, true));
             
-            spawnOrb(externalCallID, false);
+            new Orb(externalCallID, phoneCellMO.getWorldBounds(), false);
 	    return;
 	}
 
@@ -481,8 +486,10 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
     private void relock(WonderlandClientSender sender) {
 	PhoneCellMO phoneCellMO = (PhoneCellMO) getCell();
 
-	if (phoneCellMO.getKeepUnlocked() == false && phoneCellMO.getLocked() == false) {
-	    phoneCellMO.setLocked(true);
+	PhoneInfo phoneInfo = phoneCellMO.getPhoneInfo();
+
+	if (phoneInfo.keepUnlocked == false && phoneInfo.locked == false) {
+	    phoneInfo.locked = true;
 
             LockUnlockResponseMessage response = new LockUnlockResponseMessage(phoneCellMO.getCellID(), true, true);
 
@@ -502,60 +509,6 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 	    callNumber++;
 
             return getCell().getCellID() + "_" + callNumber;
-	}
-    }
-
-    private void spawnOrb(String externalCallID, boolean simulateCalls) {
-	/*
-	 * XXX I was trying to get this to delay for 2 seconds,
-	 * But there are no managers in the system context in which run() runs.
-	 */
-        //Spawn the Orb to represent the new public call.
-
-	logger.fine("Spawning orb...");
-
-	CellMO cellMO = getCell();
-
-	BoundingVolume boundingVolume = cellMO.getWorldBounds();
-
-	Vector3f center = new Vector3f();
-
-	boundingVolume.getCenter(center);
-
-	center.setY((float)1.5);
-
-	System.out.println("phone bounding volume:  " + boundingVolume
-	    + " center " + center);
-
-        String cellType = 
-	    "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
-
-        OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
-	    center, (float) .5, externalCallID, simulateCalls);
-
-	if (orbCellMO == null) {
-	    logger.warning("Unable to spawn orb");
-	    return;
-	}
-
-	OrbCellServerState orbCellServerState = new OrbCellServerState();
-
-	//orbCellServerState.setOrigin(new Origin(center));
-
-	try {
-            orbCellMO.setServerState(orbCellServerState);
-        } catch (ClassCastException e) {
-            logger.warning("Error setting up new cell " +
-                orbCellMO.getName() + " of type " +
-                orbCellMO.getClass() + e.getMessage());
-            return;
-        }
-
-	try {
-	    CellManagerMO.getCellManager().insertCellInWorld(orbCellMO);
-	} catch (MultipleParentException e) {
-	    logger.warning("Can't insert orb in world:  " + e.getMessage());
-	    return;
 	}
     }
 

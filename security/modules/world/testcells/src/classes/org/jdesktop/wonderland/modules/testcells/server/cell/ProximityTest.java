@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
  *
  * @author paulby
  */
-public class ProximityTest implements ProximityListenerSrv {  // , ManagedObject {
+public class ProximityTest implements ProximityListenerSrv { // , ManagedObject {
     public void viewEnterExit(boolean entered, CellID cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
         System.err.println("ENter/Exit "+entered);
     }

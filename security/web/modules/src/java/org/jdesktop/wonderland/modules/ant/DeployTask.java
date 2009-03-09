@@ -20,9 +20,7 @@ package org.jdesktop.wonderland.modules.ant;
 import org.jdesktop.wonderland.common.modules.ModuleUploader;
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 

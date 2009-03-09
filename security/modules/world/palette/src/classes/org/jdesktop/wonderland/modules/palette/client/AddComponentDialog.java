@@ -1,24 +1,36 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * AddComponentDialog.java
+/**
+ * Project Wonderland
  *
- * Created on Jan 27, 2009, 7:23:21 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.palette.client;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.JTable;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.registry.CellComponentRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
- *
- * @author jordanslott
+ * A dialog box so that users can dynamically add a component.
+ * 
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 public class AddComponentDialog extends javax.swing.JDialog {
     /** A return status code - returned if Cancel button has been pressed */
@@ -26,12 +38,25 @@ public class AddComponentDialog extends javax.swing.JDialog {
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;
 
+    private Cell cell = null;
+
     /* The table holding the list of components */
     private JTable componentsTable;
 
+    /* A map of display names in the table to the component factories */
+    private Map<String, CellComponentFactorySPI> factoryMap = new HashMap();
+
+    /* The component factory selected to be added */
+    private CellComponentFactorySPI cellComponentFactorySPI = null;
+
+    /* The edit property frame displaying this dialog */
+    private CellEditFrame editframe = null;
+
     /** Creates new form AddComponentDialog */
-    public AddComponentDialog(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
+    public AddComponentDialog(CellEditFrame editframe, boolean modal, Cell cell) {
+        super(editframe, modal);
+        this.cell = cell;
+        this.editframe = editframe;
         initComponents();
 
         // Create the JTable with all of the components and add it to the
@@ -46,12 +71,32 @@ public class AddComponentDialog extends javax.swing.JDialog {
     }
 
     /**
+     * Returns the cell component factory of the component to add
+     */
+    public CellComponentFactorySPI getCellComponentFactorySPI() {
+        return cellComponentFactorySPI;
+    }
+
+    /**
      * Creates the table based upon the list of registered components
      */
     private JTable createTable() {
         // Fetch the set of components and form a 2D array of table entries
         CellComponentRegistry registry = CellComponentRegistry.getCellComponentRegistry();
         Set<CellComponentFactorySPI> factories = registry.getAllCellFactories();
+
+        // Fetch the set of component property display names that are already
+        // on the set and remove from the list of factories.
+        CellServerState state = editframe.getCellServerState();
+        Iterator<CellComponentFactorySPI> it = factories.iterator();
+        while (it.hasNext() == true) {
+            CellComponentFactorySPI spi = it.next();
+            Class clazz = spi.getDefaultCellComponentServerState().getClass();
+            if (state.getComponentServerState(clazz) != null) {
+                it.remove();
+            }
+        }
+
         int size = factories.size();
 
         Object[][] entries = new Object[size][2];
@@ -59,6 +104,7 @@ public class AddComponentDialog extends javax.swing.JDialog {
         for (CellComponentFactorySPI factory : factories) {
             entries[i][0] = factory.getDisplayName();
             entries[i][1] = factory.getDescription();
+            factoryMap.put(factory.getDisplayName(), factory);
             i++;
         }
 
@@ -140,10 +186,15 @@ public class AddComponentDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+        // Fetch the component factory based upon the selected comopnent
+        int row = componentsTable.getSelectedRow();
+        String displayName = (String)componentsTable.getModel().getValueAt(row, 0);
+        cellComponentFactorySPI = factoryMap.get(displayName);
         doClose(RET_OK);
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        cellComponentFactorySPI = null;
         doClose(RET_CANCEL);
     }//GEN-LAST:event_cancelButtonActionPerformed
 

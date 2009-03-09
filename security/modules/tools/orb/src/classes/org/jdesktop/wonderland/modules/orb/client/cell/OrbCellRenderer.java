@@ -68,25 +68,24 @@ public class OrbCellRenderer extends BasicRenderer {
 
         ColorRGBA color = new ColorRGBA();
 
-        ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-        buf.setEnabled(true);
-        buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+        //ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+        //buf.setEnabled(true);
+        //buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
         PointLight light = new PointLight();
         light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
         light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
         light.setLocation(new Vector3f(100, 100, 100));
         light.setEnabled(true);
-        LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
-        lightState.setEnabled(true);
-        lightState.attach(light);
+        //LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
+        //lightState.setEnabled(true);
+        //lightState.attach(light);
         
         color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
         //return createWireframeEntity();
 
 	listener = new MyMouseListener();
 	listener.addToEntity(entity);
-	//System.out.println("Added mouse listener to " + cell.getCellID());
 	return createAnimationEntity();
     }
 
@@ -106,12 +105,10 @@ public class OrbCellRenderer extends BasicRenderer {
         if (cell.getLocalBounds() instanceof BoundingBox) {
             Vector3f extent = ((BoundingBox)cell.getLocalBounds()).getExtent(null);
             mesh = new Box(name, new Vector3f(), extent.x, extent.y, extent.z);
-        }
-        else if (cell.getLocalBounds() instanceof BoundingSphere) {
+        } else if (cell.getLocalBounds() instanceof BoundingSphere) {
             float radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
             mesh = new Sphere(name, new Vector3f(), 10, 10, radius);
-        }
-        else {
+        } else {
             logger.warning("Unsupported Bounds type " +cell.getLocalBounds().getClass().getName());
             return new Node();
         }
@@ -121,9 +118,9 @@ public class OrbCellRenderer extends BasicRenderer {
         node.attachChild(mesh);
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
-        node.setLocalTranslation(translation);
-        node.setLocalScale(scaling);
-        node.setLocalRotation(rotation);
+        //node.setLocalTranslation(translation);
+        //node.setLocalScale(scaling);
+        //node.setLocalRotation(rotation);
 
         WireframeState wiState = (WireframeState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
         wiState.setEnabled(true);
@@ -196,9 +193,9 @@ public class OrbCellRenderer extends BasicRenderer {
         Vector3f scaling = transform.getScaling(null);
         Quaternion rotation = transform.getRotation(null);
 
-        node.setLocalTranslation(translation);
-        node.setLocalScale(scaling);
-        node.setLocalRotation(rotation);
+        //node.setLocalTranslation(translation);
+        //node.setLocalScale(scaling);
+        //node.setLocalRotation(rotation);
 
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
@@ -207,7 +204,6 @@ public class OrbCellRenderer extends BasicRenderer {
     }
 
     public void removeMouseListener() {
-	//System.out.println("Removing mouse listener for " + cell.getCellID());
 	listener.removeFromEntity(entity);
     }
 

@@ -17,7 +17,10 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
@@ -33,7 +36,9 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
  * @author jkaplan
  */
 public class CellMOFactory {
-   
+
+    private static Logger logger = Logger.getLogger(CellMOFactory.class.getName());
+
     /**
      * Instantiate a cell GLO of the given type with the given arguments.
      * This will try to load from each provider in turn, returning either
@@ -70,6 +75,7 @@ public class CellMOFactory {
             res = new DefaultCellMOProvider().loadCellMO(typeName, args);
         } catch (ClassNotFoundException cnfe) {
             // ignore -- it wasn't a class name after all
+            logger.log(Level.WARNING, "Cell class not found", cnfe);
         }
         
         // see what we found
@@ -80,15 +86,29 @@ public class CellMOFactory {
     static class DefaultCellMOProvider extends CellMOProvider {
         @SuppressWarnings("unchecked")
         public CellMO loadCellMO(String typeName, Object... args) 
-                throws LoadCellMOException 
+                throws LoadCellMOException
         {
             // assume type name is a fully-qualified class name
             try {
                 Class<CellMO> clazz = 
                         (Class<CellMO>) Class.forName(typeName);
                 return createCell(clazz, args);
-            } catch (Exception ex) {
-                throw new LoadCellMOException("Error loading type " + typeName, 
+            } catch (java.lang.reflect.InvocationTargetException ite) {
+                // Explicitly catch InvocationTargetException and make sure
+                // we through the suitable RuntimeException if that's the cause.
+                // The reason is this: if the cell creation times-out because
+                // of the classloader, then we need to retry the task.
+                Throwable throwable = ite.getCause();
+                if (throwable instanceof java.lang.RuntimeException) {
+                    throw ((RuntimeException)throwable);
+                }
+                throw new LoadCellMOException("Error loading type " + typeName,
+                                               ite);
+            } catch (java.lang.Exception ex) {
+                // Catch all exceptions (except for Runtime exceptions) and
+                // re-throw as a LoadCellMOException
+                logger.log(Level.WARNING, "Cannot create cell", ex);
+                throw new LoadCellMOException("Error loading type " + typeName,
                                                ex);
             }
         }
