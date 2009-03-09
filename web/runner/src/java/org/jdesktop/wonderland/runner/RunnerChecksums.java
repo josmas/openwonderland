@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.runner;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -40,10 +41,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.modules.Checksum;
-import org.jdesktop.wonderland.common.modules.ModuleChecksums;
+import org.jdesktop.wonderland.common.checksums.Checksum;
+import org.jdesktop.wonderland.common.checksums.ChecksumList;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer;
 import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer.DeployedAsset;
+import org.jdesktop.wonderland.web.checksums.ChecksumFactory;
+import org.jdesktop.wonderland.web.checksums.ChecksumFactory.ChecksumAction;
+import org.jdesktop.wonderland.web.checksums.ChecksumManager;
+import org.jdesktop.wonderland.web.checksums.modules.ModuleAssetDescriptor;
 
 /**
  * The ChecksumList class represents a collection of checkums for all runners
@@ -198,16 +203,24 @@ public class RunnerChecksums {
          * if the module name matches each entry and collect its checksum
          * entries into a single map.
          */
-
-        Map<DeployedAsset, ModuleChecksums> checksumMap = AssetDeployer.getChecksumMap();
-        for (DeployedAsset asset : checksumMap.keySet()) {
+        Map<DeployedAsset, File> partMap = AssetDeployer.getFileMap();
+        for (DeployedAsset asset : partMap.keySet()) {
             if (types.contains(asset.assetType)) {
                 String moduleName = asset.moduleName;
 
-                // go through each checksum, and create a location checksum
-                // to add to the output
-                ModuleChecksums checksums = checksumMap.get(asset);
-                for (Map.Entry<String, Checksum> e : checksums.getChecksums().entrySet()) {
+                // go through each checksum, and create a checksum
+                // to add to the output. If there is no factory to load the
+                // checksum for the asset, the go onto the next deployed asset
+                // part
+                ModuleAssetDescriptor mad = new ModuleAssetDescriptor(moduleName, asset.assetType, null);
+                ChecksumManager checksumManager = ChecksumManager.getChecksumManager();
+                ChecksumFactory factory = checksumManager.getChecksumFactory(mad);
+                ChecksumList checksumList = factory.getChecksumList(mad, ChecksumAction.DO_NOT_GENERATE);
+                if (checksumList == null) {
+                    continue;
+                }
+
+                for (Map.Entry<String, Checksum> e : checksumList.getChecksumMap().entrySet()) {
                     String assetName = e.getKey();
                     Checksum assetChecksum = e.getValue();
 

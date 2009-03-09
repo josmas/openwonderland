@@ -43,7 +43,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipInputStream;
 import javax.xml.bind.JAXBException;
-import org.jdesktop.wonderland.common.modules.ModuleChecksums;
 import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;

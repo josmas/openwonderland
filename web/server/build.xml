@@ -91,6 +91,7 @@
             <checksumfileset dir="${web.dir}/lib/apache" prefix="webserver"/>
             <checksumfileset file="${web.dir}/modules/dist/wonderland-modules-core.jar" prefix="webserver"/>
             <checksumfileset file="${web.dir}/asset/dist/wonderland-asset-core.jar" prefix="webserver"/>
+            <checksumfileset file="${web.dir}/checksums/dist/wonderland-checksums-core.jar" prefix="webserver"/>
             <checksumfileset file="${web.dir}/help/dist/wonderland-help-core.jar" prefix="webserver"/>
             <checksumfileset file="${web.dir}/runner/dist/wonderland-runner-core.jar" prefix="webserver"/>
             <checksumfileset file="${web.dir}/front/dist/wonderland-webadmin-core.jar" prefix="webserver"/>
@@ -117,6 +118,9 @@
                 <include name="**/*.war"/>
             </checksumfileset>
             <checksumfileset dir="${top.dir}/web/asset/dist" prefix="deploy">
+                <include name="**/*.war"/>
+            </checksumfileset>
+            <checksumfileset dir="${top.dir}/web/checksums/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </checksumfileset>
             <checksumfileset dir="${top.dir}/web/help/dist" prefix="deploy">

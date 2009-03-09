@@ -26,7 +26,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.jdesktop.wonderland.common.modules.ModuleRepository;
 import org.jdesktop.wonderland.common.modules.ModuleRepository.Repository;
@@ -43,9 +42,6 @@ import org.jdesktop.wonderland.utils.Constants;
  */
 @Path("/{modulename}/repository")
 public class ModuleRepositoryResource {
-    
-    @Context
-    private UriInfo context;
     
     /**
      * Returns the repository information about a module, given its module name
@@ -76,18 +72,10 @@ public class ModuleRepositoryResource {
             ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
             return rb.build();
         }
-        
-        /*
-         * If there are any entries with %WL_SERVER%, then replace with the
-         * server path to the asset.
-         */
-//        UriBuilder uriBuilder = context.getBaseUriBuilder().path(moduleName).path("/asset/get");
-//        String hostname = uriBuilder.build().toString();
 
         // For the base URL of assets within a module, use the server URL and
         // point it to the webdav repository
         String hostname = System.getProperty(Constants.WEBSERVER_URL_PROP) + "webdav/content/modules/installed/" + moduleName;
-        logger.warning("USING REPOSITORY " + hostname);
 
         /* Fetch the module repository, return an error if it does not exist */
         ModuleRepository mr = module.getRepository();

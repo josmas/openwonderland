@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
@@ -38,9 +36,6 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.UserMO;
 
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
@@ -54,18 +49,13 @@ import java.util.logging.Logger;
 import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 
-import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
-import com.sun.mpk20.voicelib.app.BridgeInfo;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
@@ -79,7 +69,6 @@ import com.sun.voip.client.connector.CallStatus;
 
 import java.io.IOException;
 
-import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**

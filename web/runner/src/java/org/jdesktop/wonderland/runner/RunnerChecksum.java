@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.runner;
 import java.net.URL;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.modules.Checksum;
+import org.jdesktop.wonderland.common.checksums.Checksum;
 
 /**
  * A checksum that contains full location information
