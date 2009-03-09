@@ -72,12 +72,14 @@
             <jvmarg value="-Drun.properties.file=file:${run-client.properties.file}"/>
 
             <!--start debug-->
-	    <!-- 
+            <!--
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
-	    <jvmarg value="-agentpath:/tmp/NBProfiler60438.link/deployed/jdk15/mac/libprofilerinterface.jnilib=/tmp/NBProfiler60438.link,5140"/>
             -->
-	    <!--end debug-->
+            <!--
+            <jvmarg value="-agentpath:/tmp/NBProfiler60438.link/deployed/jdk15/mac/libprofilerinterface.jnilib=/tmp/NBProfiler60438.link,5140"/>
+            -->
+            <!--end debug-->
             
             <classpath>
                 <pathelement path="${core-client.classpath}"/>
@@ -121,7 +123,9 @@
     <target name="deploy" depends="dist, -core-deploy"/>
 
     <!-- clean -->
-    <target name="clean" depends="-core-clean" description="Clean core directories"/>
+    <target name="clean" depends="-core-clean" description="Clean core directories">
+        <delete dir="cache"/>
+    </target>
     
     <!-- remove libraries too -->
     <target name="scrub" depends="-core-clean, -core-scrub-libs"/>

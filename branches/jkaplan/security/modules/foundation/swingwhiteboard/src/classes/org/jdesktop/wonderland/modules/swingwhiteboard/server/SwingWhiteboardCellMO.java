@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardAction.A
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.SwingWhiteboardCellClientState;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.SwingWhiteboardTypeName;
-import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
+import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;

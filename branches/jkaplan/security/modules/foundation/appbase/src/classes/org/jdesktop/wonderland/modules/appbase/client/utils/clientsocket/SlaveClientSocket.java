@@ -21,6 +21,9 @@ import java.math.BigInteger;
 import java.net.Socket;
 import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsReporter;
 
+/**
+ * The slave side of the socket code.
+ */
 public class SlaveClientSocket extends ClientSocket {
 
     public SlaveClientSocket(BigInteger clientId, Socket s, ClientSocketListener listener) {
@@ -39,6 +42,7 @@ public class SlaveClientSocket extends ClientSocket {
         }
     }
 
+    @Override
     public void close() {
         super.close();
         if (ENABLE_STATS) {

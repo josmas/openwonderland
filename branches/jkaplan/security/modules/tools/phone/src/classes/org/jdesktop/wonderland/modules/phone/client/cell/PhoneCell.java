@@ -44,6 +44,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellClientState;
+import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
 
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -68,13 +69,7 @@ public class PhoneCell extends Cell implements CellStatusChangeListener {
     
     //private ProjectorStateUpdater projectorStateUpdater;
         
-    private boolean locked;
-    private boolean simulateCalls;
-    private String phoneNumber;
-    private String password;
-    private String phoneLocation;
-    private double zeroVolumeRadius;
-    private double fullVolumeRadius;
+    private PhoneInfo phoneInfo;
 
     private PhoneMessageHandler phoneMessageHandler;
 
@@ -114,25 +109,11 @@ public class PhoneCell extends Cell implements CellStatusChangeListener {
 
 	PhoneCellClientState phoneCellClientState = (PhoneCellClientState) cellClientState;
 
-	locked = phoneCellClientState.getLocked();
-        simulateCalls = phoneCellClientState.getSimulateCalls();
-        phoneNumber = phoneCellClientState.getPhoneNumber();
-        password = phoneCellClientState.getPassword();
-        phoneLocation = phoneCellClientState.getPhoneLocation();
-	zeroVolumeRadius = phoneCellClientState.getZeroVolumeRadius();
-	fullVolumeRadius = phoneCellClientState.getFullVolumeRadius();
+	phoneInfo = phoneCellClientState.getPhoneInfo();
     }
 
-    public String getPhoneNumber() {
-	return phoneNumber;
-    }
-
-    public boolean getLocked() {
-	return locked;
-    }
-
-    public String getPassword() {
-	return password;
+    public PhoneInfo getPhoneInfo() {
+	return phoneInfo;
     }
 
     public WonderlandSession getSession() {

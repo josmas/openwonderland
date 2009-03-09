@@ -43,7 +43,7 @@ public interface ModelLoader {
      * Deploy the art content to the module.
      * @param rootDir the art root directory of the module (usually <module>/art)
      */
-    public ModelDeploymentInfo deployToModule(File moduleRootDir) throws IOException;
+    public ModelDeploymentInfo deployToModule(File moduleRootDir, ImportedModel model) throws IOException;
     
     /**
      * Runtime load of the model from a module

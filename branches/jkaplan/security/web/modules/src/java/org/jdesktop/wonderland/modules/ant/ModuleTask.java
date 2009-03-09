@@ -189,7 +189,9 @@ public class ModuleTask extends Jar {
         
         if (overwrite || !compareModuleInfo(mi, moduleInfoFile)) {
             log("Rewriting moduleInfo file", Project.MSG_VERBOSE);
-            mi.encode(new FileWriter(moduleInfoFile));
+            FileWriter writer = new FileWriter(moduleInfoFile);
+            mi.encode(writer);
+            writer.close();
         }
         
         ZipFileSet zfs = new ZipFileSet();
@@ -220,9 +222,11 @@ public class ModuleTask extends Jar {
         if (!oldMIFile.exists()) {
             return false;
         }
-        
+
+        FileReader reader = null;
         try {
-            ModuleInfo oldMI = ModuleInfo.decode(new FileReader(oldMIFile));
+            reader = new FileReader(oldMIFile);
+            ModuleInfo oldMI = ModuleInfo.decode(reader);
             
             log("New desc:|" + newMI.getDescription() + "|Old desc:|" + oldMI.getDescription() + "|", Project.MSG_VERBOSE);
             
@@ -239,6 +243,8 @@ public class ModuleTask extends Jar {
             return (!descChanged && newMI.equals(oldMI));
         } catch (JAXBException je) {
             // problem reading file
+        } finally {
+            reader.close();
         }
         
         return false;
@@ -262,7 +268,9 @@ public class ModuleTask extends Jar {
         
         if (overwrite || !compareModuleRequires(mr, moduleRequiresFile)) {
             log("Rewriting moduleRequires file", Project.MSG_VERBOSE);
-            mr.encode(new FileOutputStream(moduleRequiresFile));
+            FileOutputStream fos = new FileOutputStream(moduleRequiresFile);
+            mr.encode(fos);
+            fos.close();
         }
         
         ZipFileSet zfs = new ZipFileSet();
@@ -289,13 +297,17 @@ public class ModuleTask extends Jar {
         if (!oldMRFile.exists()) {
             return false;
         }
-        
+
+        FileReader reader = null;
         try {
-            ModuleRequires oldMR = ModuleRequires.decode(new FileReader(oldMRFile));
+            reader = new FileReader(oldMRFile);
+            ModuleRequires oldMR = ModuleRequires.decode(reader);
            
             return Arrays.deepEquals(newMR.getRequires(), oldMR.getRequires());
         } catch (JAXBException je) {
             // problem reading file
+        } finally {
+           reader.close();
         }
         
         return false;

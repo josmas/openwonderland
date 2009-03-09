@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client;
 
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
 
 /**
  * The generic 2D application superclass. All 2D apps in Wonderland have this
@@ -77,8 +78,8 @@ public abstract class App2D extends App {
      * {@inheritDoc}
      */
     @Override
-    public void setCell(AppCell cell) {
-        super.setCell(cell);
+    public void setDisplayer(Displayer displayEnvironment) {
+        super.setDisplayer(displayEnvironment);
 
         // Do an updateAll on all windows currently attached to this app
         for (Window window : windows) {

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="sasxremwin" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.sasxremwin}"/>
+    <property name="modules.dir" location="${current.dir}/../.."/>
+        
+    <property name="module.src" value="org/jdesktop/wonderland/modules/sasxremwin"/>
+    <property name="module.packagename" value="org.jdesktop.wonderland.modules.sasxremwin"/>
+    <property name="module.jarname" value="sasxremwin"/>
+    
+    <pathconvert property="module-provider.classpath">
+      <path location="${current.dir}/../appbase/build/client/appbase-client.jar"/>
+      <path location="${current.dir}/../xremwin/build/client/xremwin-client.jar"/>
+      <path location="${current.dir}/../xremwin/lib/escher-0.2.2.lg.jar"/>
+      <path location="${current.dir}/../sas/build/provider/sas-provider.jar"/>
+    </pathconvert>
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+       
+    <target name="build" depends="-module-init, compile-provider"/>
+
+    <target name="compile-provider" depends="-module-init">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/provider/**"/>
+            </compile-classes>
+
+            <compile-classpath>
+                <pathelement path="${core-client.classpath}"/>  
+                <pathelement path="${module-provider.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+
+    <target name="jar-provider" depends="compile-provider">
+      <mkdir dir="${current.dir}/build/provider"/>
+      <jar destfile="${current.dir}/build/provider/sasxremwin-provider.jar">
+	<fileset dir="${build.classes.dir}">
+          <include name="${module.src}/provider/**"/>
+	</fileset>
+      </jar>
+    </target>
+
+    <target name="dist" depends="build,jar-provider">
+      <!-- TODO: cannot put in dist; put the runner zip in dist
+        <mkdir dir="${module.dist.dir}"/> 
+	<copy todir="${module.dist.dir}"
+	      file="${current.dir}/build/provider/sasxremwin-provider.jar">
+        </copy>
+      -->
+        <mkdir dir="target"/> 
+	<copy todir="target"
+	      file="${current.dir}/build/provider/sasxremwin-provider.jar">
+        </copy>
+    </target>                                                       
+                                           
+    <target name="deploy" depends="dist, -module-deploy"/>
+
+    <target name="clean" depends="-module-clean">
+      <delete dir="target"/>
+    </target>
+
+    <pathconvert property="provider-run.classpath">
+      <!-- TODO: cannot put in dist; put the runner zip in dist
+      <path location="{$module.dist.dir}/sasxremwin-provider.jar"/>
+      -->
+      <path location="target/sasxremwin-provider.jar"/>
+      <path location="${module-provider.classpath}"/>
+      <path location="${core-client.classpath}"/>
+    </pathconvert>
+    
+    <target name="run" depends="dist">
+        <exec executable="java">
+	  <arg line="-cp ${provider-run.classpath} org.jdesktop.wonderland.modules.sasxremwin.provider.SasXrwProviderMain"/>
+        </exec>
+    </target>
+
+</project>

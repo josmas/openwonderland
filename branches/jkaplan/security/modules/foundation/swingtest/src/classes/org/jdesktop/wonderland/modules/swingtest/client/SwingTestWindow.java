@@ -21,10 +21,9 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
-import javax.swing.JPanel;
-import org.jdesktop.wonderland.modules.swingtest.client.TestPanel;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DViewWorld;
 
 /**
  *
@@ -32,10 +31,11 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
-public class SwingTestWindow extends WindowSwing  {
-
+public class SwingTestWindow 
+    extends WindowSwing  
+    implements TestPanel.Container 
+{
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(SwingTestWindow.class.getName());
 
@@ -52,15 +52,42 @@ public class SwingTestWindow extends WindowSwing  {
         throws InstantiationException
     {
 	super(app, width, height, topLevel, pixelScale);
-	setSize(width, height);
-	initializeSurface();
 
 	setTitle("Swing Test");
-	
-	JPanel testPanel = new TestPanel();
+
+	TestPanel testPanel = new TestPanel();
 	// Note: this seems to only be required for the swing set, but do it here for safety
 	// TODO: test without
        	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
+
+        testPanel.setContainer(this);
+
 	setComponent(testPanel);
+        setTitle("Swing Test");
+
+
+        /* Test Force a the preferred size
+        System.err.println("test panel size = " + width + ", " + height);
+        setSize(width, height);
+        */
     }
+
+    public void setHud (boolean onHUD) {
+        // TODO: eventually this will involve specifying a specific destination HUD
+        Window2DViewWorld view = getPrimaryView();
+        view.setHUDLocation(300, 300);
+
+        // Test
+        //view.setHUDSize(500, 200);
+
+        view.setOnHUD(onHUD);
+    }
+
+    /* TODO: for testing view.setVisible hack: uncomment the following
+    public void setVisibleHack (boolean visible) {
+        Window2DViewWorld view = getPrimaryView();
+        System.err.println("************** Set view visible = " + visible);
+        view.setVisible(visible);
+    }
+    */
 }

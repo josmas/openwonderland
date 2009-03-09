@@ -236,6 +236,7 @@ public class RunAppServer {
                     WebServerLauncher.class.getResourceAsStream(fullPath);
 
             RunUtil.writeToFile(fileIs, new File(docDir, addFile));
+            fileIs.close();
         }
 
         // write the updated checksum list

@@ -41,25 +41,16 @@ public class SwingWhiteboardApp extends AppGraphics2D  {
      * and makes visible the single window used by the app.
      *
      * @param appType The type of app (should be SwingWhiteboardAppType).
-     * @param width The width (in pixels) of the whiteboard window.
-     * @param height The height (in pixels) of the whiteboard window.
      * @param pixelScale The horizontal and vertical pixel sizes
      * (in world meters per pixel).
      * @param commComponent The communications component for communicating with the server.
      */
-    public SwingWhiteboardApp (AppType appType, int width, int height, Vector2f pixelScale,
-			  SwingWhiteboardComponent commComponent) {
+    public SwingWhiteboardApp (AppType appType, Vector2f pixelScale,
+                               SwingWhiteboardComponent commComponent) {
 
 	// configWorld can be null because the server cell is already configured
 	super(appType, new ControlArbMulti(), pixelScale);
 	controlArb.setApp(this);
-
-	// This app has only one window, so it is always top-level 
-        try {
-            window = new SwingWhiteboardWindow(this, width, height, true, pixelScale, commComponent);
-        } catch (InstantiationException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     /** 
@@ -67,26 +58,5 @@ public class SwingWhiteboardApp extends AppGraphics2D  {
      */
     public void cleanup () {
 	super.cleanup();
-	if (window != null) {
-	    window.setVisible(false);
-	    window.cleanup();
-	    window = null;
-	}
-    }
-
-    /**
-     * Returns the app's window.
-     */
-    public SwingWhiteboardWindow getWindow () {
-	return window;
-    }
-
-    /**
-     * Change the visibility of the app.
-     *
-     * @param visible Whether the application is visible.
-     */
-    public void setVisible (boolean visible) {
-	window.setVisible(visible);
     }
 }

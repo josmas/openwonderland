@@ -54,8 +54,11 @@ public class SimpleShapeCell extends Cell {
         this.shape = c.getShape();
         this.mass = c.getMass();
         this.materialJME = c.getMaterialJME();
-//        shapeRenderer.shapeChanged();
-//        shapeRenderer.colorChanged();
+
+        if (shapeRenderer!=null) {
+            shapeRenderer.shapeChanged();
+            shapeRenderer.colorChanged();
+        }
     }
 
     

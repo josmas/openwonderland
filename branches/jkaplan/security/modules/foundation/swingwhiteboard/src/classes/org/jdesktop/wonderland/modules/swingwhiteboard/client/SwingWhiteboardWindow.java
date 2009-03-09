@@ -34,6 +34,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardAction;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCellMessage;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCommand.Command;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.appbase.client.cell.AppCell;
 
 /**
  *
@@ -49,6 +51,8 @@ public class SwingWhiteboardWindow extends WindowSwing {
 
     SwingWhiteboardDrawingPanel drawingPanel;
     private int penX,  penY;
+
+    private CellID cellID;
 
     /**
      * Create a new instance of SwingWhiteboardWindow.
@@ -72,6 +76,8 @@ public class SwingWhiteboardWindow extends WindowSwing {
         JmeClientMain.getFrame().getCanvas3DPanel().add(panel);
         setComponent(panel);
 
+        cellID = ((AppCell)app.getDisplayer()).getCellID();
+
         drawingPanel = panel.getDrawingPanel();
         drawingPanel.addMouseMotionListener(new MouseMotionListener() {
 
@@ -92,8 +98,7 @@ public class SwingWhiteboardWindow extends WindowSwing {
 	drawingPanel.setPenColor(color);
 
         // Notify other clients
-        msg = new WhiteboardCellMessage(getClientID(app), app.getCell().getCellID(),
-                WhiteboardAction.SET_COLOR, color);
+        msg = new WhiteboardCellMessage(getClientID(app), cellID, WhiteboardAction.SET_COLOR, color);
         commComponent.sendMessage(msg);
     }
 
@@ -106,8 +111,8 @@ public class SwingWhiteboardWindow extends WindowSwing {
 	drawingPanel.repaint();
 
         // Notify other clients
-        msg = new WhiteboardCellMessage(getClientID(app), app.getCell().getCellID(),
-                WhiteboardAction.EXECUTE_COMMAND, Command.ERASE);
+        msg = new WhiteboardCellMessage(getClientID(app), cellID, WhiteboardAction.EXECUTE_COMMAND,  
+                                        Command.ERASE);
         commComponent.sendMessage(msg);
     }
 
@@ -119,8 +124,7 @@ public class SwingWhiteboardWindow extends WindowSwing {
         penY = loc.y;
 
         // notify other clients
-        WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(app), app.getCell().getCellID(),
-                WhiteboardAction.MOVE_TO, loc);
+        msg = new WhiteboardCellMessage(getClientID(app), cellID, WhiteboardAction.MOVE_TO, loc);
         commComponent.sendMessage(msg);
     }
 
@@ -135,8 +139,8 @@ public class SwingWhiteboardWindow extends WindowSwing {
         penY = loc.y;
 
         // notify other clients
-        WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(app), app.getCell().getCellID(),
-                WhiteboardAction.DRAG_TO, loc);
+        msg = new WhiteboardCellMessage(getClientID(app), cellID,
+                                        WhiteboardAction.DRAG_TO, loc);
         commComponent.sendMessage(msg);
     }
 
@@ -144,6 +148,7 @@ public class SwingWhiteboardWindow extends WindowSwing {
      * Return the client id of this window's cell.
      */
     private BigInteger getClientID(App app) {
-        return ((SwingWhiteboardCell) (app.getCell())).getClientID();
+        
+        return ((SwingWhiteboardCell)app.getDisplayer()).getClientID();
     }
 }

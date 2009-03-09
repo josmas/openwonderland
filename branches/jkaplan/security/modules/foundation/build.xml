@@ -11,6 +11,8 @@
     <fileset dir="${current.dir}" id="all.projects">
         <exclude name="appbase/build.xml"/>
         <exclude name="xremwin/build.xml"/>
+        <exclude name="sas/build.xml"/>
+        <exclude name="sasxremwin/build.xml"/>
         <exclude name="simplewhiteboard/build.xml"/>
         <include name="*/**/build.xml"/>
     </fileset>
@@ -23,7 +25,15 @@
         <include name="xremwin/build.xml"/>
     </fileset>
 
-   <fileset dir="${current.dir}" id="simplewhiteboard.module">
+    <fileset dir="${current.dir}" id="sas.module">
+        <include name="sas/build.xml"/>
+    </fileset>
+
+    <fileset dir="${current.dir}" id="sasxremwin.module">
+        <include name="sasxremwin/build.xml"/>
+    </fileset>
+
+    <fileset dir="${current.dir}" id="simplewhiteboard.module">
         <include name="simplewhiteboard/build.xml"/>
     </fileset>
 
@@ -31,6 +41,8 @@
     <target name="dist">
         <build-subprojects fileset="appbase.module" target="dist"/>
         <build-subprojects fileset="xremwin.module" target="dist"/>
+        <build-subprojects fileset="sas.module" target="dist"/>
+        <build-subprojects fileset="sasxremwin.module" target="dist"/>
         <build-subprojects fileset="simplewhiteboard.module" target="dist"/>
         <build-subprojects fileset="all.projects" target="dist"/>
     </target>
@@ -39,6 +51,7 @@
     <target name="build-clientonly">
         <build-subprojects fileset="appbase.module" target="-module-compile-client"/>
         <build-subprojects fileset="xremwin.module" target="-module-compile-client"/>
+        <build-subprojects fileset="sas.module" target="-module-compile-client"/>
         <build-subprojects fileset="simplewhiteboard.module" target="-module-compile-client"/>
         <build-subprojects fileset="all.projects" target="-module-compile-client"/>
     </target>
@@ -48,6 +61,8 @@
         <!-- clean sub-projects -->
         <build-subprojects fileset="appbase.module" target="clean"/>
         <build-subprojects fileset="xremwin.module" target="clean"/>
+        <build-subprojects fileset="sas.module" target="clean"/>
+        <build-subprojects fileset="sasxremwin.module" target="clean"/>
         <build-subprojects fileset="simplewhiteboard.module" target="clean"/>
         <build-subprojects fileset="all.projects" target="clean"/>       
     </target>

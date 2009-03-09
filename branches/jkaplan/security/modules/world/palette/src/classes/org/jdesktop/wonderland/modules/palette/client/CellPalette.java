@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,10 +37,10 @@ import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
@@ -54,7 +53,10 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Or
 public class CellPalette extends javax.swing.JFrame implements ListSelectionListener {
     /* A map of cell display names and their cell factories */
     private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
-    
+
+    /* The scalar distance from the camera to place new cells */
+    private static final float NEW_CELL_DISTANCE = 5.0f;
+
     /** Creates new form CellPalette */
     public CellPalette() {
         // Initialize the GUI components
@@ -155,10 +157,18 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     String cellDisplayName = (String) cellList.getSelectedValue();
     CellFactorySPI factory = getCellFactory(cellDisplayName);
     CellServerState setup = factory.getDefaultCellServerState();
-    
-    // Choose a random origin for now
-    Vector3f origin = new Vector3f(new Random().nextInt(10) - 5,
-            new Random().nextInt(5), new Random().nextInt(10) - 5);
+
+    // Fetch the current transform from the view manager. Find the current
+    // position of the camera and its look direction.
+    ViewManager manager = ViewManager.getViewManager();
+    Vector3f cameraPosition = manager.getCameraPosition(null);
+    Vector3f cameraLookDirection = manager.getCameraLookDirection(null);
+
+    // Compute the new vector away from the camera position to be a certain
+    // number of scalar units away
+    float lengthSquared = cameraLookDirection.lengthSquared();
+    float factor = (NEW_CELL_DISTANCE * NEW_CELL_DISTANCE) / lengthSquared;
+    Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
 
     // Create a position component that will set the initial origin
     PositionComponentServerState position = new PositionComponentServerState();

@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppType;
-import org.jdesktop.wonderland.modules.appbase.client.App2DCell;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.jeditortest.common.JEditorTestCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -84,23 +84,29 @@ public class JEditorTestCell extends App2DCell {
 	    // The cell is now visible
             case ACTIVE:
 
-		setApp(new JEditorTestApp(getAppType(), clientState.getPreferredWidth(), 
-					  clientState.getPreferredHeight(),
-					  clientState.getPixelScale()));
+                JEditorTestApp jetApp = new JEditorTestApp(getAppType(), clientState.getPixelScale());
+		setApp(jetApp);
 
 		// Associate the app with this cell (must be done before making it visible)
-		app.setCell(this);
+		app.setDisplayer(this);
 
-		// Get the window the app created
-		window = ((JEditorTestApp)app).getWindow();
+                // This app has only one window, so it is always top-level 
+                try {
+                    window = new JEditorTestWindow(jetApp, clientState.getPreferredWidth(), 
+                                                   clientState.getPreferredHeight(), 
+                                                   /*TODO: until debugged: true*/false, 
+                                                   clientState.getPixelScale());
+                } catch (InstantiationException ex) {
+                    throw new RuntimeException(ex);
+                }
 
 		// Make the app window visible
-		((JEditorTestApp)app).setVisible(true);
+		window.setVisible(true);
 		break;
 
 	    // The cell is no longer visible
             case DISK:
-		((JEditorTestApp)app).setVisible(false);
+		window.setVisible(false);
 		window = null;
 		break;
 	}

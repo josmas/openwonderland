@@ -57,7 +57,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.ShowCursorMsgArgs;
  * @author deronj
  */
 @ExperimentalAPI
-abstract class ClientXrw implements Runnable {
+public abstract class ClientXrw implements Runnable {
 
     // The connection to the XRemwin server or master.
     protected ServerProxy serverProxy;
@@ -146,8 +146,10 @@ abstract class ClientXrw implements Runnable {
     protected ProcessReporter reporter;
     /** Is the server connected? */
     protected boolean serverConnected;
-    /** The cell of the app */
-    protected AppCellXrw cell;
+    /** Whether the client is enabled. */
+    protected boolean enable;
+    /** Lock object used for enable. */
+    private final Object enableLock = new Object();
     /** Used by the logging messages in this class */
     private int messageCounter = 0;
 
@@ -209,7 +211,7 @@ abstract class ClientXrw implements Runnable {
             serverProxy = null;
         }
 
-        cell = null;
+        enable = false;
     }
 
     /** 
@@ -227,18 +229,15 @@ abstract class ClientXrw implements Runnable {
     }
 
     /**
-     * Used to associate this app with the given cell. 
-     * May only be called one time.
-     *
-     * @param cell The world cell containing the app.
-     * @throws IllegalArgumentException If the cell already is associated
-     * with an app.
-     * @throws IllegalStateException If the app is already associated 
-     * with a cell.
+     * After the client loop is first started it will wait to make the first window visible
+     * until the client is enabled. 
      */
-    public synchronized void setCell(AppCellXrw cell)
-            throws IllegalArgumentException, IllegalStateException {
-        this.cell = cell;
+    public void enable () {
+        synchronized (enableLock) {
+            if (enable) return;
+            enable = true;
+            enableLock.notifyAll();
+        }
     }
 
     /** 
@@ -371,9 +370,11 @@ abstract class ClientXrw implements Runnable {
 
             case CREATE_WINDOW:
 
-                // We can't make windows visible until we have a cell
-                if (cell == null) {
-                    app.waitForCell();
+                // We can't make windows visible until we are enable.
+                synchronized (enableLock) {
+                    while (!enable) {
+                        try { enableLock.wait(); } catch (InterruptedException ex) {}
+                    }
                 }
 
                 win = lookupWindow(createWinMsgArgs.wid);
@@ -798,6 +799,11 @@ abstract class ClientXrw implements Runnable {
                 int pixel = ((chunkBuf[chunkOffset + 2] + 256) & 0xFF) << 16 |
                         ((chunkBuf[chunkOffset + 1] + 256) & 0xFF) << 8 |
                         ((chunkBuf[chunkOffset + 0] + 256) & 0xFF);
+                //System.err.println("pixel = " + Integer.toHexString(pixel));
+
+                // Make the pixels opaque so that we can copy them with Graphics.drawImage
+                pixel |= 0xff000000;
+
                 /*
                 if (numRunsReceived++ < maxVerboseRuns) {
                 AppXrw.logger.finer("numRunsReceived = " + numRunsReceived);
@@ -839,7 +845,7 @@ abstract class ClientXrw implements Runnable {
 
         // Now transfer the decoded pixels into the texture
         if (win != null) {
-            // TODO: win.displayPixels(dpMsgArgs.x, dpMsgArgs.y, dpMsgArgs.w, h, winPixels);
+            win.displayPixels(dpMsgArgs.x, dpMsgArgs.y, dpMsgArgs.w, h, winPixels);
         }
     }
 
@@ -979,25 +985,6 @@ abstract class ClientXrw implements Runnable {
                 }
             }
         }
-    }
-
-    // Note: pixel buffer may be longer than w*h
-    protected byte[] intAryToByteAry(int[] pixels, int w, int h) {
-        byte[] bytes = new byte[w * h * 4];
-
-        int srcIdx, dstIdx;
-        for (srcIdx = 0    , dstIdx = 0;
-                srcIdx < w * h;
-                srcIdx++) {
-
-            int pixel = pixels[srcIdx];
-            bytes[dstIdx++] = (byte) ((pixel >> 24) & 0xff);
-            bytes[dstIdx++] = (byte) ((pixel >> 16) & 0xff);
-            bytes[dstIdx++] = (byte) ((pixel >> 8) & 0xff);
-            bytes[dstIdx++] = (byte) (pixel & 0xff);
-        }
-
-        return bytes;
     }
 
     /**

@@ -24,7 +24,7 @@ import java.util.HashMap;
 import com.jme.math.Vector3f;
 import java.math.BigInteger;
 import java.net.ServerSocket;
-import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.MasterClientSocketListener;
+import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientSocketListener;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.MasterSocketSet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -259,15 +259,15 @@ class SlaveForwarder {
         System.arraycopy(bytes, 0, buf, startIdx, 4);
     }
 
-    private class MyListener implements MasterClientSocketListener {
+    private class MyListener implements ClientSocketListener {
 
-        public void receivedMessage(BigInteger slaveID, byte[] message) {
+        public void receivedMessage(BigInteger otherClientID, byte[] message) {
 
             // First part of Hello message from slave: request type and string length
             if (message[0] == (byte) Proto.ClientMessageType.HELLO.ordinal()) {
                 // TODO
                 String userName = new String(message);
-                serverProxy.addIncomingSlaveHelloMessage(slaveID, userName);
+                serverProxy.addIncomingSlaveHelloMessage(otherClientID, userName);
                 return;
             }
 
@@ -279,7 +279,8 @@ class SlaveForwarder {
             }
         }
 
-        public void slaveLeft(BigInteger slaveID) {
+        public void otherClientHasLeft(BigInteger otherClientID) {
+            AppXrw.logger.info("Slave has disconnected: " + otherClientID);
         }
     }
 

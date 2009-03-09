@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.common.modules.ModuleRepository;
 import org.jdesktop.wonderland.common.modules.ModuleRequires;
 import org.jdesktop.wonderland.utils.ArchiveManifest;
+import org.jdesktop.wonderland.utils.RunUtil;
 
 /**
  * The ArchiveModule class extends the Module abstract base class and represents
@@ -40,7 +41,9 @@ import org.jdesktop.wonderland.utils.ArchiveManifest;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ArchiveModule extends Module {
-    
+
+    private static Logger logger = Logger.getLogger(ArchiveModule.class.getName());
+
     /* The manifest of the archive */
     private ArchiveManifest manifest = null;
             
@@ -94,21 +97,25 @@ public class ArchiveModule extends Module {
      * Reads the module info from the module.
      */
     private ModuleInfo fetchModuleInfo() {
+        InputStreamReader reader = null;
         try {
             /* Fetch the input stream, parse and return */
             InputStream is = manifest.getEntryInputStream(Module.MODULE_INFO);
             if (is == null) {
                 /* This is pretty bad -- if this doesn't exist, then the module is invalid */
-                Logger logger = Logger.getLogger(Module.class.getName());
                 logger.log(Level.WARNING, "[MODULE] Invalid Module " + this.getFile());
                 return null;
             }
-            return ModuleInfo.decode(new InputStreamReader(is));
+
+            /* Read in the file and parse */
+            reader = new InputStreamReader(is);
+            return ModuleInfo.decode(reader);
         } catch (java.lang.Exception excp) {
             /* This is pretty bad -- if this doesn't exist, then the module is invalid */
-            Logger logger = Logger.getLogger(Module.class.getName());
             logger.log(Level.WARNING, "[MODULE] Invalid Module " + this.getFile(), excp);
             return null;
+        } finally {
+            RunUtil.close(reader);
         }
     }
 
@@ -116,21 +123,25 @@ public class ArchiveModule extends Module {
      * Reads the dependency info from the module.
      */
     private ModuleRequires fetchModuleRequires() {
+        InputStreamReader reader = null;
         try {
             /* Fetch the input stream, parse and return */
             InputStream is = manifest.getEntryInputStream(Module.MODULE_REQUIRES);
             if (is == null) {
                 /* This is not too bad if it does not exist */
-                Logger logger = Logger.getLogger(Module.class.getName());
                 logger.log(Level.INFO, "[MODULE] No requires.xml for Module " + this.getFile());
                 return null;
             }
-            return ModuleRequires.decode(new InputStreamReader(is));
+
+            /* Read in the file and parse */
+            reader = new InputStreamReader(is);
+            return ModuleRequires.decode(reader);
         } catch (java.lang.Exception excp) {
             /* This is not too bad if it does not exist */
-            Logger logger = Logger.getLogger(Module.class.getName());
             logger.log(Level.INFO, "[MODULE] No requires.xml for Module " + this.getFile(), excp);
             return null;
+        } finally {
+            RunUtil.close(reader);
         }
     }
 
@@ -138,21 +149,25 @@ public class ArchiveModule extends Module {
      * Reads the asset server info from the module.
      */
     public ModuleRepository fetchModuleRepository() {
+        InputStreamReader reader = null;
         try {
             /* Fetch the input stream, parse and return */
             InputStream is = manifest.getEntryInputStream(Module.MODULE_REPOSITORY);
             if (is == null) {
                 /* This is not too bad if it does not exist */
-                Logger logger = Logger.getLogger(Module.class.getName());
                 logger.log(Level.INFO, "[MODULE] No repository.xml for Module " + this.getFile());
                 return null;
             }
-            return ModuleRepository.decode(new InputStreamReader(is));
+
+            /* Read in the file and parse */
+            reader = new InputStreamReader(is);
+            return ModuleRepository.decode(reader);
         } catch (java.lang.Exception excp) {
             /* This is not too bad if it does not exist */
-            Logger logger = Logger.getLogger(Module.class.getName());
             logger.log(Level.INFO, "[MODULE] No repository.xml for Module " + this.getFile(), excp);
             return null;
+        } finally {
+            RunUtil.close(reader);
         }
     }
     

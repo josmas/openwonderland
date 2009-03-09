@@ -17,19 +17,18 @@
  */
 package org.jdesktop.wonderland.modules.testcells.common.cell.state;
 
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  *
  * @author jordanslott
  */
 @XmlRootElement(name="testcells-testworld")
-public class TestWorldCellServerState extends CellServerState
-        implements Serializable, CellServerStateSPI
-{
+@ServerState
+public class TestWorldCellServerState extends CellServerState {
+
     /** Default constructor */
     public TestWorldCellServerState() {
     }

@@ -37,7 +37,10 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassFocusListener;
+import org.jdesktop.wonderland.client.input.EventListener;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
@@ -46,6 +49,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellID
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
@@ -73,6 +77,9 @@ import java.util.ArrayList;
 
 import java.util.logging.Logger;
 
+import java.awt.event.MouseEvent;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+
 /**
  *
  * @author jprovino
@@ -88,7 +95,7 @@ public class AudioManagerClient extends BaseConnection implements
     private CellID cellID;
     private boolean connected = true;
 
-    //private UserListJFrame userListJFrame;
+    private UserListJFrame userListJFrame;
 
     /** 
      * Create a new AudioManagerClient
@@ -114,6 +121,8 @@ public class AudioManagerClient extends BaseConnection implements
         JmeClientMain.getFrame().addToToolMenu(AudioMenu.getAudioMenu(this));
         
 	CellManager.getCellManager().addCellStatusChangeListener(this);
+
+	InputManager.inputManager().addGlobalEventListener(new MouseEventListener());
 
 	logger.fine("Starting AudioManagerCLient");
     }
@@ -177,7 +186,9 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void mute(boolean isMuted) {
-	SoftphoneControlImpl.getInstance().mute(isMuted);
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+	sc.mute(isMuted);
+	session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
     }
 
     public void voiceChat() {
@@ -244,7 +255,7 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    try {
 	        InetAddress ia = NetworkAddress.getPrivateLocalAddress(
-		    "server:" + tokens[5] + ":" + tokens[6] + ":10000");
+		    "server:" + tokens[5] + ":" + tokens[7] + ":10000");
 
 	        localAddress = ia.getHostAddress();
 	    } catch (UnknownHostException e) {
@@ -310,12 +321,19 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof SpeakingMessage) {
 	    SpeakingMessage msg = (SpeakingMessage) message;
 
-	    logger.fine("CallId " + msg.getCallID() 
+	    logger.info("CallId " + msg.getCallID() 
 		+ (msg.isSpeaking() ? " Started Speaking" : " Stopped Speaking"));
+
+	    if (userListJFrame != null) {
+		userListJFrame.setSpeaking(msg.getCallID(), msg.isSpeaking());
+	    }
 	} else if (message instanceof GetUserListMessage) {
-	    //if (userListJFrame == null) {
-	    //	userListJFrame = new UserListJFrame();
-	    //}
+	    if (userListJFrame == null) {
+	    	userListJFrame = 
+		    new UserListJFrame(((GetUserListMessage) message).getLocation());
+
+		new UserListUpdater(this);
+	    }
 
 	    ArrayList<String> userList = ((GetUserListMessage) message).getUserList();
 
@@ -325,10 +343,15 @@ public class AudioManagerClient extends BaseConnection implements
 		s += user + " ";
 	    }
 
-	    System.out.println("Users:  " + s);
+	    userList.remove("servermanager");  // not a real user.
+	    userListJFrame.setListData(userList.toArray(new String[0]));
+	    userListJFrame.setVisible(true);
+	} else if (message instanceof MuteCallMessage) {
+	    MuteCallMessage msg = (MuteCallMessage) message;
 
-	    //userListJFrame.setListData(userList.toArray(new String[0]));
-	    //userListJFrame.setVisible(true);
+	    if (userListJFrame != null) {
+		userListJFrame.setMute(msg.getCallID(), msg.isMuted());
+	    }
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}
@@ -336,6 +359,56 @@ public class AudioManagerClient extends BaseConnection implements
 
     public ConnectionType getConnectionType() {
         return AudioManagerConnectionType.CONNECTION_TYPE;
+    }
+
+    private void inputEvent(Event event) {
+	//System.out.println("Got event " + event);
+    }
+
+    class UserListUpdater extends Thread {
+	
+	private AudioManagerClient client;
+
+	private boolean done;
+
+	public UserListUpdater(AudioManagerClient client) {
+	    this.client = client;
+	    start();
+	}
+
+	public void done() {
+	    done = true;
+	}
+
+	public void run() {
+	    while (!done) {
+	        try {
+		    Thread.sleep(2000);
+	        } catch (InterruptedException e) {
+	        }
+
+	        session.send(client, new GetUserListMessage(null));
+	    }
+	}
+
+    }
+
+    /**
+     * Global mouse listener for selection events. Reports back to the Selection
+     * Manager on any updates.
+     */
+    class MouseEventListener extends EventClassFocusListener {
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[] { MouseEvent3D.class };
+        }
+
+        // Note: we don't override computeEvent because we don't do any computation in this listener.
+
+        @Override
+        public void commitEvent(Event event) {
+            inputEvent(event);
+        }
     }
 
 }

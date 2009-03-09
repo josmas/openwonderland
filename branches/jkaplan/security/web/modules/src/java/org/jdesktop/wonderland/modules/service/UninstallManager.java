@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
+import org.jdesktop.wonderland.utils.RunUtil;
 
 /**
  * The Uninstall class manages all modules that are waiting to be uninstalled.
@@ -55,12 +56,16 @@ public class UninstallManager {
         this.uninstallFile = new File(root, UNINSTALL_XML);
         if (this.uninstallFile.exists() == false) {
             this.uninstallList = new ModuleInfoList();
+            FileWriter writer = null;
             try {
-                this.uninstallList.encode(new FileWriter(this.uninstallFile));
+                writer = new FileWriter(uninstallFile);
+                this.uninstallList.encode(writer);
             } catch (IOException ex) {
                 Logger.getLogger(UninstallManager.class.getName()).log(Level.WARNING, null, ex);
             } catch (JAXBException ex) {
                 Logger.getLogger(UninstallManager.class.getName()).log(Level.WARNING, null, ex);
+            } finally {
+                RunUtil.close(writer);
             }
             this.uninstallModules = Collections.synchronizedMap(new HashMap<String, ModuleInfo>());
         }
@@ -87,12 +92,16 @@ public class UninstallManager {
         list.add(moduleInfo);
         ModuleInfo[] newInfos = list.toArray(new ModuleInfo[] {});
         this.uninstallList.setModuleInfos(newInfos);
+        FileWriter writer = null;
         try {
-            this.uninstallList.encode(new FileWriter(this.uninstallFile));
+            writer = new FileWriter(uninstallFile);
+            this.uninstallList.encode(writer);
         } catch (JAXBException ex) {
             Logger.getLogger(UninstallManager.class.getName()).log(Level.WARNING, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(UninstallManager.class.getName()).log(Level.WARNING, null, ex);
+        } finally {
+            RunUtil.close(writer);
         }
     }
     
@@ -116,13 +125,17 @@ public class UninstallManager {
         }
         ModuleInfo[] newInfos = list.toArray(new ModuleInfo[] {});
         this.uninstallList.setModuleInfos(newInfos);
+        FileWriter writer = null;
         try {
-            this.uninstallList.encode(new FileWriter(this.uninstallFile));
+            writer = new FileWriter(uninstallFile);
+            this.uninstallList.encode(writer);
         } catch (JAXBException ex) {
             Logger.getLogger(UninstallManager.class.getName()).log(Level.WARNING, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(UninstallManager.class.getName()).log(Level.WARNING, null, ex);
-        }        
+        } finally {
+            RunUtil.close(writer);
+        }
     }
     
     /**
@@ -135,14 +148,18 @@ public class UninstallManager {
         this.uninstallModules = Collections.synchronizedMap(new HashMap<String, ModuleInfo>());
         
         /* Read in the uninstall.xml file */
+        FileReader reader = null;
         try {
-            this.uninstallList = ModuleInfoList.decode(new FileReader(this.uninstallFile));
+            reader = new FileReader(uninstallFile);
+            this.uninstallList = ModuleInfoList.decode(reader);
             for (ModuleInfo info : this.uninstallList.getModuleInfos()) {
                 this.uninstallModules.put(info.getName(), info);
             }
         } catch (java.lang.Exception ex) {
             Logger.getLogger(UninstallManager.class.getName()).log(Level.WARNING, null, ex);
             this.uninstallList = new ModuleInfoList();
+        } finally {
+            RunUtil.close(reader);
         }
     }
 }

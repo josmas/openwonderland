@@ -19,12 +19,16 @@ package org.jdesktop.wonderland.modules.swingwhiteboard.client;
 
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.SwingWhiteboardCellServerState;
 
 /**
  * The cell factory for the swing whiteboard
  */
+@CellFactory
 public class SwingWhiteboardCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
@@ -43,15 +47,7 @@ public class SwingWhiteboardCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-//        try {
-////        URL url = ConeOfSilenceCellPaletteInfo.class.getResource("resources/sample_preview.jpg");
-////        Logger.getLogger(ConeOfSilenceCellPaletteInfo.class.getName()).warning("INFO " + url.toString());
-//            URL url = new URL("file:///Users/jordanslott/Desktop/sample_preview.jpg");
-//            return Toolkit.getDefaultToolkit().createImage(url);
-//        } catch (MalformedURLException ex) {
-//            Logger.getLogger(ConeOfSilenceCellPaletteInfo.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return null;
-        return null;
+        URL url = SwingWhiteboardCellFactory.class.getResource("resources/swingwhiteboard_preview.png");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }

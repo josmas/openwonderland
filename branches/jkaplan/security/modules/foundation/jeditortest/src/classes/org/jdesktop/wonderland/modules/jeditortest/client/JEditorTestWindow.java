@@ -51,8 +51,6 @@ public class JEditorTestWindow extends WindowSwing  {
         throws InstantiationException
     {
 	super(app, width, height, topLevel, pixelScale);
-	setSize(width, height);
-	initializeSurface();
 
 	setTitle("JEditor Test");
 	
@@ -62,5 +60,8 @@ public class JEditorTestWindow extends WindowSwing  {
 	// TODO: test without
        	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
 	setComponent(testPanel);
+
+        // Note: This particular test panel only is laid out properly if forced size mode
+        setSize(width, height);
     }
 }

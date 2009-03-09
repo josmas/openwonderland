@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.coneofsilence.common;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  * The ConeOfSilenceCellServerState class is the cell that renders a coneofsilence cell in
@@ -28,7 +28,8 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
  * @author jprovino
  */
 @XmlRootElement(name = "ConeOfSilence-cell")
-public class ConeOfSilenceCellServerState extends CellServerState implements CellServerStateSPI {
+@ServerState
+public class ConeOfSilenceCellServerState extends CellServerState {
 
     public ConeOfSilenceCellServerState() {
         super();
