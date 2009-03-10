@@ -42,6 +42,9 @@ public class JmeColladaCellServerState extends CellServerState implements Serial
     @XmlElement(name="model")
     public String model = null;
 
+    @XmlElement(name="model-group")
+    public String modelGroup = null;
+
     /* The translation for the geometry -- really should be done on the cell level */
     @XmlElement(name="geometry-translation")
     public PositionComponentServerState.Origin geometryTranslation = null;
@@ -113,6 +116,20 @@ public class JmeColladaCellServerState extends CellServerState implements Serial
     @Override
     public String toString() {
         return super.toString() + " [ColladCellSetup] model: " + this.model;
+    }
+
+    /**
+     * @return the modelGroup
+     */
+    @XmlTransient public String getModelGroup() {
+        return modelGroup;
+    }
+
+    /**
+     * @param modelGroup the modelGroup to set
+     */
+    public void setModelGroup(String modelGroup) {
+        this.modelGroup = modelGroup;
     }
 
 }
