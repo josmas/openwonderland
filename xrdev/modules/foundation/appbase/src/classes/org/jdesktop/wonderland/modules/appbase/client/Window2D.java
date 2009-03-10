@@ -90,7 +90,7 @@ public abstract class Window2D {
     private Point offset;
 
     /** The size of the window specified by the application. */
-    private Dimension sizeApp = new Dimension(1, 1);
+    private Dimension size = new Dimension(1, 1);
 
     /** The initial size of the pixels of the window's views (specified by WFS). */
     protected Vector2f pixelScale;
@@ -186,7 +186,7 @@ public abstract class Window2D {
      */
     public Window2D(App2D app, int width, int height, boolean decorated, Vector2f pixelScale, String name) {
         this.app = app;
-        this.sizeApp = new Dimension(width, height);
+        this.size = new Dimension(width, height);
         this.decorated = decorated;
         this.pixelScale = new Vector2f(pixelScale);
         this.name = name;
@@ -265,7 +265,7 @@ public abstract class Window2D {
     public Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated, 
                     Vector2f pixelScale, String name) {
         this.app = app; 
-        this.sizeApp = new Dimension(width, height);
+        this.size = new Dimension(width, height);
         this.decorated = decorated;
         this.pixelScale = new Vector2f(pixelScale);
         this.name = name;
@@ -306,8 +306,7 @@ public abstract class Window2D {
     /** Returns the name of the window. */
     public String getName () {
         if (name == null) {
-            //TODO: return "Window2D for app " + app.getName();
-            return null;
+            return "Window2D for app " + app.getName();
         } else {
             return name;
         }
@@ -387,10 +386,10 @@ public abstract class Window2D {
      * @param height The new height of the window.
      */
     public void setSize(int width, int height) {
-        if (this.sizeApp.width == width && this.sizeApp.height == height) {
+        if (this.size.width == width && this.size.height == height) {
             return;
         }
-        this.sizeApp = new Dimension(width, height);
+        this.size = new Dimension(width, height);
         changeMask |= CHANGED_SIZE;
         updateViews();
     }
@@ -399,14 +398,14 @@ public abstract class Window2D {
      * The width of the window (excluding the decoration).
      */
     public int getWidth() {
-        return sizeApp.width;
+        return size.width;
     }
 
     /** 
      * The height of the window (excluding the decoration).
      */
     public int getHeight() {
-        return sizeApp.height;
+        return size.height;
     }
 
     /** 
@@ -434,7 +433,7 @@ public abstract class Window2D {
      * @param sibWin The window which will be directly below this window after this call.
      */
     public void configure(int width, int height, Window2D sibWin) {
-        this.sizeApp = new Dimension(width, height);
+        this.size = new Dimension(width, height);
         changeMask |= CHANGED_SIZE;
 
         // TODO: stack
@@ -543,7 +542,8 @@ public abstract class Window2D {
      * @param title The string to display as the window title.
      */
     public void setTitle(String title) {
-        if (this.title.equals(title)) return;
+        if (title == null && this.title == null) return;
+        if (title.equals(this.title)) return;
         this.title = title;
         changeMask |= CHANGED_TITLE;
         updateViews();
@@ -772,7 +772,7 @@ public abstract class Window2D {
     }
 
     public void forceTextureIdAssignment() {
-        if (views == null || views.size() <= 0) {
+        if (views.size() <= 0) {
             logger.warning("Cannot assign texture ID because there are no views");
             return;
         }
@@ -896,6 +896,7 @@ public abstract class Window2D {
      * (In other words, things that happen to a window happen the same to all of its views).
      */
     public void addView (View2D view) {
+        System.err.println("************** Add view " + view);
         if (views.contains(view)) return;
 
         // TODO: someday: Currently ViewSet2D constrains a view for a window to appear only once in 
@@ -1000,7 +1001,7 @@ public abstract class Window2D {
             }
             if ((changeMask & CHANGED_SIZE) != 0) {
                 updateTexture();
-                view.setSizeApp(sizeApp, false);
+                view.setSizeApp(size, false);
             }
             if ((changeMask & CHANGED_DECORATED) != 0) {
                 view.setDecorated(decorated, false);
@@ -1024,8 +1025,8 @@ public abstract class Window2D {
     protected void updateTexture() {
 
         // TODO: someday dynamically detect graphics card support for NPOT
-        int roundedWidth = getSmallestEnclosingPowerOf2(sizeApp.width);
-        int roundedHeight = getSmallestEnclosingPowerOf2(sizeApp.height);
+        int roundedWidth = getSmallestEnclosingPowerOf2(size.width);
+        int roundedHeight = getSmallestEnclosingPowerOf2(size.height);
 
         // Check if we already have the size we want
         if (texture != null) {
