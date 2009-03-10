@@ -64,7 +64,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
      * @param pixelScale The size of the window pixels in world coordinates.
      * @throws InstantiationException if the the window cannot be created.
      */
-    public WindowConventional(App app, int width, int height, boolean topLevel, int borderWidth, Vector2f pixelScale)
+    public WindowConventional(App2D app, int width, int height, boolean topLevel, int borderWidth, Vector2f pixelScale)
             throws InstantiationException {
         super(app, width, height, topLevel, pixelScale,
                 new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
@@ -99,21 +99,14 @@ public abstract class WindowConventional extends WindowGraphics2D {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected int configureNoUpdate(int width, int height, Window2D sibWin) {
-        setSize(width, height);
-        return super.configureNoUpdate(width, height, sibWin);
-    }
-
-    /**
      * Specify a new border width.
      * The visual representations of the window are updated accordingly.
      *
      * @param borderWidth The new border width.
      */
     public void setBorderWidth(int borderWidth) {
+        int width = getWidth();
+        int height = getHeight();
         width -= 2 * borderWidth;
         height -= 2 * borderWidth;
         this.borderWidth = borderWidth;
@@ -125,21 +118,6 @@ public abstract class WindowConventional extends WindowGraphics2D {
      */
     public int getBorderWidth() {
         return borderWidth;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-
-        if (visible && appConventional.getInitInBestView()) {
-            moveToBestView();
-            appConventional.setInitInBestView(false);
-        }
-
-    // TODO: ensureIsAboveFloor();
     }
 
     /** TODO: promote to parent! */

@@ -22,16 +22,13 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
-import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
-import org.jdesktop.wonderland.modules.appbase.client.App;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwingEmbeddedToolkit.WindowSwingEmbeddedPeer;
 import com.sun.embeddedswing.EmbeddedPeer;
 import java.awt.Point;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.logging.Logger;
@@ -46,6 +43,8 @@ import org.jdesktop.wonderland.client.input.InputManager.WindowSwingMarker;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
+import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
@@ -69,7 +68,7 @@ public class WindowSwing extends WindowGraphics2D {
     /** The Swing component which is displayed in this window */
     protected Component component;
     /** The Swing Embedder object */
-    protected WindowSwingEmbeddedPeer embeddedPeer;
+    private WindowSwingEmbeddedPeer embeddedPeer;
     /** The size of the window */
     protected Dimension size;
     /** Is input enabled on this window? */
@@ -97,24 +96,107 @@ public class WindowSwing extends WindowGraphics2D {
         }
     }
 
-    /** 
-     * Create a new instance of WindowSwing.
+    /**
+     * Create an instance of WindowSwing with a default name. The first such window created for an app 
+     * becomes the primary window. Subsequent windows are secondary windows.
      * @param app The application to which this window belongs.
      * @param width The window width (in pixels).
      * @param height The window height (in pixels).
-     * @param topLevel Whether the window is top-level (e.g is decorated) with a frame.
+     * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
-     * @param surface The drawing surface on which the creator will draw
-     * @throws InstantiationException if the windows world view cannot be created.
      */
-    public WindowSwing(App app, int width, int height, boolean topLevel, Vector2f pixelScale)
-            throws InstantiationException {
-        super(app, width, height, topLevel, pixelScale, new DrawingSurfaceBufferedImage(width, height));
-        initializeSurface();
+    public WindowSwing(App2D app, int width, int height, boolean decorated, Vector2f pixelScale) {
+        this(app, width, height, decorated, pixelScale, null);
+    }
 
-        addWorldEntityComponent(InputManager.WindowSwingMarker.class, new WindowSwingMarker());
-        addWorldEntityComponent(WindowSwingReference.class, new WindowSwingReference());
-        addWorldEventListener(new MyEventListener());
+    /**
+     * Create an instance of WindowSwing with the given name. The first such window created for an app 
+     * becomes the primary window. Subsequent windows are secondary windows.
+     * @param app The application to which this window belongs.
+     * @param width The window width (in pixels).
+     * @param height The window height (in pixels).
+     * @param decorated Whether the window is top-level (e.g. is decorated) with a frame.
+     * @param pixelScale The size of the window pixels.
+     * @param name The name of the window.
+     */
+    public WindowSwing(App2D app, int width, int height, boolean decorated, Vector2f pixelScale, 
+                       String name) {
+        super(app, width, height, decorated, pixelScale, name, 
+              new DrawingSurfaceBufferedImage(width, height)); 
+        initialize();
+    }
+
+    /**
+     * Create an instance of WindowSwing of the given type with a default name. 
+     * @param app The application to which this window belongs.
+     * @param type The type of the window. If this is non-primary, the parent is set to the primary
+     * window of the app (if there is one).
+     * @param width The window width (in pixels).
+     * @param height The window height (in pixels).
+     * @param decorated Whether the window is decorated with a frame.
+     * @param pixelScale The size of the window pixels.
+     */
+    protected WindowSwing(App2D app, Type type, int width, int height, boolean decorated, 
+                          Vector2f pixelScale) {
+        this(app, type, width, height, decorated, pixelScale, null);
+    }
+
+    /**
+     * Create an instance of WindowSwing of the given type with the given name. 
+     * @param app The application to which this window belongs.
+     * @param type The type of the window. If this is non-primary, the parent is set to the primary
+     * window of the app (if there is one).
+     * @param width The window width (in pixels).
+     * @param height The window height (in pixels).
+     * @param decorated Whether the window is top-level (e.g. is decorated) with a frame.
+     * @param pixelScale The size of the window pixels.
+     * @param name The name of the window.
+     */
+    public WindowSwing(App2D app, Type type, int width, int height, boolean decorated, Vector2f pixelScale, 
+                       String name) {
+        this(app, type, app.getPrimaryWindow(), width, height, decorated, pixelScale, name);
+    }
+
+    /**
+     * Create an instance of WindowSwing of the given type with the given parent with a default name. 
+     * @param app The application to which this window belongs.
+     * @param type The type of the window. 
+     * @param parent The parent of the window. (Ignored for primary windows).
+     * @param width The window width (in pixels).
+     * @param height The window height (in pixels).
+     * @param decorated Whether the window is decorated with a frame.
+     * @param pixelScale The size of the window pixels.
+     */
+    protected WindowSwing(App2D app, Type type, Window2D parent, int width, int height, boolean decorated, 
+                       Vector2f pixelScale) {
+        this(app, type, parent, width, height, decorated, pixelScale, null);
+    }
+
+    /**
+     * Create an instance of WindowSwing of the given type with the given parent with the given name. 
+     * @param app The application to which this window belongs.
+     * @param type The type of the window. If this is non-primary, the parent is set to the primary
+     * window of the app (if there is one).
+     * @param parent The parent of the window. (Ignored for primary windows).
+     * @param width The window width (in pixels).
+     * @param height The window height (in pixels).
+     * @param decorated Whether the window is top-level (e.g. is decorated) with a frame.
+     * @param pixelScale The size of the window pixels.
+     * @param name The name of the window.
+     */
+    public WindowSwing(App2D app, Type type, Window2D parent, int width, int height, boolean decorated, 
+                    Vector2f pixelScale, String name) {
+        super(app, type, parent, width, height, decorated, pixelScale, name,
+              new DrawingSurfaceBufferedImage(width, height)); 
+        initialize();
+    }
+
+    private void initialize () {
+        // TODO: must to for *each view*/
+        addEntityComponent(InputManager.WindowSwingMarker.class, new WindowSwingMarker());
+        // TODO: should be WindowSwingViewReference
+        addEntityComponent(WindowSwingReference.class, new WindowSwingReference());
+        addEventListener(new MyEventListener());
     }
 
     /** 
@@ -150,7 +232,7 @@ public class WindowSwing extends WindowGraphics2D {
 	// TODO: Uncomment this to demonstrate the embedded component enter/exit bug
 	//component.addMouseListener(new MyAwtEnterListener());
 
-        addWorldEventListener(new MySwingEnterExitListener());
+        addEventListener(new MySwingEnterExitListener());
 
         embeddedPeer.validate();
         embeddedPeer.repaint();
@@ -334,7 +416,8 @@ public class WindowSwing extends WindowGraphics2D {
             Vector3f intersectionPointWorld,
             Point lastPressPointScreen) {
         if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
-            return viewWorld.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
+            // TODO: return viewWorld.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
+            return null;
         } else {
             return calcWorldPositionInPixelCoordinates(intersectionPointWorld, true);
         }

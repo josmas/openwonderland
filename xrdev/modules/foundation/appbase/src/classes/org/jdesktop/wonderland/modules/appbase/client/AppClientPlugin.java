@@ -18,12 +18,12 @@
 package org.jdesktop.wonderland.modules.appbase.client;
 
 import java.lang.reflect.Constructor;
-import org.jdesktop.wonderland.modules.appbase.client.gui.GuiFactory;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 
 /**
  * An object which is created during the user client login process in order to initialize the 
@@ -35,9 +35,9 @@ public class AppClientPlugin implements ClientPlugin {
 
     private static final Logger logger = Logger.getLogger(AppClientPlugin.class.getName());
 
-    /** The default 2D GUI factory to use. */
-    private final String GUI_2D_FACTORY_CLASS_DEFAULT = 
-        "org.jdesktop.wonderland.modules.appbase.client.cell.gui.guidefault.Gui2DFactory";
+    /** The default cell view factory to use. */
+    private final String VIEW2DCELL_FACTORY_CLASS_DEFAULT = 
+        "org.jdesktop.wonderland.modules.appbase.client.cell.view.default.View2DCellFactoryDefault";
 
     /** All client plugins must have a no-arg constructor. */
     public AppClientPlugin () {}
@@ -56,31 +56,33 @@ public class AppClientPlugin implements ClientPlugin {
      * Called to initialize the app base for a user client on client startup.
      */
     public void initAppBaseUserClient () {
-        initGui2DFactory();
+        initCellViewFactory();
     }
 
     /**
-     * Initialize the app base 2D gui factory for a user client.
+     * Initialize the app base cell view factory for a user client.
      */
-    public void initGui2DFactory() {
+    public void initCellViewFactory() {
 
-        // TODO: later on we might allow the default gui factory to be overridden by the user. 
+        // TODO: later on we might allow the default view factory to be overridden by the user,
+        // via a config file or property.
 
         ClassLoader classLoader = getClass().getClassLoader();
-        GuiFactory gui2DFactory = null;
+        View2DCellFactory view2DCellFactory = null;
         try {
-            Class clazz = Class.forName(GUI_2D_FACTORY_CLASS_DEFAULT, true, classLoader);
+            Class clazz = Class.forName(VIEW2DCELL_FACTORY_CLASS_DEFAULT, true, classLoader);
             Constructor constructor = clazz.getConstructor();
-            gui2DFactory = (GuiFactory) constructor.newInstance();
+            view2DCellFactory = (View2DCellFactory) constructor.newInstance();
         } catch(Exception e) {
-            logger.severe("Error instantiating app base 2D GUI factory "+ GUI_2D_FACTORY_CLASS_DEFAULT+
-                        ", Exception = " + e);
+            logger.severe("Error instantiating app base 2D cell view factory " + 
+                          VIEW2DCELL_FACTORY_CLASS_DEFAULT + ", Exception = " + e);
         }
 
-        if (gui2DFactory == null) {
-            logger.severe("Error instantiating app base 2D GUI factory "+ GUI_2D_FACTORY_CLASS_DEFAULT);
+        if (view2DCellFactory == null) {
+            logger.severe("Error instantiating app base 2D view cell factory " + 
+                          VIEW2DCELL_FACTORY_CLASS_DEFAULT);
         } else {
-            App.setGui2DFactory(gui2DFactory);
+            App2D.setView2DCellFactory(view2DCellFactory);
         }
     }
 }

@@ -45,7 +45,7 @@ public abstract class ControlArb {
     /** A list of components to notify of a state change in the control arb */
     protected final LinkedList<ControlChangeListener> listeners = new LinkedList<ControlChangeListener>();
     /** The application controlled by this arbiter */
-    protected App app;
+    protected App2D app;
     /** Has the user enabled app control? */
     protected boolean appControl;
 
@@ -87,14 +87,14 @@ public abstract class ControlArb {
      *
      * @param app The app.
      */
-    public void setApp(App app) {
+    public void setApp(App2D app) {
         this.app = app;
     }
 
     /**
      * Return the app the controlArb controls.
      */
-    public App getApp() {
+    public App2D getApp() {
         return app;
     }
 
