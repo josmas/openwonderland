@@ -29,6 +29,7 @@ import imi.character.CharacterMotionListener;
 import imi.character.avatar.FemaleAvatarAttributes;
 import imi.character.avatar.MaleAvatarAttributes;
 import imi.character.statemachine.GameContextListener;
+import imi.character.statemachine.corestates.CycleActionState;
 import imi.scene.PMatrix;
 import imi.scene.processors.JSceneEventProcessor;
 import imi.utils.PMathUtils;
@@ -97,7 +98,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
                         currentTrigger = trigger;
                         currentPressed = pressed;
                     }
-                   ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, null);
+                    String animationName = avatarCharacter.getContext().getState(CycleActionState.class).getAnimationName();
+                   ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, animationName, null);
                 }
 
             };
@@ -276,16 +278,20 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
     }
 
-    public void trigger(int trigger, boolean pressed) {
+    public void trigger(int trigger, boolean pressed, String animationName) {
         if (!selectedForInput && avatarCharacter!=null) {
             // Sync to avoid concurrent updates of currentTrigger and currentPressed
             synchronized(this) {
                 if (currentTrigger==trigger && currentPressed==pressed)
                     return;
 
-                if (pressed)
+                System.err.println("GOT TRIGGER MSG "+trigger+"  "+pressed+"  "+animationName);
+
+                if (pressed) {
+                    if (animationName!=null)
+                        ((WlAvatarContext)avatarCharacter.getContext()).setMiscAnimation(animationName);
                     avatarCharacter.getContext().triggerPressed(trigger);
-                else
+                } else
                     avatarCharacter.getContext().triggerReleased(trigger);
                 currentTrigger = trigger;
                 currentPressed = pressed;

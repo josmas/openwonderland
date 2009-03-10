@@ -136,6 +136,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             attributes = new FemaleAvatarAttributes(name, true);
         else
             attributes = new MaleAvatarAttributes(name, true);
+
         WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
         ServerSessionManager manager = LoginManager.find(session);
         String serverHostAndPort = manager.getServerNameAndPort();
