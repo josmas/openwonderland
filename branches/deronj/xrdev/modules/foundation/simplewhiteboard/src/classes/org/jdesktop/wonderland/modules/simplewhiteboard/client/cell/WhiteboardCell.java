@@ -100,27 +100,31 @@ public class WhiteboardCell extends App2DCell {
 
                 WhiteboardApp whiteboardApp = new WhiteboardApp(getAppType(), clientState.getPixelScale());
                 setApp(whiteboardApp);
+                setAppName("SimpleWhiteboard");
 
-                // Associate the app with this cell (must be done before making it visible)
-                whiteboardApp.setDisplayer(this);
+                // Tell the app to be displayed in this cell.
+                whiteboardApp.addDisplayer(this);
 
                 // This app has only one window, so it is always top-level 
                 try {
-                    whiteboardWin = new WhiteboardWindow(whiteboardApp, clientState.getPreferredWidth(),
-                                                         clientState.getPreferredHeight(), true, 
+                    whiteboardWin = new WhiteboardWindow(this, whiteboardApp, clientState.getPreferredWidth(),
+                                                         clientState.getPreferredHeight(), 
+                                                         false /*TODO:true*/,
                                                          clientState.getPixelScale(),
                                                          commComponent);
                 } catch (InstantiationException ex) {
                     throw new RuntimeException(ex);
                 }
 
-                // Make the app window visible
-                whiteboardWin.setVisible(true);
+                // Both the app and the user want this window to be visible
+                whiteboardWin.setVisibleApp(true);
+                whiteboardWin.setVisibleUser(this, true);
+
                 break;
 
             // The cell is no longer visible
             case DISK:
-                whiteboardWin.setVisible(false);
+                whiteboardWin.setVisibleApp(false);
                 removeComponent(WhiteboardComponent.class);
                 commComponent = null;
                 whiteboardWin = null;
