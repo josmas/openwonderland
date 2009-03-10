@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import imi.loaders.repository.Repository;
 import imi.utils.instruments.DefaultInstrumentation;
 import imi.utils.instruments.Instrumentation;
 import java.awt.event.ActionEvent;
@@ -26,6 +27,7 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -47,6 +49,13 @@ public class AvatarPlugin implements ClientPlugin {
     private Instrumentation instrumentation;
 
     public void initialize(ServerSessionManager loginManager) {
+        // Set the base URL
+        String serverHostAndPort = loginManager.getServerNameAndPort();
+        String baseURL = "wla://avatarbase@"+serverHostAndPort+"/";
+
+        WorldManager worldManager = ClientContextJME.getWorldManager();
+        worldManager.addUserData(Repository.class, new Repository(worldManager, baseURL, ClientContext.getUserDirectory("AvatarCache")));
+        
         ClientContextJME.getAvatarRenderManager().registerRenderer(AvatarImiJME.class);
 
         ClientContextJME.getViewManager().addViewManagerListener(new ViewManagerListener() {
