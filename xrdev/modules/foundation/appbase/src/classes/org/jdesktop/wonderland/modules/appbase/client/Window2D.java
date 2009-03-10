@@ -199,6 +199,9 @@ public abstract class Window2D {
             parent = app.getPrimaryWindow();
         }
 
+        // Must occur before adding window to the app
+        updateTexture();
+
     	app.addWindow(this);
 
         changeMask = CHANGED_ALL;
@@ -277,6 +280,9 @@ public abstract class Window2D {
         } else {
             this.parent = parent;
         }
+
+        // Must occur before adding window to the app
+        updateTexture();
 
         app.addWindow(this);
 
