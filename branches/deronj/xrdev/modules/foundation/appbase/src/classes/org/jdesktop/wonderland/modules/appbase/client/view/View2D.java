@@ -37,19 +37,13 @@ public interface View2D {
     /** Clean up resources. */
     public void cleanup ();
 
-    /** Return the name of the view. */
+    /** Returns the name of the view. */
     public String getName ();
 
-    /** Return the displayer in which this view is displayed. */
+    /** Returns the displayer in which this view is displayed. */
     public View2DDisplayer getDisplayer ();
 
-    /** Specify the window displayed by this view. Update afterward. */
-    public void setWindow (Window2D window);
-
-    /** Specify the window displayed by this view. Update if specified. */
-    public void setWindow (Window2D window, boolean update);
-
-    /** Return the window displayed by this view. */
+    /** Returns the window which the view displays. */
     public Window2D getWindow ();
 
     /** Specify the type of the view. Update afterward. */
