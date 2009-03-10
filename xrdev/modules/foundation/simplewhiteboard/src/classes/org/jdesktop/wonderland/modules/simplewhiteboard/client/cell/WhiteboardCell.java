@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCellClientState;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
@@ -34,7 +33,6 @@ import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardApp;
-import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardAppType;
 import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardComponent;
 import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardWindow;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
@@ -66,13 +64,6 @@ public class WhiteboardCell extends App2DCell {
         super(cellID, cellCache);
     }
 
-    /** 
-     * {@inheritDoc}
-     */
-    public AppType getAppType() {
-        return new WhiteboardAppType();
-    }
-
     /**
      * Initialize the whiteboard with parameters from the server.
      *
@@ -98,9 +89,9 @@ public class WhiteboardCell extends App2DCell {
 
                 commComponent = getComponent(WhiteboardComponent.class);
 
-                WhiteboardApp whiteboardApp = new WhiteboardApp(getAppType(), clientState.getPixelScale());
+                WhiteboardApp whiteboardApp = new WhiteboardApp("Simple Whiteboard", 
+                                                                clientState.getPixelScale());
                 setApp(whiteboardApp);
-                setAppName("SimpleWhiteboard");
 
                 // Tell the app to be displayed in this cell.
                 whiteboardApp.addDisplayer(this);

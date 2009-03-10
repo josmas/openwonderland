@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
@@ -37,17 +36,14 @@ public class WhiteboardApp extends AppGraphics2D  {
      * Create a new instance of WhiteboardApp. This in turn creates
      * and makes visible the single window used by the app.
      *
-     * @param appType The type of app (should be WhiteboardAppType).
      * @param width The width (in pixels) of the whiteboard window.
      * @param height The height (in pixels) of the whiteboard window.
      * @param pixelScale The horizontal and vertical pixel sizes
      * (in world meters per pixel).
      * @param commComponent The communications component for communicating with the server.
      */
-    public WhiteboardApp (AppType appType, Vector2f pixelScale) {
-
-	// configWorld can be null because the server cell is already configured
-	super(appType, new ControlArbMulti(), pixelScale);
+    public WhiteboardApp (String name, Vector2f pixelScale) {
+	super(name, new ControlArbMulti(), pixelScale);
 	controlArb.setApp(this);
     }
 

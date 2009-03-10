@@ -63,9 +63,6 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     /** All app views displayed by this cell. */
     private LinkedList<View2DCell> views = new LinkedList<View2DCell>();
 
-    /** The name of the app displayed by this cell. */
-    private String appName;
-
     /** The app displayed in this cell. */
     private App2D app;
 
@@ -115,25 +112,6 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      */
     public App2D getApp() {
         return app;
-    }
-
-    /**
-     * Specify the app name. 
-     */
-    public void setAppName (String appName) {
-        this.appName = appName;
-    }
-
-    /**
-     * Get the name of this app cell. This includes both the cellID and the app name (if one is specified).
-     */
-    @Override
-    public String getName () {
-        String name = "App2DCell for cellID=" + getCellID();
-        if (appName != null) {
-            name += ",app=" + appName;
-        }
-        return name;
     }
 
     /**
@@ -199,7 +177,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      */
     @Override
     public String toString() {
-        return getName();
+        return "App2DCell for cellID=" + getCellID() + ",app=" + app.getName();
     }
 
     // TODO: getter

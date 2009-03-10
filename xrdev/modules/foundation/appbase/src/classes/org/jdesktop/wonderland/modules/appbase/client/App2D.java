@@ -81,6 +81,9 @@ public abstract class App2D {
     /** The focus entity of the app. */
     protected Entity focusEntity;
 
+    /** The name of the app. */
+    private String name;
+
     /**
      * Set the default View2DCell factory to be used for all apps in this client. (Called by 
      * AppClientPlugin.initialize).
@@ -95,14 +98,26 @@ public abstract class App2D {
     }
 
     /**
-     * Create a new instance of App2D.
+     * Create a new instance of App2D with a default name..
      *
      * @param controlArb The control arbiter to use. null means that all users can control at the same time.
      * @param pixelScale The size of the window pixels in world coordinates.
      */
-    public App2D(AppType appType, ControlArb controlArb, Vector2f pixelScale) {
-        this.pixelScale = pixelScale;
+    public App2D(ControlArb controlArb, Vector2f pixelScale) {
+        this(null, controlArb, pixelScale);
+    }
+
+    /**
+     * Create a new instance of App2D with the given name.
+     *
+     * @param name The name of the app.
+     * @param controlArb The control arbiter to use. null means that all users can control at the same time.
+     * @param pixelScale The size of the window pixels in world coordinates.
+     */
+    public App2D(String name, ControlArb controlArb, Vector2f pixelScale) {
+        this.name = name;
         this.controlArb = controlArb;
+        this.pixelScale = pixelScale;
         focusEntity = new Entity("App focus entity");
     }
 
@@ -270,4 +285,20 @@ public abstract class App2D {
         return windows.iterator();
     }
 
+    /**
+     * Returns the name of the app.
+     */
+    public String getName () {
+        if (name == null) {
+            return "(Unnamed App)";
+        } else {
+            return name;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString () {
+        return getName();
+    }
 }

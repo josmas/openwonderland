@@ -71,26 +71,26 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
     private static final int CHANGED_USER_TRANSFORM         = 0x10000000;
     private static final int CHANGED_TEX_COORDS             = 0x08000000;
     private static final int CHANGED_FRAME                  = 0x04000000;
+    private static final int CHANGED_TEXTURE                = 0x02000000;
 
     // Category group flags
     private static final int CHANGED_TRANSFORMS             = CHANGED_OFFSET_STACK_TRANSFORM |
             	                                              CHANGED_USER_TRANSFORM;
 
     // Attribute changed flags (these include various categories which depend on them)
-    private static final int CHANGED_WINDOW           = 0x1    | CHANGED_TOPOLOGY | CHANGED_TEX_COORDS;
-    private static final int CHANGED_TYPE             = 0x2    | CHANGED_TOPOLOGY | CHANGED_TRANSFORMS;
-    private static final int CHANGED_PARENT           = 0x4    | CHANGED_TOPOLOGY
+    private static final int CHANGED_TYPE             = 0x1    | CHANGED_TOPOLOGY | CHANGED_TRANSFORMS;
+    private static final int CHANGED_PARENT           = 0x2    | CHANGED_TOPOLOGY
                                                                | CHANGED_OFFSET_STACK_TRANSFORM;
-    private static final int CHANGED_VISIBLE          = 0x8    | CHANGED_TOPOLOGY;
-    private static final int CHANGED_DECORATED        = 0x10   | CHANGED_FRAME | CHANGED_SIZE;
-    private static final int CHANGED_GEOMETRY         = 0x20   | CHANGED_TOPOLOGY | CHANGED_WINDOW;
-    private static final int CHANGED_SIZE_APP         = 0x40   | CHANGED_SIZE | CHANGED_TEX_COORDS; 
-    private static final int CHANGED_PIXEL_SCALE      = 0x80   | CHANGED_SIZE
+    private static final int CHANGED_VISIBLE          = 0x4    | CHANGED_TOPOLOGY;
+    private static final int CHANGED_DECORATED        = 0x8    | CHANGED_FRAME | CHANGED_SIZE;
+    private static final int CHANGED_GEOMETRY         = 0x10   | CHANGED_TOPOLOGY | CHANGED_TEXTURE;
+    private static final int CHANGED_SIZE_APP         = 0x20   | CHANGED_SIZE | CHANGED_TEX_COORDS; 
+    private static final int CHANGED_PIXEL_SCALE      = 0x40   | CHANGED_SIZE
                                                                | CHANGED_OFFSET_STACK_TRANSFORM;
-    private static final int CHANGED_OFFSET           = 0x100  | CHANGED_OFFSET_STACK_TRANSFORM;
-    private static final int CHANGED_USER_TRANSLATION = 0x200  | CHANGED_USER_TRANSFORM;
-    private static final int CHANGED_USER_ROTATION    = 0x400  | CHANGED_USER_TRANSFORM;
-    private static final int CHANGED_TITLE            = 0x800  | CHANGED_FRAME;
+    private static final int CHANGED_OFFSET           = 0x80   | CHANGED_OFFSET_STACK_TRANSFORM;
+    private static final int CHANGED_USER_TRANSLATION = 0x100  | CHANGED_USER_TRANSFORM;
+    private static final int CHANGED_USER_ROTATION    = 0x200  | CHANGED_USER_TRANSFORM;
+    private static final int CHANGED_TITLE            = 0x400  | CHANGED_FRAME;
 
     private static final int CHANGED_ALL = -1;
 
@@ -320,24 +320,6 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
     }
 
     /** {@inheritDoc} */
-    public synchronized void setWindow (Window2D window) {
-        setWindow(window, true);
-    }
-
-    /** {@inheritDoc} */
-    public synchronized void setWindow (Window2D window, boolean update) {
-        if (window == null) {
-            throw new RuntimeException("Window cannot be null.");
-        }
-        this.window = window;
-        controlArb = window.getApp().getControlArb();
-        changeMask |= CHANGED_WINDOW;
-        if (update) {
-            update();
-        }
-    }
-
-    /** {@inheritDoc} */
     public synchronized Window2D getWindow () {
         return window;
     }
@@ -429,7 +411,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setVisibleUser (boolean visible, boolean update) {
-        this.visibleUser = visibleUser;
+        this.visibleUser = visible;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
             update();
@@ -658,7 +640,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
             }
 
             // Uses: window
-            if ((changeMask & CHANGED_WINDOW) != 0) {
+            if ((changeMask & CHANGED_TEXTURE) != 0) {
                 if (geometryNode != null) {
                     geometryNode.setTexture(getWindow().getTexture());
                 }
