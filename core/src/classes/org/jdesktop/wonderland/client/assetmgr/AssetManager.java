@@ -203,7 +203,7 @@ public class AssetManager {
          * Print an error message here -- we cannot load the asset.
          */
         if (checksum == null) {
-            logger.warning("[ASSET] GET Checksum is null for asset");
+            logger.warning("[ASSET] GET Checksum is null for asset "+resourceURI.toExternalForm());
             logger.warning("[ASSET] GET Unable to load, recheck module installation");
             return null;
         }

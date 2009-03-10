@@ -195,6 +195,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         Entity ret = new Entity(this.getClass().getName()+"_"+cell.getCellID());
 
         rootNode = new Node();
+        rootNode.setName("CellRoot_"+cell.getCellID());
         sceneRoot = createSceneGraph(ret);
         rootNode.attachChild(sceneRoot);
         applyTransform(rootNode, cell.getWorldTransform());

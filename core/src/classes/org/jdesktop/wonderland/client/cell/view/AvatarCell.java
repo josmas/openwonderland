@@ -55,11 +55,11 @@ public class AvatarCell extends ViewCell {
      * @param trigger
      * @param pressed
      */
-    public void triggerAction(int trigger, boolean pressed) {
+    public void triggerAction(int trigger, boolean pressed, String animationName) {
         if (ClientContext.getRendererType()==RendererType.RENDERER_JME) {
             CellRenderer rend = getCellRenderer(RendererType.RENDERER_JME);
             if (rend instanceof AvatarActionTrigger) {
-                ((AvatarActionTrigger)rend).trigger(trigger, pressed);
+                ((AvatarActionTrigger)rend).trigger(trigger, pressed, animationName);
             }
         }
     }
