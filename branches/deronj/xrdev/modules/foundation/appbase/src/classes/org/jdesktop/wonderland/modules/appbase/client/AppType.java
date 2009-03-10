@@ -1,3 +1,4 @@
+// TODO: obsolete
 /**
  * Project Wonderland
  *
@@ -34,7 +35,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public abstract class AppType {
 
     /** A list of all apps of this app type in the client session */
-    protected LinkedList<App> apps = new LinkedList<App>();
+    protected LinkedList<App2D> apps = new LinkedList<App2D>();
     /** The default launch methods (returned by getLaunchMethods if this method is not overridden by the subclass */
     protected AppLaunchMethods defaultLaunchMethods;
 
@@ -48,7 +49,7 @@ public abstract class AppType {
      *
      * @param app The app to add to the list.
      */
-    void appAdd(App app) {
+    void appAdd(App2D app) {
         apps.add(app);
     }
 
@@ -57,14 +58,14 @@ public abstract class AppType {
      *
      * @param app The app to add to the list.
      */
-    void appRemove(App app) {
+    void appRemove(App2D app) {
         apps.remove(app);
     }
 
     /**
      * Returns an iterator over all app instances of this type.
      */
-    public Iterator<App> getAppIterator() {
+    public Iterator<App2D> getAppIterator() {
         return apps.iterator();
     }
 

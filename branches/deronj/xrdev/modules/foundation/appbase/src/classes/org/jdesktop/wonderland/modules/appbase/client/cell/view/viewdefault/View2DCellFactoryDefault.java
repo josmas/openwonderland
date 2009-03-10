@@ -1,4 +1,3 @@
-// TODO: obsolete
 /**
  * Project Wonderland
  *
@@ -16,17 +15,15 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client;
+package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
+import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 
-/**
- * The client-side description of a type of Wonderland or Conventional 2D application. For example,
- * a share-aware PDF app or X11 window. 
- *
- * @author deronj
- */
-@ExperimentalAPI
-public abstract class AppType2D extends AppType {
-    /// TODO: obsolete?
+public class View2DCellFactoryDefault implements View2DCellFactory {
+
+    public View2DCell createView (App2DCell cell, Window2D window) {
+        return new View2DCell(cell, window);
+    }
 }

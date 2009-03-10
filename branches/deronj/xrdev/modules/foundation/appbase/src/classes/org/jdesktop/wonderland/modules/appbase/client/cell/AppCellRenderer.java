@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.appbase.client.cell;
 
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.modules.appbase.client.gui.WindowView;
 
 /**
  * A cell renderer for app cells which allows views to be attached to it.
@@ -32,21 +31,9 @@ public abstract class AppCellRenderer extends BasicRenderer {
      * Create a new instance of AppCellRenderer.
      * @param cell The cell to be rendered.
      */
-    public AppCellRenderer (AppCell cell) {
-	super(cell);
+    public AppCellRenderer (App2DCell cell) {
+        super(cell);
     }
-
-    /**
-     * Attaches the given view to the scene graph of the cell renderer.
-     * @param view The view to attach.
-     */
-    public abstract void attachView (WindowView view);
-
-    /**
-     * Detaches the given view from the scene graph of the cell renderer.
-     * @param view The view to detach.
-     */
-    public abstract void detachView (WindowView view);
 
     /**
      * Log this cell renderer's scene graph.
