@@ -37,7 +37,7 @@ public class AppClientPlugin implements ClientPlugin {
 
     /** The default cell view factory to use. */
     private final String VIEW2DCELL_FACTORY_CLASS_DEFAULT = 
-        "org.jdesktop.wonderland.modules.appbase.client.cell.view.default.View2DCellFactoryDefault";
+        "org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCellFactoryDefault";
 
     /** All client plugins must have a no-arg constructor. */
     public AppClientPlugin () {}
