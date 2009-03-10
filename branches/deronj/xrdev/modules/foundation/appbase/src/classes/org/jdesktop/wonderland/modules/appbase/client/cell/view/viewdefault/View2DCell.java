@@ -64,6 +64,8 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     private static final Logger logger = Logger.getLogger(View2DCell.class.getName());
 
+    private static float PIXEL_SCALE_DEFAULT = 0.01f;
+
     // Category changed flags
     private static final int CHANGED_TOPOLOGY               = 0x80000000;
     private static final int CHANGED_SIZE                   = 0x40000000;
@@ -541,7 +543,29 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized Vector2f getPixelScale () {
-        return pixelScale.clone();
+        if (pixelScale == null) {
+            return new Vector2f(PIXEL_SCALE_DEFAULT, PIXEL_SCALE_DEFAULT);
+        } else {
+            return pixelScale.clone();
+        }
+    }
+
+    /** Returns the X pixel scale. */
+    private float getPixelScaleX () {
+        if (pixelScale == null) {
+            return PIXEL_SCALE_DEFAULT;
+        } else {
+            return pixelScale.x;
+        }        
+    }
+
+    /** Returns the Y pixel scale. */
+    private float getPixelScaleY () {
+        if (pixelScale == null) {
+            return PIXEL_SCALE_DEFAULT;
+        } else {
+            return pixelScale.y;
+        }        
     }
 
     /** {@inheritDoc} */
@@ -681,7 +705,9 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
             }
             
             if ((changeMask & CHANGED_TITLE) != 0) {
-                frame.setTitle(title);
+                if (frame != null) {
+                    frame.setTitle(title);
+                }
             }
         }            
 
@@ -697,8 +723,11 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
         // React to size related changes (must be done before handling transform changes)
         if ((changeMask & CHANGED_SIZE) != 0) {
             // TODO: ignore size mode and user size for now - always track window size as specified by app
-            float width = pixelScale.x * sizeApp.width;
-            float height = pixelScale.y * sizeApp.height;
+            System.err.println("pixelScale = " + pixelScale);
+            System.err.println("sizeApp = " + sizeApp);
+
+            float width = getPixelScaleX() * sizeApp.width;
+            float height = getPixelScaleY() * sizeApp.height;
             sgChangeGeometrySizeSet(geometryNode, width, height);
 
             if (frame != null) {
@@ -823,12 +852,12 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
         // TODO: does the width/height need to include the scroll bars?
         Dimension parentSize = parent.getSizeApp();
-        translation.x = -parentSize.width * pixelScale.x / 2f;
-        translation.y = parentSize.height * pixelScale.y / 2f;
-        translation.x += sizeApp.width * pixelScale.x / 2f;
-        translation.y -= sizeApp.height * pixelScale.y / 2f;
-        translation.x += offset.x * pixelScale.x;
-        translation.y -= offset.y * pixelScale.y;
+        translation.x = -parentSize.width * getPixelScaleX() / 2f;
+        translation.y = parentSize.height * getPixelScaleY() / 2f;
+        translation.x += sizeApp.width * getPixelScaleX() / 2f;
+        translation.y -= sizeApp.height * getPixelScaleY() / 2f;
+        translation.x += offset.x * getPixelScaleX();
+        translation.y -= offset.y * getPixelScaleY();
 
         return translation;
     }
