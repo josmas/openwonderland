@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 public class MovableAvatarComponent extends MovableComponent {
     private int trigger;
     private boolean pressed;
+    private String animationName;
 
     public final static int NO_TRIGGER = -1;
 
@@ -46,24 +47,26 @@ public class MovableAvatarComponent extends MovableComponent {
 
     @Override
     public void localMoveRequest(CellTransform transform) {
-        localMoveRequest(transform, NO_TRIGGER, false, null);
+        localMoveRequest(transform, NO_TRIGGER, false, null, null);
     }
 
     @Override
     public void localMoveRequest(CellTransform transform,
                                  final CellMoveModifiedListener listener) {
-        localMoveRequest(transform, NO_TRIGGER, false, listener);
+        localMoveRequest(transform, NO_TRIGGER, false, null, listener);
     }
 
 
     public void localMoveRequest(CellTransform transform,
                                  int trigger,
                                  boolean pressed,
+                                 String animationName,
                                  CellMoveModifiedListener listener) {
 
         synchronized(this) {
             this.trigger = trigger;
             this.pressed = pressed;
+            this.animationName = animationName;
             if (trigger==NO_TRIGGER) {
                 // Just a transform update, so it can be throttled
                 super.localMoveRequest(transform, null);
@@ -87,7 +90,8 @@ public class MovableAvatarComponent extends MovableComponent {
                                                     transform.getTranslation(null),
                                                     transform.getRotation(null),
                                                     trigger,
-                                                    pressed);
+                                                    pressed,
+                                                    animationName);
     }
 
     @Override
@@ -104,9 +108,11 @@ public class MovableAvatarComponent extends MovableComponent {
     protected void serverMoveRequest(MovableMessage msg) {
         super.serverMoveRequest(msg);
 
+        System.err.println("Got server move request "+msg);
+
         MovableAvatarMessage mam = (MovableAvatarMessage) msg;
         if (mam.getTrigger()!=NO_TRIGGER) {
-            ((AvatarCell)cell).triggerAction(mam.getTrigger(), mam.isPressed());
+            ((AvatarCell)cell).triggerAction(mam.getTrigger(), mam.isPressed(), mam.getAnimationName());
         }
     }
 

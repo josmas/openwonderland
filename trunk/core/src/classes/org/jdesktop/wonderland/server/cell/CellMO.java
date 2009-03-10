@@ -59,6 +59,7 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.OKMessage;
 import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
+import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
@@ -100,10 +101,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
     
     private HashMap<Class, ManagedReference<CellComponentMO>> components = new HashMap();
     
-    private CellTransform worldTransform = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f());
-    private BoundingVolume vwBounds=null;        // Bounds in VW coordinates
-    private boolean isMovable=false;            // Is this cell movable
-    private boolean isParentMovable = false;    // Is a parent of this cell movable
     private HashSet<TransformChangeListenerSrv> transformChangeListeners=null;
     
     /** Default constructor, used when the cell is created via WFS */
@@ -111,7 +108,32 @@ public abstract class CellMO implements ManagedObject, Serializable {
         this.localBounds = null;
         this.localTransform = null;
         this.cellID = WonderlandContext.getCellManager().createCellID(this);
-        
+
+        if (this instanceof AvatarCellMO) {
+            Iterable<Class<? extends CellComponentMO>> avatarComponentClasses = CellManagerMO.getCellManager().getAvatarCellComponentClasses();
+
+            if (avatarComponentClasses!=null) {
+                for(Class<? extends CellComponentMO> c : avatarComponentClasses) {
+                    try {
+                        Constructor con = c.getConstructor(CellMO.class);
+                        CellComponentMO comp = (CellComponentMO) con.newInstance(this);
+                        addComponent(comp);
+                    } catch (NoSuchMethodException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SecurityException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InstantiationException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalAccessException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalArgumentException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
     }
     
     /**
@@ -121,12 +143,12 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param transform the transform for this cell, must not be null
      */
     public CellMO(BoundingVolume localBounds, CellTransform transform) {
+        this();
         if (localBounds==null)
             throw new IllegalArgumentException("localBounds must not be null");
         if (transform==null)
             throw new IllegalArgumentException("transform must not be null");
         
-        cellID = WonderlandContext.getCellManager().createCellID(this);
         this.localTransform = transform;
         setLocalBounds(localBounds);
 

@@ -46,6 +46,7 @@ import java.awt.Canvas;
 import java.awt.event.ComponentListener;
 import java.util.HashSet;
 import javax.swing.JPanel;
+import org.jdesktop.mtgame.BufferUpdater;
 import org.jdesktop.mtgame.RenderBuffer;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -154,6 +155,13 @@ public class ViewManager {
             }
 
             public void componentHidden(ComponentEvent e) {
+            }
+        });
+
+        // Wait for the renderer to become ready
+        rb.setBufferUpdater(new BufferUpdater() {
+            public void init(RenderBuffer arg0) {
+                System.err.println("RENDERER IS READY !");
             }
         });
 

@@ -51,7 +51,7 @@ public class MovableAvatarComponentMO extends MovableComponentMO {
         channelComponent = channelComponentRef.getForUpdate();
 
         if (cell.isLive()) {
-            channelComponent.sendAll(clientID, MovableAvatarMessage.newMovedMessage(cell.getCellID(), transform, aMsg.getTrigger(), aMsg.isPressed()));
+            channelComponent.sendAll(clientID, MovableAvatarMessage.newMovedMessage(cell.getCellID(), transform, aMsg.getTrigger(), aMsg.isPressed(), aMsg.getAnimationName()));
         }
     }
 
