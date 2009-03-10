@@ -87,7 +87,7 @@ public abstract class Window2D {
      * The offset in pixels from top left of parent. 
      * Ignored by primary (initially primary is always centered in cell).
      */
-    private Point offset;
+    private Point offset = new Point(0, 0);
 
     /** The size of the window specified by the application. */
     private Dimension size = new Dimension(1, 1);

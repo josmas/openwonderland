@@ -19,9 +19,14 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
+import org.jdesktop.wonderland.modules.appbase.client.cell.AppCellRenderer;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 
 public class View2DCellFactoryDefault implements View2DCellFactory {
+
+    public AppCellRenderer createCellRenderer (App2DCell cell) {
+        return new AppCellRendererJME(cell);
+    }
 
     public View2DCell createView (App2DCell cell, Window2D window) {
         return new View2DCell(cell, window);

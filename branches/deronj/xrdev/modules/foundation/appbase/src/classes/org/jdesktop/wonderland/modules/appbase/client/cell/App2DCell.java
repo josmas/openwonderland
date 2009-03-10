@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
@@ -89,6 +90,24 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        CellRenderer ret = null;
+        switch (rendererType) {
+            case RENDERER_2D:
+                // No 2D Renderer yet
+                break;
+            case RENDERER_JME:
+                ret = getViewFactory().createCellRenderer(this);
+                break;
+        }
+
+        return ret;
+    }
+
+    /**
      * Associate the app with this cell. May only be called one time.
      *
      * @param app The world cell containing the app.
@@ -130,16 +149,24 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         return pixelScale;
     }
 
-    /** {@inheritDoc} */
-    public View2D createView (Window2D window) {
-
+    /** Returns the view cell factory */
+    private View2DCellFactory getViewFactory () {
         View2DCellFactory vFactory = view2DCellFactory;
         if (vFactory == null) {
             vFactory = App2D.getView2DCellFactory();
         }
-        if (vFactory == null) return null;
 
-        View2DCell view = (View2DCell) vFactory.createView(this, window);
+        if (vFactory == null) {
+            throw new RuntimeException("App2D View2DCellFactory is not defined.");
+        }
+
+        return vFactory;
+    }
+
+    /** {@inheritDoc} */
+    public View2D createView (Window2D window) {
+
+        View2DCell view = (View2DCell) getViewFactory().createView(this, window);
         if (view != null) {
             views.add(view);
             window.addView(view);
