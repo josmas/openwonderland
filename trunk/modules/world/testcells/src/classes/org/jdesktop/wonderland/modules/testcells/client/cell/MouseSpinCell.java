@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.testcells.client.cell;
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.sun.scenario.animation.Clip;
@@ -50,6 +52,15 @@ public class MouseSpinCell extends SimpleShapeCell {
     
     public MouseSpinCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+
+//        ProximityComponent p = new ProximityComponent(this);
+//        p.addProximityListener(new ProximityListener() {
+//
+//            public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
+//                System.err.println("viewEnterExit "+entered);
+//            }
+//        }, new BoundingVolume[] { new BoundingSphere(2f, new Vector3f()) });
+//        addComponent(p);
     }
     
     @Override
