@@ -86,7 +86,8 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
     private static final int CHANGED_VISIBLE          = 0x4    | CHANGED_TOPOLOGY;
     private static final int CHANGED_DECORATED        = 0x8    | CHANGED_FRAME | CHANGED_SIZE;
     private static final int CHANGED_GEOMETRY         = 0x10   | CHANGED_TOPOLOGY | CHANGED_TEXTURE;
-    private static final int CHANGED_SIZE_APP         = 0x20   | CHANGED_SIZE | CHANGED_TEX_COORDS; 
+    private static final int CHANGED_SIZE_APP         = 0x20   | CHANGED_SIZE | CHANGED_TEXTURE |
+                                                                 CHANGED_TEX_COORDS; 
     private static final int CHANGED_PIXEL_SCALE      = 0x40   | CHANGED_SIZE
                                                                | CHANGED_OFFSET_STACK_TRANSFORM;
     private static final int CHANGED_OFFSET           = 0x80   | CHANGED_OFFSET_STACK_TRANSFORM;
@@ -193,6 +194,9 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
     /** A dummy AWT component (used by deliverEvent). */
     private static Button dummyButton = new Button();
 
+    /** Did we create our own movable component? */
+    private boolean selfCreatedMovableComponent;
+
     /*
      ** TODO: WORKAROUND FOR A WONDERLAND PICKER PROBLEM:
      ** TODO: >>>>>>>> Is this obsolete in 0.5?
@@ -285,6 +289,10 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
             newGeometryNode = null;
         }
 
+        if (selfCreatedMovableComponent) {
+            cell.removeComponent(MovableComponent.class);
+        }
+
         // TODO: detach this from parent view
         parent = null;
         children.clear();
@@ -333,6 +341,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setType (Type type, boolean update) {
+        if (this.type == type) return;
 
         // Validate type argument
         if (this.type == Type.UNKNOWN) {
@@ -341,6 +350,8 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
             // A promotion of a secondary to a primary is permitted.
         } else {
             // No other type changes are permitted.
+            logger.severe("Old view type = " + this.type);
+            logger.severe("New view type = " + type);
             throw new RuntimeException("Invalid type change.");
         }
             
@@ -723,9 +734,6 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
         // React to size related changes (must be done before handling transform changes)
         if ((changeMask & CHANGED_SIZE) != 0) {
             // TODO: ignore size mode and user size for now - always track window size as specified by app
-            System.err.println("pixelScale = " + pixelScale);
-            System.err.println("sizeApp = " + sizeApp);
-
             float width = getPixelScaleX() * sizeApp.width;
             float height = getPixelScaleY() * sizeApp.height;
             sgChangeGeometrySizeSet(geometryNode, width, height);
@@ -913,8 +921,14 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
         CellTransform cellTransform = cell.getLocalTransform();
         cellTransform.mul(userDeltaTransform);
 
-        // User transformations on primary directly change the cell
+        // User transformations on primary directly change the cell. Create and add
+        // a movable component to the cell if it doesn't already have one.
         MovableComponent mc = (MovableComponent) cell.getComponent(MovableComponent.class);
+        if (mc == null) {
+            mc = new MovableComponent(cell);
+            cell.addComponent(mc);
+            selfCreatedMovableComponent = true;
+        }
         mc.localMoveRequest(cellTransform);
     }
 
@@ -1025,40 +1039,40 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
     // The list of scene graph changes (to be applied at the end of update).
     private LinkedList<SGChange> sgChanges = new LinkedList<SGChange>();
 
-    private void sgChangeGeometryAttachToView(Node viewNode, GeometryNode geometryNode) {
+    private synchronized void sgChangeGeometryAttachToView(Node viewNode, GeometryNode geometryNode) {
         sgChanges.add(new SGChangeGeometryAttachToView(viewNode, geometryNode));
     }
 
-    private void sgChangeGeometryDetachFromView(Node viewNode, GeometryNode geometryNode) {
+    private synchronized void sgChangeGeometryDetachFromView(Node viewNode, GeometryNode geometryNode) {
         sgChanges.add(new SGChangeGeometryDetachFromView(viewNode, geometryNode));
     }
 
-    private void sgChangeGeometrySizeSet(GeometryNode geometryNode, float width, float height) {
+    private synchronized void sgChangeGeometrySizeSet(GeometryNode geometryNode, float width, float height) {
         sgChanges.add(new SGChangeGeometrySizeSet(geometryNode, width, height));
     }
 
-    private void sgChangeGeometryTexCoordsSet(GeometryNode geometryNode, float widthRatio, 
+    private synchronized void sgChangeGeometryTexCoordsSet(GeometryNode geometryNode, float widthRatio, 
                                               float heightRatio) {
         sgChanges.add(new SGChangeGeometryTexCoordsSet(geometryNode, widthRatio, heightRatio));
     }
 
-    private void sgChangeTransformOffsetStackSet (CellTransform transform) {
+    private synchronized void sgChangeTransformOffsetStackSet (CellTransform transform) {
         sgChanges.add(new SGChangeTransformOffsetStackSet(transform));
     }
 
-    private void sgChangeTransformUserPostMultiply (CellTransform deltaTransform) {
+    private synchronized void sgChangeTransformUserPostMultiply (CellTransform deltaTransform) {
         sgChanges.add(new SGChangeTransformUserPostMultiply(deltaTransform));
     }
 
-    private void sgChangeTransformUserSet (CellTransform transform) {
+    private synchronized void sgChangeTransformUserSet (CellTransform transform) {
         sgChanges.add(new SGChangeTransformUserSet(transform));
     }
 
-    private void sgChangeFrameSizeSet (Frame2DCell frame, float width, float height) {
+    private synchronized void sgChangeFrameSizeSet (Frame2DCell frame, float width, float height) {
         sgChanges.add(new SGChangeFrameSizeSet(frame, width, height));
     }
 
-    private void sgProcessChanges () {
+    private synchronized void sgProcessChanges () {
         if (sgChanges.size() <= 0) return;
 
          ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
@@ -1082,6 +1096,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
                      case GEOMETRY_SIZE_SET: {
                          SGChangeGeometrySizeSet chg = (SGChangeGeometrySizeSet) sgChange;
                          geometryNode.setSize(chg.width, chg.height);
+                         forceTextureIdAssignment();
                          break;
                      }
 
@@ -1116,12 +1131,24 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
                      }
                  }
 
+
                  // Propagate changes to JME
                  ClientContextJME.getWorldManager().addToUpdateList(viewNode);
+
+
+                 sgChanges.clear();
+                 synchronized (sgChanges) {
+                     sgChanges.notifyAll();
+                 }
              }
          }, null);
 
-        sgChanges.clear();
+         // Wait until all changes are performed
+         synchronized (sgChanges) {
+             while (sgChanges.size() > 0) {
+                 try { sgChanges.wait(); } catch (InterruptedException ex) {}
+             }
+         }
     }
 
     /**
@@ -1226,18 +1253,19 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
+
                 // The JME magic - must be called from within the render loop
                 ts.load();
+
+                // Verify
+                Texture tex = ((Window2D) window).getTexture();
+                int texid = tex.getTextureId();
+                logger.warning("Allocated texture id " + texid + " for texture " + tex);
+                if (texid == 0) {
+                    logger.severe("Texture Id is still 0!!!");
+                }
             }
          }, null);
-
-        // Verify
-        Texture tex = ((Window2D) window).getTexture();
-        int texid = tex.getTextureId();
-        logger.warning("ViewWorldDefault: allocated texture id " + texid);
-        if (texid == 0) {
-            logger.severe("Texture Id is still 0!!!");
-        }
     }
 
     /** {@inheritDoc} */
