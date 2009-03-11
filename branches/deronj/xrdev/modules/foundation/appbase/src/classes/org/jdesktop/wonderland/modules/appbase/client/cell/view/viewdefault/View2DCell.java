@@ -73,13 +73,13 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
     private static final int CHANGED_USER_TRANSFORM         = 0x10000000;
     private static final int CHANGED_TEX_COORDS             = 0x08000000;
     private static final int CHANGED_FRAME                  = 0x04000000;
-    private static final int CHANGED_TEXTURE                = 0x02000000;
-
+    private static final int CATEGORY_CHANGE_MASK           = 0xfc000000;
     // Category group flags
     private static final int CHANGED_TRANSFORMS             = CHANGED_OFFSET_STACK_TRANSFORM |
             	                                              CHANGED_USER_TRANSFORM;
 
     // Attribute changed flags (these include various categories which depend on them)
+    private static final int CHANGED_TEXTURE          = 0x800;
     private static final int CHANGED_TYPE             = 0x1    | CHANGED_TOPOLOGY | CHANGED_TRANSFORMS;
     private static final int CHANGED_PARENT           = 0x2    | CHANGED_TOPOLOGY
                                                                | CHANGED_OFFSET_STACK_TRANSFORM;
@@ -661,6 +661,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
         // React to topology related changes
         if ((changeMask & CHANGED_TOPOLOGY) != 0) {
             logger.fine("Update topology");
+            int chgMask = changeMask & ~CATEGORY_CHANGE_MASK;
             
             // First, detach entity from parent
             if (parentEntity != null) {
@@ -672,7 +673,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
             }
 
             // Does the geometry node itself need to change?
-            if ((changeMask & CHANGED_GEOMETRY) != 0) {
+            if ((chgMask & CHANGED_GEOMETRY) != 0) {
                 if (geometryNode != null) {
                     // Note: don't need to do in RenderUpdater because we've detached our entity
                     sgChangeGeometryDetachFromView(viewNode, geometryNode);
@@ -683,6 +684,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
                 }
                 if (newGeometryNode != null) {
                     geometryNode = newGeometryNode;
+                    newGeometryNode = null;
                 } else {
                     geometryNode = new GeometryNodeQuad(this);
                     geometrySelfCreated = true;
@@ -692,7 +694,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
             }
 
             // Uses: window
-            if ((changeMask & CHANGED_TEXTURE) != 0) {
+            if ((chgMask & CHANGED_TEXTURE) != 0) {
                 logger.fine("Update texture");
                 if (geometryNode != null) {
                     geometryNode.setTexture(getWindow().getTexture());
@@ -710,7 +712,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
                 rc.setAttachPoint(rcParent.getSceneRoot());
             }
 
-            if ((changeMask & CHANGED_VISIBLE) != 0) {
+            if ((chgMask & CHANGED_VISIBLE) != 0) {
                 // Update visibility of children
                 logger.fine("Update children visibility");
                 for (View2DCell child : children) {
@@ -722,8 +724,9 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
         // React to frame changes (must do before handling size changes)
         if ((changeMask & CHANGED_FRAME) != 0) {
             logger.fine("Update frame");
+            int chgMask = changeMask & ~CATEGORY_CHANGE_MASK;
 
-            if ((changeMask & CHANGED_DECORATED) != 0) {
+            if ((chgMask & CHANGED_DECORATED) != 0) {
                 if (decorated) {
                     if (frame == null) {
                         logger.fine("Create new frame");
@@ -738,7 +741,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
                 }
             }
             
-            if ((changeMask & CHANGED_TITLE) != 0) {
+            if ((chgMask & CHANGED_TITLE) != 0) {
                 if (frame != null) {
                     // Note: doesn't need to be done in render updater
                     logger.fine("Update title");
@@ -947,7 +950,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
             cell.addComponent(mc);
             selfCreatedMovableComponent = true;
         }
-        mc.localMoveRequest(cellTransform);
+        ///TODO:        mc.localMoveRequest(cellTransform);
     }
 
     private enum SGChangeOp { 
