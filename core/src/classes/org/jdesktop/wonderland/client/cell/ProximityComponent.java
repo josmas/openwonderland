@@ -18,40 +18,43 @@
 package org.jdesktop.wonderland.client.cell;
 
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Vector3f;
-import java.util.HashMap;
 import java.util.HashSet;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
 
 /**
+ * <p>
  * Provides a mechanism for listener notification when the local view cell
  * enters/exits a set of bounds for a cell. 
- * 
+ * </p>
+ * <p>
  * The bounds must be ordered from largest to smallest, thus localBounds[i]
  * must enclose localBounds[i+1]. The listeners will be notified as the View
  * enters each subsequent bounding volume and then notified the view exits each
  * volume.
- * 
+ * </p>
+ * <p>
  * For example given a set of Bounding Spheres with the same center and radii of
  * 10, 5, 2. As the ViewCell moves from outside to the center of the spheres the
  * listeners will be called with
- * 
- * enter, 10
- * enter, 5 
- * enter, 2
- * 
+ * </p>
+ * <p>
+ * enter, 10 <br>
+ * enter, 5 <br>
+ * enter, 2 <br>
+ * </p>
+ * <p>
  * then as the user moves away from the center the following sequence of exits
  * will be called
- * 
- * exit, 2
- * exit, 5
- * exit, 10
+ * </p>
+ * <p>
+ * exit, 2 <br>
+ * exit, 5 <br>
+ * exit, 10 <br>
+ * </p>
  * 
  * 
  * @author paulby
