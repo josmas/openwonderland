@@ -141,7 +141,6 @@ public class FrameSide extends FrameComponent {
 
         float innerWidth = view.getDisplayerLocalWidth();
         float innerHeight = view.getDisplayerLocalHeight();
-        System.err.println("Frame thinks view w,h is " + innerWidth + ", " + innerHeight);
         float sideThickness = Frame2DCell.SIDE_THICKNESS;
 
         switch (whichSide) {

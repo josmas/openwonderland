@@ -661,6 +661,33 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
         }
     }
 
+    public synchronized void userMovePlanarStart (float x, float y) {
+    }
+
+    public synchronized void userMovePlanarUpdate (float x, float y) {
+    }
+
+    public synchronized void userMovePlanarFinish () {
+    }
+
+    public synchronized void userMoveZStart (float y) {
+    }
+
+    public synchronized void userMoveZUpdate (float y) {
+    }
+
+    public synchronized void userMoveZFinish () {
+    }
+
+    public synchronized void userRotateYStart (float y) {
+    }
+
+    public synchronized void userRotateYUpdate (float y) {
+    }
+
+    public synchronized void userRotateYFinish () {
+    }
+
     /** {@inheritDoc} */
     public synchronized Quaternion getRotation () {
         return userRotation.clone();
