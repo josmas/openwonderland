@@ -134,15 +134,18 @@ public interface View2D {
     /** A size change which comes from the app. Update if specified. */
     public void setSizeApp (Dimension size, boolean update);
 
-    /** Returns the app-specified size. */
+    /** Returns the app-specified size (in pixels). */
     public Dimension getSizeApp ();
-
-    /** Returns the current actually size of the view. */
-    public Dimension getSizeActual ();
 
     /** A size change which comes from the user. */
     // TODO: notyet: public void setSizeUser(int width, int height);
     /* TODO: user size getters */
+
+    /** Returns the current width of the view in the local coordinate system of the displayer. */
+    public float getDisplayerLocalWidth ();
+
+    /** Returns the current height of the view in the local coordinate system of the displayer. */
+    public float getDisplayerLocalHeight ();
 
     /** A restack operation which comes from the app. */
     // TODO: notyet: public void restackApp(RestackOp op, View2D view);

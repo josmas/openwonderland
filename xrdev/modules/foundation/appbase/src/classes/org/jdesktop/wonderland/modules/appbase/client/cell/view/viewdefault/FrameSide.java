@@ -139,8 +139,9 @@ public class FrameSide extends FrameComponent {
         // Note: we are moving the side CENTERS in this routine. This is slightly
         // different from the old code.
 
-        float innerWidth = view.getSizeActual().width;
-        float innerHeight = view.getSizeActual().height;
+        float innerWidth = view.getDisplayerLocalWidth();
+        float innerHeight = view.getDisplayerLocalHeight();
+        System.err.println("Frame thinks view w,h is " + innerWidth + ", " + innerHeight);
         float sideThickness = Frame2DCell.SIDE_THICKNESS;
 
         switch (whichSide) {

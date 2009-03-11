@@ -143,8 +143,8 @@ public class FrameResizeCorner extends FrameComponent {
         // corner of the view.
         origin = new Vector3f(0f, 0f, Z_OFFSET);
 
-        float viewWidth = view.getSizeActual().width;
-        float viewHeight = view.getSizeActual().height;
+        float viewWidth = view.getDisplayerLocalWidth();
+        float viewHeight = view.getDisplayerLocalHeight();
 
         horizX = (viewWidth - Frame2DCell.RESIZE_CORNER_WIDTH) / 2f;
         horizY = (-viewHeight - Frame2DCell.SIDE_THICKNESS) / 2f;

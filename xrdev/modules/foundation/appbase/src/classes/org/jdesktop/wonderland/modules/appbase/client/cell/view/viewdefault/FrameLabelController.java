@@ -66,7 +66,7 @@ public class FrameLabelController extends FrameLabel {
         closeButton.updateLayout();
 
         // The width of controller is a quarter of view width
-        width = 0.25f * view.getSizeActual().width;
+        width = 0.25f * view.getDisplayerLocalWidth();
         height = LABEL_HEIGHT;
 
         // Location of controller depends on the location of the close button
