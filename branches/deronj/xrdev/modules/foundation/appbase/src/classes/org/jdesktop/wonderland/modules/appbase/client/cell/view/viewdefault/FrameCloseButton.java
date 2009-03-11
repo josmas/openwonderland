@@ -146,7 +146,7 @@ public class FrameCloseButton extends FrameComponent {
      * Note: this has package scope because it is invoked by FrameLabelControler.updateLayout()
      */
     protected void updateLayout() {
-        x = (view.getSizeActual().width - CLOSE_BUTTON_WIDTH) / 2f + Frame2DCell.SIDE_THICKNESS;
+        x = (view.getDisplayerLocalWidth() - CLOSE_BUTTON_WIDTH) / 2f + Frame2DCell.SIDE_THICKNESS;
         y = 0;
     }
 

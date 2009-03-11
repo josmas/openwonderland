@@ -197,6 +197,12 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
     /** Did we create our own movable component? */
     private boolean selfCreatedMovableComponent;
 
+    /** The current width of the view in the local coordinate system of the cell. */
+    private float cellLocalWidth;
+
+    /** Returns the height of the view in the local coordinate system of the cell. */
+    private float cellLocalHeight;
+
     /*
      ** TODO: WORKAROUND FOR A WONDERLAND PICKER PROBLEM:
      ** TODO: >>>>>>>> Is this obsolete in 0.5?
@@ -545,8 +551,15 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
     }
 
     /** {@inheritDoc} */
-    public synchronized Dimension getSizeActual () {
-        return getSizeApp();
+    public float getDisplayerLocalWidth () {
+        // TODO: ignore size mode and user size for now - always track window size as specified by app
+        return getPixelScaleX() * sizeApp.width;
+    }
+
+    /** {@inheritDoc} */
+    public float getDisplayerLocalHeight () {
+        // TODO: ignore size mode and user size for now - always track window size as specified by app
+        return getPixelScaleY() * sizeApp.height;
     }
 
     /** {@inheritDoc} */
@@ -754,9 +767,9 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
         // React to size related changes (must be done before handling transform changes)
         if ((changeMask & CHANGED_SIZE) != 0) {
-            // TODO: ignore size mode and user size for now - always track window size as specified by app
-            float width = getPixelScaleX() * sizeApp.width;
-            float height = getPixelScaleY() * sizeApp.height;
+            float width = getDisplayerLocalWidth();
+            float height = getDisplayerLocalHeight();
+
             sgChangeGeometrySizeSet(geometryNode, width, height);
 
             if (frame != null) {

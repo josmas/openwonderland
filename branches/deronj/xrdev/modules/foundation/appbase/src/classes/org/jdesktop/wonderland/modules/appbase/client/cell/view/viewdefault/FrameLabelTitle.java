@@ -44,7 +44,7 @@ public class FrameLabelTitle extends FrameLabel {
     protected void updateLayout() {
 
         // The width of title is half of view width
-        float viewWidth = view.getSizeActual().width;
+        float viewWidth = view.getDisplayerLocalWidth();
         width = viewWidth / 2f;
         height = LABEL_HEIGHT;
 
