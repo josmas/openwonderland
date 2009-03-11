@@ -355,6 +355,8 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
             throw new RuntimeException("Invalid type change.");
         }
             
+        logger.info("change type = " + type);
+
         this.type = type;
         changeMask |= CHANGED_TYPE;
         if (update) {
@@ -379,6 +381,8 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
         if (this.parent != null) {
             this.parent.children.remove(this);
         }
+
+        logger.info("change parent = " + parent);
 
         this.parent = (View2DCell) parent;
 
@@ -405,6 +409,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setVisibleApp (boolean visible, boolean update) {
+        logger.info("change visibleApp = " + visible);
         visibleApp = visible;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
@@ -424,6 +429,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setVisibleUser (boolean visible, boolean update) {
+        logger.info("change visibleUser = " + visible);
         this.visibleUser = visible;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
@@ -459,6 +465,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setDecorated (boolean decorated, boolean update) {
+        logger.info("change decorated = " + decorated);
         this.decorated = decorated;
         changeMask |= CHANGED_DECORATED;
         if (update) {
@@ -478,6 +485,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setTitle (String title, boolean update) {
+        logger.info("change title = " + title);
         this.title = title;
         changeMask |= CHANGED_TITLE;
         if (update) {
@@ -497,6 +505,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setGeometryNode (GeometryNode geometryNode, boolean update) {
+        logger.info("change geometryNode = " + geometryNode);
         newGeometryNode = geometryNode;
         changeMask |= CHANGED_GEOMETRY;
         if (update) {
@@ -516,6 +525,8 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setSizeApp (Dimension size, boolean update) {
+        logger.info("change sizeApp = " + sizeApp);
+
         sizeApp = (Dimension) size.clone();
 
         // Note: AWT doesn't like zero image sizes
@@ -545,6 +556,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setPixelScale (Vector2f pixelScale, boolean update) {
+        logger.info("change pixelScale = " + pixelScale);
         this.pixelScale = pixelScale.clone();
         changeMask |= CHANGED_PIXEL_SCALE;
         if (update) {
@@ -586,6 +598,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setOffset(Point offset, boolean update) {
+        logger.info("change offset = " + offset);
         this.offset = (Point) offset.clone();
         changeMask |= CHANGED_OFFSET;
         if (update) {
@@ -605,6 +618,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** {@inheritDoc} */
     public synchronized void setTranslationUser (Vector3f translation, boolean update) {
+        logger.info("change translationUser = " + translation);
         userTranslationPrev = userTranslation;
         userTranslation = translation.clone();
         changeMask |= CHANGED_USER_TRANSLATION;
@@ -625,6 +639,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
     /** Specify the rotation (comes from the user). Update afterward. */
     public synchronized void setRotationUser (Quaternion rotation, boolean update) {
+        logger.info("change rotationUser = " + rotation);
         userRotationPrev = userRotation;
         userRotation = rotation.clone();
         changeMask |= CHANGED_USER_ROTATION;
@@ -645,6 +660,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
         // React to topology related changes
         if ((changeMask & CHANGED_TOPOLOGY) != 0) {
+            logger.fine("Update topology");
             
             // First, detach entity from parent
             if (parentEntity != null) {
@@ -652,6 +668,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
                 rc.setAttachPoint(null);
                 parentEntity.removeEntity(entity);
                 parentEntity = null;
+                logger.fine("Remove entity " + entity + "from parent entity " + parentEntity);
             }
 
             // Does the geometry node itself need to change?
@@ -676,6 +693,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
             // Uses: window
             if ((changeMask & CHANGED_TEXTURE) != 0) {
+                logger.fine("Update texture");
                 if (geometryNode != null) {
                     geometryNode.setTexture(getWindow().getTexture());
                 }
@@ -685,6 +703,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
             // Uses: visible
             parentEntity = getParentEntity();
             if (parentEntity != null && isActuallyVisible()) {
+                logger.fine("Attach entity " + entity + "to parent entity " + parentEntity);
                 parentEntity.addEntity(entity);
                 RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
                 RenderComponent rcParent = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
@@ -693,6 +712,7 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
             if ((changeMask & CHANGED_VISIBLE) != 0) {
                 // Update visibility of children
+                logger.fine("Update children visibility");
                 for (View2DCell child : children) {
                     child.updateVisibility();
                 }
@@ -701,14 +721,17 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
 
         // React to frame changes (must do before handling size changes)
         if ((changeMask & CHANGED_FRAME) != 0) {
+            logger.fine("Update frame");
 
             if ((changeMask & CHANGED_DECORATED) != 0) {
                 if (decorated) {
                     if (frame == null) {
+                        logger.fine("Create new frame");
                         frame = new Frame2DCell(this);
                     }
                 } else {
                     if (frame != null) {
+                        logger.fine("Destroy frame");
                         frame.cleanup();
                         frame = null;
                     }
@@ -717,17 +740,12 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
             
             if ((changeMask & CHANGED_TITLE) != 0) {
                 if (frame != null) {
+                    // Note: doesn't need to be done in render updater
+                    logger.fine("Update title");
                     frame.setTitle(title);
                 }
             }
         }            
-
-        // Doesn't need to be done in render updater
-        if ((changeMask & CHANGED_TITLE) != 0) {
-            if (frame != null) {
-                frame.setTitle(((Window2D) window).getTitle());
-            }
-        }
 
         // TODO: react to stack related changes?
 
@@ -1084,12 +1102,14 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
                      case GEOMETRY_ATTACH_TO_VIEW: {
                          SGChangeGeometryAttachToView chg = (SGChangeGeometryAttachToView) sgChange;
                          chg.viewNode.attachChild(chg.geometryNode);
+                         logger.fine("Attach geometryNode " + geometryNode + " to viewNode " + chg.viewNode);
                          break;
                      }
 
                      case GEOMETRY_DETACH_FROM_VIEW: {
                          SGChangeGeometryDetachFromView chg = (SGChangeGeometryDetachFromView) sgChange;
                          chg.viewNode.detachChild(chg.geometryNode);
+                         logger.fine("Detach geometryNode " + geometryNode + " from viewNode " + chg.viewNode);
                          break;
                      }
 
@@ -1097,12 +1117,14 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
                          SGChangeGeometrySizeSet chg = (SGChangeGeometrySizeSet) sgChange;
                          geometryNode.setSize(chg.width, chg.height);
                          forceTextureIdAssignment();
+                         logger.fine("Geometry node setSize, wh = " + chg.width + ", " + chg.height);
                          break;
                      }
 
                      case GEOMETRY_TEX_COORDS_SET: {
                          SGChangeGeometryTexCoordsSet chg = (SGChangeGeometryTexCoordsSet) sgChange;
                          geometryNode.setTexCoords(chg.widthRatio, chg.heightRatio);
+                         logger.fine("Geometry node setSize, whRatio = " + chg.widthRatio + ", " + chg.heightRatio);
                          break;
                      }
 
@@ -1110,22 +1132,31 @@ public class View2DCell implements View2D /* TODO: extends View2DEntity */ {
                          // The offset/stack transform resides in the geometry
                          SGChangeTransform chg = (SGChangeTransform) sgChange;
                          geometryNode.setTransform(chg.transform);
+                         logger.fine("Geometry node set transform, transform = " + chg.transform);
                          break;
                      }
 
                      case TRANSFORM_USER_POST_MULT: {
                          SGChangeTransform chg = (SGChangeTransform) sgChange;
                          userTransform.mul(chg.transform);
-                         viewNode.setLocalRotation(userTransform.getRotation(null));
-                         viewNode.setLocalTranslation(userTransform.getTranslation(null));
+                         Quaternion r = userTransform.getRotation(null);
+                         viewNode.setLocalRotation(r);
+                         logger.fine("View node set rotation = " + r);
+                         Vector3f t = userTransform.getTranslation(null);
+                         viewNode.setLocalTranslation(t);
+                         logger.fine("View node set translation = " + t);
                          break;
                      }
 
                      case TRANSFORM_USER_SET: {
                          SGChangeTransform chg = (SGChangeTransform) sgChange;
                          userTransform = chg.transform.clone(null);
-                         viewNode.setLocalRotation(userTransform.getRotation(null));
-                         viewNode.setLocalTranslation(userTransform.getTranslation(null));
+                         Quaternion r = userTransform.getRotation(null);
+                         viewNode.setLocalRotation(r);
+                         logger.fine("View node set rotation = " + r);
+                         Vector3f t = userTransform.getTranslation(null);
+                         viewNode.setLocalTranslation(t);
+                         logger.fine("View node set translation = " + t);
                          break;
                      }
                      }

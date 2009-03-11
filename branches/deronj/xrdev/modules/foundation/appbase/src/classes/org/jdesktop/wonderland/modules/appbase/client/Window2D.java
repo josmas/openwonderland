@@ -51,12 +51,12 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
  * Windows can be arranged into a stack with other windows. Each window occupies a unique position in the 
  * stack. The lowest window is at position 0, the window immediately above that is at position 1, and so on.
  *
-        // TODO: move this to the class description
-        // User configuration of a primary window configures the cell. A cell has only one primary window.
-        // TODO: move this to the class description
-        // A secondary window is a top-level window which is potentially decorated but which 
-        // is positioned relative to the primary. A secondary window may be promoted to a 
-        // primary window goes away.
+// TODO: move this to the class description
+// User configuration of a primary window configures the cell. A cell has only one primary window.
+// TODO: move this to the class description
+// A secondary window is a top-level window which is potentially decorated but which 
+// is positioned relative to the primary. A secondary window may be promoted to a 
+// primary window goes away.
 
 A Window2D can have zero or more views.
 
@@ -69,35 +69,32 @@ otherwise view.setParent gets really tricky
 public abstract class Window2D {
 
     private static final Logger logger = Logger.getLogger(Window2D.class.getName());
-
-    private static final int CHANGED_ALL         = -1;
-    private static final int CHANGED_TYPE        = 0x01;
-    private static final int CHANGED_PARENT      = 0x02;
+    private static final int CHANGED_ALL = -1;
+    private static final int CHANGED_TYPE = 0x01;
+    private static final int CHANGED_PARENT = 0x02;
     private static final int CHANGED_VISIBLE_APP = 0x04;
-    private static final int CHANGED_DECORATED   = 0x08;
-    private static final int CHANGED_OFFSET      = 0x10;
-    private static final int CHANGED_SIZE        = 0x20;
+    private static final int CHANGED_DECORATED = 0x08;
+    private static final int CHANGED_OFFSET = 0x10;
+    private static final int CHANGED_SIZE = 0x20;
     private static final int CHANGED_PIXEL_SCALE = 0x40;
-    private static final int CHANGED_TITLE       = 0x80;
-    
-    /** The type of the 2D window. */
-    public enum Type { PRIMARY, SECONDARY, POPUP };
+    private static final int CHANGED_TITLE = 0x80;
 
+    /** The type of the 2D window. */
+    public enum Type {
+
+        PRIMARY, SECONDARY, POPUP
+    };
     /** 
      * The offset in pixels from top left of parent. 
      * Ignored by primary (initially primary is always centered in cell).
      */
     private Point offset = new Point(0, 0);
-
     /** The size of the window specified by the application. */
     private Dimension size = new Dimension(1, 1);
-
     /** The initial size of the pixels of the window's views (specified by WFS). */
     protected Vector2f pixelScale;
-
     /** The string to display as the window title */
     protected String title;
-
     /** The texture which contains the contents of the window */
     protected Texture2D texture;
     /** Listeners for key events */
@@ -108,54 +105,42 @@ public abstract class Window2D {
     protected ArrayList<MouseMotionListener> mouseMotionListeners = null;
     /** Listeners for mouse wheel events */
     protected ArrayList<MouseWheelListener> mouseWheelListeners = null;
-
     /** The views associated with this window. */
     private LinkedList<View2D> views = new LinkedList<View2D>();
-
     /** The app to which this window belongs */
     protected App2D app;
-
     /** The name of the window. */
     private String name;
-
-    /** Is the window visible? (that is, is it showing?) */
-    protected boolean visible;
-
     /** 
      * Provides, for each displayer, a list of views associated with the window that belong to the displayer.
      * Note: currently a displayer can have only one view of a window.
      */
-    private HashMap<View2DDisplayer,View2D> displayerToView = new HashMap<View2DDisplayer,View2D>();
-
+    private HashMap<View2DDisplayer, View2D> displayerToView = new HashMap<View2DDisplayer, View2D>();
     /** The type of the window. */
     private Type type;
-
     /** The parent of the window. (Ignored for primaries). */
     private Window2D parent;
-
     /** Whether the app wants the window to be visible. */
     private boolean visibleApp;
-
     /** Whether the window is decorated with a frame. (Ignored for popups). */
-    private boolean decorated; 
-
+    private boolean decorated;
     /** The set of changes to apply to views. */
     private int changeMask;
-
     /** A list of event listeners to attach to this window's views. */
     private LinkedList<EventListener> eventListeners = new LinkedList<EventListener>();
 
     /** A type for entries in the entityComponents list. */
     private static class EntityComponentEntry {
+
         private Class clazz;
         private EntityComponent comp;
+
         private EntityComponentEntry(Class clazz, EntityComponent comp) {
             this.clazz = clazz;
             this.comp = comp;
 
         }
     }
-
     /** 
      * The entity components which should be attached to the views of this window.
      */
@@ -202,7 +187,7 @@ public abstract class Window2D {
         // Must occur before adding window to the app
         updateTexture();
 
-    	app.addWindow(this);
+        app.addWindow(this);
 
         changeMask = CHANGED_ALL;
         updateViews();
@@ -233,8 +218,8 @@ public abstract class Window2D {
      * @param pixelScale The size of the window pixels.
      * @param name The name of the window.
      */
-    public Window2D(App2D app, Type type, int width, int height, boolean decorated, Vector2f pixelScale, 
-                    String name) {
+    public Window2D(App2D app, Type type, int width, int height, boolean decorated, Vector2f pixelScale,
+            String name) {
         this(app, type, app.getPrimaryWindow(), width, height, decorated, pixelScale, name);
     }
 
@@ -248,8 +233,8 @@ public abstract class Window2D {
      * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
      */
-    protected Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated, 
-                       Vector2f pixelScale) {
+    protected Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated,
+            Vector2f pixelScale) {
         this(app, type, parent, width, height, decorated, pixelScale, null);
     }
 
@@ -265,9 +250,9 @@ public abstract class Window2D {
      * @param pixelScale The size of the window pixels.
      * @param name The name of the window.
      */
-    public Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated, 
-                    Vector2f pixelScale, String name) {
-        this.app = app; 
+    public Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated,
+            Vector2f pixelScale, String name) {
+        this.app = app;
         this.size = new Dimension(width, height);
         this.decorated = decorated;
         this.pixelScale = new Vector2f(pixelScale);
@@ -295,22 +280,22 @@ public abstract class Window2D {
      */
     public void cleanup() {
         texture = null;
-	if (app != null) {
-	    app.removeWindow(this);
-	    app = null;
-	}
-        visible = false;
+        if (app != null) {
+            app.removeWindow(this);
+            app = null;
+        }
+        visibleApp = false;
     }
 
     /**
      * Returns the app to which this this window belongs.
      */
-    public App2D getApp () {
-	return app;
+    public App2D getApp() {
+        return app;
     }
 
     /** Returns the name of the window. */
-    public String getName () {
+    public String getName() {
         if (name == null) {
             return "Window2D for app " + app.getName();
         } else {
@@ -319,23 +304,22 @@ public abstract class Window2D {
     }
 
     /* TODO: 
-       promoteToPrimary throws IllegalStateException
+    promoteToPrimary throws IllegalStateException
     throws exception if there is already a primary
     changes secondary to primary.
     all other secondary windows of the app are parented to the new primary
      */
-
     /**
      * Returns the window type.
      */
-    public Type getType () {
+    public Type getType() {
         return type;
     }
 
     /** 
      * Set the parent of the window. (This is ignored for primary windows).
      */
-    public void setParent (Window2D parent) {
+    public void setParent(Window2D parent) {
         if (type != Type.PRIMARY) {
             this.parent = parent;
             changeMask |= CHANGED_PARENT;
@@ -346,7 +330,7 @@ public abstract class Window2D {
     /**
      * Returns the window parent.
      */
-    public Window2D getParent () {
+    public Window2D getParent() {
         return parent;
     }
 
@@ -361,8 +345,10 @@ public abstract class Window2D {
     /**
      * TODO
      */
-    public void setOffset (int x, int y) {
-        if (offset.x == x && offset.y == y) return;
+    public void setOffset(int x, int y) {
+        if (offset.x == x && offset.y == y) {
+            return;
+        }
         this.offset = new Point(x, y);
         changeMask |= CHANGED_OFFSET;
         updateViews();
@@ -371,14 +357,14 @@ public abstract class Window2D {
     /**
      * Returns the X offset of the window with respect to its parent.
      */
-    public int getOffsetX () {
+    public int getOffsetX() {
         return offset.x;
     }
 
     /**
      * Returns the Y offset of the window with respect to its parent.
      */
-    public int getOffsetY () {
+    public int getOffsetY() {
         return offset.y;
     }
 
@@ -450,7 +436,7 @@ public abstract class Window2D {
     /**
      * Specify the initial pixel scale of the window.
      */
-    public void setPixelScale (Vector2f pixelScale) {
+    public void setPixelScale(Vector2f pixelScale) {
         if (this.pixelScale.equals(pixelScale)) {
             return;
         }
@@ -471,12 +457,12 @@ public abstract class Window2D {
      *
      * @param visible Whether the app wants the window to be visible.
      */
-    public void setVisibleApp (boolean visible) {
-        if (this.visibleApp == visibleApp) {
+    public void setVisibleApp(boolean visible) {
+        if (visibleApp == visible) {
             return;
         }
-	this.visible = visible;
-        app.windowSetVisible(this, visible);
+        visibleApp = visible;
+        app.windowSetVisible(this, visibleApp);
         changeMask |= CHANGED_VISIBLE_APP;
         updateViews();
     }
@@ -484,11 +470,11 @@ public abstract class Window2D {
     /** 
      * Does the app want the window to be visible?
      */
-    public boolean isVisibleApp () { 
-	return visible; 
+    public boolean isVisibleApp() {
+        return visibleApp;
     }
 
-    public void setVisibleUser (View2DDisplayer displayer, boolean visible) {
+    public void setVisibleUser(View2DDisplayer displayer, boolean visible) {
         View2D view = getView(displayer);
         if (view != null) {
             // Note: update immediately
@@ -496,7 +482,7 @@ public abstract class Window2D {
         }
     }
 
-    public boolean isVisibleUser (View2DDisplayer displayer) {
+    public boolean isVisibleUser(View2DDisplayer displayer) {
         View2D view = getView(displayer);
         if (view != null) {
             return view.isVisibleUser();
@@ -548,8 +534,12 @@ public abstract class Window2D {
      * @param title The string to display as the window title.
      */
     public void setTitle(String title) {
-        if (title == null && this.title == null) return;
-        if (title.equals(this.title)) return;
+        if (title == null && this.title == null) {
+            return;
+        }
+        if (title.equals(this.title)) {
+            return;
+        }
         this.title = title;
         changeMask |= CHANGED_TITLE;
         updateViews();
@@ -821,7 +811,9 @@ public abstract class Window2D {
      * @param listener The listener to add.
      */
     public void addEventListener(EventListener listener) {
-        if (eventListeners.contains(listener)) return;
+        if (eventListeners.contains(listener)) {
+            return;
+        }
         eventListeners.add(listener);
         for (View2D view : views) {
             view.addEventListener(listener);
@@ -849,7 +841,7 @@ public abstract class Window2D {
         return eventListeners.contains(listener);
     }
 
-    private EntityComponentEntry entityComponentEntryForClass (Class clazz) {
+    private EntityComponentEntry entityComponentEntryForClass(Class clazz) {
         for (EntityComponentEntry entry : entityComponents) {
             if (entry.clazz.equals(clazz)) {
                 return entry;
@@ -863,7 +855,9 @@ public abstract class Window2D {
      * If the window's views already have an entity component with this class, nothing happens.
      */
     public void addEntityComponent(Class clazz, EntityComponent comp) {
-        if (entityComponentEntryForClass(clazz) != null) return;
+        if (entityComponentEntryForClass(clazz) != null) {
+            return;
+        }
         entityComponents.add(new EntityComponentEntry(clazz, comp));
         for (View2D view : views) {
             view.addEntityComponent(clazz, comp);
@@ -901,9 +895,10 @@ public abstract class Window2D {
      * Thereafter, changes to the window state result in corresponding changes to these attributes.
      * (In other words, things that happen to a window happen the same to all of its views).
      */
-    public void addView (View2D view) {
-        System.err.println("************** Add view " + view);
-        if (views.contains(view)) return;
+    public void addView(View2D view) {
+        if (views.contains(view)) {
+            return;
+        }
 
         // TODO: someday: Currently ViewSet2D constrains a view for a window to appear only once in 
         // a single displayer. Someday we might relax this. Until then we enforce it.
@@ -929,7 +924,7 @@ public abstract class Window2D {
     /**
      * Removes a view from the window.
      */
-    public void removeView (View2D view) {
+    public void removeView(View2D view) {
         if (views.remove(view)) {
             removeViewForDisplayer(view);
 
@@ -943,12 +938,12 @@ public abstract class Window2D {
         }
     }
 
-    private void addViewForDisplayer (View2D view) {
+    private void addViewForDisplayer(View2D view) {
         View2DDisplayer displayer = view.getDisplayer();
         displayerToView.put(displayer, view);
     }
 
-    private void removeViewForDisplayer (View2D view) {
+    private void removeViewForDisplayer(View2D view) {
         View2DDisplayer displayer = view.getDisplayer();
         displayerToView.remove(displayer);
     }
@@ -956,39 +951,39 @@ public abstract class Window2D {
     /**
      * Returns the view of this window in the given displayer.
      */
-    public View2D getView (View2DDisplayer displayer) {
+    public View2D getView(View2DDisplayer displayer) {
         return displayerToView.get(displayer);
     }
 
     /**
      * Returns an iterator over the views of this window for all displayers.
      */
-    public Iterator<View2D> getViews () {
+    public Iterator<View2D> getViews() {
         return views.iterator();
     }
 
     @Override
-    public String toString () {
+    public String toString() {
         return getName();
     }
 
     /**
      * Update all views with the current state of the window.
      */
-    private void updateViews () {
+    private void updateViews() {
         for (View2D view : views) {
             if ((changeMask & CHANGED_TYPE) != 0) {
                 View2D.Type viewType = View2D.Type.UNKNOWN;
                 switch (type) {
-                case PRIMARY:
-                    viewType = View2D.Type.PRIMARY;
-                    break;
-                case SECONDARY:
-                    viewType = View2D.Type.SECONDARY;
-                    break;
-                case POPUP:
-                    viewType = View2D.Type.POPUP;
-                    break;
+                    case PRIMARY:
+                        viewType = View2D.Type.PRIMARY;
+                        break;
+                    case SECONDARY:
+                        viewType = View2D.Type.SECONDARY;
+                        break;
+                    case POPUP:
+                        viewType = View2D.Type.POPUP;
+                        break;
                 }
                 view.setType(viewType, false);
             }
@@ -1024,7 +1019,6 @@ public abstract class Window2D {
         changeMask = 0;
     }
 
-
     /** 
      * The window size has been updated. Recreate the texture.
      */
@@ -1055,15 +1049,15 @@ public abstract class Window2D {
         texture.setMinificationFilter(Texture.MinificationFilter.BilinearNoMipMaps);
         texture.setApply(Texture.ApplyMode.Replace);
 
-        /* 
-         * TODO: NOTYET: set anisotropic filtering
-         * This improves texture filtering when the texture is close up from the side,
-         * viewing down the length of the window, but it actually causes more drop outs
-         * in magnified text in some cases.
-         * The anticipated Java3D code was:
-         texture.setAnisotropicFilterMode(Texture2D.ANISOTROPIC_SINGLE_VALUE);
-         texture.setAnisotropicFilterDegree(8.0f);
-        */
+    /*
+     * TODO: NOTYET: set anisotropic filtering
+     * This improves texture filtering when the texture is close up from the side,
+     * viewing down the length of the window, but it actually causes more drop outs
+     * in magnified text in some cases.
+     * The anticipated Java3D code was:
+    texture.setAnisotropicFilterMode(Texture2D.ANISOTROPIC_SINGLE_VALUE);
+    texture.setAnisotropicFilterDegree(8.0f);
+     */
     }
 
     /** 
