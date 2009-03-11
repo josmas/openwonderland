@@ -17,12 +17,17 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
+import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
+import java.awt.Point;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -95,11 +100,13 @@ public class Gui2D {
     protected ConfigState configState = ConfigState.IDLE;
     /** The view configuration drag type (only valid when configState != IDLE */
     protected ConfigDragType configDragType;
-    /** 
-     * The current drag point (only valid when configState != IDLE.
-     * Note: z is always 0.
-     */
-    protected Vector3f configDragPoint = new Vector3f();
+    /** The intersection point on the entity over which the button was pressed, in world coordinates. */
+    private Vector3f dragStartWorld;
+    /** The screen coordinates of the button press event. */
+    private Point dragStartScreen;
+    /** The current drag point (only valid when configState != IDLE). */
+    protected Vector2f configDragPoint;
+
     /** A listener for 3D mouse events */
     protected EventClassListener mouseListener;
 
@@ -302,23 +309,28 @@ public class Gui2D {
         switch (me.getID()) {
 
         case MouseEvent.MOUSE_PRESSED:
+            MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) me3d;
             if (configState == ConfigState.IDLE && me.getButton() == MouseEvent.BUTTON1) {
-                /* TODO
-                if ((me3d.getAugmentedModifiers() & InputEvent3D.AUGMENTED_MODIFIERS_F) != 0) {
-                    action = new Action(ActionType.DRAG_START);
-                    configDragType = ConfigDragType.MOVING_Z;
-                } else if ((me3d.getAugmentedModifiers() & InputEvent3D.AUGMENTED_MODIFIERS_R) != 0) {
-                    action = new Action(ActionType.DRAG_START);
-                    configDragType = ConfigDragType.ROTATING_Y;
-                } else {
-                */
-                    action = new Action(ActionType.DRAG_START);
-                    configDragType = ConfigDragType.MOVING_PLANAR;
-                /*
-                }
-                */
+
                 configState = ConfigState.DRAG_ACTIVE;
-// TODO:>>>>                calcWorldDragPointFromImagePlate(me);
+                action = new Action(ActionType.DRAG_START);
+                dragStartScreen = new Point(me.getX(), me.getY());
+                dragStartWorld = buttonEvent.getIntersectionPointWorld();
+                // TODO: convert world to eye
+                configDragPoint = new Vector2f(dragStartWorld.x, dragStartWorld.y);
+
+                if ((me.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
+                    if ((me.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
+                        // TODO: temp: shift+control left press means rotate y
+                        configDragType = ConfigDragType.ROTATING_Y;
+                    } else {
+                        // TODO: temp: shift left press means move z
+                        configDragType = ConfigDragType.MOVING_Z;
+                    }
+                } else {
+                    // Unmodified left press means move planar
+                    configDragType = ConfigDragType.MOVING_PLANAR;
+                }
             }
             return action;
 
@@ -327,7 +339,13 @@ public class Gui2D {
                 configState == ConfigState.DRAGGING) {
                 action = new Action(ActionType.DRAG_UPDATE);
                 configState = ConfigState.DRAGGING;
-//TODO:>>>>                calcWorldDragPointFromImagePlate(me);
+
+                MouseDraggedEvent3D dragEvent = (MouseDraggedEvent3D) me3d;
+                Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen,
+                                                                   new Vector3f());
+                // TODO: convert world to eye
+                configDragPoint = new Vector2f(configDragPoint.x + dragVector.x, 
+                                               configDragPoint.y + dragVector.y); 
             }
             return action;
 
@@ -346,7 +364,7 @@ public class Gui2D {
                     // Note: A bit of uncleanliness: Even though we haven't been
                     // actually dragging we still need to restore the cursor to
                     // its original form.
-//TODO                   window.userMovePlanarFinish();
+                    view.userMovePlanarFinish();
                 }
 
                 configState = ConfigState.IDLE;
@@ -379,13 +397,13 @@ public class Gui2D {
         case DRAG_START:
             switch (configDragType) {
             case MOVING_PLANAR:
-//>>>>>>>>>.                window.userMovePlanarStart(configDragPoint.x, configDragPoint.y);
+                view.userMovePlanarStart(configDragPoint.x, configDragPoint.y);
                 break;
             case MOVING_Z:
-//>>>>>>>>>>.                window.userMoveZStart(configDragPoint.y);
+                view.userMoveZStart(configDragPoint.y);
                 break;
             case ROTATING_Y:
-//>>>>>                window.userRotateYStart(configDragPoint.y);
+                view.userRotateYStart(configDragPoint.y);
                 break;
             }
             break;
@@ -393,13 +411,13 @@ public class Gui2D {
         case DRAG_UPDATE:
             switch (configDragType) {
             case MOVING_PLANAR:
-                // >>>>> window.userMovePlanarUpdate(configDragPoint.x, configDragPoint.y);
+                view.userMovePlanarUpdate(configDragPoint.x, configDragPoint.y);
                 break;
             case MOVING_Z:
-                // >>>>>>> window.userMoveZUpdate(configDragPoint.y);
+                view.userMoveZUpdate(configDragPoint.y);
                 break;
             case ROTATING_Y:
-                // >>>>> window.userRotateYUpdate(configDragPoint.y);
+                view.userRotateYUpdate(configDragPoint.y);
                 break;
             }
             break;
@@ -407,13 +425,13 @@ public class Gui2D {
         case DRAG_FINISH:
             switch (configDragType) {
             case MOVING_PLANAR:
-//                window.userMovePlanarFinish();
+                view.userMovePlanarFinish();
                 break;
             case MOVING_Z:
- //               window.userMoveZFinish();
+                view.userMoveZFinish();
                 break;
             case ROTATING_Y:
- //               window.userRotateYFinish();
+                view.userRotateYFinish();
                 break;
             }
             break;
