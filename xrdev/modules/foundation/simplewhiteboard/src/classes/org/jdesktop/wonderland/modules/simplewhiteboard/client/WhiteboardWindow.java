@@ -74,6 +74,8 @@ public class WhiteboardWindow extends WindowGraphics2D {
 
         wbSurface = (WhiteboardDrawingSurface) getSurface();
 
+        initializeSurface();
+
         addMouseMotionListener(new MouseMotionListener() {
 
             public void mouseDragged(MouseEvent e) {
