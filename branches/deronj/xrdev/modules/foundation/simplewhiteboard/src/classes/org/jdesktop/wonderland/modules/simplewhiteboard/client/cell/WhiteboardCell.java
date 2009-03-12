@@ -100,8 +100,7 @@ public class WhiteboardCell extends App2DCell {
                 try {
                     whiteboardWin = new WhiteboardWindow(this, whiteboardApp, clientState.getPreferredWidth(),
                                                          clientState.getPreferredHeight(), 
-                                                         false /*TODO:true*/,
-                                                         clientState.getPixelScale(),
+                                                         true, clientState.getPixelScale(),
                                                          commComponent);
                 } catch (InstantiationException ex) {
                     throw new RuntimeException(ex);
