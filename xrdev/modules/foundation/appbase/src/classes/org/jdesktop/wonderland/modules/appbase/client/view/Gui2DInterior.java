@@ -112,20 +112,14 @@ public class Gui2DInterior extends Gui2D {
 
         @Override
         public boolean consumesEvent(Event event) {
-            System.err.println("G2I event = " + event);
             if (!super.consumesEvent(event)) {
                 // Not meant for us
                 return false;
             }
-            System.err.println("Meant for us");
 
             if (!app.getControlArb().hasControl()) {
                 return false;
             }
-            System.err.println("We have control");
-
-            System.err.println("Do we have focus? Answer: " + 
-                               InputManager3D.entityHasFocus(event, appFocusEntity));
 
             // When the app has control only consume if app has focus.
             return InputManager3D.entityHasFocus(event, appFocusEntity);

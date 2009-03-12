@@ -90,6 +90,7 @@ public abstract class View2DEntity implements View2D {
     protected static final int CHANGED_OFFSET           = 0x80   | CHANGED_OFFSET_STACK_TRANSFORM;
     protected static final int CHANGED_USER_TRANSLATION = 0x100  | CHANGED_USER_TRANSFORM;
     protected static final int CHANGED_TITLE            = 0x200  | CHANGED_FRAME;
+    protected static final int CHANGED_ORTHO            = 0x400;
 
     protected static final int CHANGED_ALL = -1;
 
@@ -176,6 +177,9 @@ public abstract class View2DEntity implements View2D {
 
     /** Returns the height of the view in the local coordinate system of the cell. */
     private float cellLocalHeight;
+
+    /** Whether the view entity is to be displayed in ortho mode ("on the glass"). */
+    private boolean ortho;
 
     /** A dummy AWT component (used by deliverEvent). */
     private static Button dummyButton = new Button();
@@ -621,6 +625,33 @@ public abstract class View2DEntity implements View2D {
     }
 
     public synchronized void userMoveZFinish () {
+    }
+
+    /**
+     * Specifies whether the view entity is to be displayed in ortho mode ("on the glass").
+     * Update immediately.
+     */
+    public void setOrtho (boolean ortho) {
+        setOrtho(ortho, true);
+    }
+
+    /**
+     * Specifies whether the view entity is to be displayed in ortho mode ("on the glass").
+     * Update if specified.
+     */
+    public void setOrtho (boolean ortho, boolean update) {
+        this.ortho = ortho;
+        changeMask |= CHANGED_ORTHO;
+        if (update) {
+            update();
+        }
+    }
+
+    /**
+     * Returns whether the view entity is in ortho mode.
+     */
+    public boolean getOrtho () {
+        return ortho;
     }
 
     /** Processes attribute changes. Should be called within a synchronized block. */

@@ -65,7 +65,7 @@ public class View2DCell extends View2DEntity {
 
     private static final Logger logger = Logger.getLogger(View2DCell.class.getName());
 
-    private static final int CHANGED_USER_ROTATION = 0x400 | CHANGED_USER_TRANSFORM;
+    private static final int CHANGED_USER_ROTATION = 0x800 | CHANGED_USER_TRANSFORM;
 
     /** The cell in which this view is displayed. */
     private App2DCell cell;
