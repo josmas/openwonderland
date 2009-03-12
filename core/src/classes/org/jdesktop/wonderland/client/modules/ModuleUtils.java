@@ -54,7 +54,7 @@ public class ModuleUtils {
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH MODULE INFO Failed", excp);
-            return new ModuleInfo();
+            return null;
         }
     }
     
@@ -92,7 +92,7 @@ public class ModuleUtils {
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH MODULE ART Failed", excp);
-            return new ModuleArtList();
+            return null;
         }
     }
     
@@ -109,7 +109,6 @@ public class ModuleUtils {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
             URL url = new URL(new URL(serverURL), ASSET_PREFIX + moduleName + "/repository");
-            logger.info("[MODULE] Fetching Repository list from " + url.toString());
             return ModuleRepository.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
@@ -131,7 +130,6 @@ public class ModuleUtils {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
             URL url = new URL(new URL(serverURL), CHECKSUM_PREFIX + moduleName + "/checksums/get");
-            logger.warning("[MODULES] Fetch modules from " + url.toString());
             return ChecksumList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */

@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.common.JarURIAdapter;
 /**
  * A list of module plugins, given by URIs. These URIs are of the format:
  * <p>
- * wla://<module name>/<jar path>
+ * wlj://<module name>/<jar path>
  * <p>
  * where <module name> is the name of the module, and <jar path> is the path
  * of the jar within the module, e.g. "server/myplugin-server.jar".

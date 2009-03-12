@@ -34,7 +34,6 @@ import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JBulletCollisionComponent;
-import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
@@ -53,8 +52,9 @@ import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.ArtURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ModuleURI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -395,7 +395,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         }
 
         try {
-            AssetURI uri = new AssetURI(origURL).getAnnotatedURI(serverHostAndPort);
+            ModuleURI uri = new ArtURI(origURL).getAnnotatedURI(serverHostAndPort);
             return uri.toURL();
         } catch (URISyntaxException use) {
             MalformedURLException mue =
