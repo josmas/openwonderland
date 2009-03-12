@@ -50,7 +50,7 @@ public interface HUDAnimation {
 
     /**
      * Gets whether the animation is in progress
-     * @return
+     * @return true if the animation is in progress, false if not
      */
     public boolean isAnimating();
 
