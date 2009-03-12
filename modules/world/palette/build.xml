@@ -24,6 +24,10 @@
             <client>
                 <clientjar name="palette-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**/*.png"/>
+                    </fileset>
+
                 </clientjar> 
             </client>
         </module>

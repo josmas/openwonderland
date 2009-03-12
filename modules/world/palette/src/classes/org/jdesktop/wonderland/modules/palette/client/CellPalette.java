@@ -18,10 +18,12 @@
 package org.jdesktop.wonderland.modules.palette.client;
 
 import com.jme.math.Vector3f;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
+import java.awt.Toolkit;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -44,6 +46,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.modules.palette.client.dnd.PaletteDragGestureListener;
 
 /**
  * A palette of cell types available to create in the world.
@@ -55,16 +58,33 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
     private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
 
     /* The scalar distance from the camera to place new cells */
-    private static final float NEW_CELL_DISTANCE = 5.0f;
+    public static final float NEW_CELL_DISTANCE = 5.0f;
+
+    /* The current selected preview image */
+    private Image selectedPreviewImage = null;
+
+    /* The "No Preview Available" image icon */
+    private ImageIcon noPreviewAvailableIcon = null;
 
     /** Creates new form CellPalette */
     public CellPalette() {
         // Initialize the GUI components
         initComponents();
-        
+
+        // Create the icon for the "No Preview Available" image
+        URL url = CellPalette.class.getResource("resources/nopreview.png");
+        Image image = Toolkit.getDefaultToolkit().createImage(url);
+        noPreviewAvailableIcon = new ImageIcon(image);
+
         // Listen for list selection events and update the preview panel with
         // the selected item's image
         cellList.addListSelectionListener(this);
+
+        // Add support for drag from the preview image label
+        DragSource ds = DragSource.getDefaultDragSource();
+        DragGestureListener l = new PaletteDragGestureListener(this);
+        ds.createDefaultDragGestureRecognizer(previewLabel, DnDConstants.ACTION_COPY_OR_MOVE, l);
+
     }
 
     @Override
@@ -74,7 +94,27 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         super.setVisible(b);
     }
 
-    
+    /**
+     * Returns the currently selected preview image, or null if there is no
+     * selection or the cell palette entry does not have a preview
+     *
+     * @return The currently selected preview Image object
+     */
+    public Image getSelectedPreviewImage() {
+        return selectedPreviewImage;
+    }
+
+    /**
+     * Returns the cell factory for the currently selected cell, or null if
+     * no selection exists.
+     *
+     * @return The currently selected CellFactorySPI object
+     */
+    public CellFactorySPI getSelectedCellFactory() {
+        String cellDisplayName = (String)cellList.getSelectedValue();
+        return getCellFactory(cellDisplayName);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -206,12 +246,12 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             } catch (java.lang.Exception excp) {
                 // Just ignore, but log a message
                 Logger logger = Logger.getLogger(CellPalette.class.getName());
-                logger.log(Level.WARNING, "[PALETTE] No Display Name for Cell " +
-                        "Factory " + cellFactory, excp);
+                logger.log(Level.WARNING, "No Display Name for Cell Factory " +
+                        cellFactory, excp);
             }
         }
         cellList.setListData(listNames.toArray(new String[] {}));
-        //cellList.setDragEnabled(true);        
+        cellList.setDragEnabled(true);        
     }
 
     /**
@@ -234,22 +274,6 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         }
         return null;
     }
-
-    /**
-     * Resizes an image using a Graphics2D object backed by a BufferedImage.
-     * @param srcImg - source image to scale
-     * @param w - desired width
-     * @param h - desired height
-     * @return - the new resized image
-     */
-    private Image getScaledImage(Image srcImg, int w, int h) {
-        BufferedImage resizedImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = resizedImg.createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2.drawImage(srcImg, 0, 0, w, h, null);
-        g2.dispose();
-        return resizedImg;
-    }
     
     /**
      * Handles when a selection has been made of the list of cell type names.
@@ -258,19 +282,16 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     public void valueChanged(ListSelectionEvent e) {
         // Create a JLabel with the image, resized to be 128x128.
         String selectedName = (String)cellList.getSelectedValue();
-        Logger logger = Logger.getLogger(CellPalette.class.getName());
         if (selectedName != null) {
             CellFactorySPI cellFactory = cellFactoryMap.get(selectedName);
             if (cellFactory != null) {
-                Image image = cellFactory.getPreviewImage();
-                if (image != null) {
-                    ImageIcon icon = new ImageIcon(image);
+                selectedPreviewImage = cellFactory.getPreviewImage();
+                if (selectedPreviewImage != null) {
+                    ImageIcon icon = new ImageIcon(selectedPreviewImage);
                     previewLabel.setIcon(icon);
-                    previewLabel.setText(null);
                 }
                 else {
-                    previewLabel.setIcon(null);
-                    previewLabel.setText("<html><center>No Preview<br>Available</center></html>");
+                    previewLabel.setIcon(noPreviewAvailableIcon);
                 }
             }
         }
@@ -285,5 +306,4 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     private javax.swing.JLabel previewLabel;
     private javax.swing.JPanel previewPanel;
     // End of variables declaration//GEN-END:variables
-
 }

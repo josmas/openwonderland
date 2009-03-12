@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.common.LogControl;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
+import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 
 /**
  * The Main JFrame for the wonderland jme client
@@ -91,6 +92,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
         centerPanel.setMinimumSize(new Dimension(width, height));
         centerPanel.setPreferredSize(new Dimension(width, height));
+
+        // Register the main panel with the drag-and-drop manager
+        DragAndDropManager.getDragAndDropManager().setDropTarget(centerPanel);
 
         serverField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
