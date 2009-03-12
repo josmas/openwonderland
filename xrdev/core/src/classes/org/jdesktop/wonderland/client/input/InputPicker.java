@@ -378,7 +378,7 @@ public abstract class InputPicker {
      */
     private static boolean isWindowSwingEntity (Entity entity) {
 	// We know whether it is a WindowSwing entity by looking for the attached WindowSwingEntityComponent
-	EntityComponent comp = entity.getComponent(InputManager.WindowSwingMarker.class);
+	EntityComponent comp = entity.getComponent(InputManager.WindowSwingViewMarker.class);
 	return comp != null;
     }
 
