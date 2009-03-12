@@ -564,11 +564,11 @@ public abstract class InputManager
     }
 
     /** 
-     * An entity component which allows us to map a pick hit entity to a WindowSwing. 
+     * An entity component which allows us to identify a pick hit entity as a view of a WindowSwing. 
      * <br>
      * FOR APP BASE ONLY.
      */
-    public static class WindowSwingMarker extends EntityComponent {}
+    public static class WindowSwingViewMarker extends EntityComponent {}
 
     /**
      * Calculate a pick ray from the current eye position into the given

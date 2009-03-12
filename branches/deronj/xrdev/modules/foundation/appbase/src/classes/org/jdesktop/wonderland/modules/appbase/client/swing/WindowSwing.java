@@ -25,12 +25,9 @@ import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwingEmbeddedToolkit.WindowSwingEmbeddedPeer;
 import com.sun.embeddedswing.EmbeddedPeer;
-import java.awt.Point;
 import com.jme.math.Vector2f;
-import com.jme.math.Vector3f;
 import java.awt.Canvas;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Point2D;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
@@ -39,12 +36,13 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.input.InputManager;
-import org.jdesktop.wonderland.client.input.InputManager.WindowSwingMarker;
+import org.jdesktop.wonderland.client.input.InputManager.WindowSwingViewMarker;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
@@ -66,16 +64,18 @@ public class WindowSwing extends WindowGraphics2D {
 
     private static final Logger logger = Logger.getLogger(WindowSwing.class.getName());
     /** The Swing component which is displayed in this window */
-    protected Component component;
+    private Component component;
     /** The Swing Embedder object */
     private WindowSwingEmbeddedPeer embeddedPeer;
     /** The size of the window */
-    protected Dimension size;
+    private Dimension size;
     /** Is input enabled on this window? */
-    protected boolean inputEnabled = true;
+    private boolean inputEnabled = true;
+    /** A listener which allows the inputEnabled attribute to control whether this window receives events. */
+    private MyEventListener eventListener;
 
     /** The event listener for this window. */
-    protected class MyEventListener extends EventListenerBaseImpl {
+    private class MyEventListener extends EventListenerBaseImpl {
 
         @Override
         public boolean consumesEvent(Event event) {
@@ -89,10 +89,13 @@ public class WindowSwing extends WindowGraphics2D {
     }
 
     /** An entity component which provides a back pointer from the entity of a WindowSwing to the WindowSwing. */
-    class WindowSwingReference extends EntityComponent {
-
-        WindowSwing getWindowSwing() {
-            return WindowSwing.this;
+    static class WindowSwingViewReference extends EntityComponent {
+        private View2D view;
+        WindowSwingViewReference (View2D view) {
+            this.view = view;
+        }
+        View2D getView() {
+            return view;
         }
     }
 
@@ -123,7 +126,7 @@ public class WindowSwing extends WindowGraphics2D {
                        String name) {
         super(app, width, height, decorated, pixelScale, name, 
               new DrawingSurfaceBufferedImage(width, height)); 
-        initialize();
+        initializeViews();
     }
 
     /**
@@ -136,7 +139,7 @@ public class WindowSwing extends WindowGraphics2D {
      * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
      */
-    protected WindowSwing(App2D app, Type type, int width, int height, boolean decorated, 
+    public WindowSwing(App2D app, Type type, int width, int height, boolean decorated, 
                           Vector2f pixelScale) {
         this(app, type, width, height, decorated, pixelScale, null);
     }
@@ -167,7 +170,7 @@ public class WindowSwing extends WindowGraphics2D {
      * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
      */
-    protected WindowSwing(App2D app, Type type, Window2D parent, int width, int height, boolean decorated, 
+    public WindowSwing(App2D app, Type type, Window2D parent, int width, int height, boolean decorated, 
                        Vector2f pixelScale) {
         this(app, type, parent, width, height, decorated, pixelScale, null);
     }
@@ -188,15 +191,30 @@ public class WindowSwing extends WindowGraphics2D {
                     Vector2f pixelScale, String name) {
         super(app, type, parent, width, height, decorated, pixelScale, name,
               new DrawingSurfaceBufferedImage(width, height)); 
-        initialize();
+        initializeViews();
     }
 
-    private void initialize () {
-        // TODO: must to for *each view*/
-        addEntityComponent(InputManager.WindowSwingMarker.class, new WindowSwingMarker());
-        // TODO: should be WindowSwingViewReference
-        addEntityComponent(WindowSwingReference.class, new WindowSwingReference());
-        addEventListener(new MyEventListener());
+    public void cleanup () {
+        cleanupViews();
+        super.cleanup();
+    }
+
+    /** Initialize all existing views. */
+    private void initializeViews () {
+        Iterator<View2D> it = getViews();
+        while (it.hasNext()) {
+            View2D view = it.next();
+            viewInit(view);
+        }
+    }
+
+    /** Clean up all views. */
+    private void cleanupViews () {
+        Iterator<View2D> it = getViews();
+        while (it.hasNext()) {
+            View2D view = it.next();
+            viewCleanup(view);
+        }
     }
 
     /** 
@@ -271,9 +289,10 @@ public class WindowSwing extends WindowGraphics2D {
 
             if (seeEvent.isEntered()) {
                 Entity entity = seeEvent.getEntity();
-                EntityComponent comp = entity.getComponent(WindowSwing.WindowSwingReference.class);
+                EntityComponent comp = entity.getComponent(WindowSwing.WindowSwingViewReference.class);
                 assert comp != null;
-                WindowSwing windowSwing = ((WindowSwing.WindowSwingReference) comp).getWindowSwing();
+                View2D view = ((WindowSwing.WindowSwingViewReference) comp).getView();
+                WindowSwing windowSwing = (WindowSwing) view.getWindow();
                 assert windowSwing != null;
                 windowSwing.requestFocusInWindow();
             } else {
@@ -412,14 +431,33 @@ public class WindowSwing extends WindowGraphics2D {
         return inputEnabled;
     }
 
-    public Point calcWorldPositionInPixelCoordinates(Point2D src, MouseEvent event,
-            Vector3f intersectionPointWorld,
-            Point lastPressPointScreen) {
-        if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
-            // TODO: return viewWorld.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
-            return null;
-        } else {
-            return calcWorldPositionInPixelCoordinates(intersectionPointWorld, true);
-        }
+    /** {@inheritDoc} */
+    @Override
+    public void addView(View2D view) {
+        super.addView(view);
+        viewInit(view);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void removeView(View2D view) {
+        viewCleanup(view);
+        super.removeView(view);
+    }
+
+    /** Attach the things we need to the given given view. */
+    private void viewInit (View2D view) {
+        view.addEntityComponent(InputManager.WindowSwingViewMarker.class, new WindowSwingViewMarker());
+        view.addEntityComponent(WindowSwingViewReference.class, new WindowSwingViewReference(view));
+        eventListener = new MyEventListener();
+        view.addEventListener(eventListener);
+    }
+
+    /** Attach the things we use from the given given view. */
+    private void viewCleanup (View2D view) {
+        view.removeEntityComponent(InputManager.WindowSwingViewMarker.class);
+        view.removeEntityComponent(WindowSwingViewReference.class);
+        view.removeEventListener(eventListener);
+        eventListener = null;
     }
 }

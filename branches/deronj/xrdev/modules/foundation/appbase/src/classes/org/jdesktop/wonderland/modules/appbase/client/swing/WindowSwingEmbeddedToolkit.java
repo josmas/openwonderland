@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 
 /**
  * The main interface to Embedded Swing. This singleton provides access to the three basic capabilities
@@ -86,10 +87,10 @@ class WindowSwingEmbeddedToolkit
         logger.fine("WindowSwing hit");
         logger.fine("Pick hit entity = " + ret.entity);
 
-        EntityComponent comp = ret.entity.getComponent(WindowSwing.WindowSwingReference.class);
+        EntityComponent comp = ret.entity.getComponent(WindowSwing.WindowSwingViewReference.class);
         assert comp != null;
-        final WindowSwing windowSwing = ((WindowSwing.WindowSwingReference) comp).getWindowSwing();
-        assert windowSwing != null;
+        final View2D view = ((WindowSwing.WindowSwingViewReference) comp).getView();
+        WindowSwing windowSwing = (WindowSwing) view.getWindow();
 
         // TODO: someday: I don't think we need to set this anymore for drag events. But it doesn't hurt.
         final Vector3f intersectionPointWorld = ret.destPickDetails.getPosition();
@@ -111,8 +112,12 @@ class WindowSwingEmbeddedToolkit
                 logger.fine("src = " + src);
                 logger.fine("event = " + event);
 
-                Point pt = windowSwing.calcWorldPositionInPixelCoordinates(src, event,
-                        intersectionPointWorld, lastPressPointScreen);
+                Point pt;
+                if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
+                    pt = view.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
+                } else {
+                    pt = view.calcPositionInPixelCoordinates(intersectionPointWorld, true);
+                }
 
                 if (dst == null) {
                     dst = new Point2D.Double();
