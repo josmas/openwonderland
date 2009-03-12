@@ -1291,8 +1291,6 @@ public abstract class View2DEntity implements View2D {
         JMECollisionSystem collisionSystem = (JMECollisionSystem) ClientContextJME.getWorldManager().
             getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
-        System.err.println("############# rc = " + rc);
-        System.err.println("############# rc.getSceneRoot() = " + rc.getSceneRoot());
         CollisionComponent cc = collisionSystem.createCollisionComponent(rc.getSceneRoot());
         entity.addComponent(CollisionComponent.class, cc);
     }

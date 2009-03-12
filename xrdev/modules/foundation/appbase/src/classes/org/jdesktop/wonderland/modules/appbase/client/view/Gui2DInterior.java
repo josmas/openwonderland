@@ -127,7 +127,7 @@ public class Gui2DInterior extends Gui2D {
 
         @Override
         public void commitEvent(Event event) {
-            logger.severe("Interior mouse commitEvent, event = " + event);
+            logger.fine("Interior mouse commitEvent, event = " + event);
             MouseEvent3D me3d = (MouseEvent3D) event;
 
             // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.

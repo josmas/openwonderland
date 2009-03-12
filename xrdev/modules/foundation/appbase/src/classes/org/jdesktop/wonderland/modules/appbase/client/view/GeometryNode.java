@@ -138,9 +138,9 @@ public abstract class GeometryNode extends Node {
         }
         logger.fine("point = " + point);
 
-        // First calculate the actual coordinates of the corners of the displayer in world coords.
-        float width = texture.getImage().getWidth();
-        float height = texture.getImage().getHeight();
+        // First calculate the actual coordinates of the corners of the view in world coords.
+        float width = view.getDisplayerLocalWidth();
+        float height = view.getDisplayerLocalHeight();
         Vector3f topLeftLocal = new Vector3f(-width / 2f, height / 2f, 0f);
         Vector3f topRightLocal = new Vector3f(width / 2f, height / 2f, 0f);
         Vector3f bottomLeftLocal = new Vector3f(-width / 2f, -height / 2f, 0f);
@@ -159,7 +159,7 @@ public abstract class GeometryNode extends Node {
         logger.fine("bottomLeft = " + bottomLeft);
         logger.fine("bottomRight = " + bottomRight);
 
-        // Now calculate the x and y coords relative to the displayer
+        // Now calculate the x and y coords relative to the view
 
         float widthWorld = topRight.x - topLeft.x;
         float heightWorld = topLeft.y - bottomLeft.y;
