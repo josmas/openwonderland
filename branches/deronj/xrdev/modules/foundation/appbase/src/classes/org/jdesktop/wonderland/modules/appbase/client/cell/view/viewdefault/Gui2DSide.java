@@ -86,6 +86,11 @@ class Gui2DSide extends Gui2D {
                 return;
             }
         }
+
+        /** {@inheritDoc} */
+        public boolean propagatesToParent (Event event) {
+            return false;
+        }
     }
 
     /**
@@ -137,6 +142,11 @@ class Gui2DSide extends Gui2D {
                 // TODO: notyet window.getApp().printWindowInfosAll();
                 return;
             }
+        }
+
+        /** {@inheritDoc} */
+        public boolean propagatesToParent (Event event) {
+            return false;
         }
     }
 
