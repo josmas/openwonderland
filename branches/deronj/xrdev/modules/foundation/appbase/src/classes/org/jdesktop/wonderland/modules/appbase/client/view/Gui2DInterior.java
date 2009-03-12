@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
+package org.jdesktop.wonderland.modules.appbase.client.view;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -75,7 +75,7 @@ public class Gui2DInterior extends Gui2D {
      *
      * @param view The view associated with the component that uses this Gui.
      */
-    public Gui2DInterior(View2DCell view) {
+    public Gui2DInterior(View2DEntity view) {
         super(view);
         app = view.getWindow().getApp();
         appFocusEntity = app.getFocusEntity();
@@ -112,14 +112,20 @@ public class Gui2DInterior extends Gui2D {
 
         @Override
         public boolean consumesEvent(Event event) {
+            System.err.println("G2I event = " + event);
             if (!super.consumesEvent(event)) {
                 // Not meant for us
                 return false;
             }
+            System.err.println("Meant for us");
 
             if (!app.getControlArb().hasControl()) {
                 return false;
             }
+            System.err.println("We have control");
+
+            System.err.println("Do we have focus? Answer: " + 
+                               InputManager3D.entityHasFocus(event, appFocusEntity));
 
             // When the app has control only consume if app has focus.
             return InputManager3D.entityHasFocus(event, appFocusEntity);
@@ -127,7 +133,7 @@ public class Gui2DInterior extends Gui2D {
 
         @Override
         public void commitEvent(Event event) {
-            logger.fine("Interior mouse commitEvent, event = " + event);
+            logger.severe("Interior mouse commitEvent, event = " + event);
             MouseEvent3D me3d = (MouseEvent3D) event;
 
             // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
@@ -243,7 +249,7 @@ public class Gui2DInterior extends Gui2D {
 
             // Note: currently no special GUI processing is needed for key events
             // so they are all just sent to the app group if it has control
-            ControlArb controlArb = view.getCell().getApp().getControlArb();
+            ControlArb controlArb = view.getWindow().getApp().getControlArb();
             if (controlArb.hasControl()) {
                 controlArb.deliverEvent(view.getWindow(), ke);
             }

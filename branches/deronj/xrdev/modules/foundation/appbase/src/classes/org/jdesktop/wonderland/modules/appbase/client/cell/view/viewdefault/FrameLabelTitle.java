@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 
 /**
  * A 2D label which displays the window title.

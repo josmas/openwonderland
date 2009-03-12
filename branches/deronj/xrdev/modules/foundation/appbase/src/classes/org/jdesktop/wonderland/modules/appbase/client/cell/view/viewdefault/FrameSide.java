@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.mtgame.RenderUpdater;
+import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 
 /**
  * One of the sides of the frame.
