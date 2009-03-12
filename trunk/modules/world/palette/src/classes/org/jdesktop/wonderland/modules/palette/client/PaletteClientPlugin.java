@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenu;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.scenemanager.SceneManager;
@@ -41,6 +42,7 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDuplicateMessage;
+import org.jdesktop.wonderland.modules.palette.client.dnd.CellPaletteDataFlavorHandler;
 
 /**
  * Client-size plugin for the cell palette.
@@ -81,6 +83,12 @@ public class PaletteClientPlugin implements ClientPlugin {
         });
         paletteMenu.add(item);
         JmeClientMain.getFrame().addToToolMenu(paletteMenu);
+
+        // Register the handler for CellServerState flavors with the system-wide
+        // drag and drop manager. When the preview icon is dragged from the Cell
+        // Palette this handler creates an instance of the cell in the world.
+        DragAndDropManager.getDragAndDropManager().registerDataFlavorHandler(new CellPaletteDataFlavorHandler());
+
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.

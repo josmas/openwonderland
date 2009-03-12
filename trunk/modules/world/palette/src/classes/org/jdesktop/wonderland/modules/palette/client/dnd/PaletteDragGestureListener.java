@@ -1,0 +1,61 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
+ */
+package org.jdesktop.wonderland.modules.palette.client.dnd;
+
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.palette.client.CellPalette;
+
+/**
+ * Listener for the drag-start gesture for the cell palette preview image
+ * and initiates the drag.
+ *
+ * @author Jordan Slott <jslott@dev.java.net>
+ */
+public class PaletteDragGestureListener implements DragGestureListener {
+    private CellPalette cellPalette = null;
+
+    /** Constructor, takes a reference to the Cell Palette */
+    public PaletteDragGestureListener(CellPalette cellPalette) {
+        this.cellPalette = cellPalette;
+    }
+
+    public void dragGestureRecognized(DragGestureEvent dge) {
+        // From the Cell Palette fetch the cell factory and image that
+        // corresponds to the currently selected item
+        CellFactorySPI factory = cellPalette.getSelectedCellFactory();
+        CellServerState state = factory.getDefaultCellServerState();
+        Image image = cellPalette.getSelectedPreviewImage();
+
+        // Initialize the transferable with the default cell server state from
+        // the factory
+        Transferable t = new CellServerStateTransferable(state);
+
+        // Begin with the drag setting up the origin so that it aligns with
+        // the image.
+        Point dragOrigin = dge.getDragOrigin();
+        dragOrigin.setLocation(-dragOrigin.x, -dragOrigin.y);
+        dge.startDrag(DragSource.DefaultCopyNoDrop, image, dragOrigin, t, null);
+    }
+}
