@@ -19,6 +19,7 @@
         <include name="content-repository/build.xml"/>
         <include name="webdav/build.xml"/>
         <include name="snapshot-manager/build.xml"/>
+        <include name="asset-meter/build.xml"/>
     </fileset>
     
     <!-- build and package all subprojects -->

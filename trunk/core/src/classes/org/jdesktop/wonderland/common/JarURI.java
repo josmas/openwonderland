@@ -17,23 +17,23 @@
  */
 package org.jdesktop.wonderland.common;
 
-import java.io.File;
 import java.net.URISyntaxException;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * The JarURI class uniquely identifies a plugin jar resource within the sytem.
+ * The JarURI class uniquely identifies a plugin jar resource within a module
+ * in the sytem.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
 @XmlJavaTypeAdapter(JarURIAdapter.class)
-public class JarURI extends ResourceURI {
-    
+public class JarURI extends ModuleURI {
+
     /** Default constructor */
     public JarURI() {
     }
-    
+
     /**
      * Constructor which takes the string represents of the URI.
      * 
@@ -52,28 +52,13 @@ public class JarURI extends ResourceURI {
         super("wlj", moduleName, hostNameAndPort, assetPath);
     }
     
-    /**
-     * Returns the relative path of the resource specified by the URI. The
-     * relative path does not being with any forward "/".
-     * 
-     * @return The relative path within the URI
-     */
-    public String getRelativePath() {
+    @Override
+    public String getRelativePathInModule() {
         return this.getAssetPath();
     }
-    
-    /**
-     * Returns a relative path of the asset so that it exists in a unique
-     * location within a cache. The path does not have a leading "/".
-     * 
-     * @return A unique relative path for the URI
-     */
-    public String getRelativeCachePath() {
-        /*
-         * If the uri describes an asset within a module, prepend the "module"
-         * directory followed by the name of the module (which must be
-         * unique).
-         */
-        return "module" + File.separator + this.getModuleName() + File.separator + this.getRelativePath();
+
+    @Override
+    public ModuleURI getAnnotatedURI(String hostNameAndPort) throws URISyntaxException {
+        return new JarURI(getModuleName(), hostNameAndPort, getAssetPath());
     }
 }

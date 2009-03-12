@@ -26,69 +26,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * The AssetDB class represents the client-side cache of assets. The database
  * itself simply stores the entries found in the cache; the cached assets are
  * actually stored in a corresponding directorly.
- * <p>
- * Each entry in the database is uniquely identified by a variable-length string
- * that includes the repository from which it came and the relative path of the
- * resource within the repository.
- * <p>
- * The resource may be specified in one of several ways, which dictate how it is
- * uniquely identified in the asset database. Typically resources are specified
- * within the configuration of a cell in WFS.
- * <p>
- * (1) An absolute path of the resource is specified within the cell configuration.
- * Here, that resource, and only that resource is used. This is used very rarely.
- * In this case, the full URL uniquely identifies the resource.
- * <p>
- * (2) A relative path of the resource is specified with respect to the default
- * repository for the instance of Wonderland. This case is the legacy case from
- * v0.4 and earlier versions of Wonderland. The resource is uniquely identified
- * by the relative path.
- * <p>
- * (3) A relative path of the resource within some module is specified. This
- * mechanism is new to v0.5 Wonderland and later. The resource is uniquely
- * identified by the relative path and the unique name of the module.
- * <p>
- * The RESOURCE_PATH field gives the unique identification of the resource and
- * takes the form of a URL:
- * <p>
- * Case 1: http://<repository>/<relative path>
- * Case 2: wlr://<relative path>
- * Case 3: wlm://<module name>/<relative path>
- * <p>
- * The FILENAME field gives only the file name. In case (1) and (3), it is the
- * value of <relative path>. In case (2), it is also <relative path>. Note that
- * in case (1) <relative path> includes everything after the machine domain
- * name.
- * <p>
- * The BASE_URL field gives the base URL from which the resource case. In case(1),
- * it is <repository>, case (2) its the URL of the repository currently in use,
- * and case (3), its the URL from which the resource was actually fetched, as
- * defined by the list of available repositories in the model.
- * <p>
- * <p>
- * <h3>Database Version<h3>
- *
- * Each database has a version. To allow multiple database caches with different
- * versions to exist on the same machine, the location of the asset database
- * includes the version. That is, the location of the database is: derby.system.home +
- * version + database name.
- * 
- * RESOURCE_URI: The abstract URI describing the asset
- * URL: The URL from which the asset was fetched.
  * 
  * @author paulby
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@InternalAPI
 public class AssetDB {
 
     /* The default name of the asset database */
@@ -96,7 +51,6 @@ public class AssetDB {
     
     /* The maximum length of strings in the database */
     private static final int MAX_STRING_LENGTH = 8192;
-
     
     /* The error logger for this class */
     private static Logger logger = Logger.getLogger(AssetDB.class.getName());
@@ -112,7 +66,19 @@ public class AssetDB {
     
     /* The name of the database, initially DB_NAME */
     private String dbName = null;
-    
+
+    /**
+     * Represents a record in the Asset DB
+     */
+    public static class AssetDBRecord {
+        public String assetURI = null;
+        public String checksum = null;
+        public String baseURL = null;
+        public String type = null;
+        public long size = 0;
+        public long lastAccessed = 0;
+    }
+
     /**
      * Default constructor
      */
@@ -184,65 +150,6 @@ public class AssetDB {
             }
         }
     }
-        
-    /**
-     * Returns the location of the database. This location is the full path name.
-     * 
-     * @return The full location to the database
-     */
-    public String getDatabaseLocation() {
-        String dbLocation = System.getProperty("derby.system.home") + "/" + dbName;
-        return dbLocation;
-    }
-    
-    /**
-     * Returns the URL representation of the database
-     * 
-     * @return The URL representation of the database
-     */
-    public String getDatabaseUrl() {
-        String dbUrl = dbProperties.getProperty("derby.url") + dbName;
-        return dbUrl;
-    }
-    
-    /**
-     * Returns true if the database is connected, false if not.
-     * 
-     * @return True if the database is connected, false if not.
-     */
-    public boolean isConnected() {
-        return this.isConnected;
-    }
-
-    /**
-     * Connect to the database. Return true upon success, false upon falure
-     * 
-     * @return True upon success, false upon failure.
-     */
-    public boolean connect() {
-        /*
-         * Attempt to connect to the database, also compile some SQL statements
-         * that we'll use. Set the isConnected flag upon result.
-         */
-        try {
-            dbConnection = DriverManager.getConnection(this.getDatabaseUrl(), dbProperties);
-            stmtSaveNewRecord = dbConnection.prepareStatement(strSaveAsset);
-            stmtUpdateExistingRecord = dbConnection.prepareStatement(strUpdateAsset);
-            stmtGetAsset = dbConnection.prepareStatement(strGetAsset);
-            stmtDeleteAsset = dbConnection.prepareStatement(strDeleteAsset);
-            stmtUpdateLastAccessed = dbConnection.prepareStatement(strUpdateLastAccessed);
-            stmtComputeTotalSize = dbConnection.prepareStatement(strComputeTotalSize);
-            
-            this.isConnected = dbConnection != null;
-        } catch (SQLException ex) {
-            isConnected = false;
-            dbConnection = null;
-            ex.printStackTrace();
-        }
-        
-        logger.fine("AssetDB: Done attempting to connect, ret=" + this.isConnected);
-        return isConnected;
-    }
     
     /**
      * Disconnects from the database.
@@ -272,39 +179,148 @@ public class AssetDB {
     }
     
     /**
-     * Adds a new asset to database. Returns true upon success, false upon
-     * failure. If the asset already exists, this method logs an exception and
-     * returns false.
+     * Adds a new asset to database. Throws a SQLException upon error, or if
+     * the asset already exists in the database.
      * 
-     * @param asset The asset to add to the database
-     * @return True if the asset was added successfully, false if not
+     * @param assetRecord The asset record to add to the database
+     * @throw SQLException Upon error adding the asset
      */
-    public boolean addAsset(Asset asset) {
-        boolean isSaved = false;
+    public void addAsset(AssetDBRecord assetRecord) throws SQLException {
         synchronized(stmtSaveNewRecord) {
-            try {
-                String checksum = (asset.getChecksum() == null) ? "" : asset.getChecksum();
-                logger.fine("[ASSET DB] ADD " + asset.getResourceURI().toString() + " [" + checksum + "]");
-                logger.fine("[ASSET DB] ADD url: " + asset.getURL());
-                logger.fine("[ASSET DB] ADD type: " + asset.getType().toString());
-                stmtSaveNewRecord.clearParameters();
-                stmtSaveNewRecord.setString(1, asset.getResourceURI().toString());
-                stmtSaveNewRecord.setString(2, checksum);
-                stmtSaveNewRecord.setString(3, "" /*asset.getURL()*/);
-                stmtSaveNewRecord.setString(4, asset.getType().toString());
-                stmtSaveNewRecord.setLong(5, System.currentTimeMillis());
-                stmtSaveNewRecord.setLong(6, 0 /* XXX */);
-                int row = stmtSaveNewRecord.executeUpdate();
-                logger.fine("AssetDB: Saving asset, row=" + row);
-                isSaved = true;            
-            } catch (java.sql.SQLException sqle) {
-                logger.log(Level.SEVERE, "AssetDB: SQL Error saving record for " + asset.getResourceURI().toString());
-                sqle.printStackTrace();
+            String checksum = (assetRecord.checksum == null) ? "" : assetRecord.checksum;
+            
+            stmtSaveNewRecord.clearParameters();
+            stmtSaveNewRecord.setString(1, assetRecord.assetURI);
+            stmtSaveNewRecord.setString(2, checksum);
+            stmtSaveNewRecord.setString(3, assetRecord.baseURL);
+            stmtSaveNewRecord.setString(4, assetRecord.type);
+            stmtSaveNewRecord.setLong(5, System.currentTimeMillis());
+            stmtSaveNewRecord.setLong(6, assetRecord.size);
+            int row = stmtSaveNewRecord.executeUpdate();
+        }
+    }
+
+    /**
+     * Updates an existing asset in the database. Throws a SQLException upon
+     * error.
+     *
+     * @param assetRecrord The asset record to update
+     * @throw SQLException Upon error updating the asset
+     */
+    public void updateAsset(AssetDBRecord assetRecord) throws SQLException {
+        synchronized(stmtUpdateExistingRecord) {
+            String checksum = (assetRecord.checksum == null) ? "" : assetRecord.checksum;
+
+            stmtUpdateExistingRecord.clearParameters();
+            stmtUpdateExistingRecord.setString(1, assetRecord.assetURI);
+            stmtUpdateExistingRecord.setString(2, checksum);
+            stmtUpdateExistingRecord.setString(3, assetRecord.baseURL);
+            stmtUpdateExistingRecord.setString(4, assetRecord.type);
+            stmtUpdateExistingRecord.setLong(5, System.currentTimeMillis());
+            stmtUpdateExistingRecord.setLong(6, assetRecord.size);
+            stmtUpdateExistingRecord.setString(7, assetRecord.assetURI);
+            stmtUpdateExistingRecord.setString(8, checksum);
+            stmtUpdateExistingRecord.executeUpdate();
+        }
+    }
+
+    /**
+     * Removes an asset given its unique identifying URI and checksum. Throws
+     * SQLException upon error
+     *
+     * @param assetID The unique ID of the asset (URI, checksum)
+     * @throw SQLException Upon error deleting the asset
+     */
+    public void deleteAsset(AssetID assetID) throws SQLException {
+        synchronized(stmtDeleteAsset) {
+            String uri = assetID.getAssetURI().toExternalForm();
+            String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
+
+            stmtDeleteAsset.clearParameters();
+            stmtDeleteAsset.setString(1, uri);
+            stmtDeleteAsset.setString(2, checksum);
+            stmtDeleteAsset.executeUpdate();
+        }
+    }
+
+    /**
+     * Return the asset record for the supplied unique asset ID, or null if
+     * the asset described by the ID is not in the cache. Throws SQLException
+     * upon error.
+     *
+     * @param assetID The unique asset ID (URI, checksum)
+     * @return The asset record in the cache, null if not present.
+     * @throw SQLException Upon error fetching the asset
+     */
+    public AssetDBRecord getAsset(AssetID assetID) throws SQLException {
+        AssetDBRecord assetRecord = null;
+        synchronized(stmtGetAsset) {
+            String uri = assetID.getAssetURI().toExternalForm();
+            String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
+
+            logger.fine("Getting asset in database uri " + uri + " checksum " +
+                    checksum);
+            
+            stmtGetAsset.clearParameters();
+            stmtGetAsset.setString(1, uri);
+            stmtGetAsset.setString(2, checksum);
+            ResultSet result = stmtGetAsset.executeQuery();
+
+            if (result != null && result.next() == true) {
+                assetRecord = new AssetDBRecord();
+                assetRecord.assetURI = result.getString("ASSET_URI");
+                assetRecord.checksum = result.getString("CHECKSUM");
+                assetRecord.baseURL = result.getString("URL");
+                assetRecord.type = result.getString("TYPE");
+                assetRecord.lastAccessed = result.getLong("LAST_ACCESSED");
+                assetRecord.size = result.getLong("SIZE");
+
+                // In the database, a null checksum is an empty string (""),
+                // but in the code, a null checksum is null
+                assetRecord.checksum = (assetRecord.checksum.equals("") == true) ?
+                    null : assetRecord.checksum;
             }
         }
-        return isSaved;
+        return assetRecord;
     }
-    
+
+    /**
+     * Returns a list of asset records for the unique asset uri. Returns an
+     * empty list if no such assets exists. Throws SQLException upon error
+     *
+     * @param assetURI The unique uri of the assets to fetch
+     * @return A list of assets that match the uri, an empty list if none
+     * @throw SQLException Upon error fetching the list
+     */
+    public List<AssetDBRecord> getAssetList(AssetURI assetURI) throws SQLException {
+        List<AssetDBRecord> assetList = new LinkedList();
+        synchronized (stmtGetAssetList) {
+            String uri = assetURI.toExternalForm();
+
+            stmtGetAssetList.clearParameters();
+            stmtGetAssetList.setString(1, uri);
+            ResultSet result = stmtGetAssetList.executeQuery();
+
+            if (result.next() == true) {
+                AssetDBRecord assetRecord = new AssetDBRecord();
+                assetRecord.assetURI = result.getString("ASSET_URI");
+                assetRecord.checksum = result.getString("CHECKSUM");
+                assetRecord.baseURL = result.getString("URL");
+                assetRecord.type = result.getString("TYPE");
+                assetRecord.lastAccessed = result.getLong("LAST_ACCESSED");
+                assetRecord.size = result.getLong("SIZE");
+
+                // In the database, a null checksum is an empty string (""),
+                // but in the code, a null checksum is null
+                assetRecord.checksum = (assetRecord.checksum.equals("") == true) ?
+                    null : assetRecord.checksum;
+
+                assetList.add(assetRecord);
+            }
+        }
+        return assetList;
+    }
+
     /**
      * Returns true if the asset database already exist. The asset database is
      * considered to exist, if the proper version of the database exists. If
@@ -348,6 +364,67 @@ public class AssetDB {
             return false;
         }
     }
+
+    /**
+     * Returns the location of the database. This location is the full path name.
+     *
+     * @return The full location to the database
+     */
+    private String getDatabaseLocation() {
+        String dbLocation = System.getProperty("derby.system.home") + "/" + dbName;
+        return dbLocation;
+    }
+
+    /**
+     * Returns the URL representation of the database
+     *
+     * @return The URL representation of the database
+     */
+    private String getDatabaseUrl() {
+        String dbUrl = dbProperties.getProperty("derby.url") + dbName;
+        return dbUrl;
+    }
+
+    /**
+     * Returns true if the database is connected, false if not.
+     *
+     * @return True if the database is connected, false if not.
+     */
+    private boolean isConnected() {
+        return this.isConnected;
+    }
+
+    /**
+     * Connect to the database. Return true upon success, false upon falure
+     *
+     * @return True upon success, false upon failure.
+     */
+    private boolean connect() {
+        /*
+         * Attempt to connect to the database, also compile some SQL statements
+         * that we'll use. Set the isConnected flag upon result.
+         */
+        try {
+            dbConnection = DriverManager.getConnection(this.getDatabaseUrl(), dbProperties);
+            stmtSaveNewRecord = dbConnection.prepareStatement(strSaveAsset);
+            stmtUpdateExistingRecord = dbConnection.prepareStatement(strUpdateAsset);
+            stmtGetAsset = dbConnection.prepareStatement(strGetAsset);
+            stmtGetAssetList = dbConnection.prepareStatement(strGetAssetList);
+            stmtDeleteAsset = dbConnection.prepareStatement(strDeleteAsset);
+            stmtUpdateLastAccessed = dbConnection.prepareStatement(strUpdateLastAccessed);
+            stmtComputeTotalSize = dbConnection.prepareStatement(strComputeTotalSize);
+
+            this.isConnected = dbConnection != null;
+        } catch (SQLException ex) {
+            isConnected = false;
+            dbConnection = null;
+            ex.printStackTrace();
+        }
+
+        logger.fine("AssetDB: Done attempting to connect, ret=" + this.isConnected);
+        return isConnected;
+    }
+
     
     /**
      * Create the tables in the database, takes an open connection to the database.
@@ -400,122 +477,6 @@ public class AssetDB {
         logger.fine("AssetDB: Created new database at " + this.getDatabaseLocation());
         return bCreated;
     }
-    
-    /**
-     * Updates an existing asset on the database with new information. If the
-     * asset does not exist, this method logs an exception and returns false.
-     * 
-     * @param asset The asset to update
-     * @return True upon success, false upon failure
-     */
-    public boolean updateAsset(Asset asset) {
-        boolean bEdited = false;
-        synchronized(stmtUpdateExistingRecord) {
-            try {
-                String checksum = (asset.getChecksum() == null) ? "" : asset.getChecksum();
-                logger.fine("[ASSET DB] UPDATE " + asset.getResourceURI().toString() + " [" + checksum + "]");
-
-                stmtUpdateExistingRecord.clearParameters();
-
-                stmtUpdateExistingRecord.setString(1, asset.getResourceURI().toString());
-                stmtUpdateExistingRecord.setString(2, checksum);
-                stmtUpdateExistingRecord.setString(3, asset.getURL());
-                stmtUpdateExistingRecord.setString(4, asset.getType().toString());
-                stmtUpdateExistingRecord.setLong(5, System.currentTimeMillis());
-                stmtUpdateExistingRecord.setLong(6, 0 /* XXX */);
-                stmtUpdateExistingRecord.setString(7, asset.getResourceURI().toString());
-                stmtUpdateExistingRecord.setString(8, checksum);
-
-                stmtUpdateExistingRecord.executeUpdate();
-                bEdited = true;
-            } catch(SQLException sqle) {
-                logger.log(Level.SEVERE, "AssetDB: SQL Error updating record for " + asset.getResourceURI().toString());
-                sqle.printStackTrace();
-            }
-        }
-        return bEdited;
-    }
-    
-    /**
-     * Removes an asset given its unique identifying URI and checksum. Returns
-     * true if the asset was successfully removed, false if not.
-     * 
-     * @param assetID The unique ID of the asset (URI, checksum)
-     * @return True upon success, false upon failure
-     */
-    public boolean deleteAsset(AssetID assetID) {
-        boolean bDeleted = false;
-        synchronized(stmtDeleteAsset) {
-            try {
-                String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
-                stmtDeleteAsset.clearParameters();
-                stmtDeleteAsset.setString(1, assetID.getResourceURI().toString());
-                stmtDeleteAsset.setString(2, checksum);
-                stmtDeleteAsset.executeUpdate();
-                bDeleted = true;
-            } catch (SQLException sqle) {
-                sqle.printStackTrace();
-            }
-        }
-        
-        return bDeleted;
-    }
-    
-    /**
-     * Return the asset record for the supplied unique asset ID, or null if
-     * the asset described by the ID is not in the cache
-     * 
-     * @param assetID The unique asset ID (URI, checksum)
-     * @return The asset record in the cache, null if not present.
-     */
-    public Asset getAsset(AssetID assetID) {
-        Asset asset = null;
-        synchronized(stmtGetAsset) {
-            try {
-                String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
-                logger.fine("[ASSET DB] GET " + assetID.getResourceURI().toString() + " [" + checksum + "]");
-                stmtGetAsset.clearParameters();
-                stmtGetAsset.setString(1, assetID.getResourceURI().toString());
-                stmtGetAsset.setString(2, checksum);
-                ResultSet result = stmtGetAsset.executeQuery();
-                if (result.next() == true) {
-                    /* Fetch the information from the database */
-                    String uri = result.getString("ASSET_URI");
-                    String cksum = result.getString("CHECKSUM");
-                    String url = result.getString("URL");
-                    AssetType assetType = AssetType.valueOf(result.getString("TYPE"));
-                    long lastAccessed = result.getLong("LAST_ACCESSED");
-                    long size = result.getLong("SIZE");
-                    
-                    /*
-                     * Create an ResourceURI class, log and error and return null
-                     * if its syntax is invalid.
-                     */
-                    asset = AssetManager.getAssetManager().assetFactory(assetType, assetID);
-                    asset.setURL(url);
-                    
-                    /*
-                     * In the database, a null checksum is an empty string (""),
-                     * but in the code, a null checksum is null
-                     */
-                    if (cksum.compareTo("") == 0) {
-                        asset.setChecksum(null);
-                    }
-                    else {
-                        asset.setChecksum(cksum);
-                    }
-                }
-            } catch(SQLException sqle) {
-                sqle.printStackTrace();
-            }
-        }
-        
-        /* Update the time the asset was last accessed */
-        if (asset != null) {
-            this.updateLastAccessed(assetID);
-        }
-        return asset;
-    }
 
     /**
      * Update the "last accessed" time with the current time (in milliseconds
@@ -524,40 +485,38 @@ public class AssetDB {
     private void updateLastAccessed(AssetID assetID) {
         synchronized(stmtUpdateLastAccessed) {
             try {
+                String uri = assetID.getAssetURI().toExternalForm();
                 String checksum = (assetID.getChecksum() == null) ? "" : assetID.getChecksum();
-                logger.fine("[ASSET DB] UPDATE LAST " + assetID.getResourceURI().toString() + " [" + checksum + "]");
                 
                 stmtUpdateLastAccessed.clearParameters();
                 stmtUpdateLastAccessed.setLong(1, System.currentTimeMillis());
-                stmtUpdateLastAccessed.setString(2, assetID.getResourceURI().toString());
+                stmtUpdateLastAccessed.setString(2, uri);
                 stmtUpdateLastAccessed.setString(3, checksum);
                 stmtUpdateLastAccessed.executeUpdate();
             } catch(SQLException sqle) {
-                logger.log(Level.SEVERE, "AssetDB: SQL Error updating last accessed for " + assetID.getResourceURI());
+                logger.log(Level.SEVERE, "AssetDB: SQL Error updating last accessed for " + assetID.getAssetURI());
                 sqle.printStackTrace();
             }
         }
     }
     
     /**
-     * Computes and returns the sum of all of the assets.
+     * Computes and returns the sum of all of the assets. Throws a SQLException
+     * upon error
      * 
      * @return The size in bytes of all of the assets
+     * @throw SQLException Upon error reading the total size
      */
-    public long getTotalSize() {
+    public long getTotalSize() throws SQLException {
         synchronized (stmtComputeTotalSize) {
-            try {
-                /* Do the SQL statement to compute the sum */
-                stmtComputeTotalSize.clearParameters();
-                ResultSet result = stmtComputeTotalSize.executeQuery();
-                
-                /* Fetch the one result, which should be the sum */
-                if (result.next() == true) {
-                    long size = result.getLong(0);
-                    return size;
-                }
-            } catch(SQLException sqle) {
-                sqle.printStackTrace();
+            /* Do the SQL statement to compute the sum */
+            stmtComputeTotalSize.clearParameters();
+            ResultSet result = stmtComputeTotalSize.executeQuery();
+
+            /* Fetch the one result, which should be the sum */
+            if (result.next() == true) {
+                long size = result.getLong(0);
+                return size;
             }
         }
         return 0;
@@ -618,8 +577,8 @@ public class AssetDB {
     /* The various SQL statements to operate on the database */
     private PreparedStatement stmtSaveNewRecord;
     private PreparedStatement stmtUpdateExistingRecord;
-    private PreparedStatement stmtGetListEntries;
     private PreparedStatement stmtGetAsset;
+    private PreparedStatement stmtGetAssetList;
     private PreparedStatement stmtDeleteAsset;
     private PreparedStatement stmtUpdateLastAccessed;
     private PreparedStatement stmtComputeTotalSize;
@@ -636,10 +595,14 @@ public class AssetDB {
             "    PRIMARY KEY (ASSET_URI, CHECKSUM) " +
             ")";
     
-    /* Get an asset based upon the unique resource path name */
+    /* Get an asset based upon the unique resource path name and checksum */
     private static final String strGetAsset =
             "SELECT * FROM APP.ASSET WHERE ASSET_URI = ? AND CHECKSUM = ?";
-    
+
+    /* Get a list of assets based upon the unique resource path name */
+    private static final String strGetAssetList =
+            "SELECT * FROM APP.ASSET WHERE ASSET_URI = ?";
+
     /* Save an asset given all of its values */
     private static final String strSaveAsset =
             "INSERT INTO APP.ASSET " +

@@ -17,69 +17,52 @@
  */
 package org.jdesktop.wonderland.common;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * The AssetURI class uniquely identifies a resource within the sytem that is
- * managed by the client-side asset management system. It is an extension of
- * the java.net.URI class with special accessor methods.
- * <p>
- * A AssetURI is typically a URI where certain of the field has specific
- * interpretations. Since these URIs refer to resources in modules, the host
- * part is interpreted as the module name and the path part as the relative
- * path of the resource within the module.
- * <p>
- * This class is meant to be subclasses by more specific kinds of protocols.
- * Two examples are AssetURI (protocol 'wla') that represents art assets in
- * modules, and JarURI (protocol 'wlj') that represents plugin jars in modules.
+ * An AssetURI is the base class of all asset uri's handle by the client-side
+ * asset management system.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
-@XmlJavaTypeAdapter(AssetURIAdapter.class)
-public class AssetURI extends ResourceURI {
-    
+public abstract class AssetURI implements Serializable {
+
+    /* String that holds the URI */
+    private String uri = null;
+
+    /* A map of protocols to the classes that handle them */
+    private static Map<String, Class<? extends AssetURI>> uriMap = new HashMap();
+
+    /* Initialize the list of known asset uri classes */
+    static {
+        uriMap.put("wla", ArtURI.class);
+        uriMap.put("wlhttp", WlHttpURI.class);
+        uriMap.put("wlj", JarURI.class);
+        uriMap.put("wlcontent", ContentURI.class);
+    }
+
     /** Default constructor */
     public AssetURI() {
-        super();
     }
     
-    /**
-     * Constructor which takes the string represents of the URI.
-     * 
-     * @param uri The string URI representation
-     * @throw URISyntaxException If the URI is not well-formed
-     */
-    public AssetURI(String uri) throws URISyntaxException {
-        super(uri);
+    /** Default constructor */
+    public AssetURI(String uri) {
+        this.uri = uri;
     }
-    
+
     /**
-     * Constructor which takes the module name, asset path and host name and
-     * host port.
+     * Returns the String URI
+     *
+     * @return The URI as a String
      */
-    public AssetURI(String moduleName, String hostName, int hostPort, String assetPath) {
-        super("wla", moduleName, hostName, hostPort, assetPath);
-    }
-    
-    /**
-     * Constructor which takes the module name, host name/port, and asset path.
-     * The host name/port is given as: <host name>:<port>
-     */
-    public AssetURI(String moduleName, String hostNameAndPort, String assetPath) {
-        super("wla", moduleName, hostNameAndPort, assetPath);
-    }
-    
-    /**
-     * Returns the relative path of the resource specified by the URI. The
-     * relative path does not being with any forward "/".
-     * 
-     * @return The relative path within the URI
-     */
-    public String getRelativePath() {
-       return "art/" + this.getAssetPath();
+    public String getURI() {
+        return uri;
     }
     
     /**
@@ -88,19 +71,91 @@ public class AssetURI extends ResourceURI {
      * 
      * @return A unique relative path for the URI
      */
-    public String getRelativeCachePath() {
-        return "module" + File.separator + this.getModuleName() + File.separator + this.getRelativePath();       
-    }
+    public abstract String getRelativeCachePath();
     
     /**
-     * Annotates this URI with a <server name>:<port>. Returns a new instance
-     * of AssetURI with this annotation
+     * Returns the string representation of the URI
      * 
-     * @param hostNameAndPort The <server name>:<port>
-     * @return A new AssetURI with annotated with the <server name>:<port>
-     * @throw URISyntaxException If the URI is not properly formed
+     * @return The string representation of the URI
      */
-    public AssetURI getAnnotatedURI(String hostNameAndPort) throws URISyntaxException {
-        return new AssetURI(this.getModuleName(), hostNameAndPort, this.getAssetPath());
+    @Override
+    public String toString() {
+        return toExternalForm();
+    }
+
+    /**
+     * Returns the external representation of the URI.
+     *
+     * @return The external URI form
+     */
+    public String toExternalForm() {
+        return uri;
+    }
+
+    /**
+     * Returns the protocol for this uri, null if none is present
+     */
+    public String getProtocol() {
+        // Parse of the protocol string, return null if malformed
+        int index = uri.indexOf("://");
+        if (index == -1) {
+            return null;
+        }
+        return uri.substring(0, index);
+    }
+
+    /**
+     * Returns an instance of the proper subclass of AssetURI for the given
+     * string URI. Returns null if none exists, based upon the protocol of
+     * the given URI.
+     *
+     * @param uri The String uri
+     * @return Some subclass of AssetURI that supports the uri
+     */
+    public static AssetURI uriFactory(String uri) {
+        // Parse of the protocol string, return null if malformed
+        int index = uri.indexOf("://");
+        if (index == -1) {
+            return null;
+        }
+        String protocol = uri.substring(0, index);
+
+        // Find the class that deals with the protocol type
+        Class clazz = uriMap.get(protocol);
+        if (clazz == null) {
+            return null;
+        }
+
+        try {
+            // Find the proper constructor that takes a String and return
+            // a new instance of the class
+            Constructor constructor = clazz.getConstructor(String.class);
+            return (AssetURI)constructor.newInstance(uri);
+        } catch (Exception ex) {
+            Logger.getLogger(AssetURI.class.getName()).log(Level.WARNING, null, ex);
+            return null;
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final AssetURI other = (AssetURI) obj;
+        if ((this.uri == null) ? (other.uri != null) : !this.uri.equals(other.uri)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + (this.uri != null ? this.uri.hashCode() : 0);
+        return hash;
     }
 }

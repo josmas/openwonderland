@@ -45,8 +45,8 @@ import org.jdesktop.wonderland.client.jme.Environment;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.ArtURI;
+import org.jdesktop.wonderland.common.ModuleURI;
 
 /**
  *
@@ -118,12 +118,12 @@ public class DefaultEnvironment implements Environment {
             /* Form the asset URIs */
             String server = loginManager.getServerNameAndPort();
 
-            AssetURI northURI = new AssetURI("wla://defaultenvironment/skybox1/1.jpg").getAnnotatedURI(server);
-            AssetURI southURI = new AssetURI("wla://defaultenvironment/skybox1/3.jpg").getAnnotatedURI(server);
-            AssetURI eastURI = new AssetURI("wla://defaultenvironment/skybox1/2.jpg").getAnnotatedURI(server);
-            AssetURI westURI = new AssetURI("wla://defaultenvironment/skybox1/4.jpg").getAnnotatedURI(server);
-            AssetURI downURI = new AssetURI("wla://defaultenvironment/skybox1/5.jpg").getAnnotatedURI(server);
-            AssetURI upURI = new AssetURI("wla://defaultenvironment/skybox1/6.jpg").getAnnotatedURI(server);
+            ModuleURI northURI = new ArtURI("wla://defaultenvironment/skybox1/1.jpg").getAnnotatedURI(server);
+            ModuleURI southURI = new ArtURI("wla://defaultenvironment/skybox1/3.jpg").getAnnotatedURI(server);
+            ModuleURI eastURI = new ArtURI("wla://defaultenvironment/skybox1/2.jpg").getAnnotatedURI(server);
+            ModuleURI westURI = new ArtURI("wla://defaultenvironment/skybox1/4.jpg").getAnnotatedURI(server);
+            ModuleURI downURI = new ArtURI("wla://defaultenvironment/skybox1/5.jpg").getAnnotatedURI(server);
+            ModuleURI upURI = new ArtURI("wla://defaultenvironment/skybox1/6.jpg").getAnnotatedURI(server);
 
             WorldManager wm = ClientContextJME.getWorldManager();
             skybox = new Skybox("skybox", 1000, 1000, 1000);

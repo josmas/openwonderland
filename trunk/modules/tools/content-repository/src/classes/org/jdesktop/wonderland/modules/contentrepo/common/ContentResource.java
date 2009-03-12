@@ -73,4 +73,11 @@ public interface ContentResource extends ContentNode {
      * @throws IOException if there is an error reading the file
      */
     public void put(File file) throws ContentRepositoryException, IOException;
+
+    /**
+     * Write the contents of the given input stream to this resource.
+     * @param is the input stream to write
+     * @throws IOException if there is an error reading the file
+     */
+    public void put(InputStream is) throws ContentRepositoryException, IOException;
 }

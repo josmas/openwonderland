@@ -119,6 +119,14 @@
         </java>
     </target>
 
+    <target name="run-assettest" depends="jar">
+        <java classname="org.jdesktop.wonderland.client.assetmgr.AssetManager" fork="true">
+            <classpath>
+                <pathelement path="${core-client.classpath}"/>
+            </classpath>
+        </java>
+    </target>
+
     <!-- deploy -->
     <target name="deploy" depends="dist, -core-deploy"/>
 

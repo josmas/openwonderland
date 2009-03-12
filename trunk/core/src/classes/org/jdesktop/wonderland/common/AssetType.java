@@ -28,8 +28,6 @@ public enum AssetType {
     
     // IMPORTANT names must be <=10 characters
     
-    IMAGE,
-    MODEL,
     FILE,
     OTHER           // For user defined assets
     
