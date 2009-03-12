@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
+package org.jdesktop.wonderland.modules.appbase.client.view;
 
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
@@ -44,7 +44,7 @@ public class Gui2D {
     private static final Logger logger = Logger.getLogger(Gui2D.class.getName());
 
     /** The type of actions that user events can generate */
-    protected enum ActionType {
+    public enum ActionType {
 
         TOGGLE_CONTROL,
         MOVE_CAMERA_TO_BEST_VIEW,
@@ -60,17 +60,17 @@ public class Gui2D {
     };
 
     /** A basic action object */
-    protected static class Action {
+    public static class Action {
 
         /** The type of the action */
-        protected ActionType type;
+        public ActionType type;
 
         /**
          * Create a new instance of Action.
          *
          * @param type The type of the action.
          */
-        protected Action(ActionType type) {
+        public Action(ActionType type) {
             this.type = type;
         }
     }
@@ -94,7 +94,7 @@ public class Gui2D {
         /** The user is dragging the mouse to move the view in the Z direction to its current plane */
         MOVING_Z,
         /** The user is dragging the mouse to rotate the view around its Y axis */
-        ROTATING_Y
+            // TODO        ROTATING_Y
     };
     /** The view configuration GUI state */
     protected ConfigState configState = ConfigState.IDLE;
@@ -111,14 +111,14 @@ public class Gui2D {
     protected EventClassListener mouseListener;
 
     /** This Gui's view */
-    protected View2DCell view;
+    protected View2DEntity view;
 
     /**
      * Create a new instance of Gui2D.
      *
      * @param view The view associated with the component that uses this Gui.
      */
-    public Gui2D(View2DCell view) {
+    public Gui2D(View2DEntity view) {
         this.view = view;
     }
 
@@ -322,7 +322,7 @@ public class Gui2D {
                 if ((me.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
                     if ((me.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
                         // TODO: temp: shift+control left press means rotate y
-                        configDragType = ConfigDragType.ROTATING_Y;
+                        //TODO: configDragType = ConfigDragType.ROTATING_Y;
                     } else {
                         // TODO: temp: shift left press means move z
                         configDragType = ConfigDragType.MOVING_Z;
@@ -402,9 +402,11 @@ public class Gui2D {
             case MOVING_Z:
                 view.userMoveZStart(configDragPoint.y);
                 break;
+                /* TODO
             case ROTATING_Y:
                 view.userRotateYStart(configDragPoint.y);
                 break;
+                 */
             }
             break;
 
@@ -416,9 +418,11 @@ public class Gui2D {
             case MOVING_Z:
                 view.userMoveZUpdate(configDragPoint.y);
                 break;
+                /* TODO
             case ROTATING_Y:
                 view.userRotateYUpdate(configDragPoint.y);
                 break;
+                */
             }
             break;
 
@@ -430,9 +434,11 @@ public class Gui2D {
             case MOVING_Z:
                 view.userMoveZFinish();
                 break;
+                /* TODO
             case ROTATING_Y:
                 view.userRotateYFinish();
                 break;
+                */
             }
             break;
 

@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 
 /**
  * The GUI code for the frame close button.

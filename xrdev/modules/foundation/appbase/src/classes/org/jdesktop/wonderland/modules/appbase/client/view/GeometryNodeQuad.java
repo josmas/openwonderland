@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
+package org.jdesktop.wonderland.modules.appbase.client.view;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.image.Texture2D;

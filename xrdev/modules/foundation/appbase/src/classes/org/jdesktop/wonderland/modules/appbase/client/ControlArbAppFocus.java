@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author deronj
  */
 @ExperimentalAPI
-abstract public class ControlArbAppFocus extends ControlArbSingle {
+public class ControlArbAppFocus extends ControlArbSingle {
 
     /** The input manager. */
     private InputManager inputManager;

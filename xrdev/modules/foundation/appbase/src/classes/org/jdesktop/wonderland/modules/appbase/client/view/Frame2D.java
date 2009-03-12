@@ -20,4 +20,5 @@ package org.jdesktop.wonderland.modules.appbase.client.view;
 public interface Frame2D {
     public View2D getView ();
     public void setTitle (String title);
+    public void update () throws InstantiationException;
 }

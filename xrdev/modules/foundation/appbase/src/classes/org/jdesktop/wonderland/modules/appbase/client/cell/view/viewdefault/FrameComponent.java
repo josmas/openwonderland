@@ -27,6 +27,7 @@ import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 
 /**
  * The generic superclass of window frame components.

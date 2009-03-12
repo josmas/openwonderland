@@ -216,7 +216,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
      *
      * @throw InstantiationException if couldn't allocate resources for the visual representation.
      */
-    void update() throws InstantiationException {
+    public void update() throws InstantiationException {
         if (header != null) {
             header.update();
         }

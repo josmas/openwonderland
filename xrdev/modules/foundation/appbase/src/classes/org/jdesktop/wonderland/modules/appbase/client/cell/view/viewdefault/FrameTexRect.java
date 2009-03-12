@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 
 /**
  * A textured rectangle component derived from <code>FrameRect</code>.
