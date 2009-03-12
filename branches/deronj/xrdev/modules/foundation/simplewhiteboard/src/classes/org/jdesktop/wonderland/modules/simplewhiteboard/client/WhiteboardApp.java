@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.simplewhiteboard.client;
 
 import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -43,7 +43,7 @@ public class WhiteboardApp extends AppGraphics2D  {
      * @param commComponent The communications component for communicating with the server.
      */
     public WhiteboardApp (String name, Vector2f pixelScale) {
-	super(name, new ControlArbMulti(), pixelScale);
+	super(name, new ControlArbAppFocus(), pixelScale);
 	controlArb.setApp(this);
     }
 
