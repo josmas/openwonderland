@@ -381,6 +381,10 @@ public abstract class View2DEntity implements View2D {
     public synchronized void setVisibleApp (boolean visible, boolean update) {
         logger.info("change visibleApp = " + visible);
         visibleApp = visible;
+
+        // TODO: HACK
+        visibleUser = visible;
+
         changeMask |= CHANGED_VISIBLE;
         if (update) {
             update();
@@ -400,7 +404,7 @@ public abstract class View2DEntity implements View2D {
     /** {@inheritDoc} */
     public synchronized void setVisibleUser (boolean visible, boolean update) {
         logger.info("change visibleUser = " + visible);
-        this.visibleUser = visible;
+        visibleUser = visible;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
             update();
@@ -707,7 +711,7 @@ public abstract class View2DEntity implements View2D {
             // Uses: visible
             parentEntity = getParentEntity();
             if (parentEntity != null && isActuallyVisible()) {
-                logger.fine("Attach entity " + entity + "to parent entity " + parentEntity);
+                logger.fine("Attach entity " + entity + " to parent entity " + parentEntity);
                 parentEntity.addEntity(entity);
                 RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
                 RenderComponent rcParent = (RenderComponent) parentEntity.getComponent(RenderComponent.class);

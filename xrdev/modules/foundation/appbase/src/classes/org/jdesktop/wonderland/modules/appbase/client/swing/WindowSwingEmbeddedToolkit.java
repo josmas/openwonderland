@@ -147,7 +147,7 @@ class WindowSwingEmbeddedToolkit
         WindowSwing winOwner = ((WindowSwingEmbeddedPeer) peer).getWindowSwing();
         WindowSwing winPopup = null;
         winPopup = new WindowSwing(winOwner.getApp(), Window2D.Type.POPUP, winOwner, width, height,
-                false, winOwner.getPixelScale());
+                                   false, winOwner.getPixelScale(), "Popup for " + winOwner.getName());
         winPopup.setComponent(contents);
 
         final WindowSwing popup = winPopup;
