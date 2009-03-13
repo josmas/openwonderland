@@ -107,6 +107,8 @@ public interface PresenceManager {
     /**
      * Get PresenceInfo for a given username.  If there is more than one user
      * with the username, all of them are returned;
+     * @param String user name
+     * @return PresenceInfo[] presence information for user.  Should be only one entry.
      */
     public PresenceInfo[] getPresenceInfo(String username);
 
@@ -114,6 +116,11 @@ public interface PresenceManager {
      * Get the PresenceInfo for the given CellID.
      */
     public PresenceInfo getPresenceInfo(CellID cellID);
+
+    /**
+     * Get the PresenceInfo for the given WonderlandIdentity.
+     */
+    public PresenceInfo getPresenceInfo(WonderlandIdentity userID);
 
     /**
      * Listener for changes
