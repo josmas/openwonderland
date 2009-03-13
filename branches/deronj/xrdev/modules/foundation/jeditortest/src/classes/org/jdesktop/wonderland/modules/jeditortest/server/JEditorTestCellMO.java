@@ -24,7 +24,6 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.jeditortest.common.JEditorTestCellClientState;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
-import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -53,13 +52,6 @@ public class JEditorTestCellMO extends App2DCellMO {
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.jeditortest.client.JEditorTestCell";
-    }
-
-    /** 
-     * {@inheritDoc}
-     */
-    public AppTypeMO getAppType () {
-	return new JEditorTestAppTypeMO();
     }
 
     /** 
