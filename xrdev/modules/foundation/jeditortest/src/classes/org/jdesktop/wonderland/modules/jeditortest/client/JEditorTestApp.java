@@ -17,12 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.jeditortest.client;
 
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.cell.AppCell;
 
 /**
  *
@@ -37,13 +35,11 @@ public class JEditorTestApp extends AppGraphics2D  {
     /**
      * Create a new instance of JEditorTestApp. 
      *
-     * @param appType The type of app (should be JEditorTestAppType).
+     * @param name The name of the app.
      * @param pixelScale The horizontal and vertical pixel sizes (in world meters per pixel).
      */
-    public JEditorTestApp (AppType appType, Vector2f pixelScale) {
-
-	// configWorld can be null because the server cell is already configured
-	super(appType, new ControlArbMulti(), pixelScale);
+    public JEditorTestApp (String name, Vector2f pixelScale) {
+	super(name, new ControlArbMulti(), pixelScale);
 	controlArb.setApp(this);
     }
 
