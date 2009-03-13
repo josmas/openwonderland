@@ -275,6 +275,7 @@ public class PresenceManagerImpl implements PresenceManager {
      * @return WonderlandIdentity[] the array of user ID's.
      */
     public WonderlandIdentity[] getUsersInRange(CellID cellID, BoundingVolume bounds) {
+	// TODO:  Return only users in range.
 	return getAllUsers();
     }
 
@@ -335,6 +336,20 @@ public class PresenceManagerImpl implements PresenceManager {
 	}
 
 	return new PresenceInfo(info.sessionID, info.userID, cellID);
+    }
+
+    /**
+     * Get the PresenceInfo for the given WonderlandIdentity.
+     */
+    public PresenceInfo getPresenceInfo(WonderlandIdentity userID) {
+	UserInfo info = userIDMap.get(userID);
+
+	if (info == null) {
+	    logger.warning("userIDMap does not have an entry for " + userID);
+	    return null;
+	}
+
+	return new PresenceInfo(info.sessionID, userID, info.cellID);
     }
 
     /**
