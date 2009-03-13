@@ -503,7 +503,7 @@ public abstract class View2DEntity implements View2D {
         size.width = (size.width <= 0) ? 1 : size.width;
         size.height = (size.height <= 0) ? 1 : size.height;
 
-        changeMask |= CHANGED_SIZE_APP;
+        changeMask |= CHANGED_SIZE_APP | CHANGED_TEXTURE;
         if (update) {
             update();
         }
@@ -609,19 +609,21 @@ public abstract class View2DEntity implements View2D {
         return userTranslation.clone();
     }
 
-    public synchronized void userMovePlanarStart (float x, float y) {
+    /** TODO: these are now deltas! */
+
+    public synchronized void userMovePlanarStart (float dx, float dy) {
     }
 
-    public synchronized void userMovePlanarUpdate (float x, float y) {
+    public synchronized void userMovePlanarUpdate (float x, float dy) {
     }
 
     public synchronized void userMovePlanarFinish () {
     }
 
-    public synchronized void userMoveZStart (float y) {
+    public synchronized void userMoveZStart (float dy) {
     }
 
-    public synchronized void userMoveZUpdate (float y) {
+    public synchronized void userMoveZUpdate (float dy) {
     }
 
     public synchronized void userMoveZFinish () {

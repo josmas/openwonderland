@@ -288,8 +288,8 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
                     }
                     window.forceTextureIdAssignment();
                     if (texture.getTextureId() == 0) {
-                        Thread.dumpStack();
-                        logger.severe("********* imageGraphics.update when texture id is still unassigned!!!!");
+                        stop();
+                        throw new RuntimeException("imageGraphics.update when texture id is still unassigned!!!!");
                     }
                 }
 

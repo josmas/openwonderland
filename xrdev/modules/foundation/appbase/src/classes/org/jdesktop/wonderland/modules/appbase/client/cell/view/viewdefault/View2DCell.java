@@ -65,8 +65,6 @@ public class View2DCell extends View2DEntity {
 
     private static final Logger logger = Logger.getLogger(View2DCell.class.getName());
 
-    private static final int CHANGED_USER_ROTATION = 0x800 | CHANGED_USER_TRANSFORM;
-
     /** The cell in which this view is displayed. */
     private App2DCell cell;
 
@@ -141,7 +139,7 @@ public class View2DCell extends View2DEntity {
         logger.info("change rotationUser = " + rotation);
         userRotationPrev = userRotation;
         userRotation = rotation.clone();
-        changeMask |= CHANGED_USER_ROTATION;
+        changeMask |= CHANGED_USER_TRANSFORM;
         if (update) {
             update();
         }
@@ -153,10 +151,10 @@ public class View2DCell extends View2DEntity {
     }
 
         
-    public synchronized void userRotateYStart (float y) {
+    public synchronized void userRotateYStart (float dy) {
     }
 
-    public synchronized void userRotateYUpdate (float y) {
+    public synchronized void userRotateYUpdate (float dy) {
     }
 
     public synchronized void userRotateYFinish () {

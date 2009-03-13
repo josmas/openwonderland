@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.view;
 
-import com.jme.math.Vector2f;
+import com.jme.math.Matrix4f;
 import com.jme.math.Vector3f;
 import java.awt.Point;
 import java.awt.event.InputEvent;
@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.jme.input.InputPicker3D;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
@@ -104,8 +105,8 @@ public class Gui2D {
     private Vector3f dragStartWorld;
     /** The screen coordinates of the button press event. */
     private Point dragStartScreen;
-    /** The current drag point (only valid when configState != IDLE). */
-    protected Vector2f configDragPoint;
+    /** The amount that the cursor has been dragged in eye coordinates. */
+    protected Vector3f dragVectorEye;
 
     /** A listener for 3D mouse events */
     protected EventClassListener mouseListener;
@@ -316,8 +317,6 @@ public class Gui2D {
                 action = new Action(ActionType.DRAG_START);
                 dragStartScreen = new Point(me.getX(), me.getY());
                 dragStartWorld = buttonEvent.getIntersectionPointWorld();
-                // TODO: convert world to eye
-                configDragPoint = new Vector2f(dragStartWorld.x, dragStartWorld.y);
 
                 if ((me.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
                     if ((me.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
@@ -341,11 +340,15 @@ public class Gui2D {
                 configState = ConfigState.DRAGGING;
 
                 MouseDraggedEvent3D dragEvent = (MouseDraggedEvent3D) me3d;
-                Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen,
-                                                                   new Vector3f());
-                // TODO: convert world to eye
-                configDragPoint = new Vector2f(configDragPoint.x + dragVector.x, 
-                                               configDragPoint.y + dragVector.y); 
+                Vector3f dragVectorWorld = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen,
+                                                                        new Vector3f());
+
+                // Convert world to eye coordinates
+                /* TODO: notyet
+                Matrix4f camInverse = InputPicker3D.getInputPicker().getCameraModelViewMatrixInverse(null);
+                dragVectorEye = new Vector3f();
+                camInverse.mult(dragVectorWorld, dragVectorEye);
+                */
             }
             return action;
 
@@ -397,14 +400,14 @@ public class Gui2D {
         case DRAG_START:
             switch (configDragType) {
             case MOVING_PLANAR:
-                view.userMovePlanarStart(configDragPoint.x, configDragPoint.y);
+                view.userMovePlanarStart(dragVectorEye.x, dragVectorEye.y);
                 break;
             case MOVING_Z:
-                view.userMoveZStart(configDragPoint.y);
+                view.userMoveZStart(dragVectorEye.y);
                 break;
                 /* TODO
             case ROTATING_Y:
-                view.userRotateYStart(configDragPoint.y);
+                view.userRotateYStart(dragVectorEye.y);
                 break;
                  */
             }
@@ -413,14 +416,14 @@ public class Gui2D {
         case DRAG_UPDATE:
             switch (configDragType) {
             case MOVING_PLANAR:
-                view.userMovePlanarUpdate(configDragPoint.x, configDragPoint.y);
+                view.userMovePlanarUpdate(dragVectorEye.x, dragVectorEye.y);
                 break;
             case MOVING_Z:
-                view.userMoveZUpdate(configDragPoint.y);
+                view.userMoveZUpdate(dragVectorEye.y);
                 break;
                 /* TODO
             case ROTATING_Y:
-                view.userRotateYUpdate(configDragPoint.y);
+                view.userRotateYUpdate(dragVectorEye.y);
                 break;
                 */
             }
