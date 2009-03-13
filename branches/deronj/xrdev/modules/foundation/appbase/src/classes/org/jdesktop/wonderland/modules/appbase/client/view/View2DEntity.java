@@ -851,7 +851,7 @@ public abstract class View2DEntity implements View2D {
         // Uses: type
         Vector3f stackTranslation = calcStackTranslation();
 
-        offsetTranslation.add(stackTranslation);
+        offsetTranslation.addLocal(stackTranslation);
         transform.setTranslation(offsetTranslation);
 
         return transform;
@@ -1230,7 +1230,7 @@ public abstract class View2DEntity implements View2D {
                 // Verify
                 Texture tex = ((Window2D) window).getTexture();
                 int texid = tex.getTextureId();
-                logger.warning("Allocated texture id " + texid + " for texture " + tex);
+                logger.fine("Allocated texture id " + texid + " for texture " + tex);
                 if (texid == 0) {
                     logger.severe("Texture Id is still 0!!!");
                 }
