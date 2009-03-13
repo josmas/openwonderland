@@ -1044,6 +1044,7 @@ public abstract class Window2D {
 
         // Create the texture which wraps the image
         texture = new Texture2D();
+        logger.fine("Created new texture " + texture);
         texture.setImage(image);
         texture.setMagnificationFilter(Texture.MagnificationFilter.Bilinear);
         texture.setMinificationFilter(Texture.MinificationFilter.BilinearNoMipMaps);

@@ -76,7 +76,7 @@ public abstract class View2DEntity implements View2D {
             	                                                CHANGED_USER_TRANSFORM;
 
     // Attribute changed flags (these include various categories which depend on them)
-    protected static final int CHANGED_TEXTURE          = 0x800;
+    protected static final int CHANGED_TEXTURE          = 0x800  | CHANGED_TOPOLOGY;
     protected static final int CHANGED_TYPE             = 0x1    | CHANGED_TOPOLOGY | CHANGED_TRANSFORMS;
     protected static final int CHANGED_PARENT           = 0x2    | CHANGED_TOPOLOGY
                                                                  | CHANGED_OFFSET_STACK_TRANSFORM;
@@ -1214,6 +1214,8 @@ public abstract class View2DEntity implements View2D {
             logger.warning("Trying to force texture id assignment while view texture state is null");
             return;
         }
+
+        logger.fine("texid alloc: ts.getTexture() = " + ts.getTexture());
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {

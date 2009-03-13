@@ -26,11 +26,14 @@ import java.nio.FloatBuffer;
 import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import java.util.logging.Logger;
 
 /**
  * A quad shaped geometry node.
  */
 class GeometryNodeQuad extends GeometryNode {
+
+    private static final Logger logger = Logger.getLogger(GeometryNodeQuad.class.getName());
 
     /** The actual geometry */
     private TexturedQuad quad;
@@ -82,6 +85,7 @@ class GeometryNodeQuad extends GeometryNode {
     public void setTexture(Texture2D texture) {
         super.setTexture(texture);
         quad.setTexture(texture);
+        logger.fine("Last texture assigned to quad = " + texture);
     }
 
     /** {@inheritDoc} */
