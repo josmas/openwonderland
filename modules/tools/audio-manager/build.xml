@@ -13,10 +13,16 @@
         <path location="${current.dir}/lib/voicelib.jar"/>
         <path location="${current.dir}/lib/voip.jar"/>
         <path location="${current.dir}/lib/bridge_connector.jar"/>
+        <path location="${current.dir}/../presence-manager/build/lib/server/presencemanager-server.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-common.classpath">
+        <path location="${current.dir}/../presence-manager/build/lib/client/presencemanager-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-client.classpath">
         <path location="${current.dir}/lib/stun.jar"/>
+        <path location="${current.dir}/../presence-manager/build/lib/client/presencemanager-client.jar"/>
     </pathconvert>
 
     <!-- import common build file -->

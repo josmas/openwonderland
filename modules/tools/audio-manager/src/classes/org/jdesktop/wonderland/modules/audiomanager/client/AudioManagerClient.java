@@ -32,6 +32,8 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 import org.jdesktop.wonderland.common.NetworkAddress;
 
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -48,7 +50,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectio
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
@@ -140,13 +141,16 @@ public class AudioManagerClient extends BaseConnection implements
     private UserListJFrame userListJFrame;
 
     public void showUsers(java.awt.event.ActionEvent evt) {
+	if (cellID == null) {
+	    return;
+	}
+
         if (userListJFrame == null) {
             userListJFrame = new UserListJFrame(session, this);
 	}
 
+	userListJFrame.setUserList();
         userListJFrame.setVisible(true);
-
-        session.send(this, new GetUserListMessage());
     }
 
     public void cellStatusChanged(Cell cell, CellStatus status) {
@@ -333,6 +337,7 @@ public class AudioManagerClient extends BaseConnection implements
 
             if (voiceChatDialog == null) {
 	        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+
 		try {
                     voiceChatDialog = new VoiceChatDialog(this, session, cellID);
 		} catch (IOException e) {
@@ -346,7 +351,7 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof VoiceChatBusyMessage) {
 	    VoiceChatBusyMessage msg = (VoiceChatBusyMessage) message;
 
-	    new VoiceChatBusyDialog(msg.getGroup(), msg.getCalleeList());
+	    new VoiceChatBusyDialog(msg.getGroup(), msg.getCalleeList()[0]);
 	} else if (message instanceof VoiceChatInfoResponseMessage) {
 	    VoiceChatInfoResponseMessage msg = (VoiceChatInfoResponseMessage) message;
 
@@ -365,12 +370,6 @@ public class AudioManagerClient extends BaseConnection implements
 	    if (userListJFrame != null) {
 	        SpeakingMessage msg = (SpeakingMessage) message;
 		userListJFrame.setSpeaking(msg.getCallID(), msg.getUsername(), msg.isSpeaking());
-	    }
-	} else if (message instanceof GetUserListMessage) {
-	    if (userListJFrame != null) {
-		GetUserListMessage msg = (GetUserListMessage) message;
-
-	        userListJFrame.setUserList(msg.getUserList());
 	    }
 	} else if (message instanceof MuteCallMessage) {
 	    if (userListJFrame != null) {

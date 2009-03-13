@@ -6,9 +6,13 @@
 
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import java.util.ArrayList;
 
@@ -18,7 +22,7 @@ import java.awt.Point;
  *
  * @author  jp
  */
-public class UserListJFrame extends javax.swing.JFrame {
+public class UserListJFrame extends javax.swing.JFrame implements PresenceManagerListener {
 
     private WonderlandSession session;
     private AudioManagerClient client;
@@ -72,18 +76,80 @@ public class UserListJFrame extends javax.swing.JFrame {
 	setVisible(false);
     }
 
-    public void setUserList(ArrayList<String> userData) {
-	userList.setListData(userData.toArray(new String[0]));
+    private String[] userData;
+
+    public void setUserList() {
+	PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
+
+	WonderlandIdentity[] userIDArray = pm.getAllUsers();
+
+	String[] userData = new String[userIDArray.length];
+
+	for (int i = 0; i < userIDArray.length; i++) {
+	    userData[i] = userIDArray[i].getUsername();
+	}
+
+	setUserList(userData);
+    }
+
+    public void setUserList(String[] userData) {
+	this.userData = userData;
+
+	userList.setListData(userData);
     }
 
     public void setSpeaking(String callID, String username, boolean isSpeaking) {
 	//System.out.println("Got message for " + callID + " username " + username
 	//    + (isSpeaking ? " Started Speaking" : " Stopped Speaking"));
+
+        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
+
+        WonderlandIdentity[] userIDArray = pm.getAllUsers();
+
+        String[] userData = new String[userIDArray.length];
+
+        for (int i = 0; i < userIDArray.length; i++) {
+	    String user = userIDArray[i].getUsername();
+
+	    if (username.equals(user) && isSpeaking) {
+		user += "...";
+	    } 
+
+            userData[i] = user;
+        }
+
+	setUserList(userData);
     }
 
     public void muteCall(String callID, String username, boolean isMuted) {
 	//System.out.println("callID " + callID + " username '" + username + "' "
 	//    + (isMuted ? "Muted" : "Unmuted"));
+
+        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
+
+        WonderlandIdentity[] userIDArray = pm.getAllUsers();
+
+        String[] userData = new String[userIDArray.length];
+
+        for (int i = 0; i < userIDArray.length; i++) {
+	    String user = userIDArray[i].getUsername();
+
+	    if (username.equals(user) && isMuted) {
+		user = "[" + user + "]";
+	    } 
+
+            userData[i] = user;
+        }
+
+	setUserList(userData);
+    }
+
+    public void userAdded(WonderlandIdentity userID) {
+	setUserList();
+    }
+
+    public void userRemoved(WonderlandIdentity userID) {
+	setUserList();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

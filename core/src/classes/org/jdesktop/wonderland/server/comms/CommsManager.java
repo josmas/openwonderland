@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server.comms;
 
 import com.sun.sgs.app.ClientSession;
+import java.math.BigInteger;
 import java.util.Set;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -128,4 +129,13 @@ public interface CommsManager {
      * type
      */
     public WonderlandClientSender getSender(ConnectionType clientType);
+
+    /**
+     * Get a WonderlandClientID from a sessionID.
+     *
+     * @param sessionID BigInteger
+     * @return a WonderlandClientID or null
+     */
+    public WonderlandClientID getWonderlandClientID(BigInteger sessionID);
+
 }

@@ -41,6 +41,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLea
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.UserMO;
@@ -50,6 +52,8 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 
+import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 import com.sun.sgs.app.AppContext;
@@ -106,7 +110,9 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	if (message instanceof VoiceChatBusyMessage) {
 	    VoiceChatBusyMessage msg = (VoiceChatBusyMessage) message;
 
-            WonderlandClientID id = getClientID(msg.getCaller());
+	    CommsManager cm = CommsManagerFactory.getCommsManager();
+	    
+            WonderlandClientID id = cm.getWonderlandClientID(msg.getCaller().clientID);
 
             if (id == null) {
                 logger.warning("No WonderlandClientID for caller "
@@ -130,7 +136,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
 
-	    Player player = vm.getPlayer(msg.getCaller());
+	    Player player = vm.getPlayer(msg.getCaller().userID.getUsername());
 
 	    if (player == null) {
 		logger.warning("No player for " + msg.getCaller());
@@ -176,7 +182,8 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    audioGroup = vm.createAudioGroup(group, setup);
 	}
 
-	String callerCallID = AudioManagerConnectionHandler.getCallID(msg.getCaller());
+	String callerCallID = AudioManagerConnectionHandler.getCallID(
+	    msg.getCaller().userID.getUsername());
 
 	if (callerCallID == null) {
 	    logger.warning("No callID for " + msg.getCaller());
@@ -184,9 +191,11 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    return;
 	}
 
-	String[] playerUsername = msg.getCalleeList().split(" ");
+	String[] playerUsername = getUsers(msg.getCalleeList());
 
-	boolean added = addPlayerToChatGroup(vm, audioGroup, msg.getCaller(), callerCallID, 
+	String caller = msg.getCaller().userID.getUsername();
+
+	boolean added = addPlayerToChatGroup(vm, audioGroup, caller, callerCallID, 
 	    msg.getChatType());
 
 	if (added == false && playerUsername.length == 0) {
@@ -194,11 +203,12 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    return;
 	}
 
-	logger.info("AudioGroup " + group + " caller " + msg.getCaller()
-	    + " callees '" + msg.getCalleeList() + "'");
+	logger.fine("Request to join AudioGroup " + group + " caller " + caller);
 
 	for (int i = 0; i < playerUsername.length; i++) {
 	    String username = playerUsername[i];
+
+	    logger.fine("  callee:  " + username);
 
 	    if (username == null || username.length() == 0) {
 		continue;
@@ -218,7 +228,10 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 		continue;
 	    }
 
-	    WonderlandClientID id = getClientID(username);
+	    PresenceInfo info = msg.getCalleeList()[i];
+
+            WonderlandClientID id = 
+	       CommsManagerFactory.getCommsManager().getWonderlandClientID(info.clientID);
 
 	    if (id == null) {
 		logger.warning("No WonderlandClientID for call " 
@@ -246,7 +259,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    logger.info("Asking " + username + " to join audio group " 
 		+ group + " chatType " + msg.getChatType());
 
-	    requestPlayerJoinAudioGroup(sender, id, group, msg.getCaller(),
+	    requestPlayerJoinAudioGroup(sender, id, group, caller,
 		username, msg.getChatType());
 	}
 
@@ -254,61 +267,18 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	return;
     }
 
-    /*
-     * XXX There must be a better way to get the WonderlandClientID from a username!
-     */
-    private WonderlandClientID getClientID(String username) {
-        UserManager userManager = UserManager.getUserManager();
+    private String[] getUsers(PresenceInfo[] info) {
+	String[] users = new String[info.length];
 
-        Iterator<ManagedReference<UserMO>> it = userManager.getAllUsers().iterator();
-
-        while (it.hasNext()) {
-            UserMO userMO = it.next().get();
-
-            if (userMO.getUsername().equals(username) == false) {
-                continue;
-            }
-
-	    WonderlandClientID clientID = getClientID(userMO);
-
-	    if (clientID != null) {
-		return clientID;
-	    }
+	for (int i = 0; i < info.length; i++) {
+	    users[i] = getUser(info[i]);
 	}
 
-	return null;
+	return users;
     }
 
-    private WonderlandClientID getClientID(UserMO userMO) {
-	Map<WonderlandClientID, Map<String, ManagedReference<AvatarCellMO>>> avatars = userMO.getAvatars();
-
-        Iterator<WonderlandClientID> it = avatars.keySet().iterator();
-
-        while (it.hasNext()) {
-	    WonderlandClientID clientID = it.next();
-
-            if (getClientID(userMO.getUsername(), avatars.get(clientID)) == true) {
-		return clientID;
-	    }
-        }
-
-        return null;
-    }
-
-    private boolean getClientID(String username, Map<String, ManagedReference<AvatarCellMO>> map) {
-        Iterator<ManagedReference<AvatarCellMO>> it = map.values().iterator();
-
-        while (it.hasNext()) {
-             AvatarCellMO cellMO = it.next().get();
-
-             UserMO userMO = cellMO.getUser();
-
-             if (userMO.getUsername().equals(username)) {
-                return true;
-             }
-        }
-
-        return false;
+    private String getUser(PresenceInfo info) {
+	return info.userID.getUsername();
     }
 
     private ConcurrentHashMap<String, String> playerMap = new ConcurrentHashMap();
@@ -397,22 +367,6 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    Player[] players = audioGroup.getPlayers();
 
 	    for (int i = 0; i < players.length; i++) {
-		//UserMO userMO = WonderlandContext.getUserManager().getUser(clientID);
-
-		//WonderlandIdentity identity = userMO.getIdentity();
-
-		/*
-		 * XXX This won't work because getId() is the player ID and not the user name.
-		 */
-		//UserMO userMO = WonderlandContext.getUserManager().getUserMO(players[i].getId());
-
-		//if (userMO == null) {
-		//    System.out.println("No UserMO for " + players[i].getId());
-		//    continue;
-		//}
-
-	        //chatInfo += userMO.getUsername() + " ";
-
 		String callID = playerMap.get(players[i].getId());
 	
 		if (callID == null) {

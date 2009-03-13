@@ -15,31 +15,31 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.presencemanager.common.messages;
+
+import java.math.BigInteger;
+
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- *
+ * Message indicating a client has connected
  * @author jprovino
  */
-public class VoiceChatLeaveMessage extends VoiceChatMessage {
-    
-    private PresenceInfo caller;
+@ExperimentalAPI
+public class ClientConnectedMessage extends Message {
 
-    /*
-     * Leave group
-     */
-    public VoiceChatLeaveMessage(String group, PresenceInfo caller) {
-	super(group);
+    private BigInteger clientID;
 
-	this.caller = caller;
+    public ClientConnectedMessage(BigInteger clientID) {
+	this.clientID = clientID;
     }
-	 
-    public PresenceInfo getCaller() {
-	return caller;
+
+    public BigInteger getClientID() {
+	return clientID;
     }
 
 }

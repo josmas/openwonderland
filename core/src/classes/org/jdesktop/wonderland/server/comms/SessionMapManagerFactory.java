@@ -15,31 +15,22 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.server.comms;
 
-import org.jdesktop.wonderland.common.messages.Message;
-
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+import com.sun.sgs.app.AppContext;
 
 /**
+ * Get an instance of the SessionMapManager
  *
  * @author jprovino
  */
-public class VoiceChatLeaveMessage extends VoiceChatMessage {
-    
-    private PresenceInfo caller;
-
-    /*
-     * Leave group
+public class SessionMapManagerFactory {
+    /**
+     * Get the SessionMapManager singleton
+     * @return the  SessionMapManager
      */
-    public VoiceChatLeaveMessage(String group, PresenceInfo caller) {
-	super(group);
-
-	this.caller = caller;
+    public static SessionMapManager getSessionMapManager() {
+        return AppContext.getManager(SessionMapManager.class);
     }
-	 
-    public PresenceInfo getCaller() {
-	return caller;
-    }
-
+    
 }

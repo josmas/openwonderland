@@ -17,16 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.common.messages.Message;
-
 /**
  *
  * @author jprovino
  */
 public class VoiceChatJoinRequestMessage extends VoiceChatMessage {
     
-    private String calleeList;
     private String caller;
+    private String calleeList;
     private ChatType chatType;
 
     public VoiceChatJoinRequestMessage(String group, String caller, 
@@ -46,7 +44,7 @@ public class VoiceChatJoinRequestMessage extends VoiceChatMessage {
     public String getCalleeList() {
 	return calleeList;
     }
-    
+
     public ChatType getChatType() {
 	return chatType;
     }

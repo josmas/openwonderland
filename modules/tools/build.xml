@@ -22,8 +22,13 @@
         <include name="asset-meter/build.xml"/>
     </fileset>
     
+    <fileset dir="${current.dir}" id="presence.manager">
+        <include name="presence-manager/build.xml"/>
+    </fileset>
+
     <!-- build and package all subprojects -->
     <target name="dist">
+        <build-subprojects fileset="presence.manager" target="dist"/>
         <build-subprojects fileset="all.projects" target="dist"/>
     </target>
     
