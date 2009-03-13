@@ -21,7 +21,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.swingmenutest.common.SwingMenuTestCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -55,13 +54,6 @@ public class SwingMenuTestCell extends App2DCell {
         super(cellID, cellCache);
     }
     
-    /** 
-     * {@inheritDoc}
-     */
-    public AppType getAppType () {
-	return new SwingMenuTestAppType();
-    }
-
     /**
      * Initialize the cell with parameters from the server.
      *
@@ -84,11 +76,12 @@ public class SwingMenuTestCell extends App2DCell {
 	    // The cell is now visible
             case ACTIVE:
 		
-                SwingMenuTestApp smtApp = new SwingMenuTestApp(getAppType(), clientState.getPixelScale());
+                SwingMenuTestApp smtApp = new SwingMenuTestApp("Swing Menu Test", 
+                                                               clientState.getPixelScale());
 	        setApp(smtApp);
 
-		// Associate the app with this cell (must be done before making it visible)
-		app.setDisplayer(this);
+                // Tell the app to be displayed in this cell.
+                smtApp.addDisplayer(this);
 
                 // This app has only one window, so it is always top-level 
                 try {
@@ -100,13 +93,14 @@ public class SwingMenuTestCell extends App2DCell {
                     throw new RuntimeException(ex);
                 }
 
-		// Make the app window visible
-		window.setVisible(true);
+                // Both the app and the user want this window to be visible
+                window.setVisibleApp(true);
+                window.setVisibleUser(this, true);
 		break;
 
 	    // The cell is no longer visible
             case DISK:
-		window.setVisible(false);
+                window.setVisibleApp(false);
 		window = null;
 		break;
 	} 

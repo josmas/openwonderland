@@ -36,8 +36,7 @@ public class WhiteboardApp extends AppGraphics2D  {
      * Create a new instance of WhiteboardApp. This in turn creates
      * and makes visible the single window used by the app.
      *
-     * @param width The width (in pixels) of the whiteboard window.
-     * @param height The height (in pixels) of the whiteboard window.
+     * @param name The name of the app.
      * @param pixelScale The horizontal and vertical pixel sizes
      * (in world meters per pixel).
      * @param commComponent The communications component for communicating with the server.
