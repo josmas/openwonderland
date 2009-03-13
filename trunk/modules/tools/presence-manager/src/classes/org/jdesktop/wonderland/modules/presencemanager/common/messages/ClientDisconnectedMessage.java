@@ -15,36 +15,31 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.presencemanager.common.messages;
+
+import java.math.BigInteger;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.comms.ProtocolVersion;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
-import java.io.Serializable;
-
-import java.util.ArrayList;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- * Get the list of users
- *
+ * Message indicating a client has disconnected
  * @author jprovino
  */
 @ExperimentalAPI
-public class GetUserListMessage extends Message {
+public class ClientDisconnectedMessage extends Message {
 
-    private ArrayList<String> userList;
+    private BigInteger clientID;
 
-    public GetUserListMessage() {
+    public ClientDisconnectedMessage(BigInteger clientID) {
+	this.clientID = clientID;
     }
 
-    public void setUserList(ArrayList<String> userList) {
-	this.userList = userList;
-    }
-
-    public ArrayList<String> getUserList() {
-	return userList;
+    public BigInteger getClientID() {
+	return clientID;
     }
 
 }

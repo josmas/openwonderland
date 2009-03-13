@@ -24,7 +24,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectio
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
@@ -84,7 +83,7 @@ public class AudioManagerConnectionHandler
     
     private VoiceChatHandler voiceChatHandler = new VoiceChatHandler();
 
-    private ConcurrentHashMap<WonderlandClientSender, String> senderCallIDMap = 
+    private static ConcurrentHashMap<WonderlandClientSender, String> senderCallIDMap = 
 	new ConcurrentHashMap();
 
     private static ConcurrentHashMap<String, String> callIDUsernameMap = 
@@ -108,7 +107,6 @@ public class AudioManagerConnectionHandler
     public void clientConnected(WonderlandClientSender sender, 
 	    WonderlandClientID clientID, Properties properties) {
 
-        //throw new UnsupportedOperationException("Not supported yet.");
 	logger.fine("client connected...");
     }
 
@@ -166,11 +164,6 @@ public class AudioManagerConnectionHandler
 	    return;
 	}
 
-	if (message instanceof GetUserListMessage) {
-	    sendUserList(sender);
-	    return;
-	}
-
 	if (message instanceof PlaceCallMessage) {
 	    logger.fine("Got place call message from " + clientID);
 
@@ -222,16 +215,12 @@ public class AudioManagerConnectionHandler
 		senderCallIDMap.remove(sender);
 		callIDUsernameMap.remove(callID);
 	    }
-
-	    sendUserList(sender, username + " (Invited)");
 	    return;
 	}
 
 	if (message instanceof MuteCallMessage) {
 	    MuteCallMessage msg = (MuteCallMessage) message;
 
-	    //sender.send(new MuteCallMessage(msg.getCallID(), getUsername(msg.getCallID()), 
-	    //	msg.isMuted()));
 	    Call call = vm.getCall(msg.getCallID());
 
 	    if (call == null) {
@@ -244,14 +233,12 @@ public class AudioManagerConnectionHandler
 	    } catch (IOException e) {
 		logger.warning("Unable to mute/unmute call " + call.getId() + ": "
 		    + e.getMessage());
+		return;
 	    }
 
-	    String username = call.getSetup().cp.getName();
+	    sender.send(new MuteCallMessage(msg.getCallID(), getUsername(msg.getCallID()), 
+	    	msg.isMuted()));
 
-	    if (msg.isMuted()) {
-		username = "[" + username + "]";
-	    }
-	    sendUserList(sender, username);
 	    return;
 	}
 	
@@ -307,90 +294,7 @@ public class AudioManagerConnectionHandler
 	    return;
 	}
 
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    private void sendUserList(WonderlandClientSender sender) {
-	sendUserList(sender, null);
-    }
-
-    private void sendUserList(WonderlandClientSender sender, String user) {
-	ArrayList<String> userList = getUserList(user);
-
-        GetUserListMessage message = new GetUserListMessage();
-	message.setUserList(getUserList(user));
-	sender.send(message);
-    }
-
-    private ArrayList<String> getUserList() {
-	return getUserList(null);
-    }
-
-    private ArrayList<String> getUserList(String user) {
-	UserManager userManager = UserManager.getUserManager();
-
-	Iterator<ManagedReference<UserMO>> it = userManager.getAllUsers().iterator();
-	    
-	ArrayList<String> userList= new ArrayList();
-
-	while (it.hasNext()) {
-	    UserMO userMO = it.next().get();
-
-	    String username = userMO.getIdentity().getUsername();
-
-	    if (user != null && user.indexOf(username) >= 0) {
-		userList.add(user);
-		continue;
-	    }
-
-	    String callID = getCallID(username);
-
-	    if (callID != null) {
-		Call call = AppContext.getManager(VoiceManager.class).getCall(callID);
-
-		if (call != null && call.isMuted()) {
-		    username = "[" + username + "]";
-		}
-	    }
-
-	    userList.add(username);
-	}
-
-	addOutworlders(userList);
-	userList.remove("servermanager");  // not a real user.
-	return userList;
-    }
-
-    private void addOutworlders(ArrayList<String> userList) {
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	Player[] players = vm.getPlayers();
-
-	for (int i = 0; i < players.length; i++) {
-	    Player p = players[i];
-
-	    if (p.getSetup().isLivePlayer == false) {
-		continue;
-	    }
-	    
-	    if (p.getSetup().isOutworlder== false) {
-		continue;
-	    }
-	    
-	    Call call = p.getCall();
-
-	    if (call == null) {
-		continue;
-	    }
-
-	    String name = call.getSetup().cp.getName();
-
-	    if (userList.contains(name)) {
-		return;
-	    }
-
-	    userList.add(name + " (Outworlder)");
-	}
+        throw new UnsupportedOperationException("Unknown message:  " + message);
     }
 
     private void setupCall(String callID, CallSetup setup, double x, 
@@ -440,8 +344,6 @@ public class AudioManagerConnectionHandler
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-
 	String callID = senderCallIDMap.get(sender);
 
 	if (callID == null) {
@@ -504,28 +406,17 @@ public class AudioManagerConnectionHandler
 
 	    vm.dump("all");
 	    player.setPrivateMixes(true);
-	    sendUserList(sender);
 	    break;
 
         case CallStatus.STARTEDSPEAKING:
 	    sender.send(new SpeakingMessage(callId, getUsername(callId), true));
-	    sendUserList(sender, getUsername(callId) + "...");
             break;
 
         case CallStatus.STOPPEDSPEAKING:
 	    sender.send(new SpeakingMessage(callId, getUsername(callId), false));
-	    sendUserList(sender, getUsername(callId));
             break;
 
 	case CallStatus.ENDED:
-	    ArrayList<String> userList = getUserList();
-
-	    userList.remove(getUsername(callId));
-
-            GetUserListMessage message = new GetUserListMessage();
-
-	    message.setUserList(userList);
-	    sender.send(message);
             break;
 	  
 	case CallStatus.BRIDGE_OFFLINE:

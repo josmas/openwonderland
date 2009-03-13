@@ -26,7 +26,6 @@ import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
@@ -34,6 +33,10 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInf
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
+
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
@@ -66,13 +69,14 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 
     private Flasher flasher;
 
-    private VoiceChatMessage.ChatType chatType = 
-	VoiceChatMessage.ChatType.PRIVATE;
+    private VoiceChatMessage.ChatType chatType = VoiceChatMessage.ChatType.PRIVATE;
 
     private AudioManagerClient client;
     private WonderlandSession session;
 
-    private String caller;
+    private PresenceInfo caller;
+
+    private PresenceManager pm;
 
     /** Creates new form VoiceChatDialog */
     public VoiceChatDialog(AudioManagerClient client, WonderlandSession session, CellID cellID) 
@@ -87,16 +91,32 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 
 	Cell cell = ClientContext.getCellCache(session).getCell(cellID);
 
+	pm = PresenceManagerFactory.getPresenceManager(session);
+
+	String user;
+
 	try {
-	    caller = cell.getCellCache().getViewCell().getIdentity().getUsername();
+	    user = cell.getCellCache().getViewCell().getIdentity().getUsername();
+
+	    PresenceInfo[] callerList = pm.getPresenceInfo(user);
+
+	    if (callerList == null) {
+		logger.warning("Cannot find PresenceInfo for " + user);
+		joinButton.setEnabled(false);
+		leaveButton.setEnabled(false);
+		busyButton.setEnabled(false);
+		statusLabel.setText("Unknown user" + user);
+	    } else {
+	        caller = callerList[0];
+	    }
 	} catch (Exception e) {
 	    throw new IOException(e.getMessage());
 	}
 
-	callerText.setText(caller);
+	callerText.setText(user);
 	callerText.setEnabled(false);
 
-	chatGroupText.setText(caller);
+	chatGroupText.setText(user);
 
 	setVisible(true);
     }
@@ -119,19 +139,30 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 
 	Cell cell = ClientContext.getCellCache(session).getCell(cellID);
 
-	caller = cell.getCellCache().getViewCell().getIdentity().getUsername();
+	String user = cell.getCellCache().getViewCell().getIdentity().getUsername();
 
-	callerText.setText(caller);
+	PresenceInfo[] callerList = pm.getPresenceInfo(user);
+
+        if (callerList == null) {
+            logger.warning("Cannot find PresenceInfo for " + user);
+	    joinButton.setEnabled(false);
+	    leaveButton.setEnabled(false);
+	    busyButton.setEnabled(false);
+	    statusLabel.setText("Unknown user" + user);
+        } else {
+	    caller = callerList[0];
+	}
+
+	callerText.setText(user);
 	callerText.setEnabled(false);
 
-	chatGroupText.setText(caller);
+	chatGroupText.setText(caller.userID.getUsername());
 
 	chatterText.setText(s);
 
 	leaveButton.setEnabled(false);
 	busyButton.setEnabled(false);
 
-	logger.fine("VOICE DIALOG IS VISIBLE!");
 	setVisible(true);
     }
 
@@ -143,7 +174,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 	chatterText.setText(chatters);
     }
 
-    public void requestToJoin(String group, String caller, String calleeList,
+    public void requestToJoin(String group, String caller, String callees,
 	    VoiceChatMessage.ChatType chatType) {
 
 	this.chatType = chatType;
@@ -152,7 +183,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 	callerText.setEnabled(false);
 	chatGroupText.setText(group);
 	chatGroupText.setEnabled(false);
-	chatterText.setText(caller + " " + calleeList);
+	chatterText.setText(caller + " " + callees);
 	chatterText.setEnabled(false);
 
 	if (chatType == VoiceChatMessage.ChatType.SECRET) {
@@ -298,20 +329,6 @@ public class VoiceChatDialog extends javax.swing.JFrame {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(158, 158, 158)
-                        .add(statusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 107, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel2)
-                            .add(jLabel1)
-                            .add(jLabel3))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, callerText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, chatterText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, chatGroupText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
@@ -322,15 +339,27 @@ public class VoiceChatDialog extends javax.swing.JFrame {
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(publicRadioButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 29, Short.MAX_VALUE))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                            .add(layout.createSequentialGroup()
                                 .addContainerGap()
-                                .add(updateJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 99, Short.MAX_VALUE)
+                                .add(updateJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 94, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 69, Short.MAX_VALUE)
                                 .add(busyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 73, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(51, 51, 51)))
+                                .add(58, 58, 58)))
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(leaveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(joinButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))))
+                            .add(joinButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel2)
+                            .add(jLabel1)
+                            .add(jLabel3))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                            .add(callerText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                            .add(chatterText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                            .add(chatGroupText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE))))
                 .add(57, 57, 57))
         );
         layout.setVerticalGroup(
@@ -359,8 +388,8 @@ public class VoiceChatDialog extends javax.swing.JFrame {
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(leaveButton)
-                    .add(busyButton)
-                    .add(updateJButton))
+                    .add(updateJButton)
+                    .add(busyButton))
                 .addContainerGap(27, Short.MAX_VALUE))
         );
 
@@ -385,7 +414,7 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         chatGroup = caller + "-" + cellID.toString();
     }
 
-    logger.warning("JOIN chatGroup " + chatGroup + " caller " + caller
+    logger.info("JOIN chatGroup " + chatGroup + " caller " + caller
 	+ " chatters " + chatters + " chatType " + chatType);
 
     statusLabel.setText(chatType + " Chat");
@@ -398,14 +427,65 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 	chatters = "";
     }
 
-    session.send(client, new VoiceChatJoinMessage(chatGroup, caller, chatters, chatType));
+    PresenceInfo[] callerInfo = pm.getPresenceInfo(caller);
 
-    logger.warning("Sent join message, about to enable leave button");
+    if (callerInfo == null) {
+	return;
+    }
 
+    checkLength(callerInfo);
+
+    PresenceInfo[] chattersInfo = new PresenceInfo[0];
+
+    if (chatters.length() > 0) {
+	chattersInfo = getPresenceInfo(chatters);
+
+        if (chattersInfo == null) {
+	    statusLabel.setText("Unknown user in list:  " + chatters);
+	    return;
+	}
+    }
+
+    session.send(client, new VoiceChatJoinMessage(chatGroup, callerInfo[0], chattersInfo, chatType));
+
+    logger.info("Sent join message, about to enable leave button");
+
+    busyButton.setEnabled(false);
     leaveButton.setEnabled(true);
 
     dialogs.put(chatGroup, this);
 }//GEN-LAST:event_joinButtonActionPerformed
+
+private PresenceInfo[] getPresenceInfo(String users) {
+    String[] tokens = users.split(" ");
+
+    PresenceInfo[] info = new PresenceInfo[tokens.length];
+
+    for (int i = 0; i < tokens.length; i++) {
+	PresenceInfo[] userInfo = pm.getPresenceInfo(tokens[i]);
+
+	if (userInfo == null) {
+	    logger.warning("No PresenceInfo for " + tokens[i]);
+	    return null;
+	}
+
+	info[i] = userInfo[0];
+
+	checkLength(userInfo);
+    }
+
+    return info;
+}
+
+private void checkLength(PresenceInfo[] info) {
+    if (info.length > 1) {
+	logger.info("More than one PresenceInfo, using first:");
+
+	for (int i = 0; i < info.length; i++) {
+	    logger.info("  " + info[i]);
+	}
+    }
+}
 
 private void chatGroupTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chatGroupTextActionPerformed
 // TODO add your handling code here:
@@ -416,16 +496,23 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
 }//GEN-LAST:event_privateRadioButtonActionPerformed
 
 private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_leaveButtonActionPerformed
-    String chatGroup = chatGroupText.getText();
-
-    if (chatGroup.length() == 0) {
-        chatGroup = cellID.toString();
-    }
-
     leaveButton.setEnabled(false);
     busyButton.setEnabled(false);
 
-    VoiceChatMessage chatMessage = new VoiceChatLeaveMessage(chatGroup, cellID.toString());
+    PresenceInfo userInfo = pm.getPresenceInfo(cellID);
+
+    if (userInfo == null) {
+	logger.warning("No PresenceInfo for " + cellID);
+	return;
+    }
+
+    String chatGroup = chatGroupText.getText();
+
+    if (chatGroup.length() == 0) {
+        chatGroup = userInfo.userID.getUsername() + "-" + cellID.toString();
+    }
+
+    VoiceChatMessage chatMessage = new VoiceChatLeaveMessage(chatGroup, userInfo);
 
     session.send(client, chatMessage);
 
@@ -446,13 +533,25 @@ private void busyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     stopFlasher();
 
+    PresenceInfo[] caller = getPresenceInfo(callerText.getText());
+
+    if (caller == null) {
+	return;
+    }
+
+    PresenceInfo[] chatters = getPresenceInfo(chatterText.getText());
+
+    if (chatters == null) {
+	return;
+    }
+
     VoiceChatMessage chatMessage =
-        new VoiceChatBusyMessage(chatGroupText.getText(), callerText.getText(), 
-	chatterText.getText(), chatType);
+        new VoiceChatBusyMessage(chatGroupText.getText(), caller[0], chatters, chatType);
 
     session.send(client, chatMessage);
 
     busyButton.setEnabled(false);
+    setVisible(false);
 }//GEN-LAST:event_busyButtonActionPerformed
 
 private void updateJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateJButtonActionPerformed
@@ -502,7 +601,7 @@ private void updateJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 		state = !state;
 	    }    
 
-	    setTitle(text);
+	    setTitle("Chatting...");
 	}
 
     }

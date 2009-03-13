@@ -11,20 +11,18 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.presencemanager.client;
 
-/**
- *
- * @author jprovino
- */
-public class VoiceChatInfoRequestMessage extends VoiceChatMessage {
-    
-    public VoiceChatInfoRequestMessage(String group) {
-	super(group);
-    }
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+
+public interface PresenceManagerListener {
+
+    public void userAdded(WonderlandIdentity userID);
+
+    public void userRemoved(WonderlandIdentity userID);
 
 }

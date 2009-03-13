@@ -15,31 +15,23 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.presencemanager.common;
 
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
 /**
- *
+ * The client type for the presence manager
  * @author jprovino
  */
-public class VoiceChatLeaveMessage extends VoiceChatMessage {
+public class PresenceManagerConnectionType extends ConnectionType {
+    /** The presence manager client type */
+    public static final ConnectionType CONNECTION_TYPE =
+            new PresenceManagerConnectionType();
     
-    private PresenceInfo caller;
-
-    /*
-     * Leave group
-     */
-    public VoiceChatLeaveMessage(String group, PresenceInfo caller) {
-	super(group);
-
-	this.caller = caller;
-    }
-	 
-    public PresenceInfo getCaller() {
-	return caller;
+    /** Use the static CLIENT_TYPE, not this constructor */
+    public PresenceManagerConnectionType() {
+        super ("__PresenceManagerConnection");
     }
 
 }

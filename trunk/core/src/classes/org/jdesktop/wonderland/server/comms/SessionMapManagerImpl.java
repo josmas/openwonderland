@@ -15,31 +15,24 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.server.comms;
 
-import org.jdesktop.wonderland.common.messages.Message;
-
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+import java.math.BigInteger;
 
 /**
  *
  * @author jprovino
  */
-public class VoiceChatLeaveMessage extends VoiceChatMessage {
-    
-    private PresenceInfo caller;
+public class SessionMapManagerImpl implements SessionMapManager {
 
-    /*
-     * Leave group
-     */
-    public VoiceChatLeaveMessage(String group, PresenceInfo caller) {
-	super(group);
+    private SessionMapService service;
 
-	this.caller = caller;
+    public SessionMapManagerImpl(SessionMapService service) {
+        this.service = service;
     }
-	 
-    public PresenceInfo getCaller() {
-	return caller;
+
+    public WonderlandClientID getClientID(BigInteger sessionID) {
+	return service.getClientID(sessionID);
     }
 
 }
