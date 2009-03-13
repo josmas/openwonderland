@@ -99,6 +99,11 @@ public class SessionMapService extends AbstractService implements SessionMapMana
 	    return null;
 	}
 
+	/*
+	 * Too bad ClientSessionWrapper doesn't return just the sessionRef.
+	 * I would use that rather than getting the ClientSession only
+	 * to again create a reference in WondlerlandClientID.
+	 */
 	return new WonderlandClientID(sessionRef.get().getClientSession());
     }
 
