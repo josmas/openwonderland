@@ -56,9 +56,4 @@ public class JarURI extends ModuleURI {
     public String getRelativePathInModule() {
         return this.getAssetPath();
     }
-
-    @Override
-    public ModuleURI getAnnotatedURI(String hostNameAndPort) throws URISyntaxException {
-        return new JarURI(getModuleName(), hostNameAndPort, getAssetPath());
-    }
 }

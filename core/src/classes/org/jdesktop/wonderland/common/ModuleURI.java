@@ -21,6 +21,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  * The ModuleURI class uniquely identifies a resource within the sytem that is
@@ -116,6 +118,7 @@ public abstract class ModuleURI extends AssetURI {
     /**
      * Returns the protocol of the URI
      */
+    @Override
     public String getProtocol() {
         return protocol;
     }
@@ -158,6 +161,13 @@ public abstract class ModuleURI extends AssetURI {
             url = url + ":" + hostPort;
         }
         return url;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void setServerHostAndPort(String hostNameAndPort) {
+        parseHostNameAndPort(hostNameAndPort);
     }
 
     /**
@@ -363,14 +373,4 @@ public abstract class ModuleURI extends AssetURI {
     public String getRelativeCachePath() {
         return "module" + File.separator + this.getModuleName() + File.separator + this.getRelativePathInModule();
     }
-    
-    /**
-     * Annotates this URI with a <server name>:<port>. Returns a new instance
-     * of AssetURI with this annotation
-     * 
-     * @param hostNameAndPort The <server name>:<port>
-     * @return A new AssetURI with annotated with the <server name>:<port>
-     * @throw URISyntaxException If the URI is not properly formed
-     */
-    public abstract ModuleURI getAnnotatedURI(String hostNameAndPort) throws URISyntaxException;
 }

@@ -18,7 +18,9 @@
 package org.jdesktop.wonderland.common;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * The ContentURI class uniquely identifies a resource within the content
@@ -99,6 +101,7 @@ public class ContentURI extends AssetURI {
     /**
      * Returns the protocol of the URI
      */
+    @Override
     public String getProtocol() {
         return protocol;
     }
@@ -133,7 +136,7 @@ public class ContentURI extends AssetURI {
      */
     @Override
     public String getRelativeCachePath() {
-        return "module" + File.separator + getRoot() + File.separator + getAssetPath();
+        return getProtocol() + File.separator + getRoot() + File.separator + getAssetPath();
     }
 
     /**
@@ -166,15 +169,19 @@ public class ContentURI extends AssetURI {
     }
 
     /**
-     * Annotates this URI with a <server name>:<port>. Returns a new instance
-     * of ContentURI with this annotation
-     *
-     * @param hostNameAndPort The <server name>:<port>
-     * @return A new ContentURI with annotated with the <server name>:<port>
-     * @throw URISyntaxException If the URI is not properly formed
+     * @inheritDoc()
      */
-    public ContentURI getAnnotatedURI(String hostNameAndPort) throws URISyntaxException {
-        return new ContentURI(getProtocol(), getRoot(), hostNameAndPort, getAssetPath());
+    public void setServerHostAndPort(String hostNameAndPort) {
+        parseHostNameAndPort(hostNameAndPort);
+    }
+
+    /**
+     * Returns a URL from the URI.
+     *
+     * @return A URL
+     */
+    public URL toURL() throws MalformedURLException {
+        return new URL(this.toString());
     }
 
     /**

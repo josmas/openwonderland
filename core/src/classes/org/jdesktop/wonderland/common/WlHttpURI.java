@@ -69,6 +69,22 @@ public class WlHttpURI extends AssetURI {
     }
 
     /**
+     * @inheritDoc()
+     */
+    public void setServerHostAndPort(String hostNameAndPort) {
+        // Do nothing since the URI already has the info
+    }
+
+    /**
+     * Returns a URL from the URI.
+     *
+     * @return A URL
+     */
+    public URL toURL() throws MalformedURLException {
+        return url;
+    }
+
+    /**
      * Returns the "base" url, which is the protocol and the host/port name,
      * using a protocol of 'http'.
      */

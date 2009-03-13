@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.common;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -72,6 +74,23 @@ public abstract class AssetURI implements Serializable {
      * @return A unique relative path for the URI
      */
     public abstract String getRelativeCachePath();
+
+    /**
+     * Annotates this URI with a <server name>:<port> based upon the current
+     * primary server. This method is implemented by subclasses who need a
+     * reference to the current server in order to resolve the asset. For URIs
+     * that do not need this information, this method does nothing.
+     *
+     * @param hostNameAndPort The host name and port to annotate the URI with
+     */
+    public abstract void setServerHostAndPort(String hostNameAndPort);
+
+    /**
+     * Returns the asset uri as a URL
+     *
+     * @return The URL
+     */
+    public abstract URL toURL() throws MalformedURLException;
     
     /**
      * Returns the string representation of the URI
