@@ -60,11 +60,12 @@ public class WlContentAssetRepositoryFactory extends AssetRepositoryFactory {
     public AssetRepository[] getAssetRepositories() {
         // We need to get the base URL of the server in order to find the
         // content repository.
-        String baseURL = "http://localhost:8080/webdav/content/";
+        ContentURI uri = (ContentURI)getAssetURI();
+        String serverURL = "http://" + uri.getHostName() + ":" + uri.getHostPort();
+        String baseURL = serverURL + "/webdav/content/";
        
         // Create the one asset repository for the base URL of the server
         AssetRepository[] assetRepositories = new AssetRepository[1];
-        ContentURI uri = (ContentURI)getAssetURI();
         String checksum = getDesiredChecksum();
         assetRepositories[0] = new WlContentAssetRepository(baseURL, getAsLastModified(checksum));
 

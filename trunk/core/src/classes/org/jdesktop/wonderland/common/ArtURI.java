@@ -51,9 +51,4 @@ public class ArtURI extends ModuleURI {
     public String getRelativePathInModule() {
         return "art" + File.separator + this.getAssetPath();
     }
-
-    @Override
-    public ModuleURI getAnnotatedURI(String hostNameAndPort) throws URISyntaxException {
-        return new ArtURI(getModuleName(), hostNameAndPort, getAssetPath());
-    }
 }

@@ -647,7 +647,7 @@ public class AssetManager {
     }
 
     /* URLs to download */
-    private static final String urls[] = {
+    private static final String uris[] = {
         "wla://phone/conference_phone.png",
         "wla://phone/conference_phone.png",
         "wla://phone/conference_phone.png",
@@ -664,50 +664,37 @@ public class AssetManager {
     };
 
     public static void downloadFile() throws java.net.URISyntaxException {
-        final Thread threads[] = new Thread[urls.length];
-        for (int i = 0; i < urls.length; i++) {
+        final Thread threads[] = new Thread[uris.length];
+        for (int i = 0; i < uris.length; i++) {
             final int j = i;
             threads[i] = new Thread() {
                 @Override
                 public void run() {
-                    try {
-                        Logger logger = Logger.getLogger(AssetManager.class.getName());
-                        AssetManager assetManager = AssetManager.getAssetManager();
+                    Logger logger = Logger.getLogger(AssetManager.class.getName());
+                    AssetManager assetManager = AssetManager.getAssetManager();
 
-                        // Create the AssetURI and Asset to use to load
-                        AssetURI assetURI = null;
-                        if (urls[j].startsWith("wla") == true) {
-                            assetURI = new ArtURI(urls[j]).getAnnotatedURI("localhost:8080");
-                        }
-                        else if (urls[j].startsWith("wlhttp") == true) {
-                            assetURI = new WlHttpURI(urls[j]);
-                        }
-                        else {
-                            assetURI = new ContentURI(urls[j]).getAnnotatedURI("localhost:8080");
-                        }
+                    // Create the AssetURI and Asset to use to load. Just
+                    // use the localhost:8080 as the server name and port
+                    AssetURI assetURI = AssetURI.uriFactory(uris[j]);
+                    assetURI.setServerHostAndPort("localhost:8080");
 
-                        // Wait for the asset to load and print out the result
-                        Asset asset = assetManager.getAsset(assetURI);
-                        assetManager.waitForAsset(asset);
-                        logger.fine("Failure info: " + asset.getFailureInfo());
-                        if (asset.getLocalCacheFile() == null) {
-                            logger.fine("Local Cache File: null");
-                        }
-                        else {
-                            logger.fine("Local Cache File: " + asset.getLocalCacheFile().getAbsolutePath());
-                        }
-                        logger.fine("Done with: " + assetURI.toString());
-                    } catch (java.net.URISyntaxException excp) {
-                        System.out.println(excp.toString());
-                    } catch (java.net.MalformedURLException excp) {
-                        System.out.println(excp.toString());
+                    // Wait for the asset to load and print out the result
+                    Asset asset = assetManager.getAsset(assetURI);
+                    assetManager.waitForAsset(asset);
+                    logger.fine("Failure info: " + asset.getFailureInfo());
+                    if (asset.getLocalCacheFile() == null) {
+                        logger.fine("Local Cache File: null");
                     }
+                    else {
+                        logger.fine("Local Cache File: " + asset.getLocalCacheFile().getAbsolutePath());
+                    }
+                    logger.fine("Done with: " + assetURI.toString());
                 }
             };
             threads[i].start();
         }
 
-        for (int i = 0; i < urls.length; i++) {
+        for (int i = 0; i < uris.length; i++) {
             try {
                 threads[i].join();
             } catch (java.lang.InterruptedException excp) {
