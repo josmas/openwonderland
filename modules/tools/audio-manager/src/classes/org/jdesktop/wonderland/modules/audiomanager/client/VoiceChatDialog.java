@@ -493,6 +493,10 @@ private void chatGroupTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
 private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privateRadioButtonActionPerformed
     chatType = VoiceChatMessage.ChatType.PRIVATE;
+    
+    if (leaveButton.isEnabled() == true) {
+	joinButtonActionPerformed(evt);
+    }
 }//GEN-LAST:event_privateRadioButtonActionPerformed
 
 private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_leaveButtonActionPerformed
@@ -523,10 +527,18 @@ private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
 private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
     chatType = VoiceChatMessage.ChatType.SECRET;
+    
+    if (leaveButton.isEnabled() == true) {
+	joinButtonActionPerformed(evt);
+    }
 }//GEN-LAST:event_secretRadioButtonActionPerformed
 
 private void publicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_publicRadioButtonActionPerformed
     chatType = VoiceChatMessage.ChatType.PUBLIC;
+    
+    if (leaveButton.isEnabled() == true) {
+	joinButtonActionPerformed(evt);
+    }
 }//GEN-LAST:event_publicRadioButtonActionPerformed
 
 private void busyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_busyButtonActionPerformed

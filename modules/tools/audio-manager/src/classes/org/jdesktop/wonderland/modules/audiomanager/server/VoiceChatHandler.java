@@ -136,7 +136,10 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
 
-	    Player player = vm.getPlayer(msg.getCaller().userID.getUsername());
+	    String callID = AudioManagerConnectionHandler.getCallID(
+	         msg.getCaller().userID.getUsername());
+
+	    Player player = vm.getPlayer(callID);
 
 	    if (player == null) {
 		logger.warning("No player for " + msg.getCaller());
@@ -149,7 +152,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    
 	    removePlayerFromAudioGroup(audioGroup, player);
 
-	    if (audioGroup.getNumberOfPlayers() == 0) {
+	    if (audioGroup.getNumberOfPlayers() <= 1) {
 		endVoiceChat(vm, audioGroup);
 	    }
 
