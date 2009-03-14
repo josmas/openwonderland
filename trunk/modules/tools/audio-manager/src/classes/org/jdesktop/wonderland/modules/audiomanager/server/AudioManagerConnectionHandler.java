@@ -68,6 +68,8 @@ import com.sun.voip.client.connector.CallStatus;
 
 import java.io.IOException;
 
+import java.math.BigInteger;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -83,7 +85,7 @@ public class AudioManagerConnectionHandler
     
     private VoiceChatHandler voiceChatHandler = new VoiceChatHandler();
 
-    private static ConcurrentHashMap<WonderlandClientSender, String> senderCallIDMap = 
+    private static ConcurrentHashMap<BigInteger, String> sessionCallIDMap = 
 	new ConcurrentHashMap();
 
     private static ConcurrentHashMap<String, String> callIDUsernameMap = 
@@ -205,14 +207,15 @@ public class AudioManagerConnectionHandler
             cp.setJoinConfirmationTimeout(0);
 	    cp.setCallAnsweredTreatment(null);
 
-	    senderCallIDMap.put(sender, callID);
+	    sessionCallIDMap.put(clientID.getID(), callID);
 
 	    try {
 	        setupCall(callID, setup, msg.getX(), 
 		    msg.getY(), msg.getZ(), msg.getDirection());
 	    } catch (IOException e) {
-		logger.warning("Unable to place call " + cp + " " + e.getMessage());
-		senderCallIDMap.remove(sender);
+		logger.warning("Unable to place call " + cp + " " 
+		    + e.getMessage());
+		sessionCallIDMap.remove(clientID.getID());
 		callIDUsernameMap.remove(callID);
 	    }
 	    return;
@@ -344,14 +347,17 @@ public class AudioManagerConnectionHandler
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-	String callID = senderCallIDMap.get(sender);
+	BigInteger sessionID = clientID.getID();
+
+	String callID = sessionCallIDMap.get(sessionID);
 
 	if (callID == null) {
-	    logger.warning("Unable to find callID for sender " + sender);
+	    logger.warning("Unable to find callID for client session " 
+		+ sessionID);
 	    return;
 	}
 
-	senderCallIDMap.remove(sender);
+	sessionCallIDMap.remove(sessionID);
 	callIDUsernameMap.remove(callID);
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
