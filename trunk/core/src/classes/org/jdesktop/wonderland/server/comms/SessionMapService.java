@@ -21,6 +21,7 @@ import java.util.logging.Level;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.ObjectNotFoundException;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.kernel.ComponentRegistry;
@@ -92,8 +93,15 @@ public class SessionMapService extends AbstractService implements SessionMapMana
     public WonderlandClientID getClientID(BigInteger sessionID) {
 	DataService ds = txnProxy.getService(DataService.class);
 
-	ManagedReference<ClientSessionWrapper> sessionRef = (ManagedReference<ClientSessionWrapper>) 
-	    ds.createReferenceForId(sessionID);
+	ManagedReference<ClientSessionWrapper> sessionRef;
+
+	try {
+	    sessionRef = (ManagedReference<ClientSessionWrapper>) 
+	        ds.createReferenceForId(sessionID);
+	} catch (ObjectNotFoundException e) {
+            logger.log(Level.WARNING, e.getMessage());
+	    return null;
+	}
 
 	if (sessionRef == null) {
 	    return null;
