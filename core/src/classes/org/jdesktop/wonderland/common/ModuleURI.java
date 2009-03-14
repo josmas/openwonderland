@@ -21,8 +21,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  * The ModuleURI class uniquely identifies a resource within the sytem that is
