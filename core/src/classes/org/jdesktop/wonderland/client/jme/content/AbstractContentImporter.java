@@ -40,6 +40,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 
 /**
  * An abstract base class that content importers may use to help implement the
@@ -167,6 +168,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         // Create a position component that will set the initial origin
         PositionComponentServerState position = new PositionComponentServerState();
         position.setOrigin(new Origin(origin));
+        position.setRotation(new Rotation(new Vector3f(0.0f, 1.0f, 0.0f), Math.PI));
         state.addComponentServerState(position);
 
         // Send the message to the server
