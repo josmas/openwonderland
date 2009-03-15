@@ -72,10 +72,11 @@
 
             <client>
                 <clientjar name="contentrepo-client" basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.modules.contentrepo.client.ui.BrowserPlugin"/>
-
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/ui/resources/**/*.png"/>
+                    </fileset>
                 </clientjar>
             </client>
         </module>
