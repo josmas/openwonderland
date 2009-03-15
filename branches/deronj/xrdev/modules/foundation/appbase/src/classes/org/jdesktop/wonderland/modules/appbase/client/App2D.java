@@ -118,7 +118,7 @@ public abstract class App2D {
         this.name = name;
         this.controlArb = controlArb;
         this.pixelScale = pixelScale;
-        focusEntity = new Entity("App focus entity");
+        focusEntity = new Entity("App focus entity for app " + getName());
     }
 
     /**
