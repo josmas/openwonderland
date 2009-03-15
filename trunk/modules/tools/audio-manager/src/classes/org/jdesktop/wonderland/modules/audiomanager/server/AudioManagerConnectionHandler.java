@@ -21,10 +21,12 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
@@ -85,16 +87,23 @@ public class AudioManagerConnectionHandler
     
     private VoiceChatHandler voiceChatHandler = new VoiceChatHandler();
 
-    private static ConcurrentHashMap<BigInteger, String> sessionCallIDMap = 
+    private ConcurrentHashMap<BigInteger, String> sessionCallIDMap = 
 	new ConcurrentHashMap();
 
-    private static ConcurrentHashMap<String, String> callIDUsernameMap = 
+    private ConcurrentHashMap<String, PresenceInfo> callIDPresenceInfoMap = 
 	new ConcurrentHashMap();
 
-    private static ConcurrentHashMap<String, String> usernameCallIDMap = 
-	new ConcurrentHashMap();
+    private static AudioManagerConnectionHandler handler;
 
-    public AudioManagerConnectionHandler() {
+    public static AudioManagerConnectionHandler getInstance() {
+	if (handler == null) {
+	    handler = new AudioManagerConnectionHandler();
+	}
+
+	return handler;
+    }
+
+    private AudioManagerConnectionHandler() {
         super();
     }
 
@@ -112,24 +121,10 @@ public class AudioManagerConnectionHandler
 	logger.fine("client connected...");
     }
 
-    public static String getUsername(String callID) {
-	return callIDUsernameMap.get(callID);
-    }
-
-    public static String getCallID(String username) {
-	return usernameCallIDMap.get(username);
-    }
-
     public void messageReceived(WonderlandClientSender sender, 
 	    WonderlandClientID clientID, Message message) {
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	if (message instanceof AvatarCellIDMessage) {
-	    AvatarCellIDMessage msg = (AvatarCellIDMessage) message;
-	    voiceChatHandler.addTransformChangeListener(msg.getCellID());
-	    return;
-	}
 
 	if (message instanceof CellStatusChangeMessage) {
 	    CellStatusChangeMessage msg = (CellStatusChangeMessage) message;
@@ -144,25 +139,17 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof GetVoiceBridgeMessage) {
-	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
-
-	    String username = 
-		UserManager.getUserManager().getUser(clientID).getUsername();
-
-	    logger.fine("Got voice bridge request message from " + username);
+	    String voiceBridge;
 
 	    try {
-		String voiceBridge = vm.getVoiceBridge().toString();
-
-		logger.info("Got voice bridge '" + voiceBridge + "'");
-	        msg.setBridgeInfo(voiceBridge);
-		msg.setUsername(username);
+	        voiceBridge = vm.getVoiceBridge().toString();
+	        logger.info("Got voice bridge '" + voiceBridge + "'");
 	    } catch (IOException e) {
 		logger.warning("unable to get voice bridge:  " + e.getMessage());
 		return;
 	    }
 
-	    sender.send(clientID, msg);
+	    sender.send(clientID, new GetVoiceBridgeResponseMessage(voiceBridge));
 	    return;
 	}
 
@@ -170,6 +157,10 @@ public class AudioManagerConnectionHandler
 	    logger.fine("Got place call message from " + clientID);
 
 	    PlaceCallMessage msg = (PlaceCallMessage) message;
+
+	    PresenceInfo info = msg.getPresenceInfo();
+
+	    voiceChatHandler.addTransformChangeListener(info.cellID);
 
 	    CallSetup setup = new CallSetup();
 
@@ -187,17 +178,12 @@ public class AudioManagerConnectionHandler
 	    if (callID == null) {
 	        logger.fine("Can't place call to " + msg.getSipURL()
 		    + ".  No cell for " + callID);
+	        voiceChatHandler.removeTransformChangeListener(msg.getPresenceInfo().cellID);
 		return;
 	    }
 
-	    
-	    String username = UserManager.getUserManager().getUser(clientID).getUsername();
-
-	    callIDUsernameMap.put(callID, username);
-	    usernameCallIDMap.put(username, callID);
-
 	    cp.setCallId(callID);
-	    cp.setName(username);
+	    cp.setName(info.userID.getUsername());
             cp.setPhoneNumber(msg.getSipURL());
             cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
             cp.setVoiceDetection(true);
@@ -208,6 +194,7 @@ public class AudioManagerConnectionHandler
 	    cp.setCallAnsweredTreatment(null);
 
 	    sessionCallIDMap.put(clientID.getID(), callID);
+	    callIDPresenceInfoMap.put(callID, info);
 
 	    try {
 	        setupCall(callID, setup, msg.getX(), 
@@ -215,8 +202,9 @@ public class AudioManagerConnectionHandler
 	    } catch (IOException e) {
 		logger.warning("Unable to place call " + cp + " " 
 		    + e.getMessage());
+	        voiceChatHandler.removeTransformChangeListener(msg.getPresenceInfo().cellID);
 		sessionCallIDMap.remove(clientID.getID());
-		callIDUsernameMap.remove(callID);
+		callIDPresenceInfoMap.remove(callID);
 	    }
 	    return;
 	}
@@ -224,24 +212,31 @@ public class AudioManagerConnectionHandler
 	if (message instanceof MuteCallMessage) {
 	    MuteCallMessage msg = (MuteCallMessage) message;
 
-	    Call call = vm.getCall(msg.getCallID());
+	    String callID = msg.getCallID();
+
+	    Call call = vm.getCall(callID);
 
 	    if (call == null) {
-		logger.warning("Unable to mute/unmute call " + call.getId());
+		logger.warning("Unable to mute/unmute call " + callID);
 		return;
 	    }	
 
 	    try {
 	        call.mute(msg.isMuted());
 	    } catch (IOException e) {
-		logger.warning("Unable to mute/unmute call " + call.getId() + ": "
+		logger.warning("Unable to mute/unmute call " + callID + ": "
 		    + e.getMessage());
 		return;
 	    }
 
-	    sender.send(new MuteCallMessage(msg.getCallID(), getUsername(msg.getCallID()), 
-	    	msg.isMuted()));
+	    PresenceInfo info = callIDPresenceInfoMap.get(callID);
 
+	    if (info == null) {
+		logger.warning("Can't find presence info for " + callID);
+		return;
+	    }
+
+	    sender.send(new MuteCallMessage(callID, info, msg.isMuted()));
 	    return;
 	}
 	
@@ -346,6 +341,10 @@ public class AudioManagerConnectionHandler
 	    player, info);
     }
 
+    public PresenceInfo getPresenceInfo(String callID) {
+	return callIDPresenceInfoMap.get(callID);
+    }
+
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
 	BigInteger sessionID = clientID.getID();
 
@@ -358,7 +357,7 @@ public class AudioManagerConnectionHandler
 	}
 
 	sessionCallIDMap.remove(sessionID);
-	callIDUsernameMap.remove(callID);
+	callIDPresenceInfoMap.remove(callID);
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -394,6 +393,8 @@ public class AudioManagerConnectionHandler
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+	PresenceInfo info = callIDPresenceInfoMap.get(callId);
+
 	switch (code) {
 	case CallStatus.ESTABLISHED:
 	    Call call = vm.getCall(callId);
@@ -415,11 +416,21 @@ public class AudioManagerConnectionHandler
 	    break;
 
         case CallStatus.STARTEDSPEAKING:
-	    sender.send(new SpeakingMessage(callId, getUsername(callId), true));
+	    if (info == null) {
+		logger.warning("Can't find presence info for " + callId);
+		return;
+	    }
+
+	    sender.send(new SpeakingMessage(callId, info, true));
             break;
 
         case CallStatus.STOPPEDSPEAKING:
-	    sender.send(new SpeakingMessage(callId, getUsername(callId), false));
+	    if (info == null) {
+		logger.warning("Can't find presence info for " + callId);
+		return;
+	    }
+
+	    sender.send(new SpeakingMessage(callId, info, false));
             break;
 
 	case CallStatus.ENDED:

@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
@@ -33,7 +35,7 @@ public class OrbDialog extends javax.swing.JDialog {
    
     private ChannelComponent channelComp;
 
-    private OrbMessageHandler orbMessageHandler;
+    private PresenceInfo presenceInfo;
 
     /** Creates new form OrbDialog */
     public OrbDialog(java.awt.Frame parent, boolean modal) {
@@ -42,15 +44,15 @@ public class OrbDialog extends javax.swing.JDialog {
     }
 
     public OrbDialog(OrbCell orbCell, ChannelComponent channelComp, 
-	    OrbMessageHandler orbMessageHandler) {
+	    String title) {
 
 	this.orbCell = orbCell;
 	this.channelComp = channelComp;
-	this.orbMessageHandler = orbMessageHandler;
+	this.presenceInfo = presenceInfo;
 	
 	initComponents();
 
-	setTitle(orbCell.getCellID().toString());
+	setTitle(title);
 	setVisible(true);
     }
 

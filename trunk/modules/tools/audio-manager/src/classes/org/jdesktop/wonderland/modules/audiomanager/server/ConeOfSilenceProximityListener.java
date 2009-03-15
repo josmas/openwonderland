@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
+
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
@@ -61,7 +63,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
     }
 
     private void cellEntered(CellID softphoneCellID) {
-        cellEntered(softphoneCellID.toString());
+        cellEntered(AudioManagerUtil.getCallID(softphoneCellID));
     }
 
     public void cellEntered(String callId) {
@@ -105,7 +107,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
     }
 
     private void cellExited(CellID softphoneCellID) {
-        cellExited(softphoneCellID.toString());
+        cellExited(AudioManagerUtil.getCallID(softphoneCellID));
     }
 
     public void cellExited(String callId) {

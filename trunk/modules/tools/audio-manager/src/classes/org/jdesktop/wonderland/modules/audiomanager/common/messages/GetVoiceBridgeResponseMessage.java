@@ -17,8 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.comms.ProtocolVersion;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
@@ -28,20 +28,16 @@ import org.jdesktop.wonderland.common.messages.Message;
  * @author jprovino
  */
 @ExperimentalAPI
-public class AvatarCellIDMessage extends Message {
+public class GetVoiceBridgeResponseMessage extends Message {
 
-    private CellID cellID;
+    private String bridgeInfo;   // voice bridge information
 
-    public AvatarCellIDMessage(CellID cellID) {
-	this.cellID = cellID;
+    public GetVoiceBridgeResponseMessage(String bridgeInfo) {
+	this.bridgeInfo = bridgeInfo;
     }
 
-    public void setCellID(CellID cellID) {
-	this.cellID = cellID;
-    }
-
-    public CellID getCellID() {
-	return cellID;
+    public String getBridgeInfo() {
+	return bridgeInfo;
     }
 
 }

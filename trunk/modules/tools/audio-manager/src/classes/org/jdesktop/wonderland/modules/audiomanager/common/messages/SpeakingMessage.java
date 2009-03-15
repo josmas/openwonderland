@@ -17,11 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 import org.jdesktop.wonderland.common.messages.Message;
-
-import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  * Message indicating whether someone started or stopped speaking.
@@ -31,12 +31,14 @@ import org.jdesktop.wonderland.common.cell.CellID;
 public class SpeakingMessage extends Message {
 
     private String callID;
-    private String username;
+    private PresenceInfo presenceInfo;
     private boolean isSpeaking;
 
-    public SpeakingMessage(String callID, String username, boolean isSpeaking) {
+    public SpeakingMessage(String callID, PresenceInfo presenceInfo, 
+	    boolean isSpeaking) {
+
 	this.callID = callID;
-	this.username = username;
+	this.presenceInfo = presenceInfo;
 	this.isSpeaking = isSpeaking;
     }
 
@@ -44,8 +46,8 @@ public class SpeakingMessage extends Message {
 	return callID;
     }
 
-    public String getUsername() {
-	return username;
+    public PresenceInfo getPresenceInfo() {
+	return presenceInfo;
     }
 
     public boolean isSpeaking() {

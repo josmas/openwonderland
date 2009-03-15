@@ -17,11 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 import org.jdesktop.wonderland.common.messages.Message;
-
-import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  * The initial message that a client must send to the Wonderland server
@@ -30,6 +30,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 @ExperimentalAPI
 public class PlaceCallMessage extends Message {
+
+    private PresenceInfo presenceInfo;
     private String softphoneCallID;
     private String sipURL;	      // URL of softphone to call
     private double x;	      	      // location of the call
@@ -38,9 +40,11 @@ public class PlaceCallMessage extends Message {
     private double direction;	      // direction of avatar
     private boolean confirmAnswered;  // user has to press 1
 
-    public PlaceCallMessage(String softphoneCallID, String sipURL, double x, double y,
+    public PlaceCallMessage(PresenceInfo presenceInfo, 
+	    String softphoneCallID, String sipURL, double x, double y,
 	    double z, double direction, boolean confirmAnswered) {
 
+	this.presenceInfo = presenceInfo;
 	this.softphoneCallID = softphoneCallID;
 	this.sipURL = sipURL;
 	this.x = x;
@@ -48,6 +52,10 @@ public class PlaceCallMessage extends Message {
 	this.z = z;
 	this.direction = direction;
 	this.confirmAnswered = confirmAnswered;
+    }
+
+    public PresenceInfo getPresenceInfo() {
+	return presenceInfo;
     }
 
     public String getSoftphoneCallID() {
