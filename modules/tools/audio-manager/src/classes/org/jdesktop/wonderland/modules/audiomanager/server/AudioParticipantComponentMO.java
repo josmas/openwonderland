@@ -26,6 +26,10 @@ import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -89,7 +93,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	cellMO.addTransformChangeListener(myTransformChangeListener);
 
 	AppContext.getManager(VoiceManager.class).addCallStatusListener(this,
-	    cellMO.getCellID().toString());
+	    AudioManagerUtil.getCallID(cellMO.getCellID()));
     }
 
     protected String getClientClass() {
@@ -125,15 +129,25 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    return;
 	}
 
-	CellID cellID = cellRef.get().getCellID();
+	PresenceInfo info = AudioManagerConnectionHandler.getInstance().getPresenceInfo(callId);
 
 	switch (status.getCode()) {
         case CallStatus.STARTEDSPEAKING:
-	    sender.send(new AudioParticipantSpeakingMessage(cellID, true));
+	    if (info == null) {
+		logger.warning("Can't send started speaking message to " + callId);
+		return;
+	    }
+
+	    sender.send(new AudioParticipantSpeakingMessage(info, true));
             break;
 
         case CallStatus.STOPPEDSPEAKING:
-	    sender.send(new AudioParticipantSpeakingMessage(cellID, false));
+	    if (info == null) {
+		logger.warning("Can't send stopped speaking message to " + callId);
+		return;
+	    }
+
+	    sender.send(new AudioParticipantSpeakingMessage(info, false));
             break;
 	}
     }
@@ -143,7 +157,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
         public void transformChanged(ManagedReference<CellMO> cellRef, 
 	        final CellTransform localTransform, final CellTransform localToWorldTransform) {
 
-	    String clientId = cellRef.get().getCellID().toString();
+	    String callID = AudioManagerUtil.getCallID(cellRef.get().getCellID());
 
 	    logger.fine("localTransform " + localTransform + " world " 
 	        + localToWorldTransform);
@@ -156,7 +170,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
 	    Vector3f location = localToWorldTransform.getTranslation(null);
 	
-	    Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);
+	    Player player = AppContext.getManager(VoiceManager.class).getPlayer(callID);
 
 	    AudioTreatmentComponentMO component = 
 		cellRef.get().getComponent(AudioTreatmentComponentMO.class);
@@ -166,7 +180,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    }
 
 	    if (player == null) {
-	        logger.fine("AudioParticipant:  got transformChanged, but can't find player for " + clientId);
+	        logger.fine("AudioParticipant:  got transformChanged, but can't find player for " + callID);
 		return;
 	    }
 

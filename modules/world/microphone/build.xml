@@ -12,6 +12,7 @@
         <path location="${current.dir}/../../tools/audio-manager/lib/voicelib.jar"/>
         <path location="${current.dir}/../../tools/audio-manager/lib/voip.jar"/>
         <path location="${current.dir}/../../tools/audio-manager/lib/bridge_connector.jar"/>
+        <path location="${current.dir}/../../tools/audio-manager/build/lib/server/audiomanager-server.jar"/>
         <path location="${current.dir}/../../tools/orb/build/lib/server/orb-server.jar"/>
     </pathconvert>
 

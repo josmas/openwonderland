@@ -79,7 +79,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
     private PresenceManager pm;
 
     /** Creates new form VoiceChatDialog */
-    public VoiceChatDialog(AudioManagerClient client, WonderlandSession session, CellID cellID) 
+    public VoiceChatDialog(AudioManagerClient client, WonderlandSession session, CellID cellID)
 	    throws IOException {
 
 	this.client = client;
@@ -170,20 +170,37 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 	return dialogs.get(chatGroup);
     }
 
-    public void setChatters(String chatters) {
-	chatterText.setText(chatters);
+    public void setChatters(PresenceInfo[] chatters) {
+	String s = "";
+
+	for (int i = 0; i < chatters.length; i++) {
+	    s += chatters[i].userID.getUsername();
+	}
+
+	chatterText.setText(s);
     }
 
-    public void requestToJoin(String group, String caller, String callees,
-	    VoiceChatMessage.ChatType chatType) {
+    public void requestToJoin(String group, PresenceInfo caller, 
+	    PresenceInfo[] callees, VoiceChatMessage.ChatType chatType) {
 
 	this.chatType = chatType;
 
-	callerText.setText(caller);
+	callerText.setText(caller.userID.getUsername());
 	callerText.setEnabled(false);
 	chatGroupText.setText(group);
 	chatGroupText.setEnabled(false);
-	chatterText.setText(caller + " " + callees);
+
+	String s = "";
+
+	for (int i = 0; i < callees.length; i++ ) {
+	    if (i > 0) {
+		s += " ";
+	    }
+
+	    s += callees[i].userID.getUsername();
+	}
+
+	chatterText.setText(caller + " " + s);
 	chatterText.setEnabled(false);
 
 	if (chatType == VoiceChatMessage.ChatType.SECRET) {
@@ -551,14 +568,10 @@ private void busyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 	return;
     }
 
-    PresenceInfo[] chatters = getPresenceInfo(chatterText.getText());
-
-    if (chatters == null) {
-	return;
-    }
+    PresenceInfo callee = pm.getPresenceInfo(cellID);
 
     VoiceChatMessage chatMessage =
-        new VoiceChatBusyMessage(chatGroupText.getText(), caller[0], chatters, chatType);
+        new VoiceChatBusyMessage(chatGroupText.getText(), caller[0], callee, chatType);
 
     session.send(client, chatMessage);
 

@@ -43,6 +43,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
@@ -339,7 +340,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
                     return;
                 }
 
-                if (softphoneCallID.equals(cellID.toString())) {
+                if (softphoneCallID.equals(AudioManagerUtil.getCallID(cellID))) {
                     logger.fine("Setting master volume for " + getCell().getName());
                     softphonePlayer.setMasterVolume(volume);
                     return;

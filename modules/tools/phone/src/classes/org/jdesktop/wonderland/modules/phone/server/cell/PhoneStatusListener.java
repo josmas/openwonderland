@@ -24,16 +24,6 @@ import org.jdesktop.wonderland.modules.phone.common.CallListing;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallInvitedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallEndedResponseMessage;
 import org.jdesktop.wonderland.modules.phone.common.messages.CallEstablishedResponseMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.EndCallMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.EndCallResponseMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.JoinCallResponseMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.LockUnlockResponseMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PlaceCallResponseMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PlayTreatmentMessage;
-import org.jdesktop.wonderland.modules.phone.common.messages.PhoneControlMessage;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.Call;

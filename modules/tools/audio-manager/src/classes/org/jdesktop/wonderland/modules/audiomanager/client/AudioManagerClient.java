@@ -47,9 +47,10 @@ import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
@@ -66,6 +67,11 @@ import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
+
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import java.io.IOException;
 
@@ -181,10 +187,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void connectSoftphone() {
-	session.send(this, new AvatarCellIDMessage(cellID));
-
  	logger.fine("Sending message to server to get voice bridge...");
-
 	session.send(this, new GetVoiceBridgeMessage());
     }
 
@@ -271,8 +274,8 @@ public class AudioManagerClient extends BaseConnection implements
     public void handleMessage(Message message) {
 	logger.fine("got a message...");
 
-	if (message instanceof GetVoiceBridgeMessage) {
-	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
+	if (message instanceof GetVoiceBridgeResponseMessage) {
+	    GetVoiceBridgeResponseMessage msg = (GetVoiceBridgeResponseMessage) message;
 
 	    logger.fine("Got voice bridge " + msg.getBridgeInfo());
 
@@ -304,20 +307,21 @@ public class AudioManagerClient extends BaseConnection implements
 	        logger.warning(e.getMessage());
 	    }
 
+	    PresenceInfo info = PresenceManagerFactory.getPresenceManager(session).getPresenceInfo(cellID);
+
 	    if (localAddress != null) {
 	        try {
 	            String sipURL = sc.startSoftphone(
-		        msg.getUsername(), registrarAddress, 10, localAddress, AudioQuality.VPN);
+		        info.userID.getUsername(), registrarAddress, 10, localAddress, AudioQuality.VPN);
 
-	            CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
+		    String callID = AudioManagerUtil.getCallID(cellID);
 
-		    logger.fine("Softphone call id is " + cellID.toString());
+		    logger.fine("Softphone call id is " + callID);
 
-		    sc.setCallID(cellID.toString());
+		    sc.setCallID(callID);
 
 	            // XXX need location and direction
-	            session.send(this, new PlaceCallMessage(
-		        cellID.toString(), sipURL, 0., 0., 0., 90., false));
+	            session.send(this, new PlaceCallMessage(info, callID, sipURL, 0., 0., 0., 90., false));
 	        } catch (IOException e) {
                     logger.warning(e.getMessage());
 	        }
@@ -336,8 +340,6 @@ public class AudioManagerClient extends BaseConnection implements
                 VoiceChatDialog.getVoiceChatDialog(msg.getGroup());
 
             if (voiceChatDialog == null) {
-	        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
-
 		try {
                     voiceChatDialog = new VoiceChatDialog(this, session, cellID);
 		} catch (IOException e) {
@@ -351,30 +353,29 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof VoiceChatBusyMessage) {
 	    VoiceChatBusyMessage msg = (VoiceChatBusyMessage) message;
 
-	    new VoiceChatBusyDialog(msg.getGroup(), msg.getCalleeList()[0]);
+	    new VoiceChatBusyDialog(msg.getGroup(), msg.getCallee());
 	} else if (message instanceof VoiceChatInfoResponseMessage) {
 	    VoiceChatInfoResponseMessage msg = (VoiceChatInfoResponseMessage) message;
 
             VoiceChatDialog voiceChatDialog =
                 VoiceChatDialog.getVoiceChatDialog(msg.getGroup());
 
-            logger.fine("response " + msg.getChatInfo());
-
             if (voiceChatDialog == null) {
-                logger.warning(
-                    "No voiceChatDialog for " + msg.getGroup());
+                logger.warning("No voiceChatDialog for " + msg.getGroup());
             } else {
-                voiceChatDialog.setChatters(msg.getChatInfo());
+                voiceChatDialog.setChatters(msg.getChatters());
             }
 	} else if (message instanceof SpeakingMessage) {
 	    if (userListJFrame != null) {
 	        SpeakingMessage msg = (SpeakingMessage) message;
-		userListJFrame.setSpeaking(msg.getCallID(), msg.getUsername(), msg.isSpeaking());
+		String username = msg.getPresenceInfo().userID.getUsername();
+		userListJFrame.setSpeaking(msg.getCallID(), username, msg.isSpeaking());
 	    }
 	} else if (message instanceof MuteCallMessage) {
 	    if (userListJFrame != null) {
 	        MuteCallMessage msg = (MuteCallMessage) message;
-	        userListJFrame.muteCall(msg.getCallID(), msg.getUsername(), msg.isMuted());
+		String username = msg.getPresenceInfo().userID.getUsername();
+	        userListJFrame.muteCall(msg.getCallID(), username, msg.isMuted());
 	    }
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");

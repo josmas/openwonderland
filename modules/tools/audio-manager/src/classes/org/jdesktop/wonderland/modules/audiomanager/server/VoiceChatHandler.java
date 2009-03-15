@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatEndMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
@@ -136,8 +137,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
 
-	    String callID = AudioManagerConnectionHandler.getCallID(
-	         msg.getCaller().userID.getUsername());
+	    String callID = AudioManagerUtil.getCallID(msg.getCaller().cellID);
 
 	    Player player = vm.getPlayer(callID);
 
@@ -185,8 +185,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    audioGroup = vm.createAudioGroup(group, setup);
 	}
 
-	String callerCallID = AudioManagerConnectionHandler.getCallID(
-	    msg.getCaller().userID.getUsername());
+	String callerCallID = AudioManagerUtil.getCallID(msg.getCaller().cellID);
 
 	if (callerCallID == null) {
 	    logger.warning("No callID for " + msg.getCaller());
@@ -194,35 +193,28 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    return;
 	}
 
-	String[] playerUsername = getUsers(msg.getCalleeList());
+	PresenceInfo[] calleeList = msg.getCalleeList();
 
-	String caller = msg.getCaller().userID.getUsername();
+	PresenceInfo caller = msg.getCaller();
 
 	boolean added = addPlayerToChatGroup(vm, audioGroup, caller, callerCallID, 
 	    msg.getChatType());
 
-	if (added == false && playerUsername.length == 0) {
+	if (added == false && calleeList.length == 0) {
 	    endVoiceChat(vm, audioGroup);
 	    return;
 	}
 
 	logger.fine("Request to join AudioGroup " + group + " caller " + caller);
 
-	for (int i = 0; i < playerUsername.length; i++) {
-	    String username = playerUsername[i];
+	for (int i = 0; i < calleeList.length; i++) {
+	    PresenceInfo info = calleeList[i];
 
-	    logger.fine("  callee:  " + username);
+	    CellID cellID = calleeList[i].cellID;
 
-	    if (username == null || username.length() == 0) {
-		continue;
-	    }
+	    logger.fine("  callee:  " + calleeList[i]);
 
-	    String callID = AudioManagerConnectionHandler.getCallID(username);
-
-	    if (callID == null) {
-		logger.warning("No callID for " + username);
-		continue;
-	    }
+	    String callID = AudioManagerUtil.getCallID(cellID);
 
 	    Player player = vm.getPlayer(callID);
 
@@ -231,20 +223,17 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 		continue;
 	    }
 
-	    PresenceInfo info = msg.getCalleeList()[i];
+	    if (audioGroup.getPlayerInfo(player) != null) {
+		logger.fine("Player " + info
+		    + " is already in audio group " + audioGroup);
+		continue;
+	    }
 
             WonderlandClientID id = 
 	       CommsManagerFactory.getCommsManager().getWonderlandClientID(info.clientID);
 
 	    if (id == null) {
-		logger.warning("No WonderlandClientID for call " 
-		    + callID + " username " + username);
-		continue;
-	    }
-
-	    if (audioGroup.getPlayerInfo(player) != null) {
-		logger.fine("Player " + username 
-		    + " is already in audio group " + audioGroup);
+		logger.warning("No WonderlandClientID for " + info);
 		continue;
 	    }
 
@@ -259,35 +248,30 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 		}
 	    }
 
-	    logger.info("Asking " + username + " to join audio group " 
+	    logger.info("Asking " + info + " to join audio group " 
 		+ group + " chatType " + msg.getChatType());
 
+	    /*
+	     * put callee first in the list
+	     */
+	    PresenceInfo pi = calleeList[0];
+
+	    calleeList[0] = info;
+
+	    calleeList[i] = info;
+
 	    requestPlayerJoinAudioGroup(sender, id, group, caller,
-		username, msg.getChatType());
+		calleeList, msg.getChatType());
 	}
 
 	vm.dump("all");
 	return;
     }
 
-    private String[] getUsers(PresenceInfo[] info) {
-	String[] users = new String[info.length];
-
-	for (int i = 0; i < info.length; i++) {
-	    users[i] = getUser(info[i]);
-	}
-
-	return users;
-    }
-
-    private String getUser(PresenceInfo info) {
-	return info.userID.getUsername();
-    }
-
-    private ConcurrentHashMap<String, String> playerMap = new ConcurrentHashMap();
+    private ConcurrentHashMap<String, PresenceInfo> playerMap = new ConcurrentHashMap();
 
     private boolean addPlayerToChatGroup(VoiceManager vm, AudioGroup audioGroup,
-	    String username, String callID, VoiceChatMessage.ChatType chatType) {
+	    PresenceInfo info, String callID, VoiceChatMessage.ChatType chatType) {
 
 	Player player = vm.getPlayer(callID);
 
@@ -322,22 +306,22 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	for (int i = 0; i < players.length; i++) {
 	    Player p = players[i];
 
-	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(p);
+	    AudioGroupPlayerInfo audioGroupPlayerinfo = audioGroup.getPlayerInfo(p);
 
-	    if (info.chatType == AudioGroupPlayerInfo.ChatType.PUBLIC) {
+	    if (audioGroupPlayerinfo.chatType == AudioGroupPlayerInfo.ChatType.PUBLIC) {
 	        createVirtualPlayers(audioGroup);
 	    } else {
 	        removeVirtualPlayers(audioGroup, p);
 	    }
 	}
 
-	playerMap.put(callID, username);
+	playerMap.put(callID, info);
 	return true;
     }
 
     private void requestPlayerJoinAudioGroup(WonderlandClientSender sender,
-	    WonderlandClientID clientID, String group, String caller, String calleeList, 
-	    VoiceChatMessage.ChatType chatType) {
+	    WonderlandClientID clientID, String group, PresenceInfo caller, 
+	    PresenceInfo[] calleeList, VoiceChatMessage.ChatType chatType) {
 
 	VoiceChatMessage message = new VoiceChatJoinRequestMessage(group, 
 	    caller, calleeList, chatType);
@@ -348,13 +332,10 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     private void sendVoiceChatBusyMessage(WonderlandClientSender sender,
 	    WonderlandClientID clientID, VoiceChatBusyMessage message) {
 
-	logger.fine("Sending busy message to " + message.getCaller());
+	logger.fine(message.getCallee() + " sending busy message to " 
+	    + message.getCaller());
 
-	VoiceChatMessage msg = new VoiceChatBusyMessage(
-	     message.getGroup(), message.getCaller(), message.getCalleeList(),
-	     message.getChatType());
-
-        sender.send(clientID, msg);
+        sender.send(clientID, message);
     }
 
     private void sendVoiceChatInfo(WonderlandClientSender sender,
@@ -366,23 +347,28 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	AudioGroup audioGroup = vm.getAudioGroup(group);
 
-	if (audioGroup != null) {
-	    Player[] players = audioGroup.getPlayers();
-
-	    for (int i = 0; i < players.length; i++) {
-		String callID = playerMap.get(players[i].getId());
-	
-		if (callID == null) {
-		    logger.warning("Unable to map callID " + players[i].getId()
-			+ " to username");
-		    continue;
-		}
-		
-	        chatInfo += callID + " ";
-	    }
+	if (audioGroup == null) {
+	    logger.warning("Can't find audio group " + group);
+	    return;
 	}
 
-        VoiceChatMessage msg = new VoiceChatInfoResponseMessage(group, chatInfo);
+	ArrayList<PresenceInfo> chatters = new ArrayList();
+
+	Player[] players = audioGroup.getPlayers();
+
+	for (int i = 0; i < players.length; i++) {
+	    PresenceInfo info = playerMap.get(players[i].getId());
+	
+	    if (info == null) {
+		logger.warning("Unable to find " + players[i].getId());
+		continue;
+	    }
+		
+	    chatters.add(info);
+	}
+
+        VoiceChatMessage msg = new VoiceChatInfoResponseMessage(group, 
+	    chatters.toArray(new PresenceInfo[0]));
 
         sender.send(clientID, msg);
     }
@@ -678,15 +664,15 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     public void transformChanged(ManagedReference<CellMO> cellMORef, 
 	    final CellTransform localTransform, final CellTransform localToWorldTransform) {
 
-	String clientId = cellMORef.get().getCellID().toString();
+	String callID = AudioManagerUtil.getCallID(cellMORef.get().getCellID());
 
 	logger.fine("localTransform " + localTransform + " world " 
 	    + localToWorldTransform);
 
-	Player player = AppContext.getManager(VoiceManager.class).getPlayer(clientId);
+	Player player = AppContext.getManager(VoiceManager.class).getPlayer(callID);
 
 	if (player == null) {
-	    logger.fine("got AvatarMovedMessage but can't find player for " + clientId);
+	    logger.fine("got AvatarMovedMessage but can't find player for " + callID);
 	    return;
 	}
 

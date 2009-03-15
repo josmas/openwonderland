@@ -15,34 +15,27 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.audiomanager.common;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
- * Message to transfer a call to a different number.
- *
+ * Utility class
  * @author jprovino
  */
-@ExperimentalAPI
-public class TransferCallMessage extends Message {
+public class AudioManagerUtil {
 
-    private String softphoneCallID;
-    private String phoneNumber;
-
-    public TransferCallMessage(String softphoneCallID, String phoneNumber) {
-	this.softphoneCallID = softphoneCallID;
-	this.phoneNumber = phoneNumber;
+    private AudioManagerUtil() {
     }
 
-    public String getSoftphoneCallID() {
-        return softphoneCallID;
-    }
+    public static String getCallID(CellID cellID) {
+	String s = cellID.toString();
 
-    public String getPhoneNumber() {
-	return phoneNumber;
+	if (s.equals("0")) {
+	    s = "00";
+	}
+	
+	return s;
     }
 
 }

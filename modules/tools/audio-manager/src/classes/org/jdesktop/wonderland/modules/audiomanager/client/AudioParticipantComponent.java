@@ -36,8 +36,12 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
+
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  * A component that provides audio participant control
@@ -76,8 +80,7 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
                 msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
                     public void messageReceived(CellMessage message) {
                         AudioParticipantSpeakingMessage msg = (AudioParticipantSpeakingMessage) message;
-
-			logger.info(msg.getCellID().toString() 
+			logger.info(msg.getPresenceInfo()
 			    + (msg.isSpeaking() ? " Started speaking" : " Stopped speaking"));
                     }
                 };
@@ -106,7 +109,7 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
 
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-	if (cell.getCellID().toString().equals(sc.getCallID())) {
+	if (AudioManagerUtil.getCallID(cell.getCellID()).equals(sc.getCallID())) {
 	    volumeControlJFrame.setTitle("Master Volume for " + cell.getName());
 	} else {
 	    volumeControlJFrame.setTitle("Volume Control for " + cell.getName());

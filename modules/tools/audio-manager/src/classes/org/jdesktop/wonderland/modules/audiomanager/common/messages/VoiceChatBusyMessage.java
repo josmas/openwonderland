@@ -23,12 +23,32 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  *
  * @author jprovino
  */
-public class VoiceChatBusyMessage extends VoiceChatUserMessage {
+public class VoiceChatBusyMessage extends VoiceChatMessage {
     
-    public VoiceChatBusyMessage(String group, PresenceInfo caller, 
-	    PresenceInfo[] calleeList, ChatType chatType) {
+    private PresenceInfo caller;
+    private PresenceInfo callee;
+    private ChatType chatType;
 
-	super(group, caller, calleeList, chatType);
+    public VoiceChatBusyMessage(String group, PresenceInfo caller, 
+	    PresenceInfo callee, ChatType chatType) {
+
+	super(group);
+
+	this.caller = caller;
+	this.callee = callee;
+	this.chatType = chatType;
+    }
+
+    public PresenceInfo getCaller() {
+	return caller;
+    }
+
+    public PresenceInfo getCallee() {
+	return callee;
+    }
+
+    public ChatType getChatType() {
+	return chatType;
     }
     
 }

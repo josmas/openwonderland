@@ -30,11 +30,11 @@ public class VoiceChatBusyDialog extends javax.swing.JFrame {
         initComponents();
     }
 
-    public VoiceChatBusyDialog(String group, PresenceInfo user) {
+    public VoiceChatBusyDialog(String group, PresenceInfo info) {
 	initComponents();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
-        busyText.setText(user.userID.getUsername() + " is busy and cannot join chat group '" 
+        busyText.setText(info.userID.getUsername() + " is busy and cannot join chat group '" 
 	    + group + "'");
 	busyText.setVisible(true);
         setVisible(true);
