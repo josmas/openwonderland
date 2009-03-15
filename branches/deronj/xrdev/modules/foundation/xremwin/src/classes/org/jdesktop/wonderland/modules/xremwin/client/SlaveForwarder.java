@@ -187,37 +187,40 @@ class SlaveForwarder {
                     ? controllingUser.length() : 0;
 
             System.err.println("wid = " + win.getWid());
-            System.err.println("xy = " + win.getX() + " " + win.getY());
+            System.err.println("xy = " + win.getOffsetX() + " " + win.getOffsetY());
             System.err.println("wh = " + win.getWidth() + " " + win.getHeight());
             System.err.println("bw = " + win.getBorderWidth());
-            System.err.println("decorated = " + win.isTopLevel());
-            System.err.println("showing = " + win.isVisible());
+            System.err.println("decorated = " + win.isDecorated());
+            System.err.println("showing = " + win.isVisibleApp());
             System.err.println("controlling user = " + controllingUser);
             System.err.println("stackPos = " + win.getStackPosition());
 
-            Vector3f userDispl = win.getUserDisplacement();
+            /*TODO:
             System.err.println("rotY = " + win.getRotateY());
-            System.err.println("userDispl = " + userDispl);
+            System.err.println("userTranslation = " + win.getUserTranslation());
+             */
 
             // Send basic window attributes
             encode(syncBuf, 0, win.getWid());
-            encode(syncBuf, 4, win.getX());
-            encode(syncBuf, 8, win.getY());
+            encode(syncBuf, 4, win.getOffsetX());
+            encode(syncBuf, 8, win.getOffsetY());
             encode(syncBuf, 12, win.getWidth());
             encode(syncBuf, 16, win.getHeight());
             encode(syncBuf, 20, win.getBorderWidth());
             encode(syncBuf, 24, controllingUserLen);
             encode(syncBuf, 28, win.getStackPosition());
-            encode(syncBuf, 32, win.getRotateY());
+            /* TODO:
+             encode(syncBuf, 32, win.getRotateY());
             encode(syncBuf, 36, userDispl.x);
             encode(syncBuf, 40, userDispl.y);
             encode(syncBuf, 44, userDispl.z);
+             */
             /* TODO: 0.4 protocol:
             encode(syncBuf, 48, win.getTransientFor().getWid());
              */
             encode(syncBuf, 48, 0);
-            syncBuf[52] = (byte) (win.isTopLevel() ? 1 : 0);
-            syncBuf[53] = (byte) (win.isVisible() ? 1 : 0);
+            syncBuf[52] = (byte) (win.isDecorated() ? 1 : 0);
+            syncBuf[53] = (byte) (win.isVisibleApp() ? 1 : 0);
 
             unicastSend(slaveID, syncBuf);
             //System.err.println("Call unicastMessage with " + syncBuf.length + " bytes");

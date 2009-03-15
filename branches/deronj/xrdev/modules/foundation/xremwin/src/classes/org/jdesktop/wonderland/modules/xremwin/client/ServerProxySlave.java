@@ -300,9 +300,9 @@ class ServerProxySlave implements ServerProxy {
 
         /* TODO: 0.4 protocol:
         WindowXrw winTransientFor = client.lookupWindow(transientFor);
-        win.setVisible(show, winTransientFor);
+        win.setVisibleApp(show, winTransientFor);
          */
-        win.setVisible(show, null);
+        win.setVisibleApp(show);
 
         if (stackPos >= 0) {
             winStackOrder[stackPos] = win;
