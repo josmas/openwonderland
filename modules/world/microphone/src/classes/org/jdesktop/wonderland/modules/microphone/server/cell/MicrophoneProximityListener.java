@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.microphone.server.cell;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
+//import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
@@ -75,7 +75,8 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
 	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
-	String callId = AudioManagerUtil.getCallID(viewCellID);
+	//String callId = AudioManagerUtil.getCallID(viewCellID);
+	String callId = viewCellID.toString();
 
 	if (entered) {
 	    if (proximityIndex == 0) {
