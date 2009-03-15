@@ -23,8 +23,10 @@ import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.content.ContentBrowserManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 
@@ -32,15 +34,19 @@ import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegis
  *
  * @author jkaplan
  */
+@Plugin
 public class BrowserPlugin implements ClientPlugin {
     private BrowserFrame frame;
 
     public void initialize(final ServerSessionManager loginInfo) {
+        // Fetch the system content repository based upon the server we are
+        // currently connected to.
+        ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
+        final ContentRepository repo = registry.getRepository(loginInfo);
+
         Action launchAction = new AbstractAction("Content Browser...") {
             public synchronized void actionPerformed(ActionEvent e) {
                 if (frame == null) {
-                    ContentRepository repo =
-                            ContentRepositoryRegistry.getInstance().getRepository(loginInfo);
                     frame = new BrowserFrame(repo);
                 }
 
@@ -53,6 +59,10 @@ public class BrowserPlugin implements ClientPlugin {
         };
 
         JmeClientMain.getFrame().addToToolMenu(new JMenuItem(launchAction));
+
+        // Registery the content browser frame with the registry of such panels
+        ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
+        manager.setDefaultContentBrowser(new ContentBrowserJDialog(repo));
     }
 
 }

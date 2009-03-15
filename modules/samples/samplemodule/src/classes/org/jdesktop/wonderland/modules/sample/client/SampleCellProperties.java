@@ -18,10 +18,15 @@
 
 package org.jdesktop.wonderland.modules.sample.client;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
+import org.jdesktop.wonderland.client.content.ContentBrowserManager;
+import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI;
+import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI.ContentBrowserListener;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
 
@@ -38,6 +43,30 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
     /** Creates new form SampleCellProperties */
     public SampleCellProperties() {
         initComponents();
+
+        // Listen for when the Browse... button is selected and display a
+        // GUI to browser the content repository. Wait until OK has been
+        // selected and fill in the text field with the URI
+        browseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Fetch the browser for the webdav protocol and display it.
+                // Add a listener for the result and update the value of the
+                // text field for the URI
+                ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
+                final ContentBrowserSPI browser = manager.getDefaultContentBrowser();
+                browser.addContentBrowserListener(new ContentBrowserListener() {
+                    public void okAction(String uri) {
+                        uriTextField.setText(uri);
+                        browser.removeContentBrowserListener(this);
+                    }
+
+                    public void cancelAction() {
+                        browser.removeContentBrowserListener(this);
+                    }
+                });
+                browser.setVisible(true);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -51,6 +80,9 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
 
         jLabel1 = new javax.swing.JLabel();
         shapeTypeComboBox = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        uriTextField = new javax.swing.JTextField();
+        browseButton = new javax.swing.JButton();
 
         jLabel1.setText("Shape Type:");
 
@@ -66,16 +98,28 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
             }
         });
 
+        jLabel2.setText("URI:");
+
+        browseButton.setText("Browse...");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(shapeTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 230, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(uriTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(shapeTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 230, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(54, Short.MAX_VALUE))
+                .add(browseButton)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -84,7 +128,12 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(shapeTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(139, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(uriTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(browseButton))
+                .addContainerGap(101, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -115,8 +164,11 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JComboBox shapeTypeComboBox;
+    private javax.swing.JTextField uriTextField;
     // End of variables declaration//GEN-END:variables
 
     public Class getServerCellStateClass() {
