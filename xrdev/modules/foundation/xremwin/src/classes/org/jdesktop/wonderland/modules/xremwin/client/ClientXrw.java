@@ -401,9 +401,9 @@ public abstract class ClientXrw implements Runnable {
                 } else {
                     /* TODO: 0.4 protocol:
                     WindowXrw transientFor = lookupWindow(showWinMsgArgs.transientFor);
-                    win.setVisible(showWinMsgArgs.show, transientFor);
+                    win.setVisibleApp(showWinMsgArgs.show, transientFor);
                      */
-                    win.setVisible(showWinMsgArgs.show, null);
+                    win.setVisibleApp(showWinMsgArgs.show, null);
                 }
                 break;
 
@@ -423,7 +423,7 @@ public abstract class ClientXrw implements Runnable {
                     if (win == null) {
                         AppXrw.logger.warning("PositionWindow: window doesn't exist: wid = " + positionWinMsgArgs.wid);
                     } else {
-                        win.setLocation(positionWinMsgArgs.x, positionWinMsgArgs.y);
+                        win.setOffset(positionWinMsgArgs.x, positionWinMsgArgs.y);
                     }
                 }
                 break;
@@ -451,7 +451,7 @@ public abstract class ClientXrw implements Runnable {
                 if (win == null) {
                     AppXrw.logger.warning("WindowSetDecorated: window doesn't exist: wid = " + winSetDecoratedMsgArgs.wid);
                 } else {
-                    win.setTopLevel(winSetDecoratedMsgArgs.decorated);
+                    win.setDecorated(winSetDecoratedMsgArgs.decorated);
                 }
                 break;
 
@@ -646,7 +646,7 @@ public abstract class ClientXrw implements Runnable {
 
             // Self configure: see if this is a size change
             if (msg.wAndBorder != win.getWidth() ||
-                    msg.hAndBorder != win.getHeight()) {
+                msg.hAndBorder != win.getHeight()) {
 
                 // Accept this self resize. This is because the user resize operation
                 // is not completely finished until setDimensions is called with
@@ -657,7 +657,9 @@ public abstract class ClientXrw implements Runnable {
         }
 
         WindowXrw sibWin = lookupWindow(msg.sibid);
-        win.configure(msg.x, msg.y, msg.wAndBorder, msg.hAndBorder, sibWin);
+        win.setOffset(msg.x, msg.y);
+        win.setSize(msg.wAndBorder, msg.hAndBorder);
+        win.setSiblingAbove(sibWin);
     }
 
     /**
@@ -973,18 +975,6 @@ public abstract class ClientXrw implements Runnable {
 
     private void printRLEnd() {
         printRLRun();
-    }
-
-    public void printWindowTransformsAll() {
-        synchronized (AppXrw.widToWindow) {
-            Iterator it = AppXrw.widToWindow.values().iterator();
-            while (it.hasNext()) {
-                WindowXrw win = (WindowXrw) it.next();
-                if (win.isVisible()) {
-                    // TODO: notyet : win.printTransform();
-                }
-            }
-        }
     }
 
     /**

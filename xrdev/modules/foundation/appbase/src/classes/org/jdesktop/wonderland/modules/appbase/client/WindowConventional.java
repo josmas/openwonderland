@@ -54,7 +54,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
     private BufferedImage tempImage;
 
     /** 
-     * Create a new instance of WindowConventional.
+     * Create a new instance of WindowConventional with a default name.
      *
      * @param app The app to which the window belongs.
      * @param width The width of the window (in pixels). This does NOT include the borderWidth.
@@ -62,12 +62,30 @@ public abstract class WindowConventional extends WindowGraphics2D {
      * @param topLevel Whether the window is top left (that is, is decorated).
      * @param borderWidth The border width of the window.
      * @param pixelScale The size of the window pixels in world coordinates.
-     * @throws InstantiationException if the the window cannot be created.
      */
-    public WindowConventional(App2D app, int width, int height, boolean topLevel, int borderWidth, Vector2f pixelScale)
-            throws InstantiationException {
+    public WindowConventional(App2D app, int width, int height, boolean topLevel, int borderWidth, 
+                              Vector2f pixelScale) {
         super(app, width, height, topLevel, pixelScale,
-                new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
+              new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
+        this.borderWidth = borderWidth;
+        appConventional = (AppConventional) app;
+    }
+
+    /** 
+     * Create a new instance of WindowConventional with the given  name.
+     *
+     * @param app The app to which the window belongs.
+     * @param width The width of the window (in pixels). This does NOT include the borderWidth.
+     * @param height The height of the window (in pixels). This does NOT include the borderWidth.
+     * @param topLevel Whether the window is top left (that is, is decorated).
+     * @param borderWidth The border width of the window.
+     * @param pixelScale The size of the window pixels in world coordinates.
+     * @param name The name of the window.
+     */
+    public WindowConventional(App2D app, int width, int height, boolean topLevel, int borderWidth, 
+                              Vector2f pixelScale, String name) {
+        super(app, width, height, topLevel, pixelScale, name,
+              new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
         this.borderWidth = borderWidth;
         appConventional = (AppConventional) app;
     }

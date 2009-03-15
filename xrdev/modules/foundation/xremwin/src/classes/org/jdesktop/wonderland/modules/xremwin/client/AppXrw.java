@@ -22,9 +22,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.AppConventional;
-import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
-import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
 
 /**
  * An X11 app which receives its window contents from the Xremwin server.
@@ -45,14 +43,12 @@ public class AppXrw extends AppConventional {
     /**
      * Create a instance of AppXRW with a generated ID.
      *
-     * @param appType The type of 2D app to create.
      * @param appName The name of the app.
      * @param controlArb The control arbiter to use. null means that all users can control at the same time.
      * @param pixelScale The size of the window pixels.
      */
-    public AppXrw(AppTypeConventional appType, String appName, ControlArb controlArb, Vector2f pixelScale) {
-        super(appType, appName, controlArb, pixelScale);
-        AppXrw.logger.severe("AppXrw: appType = " + appType);
+    public AppXrw(String appName, ControlArb controlArb, Vector2f pixelScale) {
+        super(appName, controlArb, pixelScale);
     }
 
     /**

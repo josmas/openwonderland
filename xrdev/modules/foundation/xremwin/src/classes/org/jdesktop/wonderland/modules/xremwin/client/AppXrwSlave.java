@@ -20,9 +20,8 @@ package org.jdesktop.wonderland.modules.xremwin.client;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.InternalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
-import org.jdesktop.wonderland.modules.appbase.client.gui.Displayer;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 
 /**
  * A Slave Xremwin app. This is the AppXrw subclass used on a client machine
@@ -36,7 +35,6 @@ public class AppXrwSlave extends AppXrw {
     /**
      * Create a new instance of AppXrwSlave.
      *
-     * @param appType The type of app to create.
      * @param appName The name of the app.
      * @param pixelScale The size of the window pixels.
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between master 
@@ -44,15 +42,15 @@ public class AppXrwSlave extends AppXrw {
      * @param session This app's Wonderland session.
      * @param displayer The environment in which the app is going to be displayed.
      */
-    public AppXrwSlave(AppTypeConventional appType, String appName, Vector2f pixelScale, 
+    public AppXrwSlave(String appName, Vector2f pixelScale, 
                        ProcessReporter reporter, AppXrwConnectionInfo connectionInfo, 
-                       WonderlandSession session, Displayer displayer) {
+                       WonderlandSession session, View2DDisplayer displayer) {
 
-        super(appType, appName, new ControlArbXrw(), pixelScale);
+        super(appName, new ControlArbXrw(), pixelScale);
         controlArb.setApp(this);
         
-        // The displaye must be set early on. The client sync from the master requires this.
-        setDisplayer(displayer);
+        // The displayer must be added early on. The client sync from the master requires this.
+        addDisplayer(displayer);
 
         // Create the Xremwin protocol client and start its interpreter loop running.
         client = null;

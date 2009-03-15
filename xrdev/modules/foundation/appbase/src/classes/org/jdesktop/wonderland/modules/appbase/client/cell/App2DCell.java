@@ -65,7 +65,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     private LinkedList<View2DCell> views = new LinkedList<View2DCell>();
 
     /** The app displayed in this cell. */
-    private App2D app;
+    protected App2D app;
 
     /** 
      * Creates a new instance of App2DCell.

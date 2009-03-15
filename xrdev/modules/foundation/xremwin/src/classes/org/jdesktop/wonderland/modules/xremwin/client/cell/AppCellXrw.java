@@ -22,11 +22,8 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.AppConventional;
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
-import org.jdesktop.wonderland.modules.appbase.client.AppTypeConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporterFactory;
 import org.jdesktop.wonderland.modules.appbase.client.cell.AppConventionalCell;
-import org.jdesktop.wonderland.modules.xremwin.client.AppTypeXrw;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrw;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwMaster;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwSlave;
@@ -54,26 +51,19 @@ public class AppCellXrw extends AppConventionalCell {
         session = cellCache.getSession();
     }
 
-    /** 
-     * {@inheritDoc}
-     */
-    public AppType getAppType() {
-        return new AppTypeXrw();
-    }
-
     /**
      * {@inheritDoc}
      */
     protected String startMaster(String appName, String command, boolean initInBestView) {
         try {
-            app = new AppXrwMaster((AppTypeXrw) getAppType(), appName, command,
-                    pixelScale, ProcessReporterFactory.getFactory().create(appName), session);
+            app = new AppXrwMaster(appName, command, pixelScale,
+                                   ProcessReporterFactory.getFactory().create(appName), session);
         } catch (InstantiationException ex) {
             return null;
         }
 
         ((AppConventional) app).setInitInBestView(initInBestView);
-        app.setDisplayer(this);
+        app.addDisplayer(this);
 
         // Now it is safe to enable the master client loop
         ((AppXrw)app).getClient().enable();
@@ -85,7 +75,7 @@ public class AppCellXrw extends AppConventionalCell {
      * {@inheritDoc}
      */
     protected void startSlave(String connectionInfo) {
-        app = new AppXrwSlave((AppTypeConventional) getAppType(), appName, pixelScale,
+        app = new AppXrwSlave(appName, pixelScale,
                 ProcessReporterFactory.getFactory().create(appName),
                 new AppXrwConnectionInfo(connectionInfo), session, this);
     }
