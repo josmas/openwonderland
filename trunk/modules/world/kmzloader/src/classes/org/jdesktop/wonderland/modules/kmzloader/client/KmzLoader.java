@@ -58,6 +58,8 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Or
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
+//import org.jdesktop.wonderland.modules.kmzloader.client.kml_22.AbstractFeatureType;
+//import org.jdesktop.wonderland.modules.kmzloader.client.kml_22.AbstractGeometryType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
 import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.GeometryType;
@@ -105,10 +107,12 @@ class KmzLoader implements ModelLoader {
             
             ArrayList<ModelType> models=new ArrayList();
             FeatureType feature = kml.getFeature().getValue();
+            // For the 2.2 version of KML
+            //AbstractFeatureType feature = kml.getAbstractFeatureGroup().getValue();
             if (feature instanceof FolderType) {
                 findModels(models, (FolderType)feature);
             }
-            
+
             if (models.size()==0) {
                 logger.severe("No models found in KMZ File");
                 return null;
@@ -151,17 +155,26 @@ class KmzLoader implements ModelLoader {
         
         ZipEntry modelEntry = zipFile.getEntry(filename);
         BufferedInputStream in = new BufferedInputStream(zipFile.getInputStream(modelEntry));
-        
+
         ColladaImporter.load(in, filename);
         modelNode = ColladaImporter.getModel();
+
+        // Adjust the scene transform to match the scale and axis specified in
+        // the collada file
+        float unitMeter = ColladaImporter.getInstance().getUnitMeter();
+        modelNode.setLocalScale(unitMeter);
+
+        String upAxis = ColladaImporter.getInstance().getUpAxis();
+        if (upAxis.equals("Z_UP")) {
+            modelNode.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
+        } else if (upAxis.equals("X_UP")) {
+            modelNode.setLocalRotation(new Quaternion(new float[] {0f, 0f, (float)Math.PI/2}));
+        } // Y_UP is the Wonderland default
 
         ColladaImporter.cleanUp();
         
         ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, zipResource);
         WlzipManager.getWlzipManager().removeZip(zipHost, zipFile);
-
-        // Correctly orient model - TODO get initial orientation from KML
-        modelNode.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
 
         return modelNode;
     }
@@ -175,7 +188,7 @@ class KmzLoader implements ModelLoader {
         List<JAXBElement<? extends FeatureType>> features = folder.getFeature();
         for(JAXBElement<? extends FeatureType> featureJAXB : features) {
             FeatureType feature = featureJAXB.getValue();
-            
+
             if (feature instanceof FolderType) {
                 findModels(models, (FolderType)feature);
             } else if (feature instanceof PlacemarkType) {
@@ -191,6 +204,28 @@ class KmzLoader implements ModelLoader {
                 logger.info("Skipping feature "+feature);
         }
     }
+
+    // For the 2.2 version of KML
+//    private void findModels22(ArrayList<ModelType> models, FolderType folder) {
+//        List<JAXBElement<? extends AbstractFeatureType>> features = folder.getAbstractFeatureGroup();
+//        for(JAXBElement<? extends AbstractFeatureType> featureJAXB : features) {
+//            AbstractFeatureType feature = featureJAXB.getValue();
+//
+//            if (feature instanceof FolderType) {
+//                findModels(models, (FolderType)feature);
+//            } else if (feature instanceof PlacemarkType) {
+//                if (((PlacemarkType)feature).getAbstractGeometryGroup()!=null) {
+//                    AbstractGeometryType geometryType = ((PlacemarkType)feature).getAbstractGeometryGroup().getValue();
+//                    if (geometryType instanceof ModelType) {
+//                        models.add((ModelType)geometryType);
+//                    } else {
+//                        logger.info("Unsupported GeometryType "+geometryType);
+//                    }
+//                }
+//            } else
+//                logger.info("Skipping feature "+feature);
+//        }
+//    }
     
     public ModelDeploymentInfo deployToModule(File moduleRootDir, ImportedModel model) throws IOException {
         try {
