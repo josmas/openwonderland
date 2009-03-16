@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.PostConstruct;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -39,6 +40,7 @@ import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.PhysicsComponent;
 import org.jdesktop.mtgame.PhysicsSystem;
+import org.jdesktop.mtgame.PostEventCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
@@ -457,9 +459,9 @@ public abstract class BasicRenderer implements CellRendererJME {
         private Vector3f tmp2V3f = new Vector3f();
         private Quaternion tmpQuat = new Quaternion();
 
+        private final long postId = ClientContextJME.getWorldManager().allocateEvent();
 
-        private boolean isChained = false;
-        private NewFrameCondition postCondition = new NewFrameCondition(this);
+        private PostEventCondition postCondition = new PostEventCondition(this, new long[] {postId});
         
         public MoveProcessor(WorldManager worldManager, Node node) {
             this.node = node;
@@ -472,21 +474,30 @@ public abstract class BasicRenderer implements CellRendererJME {
 
         @Override
         public void commit(ProcessorArmingCollection arg0) {
+            // The dirty flag is important for Avatars, as we chain
+            // the moveProcessor to the avatarcontrol which update per frame
+            // This needs breaking out at some point in the future
+
             synchronized(this) {
                 if (dirty) {
                     node.setLocalTranslation(cellTransform.getTranslation(tmpV3f));
                     node.setLocalRotation(cellTransform.getRotation(tmpQuat));
                     node.setLocalScale(cellTransform.getScaling(tmp2V3f));
-//                    System.err.println("BasicRenderer.cellMoved "+tmpV3f);
+//                    System.err.println("BasicRenderer.cellMoved "+tmpV3f+"  "+arg0.size());
                     dirty = false;
                     worldManager.addToUpdateList(node);
 //            System.err.println("--------------------------------");
                 }
             }
+
+            // Clear the triggering events
+            if (arg0.size() != 0) {
+               PostEventCondition pec = (PostEventCondition)arg0.get(0);
+               pec.getTriggerEvents();
+            }
         }
 
-        @Override
-        
+        @Override        
         public void initialize() {
             setArmingCondition(postCondition);
         }
@@ -500,17 +511,14 @@ public abstract class BasicRenderer implements CellRendererJME {
             synchronized(this) {
                 this.cellTransform = transform;
                 dirty = true;
-
-
+//                System.err.println("CellMoved "+postId);
+                ClientContextJME.getWorldManager().postEvent(postId);
             }
         }
 
-        public void setChained(boolean isChained) {
-            this.isChained = isChained;
-            if (isChained)
-                setArmingCondition(null);
-            else 
-                setArmingCondition(postCondition);
+        @Override
+        protected void finalize() {
+            ClientContextJME.getWorldManager().freeEvent(postId);
         }
     }
 }
