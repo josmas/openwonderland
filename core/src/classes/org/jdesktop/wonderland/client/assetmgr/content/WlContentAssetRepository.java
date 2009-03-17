@@ -62,7 +62,7 @@ public class WlContentAssetRepository implements AssetRepository {
         // If there is no last modified date, then log a warning. We will
         // still fetch whatever asset we find on the server.
         if (lastModified == -1) {
-            logger.warning("Opening asset stream, no last modified date for " +
+            logger.fine("Opening asset stream, no last modified date for " +
                     "asset " + assetURI.toExternalForm());
         }
 
@@ -97,12 +97,12 @@ public class WlContentAssetRepository implements AssetRepository {
         // the cached version if so. If we are ok, then create an asset stream
         // ready for download.
         if (response == HttpURLConnection.HTTP_NOT_MODIFIED) {
-            logger.warning("Opening asset stream, asset is already cached " +
+            logger.fine("Opening asset stream, asset is already cached " +
                     assetURI.toExternalForm());
             return new WlContentAssetStream(AssetResponse.ASSET_CACHED, assetURI);
         }
         else if (response == HttpURLConnection.HTTP_OK) {
-            logger.warning("Opening asset stream with base url " + baseURL +
+            logger.fine("Opening asset stream with base url " + baseURL +
                     " for asset " + assetURI.toExternalForm());
             return new WlContentAssetStream(AssetResponse.STREAM_READY, assetURI,
                     urlConnection, baseURL);

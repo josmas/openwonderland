@@ -62,7 +62,7 @@ public class WlHttpAssetRepository implements AssetRepository {
         // If there is no last modified date, then log a warning. We will
         // still fetch whatever asset we find on the server.
         if (lastModified == -1) {
-            logger.warning("Opening asset stream, no last modified date for " +
+            logger.fine("Opening asset stream, no last modified date for " +
                     "asset " + assetURI.toExternalForm());
         }
 
