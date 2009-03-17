@@ -17,11 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.palette.client;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureListener;
 import java.awt.dnd.DragSource;
 import java.net.URL;
 import java.util.HashMap;
@@ -46,6 +46,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.modules.palette.client.dnd.PaletteDragGestureListener;
 
 /**
@@ -191,6 +192,11 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     // Create a position component that will set the initial origin
     PositionComponentServerState position = new PositionComponentServerState();
     position.setOrigin(new Origin(origin));
+    Quaternion quaternion = new Quaternion();
+    quaternion.lookAt(cameraLookDirection.negate(), new Vector3f(0, 1, 0));
+    Vector3f axis = new Vector3f();
+    float angle = quaternion.toAngleAxis(axis);
+    position.setRotation(new Rotation(axis, angle));
     setup.addComponentServerState(position);
     
     // Send the message to the server
