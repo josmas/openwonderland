@@ -60,12 +60,11 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
     /* The scalar distance from the camera to place new cells */
     public static final float NEW_CELL_DISTANCE = 5.0f;
 
-    /* The current selected preview image */
-    private Image selectedPreviewImage = null;
+    /* The "No Preview Available" image */
+    private Image noPreviewAvailableImage = null;
 
-    /* The "No Preview Available" image icon */
-    private ImageIcon noPreviewAvailableIcon = null;
-
+    /* The handler for the drag source for the preview image */
+    private PaletteDragGestureListener gestureListener = null;
     /** Creates new form CellPalette */
     public CellPalette() {
         // Initialize the GUI components
@@ -73,8 +72,7 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
 
         // Create the icon for the "No Preview Available" image
         URL url = CellPalette.class.getResource("resources/nopreview.png");
-        Image image = Toolkit.getDefaultToolkit().createImage(url);
-        noPreviewAvailableIcon = new ImageIcon(image);
+        noPreviewAvailableImage = Toolkit.getDefaultToolkit().createImage(url);
 
         // Listen for list selection events and update the preview panel with
         // the selected item's image
@@ -82,8 +80,9 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
 
         // Add support for drag from the preview image label
         DragSource ds = DragSource.getDefaultDragSource();
-        DragGestureListener l = new PaletteDragGestureListener(this);
-        ds.createDefaultDragGestureRecognizer(previewLabel, DnDConstants.ACTION_COPY_OR_MOVE, l);
+        gestureListener = new PaletteDragGestureListener();
+        ds.createDefaultDragGestureRecognizer(previewLabel,
+                DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
 
     }
 
@@ -92,27 +91,6 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         // Update the list values and set it visible or not
         updateListValues();
         super.setVisible(b);
-    }
-
-    /**
-     * Returns the currently selected preview image, or null if there is no
-     * selection or the cell palette entry does not have a preview
-     *
-     * @return The currently selected preview Image object
-     */
-    public Image getSelectedPreviewImage() {
-        return selectedPreviewImage;
-    }
-
-    /**
-     * Returns the cell factory for the currently selected cell, or null if
-     * no selection exists.
-     *
-     * @return The currently selected CellFactorySPI object
-     */
-    public CellFactorySPI getSelectedCellFactory() {
-        String cellDisplayName = (String)cellList.getSelectedValue();
-        return getCellFactory(cellDisplayName);
     }
 
     /** This method is called from within the constructor to
@@ -285,13 +263,22 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         if (selectedName != null) {
             CellFactorySPI cellFactory = cellFactoryMap.get(selectedName);
             if (cellFactory != null) {
-                selectedPreviewImage = cellFactory.getPreviewImage();
-                if (selectedPreviewImage != null) {
-                    ImageIcon icon = new ImageIcon(selectedPreviewImage);
+                Image previewImage = cellFactory.getPreviewImage();
+                if (previewImage != null) {
+                    ImageIcon icon = new ImageIcon(previewImage);
                     previewLabel.setIcon(icon);
+                    
+                    // Pass the necessary information for drag and drop
+                    gestureListener.cellFactory = cellFactory;
+                    gestureListener.previewImage = previewImage;
                 }
                 else {
-                    previewLabel.setIcon(noPreviewAvailableIcon);
+                    ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
+                    previewLabel.setIcon(icon);
+
+                    // Pass the necessary information for drag and drop
+                    gestureListener.cellFactory = cellFactory;
+                    gestureListener.previewImage = noPreviewAvailableImage;
                 }
             }
         }
