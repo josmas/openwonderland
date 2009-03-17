@@ -38,12 +38,9 @@ import org.jdesktop.wonderland.client.assetmgr.TrackingInputStream.ProgressListe
 import org.jdesktop.wonderland.client.assetmgr.content.WlContentAssetRepositoryFactory;
 import org.jdesktop.wonderland.client.assetmgr.http.WlHttpAssetRepositoryFactory;
 import org.jdesktop.wonderland.client.assetmgr.modules.ModuleAssetRepositoryFactory;
-import org.jdesktop.wonderland.common.ArtURI;
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
-import org.jdesktop.wonderland.common.ContentURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.WlHttpURI;
 
 /**
  * AssetManager provides services for downloading and maintaining the latest
@@ -185,7 +182,7 @@ public class AssetManager {
      * @return An Asset object
      */
     public Asset getAsset(AssetURI assetURI, AssetRepositoryFactory factory) {
-        
+
         synchronized(loadingAssets) {
             // Formulate the id (uri + checksum) of the asset we wish to download.
             // We need this to see if we are already downloading the same asset.

@@ -111,7 +111,7 @@ public class WlContentAssetRepositoryFactory extends AssetRepositoryFactory {
                     assetURI.toExternalForm());
         }
         if (assetList.size() == 0) {
-            logger.warning("Unable to find asset in database for " +
+            logger.fine("Unable to find asset in cache for " +
                     assetURI.toExternalForm());
             return null;
         }
