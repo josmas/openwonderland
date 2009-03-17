@@ -37,7 +37,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.net.URLStreamHandler;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -46,7 +45,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.utils.Constants;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
@@ -123,6 +121,12 @@ public class WebServerLauncher {
         if (!parseArguments(args)) {
             usage();
             System.exit(-1);
+        }
+
+        // If the web server port property has not been set at this point, then
+        // set it to the default
+        if (System.getProperty(Constants.WEBSERVER_PORT_PROP) == null) {
+            System.setProperty(Constants.WEBSERVER_PORT_PROP, "8080");
         }
 
         // start the killswitch
@@ -238,8 +242,6 @@ public class WebServerLauncher {
         // override the port and directory if specified
         if (port != null) {
             System.setProperty(Constants.WEBSERVER_PORT_PROP, port);
-        } else {
-            System.setProperty(Constants.WEBSERVER_PORT_PROP, "8080");
         }
 
         if (directory != null) {
