@@ -34,19 +34,17 @@ import org.jdesktop.wonderland.modules.palette.client.CellPalette;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class PaletteDragGestureListener implements DragGestureListener {
-    private CellPalette cellPalette = null;
+    public CellFactorySPI cellFactory = null;
+    public Image previewImage = null;
 
-    /** Constructor, takes a reference to the Cell Palette */
-    public PaletteDragGestureListener(CellPalette cellPalette) {
-        this.cellPalette = cellPalette;
+    /** Default Constructor */
+    public PaletteDragGestureListener() {
     }
 
     public void dragGestureRecognized(DragGestureEvent dge) {
         // From the Cell Palette fetch the cell factory and image that
         // corresponds to the currently selected item
-        CellFactorySPI factory = cellPalette.getSelectedCellFactory();
-        CellServerState state = factory.getDefaultCellServerState();
-        Image image = cellPalette.getSelectedPreviewImage();
+        CellServerState state = cellFactory.getDefaultCellServerState();
 
         // Initialize the transferable with the default cell server state from
         // the factory
@@ -56,6 +54,6 @@ public class PaletteDragGestureListener implements DragGestureListener {
         // the image.
         Point dragOrigin = dge.getDragOrigin();
         dragOrigin.setLocation(-dragOrigin.x, -dragOrigin.y);
-        dge.startDrag(DragSource.DefaultCopyNoDrop, image, dragOrigin, t, null);
+        dge.startDrag(DragSource.DefaultCopyNoDrop, previewImage, dragOrigin, t, null);
     }
 }

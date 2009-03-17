@@ -57,6 +57,9 @@ public class PaletteClientPlugin implements ClientPlugin {
     /* The single instance of the cell palette dialog */
     private WeakReference<CellPalette> cellPaletteFrameRef = null;
 
+    /* The single instance of the HUD cell palette dialog */
+    private WeakReference<HUDCellPalette> hudCellPaletteFrameRef = null;
+
     /* The single instance of the module palette dialog */
     private WeakReference<ModulePalette> modulePaletteFrameRef = null;
 
@@ -82,12 +85,34 @@ public class PaletteClientPlugin implements ClientPlugin {
             }
         });
         paletteMenu.add(item);
+
+        // Add the Palette menu and the Cell submenu and dialog that lets users
+        // create new cells.
+        JMenuItem item2 = new JMenuItem("Cell Palette (HUD)");
+        item2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                HUDCellPalette hudCellPaletteFrame;
+                if (hudCellPaletteFrameRef == null || hudCellPaletteFrameRef.get() == null) {
+                    hudCellPaletteFrame = new HUDCellPalette();
+                    hudCellPaletteFrameRef = new WeakReference(hudCellPaletteFrame);
+                }
+                else {
+                    hudCellPaletteFrame = hudCellPaletteFrameRef.get();
+                }
+
+                if (hudCellPaletteFrame.isVisible() == false) {
+                    hudCellPaletteFrame.setVisible(true);
+                }
+            }
+        });
+        paletteMenu.add(item2);
         JmeClientMain.getFrame().addToToolMenu(paletteMenu);
 
         // Register the handler for CellServerState flavors with the system-wide
         // drag and drop manager. When the preview icon is dragged from the Cell
         // Palette this handler creates an instance of the cell in the world.
-        DragAndDropManager.getDragAndDropManager().registerDataFlavorHandler(new CellPaletteDataFlavorHandler());
+        DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
+        dndManager.registerDataFlavorHandler(new CellPaletteDataFlavorHandler());
 
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
