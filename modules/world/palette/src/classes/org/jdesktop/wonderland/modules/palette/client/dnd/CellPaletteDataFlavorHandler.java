@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.palette.client.dnd;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
@@ -35,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.modules.palette.client.CellPalette;
 
 /**
@@ -79,6 +81,11 @@ public class CellPaletteDataFlavorHandler implements DataFlavorHandlerSPI {
             // Create a position component that will set the initial origin
             PositionComponentServerState position = new PositionComponentServerState();
             position.setOrigin(new Origin(origin));
+            Quaternion quaternion = new Quaternion();
+            quaternion.lookAt(cameraLookDirection.negate(), new Vector3f(0, 1, 0));
+            Vector3f axis = new Vector3f();
+            float angle = quaternion.toAngleAxis(axis);
+            position.setRotation(new Rotation(axis, angle));
             state.addComponentServerState(position);
 
             // Send the message to the server

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.jme.content;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.io.File;
 import java.io.IOException;
@@ -165,10 +166,16 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         float factor = (5.0f * 5.0f) / lengthSquared;
         Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
 
-        // Create a position component that will set the initial origin
+        // Create a position component that will set the initial origin. For
+        // the initial rotation, assume the cell faces the +z direction and
+        // rotate it so that it faces the camera
         PositionComponentServerState position = new PositionComponentServerState();
         position.setOrigin(new Origin(origin));
-        position.setRotation(new Rotation(new Vector3f(0.0f, 1.0f, 0.0f), Math.PI));
+        Quaternion quaternion = new Quaternion();
+        quaternion.lookAt(cameraLookDirection.negate(), new Vector3f(0, 1, 0));
+        Vector3f axis = new Vector3f();
+        float angle = quaternion.toAngleAxis(axis);
+        position.setRotation(new Rotation(axis, angle));
         state.addComponentServerState(position);
 
         // Send the message to the server
