@@ -18,8 +18,10 @@
 package org.jdesktop.wonderland.servermanager.server;
 
 import java.util.Properties;
+import java.util.Set;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
@@ -69,6 +71,14 @@ public class ServerManagerConnectionHandler
         logger.fine("ServerManager client connected");
     }
 
+    public void connectionRejected(WonderlandClientID clientID) {
+        logger.fine("ServerManager client rejected");
+    }
+
+    public Resource checkMessage(WonderlandClientID clientID, Message message) {
+        return null;
+    }
+
     public void messageReceived(WonderlandClientSender sender, 
                                 WonderlandClientID clientID,
                                 Message message) 
@@ -79,6 +89,15 @@ public class ServerManagerConnectionHandler
             PingResponseMessage resp = new PingResponseMessage(req);
             sender.send(clientID, resp);
         }
+    }
+
+
+    public boolean messageRejected(WonderlandClientSender sender,
+                                   WonderlandClientID clientID, Message message,
+                                   Set<Action> requested, Set<Action> granted)
+    {
+        logger.fine("ServerManager message rejected");
+        return true;
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {

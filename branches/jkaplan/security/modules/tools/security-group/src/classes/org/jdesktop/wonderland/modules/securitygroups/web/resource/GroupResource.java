@@ -17,10 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.securitygroups.web.resource;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
@@ -48,6 +52,7 @@ public class GroupResource {
     }
 
     @GET
+    @Produces({"text/plain", "application/xml", "application/json"})
     public Response get() {
         GroupDTO out = GroupResourceUtil.toDTO(groups.getGroup(groupId), true);
         if (out == null) {
@@ -62,6 +67,7 @@ public class GroupResource {
     }
     
     @PUT
+    @Consumes({"application/xml", "application/json"})
     public Response put(GroupDTO group) {
         if (group.getId() == null || !group.getId().equals(groupId)) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -77,8 +83,30 @@ public class GroupResource {
     }
 
     @POST
+    @Consumes({"application/xml", "application/json"})
     public Response post(GroupDTO group) {
         return put(group);
+    }
+
+    /**
+     * This is used by the prototype javascript library to handle delete
+     * requests from a browser by encoding the method in an argument to
+     * a post.
+     * @param method the method to execute
+     * @return the result of executing the method
+     */
+    @POST
+    @Consumes("application/x-www-form-urlencoded")
+    public Response postForm(@FormParam("_method") String method) {
+        if (method == null) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (method.equalsIgnoreCase("delete")) {
+            return delete();
+        }
+
+        return Response.status(Response.Status.BAD_REQUEST).build();
     }
 
     @DELETE
@@ -95,6 +123,4 @@ public class GroupResource {
     private boolean canModify() {
         return GroupResourceUtil.canModify(groupId, groups, security);
     }
-
-    
 }

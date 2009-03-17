@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,19 +11,25 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 package org.jdesktop.wonderland.common.security;
 
 import java.io.Serializable;
 
 /**
- * An action that a user can perform on a resource
+ * An action that a user can perform on a resource.  This is the common
+ * superclass of all actions in the Wonderland system.  An action can be
+ * any class that extends Action and has a public, no-argument construtor.
+ * <p>
+ * Actions are typically referred to by class, so are not designed to
+ * be stateful or mutable.
+ *
  * @author jkaplan
  */
-public class Action implements Serializable {
+public abstract class Action implements Serializable {
     /** actions are uniquely identified by name */
     private String name;
 
@@ -40,7 +46,7 @@ public class Action implements Serializable {
      * Create a new top-level action with the given name
      * @param name the name of the action to created
      */
-    public Action(String name) {
+    protected Action(String name) {
         this (name, null);
     }
 
@@ -49,7 +55,7 @@ public class Action implements Serializable {
      * @param name the name of the action to create
      * @param parent the name of this action's parent
      */
-    public Action(String name, String parent) {
+    protected Action(String name, String parent) {
         this (name, parent, null, null);
     }
 
@@ -58,7 +64,7 @@ public class Action implements Serializable {
      * @param name the name of the action to create
      * @param parent the name of this action's parent
      */
-    public Action(String name, String parent, String displayName,
+    protected Action(String name, String parent, String displayName,
                   String toolTip)
     {
         this.name        = name;

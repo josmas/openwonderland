@@ -25,6 +25,7 @@ import com.sun.sgs.app.ClientSessionListener;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedObjectRemoval;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -52,6 +53,8 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
+import org.jdesktop.wonderland.common.security.Action;
+import org.jdesktop.wonderland.common.security.annotation.Actions;
 import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
 import org.jdesktop.wonderland.server.security.ActionMap;
 import org.jdesktop.wonderland.server.security.Resource;
@@ -77,16 +80,25 @@ import org.jdesktop.wonderland.server.security.SecurityManager;
  */
 @ExperimentalAPI
 public class WonderlandSessionListener
-        implements ClientSessionListener, ManagedObject, Serializable {
-    
+        implements ClientSessionListener, ManagedObject, 
+                   ManagedObjectRemoval, Serializable
+{    
     /** a logger */
     private static final Logger logger =
             Logger.getLogger(WonderlandSessionListener.class.getName());
+
+    /** the name of the binding for this listener */
+    private static final String BINDING_NAME =
+            WonderlandSessionListener.class.getName();
     
     /** client ID of the internal session handler */
     private static final short SESSION_INTERNAL_CLIENT_ID =
             SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_ID;
-    
+
+    /** a cache of Actions associated with message classes */
+    private static final Map<Class, Set<Action>> actionCache =
+            new HashMap<Class, Set<Action>>();
+
     /** the session associated with this listener */
     private ManagedReference<ClientSession> sessionRef;
     
@@ -114,7 +126,12 @@ public class WonderlandSessionListener
         // initialize maps
         handlers = new TreeMap<Short, ClientHandlerRef>();
         senders = new TreeMap<Short, WonderlandClientSenderImpl>();
-                
+
+        // create a binding for ourself in the datastore.  This binding
+        // is used by inner classes to securely complete operations on this
+        // listener
+        dm.setBinding(getBindingName(), this);
+
         // add internal handler
         ClientHandlerRef internalRef = getHandlerStore().getHandlerRef(
                     SessionInternalConnectionType.SESSION_INTERNAL_CLIENT_TYPE);
@@ -149,6 +166,14 @@ public class WonderlandSessionListener
     }
     
     /**
+     * Clean up when a session is destroyed
+     */
+    public void removingObject() {
+        // remove our binding
+        AppContext.getDataManager().removeBinding(getBindingName());
+    }
+
+    /**
      * Called when the listener receives a message.  If the wrapped session
      * has not yet been defined, look for ProtocolSelectionMessages, otherwise
      * simply forward the data to the delegate session
@@ -177,13 +202,29 @@ public class WonderlandSessionListener
                               " for client ID" + clientID + 
                               " handled by " + handler.getConnectionType());
             }
-            
-            // get the WonderlandClientSender to pass in
-            WonderlandClientSender sender = senders.get(clientID);
-            
-            // call the handler
-            handler.messageReceived(sender, getWonderlandClientID(), m);
-            
+
+            // determine if security is needed
+            Resource resource = null;
+            if (handler instanceof SecureClientConnectionHandler) {
+                SecureClientConnectionHandler sec =
+                        (SecureClientConnectionHandler) handler;
+                resource = sec.checkMessage(getWonderlandClientID(), m);
+            }
+
+            // get the actions associated with this message
+            Set<Action> actions = getActions(m.getClass());
+
+            // if the resource is not null and the message requires actions,
+            // we need to query the resource for the given actions, and only
+            // handle the message if the query returns the required
+            // permissions
+            if (resource != null && !actions.isEmpty()) {
+                receiveSecure(resource, clientID, m, actions);
+            } else {
+                // no security, just handle the message
+                WonderlandClientSender sender = senders.get(clientID);
+                handler.messageReceived(sender, getWonderlandClientID(), m);
+            }
         } catch (PackerException eme) {
             logger.log(Level.WARNING, "Error extracting message from client", 
                        eme);
@@ -193,6 +234,73 @@ public class WonderlandSessionListener
                 sendError(eme.getMessageID(), eme.getClientID(), eme);
             }
         }
+    }
+
+    /**
+     * Set up security and make a secure message request.  This will spawn a new
+     * task to handle the message request if the security check succeeds.
+     * @param resource the resource to use in the check
+     * @param clientID the clientID of the
+     * @param message the message to deliver
+     */
+    private void receiveSecure(final Resource resource,
+                               final short clientID,
+                               final Message message,
+                               final Set<Action> actions)
+    {
+        // get the security manager
+        SecurityManager security = AppContext.getManager(SecurityManager.class);
+
+        // create a request
+        ActionMap am = new ActionMap(resource, actions.toArray(new Action[0]));
+        ResourceMap request = new ResourceMap();
+        request.put(resource.getId(), am);
+
+        // create a binding for the listener so we can retrieve it in the
+        // SecureTask
+        final String bindingName = getBindingName();
+
+        // perform the security check
+        security.doSecure(request, new SecureTask() {
+            public void run(ResourceMap granted) {
+                ActionMap am = granted.get(resource.getId());
+
+                // make sure all actions were granted
+                Set<Action> grantedActions = new HashSet<Action>(am.values());
+
+                // get the binding for the session listener
+                WonderlandSessionListener listener = (WonderlandSessionListener)
+                        AppContext.getDataManager().getBinding(bindingName);
+
+                // use the client ID to get the values we need to pass in
+                // to the handler
+                SecureClientConnectionHandler handler =
+                        (SecureClientConnectionHandler) listener.getHandler(clientID);
+                WonderlandClientSender sender = listener.senders.get(clientID);
+                WonderlandClientID wID = listener.getWonderlandClientID();
+
+                // test if the request was granted -- we do this by simply
+                // comparing the size of the requested actions set to the
+                // size of the granted action set, since we don't care
+                // which specific actions were granted or not
+                if (actions.size() == grantedActions.size()) {
+                    // request was accepted -- continue processing
+                    handler.messageReceived(sender, wID, message);
+                } else {
+                    // the message was rejected -- notify the handler
+                    logger.fine("Session " + listener.getSession().getName() +
+                                " permission denied for message " + message);
+
+                    if (handler.messageRejected(sender, wID, message, actions,
+                                                grantedActions))
+                    {
+                        // the handler isn't sending an error, so we need to
+                        listener.sendError(message.getMessageID(), clientID,
+                                           "Permission denied.");
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -383,6 +491,15 @@ public class WonderlandSessionListener
         }
     }
 
+    /**
+     * Set up security and make an attach request.  This will spawn a new task
+     * to handle the attach request if the security check succeeds.
+     * @param resource the resource to use in the check
+     * @param messageID the ID of the attach message
+     * @param type the type of connection
+     * @param properties the initial connection properties
+     * @param ref the handler we will use for this message
+     */
     private void attachSecure(final Resource resource,
                               final MessageID messageID,
                               final ConnectionType type,
@@ -399,19 +516,16 @@ public class WonderlandSessionListener
 
         // create a binding for the listener so we can retrieve it in the
         // SecureTask
-        final String bindingName = getSession().getName() + ".secureAttach." +
-                                   type.toString();
-        AppContext.getDataManager().setBinding(bindingName, this);
+        final String bindingName = getBindingName();
 
         // perform the security check
         security.doSecure(request, new SecureTask() {
             public void run(ResourceMap granted) {
                 ActionMap am = granted.get(resource.getId());
                 
-                // get the binding we created earlier
+                // get the binding for the session listener
                 WonderlandSessionListener listener = (WonderlandSessionListener)
                         AppContext.getDataManager().getBinding(bindingName);
-                AppContext.getDataManager().removeBinding(bindingName);
 
                 if (am.containsKey(ConnectAction.getInstance().getName())) {
                     // request was accepted -- continue processing
@@ -419,6 +533,14 @@ public class WonderlandSessionListener
                 } else {
                     logger.fine("Session " + listener.getSession().getName() +
                                 " permission denied for client type " + type);
+
+                    // notify the handler of the rejection
+                    SecureClientConnectionHandler handler =
+                            (SecureClientConnectionHandler) ref.get();
+                    WonderlandClientID clientID = listener.getWonderlandClientID();
+                    handler.connectionRejected(clientID);
+
+                    // send an error back to the sender
                     listener.sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
                                        "Permission denied for " + type);
                 }
@@ -426,6 +548,14 @@ public class WonderlandSessionListener
         });
     }
 
+    /**
+     * Complete the attach process, after the security check (if any) has been
+     * performed.
+     * @param messageID the id of the connect message
+     * @param type the type of connection
+     * @param properties the initial connection properties
+     * @param ref a reference to the correct client handler
+     */
     private void finishAttach(MessageID messageID, ConnectionType type,
                               Properties properties, ClientHandlerRef ref)
     {
@@ -493,7 +623,15 @@ public class WonderlandSessionListener
         // notify the handler
         handler.clientDisconnected(sender, getWonderlandClientID());
     }
-    
+
+    /**
+     * Get the binding name this manager is bound to
+     * @return the binding name
+     */
+    protected String getBindingName() {
+        return BINDING_NAME + "." + sessionRef.getId();
+    }
+
     /**
      * Send an error to the session
      * @param messageID the source message's ID
@@ -573,7 +711,48 @@ public class WonderlandSessionListener
     private static HandlerStore getHandlerStore() {
         return (HandlerStore) AppContext.getDataManager().getBinding(HandlerStore.DS_KEY);
     }
-    
+
+    /**
+     * Get the actions associated with a message class
+     * @param clazz the message class
+     * @return the set of actions associated with the given message type, or
+     * an empty set if no actions are associated with the given type
+     */
+    private static Set<Action> getActions(Class clazz) {
+        Set<Action> out;
+
+        synchronized (actionCache) {
+            out = actionCache.get(clazz);
+        }
+
+        if (out == null) {
+            out = new HashSet<Action>();
+            
+            // get the actions from the actions annotation
+            Actions actions = (Actions) clazz.getAnnotation(Actions.class);
+            if (actions != null) {
+                for (Class<Action> c : actions.value()) {
+                    try {
+                        out.add(c.newInstance());
+                    } catch (InstantiationException ie) {
+                        throw new IllegalStateException("Error getting " +
+                                " actions for " + clazz, ie);
+                    } catch (IllegalAccessException iae) {
+                        throw new IllegalStateException("Error getting " +
+                                " actions for " + clazz, iae);
+                    }
+                }
+            }
+
+            // add to the cache
+            synchronized (actionCache) {
+                actionCache.put(clazz, out);
+            }
+        }
+
+        return out;
+    }
+
     /**
      * A sender that sends data to clients of a particular type.  The sender
      * itself is serializable, but the data it uses (the channel and session
