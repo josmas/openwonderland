@@ -42,6 +42,7 @@ public class GroupUtils {
     {
         URL u = new URL(baseUrl + GROUPS_PATH + "/" + groupName);
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
+        uc.setRequestProperty("Accept", "application/xml");
         cm.secureURLConnection(uc);
 
         if (uc.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -78,10 +79,9 @@ public class GroupUtils {
     private static Set<GroupDTO> getGroups(String url, CredentialManager cm)
         throws IOException, JAXBException
     {
-        System.out.println("Get groups: " + url);
-
         URL u = new URL(url);
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
+        uc.setRequestProperty("Accept", "application/xml");
         cm.secureURLConnection(uc);
 
         GroupsDTO groups = GroupsDTO.decode(new InputStreamReader(uc.getInputStream()));
@@ -96,6 +96,7 @@ public class GroupUtils {
         URL u = new URL(baseUrl + GROUPS_PATH + "/" + group.getId());
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
         uc.setRequestMethod("POST");
+        uc.setRequestProperty("Content-Type", "application/xml");
         uc.setDoOutput(true);
         uc.setDoInput(true);
         cm.secureURLConnection(uc);

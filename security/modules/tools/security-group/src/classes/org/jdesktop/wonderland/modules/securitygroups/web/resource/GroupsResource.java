@@ -25,6 +25,7 @@ import javax.persistence.PersistenceUnit;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -56,12 +57,11 @@ public class GroupsResource {
     }
 
     @GET
+    @Produces({"text/plain", "application/xml", "application/json"})
     public Response get(@QueryParam("pattern") String patternParam,
                         @QueryParam("members") String membersParam,
                         @QueryParam("user") String userParam)
     {
-        System.out.println("EMF: " + emf);
-
         List<GroupEntity> res;
         GroupDAO groups = new GroupDAO(emf);
 

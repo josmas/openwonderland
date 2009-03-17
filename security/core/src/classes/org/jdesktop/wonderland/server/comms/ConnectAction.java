@@ -33,7 +33,7 @@ public class ConnectAction extends Action {
     /**
      * Singleton -- use getInstance() instead.
      */
-    protected ConnectAction() {
+    public ConnectAction() {
         super (NAME, null, DISPLAY_NAME, null);
     }
 

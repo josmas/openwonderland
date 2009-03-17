@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <listener>
+        <listener-class>org.jdesktop.wonderland.modules.securitygroups.web.GroupContextListener</listener-class>
+    </listener>
     <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
         <servlet-class>com.sun.jersey.impl.container.servlet.ServletAdaptor</servlet-class>
@@ -11,11 +14,19 @@
         </init-param>
     </servlet>
     
+    <servlet>
+        <servlet-name>GroupEditorServlet</servlet-name>
+        <servlet-class>org.jdesktop.wonderland.modules.securitygroups.web.GroupEditorServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>ServletAdaptor</servlet-name>
         <url-pattern>/resources/*</url-pattern>
     </servlet-mapping>
 
+    <servlet-mapping>
+        <servlet-name>GroupEditorServlet</servlet-name>
+        <url-pattern>/editor</url-pattern>
+    </servlet-mapping>
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>

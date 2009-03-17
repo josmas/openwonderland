@@ -37,6 +37,8 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
     private static final Logger logger =
             Logger.getLogger(WonderSAM.class.getName());
 
+    public static final String USERID_SESSION_ATTR = "__userId";
+
     private static final String SESSION_RESOLVER_OPT = "session.resolver.class";
     private static final String GROUP_RESOLVER_OPT = "group.resolver.class";
     private static final String LOGIN_PAGE_OPT = "login.page";
@@ -79,8 +81,8 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
         // determine whether or not authentication is enabled
         // this will override the app's notion of authentication constraint --
         // if a user auth constraint is set to true, and this property is
-        // false, all users will automatically be added to the admin group,
-        // effectively giving them all permissions.
+        // false, the authentication will succeed, and the user will be
+        // given default credentials.
         // This is a session property, not an option to the login manager,
         // since it is needed in lots of places
         authEnabled = Boolean.parseBoolean(
@@ -111,7 +113,13 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
                 // see if we have a session with a user id stored in it
                 userId = processSessionAuth(req.getSession(false));
             }
-            
+
+            // if we couldn't find a user ID, but authentication is disabled,
+            // use a default user id
+            if (!authEnabled && userId == null) {
+                userId = "unauthenticated";
+            }
+
             // if we found a valid user, initialize user id and groups
             if (userId != null) {
                 try {
@@ -194,7 +202,7 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
             return null;
         }
 
-        return (String) session.getAttribute("__userId");
+        return (String) session.getAttribute(USERID_SESSION_ATTR);
     }
 
     /**
