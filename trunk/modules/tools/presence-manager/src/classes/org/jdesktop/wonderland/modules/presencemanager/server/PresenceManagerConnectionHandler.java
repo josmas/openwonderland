@@ -64,18 +64,20 @@ import java.util.Properties;
 
 import java.io.IOException;
 
+import com.sun.sgs.app.ManagedObject;
+
 /**
  * Presence Manager
  * 
  * @author jprovino
  */
 public class PresenceManagerConnectionHandler 
-        implements ClientConnectionHandler, Serializable {
+        implements ClientConnectionHandler, Serializable, ManagedObject {
 
     private static final Logger logger =
             Logger.getLogger(PresenceManagerConnectionHandler.class.getName());
     
-    private static ConcurrentHashMap<BigInteger, PresenceInfo> sessions = 
+    private ConcurrentHashMap<BigInteger, PresenceInfo> sessions = 
 	new ConcurrentHashMap();
 
     public PresenceManagerConnectionHandler() {
@@ -190,12 +192,22 @@ public class PresenceManagerConnectionHandler
 
 	    PresenceInfo info = sessions.get(sessionID);
 
-	    logger.fine("Sending SESSION CREATED TO " + info.userID);
+	    String s;
+
+            if (message instanceof SessionCreatedMessage) {
+                s = "CREATED";
+            } else {
+                s = "ENDED";
+            }
+
+	    logger.info("Sending SESSION " + s + " to " + sessions.get(sessionID));
 
 	    /*
 	     * We rely on clientID.getID() being equal to ClientSession.getID();
 	     */
-	    WonderlandClientID clientID = CommsManagerFactory.getCommsManager().getWonderlandClientID(sessionID);
+	    WonderlandClientID clientID = 
+		CommsManagerFactory.getCommsManager().getWonderlandClientID(sessionID);
+
 	    sender.send(clientID, message);
 	}
     }
