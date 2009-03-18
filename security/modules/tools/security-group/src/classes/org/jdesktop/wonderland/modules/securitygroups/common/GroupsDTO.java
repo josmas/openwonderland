@@ -21,8 +21,9 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.Comparator;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -53,7 +54,7 @@ public class GroupsDTO {
         }
     }
 
-    private Set<GroupDTO> groups = new LinkedHashSet<GroupDTO>();
+    private Set<GroupDTO> groups = new TreeSet<GroupDTO>(new GroupComparator());
 
     public GroupsDTO() {
     }
@@ -77,7 +78,7 @@ public class GroupsDTO {
     }
 
     public void setGroupsInternal(GroupDTO[] groupArr) {
-        groups = new LinkedHashSet<GroupDTO>();
+        groups = new TreeSet<GroupDTO>(new GroupComparator());
         groups.addAll(Arrays.asList(groupArr));
     }
 
@@ -101,5 +102,11 @@ public class GroupsDTO {
      */
     public void encode(Writer w) throws JAXBException {
         marshaller.marshal(this, w);
+    }
+
+    class GroupComparator implements Comparator<GroupDTO> {
+        public int compare(GroupDTO o1, GroupDTO o2) {
+            return o1.getId().compareToIgnoreCase(o2.getId());
+        }
     }
 }

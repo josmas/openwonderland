@@ -22,6 +22,7 @@ import java.net.URLDecoder;
 import java.util.List;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnit;
+import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -46,6 +47,9 @@ public class GroupsResource {
     private SecurityContext security;
 
     @Context
+    private ServletContext context;
+
+    @Context
     private UriInfo uriInfo;
 
     @PersistenceUnit(unitName="WonderlandGroupPU")
@@ -53,7 +57,7 @@ public class GroupsResource {
 
     @Path("{groupId}")
     public GroupResource getGroup(@PathParam("groupId") String groupId) {
-        return new GroupResource(new GroupDAO(emf), uriInfo, groupId, security);
+        return new GroupResource(new GroupDAO(emf), uriInfo, groupId, context, security);
     }
 
     @GET
