@@ -56,7 +56,6 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.JmeColladaCe
 public class JmeColladaRenderer extends BasicRenderer {
 
     private Node model;
-    private Iterable<Entity> entityGroup = null;
 
     public JmeColladaRenderer(Cell cell) {
         super(cell);
@@ -64,22 +63,14 @@ public class JmeColladaRenderer extends BasicRenderer {
     
     @Override
     protected Node createSceneGraph(Entity entity) {
-        System.err.println("******* CREATE JmeColladaRenderer");
-
         try {
             // We need to handle null model uri's better!
             Node ret = new Node();
             if (((JmeColladaCell)cell).getModelURI() != null) {
                 URL url = getAssetURL(((JmeColladaCell) cell).getModelURI());
-                ResourceLocator resourceLocator = new AssetResourceLocator(url);
-
-                ResourceLocatorTool.addResourceLocator(
-                        ResourceLocatorTool.TYPE_TEXTURE,
-                        resourceLocator);
                 // loadColladaAsset has the side effect of setting the model variable
                 ret = loadColladaAsset(cell.getCellID().toString(), url);
 
-                ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
             } else if (((JmeColladaCell)cell).getModelGroupURI()!=null) {
                 // Bulk of work done in addDefaultComponents
                 model = null;
@@ -111,12 +102,21 @@ public class JmeColladaRenderer extends BasicRenderer {
     protected void addDefaultComponents(Entity entity, Node rootNode) {
         super.addDefaultComponents(entity, rootNode);
         if (model==null) {
-            try {
-                URL url = getAssetURL(((JmeColladaCell) cell).getModelGroupURI());
-                ClientContextJME.getWorldManager().loadConfiguration(url, new LoadListener(entity));
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(JmeColladaRenderer.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            final Entity rootEntity = entity;
+            Thread loader = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        URL url = getAssetURL(((JmeColladaCell) cell).getModelGroupURI());
+                        ClientContextJME.getWorldManager().loadConfiguration(url, new LoadListener(rootEntity));
+                    } catch (MalformedURLException ex) {
+                        Logger.getLogger(JmeColladaRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            };
+
+            // TODO call start to run the load in a thread
+            loader.start();
         }
     }
 
@@ -128,6 +128,11 @@ public class JmeColladaRenderer extends BasicRenderer {
     protected Node loadColladaAsset(String name, URL url) {
         Node node = new Node();
         
+        ResourceLocator resourceLocator = new AssetResourceLocator(url);
+
+        ResourceLocatorTool.addResourceLocator(
+                ResourceLocatorTool.TYPE_TEXTURE,
+                resourceLocator);
         try {
             InputStream input;
             
@@ -144,6 +149,8 @@ public class JmeColladaRenderer extends BasicRenderer {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error loading Collada file "+((JmeColladaCell)cell).getModelURI(), e);
         }
+        
+        ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
         
         // Make sure all the geometry has model bounds
         TreeScan.findNode(node, Geometry.class, new ProcessNodeInterface() {
@@ -197,7 +204,6 @@ public class JmeColladaRenderer extends BasicRenderer {
 
         public void entityLoaded(Entity entity) {
             BasicRenderer.entityAddChild(rootEntity, entity);
-            System.err.println("entity loaded");
         }
 
     }
