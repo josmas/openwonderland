@@ -58,7 +58,10 @@ public class FileContentResource extends FileContentNode
 
     public URL getURL() throws ContentRepositoryException {
         try {
-            return new URL(getBaseURL(), getPath());
+            String p = getPath();
+            if (p.startsWith("/"))
+                p = p.substring(1);
+            return new URL(getBaseURL(), p);
         } catch (IOException ioe) {
             throw new ContentRepositoryException(ioe);
         }
