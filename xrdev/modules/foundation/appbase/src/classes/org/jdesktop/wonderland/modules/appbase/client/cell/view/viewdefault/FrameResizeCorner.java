@@ -113,13 +113,21 @@ public class FrameResizeCorner extends FrameComponent {
             public void update(Object arg0) {
 
                 // Update position
-                horizBar.setLocalTranslation(new Vector3f(horizX, horizY, Z_OFFSET));
-                vertBar.setLocalTranslation(new Vector3f(vertX, vertY, Z_OFFSET));
+                // TODO: wa: for now do this. Ultimately use a synchronous render updater
+                if (horizBar != null) {
+                    horizBar.setLocalTranslation(new Vector3f(horizX, horizY, Z_OFFSET));
+                }
+                // TODO: wa: for now do this. Ultimately use a synchronous render updater
+                if (vertBar != null) {
+                    vertBar.setLocalTranslation(new Vector3f(vertX, vertY, Z_OFFSET));
+                }
 
-                // Translate the resize corner's coordinate system
-                localToCellNode.setLocalTranslation(origin);
-
-                ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                // TODO: wa: for now do this. Ultimately use a synchronous render updater
+                if (localToCellNode != null) {
+                    // Translate the resize corner's coordinate system
+                    localToCellNode.setLocalTranslation(origin);
+                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                }
             }
         }, null);
 
@@ -156,10 +164,10 @@ public class FrameResizeCorner extends FrameComponent {
         vertWidth = Frame2DCell.SIDE_THICKNESS;
         vertHeight = RESIZE_CORNER_HEIGHT + Frame2DCell.SIDE_THICKNESS;
 
-        logger.warning("vertX = " + vertX);
-        logger.warning("vertY = " + vertY);
-        logger.warning("vertWidth = " + vertWidth);
-        logger.warning("vertHeight = " + vertHeight);
+        logger.fine("vertX = " + vertX);
+        logger.fine("vertY = " + vertY);
+        logger.fine("vertWidth = " + vertWidth);
+        logger.fine("vertHeight = " + vertHeight);
     }
 
     /**

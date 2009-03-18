@@ -261,8 +261,11 @@ public abstract class FrameComponent {
     public void setLocalTranslation(final Vector3f trans) {
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
-                localToCellNode.setLocalTranslation(trans);
-                ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                // TODO: wa: for now do this. Ultimately use a synchronous render updater
+                if (localToCellNode != null) {
+                    localToCellNode.setLocalTranslation(trans);
+                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                }
             }
         }, this);
     }

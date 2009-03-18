@@ -21,9 +21,14 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
-import javax.swing.JPanel;
+import com.jme.scene.Node;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
+import org.jdesktop.wonderland.modules.swingtest.client.cell.SwingTestCell;
 
 /**
  *
@@ -39,19 +44,25 @@ public class SwingTestWindow
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(SwingTestWindow.class.getName());
 
+    /** The cell in which this window is displayed. */
+    private SwingTestCell cell;
+
     /**
      * Create a new instance of SwingTestWindow.
      *
+     * @param cell The cell in which this window is displayed.
      * @param app The app which owns the window.
      * @param width The width of the window (in pixels).
      * @param height The height of the window (in pixels).
      * @param topLevel Whether the window is top-level (e.g. is decorated) with a frame.
      * @param pixelScale The size of the window pixels.
      */
-    public SwingTestWindow (App2D app, int width, int height, boolean topLevel, Vector2f pixelScale)
+    public SwingTestWindow (SwingTestCell cell, App2D app, int width, int height, boolean topLevel, 
+                            Vector2f pixelScale)
         throws InstantiationException
     {
 	super(app, width, height, topLevel, pixelScale);
+        this.cell = cell;
 
 	setTitle("Swing Test");
 
@@ -65,10 +76,35 @@ public class SwingTestWindow
 	setComponent(testPanel);
         setTitle("Swing Test");
 
-
         /* Test Force a the preferred size
         System.err.println("test panel size = " + width + ", " + height);
         setSize(width, height);
         */
+    }
+
+    public void setOrtho(boolean ortho) {
+        View2DEntity view = (View2DEntity) getView(cell);
+
+        view.setOrtho(ortho, false);
+        // TODO: notyet        view.setTranslationUser(new Vector3f(300f, 300f, 0f), false);
+
+        // Test (TODO: use app size for now)
+        //view.setSizeApp(500, 200, false);
+
+        view.update();
+
+        Entity entity = view.getEntity();
+        System.err.println("%%%%%%%%%% view entity = " + entity);
+        RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
+        System.err.println("%%%%%%%%%% rc = " + rc);
+        Node attachPoint = rc.getAttachPoint();
+        System.err.println("%%%%%%%%%% attachPoint = " + attachPoint);
+        Node sceneRoot = rc.getSceneRoot();
+        System.err.println("%%%%%%%%%% sceneRoot = " + sceneRoot);
+        boolean o = rc.getOrtho();
+        System.err.println("%%%%%%%%%% ortho = " + o);
+        
+        Node viewNode = view.getNode();
+        GraphicsUtils.printNode(viewNode);
     }
 }

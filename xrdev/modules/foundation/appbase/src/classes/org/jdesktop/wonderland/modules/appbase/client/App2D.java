@@ -286,6 +286,13 @@ public abstract class App2D {
     }
 
     /**
+     * Returns an iterator over all the displayers of this app.
+     */
+    public Iterator<View2DDisplayer> getDisplayers() {
+        return viewSet.getDisplayers();
+    }
+
+    /**
      * Returns the name of the app.
      */
     public String getName () {

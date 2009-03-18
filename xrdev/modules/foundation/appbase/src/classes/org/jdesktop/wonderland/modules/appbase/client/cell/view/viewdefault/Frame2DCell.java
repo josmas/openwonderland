@@ -128,7 +128,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /**
      * {@inheritDoc}
      */
-    public void cleanup() {
+    public synchronized void cleanup() {
         if (view != null) {
             detachFromViewEntity(view.getEntity());
             view = null;
@@ -200,23 +200,13 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
         return view;
     }
 
-
-    /**
-     * Returns the cell of this view.
-     */
-    /* TODO: needed?
-    private AppCell getCell() {
-        return (AppCell) getView().getWindow().getApp().getDisplayer();
-    }
-    */
-
     /** 
      * The size of the view has changed. Make the corresponding
      * position and/or size updates for the frame components.
      *
      * @throw InstantiationException if couldn't allocate resources for the visual representation.
      */
-    public void update() throws InstantiationException {
+    public synchronized void update() throws InstantiationException {
         if (header != null) {
             header.update();
         }
@@ -237,7 +227,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     }
 
     /** {@inheritDoc} */
-    public void setTitle(String title) {
+    public synchronized void setTitle(String title) {
         if (header != null) {
             header.setTitle(title);
         }
@@ -246,7 +236,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /**
      * {@inheritDoc}
      */
-    public void updateControl(ControlArb controlArb) {
+    public synchronized void updateControl(ControlArb controlArb) {
         if (view == null) return;
         
         // Sometimes some of these are null during debugging
@@ -272,7 +262,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
      *
      * @param listener The listener to add.
      */
-    public void addCloseListener(CloseListener listener) {
+    public synchronized void addCloseListener(CloseListener listener) {
         closeListeners.add(listener);
     }
 
@@ -281,14 +271,14 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
      *
      * @param listener The listener to remove.
      */
-    public void removeCloseListener(CloseListener listener) {
+    public synchronized void removeCloseListener(CloseListener listener) {
         closeListeners.remove(listener);
     }
 
     /**
      * Returns an iterator over all close listeners.
      */
-    public Iterator<CloseListener> getCloseListeners() {
+    public synchronized Iterator<CloseListener> getCloseListeners() {
         return closeListeners.iterator();
     }
 

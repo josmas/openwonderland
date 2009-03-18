@@ -91,7 +91,7 @@ public class FrameRect extends FrameComponent {
      * {@inheritDoc}
      */
     @Override
-    public void cleanup() {
+    public synchronized void cleanup() {
         super.cleanup();
         quad = null;
     }
@@ -100,7 +100,7 @@ public class FrameRect extends FrameComponent {
      * {@inheritDoc}
      */
     @Override
-    public void update() throws InstantiationException {
+    public synchronized void update() throws InstantiationException {
         updateLayout();
 
         if (quad == null) {
@@ -115,8 +115,11 @@ public class FrameRect extends FrameComponent {
         } else {
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
                 public void update(Object arg0) {
-                    quad.resize(width, height);
-                    quad.updateModelBound();
+                    // TODO: wa: for now do this. Ultimately use a synchronous render updater
+                    if (quad != null) {
+                        quad.resize(width, height);
+                        quad.updateModelBound();
+                    }
                 }
             }, null);
         }
@@ -127,14 +130,14 @@ public class FrameRect extends FrameComponent {
     /**
      * Returns the width of this component. 
      */
-    public float getWidth() {
+    public synchronized float getWidth() {
         return width;
     }
 
     /**
      * Returns the height of this component. 
      */
-    public float getHeight() {
+    public synchronized float getHeight() {
         return height;
     }
 
@@ -163,18 +166,21 @@ public class FrameRect extends FrameComponent {
     /**
      * {@inheritDoc}
      */
-    public void setColor(final ColorRGBA color) {
+    public synchronized void setColor(final ColorRGBA color) {
         if (quad != null) {
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
                 public void update(Object arg0) {
-                    MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
-                    if (ms == null) {
-                        ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
-                        quad.setRenderState(ms);
+                    // TODO: wa: for now do this. Ultimately use a synchronous render updater
+                    if (quad != null) {
+                        MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
+                        if (ms == null) {
+                            ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
+                            quad.setRenderState(ms);
+                        }
+                        ms.setAmbient(new ColorRGBA(color));
+                        ms.setDiffuse(new ColorRGBA(color));
+                        ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                     }
-                    ms.setAmbient(new ColorRGBA(color));
-                    ms.setDiffuse(new ColorRGBA(color));
-                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
             }, this);
         }
@@ -183,7 +189,7 @@ public class FrameRect extends FrameComponent {
     /**
      * {@inheritDoc}
      */
-    public ColorRGBA getColor() {
+    public synchronized ColorRGBA getColor() {
         MaterialState ms = null;
         if (quad != null) {
             ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
@@ -201,7 +207,7 @@ public class FrameRect extends FrameComponent {
      * @param width The new width.
      * @param height The new height.
      */
-    public void resize(float width, float height) throws InstantiationException {
+    public synchronized void resize(float width, float height) throws InstantiationException {
         this.width = width;
         this.height = height;
         update();

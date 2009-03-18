@@ -65,6 +65,9 @@ public class View2DCell extends View2DEntity {
 
     private static final Logger logger = Logger.getLogger(View2DCell.class.getName());
 
+    /** The amount of space between views in the view stack.*/
+    private static float STACK_GAP = 0.01f;
+
     /** The cell in which this view is displayed. */
     private App2DCell cell;
 
@@ -104,7 +107,7 @@ public class View2DCell extends View2DEntity {
     }
 
     /** Clean up resources. */
-    public void cleanup () {
+    public synchronized void cleanup () {
         super.cleanup();
 
         if (frame != null) {
@@ -169,25 +172,46 @@ public class View2DCell extends View2DEntity {
     // Uses: type, parent
     @Override
     protected Entity getParentEntity () {
+        Entity cellEntity = 
+            ((AppCellRendererJME)cell.getCellRenderer(Cell.RendererType.RENDERER_JME)).getEntity();
+
         switch (type) {
 
         case UNKNOWN:
             // Can't attach until we know the type
-            return null;
+            logger.warning("Attempt to attach a view of unknown type to an app cell");
+            logger.warning("cell = " + cell);
+            logger.warning("view = " + this);
+
+            // This is the best we can do
+            return cellEntity;
 
         case PRIMARY:
-            // Attach primaries directly to cell root entity
-            return ((AppCellRendererJME)cell.getCellRenderer(Cell.RendererType.RENDERER_JME)).getEntity();
+            // Attach primaries directly to cell entity
+            return cellEntity;
         
         default:
-            // Attach non-primaries to the entity of their parent
+            // Attach non-primaries to the entity of their parent, if possible
             if (parent == null) {
-                return null;
+                logger.warning("Attempt to attach a non-primary view without a parent");
+                logger.warning("cell = " + cell);
+                logger.warning("view = " + this);
+                logger.warning("view type = " + type);
+                // This is the best we can do
+                return cellEntity;
             } else {
                 return parent.getEntity();
             }
         }
     }                
+
+    protected Vector3f calcStackTranslation () {
+        if (isOrtho()) {
+            return new Vector3f(0f, 0f, 0f);
+        } else {
+            return new Vector3f(0f, 0f, zOrder * STACK_GAP);
+        }
+    }
 
     // Uses: userRotation, userTranslation
     protected CellTransform calcUserDeltaTransform () {
@@ -212,6 +236,7 @@ public class View2DCell extends View2DEntity {
 
     @Override
     protected void updatePrimaryTransform (CellTransform userDeltaTransform) {
+        /*TODO: empty for nwo
         CellTransform cellTransform = cell.getLocalTransform();
         cellTransform.mul(userDeltaTransform);
 
@@ -224,6 +249,7 @@ public class View2DCell extends View2DEntity {
             selfCreatedMovableComponent = true;
         }
         ///TODO:        mc.localMoveRequest(cellTransform);
+        */
     }
 
     /** {@inheritDoc} */

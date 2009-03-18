@@ -39,7 +39,7 @@ public class View2DSet {
     /**
      * Clean up resources.
      */
-    public void cleanup () {
+    public synchronized void cleanup () {
         for (View2DDisplayer displayer : displayers) {
             remove(displayer);
         }
@@ -55,7 +55,7 @@ public class View2DSet {
      * Add a displayer to this view set. A view in that displayer is created for each window in the set.
      * Nothing happens if the displayer is already in the set.
      */
-    public void add (View2DDisplayer displayer) {
+    public synchronized void add (View2DDisplayer displayer) {
         if (displayers.contains(displayer)) return;
         displayers.add(displayer);
         displayerCreateViewsForAllWindows(displayer);
@@ -65,7 +65,7 @@ public class View2DSet {
      * Removes a displayer from the set. All views associated with the displayer are destroyed.
      * Nothing happens if the displayer is not in the set.
      */
-    public void remove (View2DDisplayer displayer) {
+    public synchronized void remove (View2DDisplayer displayer) {
         if (displayers.remove(displayer)) {
             displayer.destroyAllViews();
         }
@@ -75,7 +75,7 @@ public class View2DSet {
      * Add a window to the view set. A view for that window is created for each displayer in the set.
      * Nothing happens if the window is already in the set.
      */
-    public void add (Window2D window) {
+    public synchronized void add (Window2D window) {
         if (windows.contains(window)) return;
         windows.add(window);
         windowCreateViewsForAllDisplayers(window);
@@ -85,35 +85,30 @@ public class View2DSet {
      * Removes a window from the set. All views associated with the window are destroyed.
      * Nothing happens if the window is not in the set.
      */
-    public void remove (Window2D window) {
+    public synchronized void remove (Window2D window) {
         if (windows.remove(window)) {
-            Iterator<View2D> it  = window.getViews();
-            while (it.hasNext()) {
-                View2D view = it.next();
-                View2DDisplayer displayer = view.getDisplayer();
-                displayer.destroyView(view);
-            }
+            window.removeViewsAll();
         }
     }
 
     /**
      * Returns the number of windows in this view set.
      */
-    public int getNumWindows () {
+    public synchronized int getNumWindows () {
         return windows.size();
     }
 
     /**
      * Returns an iterator over all displayers in this view set.
      */
-    public Iterator<View2DDisplayer> getDisplayers () {
+    public synchronized Iterator<View2DDisplayer> getDisplayers () {
         return displayers.iterator();
     }
 
     /**
      * Returns an iterator over all windows in this view set.
      */
-    public Iterator<Window2D> getWindows () {
+    public synchronized Iterator<Window2D> getWindows () {
         return windows.iterator();
     }
 
