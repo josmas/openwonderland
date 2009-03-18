@@ -74,7 +74,7 @@ public class AvatarCell extends ViewCell {
                 WonderlandSession session = getCellCache().getSession();
                 ServerSessionManager manager = LoginManager.find(session);
                 String serverHostAndPort = manager.getServerNameAndPort();
-                avatarConfigURL = new URL("wla://avatarbase@"+serverHostAndPort+"/"+str);
+                avatarConfigURL = new URL("wla://avatarbaseart@"+serverHostAndPort+"/"+str);
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(AvatarCell.class.getName()).log(Level.SEVERE, "Bad Avatar Config URL ", ex);
