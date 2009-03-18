@@ -267,7 +267,7 @@ public abstract class FrameComponent {
                     ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
             }
-        }, this);
+        }, null, true);
     }
 
     /**

@@ -35,7 +35,6 @@ import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.RenderComponent;
-import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.EventListener;

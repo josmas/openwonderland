@@ -126,7 +126,7 @@ public class FrameLabel extends FrameTexRect {
                     ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
             }
-        }, this);
+        }, null, true);
     }
 
     /**

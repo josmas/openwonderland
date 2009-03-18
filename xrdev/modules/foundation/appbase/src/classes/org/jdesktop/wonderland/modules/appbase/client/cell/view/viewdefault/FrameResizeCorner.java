@@ -129,7 +129,7 @@ public class FrameResizeCorner extends FrameComponent {
                     ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
             }
-        }, null);
+        }, null, true);
 
         // Update size
         horizBar.resize(horizWidth, horizHeight);

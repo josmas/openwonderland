@@ -111,7 +111,7 @@ public class FrameRect extends FrameComponent {
                 public void update(Object arg0) {
                     localToCellNode.attachChild(quad);
                 }
-            }, null);
+            }, null, true);
         } else {
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
                 public void update(Object arg0) {
@@ -121,7 +121,7 @@ public class FrameRect extends FrameComponent {
                         quad.updateModelBound();
                     }
                 }
-            }, null);
+            }, null, true);
         }
 
         super.update();
@@ -182,7 +182,7 @@ public class FrameRect extends FrameComponent {
                         ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                     }
                 }
-            }, this);
+            }, null, true);
         }
     }
 

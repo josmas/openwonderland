@@ -229,8 +229,11 @@ public interface View2D {
      */
     public Point calcIntersectionPixelOfEyeRay(int x, int y);
 
+    /* TODO: no longer needed?
+    >>>> I think I can remove this now. But I'm leaving it in a bit longer to be sure.
     // TODO: temporary until ImageGraphics can be fixed to allocated texture id when necessary
     public void forceTextureIdAssignment();
+    */
 
     /**
      * Add an event listener to this view.

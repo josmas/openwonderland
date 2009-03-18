@@ -109,7 +109,7 @@ public class FrameTexRect extends FrameRect {
                         quad.updateModelBound();
                     }
                 }
-            }, null);
+            }, null, true);
         }
 
         // This should be the same as FrameComponent.update

@@ -105,7 +105,7 @@ public class FrameSide extends FrameComponent {
                     ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
             }
-        }, this);
+        }, null, true);
 
         super.update();
 
