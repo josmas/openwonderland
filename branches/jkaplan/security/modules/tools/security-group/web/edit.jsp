@@ -143,9 +143,6 @@
             group.membersInternal.splice(remove[i], 1);
         }
 
-
-        alert("Submit " + Object.toJSON(group));
-
         new Ajax.Request('resources/groups/' + groupId, {
                 method: 'post',
                 contentType: 'application/json',

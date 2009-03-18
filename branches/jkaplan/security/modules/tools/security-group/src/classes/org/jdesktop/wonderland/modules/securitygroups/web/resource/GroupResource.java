@@ -17,19 +17,24 @@
  */
 package org.jdesktop.wonderland.modules.securitygroups.web.resource;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import org.jdesktop.wonderland.modules.securitygroups.common.GroupDTO;
+import org.jdesktop.wonderland.modules.securitygroups.web.GroupContextListener;
+import org.jdesktop.wonderland.modules.securitygroups.web.SecurityCacheConnection;
 import org.jdesktop.wonderland.modules.securitygroups.weblib.db.GroupDAO;
+import org.jdesktop.wonderland.modules.securitygroups.weblib.db.MemberEntity;
 
 
 /**
@@ -38,16 +43,18 @@ import org.jdesktop.wonderland.modules.securitygroups.weblib.db.GroupDAO;
  */
 public class GroupResource {
     private SecurityContext security;
+    private ServletContext context;
     private GroupDAO groups;
     private UriInfo uriInfo;
     private String groupId;
 
     public GroupResource(GroupDAO groups, UriInfo uriInfo, String groupId, 
-                         SecurityContext security)
+                         ServletContext context, SecurityContext security)
     {
         this.groups = groups;
         this.uriInfo = uriInfo;
         this.groupId = groupId;
+        this.context = context;
         this.security = security;
     }
 
@@ -78,7 +85,14 @@ public class GroupResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        groups.updateGroup(GroupResourceUtil.toEntity(group));
+        // make the update, which will return to us the set of users that
+        // changed
+        Set<MemberEntity> members = groups.updateGroup(GroupResourceUtil.toEntity(group));
+        
+        // notify the Darkstar server to invalidate the given members
+        sendInvalidateMessage(members);
+
+        // send an OK response
         return Response.ok().build();
     }
 
@@ -116,11 +130,36 @@ public class GroupResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        groups.removeGroup(groupId);
+        // remove the group, returning the set of users formerly in the
+        // group
+        Set<MemberEntity> members = groups.removeGroup(groupId);
+
+        // notify the Darkstar server to invalidate the given members
+        sendInvalidateMessage(members);
+
+        // send an OK response
         return Response.ok().build();
     }
 
     private boolean canModify() {
         return GroupResourceUtil.canModify(groupId, groups, security);
+    }
+
+    private void sendInvalidateMessage(Set<MemberEntity> members) {
+        // get the connection from the servlet context
+        SecurityCacheConnection conn = (SecurityCacheConnection)
+                context.getAttribute(GroupContextListener.SECURITY_CACHE_CONN_ATTR);
+        if (conn == null) {
+            return;
+        }
+
+        // convert the members into a set of usernames
+        Set<String> usernames = new LinkedHashSet<String>(members.size());
+        for (MemberEntity member : members) {
+            usernames.add(member.getMemberId());
+        }
+
+        // send the message
+        conn.invalidateGroup(groupId, usernames);
     }
 }

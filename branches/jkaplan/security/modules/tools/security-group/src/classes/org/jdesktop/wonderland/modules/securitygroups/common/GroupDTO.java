@@ -20,8 +20,9 @@ package org.jdesktop.wonderland.modules.securitygroups.common;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
+import java.util.Comparator;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -55,7 +56,7 @@ public class GroupDTO {
     private String id;
     private int memberCount;
     private boolean editable;
-    private Set<MemberDTO> members = new LinkedHashSet<MemberDTO>();
+    private Set<MemberDTO> members = new TreeSet<MemberDTO>(new MemberComparator());
 
     public GroupDTO() {
     }
@@ -106,7 +107,7 @@ public class GroupDTO {
     }
 
     public void setMembersInternal(MemberDTO[] memberArr) {
-        members = new LinkedHashSet<MemberDTO>();
+        members = new TreeSet<MemberDTO>(new MemberComparator());
         members.addAll(Arrays.asList(memberArr));
     }
 
@@ -156,5 +157,16 @@ public class GroupDTO {
         return hash;
     }
 
-
+    class MemberComparator implements Comparator<MemberDTO> {
+        public int compare(MemberDTO o1, MemberDTO o2) {
+            // first compare owners
+            if (o1.isOwner() && !o2.isOwner()) {
+                return 1;
+            } else if (!o1.isOwner() && o2.isOwner()) {
+                return -1;
+            } else {
+                return o1.getId().compareToIgnoreCase(o2.getId());
+            }
+        }
+    }
 }
