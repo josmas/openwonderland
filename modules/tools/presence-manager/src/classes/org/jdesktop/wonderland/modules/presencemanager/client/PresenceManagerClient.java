@@ -89,7 +89,6 @@ public class PresenceManagerClient extends BaseConnection implements
 	    throws ConnectionFailureException {
 
 	this.session = session;
-	session.connect(this);
 
         LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
         avatar.addViewCellConfiguredListener(this);
@@ -103,6 +102,8 @@ public class PresenceManagerClient extends BaseConnection implements
 	presenceManager = PresenceManagerFactory.getPresenceManager(session);
 
 	logger.fine("Starting PresenceManagerClient");
+
+	session.connect(this);
     }
 
     public void cellStatusChanged(Cell cell, CellStatus status) {
