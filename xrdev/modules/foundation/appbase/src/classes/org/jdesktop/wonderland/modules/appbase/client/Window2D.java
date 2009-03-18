@@ -82,8 +82,7 @@ public abstract class Window2D {
 
     /** The type of the 2D window. */
     public enum Type {
-
-        PRIMARY, SECONDARY, POPUP
+        UNKNOWN, PRIMARY, SECONDARY, POPUP
     };
     /** 
      * The offset in pixels from top left of parent. 
@@ -179,6 +178,7 @@ public abstract class Window2D {
         this.pixelScale = new Vector2f(pixelScale);
         this.name = name;
 
+        /* HACK: for now, let a window be primary if it has no parent. Otherwise secondary.
         if (app.getNumWindows() <= 0) {
             type = Type.PRIMARY;
             app.setPrimaryWindow(this);
@@ -186,6 +186,8 @@ public abstract class Window2D {
             type = Type.SECONDARY;
             /// TODO:            parent = app.getPrimaryWindow();
         }
+        */
+        type = type.UNKNOWN;
 
         // Must occur before adding window to the app
         updateTexture();
@@ -323,12 +325,26 @@ public abstract class Window2D {
      * Set the parent of the window. (This is ignored for primary windows).
      */
     public synchronized void setParent(Window2D parent) {
+        if (parent == this.parent) return;
+
         System.err.println("&&&&&&&&&&&&&&&&& setting parent for window " + this + " to " + parent);
+        /* HACK: for now, let a window be primary if it has no parent. Otherwise secondary.
         if (type != Type.PRIMARY) {
             this.parent = parent;
             changeMask |= CHANGED_PARENT;
             updateViews();
         }
+        */
+        if (type == Type.UNKNOWN) {
+            if (parent == null) {
+                type = Type.PRIMARY;
+            } else {
+                type = Type.SECONDARY;
+            }
+        }
+        this.parent = parent;
+        changeMask |= CHANGED_PARENT | CHANGED_TYPE;
+        updateViews();
     }
 
     /**
@@ -1000,6 +1016,10 @@ public abstract class Window2D {
             if ((changeMask & CHANGED_TYPE) != 0) {
                 View2D.Type viewType = View2D.Type.UNKNOWN;
                 switch (type) {
+
+                    // TODO: HACK: for now, treat unknown as primary. Do we want to make this permanent?
+                    case UNKNOWN:
+
                     case PRIMARY:
                         viewType = View2D.Type.PRIMARY;
                         break;

@@ -372,7 +372,6 @@ public abstract class View2DEntity implements View2D {
         }
 
         logger.info("change parent of view " + this + " to new parent view = " + parent);
-        Thread.dumpStack();
 
         this.parent = (View2DEntity) parent;
 
@@ -918,7 +917,7 @@ public abstract class View2DEntity implements View2D {
                 break;
             case SECONDARY:
                 deltaTransform = calcUserDeltaTransform();
-                System.err.println("################# PC: ut post mul");
+                System.err.println("################# PC: ut post mul, deltaTransform = " + deltaTransform);
                 sgChangeTransformUserPostMultiply(viewNode, deltaTransform); 
                 break;
             case UNKNOWN:
