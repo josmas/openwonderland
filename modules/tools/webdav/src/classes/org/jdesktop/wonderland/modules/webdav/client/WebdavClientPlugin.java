@@ -71,11 +71,17 @@ public class WebdavClientPlugin implements ClientPlugin {
             @Override
             protected URL getBaseURL() {
                 try {
+                    System.err.println("BASE URL "+userDir.toURI().toURL().toExternalForm());
                     return userDir.toURI().toURL();
                 } catch (MalformedURLException ex) {
                     logger.log(Level.WARNING, "Unable to create local repository", ex);
                     return null;
                 }
+            }
+
+            @Override
+            public String getPath() {
+                return "";
             }
 
         };
