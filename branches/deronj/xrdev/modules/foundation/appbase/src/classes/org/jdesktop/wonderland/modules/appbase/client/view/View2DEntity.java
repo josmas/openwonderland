@@ -1203,7 +1203,7 @@ public abstract class View2DEntity implements View2D {
                      case GEOMETRY_SIZE_SET: {
                          SGChangeGeometrySizeSet chg = (SGChangeGeometrySizeSet) sgChange;
                          chg.geometryNode.setSize(chg.width, chg.height);
-                         forceTextureIdAssignment();
+                         forceTextureIdAssignment(true);
                          logger.fine("Geometry node setSize, wh = " + chg.width + ", " + chg.height);
                          System.err.println("############ setsize to wh = " + chg.width + ", " + chg.height);
                          break;
@@ -1397,7 +1397,18 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public void forceTextureIdAssignment() {
+    /* TODO: no longer needed to be public?
+       >>>> I think I can remove this now. But I'm leaving it in a bit longer to be sure.
+    public void forceTextureIdAssignment() { 
+        forceTextureIdAssignment(false);
+    }
+    */
+
+    /** 
+     * Force the texture ID of the texture to be allocated.
+     * @param inRenderLoop true if the call is already being made from inside the render loop.
+     */
+    private void forceTextureIdAssignment(boolean inRenderLoop) {
         if (geometryNode == null) {
             setGeometryNode(null);
             if (geometryNode == null) {
@@ -1413,12 +1424,26 @@ public abstract class View2DEntity implements View2D {
 
         logger.fine("texid alloc: ts.getTexture() = " + ts.getTexture());
 
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                // The JME magic - must be called from within the render loop
-                ts.load();
-            }
-         }, null);
+        if (inRenderLoop) {
+            // We're already in the render loop
+            ts.load();
+        } else {
+            // Not in render loop. Must do this inside the render loop.
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+                public void update(Object arg0) {
+                    // The JME magic - must be called from within the render loop
+                    ts.load();
+                }
+            }, null, true);
+        }
+
+        /* For debug: Verify that ID was actually allocated 
+        Texture tex = geometryNode.getTexture();
+        int texid = tex.getTextureId();
+        if (texid == 0) {
+            logger.severe("Failed to allocated texture ID");
+        }
+        */
     }
 
     /** {@inheritDoc} */

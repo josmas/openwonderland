@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.appbase.client.view;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.image.Texture;
 import com.jme.image.Texture2D;
 import com.jme.scene.TexCoords;
 import com.jme.scene.state.TextureState;
@@ -96,6 +97,11 @@ class GeometryNodeQuad extends GeometryNode {
         tbuf.put(widthRatio).put(heightRatio);
         tbuf.put(widthRatio).put(0);
         quad.setTextureCoords(new TexCoords(tbuf));
+    }
+
+    /** {@inheritDoc} */
+    public Texture getTexture() {
+        return quad.getTexture();
     }
 
     /** {@inheritDoc} */

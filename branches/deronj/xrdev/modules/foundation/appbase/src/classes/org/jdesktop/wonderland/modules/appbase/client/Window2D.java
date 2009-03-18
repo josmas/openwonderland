@@ -810,6 +810,8 @@ public abstract class Window2D {
         }
     }
 
+    /* TODO: no longer needed?
+       >>>> I think I can remove this now. But I'm leaving it in a bit longer to be sure.
     public synchronized void forceTextureIdAssignment() {
         if (views.size() <= 0) {
             logger.warning("Cannot assign texture ID because there are no views");
@@ -820,6 +822,7 @@ public abstract class Window2D {
             view.forceTextureIdAssignment();
         }
     }
+    */
 
     /**
      * Called by the GUI to close the window.
