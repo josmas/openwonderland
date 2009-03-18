@@ -164,4 +164,11 @@ public class TextLabel2D {
         ret.updateRenderState();
         return ret;
     }
+    
+    public BillboardNode getBillboard(float height){
+        BillboardNode bb = new BillboardNode("bb");
+        Quad q = getQuad(height);
+        bb.attachChild(q);
+        return bb;
+    }
 }
