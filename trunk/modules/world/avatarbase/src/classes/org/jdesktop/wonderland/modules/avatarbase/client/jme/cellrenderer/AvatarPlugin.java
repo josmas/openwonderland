@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
 
 /**
  *
@@ -51,12 +52,14 @@ public class AvatarPlugin implements ClientPlugin {
     public void initialize(ServerSessionManager loginManager) {
         // Set the base URL
         String serverHostAndPort = loginManager.getServerNameAndPort();
-        String baseURL = "wla://avatarbase@"+serverHostAndPort+"/";
+        String baseURL = "wla://avatarbaseart@"+serverHostAndPort+"/";
 
         WorldManager worldManager = ClientContextJME.getWorldManager();
         worldManager.addUserData(Repository.class, new Repository(worldManager, baseURL, ClientContext.getUserDirectory("AvatarCache")));
         
         ClientContextJME.getAvatarRenderManager().registerRenderer(AvatarImiJME.class);
+
+        AvatarConfigManager.getAvatarConigManager().addServer(loginManager);
 
         ClientContextJME.getViewManager().addViewManagerListener(new ViewManagerListener() {
             public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
