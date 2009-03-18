@@ -115,8 +115,17 @@ class WindowSwingEmbeddedToolkit
                 Point pt;
                 if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
                     pt = view.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
+                    System.err.println("******** pt from calcIntersection = " + pt);
                 } else {
                     pt = view.calcPositionInPixelCoordinates(intersectionPointWorld, true);
+                    System.err.println("******** pt from calcPosition = " + pt);
+                }
+
+                
+                // TODO: temp
+                if (pt == null) {
+                    logger.severe("pt is null");
+                    return src;
                 }
 
                 if (dst == null) {

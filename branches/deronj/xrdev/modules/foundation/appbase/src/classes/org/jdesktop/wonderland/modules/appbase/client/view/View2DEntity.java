@@ -24,6 +24,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import java.awt.Point;
 import com.jme.scene.state.TextureState;
 import java.awt.Dimension;
@@ -63,6 +64,8 @@ public abstract class View2DEntity implements View2D {
 
     private static float PIXEL_SCALE_DEFAULT = 0.01f;
 
+    private static enum AttachState { DETACHED, ATTACHED_TO_ENTITY, ATTACHED_TO_WORLD };
+
     // Category changed flags
     protected static final int CHANGED_TOPOLOGY               = 0x80000000;
     protected static final int CHANGED_SIZE                   = 0x40000000;
@@ -90,7 +93,8 @@ public abstract class View2DEntity implements View2D {
     protected static final int CHANGED_OFFSET           = 0x80   | CHANGED_OFFSET_STACK_TRANSFORM;
     protected static final int CHANGED_USER_TRANSLATION = 0x100  | CHANGED_USER_TRANSFORM;
     protected static final int CHANGED_TITLE            = 0x200  | CHANGED_FRAME;
-    protected static final int CHANGED_ORTHO            = 0x400;
+    protected static final int CHANGED_Z_ORDER          = 0x400  | CHANGED_OFFSET_STACK_TRANSFORM;
+    protected static final int CHANGED_ORTHO            = 0x800;
 
     protected static final int CHANGED_ALL = -1;
 
@@ -142,6 +146,9 @@ public abstract class View2DEntity implements View2D {
     /** The frame title. */
     protected String title;
 
+    /** The Z (stacking) order of the view */
+    protected int zOrder;
+
     /** The size of the view specified by the app. */
     private Dimension sizeApp = new Dimension(1, 1);
 
@@ -172,14 +179,11 @@ public abstract class View2DEntity implements View2D {
     /* The set of changes which have occurred since the last update. */
     protected int changeMask;
 
-    /** The current width of the view in the local coordinate system of the cell. */
-    private float cellLocalWidth;
-
-    /** Returns the height of the view in the local coordinate system of the cell. */
-    private float cellLocalHeight;
-
     /** Whether the view entity is to be displayed in ortho mode ("on the glass"). */
     private boolean ortho;
+    
+    /** Whether the view entity is attached and to what. */
+    private AttachState attachState = AttachState.DETACHED;
 
     /** A dummy AWT component (used by deliverEvent). */
     private static Button dummyButton = new Button();
@@ -248,7 +252,10 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public void cleanup () {
+    public synchronized void cleanup () {
+
+        /* TODO: attach state, use sgchanges */
+
         if (gui != null) {
             gui.detachEventListeners(entity);
             gui.cleanup();
@@ -264,6 +271,7 @@ public abstract class View2DEntity implements View2D {
         if (geometryNode != null) {
             viewNode.detachChild(geometryNode);
             if (geometrySelfCreated) {
+                
                 geometryNode.cleanup();
                 geometrySelfCreated = false;
             }
@@ -285,12 +293,12 @@ public abstract class View2DEntity implements View2D {
     public abstract View2DDisplayer getDisplayer ();
 
     /** Return this view's entity. */
-    public Entity getEntity () {
+    public synchronized Entity getEntity () {
         return entity;
     }
 
     /** Return this view's root node. */
-    private Node getNode () {
+    public synchronized Node getNode () {
         return viewNode;
     }
 
@@ -339,20 +347,32 @@ public abstract class View2DEntity implements View2D {
         return type;
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc}
+     * <br><br>
+     * This also has the side effect of setting the ortho attribute of this
+     * view (and all of its children) to the ortho attribute of the parent.
+     */
     public synchronized void setParent (View2D parent) {
         setParent(parent, true);
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc}
+     * <br><br>
+     * This also has the side effect of setting the ortho attribute of this
+     * view (and all of its children) to the ortho attribute of the parent.
+     */
     public synchronized void setParent (View2D parent, boolean update) {
+        if (this.parent == parent) return;
 
         // Detach this view from previous parent
         if (this.parent != null) {
             this.parent.children.remove(this);
         }
 
-        logger.info("change parent = " + parent);
+        logger.info("change parent of view " + this + " to new parent view = " + parent);
+        Thread.dumpStack();
 
         this.parent = (View2DEntity) parent;
 
@@ -364,6 +384,12 @@ public abstract class View2DEntity implements View2D {
         changeMask |= CHANGED_PARENT;
         if (update) {
             update();
+        }
+
+        // Inherit ortho state of parent (must do this after self update)
+        if (this.parent != null) {
+            // Update immediately
+            setOrtho(this.parent.isOrtho());
         }
     }
 
@@ -424,12 +450,23 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized boolean isActuallyVisible () {
+        logger.info("Check actually visible for view " + this);
+        logger.info("visibleApp = " + visibleApp);
+        logger.info("visibleUser = " + visibleUser);
         if (!visibleApp || !visibleUser) return false;
+        /* TODO: do we really want to check parent visibility? It doesn't work out for gt
+           and isn't necessary if we always parent child entities to parent entities.
         if (parent == null) {
+            logger.info("No parent. isActuallyVisible = true");
+        */
             return true;
+            /*
         } else {
+            logger.info("parent = " + parent.getName());
+            logger.info("parent.isActuallyVisible() = " + parent.isActuallyVisible());
             return parent.isActuallyVisible();
         }
+            */
     }
 
     /** {@inheritDoc} */
@@ -470,6 +507,26 @@ public abstract class View2DEntity implements View2D {
     /** {@inheritDoc} */
     public synchronized String getTitle () {
         return title;
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void setZOrder(int zOrder) {
+        setZOrder(zOrder, true);
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void setZOrder(int zOrder, boolean update) {
+        logger.info("change zOrder = " + zOrder);
+        this.zOrder = zOrder;
+        changeMask |= CHANGED_Z_ORDER;
+        if (update) {
+            update();
+        }
+    }
+
+    /** {@inheritDoc} */
+    public synchronized int getZOrder () {
+        return zOrder;
     }
 
     /** {@inheritDoc} */
@@ -519,13 +576,13 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public float getDisplayerLocalWidth () {
+    public synchronized float getDisplayerLocalWidth () {
         // TODO: ignore size mode and user size for now - always track window size as specified by app
         return getPixelScaleX() * sizeApp.width;
     }
 
     /** {@inheritDoc} */
-    public float getDisplayerLocalHeight () {
+    public synchronized float getDisplayerLocalHeight () {
         // TODO: ignore size mode and user size for now - always track window size as specified by app
         return getPixelScaleY() * sizeApp.height;
     }
@@ -555,7 +612,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Returns the X pixel scale. */
-    private float getPixelScaleX () {
+    private synchronized float getPixelScaleX () {
         if (pixelScale == null) {
             return PIXEL_SCALE_DEFAULT;
         } else {
@@ -564,7 +621,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Returns the Y pixel scale. */
-    private float getPixelScaleY () {
+    private synchronized float getPixelScaleY () {
         if (pixelScale == null) {
             return PIXEL_SCALE_DEFAULT;
         } else {
@@ -635,9 +692,11 @@ public abstract class View2DEntity implements View2D {
 
     /**
      * Specifies whether the view entity is to be displayed in ortho mode ("on the glass").
-     * Update immediately.
+     * Update immediately. In addition, the ortho attribute of all descendents is set to the
+     * same value. And, when ortho is true, the decorated attribute is ignored and is regarded
+     * as false.
      */
-    public void setOrtho (boolean ortho) {
+    public synchronized void setOrtho (boolean ortho) {
         setOrtho(ortho, true);
     }
 
@@ -645,7 +704,7 @@ public abstract class View2DEntity implements View2D {
      * Specifies whether the view entity is to be displayed in ortho mode ("on the glass").
      * Update if specified.
      */
-    public void setOrtho (boolean ortho, boolean update) {
+    public synchronized void setOrtho (boolean ortho, boolean update) {
         this.ortho = ortho;
         changeMask |= CHANGED_ORTHO;
         if (update) {
@@ -656,7 +715,7 @@ public abstract class View2DEntity implements View2D {
     /**
      * Returns whether the view entity is in ortho mode.
      */
-    public boolean getOrtho () {
+    public synchronized boolean isOrtho () {
         return ortho;
     }
 
@@ -665,18 +724,29 @@ public abstract class View2DEntity implements View2D {
         // Note: all of the scene graph changes are queued up and executed at the end
 
         // React to topology related changes
-        if ((changeMask & CHANGED_TOPOLOGY) != 0) {
+        if ((changeMask & (CHANGED_TOPOLOGY | CHANGED_ORTHO)) != 0) {
             logger.fine("Update topology");
             int chgMask = changeMask & ~CATEGORY_CHANGE_MASK;
             
-            // First, detach entity from parent
-            if (parentEntity != null) {
-                RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
-                rc.setAttachPoint(null);
-                parentEntity.removeEntity(entity);
-                parentEntity = null;
-                logger.fine("Remove entity " + entity + "from parent entity " + parentEntity);
+            // First, detach entity (if necessary)
+            switch (attachState) {
+            case ATTACHED_TO_ENTITY:
+                if (parentEntity != null) {
+                    logger.fine("Remove entity " + entity + " from parent entity " + parentEntity);
+                    RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
+                    rc.setAttachPoint(null);
+                    parentEntity.removeEntity(entity);
+                    parentEntity = null;
+                    System.err.println("############ Detached from entity");
+                }
+                break;
+            case ATTACHED_TO_WORLD:
+                logger.fine("Remove entity " + entity + " from world manager.");
+                ClientContextJME.getWorldManager().removeEntity(entity);
+                System.err.println("############ Detached from entity");
+                break;
             }
+            attachState = AttachState.DETACHED;
 
             // Does the geometry node itself need to change?
             if ((chgMask & CHANGED_GEOMETRY) != 0) {
@@ -708,14 +778,33 @@ public abstract class View2DEntity implements View2D {
             }
 
             // Now reattach geometry if view should be visible
-            // Uses: visible
-            parentEntity = getParentEntity();
-            if (parentEntity != null && isActuallyVisible()) {
-                logger.fine("Attach entity " + entity + " to parent entity " + parentEntity);
-                parentEntity.addEntity(entity);
-                RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
-                RenderComponent rcParent = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
-                rc.setAttachPoint(rcParent.getSceneRoot());
+            // Uses: visible, ortho
+            System.err.println("isActuallyVisible() = " + isActuallyVisible());
+            if (isActuallyVisible()) {
+                if (ortho) {
+                    logger.fine("Attach entity " + entity + " to world manager.");
+                    ClientContextJME.getWorldManager().addEntity(entity);
+                    attachState = AttachState.ATTACHED_TO_WORLD;
+                    System.err.println("############ Attached to world");
+                } else {
+                    parentEntity = getParentEntity();
+                    if (parentEntity != null) {
+                        logger.fine("Attach entity " + entity + " to parent entity " + parentEntity);
+                        parentEntity.addEntity(entity);
+                        RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
+                        RenderComponent rcParent = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+                        rc.setAttachPoint(rcParent.getSceneRoot());
+                        attachState = AttachState.ATTACHED_TO_ENTITY;
+                    }
+                }
+            }
+
+            if ((chgMask & CHANGED_ORTHO) != 0) {
+                // Propagate our ortho setting to our children
+                logger.fine("Force children ortho to " + ortho);
+                for (View2DEntity child : children) {
+                    child.setOrtho(ortho);
+                }
             }
 
             if ((chgMask & CHANGED_VISIBLE) != 0) {
@@ -728,34 +817,60 @@ public abstract class View2DEntity implements View2D {
         }
 
         // React to frame changes (must do before handling size changes)
-        if ((changeMask & CHANGED_FRAME) != 0) {
+        if ((changeMask & (CHANGED_FRAME | CHANGED_ORTHO)) != 0) {
             logger.fine("Update frame");
             int chgMask = changeMask & ~CATEGORY_CHANGE_MASK;
 
-            if ((chgMask & CHANGED_DECORATED) != 0) {
-                if (decorated) {
+            if ((chgMask & (CHANGED_DECORATED | CHANGED_ORTHO)) != 0) {
+                if (decorated && !ortho) {
                     if (!hasFrame()) {
+                        logger.fine("Attach frame");
                         attachFrame();
+                        System.err.println("############ Attached frame");
                     }
                 } else {
                     if (hasFrame()) {
+                        logger.fine("Detach frame");
                         detachFrame();
+                        System.err.println("############ Detached frame");
                     }
                 }
             }
             
             if ((chgMask & CHANGED_TITLE) != 0) {
+                logger.fine("Update title");
                 frameUpdateTitle();
             }
         }            
 
-        // TODO: react to stack related changes?
+        if ((changeMask & CHANGED_Z_ORDER) != 0) {
+            logger.fine("Update geometry ortho Z order");
+            sgChangeGeometryOrthoZOrderSet(geometryNode, zOrder);
+        }
+
+        if ((changeMask & CHANGED_ORTHO) != 0) {
+            logger.fine("Update ortho, ortho = " + ortho);
+            logger.severe("entity = " + entity);
+            logger.severe("entity.getComponent(RenderComponent.class) = " + entity.getComponent(RenderComponent.class));
+            entity.getComponent(RenderComponent.class).setOrtho(ortho);
+            System.err.println("############ Entity ortho set to " + ortho);
+            sgChangeViewNodeOrthoSet(viewNode, ortho);
+        }
 
         // React to size related changes (must be done before handling transform changes)
-        if ((changeMask & CHANGED_SIZE) != 0) {
+        /// TODO       if ((changeMask & CHANGED_SIZE) != 0) {
+        if ((changeMask & (CHANGED_SIZE | CHANGED_ORTHO)) != 0) {
             float width = getDisplayerLocalWidth();
             float height = getDisplayerLocalHeight();
-
+            // TODO
+            if (ortho) {
+                /*
+                width = 500f;
+                height = 200f;
+                */
+                width = 10f;
+                height = 10f;
+            }
             sgChangeGeometrySizeSet(geometryNode, width, height);
         }
 
@@ -774,7 +889,7 @@ public abstract class View2DEntity implements View2D {
         // React to transform related changes
 
         // Uses: type, parent, pixelscale, size, offset
-        if ((changeMask & CHANGED_OFFSET_STACK_TRANSFORM) != 0) {
+        if ((changeMask & (CHANGED_OFFSET_STACK_TRANSFORM | CHANGED_ORTHO | CHANGED_Z_ORDER)) != 0) {
             CellTransform transform = null;
 
             switch (type) {
@@ -788,11 +903,12 @@ public abstract class View2DEntity implements View2D {
                 // Uses: type, parent, pixelScale, size, offset
                 transform = calcOffsetStackTransform();
             }
-            sgChangeTransformOffsetStackSet(transform);
+            sgChangeGeometryTransformOffsetStackSet(geometryNode, transform);
         }
 
         // Uses: type, userTranslation
-        if ((changeMask & CHANGED_USER_TRANSFORM) != 0) {
+        //TODO: if ((changeMask & CHANGED_USER_TRANSFORM) != 0) {
+        if ((changeMask & (CHANGED_USER_TRANSFORM | CHANGED_ORTHO)) != 0) {
             CellTransform deltaTransform;
 
             switch (type) {
@@ -802,12 +918,14 @@ public abstract class View2DEntity implements View2D {
                 break;
             case SECONDARY:
                 deltaTransform = calcUserDeltaTransform();
-                sgChangeTransformUserPostMultiply(deltaTransform); 
+                System.err.println("################# PC: ut post mul");
+                sgChangeTransformUserPostMultiply(viewNode, deltaTransform); 
                 break;
             case UNKNOWN:
             case POPUP:
                 // Always set to identity
-                sgChangeTransformUserSet(new CellTransform(null, null, null));
+                System.err.println("################# PC: ut set to identity");
+                sgChangeTransformUserSet(viewNode, new CellTransform(null, null, null));
             }
         }
 
@@ -822,8 +940,10 @@ public abstract class View2DEntity implements View2D {
         changeMask = 0;
     }
 
-    // TODO: cell specific
-    // Uses: type, parent
+    /**
+     * This usually should be overridden by the subclass.
+     * Uses: type, parent.
+     */
     protected Entity getParentEntity () {
         switch (type) {
 
@@ -875,19 +995,8 @@ public abstract class View2DEntity implements View2D {
         return translation;
     }
 
-    // uses: type
-    private Vector3f calcStackTranslation () {
-        switch (type) {
-        case UNKNOWN:
-        case PRIMARY:
-            // TODO: for now, primary will always be on the bottom
-            return new Vector3f(0f, 0f, 0f);
-        case SECONDARY:
-        case POPUP:
-            // TODO: for now, put every non-primary in the same plane
-            return new Vector3f(0f, 0f, 0.01f);
-        }
-        return null;
+    protected Vector3f calcStackTranslation () {
+        return new Vector3f(0f, 0f, 0f);
     }
 
     // Uses: userTranslation
@@ -911,7 +1020,9 @@ public abstract class View2DEntity implements View2D {
         GEOMETRY_DETACH_FROM_VIEW,
         GEOMETRY_SIZE_SET, 
         GEOMETRY_TEX_COORDS_SET,
-        TRANSFORM_OFFSET_STACK_SET,
+        GEOMETRY_ORTHO_Z_ORDER_SET,
+        VIEW_NODE_ORTHO_SET,
+        GEOMETRY_TRANSFORM_OFFSET_STACK_SET,
         TRANSFORM_USER_POST_MULT,
         TRANSFORM_USER_SET,
     };
@@ -971,29 +1082,55 @@ public abstract class View2DEntity implements View2D {
         }
     }
 
+    private static class SGChangeGeometryOrthoZOrderSet extends SGChange {
+        private GeometryNode geometryNode;
+        private int zOrder;
+        private SGChangeGeometryOrthoZOrderSet (GeometryNode geometryNode, int zOrder) {
+            super(SGChangeOp.GEOMETRY_ORTHO_Z_ORDER_SET);
+            this.geometryNode = geometryNode;
+            this.zOrder = zOrder;
+        }
+    }
+
+    private static class SGChangeViewNodeOrthoSet extends SGChange {
+        private Node viewNode;
+        private boolean ortho;
+        private SGChangeViewNodeOrthoSet (Node viewNode, boolean ortho) {
+            super(SGChangeOp.VIEW_NODE_ORTHO_SET);
+            this.viewNode = viewNode;
+            this.ortho = ortho;
+        }
+    }
+
     private static class SGChangeTransform extends SGChange {
-        private CellTransform transform;
+        protected CellTransform transform;
         private SGChangeTransform (SGChangeOp op, CellTransform transform) {
             super(op);
             this.transform = transform;
         }
     }
     
-    private static class SGChangeTransformOffsetStackSet extends SGChangeTransform {
-        private SGChangeTransformOffsetStackSet (CellTransform transform) {
-            super(SGChangeOp.TRANSFORM_OFFSET_STACK_SET, transform);
+    private static class SGChangeGeometryTransformOffsetStackSet extends SGChangeTransform {
+        private GeometryNode geometryNode;
+        private SGChangeGeometryTransformOffsetStackSet (GeometryNode geometryNode, CellTransform transform) {
+            super(SGChangeOp.GEOMETRY_TRANSFORM_OFFSET_STACK_SET, transform);
+            this.geometryNode = geometryNode;
         }
     }
 
     private static class SGChangeTransformUserSet extends SGChangeTransform {
-        private SGChangeTransformUserSet (CellTransform transform) {
+        private Node viewNode;
+        private SGChangeTransformUserSet (Node viewNode, CellTransform transform) {
             super(SGChangeOp.TRANSFORM_USER_SET, transform);
-        }
+            this.viewNode = viewNode;
+       }
     }
 
     private static class SGChangeTransformUserPostMultiply extends SGChangeTransform {
-        private SGChangeTransformUserPostMultiply (CellTransform transform) {
+        private Node viewNode;
+        private SGChangeTransformUserPostMultiply (Node viewNode, CellTransform transform) {
             super(SGChangeOp.TRANSFORM_USER_POST_MULT, transform);
+            this.viewNode = viewNode;
         }
     }
 
@@ -1013,20 +1150,30 @@ public abstract class View2DEntity implements View2D {
     }
 
     private synchronized void sgChangeGeometryTexCoordsSet(GeometryNode geometryNode, float widthRatio, 
-                                              float heightRatio) {
+                                                           float heightRatio) {
         sgChanges.add(new SGChangeGeometryTexCoordsSet(geometryNode, widthRatio, heightRatio));
     }
 
-    private synchronized void sgChangeTransformOffsetStackSet (CellTransform transform) {
-        sgChanges.add(new SGChangeTransformOffsetStackSet(transform));
+    private synchronized void sgChangeGeometryOrthoZOrderSet(GeometryNode geometryNode, int zOrder) {
+        sgChanges.add(new SGChangeGeometryOrthoZOrderSet(geometryNode, zOrder));
     }
 
-    private synchronized void sgChangeTransformUserPostMultiply (CellTransform deltaTransform) {
-        sgChanges.add(new SGChangeTransformUserPostMultiply(deltaTransform));
+    private synchronized void sgChangeViewNodeOrthoSet(Node viewNode, boolean ortho) {
+        sgChanges.add(new SGChangeViewNodeOrthoSet(viewNode, ortho));
     }
 
-    private synchronized void sgChangeTransformUserSet (CellTransform transform) {
-        sgChanges.add(new SGChangeTransformUserSet(transform));
+    private synchronized void sgChangeGeometryTransformOffsetStackSet (GeometryNode geometryNode,
+                                                                       CellTransform transform) {
+        sgChanges.add(new SGChangeGeometryTransformOffsetStackSet(geometryNode,transform));
+    }
+
+    private synchronized void sgChangeTransformUserPostMultiply (Node viewNode, 
+                                                                 CellTransform deltaTransform) {
+        sgChanges.add(new SGChangeTransformUserPostMultiply(viewNode, deltaTransform));
+    }
+
+    private synchronized void sgChangeTransformUserSet (Node viewNode, CellTransform transform) {
+        sgChanges.add(new SGChangeTransformUserSet(viewNode, transform));
     }
 
     private synchronized void sgProcessChanges () {
@@ -1041,61 +1188,107 @@ public abstract class View2DEntity implements View2D {
                      case GEOMETRY_ATTACH_TO_VIEW: {
                          SGChangeGeometryAttachToView chg = (SGChangeGeometryAttachToView) sgChange;
                          chg.viewNode.attachChild(chg.geometryNode);
-                         logger.fine("Attach geometryNode " + geometryNode + " to viewNode " + chg.viewNode);
+                         logger.fine("Attach geometryNode " + chg.geometryNode + " to viewNode " + 
+                                     chg.viewNode);
                          break;
                      }
 
                      case GEOMETRY_DETACH_FROM_VIEW: {
                          SGChangeGeometryDetachFromView chg = (SGChangeGeometryDetachFromView) sgChange;
                          chg.viewNode.detachChild(chg.geometryNode);
-                         logger.fine("Detach geometryNode " + geometryNode + " from viewNode " + chg.viewNode);
+                         logger.fine("Detach geometryNode " + chg.geometryNode + " from viewNode " + 
+                                     chg.viewNode);
                          break;
                      }
 
                      case GEOMETRY_SIZE_SET: {
                          SGChangeGeometrySizeSet chg = (SGChangeGeometrySizeSet) sgChange;
-                         geometryNode.setSize(chg.width, chg.height);
+                         chg.geometryNode.setSize(chg.width, chg.height);
                          forceTextureIdAssignment();
                          logger.fine("Geometry node setSize, wh = " + chg.width + ", " + chg.height);
+                         System.err.println("############ setsize to wh = " + chg.width + ", " + chg.height);
                          break;
                      }
 
                      case GEOMETRY_TEX_COORDS_SET: {
                          SGChangeGeometryTexCoordsSet chg = (SGChangeGeometryTexCoordsSet) sgChange;
-                         geometryNode.setTexCoords(chg.widthRatio, chg.heightRatio);
-                         logger.fine("Geometry node setSize, whRatio = " + chg.widthRatio + ", " + chg.heightRatio);
+                         chg.geometryNode.setTexCoords(chg.widthRatio, chg.heightRatio);
+                         logger.fine("Geometry node setSize, whRatio = " + chg.widthRatio + ", " + 
+                                     chg.heightRatio);
                          break;
                      }
 
-                     case TRANSFORM_OFFSET_STACK_SET: {
+                     case GEOMETRY_ORTHO_Z_ORDER_SET: {
+                         SGChangeGeometryOrthoZOrderSet chg = (SGChangeGeometryOrthoZOrderSet) sgChange;
+                         if (chg.geometryNode != null) {
+                             chg.geometryNode.setOrthoZOrder(chg.zOrder);
+                         }
+                         logger.fine("Geometry set ortho z order = " + chg.zOrder);
+                         System.err.println("############ Geometry ortho z order set to " + chg.zOrder);
+                         break;
+                     }
+
+                     case VIEW_NODE_ORTHO_SET: {
+                         SGChangeViewNodeOrthoSet chg = (SGChangeViewNodeOrthoSet) sgChange;
+                         if (chg.ortho) {
+                             chg.viewNode.setCullHint(Spatial.CullHint.Never);
+                             System.err.println("############ Cull hint set to " + Spatial.CullHint.Never);
+                         } else {
+                             chg.viewNode.setCullHint(Spatial.CullHint.Inherit);
+                             System.err.println("############ Cull hint set to " + Spatial.CullHint.Inherit);
+                         }
+                         logger.fine("View node ortho cull hint set = " + chg.ortho);
+                         break;
+                     }
+
+                     case GEOMETRY_TRANSFORM_OFFSET_STACK_SET: {
                          // The offset/stack transform resides in the geometry
-                         SGChangeTransform chg = (SGChangeTransform) sgChange;
-                         geometryNode.setTransform(chg.transform);
+                         SGChangeGeometryTransformOffsetStackSet chg =
+                             (SGChangeGeometryTransformOffsetStackSet) sgChange;
+                         chg.geometryNode.setTransform(chg.transform);
                          logger.fine("Geometry node set transform, transform = " + chg.transform);
                          break;
                      }
 
                      case TRANSFORM_USER_POST_MULT: {
-                         SGChangeTransform chg = (SGChangeTransform) sgChange;
+                         SGChangeTransformUserPostMultiply chg = (SGChangeTransformUserPostMultiply) sgChange;
+                         // TODO
+                         if (ortho) {
+                             System.err.println("############## set user transform to identity");
+                             viewNode.setLocalRotation(new Quaternion());
+                             viewNode.setLocalScale(1.0f);
+                             viewNode.setLocalTranslation(new Vector3f(0f, 0f, 0f));
+                         } else {
                          userTransform.mul(chg.transform);
                          Quaternion r = userTransform.getRotation(null);
-                         viewNode.setLocalRotation(r);
+                         chg.viewNode.setLocalRotation(r);
                          logger.fine("View node set rotation = " + r);
                          Vector3f t = userTransform.getTranslation(null);
-                         viewNode.setLocalTranslation(t);
+                         chg.viewNode.setLocalTranslation(t);
                          logger.fine("View node set translation = " + t);
-                         break;
+                         // TODO
+                         }
+                         break;                         
                      }
 
                      case TRANSFORM_USER_SET: {
-                         SGChangeTransform chg = (SGChangeTransform) sgChange;
+                         SGChangeTransformUserSet chg = (SGChangeTransformUserSet) sgChange;
+                         // TODO
+                         if (ortho) {
+                             System.err.println("############## set user transform to identity");
+                             viewNode.setLocalRotation(new Quaternion());
+                             viewNode.setLocalScale(1.0f);
+                             viewNode.setLocalTranslation(new Vector3f(0f, 0f, 0f));
+                         } else {
                          userTransform = chg.transform.clone(null);
                          Quaternion r = userTransform.getRotation(null);
-                         viewNode.setLocalRotation(r);
+                         chg.viewNode.setLocalRotation(r);
                          logger.fine("View node set rotation = " + r);
                          Vector3f t = userTransform.getTranslation(null);
-                         viewNode.setLocalTranslation(t);
+                         chg.viewNode.setLocalTranslation(t);
                          logger.fine("View node set translation = " + t);
+                         // TODO
+                         }
                          break;
                      }
                      }
@@ -1122,7 +1315,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public void deliverEvent(Window2D window, MouseEvent3D me3d) {
+    public synchronized void deliverEvent(Window2D window, MouseEvent3D me3d) {
         /*
         System.err.println("********** me3d = " + me3d);
         System.err.println("********** awt event = " + me3d.getAwtEvent());
@@ -1223,17 +1416,8 @@ public abstract class View2DEntity implements View2D {
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
-
                 // The JME magic - must be called from within the render loop
                 ts.load();
-
-                // Verify
-                Texture tex = ((Window2D) window).getTexture();
-                int texid = tex.getTextureId();
-                logger.fine("Allocated texture id " + texid + " for texture " + tex);
-                if (texid == 0) {
-                    logger.severe("Texture Id is still 0!!!");
-                }
             }
          }, null);
     }

@@ -164,9 +164,13 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /** {@inheritDoc} */
-    public View2D createView (Window2D window) {
+    public synchronized View2D createView (Window2D window) {
 
         View2DCell view = (View2DCell) getViewFactory().createView(this, window);
+
+        // This type of cell allows the app to fully control the visibility
+        view.setVisibleUser(true);
+
         if (view != null) {
             views.add(view);
             window.addView(view);
@@ -176,7 +180,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /** {@inheritDoc} */
-    public void destroyView (View2D view) {
+    public synchronized void destroyView (View2D view) {
         if (views.remove(view)) {
             Window2D window = view.getWindow();
             window.removeView(view);
@@ -185,7 +189,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /** {@inheritDoc} */
-    public void destroyAllViews () {
+    public synchronized void destroyAllViews () {
         for (View2D view : views) {
             Window2D window = view.getWindow();
             window.removeView(view);
@@ -195,7 +199,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /** {@inheritDoc} */
-    public Iterator<? extends View2D> getViews () {
+    public synchronized Iterator<? extends View2D> getViews () {
         return views.iterator();
     }
     

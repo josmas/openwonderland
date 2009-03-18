@@ -103,8 +103,11 @@ public class FrameTexRect extends FrameRect {
         } else {
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
                 public void update(Object arg0) {
-                    quad.resize(width, height);
-                    quad.updateModelBound();
+                    // TODO: wa: for now do this. Ultimately use a synchronous render updater
+                    if (quad != null) {
+                        quad.resize(width, height);
+                        quad.updateModelBound();
+                    }
                 }
             }, null);
         }

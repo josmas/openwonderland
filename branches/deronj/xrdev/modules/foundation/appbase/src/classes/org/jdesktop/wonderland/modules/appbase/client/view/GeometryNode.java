@@ -201,6 +201,14 @@ public abstract class GeometryNode extends Node {
      */
     public abstract TextureState getTextureState();
 
+    /** 
+     * Set the ortho Z order (used only when the geometry's render component is in ortho mode).
+     */
+    public abstract void setOrthoZOrder (int zOrder);
+
+    /** Returns the Z order. */
+    public abstract int getOrthoZOrder();
+
     /**
      * Given a point in the pixel space of the Wonderland canvas calculates
      * the texel coordinates of the point on the geometry where a

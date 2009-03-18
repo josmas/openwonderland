@@ -102,4 +102,14 @@ class GeometryNodeQuad extends GeometryNode {
     public TextureState getTextureState() {
         return quad.getTextureState();
     }
+
+    /** {@inheritDoc} */
+    public void setOrthoZOrder (int zOrder) {
+        quad.setZOrder(zOrder);
+    }
+
+    /** {@inheritDoc} */
+    public int getOrthoZOrder() {
+        return quad.getZOrder();
+    }
 }
