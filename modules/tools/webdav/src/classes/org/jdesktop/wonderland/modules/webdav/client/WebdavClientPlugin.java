@@ -17,15 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.webdav.client;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.webdav.common.WebdavContentCollection;
 import org.apache.commons.httpclient.HttpURL;
 import org.apache.webdav.lib.WebdavResource;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
+import org.jdesktop.wonderland.modules.webdav.common.FileContentCollection;
 
 /**
  * Register the WebdavContentRepository as the content repository for this
@@ -39,6 +44,7 @@ public class WebdavClientPlugin implements ClientPlugin {
     public void initialize(ServerSessionManager loginInfo) {
         String baseURL = loginInfo.getServerURL() + "/webdav/content";
 
+        // register the webdav repository for this session
         try {
             WebdavResource wdr = new WebdavResource(new HttpURL(baseURL), true);
             WebdavContentCollection root =
@@ -57,5 +63,22 @@ public class WebdavClientPlugin implements ClientPlugin {
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Unable to start content repository", ioe);
         }
+
+        // register the local repository
+        String dirName = "localRepo-" + loginInfo.getUsername();
+        final File userDir = ClientContext.getUserDirectory(dirName);
+        FileContentCollection localRepo = new FileContentCollection(userDir, null) {
+            @Override
+            protected URL getBaseURL() {
+                try {
+                    return userDir.toURI().toURL();
+                } catch (MalformedURLException ex) {
+                    logger.log(Level.WARNING, "Unable to create local repository", ex);
+                    return null;
+                }
+            }
+
+        };
+        ContentRepositoryRegistry.getInstance().registerLocalRepository(localRepo);
     }
 }

@@ -20,15 +20,20 @@ package org.jdesktop.wonderland.modules.contentrepo.client;
 import java.util.HashMap;
 import java.util.Map;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 
 /**
  * Common place to register repository instances
  * @author jkaplan
  */
 public class ContentRepositoryRegistry {
+    /** a map of remote repositories, mapped by session */
     private Map<ServerSessionManager, ContentRepository> repos =
             new HashMap<ServerSessionManager, ContentRepository>();
-    
+
+    /** the local repository */
+    private ContentCollection localRepo;
+
     public static ContentRepositoryRegistry getInstance() {
         return SingletonHolder.REGISTRY;
     }
@@ -64,6 +69,27 @@ public class ContentRepositoryRegistry {
      */
     public ContentRepository getRepository(ServerSessionManager session) {
         return repos.get(session);
+    }
+
+    /**
+     * Register a local repository.  Throws an illegal argument exception
+     * if there is already a local repository registered.
+     * @param collection the local repository, or null to unregister.
+     */
+    public void registerLocalRepository(ContentCollection collection) {
+        if (localRepo != null) {
+            throw new IllegalStateException("Local repository already registered");
+        }
+
+        this.localRepo = collection;
+    }
+
+    /**
+     * Get the local repository
+     * @return the local repository, or null if none is registered
+     */
+    public ContentCollection getLocalRepository() {
+        return localRepo;
     }
 
 
