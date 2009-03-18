@@ -118,10 +118,10 @@ public class PresenceManagerConnectionHandler
     public void clientDisconnected(WonderlandClientSender sender, 
 	    WonderlandClientID clientID) {
 
-	PresenceInfo info = sessions.get(clientID);
+	PresenceInfo info = sessions.get(clientID.getID());
 
 	if (info == null) {
-	    logger.warning("Can't find PresenceInfo for " + clientID);
+	    logger.warning("Can't find PresenceInfo for " + clientID.getID());
 	    return;
 	}
 
