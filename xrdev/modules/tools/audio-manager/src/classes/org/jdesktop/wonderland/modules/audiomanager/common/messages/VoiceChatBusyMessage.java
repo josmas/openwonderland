@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  *
@@ -25,30 +25,30 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 public class VoiceChatBusyMessage extends VoiceChatMessage {
     
-    private String caller;
-    private String calleeList;
+    private PresenceInfo caller;
+    private PresenceInfo callee;
     private ChatType chatType;
 
-    public VoiceChatBusyMessage(String group, String caller, String calleeList, 
-	    ChatType chatType) {
+    public VoiceChatBusyMessage(String group, PresenceInfo caller, 
+	    PresenceInfo callee, ChatType chatType) {
 
 	super(group);
 
 	this.caller = caller;
-	this.calleeList = calleeList;
+	this.callee = callee;
 	this.chatType = chatType;
     }
-    
-    public String getCaller() {
+
+    public PresenceInfo getCaller() {
 	return caller;
     }
 
-    public String getCalleeList() {
-	return calleeList;
+    public PresenceInfo getCallee() {
+	return callee;
     }
-    
+
     public ChatType getChatType() {
 	return chatType;
     }
-
+    
 }

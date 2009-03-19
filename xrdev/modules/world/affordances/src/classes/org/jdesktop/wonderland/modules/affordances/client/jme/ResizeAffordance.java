@@ -32,16 +32,23 @@ import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.util.Formatter;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -50,6 +57,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceException;
 
 /**
  * Visual affordance (manipulator) to resize a cell in the world.
@@ -87,10 +95,10 @@ public class ResizeAffordance extends Affordance {
     private GeometricUpdateListener updateListener = null;
 
     /**
-     * Private constructor, use the addToCell() method instead.
-     * @param cell
+     * Constructor, create a new resize affordance entity given the Cell to
+     * attach it to.
      */
-    private ResizeAffordance(Cell cell) {
+    public ResizeAffordance(Cell cell) throws AffordanceException {
         super("Resize", cell);
 
         // Figure out the bounds of the root entity of the cell and create a
@@ -133,35 +141,6 @@ public class ResizeAffordance extends Affordance {
                 ClientContextJME.getWorldManager().addToUpdateList(nodeArray[0]);
             }
         });
-    }
-
-    /**
-     * Adds a resize affordance to a given cell.
-     *
-     * @param cell The cell to which to add the affordance
-     * @return The affordance object, or null upon error
-     */
-    public static ResizeAffordance addToCell(Cell cell) {
-        Logger logger = Logger.getLogger(TranslateAffordance.class.getName());
-
-        // First check to see if the cell has the moveable component. If not,
-        // then do not add the affordance
-        if (cell.getComponent(MovableComponent.class) == null) {
-            logger.warning("[AFFORDANCE] Cell " + cell.getName() + " does not " +
-                    "have the moveable component.");
-            return null;
-        }
-
-        // Create the translate affordance entity and add it to the scene graph.
-        // Since we are updating the scene graph, we need to put this in a
-        // special update thread.
-        ResizeAffordance affordance = new ResizeAffordance(cell);
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                ClientContextJME.getWorldManager().addEntity((Entity)arg0);
-                ClientContextJME.getWorldManager().addToUpdateList(((ResizeAffordance)arg0).rootNode);
-            }}, affordance);
-        return affordance;
     }
 
     /**
@@ -213,36 +192,6 @@ public class ResizeAffordance extends Affordance {
                 resizeEntity = null;
             }}, null);
     }
-
-    /**
-     * Creates and returns a Node that contains a sphere that represents the
-     * resize affordance
-     */
-//    private Node createSphereNode(String name) {
-//        // Create the new node and sphere primitive
-//        Node sphereNode = new Node();
-//        Sphere sphere = new Sphere(name, 50, 50, radius);
-//        sphereNode.attachChild(sphere);
-//
-//        // Set the color to black and the transparency
-//        sphere.setSolidColor(ColorRGBA.black);
-//        sphereNode.setRenderState(zbuf);
-//        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-//        MaterialState matState = (MaterialState) rm.createRendererState(RenderState.RS_MATERIAL);
-//        matState.setDiffuse(ColorRGBA.black);
-//        sphereNode.setRenderState(matState);
-//        matState.setEnabled(true);
-//
-//        // Make the sphere wireframe so we can see through it
-//        WireframeState wiState = (WireframeState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
-//        wiState.setEnabled(true);
-//        sphereNode.setRenderState(wiState);
-//
-//        // Set the bound so this node can be pickable
-//        sphere.setModelBound(new BoundingSphere());
-//        sphere.updateModelBound();
-//        return sphereNode;
-//    }
 
     /**
      * Creates and returns a Node that contains a sphere that represents the
@@ -321,7 +270,30 @@ public class ResizeAffordance extends Affordance {
         // The original scaling of the cell when the drag started
         private Vector3f dragStartScaling;
 
+        // The label (and frame) to display the current drag amount
+        private JFrame labelFrame = null;
+        private JLabel resizeLabel = null;
+
         public ResizeDragListener() {
+            // Tell the processor component super class that we are going to
+            // post some Swing UI
+            setSwingSafe(true);
+
+            // Create a label to display the current drag amount
+            labelFrame = new JFrame();
+            labelFrame.setResizable(false);
+            labelFrame.setUndecorated(true);
+            labelFrame.getContentPane().setLayout(new GridLayout(1, 1));
+            JPanel labelPanel = new JPanel();
+            labelPanel.setBackground(Color.WHITE);
+            labelPanel.setOpaque(true);
+            labelFrame.getContentPane().add(labelPanel);
+            labelPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+            labelPanel.setLayout(new GridLayout());
+            resizeLabel = new JLabel("0.00x");
+            labelPanel.add(resizeLabel);
+            labelPanel.invalidate();
+            labelFrame.pack();
         }
 
         @Override
@@ -331,8 +303,9 @@ public class ResizeAffordance extends Affordance {
 
         @Override
         public void commitEvent(Event event) {
-            Logger logger = Logger.getLogger(RotateAffordance.class.getName());
-            MouseEvent3D me = (MouseEvent3D) event;
+            // Fetch and cast some event objects
+            MouseEvent3D mouseEvent = (MouseEvent3D)event;
+            MouseEvent awtMouseEvent = (MouseEvent)mouseEvent.getAwtEvent();
 
             // Figure out where the initial mouse button press happened and
             // store the initial position. We also store the center of the
@@ -360,6 +333,14 @@ public class ResizeAffordance extends Affordance {
                     // to the center of the affordance in world coordinates.
                     dragStartVectorWorld = dragStartWorld.subtract(centerWorld);
                     dragStartRadius = dragStartVectorWorld.length();
+
+                    // Set the initial value of the label to 0.0 and display
+                    setLabelPosition(awtMouseEvent);
+                    labelFrame.toFront();
+                    labelFrame.setVisible(true);
+                    labelFrame.repaint();
+                } else if (be.isReleased() == true) {
+                    labelFrame.setVisible(false);
                 }
                 return;
             }
@@ -387,10 +368,33 @@ public class ResizeAffordance extends Affordance {
             // will give us the amount to scale the cell
             float scale = dragEndRadius / dragStartRadius;
 
+            // Set the label with the amount that we have scaled it. We display
+            // the scaled amount to two decimal points
+            StringBuilder resizeString = new StringBuilder();
+            Formatter formatter = new Formatter(resizeString);
+            formatter.format("%.2fx", scale);
+            resizeLabel.setText(resizeString.toString());
+            labelFrame.pack();
+
+            // Figure out where to place the label based upon the location of
+            // the event.
+            setLabelPosition(awtMouseEvent);
+
             // Rotate the object along the defined axis and angle.
             Vector3f scaling = dragStartScaling.mult(scale);
             transform.setScaling(scaling);
             movableComp.localMoveRequest(transform);
+        }
+
+        /**
+         * Sets the location of the frame holding the label given the current
+         * mouse event, using its location
+         */
+        private void setLabelPosition(MouseEvent mouseEvent) {
+            Component component = mouseEvent.getComponent();
+            Point parentPoint = new Point(component.getLocationOnScreen());
+            parentPoint.translate(mouseEvent.getX() + 10, mouseEvent.getY() - 15);
+            labelFrame.setLocation(parentPoint);
         }
     }
 }

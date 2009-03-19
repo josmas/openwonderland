@@ -17,6 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
@@ -30,11 +35,11 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbStartCallMessage;
 
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
@@ -63,6 +68,8 @@ public class OrbMessageHandler {
 
     private OrbDialog orbDialog;
 
+    private String username;
+
     private String callID;
 
     public OrbMessageHandler(OrbCell orbCell) {
@@ -82,6 +89,7 @@ public class OrbMessageHandler {
         channelComp.addMessageReceiver(OrbStartCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbEndCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbMuteCallMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(OrbSpeakingMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbSetVolumeMessage.class, msgReceiver);
     }
 
@@ -89,6 +97,7 @@ public class OrbMessageHandler {
 	channelComp.removeMessageReceiver(OrbStartCallMessage.class);
 	channelComp.removeMessageReceiver(OrbEndCallMessage.class);
 	channelComp.removeMessageReceiver(OrbMuteCallMessage.class);
+        channelComp.removeMessageReceiver(OrbSpeakingMessage.class);
 	channelComp.removeMessageReceiver(OrbSetVolumeMessage.class);
     }
 
@@ -96,15 +105,14 @@ public class OrbMessageHandler {
 	logger.finest("process message " + message);
 
 	if (message instanceof OrbStartCallMessage) {
+	    username = ((OrbStartCallMessage) message).getUsername();
 	    callID = ((OrbStartCallMessage) message).getCallID();
 	}
     }
     
     public void orbSelected() {
 	if (orbDialog == null) {
-	    logger.finer("Creating new OrbDialog for " + callID);
-
-	    orbDialog = new OrbDialog(orbCell, channelComp, this);
+	    orbDialog = new OrbDialog(orbCell, channelComp, username);
 	} 
 
 	orbDialog.setVisible(true);

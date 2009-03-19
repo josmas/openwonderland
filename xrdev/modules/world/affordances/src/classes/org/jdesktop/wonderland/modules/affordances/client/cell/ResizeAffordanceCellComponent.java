@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.affordances.client.cell;
 
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.affordances.client.jme.ResizeAffordance;
 
 /**
@@ -28,35 +27,22 @@ import org.jdesktop.wonderland.modules.affordances.client.jme.ResizeAffordance;
  */
 public class ResizeAffordanceCellComponent extends AffordanceCellComponent {
 
-    private ResizeAffordance resizeAffordance = null;
-
-    public ResizeAffordanceCellComponent(Cell cell) {
+    public ResizeAffordanceCellComponent(Cell cell) throws AffordanceException {
         super(cell);
-    }
-
-    @Override
-    public void setStatus(CellStatus status) {
-        // If we are making this component active, then create the affordance,
-        // if the first time through.
-        super.setStatus(status);
-        if (status == CellStatus.ACTIVE) {
-            if (resizeAffordance == null) {
-                resizeAffordance = ResizeAffordance.addToCell(cell);
-            }
-        }
+        affordance = new ResizeAffordance(cell);
     }
 
     @Override
     public void setSize(float size) {
         super.setSize(size);
-        resizeAffordance.setSize(size);
+        affordance.setSize(size);
     }
 
     @Override
     public void remove() {
         super.remove();
-        resizeAffordance.remove();
+        affordance.remove();
         cell.removeComponent(ResizeAffordanceCellComponent.class);
-        resizeAffordance = null;
+        affordance = null;
     }
 }

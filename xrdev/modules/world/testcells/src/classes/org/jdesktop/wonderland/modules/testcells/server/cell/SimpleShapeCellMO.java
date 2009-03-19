@@ -92,6 +92,7 @@ public class SimpleShapeCellMO extends CellMO {
             state = new SimpleShapeCellServerState();
         }
         ((SimpleShapeCellServerState)state).setShape(shape);
-        return state;
+        
+        return super.getServerState(state);
     }
 }

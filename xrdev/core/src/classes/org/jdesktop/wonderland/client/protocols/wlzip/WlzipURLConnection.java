@@ -42,7 +42,6 @@ public class WlzipURLConnection extends URLConnection {
     
     @Override
     public InputStream getInputStream() {
-        System.out.println("-------------> wlzip "+url);
         try {
             return WlzipManager.getWlzipManager().getInputStream(url.getHost(), url.getPath());
         } catch (IOException ex) {

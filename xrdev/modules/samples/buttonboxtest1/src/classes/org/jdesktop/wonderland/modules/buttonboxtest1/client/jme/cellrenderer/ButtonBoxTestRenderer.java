@@ -79,19 +79,21 @@ public class ButtonBoxTestRenderer extends BasicRenderer {
     }
 
     /**
-     * Attach event listeners to the button box.
-     * @param baseListener The listener for events which happen when the cursor is over the base.
-     * @param buttonListener The listener of events which happen when the cursor is over a button.
+     * Attach the event listener to the button box. This will allow the components of the box
+     * to be mouse input sensitive when they are visible, that is, the listener will receive 
+     * mouse events.
+     * @param listener The listener for mouse events on the box.
      */
-    public void addEventListeners (EventListener baseListener, EventListener buttonListener) {
-        buttonBox.addEventListeners(baseListener, buttonListener);
+    public void addEventListener (EventListener listener) {
+        buttonBox.addEventListener(listener);
     }
 
     /**
-     * Detaches both listeners from the button box. The button box will no longer be input sensitive.
+     * Detaches the mouse event listener from the button box. The button box will no longer 
+     * be input sensitive.
      */
-    public void removeEventListeners () {
-        buttonBox.removeEventListeners();
+    public void removeEventListener () {
+        buttonBox.removeEventListener();
     }
 }
 

@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
@@ -41,9 +42,15 @@ public class JmeColladaCellServerState extends CellServerState implements Serial
     @XmlElement(name="model")
     public String model = null;
 
+    @XmlElement(name="model-group")
+    public String modelGroup = null;
+
     /* The translation for the geometry -- really should be done on the cell level */
     @XmlElement(name="geometry-translation")
     public PositionComponentServerState.Origin geometryTranslation = null;
+
+    @XmlElement(name="geometry-scale")
+    public PositionComponentServerState.Scale geometryScale = null;
 
     /* The rotation for the geometry -- really should be done on the cell level */
     @XmlElement(name="geometry-rotation")
@@ -88,6 +95,14 @@ public class JmeColladaCellServerState extends CellServerState implements Serial
         this.geometryTranslation = geometryTranslation;
     }
     
+    @XmlTransient public Scale getGeometryScale() {
+        return geometryScale;
+    }
+
+    public void setGeometryScale(Scale geometryScale) {
+        this.geometryScale = geometryScale;
+    }
+
     @Override
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.jmecolladaloader.server.cell.JmeColladaCellMO";
@@ -101,6 +116,20 @@ public class JmeColladaCellServerState extends CellServerState implements Serial
     @Override
     public String toString() {
         return super.toString() + " [ColladCellSetup] model: " + this.model;
+    }
+
+    /**
+     * @return the modelGroup
+     */
+    @XmlTransient public String getModelGroup() {
+        return modelGroup;
+    }
+
+    /**
+     * @param modelGroup the modelGroup to set
+     */
+    public void setModelGroup(String modelGroup) {
+        this.modelGroup = modelGroup;
     }
 
 }

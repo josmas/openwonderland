@@ -19,25 +19,27 @@ package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 /**
  *
  * @author jprovino
  */
 public class VoiceChatLeaveMessage extends VoiceChatMessage {
     
-    private String caller;
+    private PresenceInfo callee;
 
     /*
      * Leave group
      */
-    public VoiceChatLeaveMessage(String group, String caller) {
+    public VoiceChatLeaveMessage(String group, PresenceInfo callee) {
 	super(group);
 
-	this.caller = caller;
+	this.callee = callee;
     }
 	 
-    public String getCaller() {
-	return caller;
+    public PresenceInfo getCallee() {
+	return callee;
     }
 
 }

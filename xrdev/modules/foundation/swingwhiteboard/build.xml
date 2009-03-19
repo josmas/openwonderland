@@ -29,11 +29,11 @@
                  
            <client>
                <clientjar name="swingwhiteboard-client" basedir="${build.classes.dir}">
-                    <cellfactory>
-                        <provider classname="org.jdesktop.wonderland.modules.swingwhiteboard.client.SwingWhiteboardCellFactory"/>
-                    </cellfactory>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**/*.png"/>
+                    </fileset>
                 </clientjar> 
            </client>
            

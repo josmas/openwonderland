@@ -76,7 +76,7 @@ public class DarkstarRunner extends BaseRunner {
 
     /** the name of the default world, if the file doesn't exist */
     private static final String DEFAULT_WORLD_PROP = "wonderland.sgs.wfs.default";
-    private static final String DEFAULT_WORLD = "worlds/celltest-wfs";
+    private static final String DEFAULT_WORLD = "worlds/gardenarches-wfs";
 
     /** the property to check for persistence options */
     private static final String PERSISTENCE_TYPE_PROP = "wonderland.sgs.persistence";

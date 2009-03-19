@@ -17,13 +17,13 @@
  */
 package org.jdesktop.wonderland.runner;
 
-import org.jdesktop.wonderland.web.asset.deployer.AssetDeployer;
+import org.jdesktop.wonderland.web.checksums.deployer.ChecksumDeployer;
 
 /**
  * Deploys runner .zips
  * @author jkaplan
  */
-public class RunnerDeployer extends AssetDeployer {
+public class RunnerDeployer extends ChecksumDeployer {
     @Override
     public String getName() {
         return "Runner";

@@ -27,12 +27,18 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 public class OrbStartCallMessage extends CellMessage {   
     
+    String username;
     String callID;
 
-    public OrbStartCallMessage(CellID cellID, String callID) {
+    public OrbStartCallMessage(CellID cellID, String username, String callID) {
 	super(cellID);
 
+	this.username = username;
 	this.callID = callID;
+    }
+
+    public String getUsername() {
+	return username;
     }
 
     public String getCallID() {

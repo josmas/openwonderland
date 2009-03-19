@@ -40,6 +40,7 @@ import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.ManagedCallBeginEndListener;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
 
 import com.sun.voip.CallParticipant;
 
@@ -245,7 +246,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
 	setup.cp = new CallParticipant();	
 	setup.cp.setCallId(callId);
-	setup.cp.setConferenceId(vm.getConferenceId());
+	setup.cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
 	setup.cp.setPhoneNumber(status.getCallInfo());
 
 	Call call;
@@ -254,6 +255,16 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	    call = vm.createCall(callId, setup);
 	} catch (IOException e) {
 	    logger.warning("Unable to create call " + callId + ": " + e.getMessage());
+	    return;
+	}
+
+	if (phoneList.size() == 0) {
+	    try {
+	        call.playTreatment("tts:There are no phones!  Good Bye.");
+	        call.end(true);
+	    } catch (IOException e) {
+		logger.warning("Unable to play treatment or end call " + call + ": " + e.getMessage());
+	    }
 	    return;
 	}
 
@@ -418,7 +429,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	    try {
 	        call.playTreatment(treatment);
 	    } catch (IOException e) {
-		logger.warning("Unable to play treat to call " + call + ": " + e.getMessage());
+		logger.warning("Unable to play treatment to call " + call + ": " + e.getMessage());
 	    }
 
 	    lastMessagePlayed = treatment;
@@ -624,8 +635,9 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 		call.setPlayer(externalPlayer);
 		externalPlayer.setCall(call);
 
-                AudioGroup defaultLivePlayerAudioGroup =
-                    vm.getDefaultLivePlayerAudioGroup();
+		VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
+
+                AudioGroup defaultLivePlayerAudioGroup = parameters.livePlayerAudioGroup;
 
                 AudioGroupPlayerInfo groupInfo = new AudioGroupPlayerInfo(true,
                     AudioGroupPlayerInfo.ChatType.PUBLIC);
@@ -634,8 +646,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
                 defaultLivePlayerAudioGroup.addPlayer(externalPlayer, groupInfo);
 
-		AudioGroup defaultStationaryPlayerAudioGroup =
-                    vm.getDefaultStationaryPlayerAudioGroup();
+		AudioGroup defaultStationaryPlayerAudioGroup = parameters.stationaryPlayerAudioGroup;
 
                 defaultStationaryPlayerAudioGroup.addPlayer(externalPlayer,
                     new AudioGroupPlayerInfo(false,
@@ -643,8 +654,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
                 call.mute(false);
 
-		call.transferToConference(
-		    AppContext.getManager(VoiceManager.class).getConferenceId());
+		call.transferToConference(parameters.conferenceId);
 		
 		String s;
 
@@ -682,7 +692,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 		playTreatment("help.au");
 		playTreatment(JOIN_CLICK);
 
-		new Orb(call.getId(), phone.phoneCellRef.get().getWorldBounds(), false);
+		new Orb(call.getId(), call.getId(), phone.phoneCellRef.get().getWorldBounds(), false);
 
 		state = ESTABLISHED;
             } catch (IOException e) {

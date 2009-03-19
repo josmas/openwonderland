@@ -18,27 +18,29 @@
 package org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer;
 
 import com.jme.scene.Spatial;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Geometry;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
-import com.jme.scene.state.LightState;
-import com.jme.scene.state.MaterialState;
+import com.jme.scene.shape.Box;
 import com.jme.util.export.SavableString;
 import com.jme.util.geom.TangentBinormalGenerator;
+import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jmex.model.collada.ColladaImporter;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.zip.GZIPInputStream;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.WorldManager.ConfigLoadListener;
 import org.jdesktop.mtgame.shader.DiffuseMap;
 import org.jdesktop.mtgame.shader.DiffuseNormalMap;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -65,18 +67,29 @@ public class JmeColladaRenderer extends BasicRenderer {
             // We need to handle null model uri's better!
             Node ret = new Node();
             if (((JmeColladaCell)cell).getModelURI() != null) {
-                ret = loadColladaAsset(cell.getCellID().toString(), getAssetURL(((JmeColladaCell) cell).getModelURI()));
-            }
-            else {
+                URL url = getAssetURL(((JmeColladaCell) cell).getModelURI());
+                // loadColladaAsset has the side effect of setting the model variable
+                ret = loadColladaAsset(cell.getCellID().toString(), url);
+
+            } else if (((JmeColladaCell)cell).getModelGroupURI()!=null) {
+                // Bulk of work done in addDefaultComponents
+                model = null;
+            } else {
                 model = new Node();
                 ret.attachChild(model);
             }
 
-            // Adjust model origin wrt to cell
-            if (((JmeColladaCell)cell).getGeometryTranslation()!=null)
-                model.setLocalTranslation(((JmeColladaCell)cell).getGeometryTranslation());
-            if (((JmeColladaCell)cell).getGeometryRotation()!=null)
-                model.setLocalRotation(((JmeColladaCell)cell).getGeometryRotation());
+            if (model!=null) {
+                // Adjust model origin wrt to cell
+                if (((JmeColladaCell)cell).getGeometryTranslation()!=null)
+                    model.setLocalTranslation(((JmeColladaCell)cell).getGeometryTranslation());
+                if (((JmeColladaCell)cell).getGeometryRotation()!=null)
+                    model.setLocalRotation(((JmeColladaCell)cell).getGeometryRotation());
+                if (((JmeColladaCell)cell).getGeometryScale()!=null)
+                    model.setLocalScale(((JmeColladaCell)cell).getGeometryScale());
+                model.setName("JmeColladaRenderer_Model");
+            }
+
             return ret;
         } catch (MalformedURLException ex) {
             Logger.getLogger(JmeColladaRenderer.class.getName()).log(Level.SEVERE, null, ex);
@@ -85,29 +98,59 @@ public class JmeColladaRenderer extends BasicRenderer {
         return null;
     }
 
+    @Override
+    protected void addDefaultComponents(Entity entity, Node rootNode) {
+        super.addDefaultComponents(entity, rootNode);
+        if (model==null) {
+            final Entity rootEntity = entity;
+            Thread loader = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        URL url = getAssetURL(((JmeColladaCell) cell).getModelGroupURI());
+                        ClientContextJME.getWorldManager().loadConfiguration(url, new LoadListener(rootEntity));
+                    } catch (MalformedURLException ex) {
+                        Logger.getLogger(JmeColladaRenderer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            };
+
+            // TODO call start to run the load in a thread
+            loader.start();
+        }
+    }
+
     /**
-     * Loads a collada cell from the asset managergiven an asset URL
+     * Loads a collada cell from the asset manager given an asset URL
      *
      * @param name the name to put in the returned node
      */
-    public Node loadColladaAsset(String name, URL url) {
+    protected Node loadColladaAsset(String name, URL url) {
         Node node = new Node();
         
-        try {
-            logger.warning("URL: " + url);
-            InputStream input = url.openStream();
-            System.out.println("Resource stream "+input);
+        ResourceLocator resourceLocator = new AssetResourceLocator(url);
 
-            ResourceLocatorTool.addResourceLocator(
-                    ResourceLocatorTool.TYPE_TEXTURE,
-                    new AssetResourceLocator(url));
+        ResourceLocatorTool.addResourceLocator(
+                ResourceLocatorTool.TYPE_TEXTURE,
+                resourceLocator);
+        try {
+            InputStream input;
+            
+            if (url.getFile().endsWith(".gz")) {
+                input = new GZIPInputStream(url.openStream());
+            } else {
+                input = url.openStream();
+            }
+
 
             model = loadModel(input, name);
-            
+
             node.attachChild(model);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error loading Collada file "+((JmeColladaCell)cell).getModelURI(), e);
         }
+        
+        ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
         
         // Make sure all the geometry has model bounds
         TreeScan.findNode(node, Geometry.class, new ProcessNodeInterface() {
@@ -128,51 +171,40 @@ public class JmeColladaRenderer extends BasicRenderer {
     }
 
     public static Node loadModel(InputStream in, String name) {
-        Node ret;
+        Node modelNode;
         ColladaImporter.load(in, name);
-        ret = ColladaImporter.getModel();
-        parseModel(0, ret, true);
+        modelNode = ColladaImporter.getModel();
+
+        // Adjust the scene transform to match the scale and axis specified in
+        // the collada file
+        float unitMeter = ColladaImporter.getInstance().getUnitMeter();
+        modelNode.setLocalScale(unitMeter);
+
+        String upAxis = ColladaImporter.getInstance().getUpAxis();
+        if (upAxis.equals("Z_UP")) {
+            modelNode.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
+        } else if (upAxis.equals("X_UP")) {
+            modelNode.setLocalRotation(new Quaternion(new float[] {0f, 0f, (float)Math.PI/2}));
+        } // Y_UP is the Wonderland default
+
 
         ColladaImporter.cleanUp();
-        return ret;
+        
+        return modelNode;
     }
 
-    static void parseModel(int level, Spatial model, boolean normalMap) {
-        if (model instanceof Node) {
-            Node n = (Node)model;
-            for (int i=0; i<n.getQuantity(); i++) {
-                parseModel(level+1, n.getChild(i), normalMap);
-            }
-        } else if (model instanceof Geometry) {
-            Geometry geo = (Geometry)model;
 
-            SavableString str = (SavableString)geo.getUserData("MTGameShaderFlag");
-            if (geo instanceof TriMesh && str!=null && str.getValue() != null) {
-                //System.out.println("Generating Tangents: " + geo);
-                TangentBinormalGenerator.generate((TriMesh)geo);
-                //System.out.println("Vertex Buffer: " + geo.getVertexBuffer());
-                //System.out.println("Normal Buffer: " + geo.getNormalBuffer());
-                //System.out.println("Color Buffer: " + geo.getColorBuffer());
-                //System.out.println("TC 0 Buffer: " + geo.getTextureCoords(0));
-                //System.out.println("TC 1 Buffer: " + geo.getTextureCoords(1));
-                //System.out.println("Tangent Buffer: " + geo.getTangentBuffer());
-                //System.out.println("Binormal Buffer: " + geo.getBinormalBuffer());
-                assignShader(geo, str.getValue(), normalMap);
-            }
+    class LoadListener implements ConfigLoadListener {
+
+        private Entity rootEntity;
+
+        public LoadListener(Entity rootEntity) {
+            this.rootEntity = rootEntity;
         }
-    }
 
-    static void assignShader(Geometry geo, String shaderFlag, boolean normalMap) {
-        if (shaderFlag.equals("MTGAMEDiffuseNormalMap")) {
-            if (normalMap) {
-                DiffuseNormalMap shader = new DiffuseNormalMap(ClientContextJME.getWorldManager());
-                shader.applyToGeometry(geo);
-            } else {
-                DiffuseMap shader = new DiffuseMap(ClientContextJME.getWorldManager());
-                shader.applyToGeometry(geo);
-            }
-//            System.out.println("Assigning Shader: " + shaderFlag);
+        public void entityLoaded(Entity entity) {
+            BasicRenderer.entityAddChild(rootEntity, entity);
         }
-    }
 
+    }
 }

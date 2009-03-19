@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenu;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.scenemanager.SceneManager;
@@ -41,6 +42,7 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDuplicateMessage;
+import org.jdesktop.wonderland.modules.palette.client.dnd.CellPaletteDataFlavorHandler;
 
 /**
  * Client-size plugin for the cell palette.
@@ -54,6 +56,12 @@ public class PaletteClientPlugin implements ClientPlugin {
 
     /* The single instance of the cell palette dialog */
     private WeakReference<CellPalette> cellPaletteFrameRef = null;
+
+    /* The single instance of the HUD cell palette dialog */
+    private WeakReference<HUDCellPalette> hudCellPaletteFrameRef = null;
+
+    /* The single instance of the module palette dialog */
+    private WeakReference<ModulePalette> modulePaletteFrameRef = null;
 
     public void initialize(ServerSessionManager loginInfo) {
         // Add the Palette menu and the Cell submenu and dialog that lets users
@@ -77,8 +85,58 @@ public class PaletteClientPlugin implements ClientPlugin {
             }
         });
         paletteMenu.add(item);
+
+        // Add the Palette menu and the Cell submenu and dialog that lets users
+        // create new cells.
+        JMenuItem item2 = new JMenuItem("Cell Palette (HUD)");
+        item2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                HUDCellPalette hudCellPaletteFrame;
+                if (hudCellPaletteFrameRef == null || hudCellPaletteFrameRef.get() == null) {
+                    hudCellPaletteFrame = new HUDCellPalette();
+                    hudCellPaletteFrameRef = new WeakReference(hudCellPaletteFrame);
+                }
+                else {
+                    hudCellPaletteFrame = hudCellPaletteFrameRef.get();
+                }
+
+                if (hudCellPaletteFrame.isVisible() == false) {
+                    hudCellPaletteFrame.setVisible(true);
+                }
+            }
+        });
+        paletteMenu.add(item2);
         JmeClientMain.getFrame().addToToolMenu(paletteMenu);
 
+        // Register the handler for CellServerState flavors with the system-wide
+        // drag and drop manager. When the preview icon is dragged from the Cell
+        // Palette this handler creates an instance of the cell in the world.
+        DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
+        dndManager.registerDataFlavorHandler(new CellPaletteDataFlavorHandler());
+
+
+        // Add the Palette menu and the Cell submenu and dialog that lets users
+        // create new cells.
+        JMenuItem moduleItem = new JMenuItem("Module Art Palette");
+        moduleItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ModulePalette modulePaletteFrame;
+                if (modulePaletteFrameRef == null || modulePaletteFrameRef.get() == null) {
+                    modulePaletteFrame = new ModulePalette();
+                    modulePaletteFrameRef = new WeakReference(modulePaletteFrame);
+                }
+                else {
+                    modulePaletteFrame = modulePaletteFrameRef.get();
+                }
+
+                if (modulePaletteFrame.isVisible() == false) {
+                    modulePaletteFrame.setVisible(true);
+                }
+            }
+        });
+        paletteMenu.add(moduleItem);
+        JmeClientMain.getFrame().addToToolMenu(paletteMenu);
+        
         // Add the "Properties" item to the context menu. Display a CellEditFrame
         // when selected.
         ContextMenu contextMenu = ContextMenu.getContextMenu();
@@ -184,10 +242,13 @@ public class PaletteClientPlugin implements ClientPlugin {
                     return;
                 }
 
+                // Create a new name for the cell, based upon the old name.
+                String cellName = cell.getName() + " Copy";
+
                 // If we want to delete, send a message to the server as such
                 WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
                 CellEditChannelConnection connection = (CellEditChannelConnection) session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-                CellDuplicateMessage msg = new CellDuplicateMessage(cell.getCellID());
+                CellDuplicateMessage msg = new CellDuplicateMessage(cell.getCellID(), cellName);
                 connection.send(msg);
 
                 // Really should receive an OK/Error response from the server!

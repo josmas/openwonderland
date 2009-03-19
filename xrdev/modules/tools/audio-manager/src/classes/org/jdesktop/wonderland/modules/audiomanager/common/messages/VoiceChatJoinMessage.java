@@ -17,38 +17,18 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  *
  * @author jprovino
  */
-public class VoiceChatJoinMessage extends VoiceChatMessage {
+public class VoiceChatJoinMessage extends VoiceChatUserMessage {
     
-    private String calleeList;
-    private String caller;
-    private ChatType chatType;
+    public VoiceChatJoinMessage(String group, PresenceInfo caller, 
+	    PresenceInfo[] calleeList, ChatType chatType) {
 
-    public VoiceChatJoinMessage(String group, String caller, String calleeList, 
-	    ChatType chatType) {
-
-	super(group);
-
-	this.caller = caller;
-	this.calleeList = calleeList;
-	this.chatType = chatType;
+	super(group, caller, calleeList, chatType);
     }
     
-    public String getCaller() {
-	return caller;
-    }
-
-    public String getCalleeList() {
-	return calleeList;
-    }
-    
-    public ChatType getChatType() {
-	return chatType;
-    }
-
 }

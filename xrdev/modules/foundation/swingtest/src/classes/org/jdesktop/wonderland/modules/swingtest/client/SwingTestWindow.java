@@ -108,4 +108,12 @@ public class SwingTestWindow
         Node viewNode = view.getNode();
         GraphicsUtils.printNode(viewNode);
     }
+
+    /* TODO: for testing view.setVisible hack: uncomment the following
+    public void setVisibleHack (boolean visible) {
+        Window2DViewWorld view = getPrimaryView();
+        System.err.println("************** Set view visible = " + visible);
+        view.setVisible(visible);
+    }
+    */
 }

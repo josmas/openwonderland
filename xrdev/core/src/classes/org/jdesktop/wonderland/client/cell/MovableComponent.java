@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  */
 @ExperimentalAPI
 public class MovableComponent extends CellComponent {
-    private MessageThrottle throttle = null;
+    protected MessageThrottle throttle = null;
 
     protected static Logger logger = Logger.getLogger(MovableComponent.class.getName());
     protected ArrayList<CellMoveListener> serverMoveListeners = null;

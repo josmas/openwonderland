@@ -30,16 +30,22 @@ import com.jme.scene.shape.Arrow;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import java.util.logging.Logger;
+import java.util.Formatter;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -48,6 +54,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceException;
 
 /**
  * Visual affordance (manipulator) to move a cell around in the world.
@@ -69,7 +76,7 @@ public class TranslateAffordance extends Affordance {
     private float currentScale = LENGTH_SCALE;
 
     /* The original extent of the object, before it was modified */
-    private float xExtent = 0.0f, yExtent = 0.0f, zExtent = 0.0f;
+    private float extent = 0.0f;
 
     /* The root of the scene graph of the cell */
     private Node sceneRoot = null;
@@ -99,10 +106,13 @@ public class TranslateAffordance extends Affordance {
     private TranslateDragListener xListener = null, yListener = null, zListener = null;
 
     /**
-     * Private constructor, use the addToCell() method instead.
+     * Creates a new translate affordance given the cell to  which it is going
+     * to be added. Also adds the movable component if not already present
+     *
      * @param cell
+     * @throw AffordanceException Upon error creating the affordance
      */
-    private TranslateAffordance(Cell cell) {
+    public TranslateAffordance(Cell cell) throws AffordanceException {
         super("Translate", cell);
 
         // Figure out the bounds of the root entity of the cell and create an
@@ -110,12 +120,13 @@ public class TranslateAffordance extends Affordance {
         sceneRoot = getSceneGraphRoot();
         BoundingVolume bounds = sceneRoot.getWorldBound();
         if (bounds instanceof BoundingSphere) {
-            xExtent = yExtent = zExtent = ((BoundingSphere)bounds).radius;
+            extent = ((BoundingSphere)bounds).radius;
         }
         else if (bounds instanceof BoundingBox) {
-            xExtent = ((BoundingBox)bounds).xExtent;
-            yExtent = ((BoundingBox)bounds).yExtent;
-            zExtent = ((BoundingBox)bounds).zExtent;
+            float xExtent = ((BoundingBox)bounds).xExtent;
+            float yExtent = ((BoundingBox)bounds).yExtent;
+            float zExtent = ((BoundingBox)bounds).zExtent;
+            extent = Math.max(xExtent, Math.max(yExtent, zExtent));
         }
         
         // Fetch the world translation for the root node of the cell and set
@@ -127,7 +138,7 @@ public class TranslateAffordance extends Affordance {
         // pointed in the +y direction, so we rotate around the -z axis to
         // orient the arrow properly.
         xEntity = new Entity("Entity X");
-        xNode = createArrow("Arrow X", xExtent + LENGTH_OFFSET, THICKNESS, ColorRGBA.red);
+        xNode = createArrow("Arrow X", extent + LENGTH_OFFSET, THICKNESS, ColorRGBA.red);
         Quaternion xRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(0, 0, -1));
         xNode.setLocalRotation(xRotation);
         xNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
@@ -138,7 +149,7 @@ public class TranslateAffordance extends Affordance {
         // Create a green arrow in the +y direction. We arrow we get back is
         // pointed in the +y direction.
         yEntity = new Entity("Entity Y");
-        yNode = createArrow("Arrow Y", yExtent + LENGTH_OFFSET, THICKNESS, ColorRGBA.green);
+        yNode = createArrow("Arrow Y", extent + LENGTH_OFFSET, THICKNESS, ColorRGBA.green);
         yNode.setLocalScale(new Vector3f(1.0f, LENGTH_SCALE, 1.0f));
         yNode.setRenderState(zbuf);
         addSubEntity(yEntity, yNode);
@@ -148,7 +159,7 @@ public class TranslateAffordance extends Affordance {
         // pointed in the +y direction, so we rotate around the +x axis to
         // orient the arrow properly.
         zEntity = new Entity("Entity Z");
-        zNode = createArrow("Arrow Z", zExtent + LENGTH_OFFSET, THICKNESS, ColorRGBA.blue);
+        zNode = createArrow("Arrow Z", extent + LENGTH_OFFSET, THICKNESS, ColorRGBA.blue);
         Quaternion zRotation = new Quaternion().fromAngleAxis((float)Math.PI / 2, new Vector3f(1, 0, 0));
         zNode.setLocalRotation(zRotation);
         zNode.setRenderState(zbuf);
@@ -174,35 +185,6 @@ public class TranslateAffordance extends Affordance {
     }
 
     /**
-     * Adds a translation affordance to a given cell.
-     *
-     * @param cell The cell to which to add the affordance
-     * @return The affordance object, or null upon error
-     */
-    public static TranslateAffordance addToCell(Cell cell) {
-        Logger logger = Logger.getLogger(TranslateAffordance.class.getName());
-
-        // First check to see if the cell has the moveable component. If not,
-        // then do not add the affordance
-        if (cell.getComponent(MovableComponent.class) == null) {
-            logger.warning("[AFFORDANCE] Cell " + cell.getName() + " does not " +
-                    "have the moveable component.");
-            return null;
-        }
-
-        // Create the translate affordance entity and add it to the scene graph.
-        // Since we are updating the scene graph, we need to put this in a
-        // special update thread.
-        TranslateAffordance affordance = new TranslateAffordance(cell);
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                ClientContextJME.getWorldManager().addEntity((Entity)arg0);
-                ClientContextJME.getWorldManager().addToUpdateList(((TranslateAffordance)arg0).rootNode);
-            }}, affordance);
-        return affordance;
-    }
-
-    /**
      * @inheritDoc()
      */
     public void setSize(float size) {
@@ -214,17 +196,14 @@ public class TranslateAffordance extends Affordance {
         BoundingVolume bounds = sceneRoot.getWorldBound();
         if (bounds instanceof BoundingSphere) {
             float newExtent = ((BoundingSphere)bounds).radius;
-            xScale = (newExtent / xExtent) * currentScale;
-            yScale = (newExtent / yExtent) * currentScale;
-            zScale = (newExtent / zExtent) * currentScale;
+            xScale = yScale = zScale = (newExtent / extent) * currentScale;
         }
         else if (bounds instanceof BoundingBox) {
             float newXExtent = ((BoundingBox)bounds).xExtent;
             float newYExtent = ((BoundingBox)bounds).yExtent;
             float newZExtent = ((BoundingBox)bounds).zExtent;
-            xScale = (newXExtent / xExtent) * currentScale;
-            yScale = (newYExtent / yExtent) * currentScale;
-            zScale = (newZExtent / zExtent) * currentScale;
+            float newExtent = Math.max(newXExtent, Math.max(newYExtent, newZExtent));
+            xScale = yScale = zScale = (newExtent / extent) * currentScale;
         }
 
         // In order to set the size of the arrows, we just set the scaling. Note
@@ -340,8 +319,32 @@ public class TranslateAffordance extends Affordance {
         // The translation of the cell when the mouse button is first pressed.
         private Vector3f translationOnPress = null;
 
+        // The label (and frame) to display the current drag amount
+        private JFrame labelFrame = null;
+        private JLabel positionLabel = null;
+
         public TranslateDragListener(TranslateAxis direction) {
             this.direction = direction;
+
+            // Tell the processor component super class that we are going to
+            // post some Swing UI
+            setSwingSafe(true);
+
+            // Create a label to display the current drag amount
+            labelFrame = new JFrame();
+            labelFrame.setResizable(false);
+            labelFrame.setUndecorated(true);
+            labelFrame.getContentPane().setLayout(new GridLayout(1, 1));
+            JPanel labelPanel = new JPanel();
+            labelPanel.setBackground(Color.WHITE);
+            labelPanel.setOpaque(true);
+            labelFrame.getContentPane().add(labelPanel);
+            labelPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+            labelPanel.setLayout(new GridLayout());
+            positionLabel = new JLabel("0.00");
+            labelPanel.add(positionLabel);
+            labelPanel.invalidate();
+            labelFrame.pack();
         }
 
         @Override
@@ -351,6 +354,9 @@ public class TranslateAffordance extends Affordance {
 
         @Override
         public void commitEvent(Event event) {
+            // Fetch and cast some event objects
+            MouseEvent3D mouseEvent = (MouseEvent3D)event;
+            MouseEvent awtMouseEvent = (MouseEvent)mouseEvent.getAwtEvent();
 
             // Figure out where the initial mouse button press happened and
             // store the initial position
@@ -358,10 +364,21 @@ public class TranslateAffordance extends Affordance {
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
                 if (buttonEvent.isPressed() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+                    // Fetch the initial location of the mouse drag event and
+                    // store away the necessary information
                     MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
                     dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
                     dragStartWorld = buttonEvent.getIntersectionPointWorld();
                     translationOnPress = transform.getTranslation(null);
+                    
+                    // Set the initial value of the label to 0.0 and display
+                    setLabelPosition(awtMouseEvent);
+                    labelFrame.toFront();
+                    labelFrame.setVisible(true);
+                    labelFrame.repaint();
+                }
+                else if (buttonEvent.isReleased() == true) {
+                    labelFrame.setVisible(false);
                 }
                 return;
             }
@@ -374,22 +391,60 @@ public class TranslateAffordance extends Affordance {
             // Get the vector of the drag motion from the initial starting
             // point in world coordinates.
             MouseDraggedEvent3D dragEvent = (MouseDraggedEvent3D) event;
-            Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen,
-                    new Vector3f());
+            Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld,
+                    dragStartScreen, new Vector3f());
 
             // Figure out how to translate based upon the axis of the affordance
             Vector3f addVector;
+            float moved = 0.0f;
             switch (direction) {
-                case X_AXIS: addVector = new Vector3f(dragVector.x, 0, 0); break;
-                case Y_AXIS: addVector = new Vector3f(0, dragVector.y, 0); break;
-                case Z_AXIS: addVector = new Vector3f(0, 0, dragVector.z); break;
-                default: addVector = new Vector3f(); break;
+                case X_AXIS: 
+                    addVector = new Vector3f(dragVector.x, 0, 0);
+                    moved = dragVector.x;
+                    break;
+
+                case Y_AXIS:
+                    addVector = new Vector3f(0, dragVector.y, 0);
+                    moved = dragVector.y;
+                    break;
+
+                case Z_AXIS:
+                    addVector = new Vector3f(0, 0, dragVector.z);
+                    moved = dragVector.z;
+                    break;
+
+                default:
+                    addVector = new Vector3f();
+                    break;
             }
+
+            // Set the label with the amount that we have dragged it. We display
+            // the dragged amount to two decimal points
+            StringBuilder movedString = new StringBuilder();
+            Formatter formatter = new Formatter(movedString);
+            formatter.format("%.2f", moved);
+            positionLabel.setText(movedString.toString());
+            labelFrame.pack();
+
+            // Figure out where to place the label based upon the location of
+            // the event.
+            setLabelPosition(awtMouseEvent);
 
             // Move the cell via the moveable comopnent
             Vector3f newTranslation = translationOnPress.add(addVector);
             transform.setTranslation(newTranslation);
             movableComp.localMoveRequest(transform);
+        }
+
+        /**
+         * Sets the location of the frame holding the label given the current
+         * mouse event, using its location
+         */
+        private void setLabelPosition(MouseEvent mouseEvent) {
+            Component component = mouseEvent.getComponent();
+            Point parentPoint = new Point(component.getLocationOnScreen());
+            parentPoint.translate(mouseEvent.getX() + 10, mouseEvent.getY() - 15);
+            labelFrame.setLocation(parentPoint);
         }
     }
 }

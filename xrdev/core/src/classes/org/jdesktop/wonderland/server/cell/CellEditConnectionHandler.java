@@ -164,6 +164,9 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             position.setOrigin(newOrigin);
             state.addComponentServerState(position);
 
+            // Set the desired name of the cell contained within the message
+            state.setName(((CellDuplicateMessage)editMessage).getCellName());
+            
             // Set the state of the new cell and add it to the same parent as
             // the old cell. If the old parent cell is null, we just insert it
             // as root.

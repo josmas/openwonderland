@@ -76,4 +76,8 @@ public class WebdavContentResource extends WebdavContentNode
     public void put(File file) throws ContentRepositoryException, IOException {
         getResource().putMethod(file);
     }
+
+    public void put(InputStream is) throws ContentRepositoryException, IOException {
+        getResource().putMethod(is);
+    }
 }

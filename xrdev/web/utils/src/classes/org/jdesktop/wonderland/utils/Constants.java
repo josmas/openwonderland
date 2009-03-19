@@ -42,4 +42,7 @@ public class Constants {
 
     /** whether or not we should overwrite data */
     public static final String WEBSERVER_NEWVERSION_PROP = "wonderland.webserver.newversion";
+
+    /** location beneath RUN_DIR_PROP of where to locate content repository */
+    public static final String WEBSERVER_CONTENT_DIR_PROP = "wonderland.webserver.content.dir";
 }

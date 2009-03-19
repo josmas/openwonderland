@@ -55,11 +55,11 @@ public class AvatarCell extends ViewCell {
      * @param trigger
      * @param pressed
      */
-    public void triggerAction(int trigger, boolean pressed) {
+    public void triggerAction(int trigger, boolean pressed, String animationName) {
         if (ClientContext.getRendererType()==RendererType.RENDERER_JME) {
             CellRenderer rend = getCellRenderer(RendererType.RENDERER_JME);
             if (rend instanceof AvatarActionTrigger) {
-                ((AvatarActionTrigger)rend).trigger(trigger, pressed);
+                ((AvatarActionTrigger)rend).trigger(trigger, pressed, animationName);
             }
         }
     }
@@ -70,12 +70,11 @@ public class AvatarCell extends ViewCell {
 
         try {
             String str = ((AvatarCellClientState) cellClientState).getAvatarConfigURL();
-            System.err.println("******* setClientState "+str);
             if (str!=null) {
                 WonderlandSession session = getCellCache().getSession();
                 ServerSessionManager manager = LoginManager.find(session);
                 String serverHostAndPort = manager.getServerNameAndPort();
-                avatarConfigURL = new URL("wla://avatarbase@"+serverHostAndPort+"/"+str);
+                avatarConfigURL = new URL("wla://avatarbaseart@"+serverHostAndPort+"/"+str);
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(AvatarCell.class.getName()).log(Level.SEVERE, "Bad Avatar Config URL ", ex);

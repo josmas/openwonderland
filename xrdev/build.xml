@@ -124,4 +124,51 @@
     </java>
 </target>
 
+<!--Netbeans debugging
+-->
+
+<target name="debug-server" depends="package, -run-setup,
+                                   -run-args-with-properties,
+                                   -run-args-without-properties,
+                                   -debug-with-wrapper,
+                                   -debug-without-wrapper"
+        description="Run the Wonderland Server"/>
+        
+        <!-- workaround for issues with shutdown on Windows.  Use a wrapper
+     so that the webserver shuts down cleanly -->
+        <target name="-debug-with-wrapper" if="run.with.wrapper">
+            <property name="wonderland.jar.location"
+              location="${current.dir}/dist/Wonderland.jar"/>
+            <nbjpdastart addressproperty="jpda.address" name="wonderland" transport="dt_socket">
+                <classpath>
+                    <pathelement path="${current.dir}/utils/ant/build/lib/wonderland-ant-utils.jar"/>
+                </classpath>
+            </nbjpdastart>
+            
+            <java dir="dist" classname="org.jdesktop.wonderland.utils.ant.RunWrapper" fork="true">
+                <classpath>
+                    <pathelement path="${current.dir}/utils/ant/build/lib/wonderland-ant-utils.jar"/>
+                </classpath>
+                <jvmarg value="-Xdebug"/>
+                <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                <arg value="${wonderland.jar.location}"/>
+                <arg pathref="run.properties.path"/>
+            </java>
+        </target>
+
+        <target name="-debug-without-wrapper" unless="run.with.wrapper">
+            <nbjpdastart addressproperty="jpda.address" name="wonderland" transport="dt_socket">
+            </nbjpdastart>
+            <java dir="dist" jar="dist/Wonderland.jar" fork="true">
+                <jvmarg value="-Xdebug"/>
+                <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                <arg pathref="run.properties.path"/>
+            </java>
+        </target>
+
+
+
+
+
+
 </project>

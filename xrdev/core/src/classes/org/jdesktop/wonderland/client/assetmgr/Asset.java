@@ -18,15 +18,16 @@
 package org.jdesktop.wonderland.client.assetmgr;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
-import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetReadyListener;
 import org.jdesktop.wonderland.common.AssetType;
-import org.jdesktop.wonderland.common.ResourceURI;
+import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * The Asset class represents an asset (e.g. artwork) in the system. An asset
- * is uniquely identified by a combination of its URI (see ResourceURI class) and
+ * is uniquely identified by a combination of its URI (see AssetURI class) and
  * an optional checksum. Assets with no checksum are considered the same asset.
  * <p>
  * Each asset has a type: typically, either file, image, or model and given by
@@ -40,23 +41,21 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 @ExperimentalAPI
 public abstract class Asset<T> {
-    protected AssetType type=null;
-    protected ResourceURI assetURI=null;
-    protected String url=null;
-    protected File localCacheFile=null;
-    protected String checksum=null;
-    
+    protected AssetType type = null;
+    protected AssetURI assetURI = null;
+    protected File localCacheFile = null;
+    protected String checksum = null;
+    protected String baseURL = null;
     protected ArrayList<AssetReadyListener> listeners = null;
-    
     protected String failureInfo = null;
-    
+
     /**
      * Constructor that takes the unique URI as an argument.
      * 
      * @param assetURI The unique identifying asset URI.
      */
     public Asset(AssetID assetID) {
-        this.assetURI = assetID.getResourceURI();
+        this.assetURI = assetID.getAssetURI();
         this.checksum = assetID.getChecksum();
     }
 
@@ -74,26 +73,8 @@ public abstract class Asset<T> {
      * 
      * @return The unique URI describing the asset
      */
-    public ResourceURI getResourceURI() {
+    public AssetURI getAssetURI() {
         return this.assetURI;
-    }
-    
-    /**
-     * Returns the URL from which the asset was downloaded
-     * 
-     * @return The absolute URL from which the asset was downloaded
-     */
-    public String getURL() {
-        return this.url;
-    }
-    
-    /**
-     * Sets the URL from which the asset was downloaded
-     * 
-     * @param url The absolute URL from which the asset was downloaded
-     */
-    public void setURL(String url) {
-        this.url = url;
     }
     
     /**
@@ -110,6 +91,22 @@ public abstract class Asset<T> {
     }
 
     /**
+     * Returns the local cache file as a URL, or null if the asset is not
+     * cached.
+     *
+     * @return The local cache file as a URL
+     * @throw MalformedURLException If the URL is malformed
+     */
+    public URL getLocalCacheFileAsURL() throws MalformedURLException {
+        if (localCacheFile != null) {
+            String fname = AssetManager.encodeSpaces(localCacheFile.getAbsolutePath());
+            return new URL("file://" + fname);
+        }
+        return null;
+    }
+
+
+    /**
      * Get the checksum of this file in the local cache.
      * @return
      */
@@ -120,9 +117,23 @@ public abstract class Asset<T> {
     void setChecksum(String checksum) {
         this.checksum = checksum;
     }
+
+    /**
+     * Returns the base URL from which the asset was downloaded, null if unknown
+     *
+     * @return The base URL
+     */
+    public String getBaseURL() {
+        return baseURL;
+    }
+
+    void setBaseURL(String baseURL) {
+        this.baseURL = baseURL;
+    }
     
+    @Override
     public String toString() {
-        return "(" + this.getResourceURI().toString() + " @ " + this.checksum + ")";
+        return "(" + this.getAssetURI().toString() + " @ " + this.checksum + ")";
     }
     
     /**
@@ -150,6 +161,25 @@ public abstract class Asset<T> {
      */
     public abstract T getAsset();
     
+    /**
+     * Used to recieve notification when an asset load has been completed or
+     * has failed. Register with Asset.addAssetReadyListener().
+     */
+    @ExperimentalAPI
+    public interface AssetReadyListener {
+        /**
+         * Called when the asset is ready for use
+         * @param asset The asset loaded
+         */
+        public void assetReady(Asset asset);
+
+        /**
+         * Called when loading the asset has failed, with the given reason
+         * @param asset The asset that has failed to load
+         * @param reason The reason why the asset has failed to load
+         */
+        public void assetFailure(Asset asset, String reason);
+    }
 
     /**
      * Notify listeners waiting for asset to be downloaded, if failureInfo
@@ -157,32 +187,32 @@ public abstract class Asset<T> {
      * @param asset
      */
     void notifyAssetReadyListeners() {
-        if (listeners==null)
+        if (listeners == null)
             return;
-        
-        synchronized(listeners) {
-            if (failureInfo==null) {
-                for(AssetReadyListener listener : listeners)
+
+        synchronized (listeners) {
+            if (failureInfo == null) {
+                for (AssetReadyListener listener : listeners)
                     listener.assetReady(this);
             } else {
-                for(AssetReadyListener listener : listeners)
+                for (AssetReadyListener listener : listeners)
                     listener.assetFailure(this, failureInfo);
             }
         }
     }
-    
+
     public void addAssetReadyListener(AssetReadyListener listener) {
-        if (listeners==null)
+        if (listeners == null)
             listeners = new ArrayList();
-        synchronized(listeners) {
+        synchronized (listeners) {
             listeners.add(listener);
-            if (localCacheFile!=null)
+            if (localCacheFile != null)
                 listener.assetReady(this);
         }
     }
-    
+
     public void removeAssetReadyListener(AssetReadyListener listener) {
-        synchronized(listeners) {
+        synchronized (listeners) {
             listeners.remove(listener);
         }
     }

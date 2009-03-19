@@ -23,6 +23,7 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.util.ScalableHashSet;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -49,6 +50,8 @@ public class CellManagerMO implements ManagedObject, Serializable {
     private static final Logger logger = Logger.getLogger(CellManagerMO.class.getName());
 
     private ManagedReference<ScalableHashSet<CellID>> rootCellsRef = null;
+
+    private Set<Class<? extends CellComponentMO>> avatarComponents = null;
 
     /**
      * Creates a new instance of CellManagerMO
@@ -163,5 +166,24 @@ public class CellManagerMO implements ManagedObject, Serializable {
      */
     static String getCellBinding(CellID cellID) {
         return "CELL_" + cellID.toString();
+    }
+
+    /**
+     * Register a component that will be added to avatar cells
+     * 
+     * @param component
+     */
+    public void registerAvatarCellComponent(Class<? extends CellComponentMO> componentClass) {
+        if (avatarComponents==null)
+            avatarComponents = new HashSet();
+
+        avatarComponents.add(componentClass);
+    }
+
+    Iterable<Class<? extends CellComponentMO>> getAvatarCellComponentClasses() {
+        if (avatarComponents==null)
+            return null;
+        else
+            return avatarComponents;
     }
 }
