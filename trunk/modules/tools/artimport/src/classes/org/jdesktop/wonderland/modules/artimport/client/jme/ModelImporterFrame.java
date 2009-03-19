@@ -223,6 +223,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         rotationYTF.setValue((float)Math.toDegrees(angles[1]));
         rotationZTF.setValue((float)Math.toDegrees(angles[2]));
 
+        scaleTF.setValue(scale.x);
     }
 
     private void calcCurrentRotationMatrix() {
