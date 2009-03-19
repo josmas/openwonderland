@@ -137,7 +137,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
             double volume = msg.getVolume();
 
             //System.out.println("GOT Volume message:  call " + softphoneCallID + " cell " + cellID 
-		+ " volume " + volume);
+	    //	+ " volume " + volume);
 
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
