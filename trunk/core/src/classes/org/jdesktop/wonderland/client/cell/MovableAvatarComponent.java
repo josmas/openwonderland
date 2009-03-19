@@ -108,8 +108,6 @@ public class MovableAvatarComponent extends MovableComponent {
     protected void serverMoveRequest(MovableMessage msg) {
         super.serverMoveRequest(msg);
 
-        System.err.println("Got server move request "+msg);
-
         MovableAvatarMessage mam = (MovableAvatarMessage) msg;
         if (mam.getTrigger()!=NO_TRIGGER) {
             ((AvatarCell)cell).triggerAction(mam.getTrigger(), mam.isPressed(), mam.getAnimationName());
