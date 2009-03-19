@@ -90,6 +90,9 @@ import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarMuteEvent;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarSpeakingEvent;
+
 /**
  *
  * @author jprovino
@@ -106,7 +109,9 @@ public class AudioManagerClient extends BaseConnection implements
 
     private PresenceInfo presenceInfo;
 
-    CellID cellID;
+    private CellID cellID;
+
+    private PresenceManager pm;
 
     /** 
      * Create a new AudioManagerClient
@@ -118,6 +123,9 @@ public class AudioManagerClient extends BaseConnection implements
 	    throws ConnectionFailureException {
 
 	this.session = session;
+
+	pm = PresenceManagerFactory.getPresenceManager(session);
+
 	session.connect(this);
 
         LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
@@ -187,8 +195,6 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void viewConfigured(LocalAvatar localAvatar) {
 	cellID = localAvatar.getViewCell().getCellID();
-
-	PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
 
 	presenceInfo = pm.getPresenceInfo(cellID);
 
@@ -405,15 +411,37 @@ public class AudioManagerClient extends BaseConnection implements
                 voiceChatDialog.setChatters(msg.getChatters());
             }
 	} else if (message instanceof SpeakingMessage) {
+	    SpeakingMessage msg = (SpeakingMessage) message;
+
 	    if (userListJFrame != null) {
-	        SpeakingMessage msg = (SpeakingMessage) message;
 		userListJFrame.setSpeaking(msg.getCallID(), msg.isSpeaking());
 	    }
+
+	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
+
+	    if (info == null) {
+		logger.warning("No presence info for " + msg.getCallID());
+		return;
+	    }
+
+	    InputManager.inputManager().postEvent(
+	        new AvatarSpeakingEvent(info.userID.getUsername(), msg.isSpeaking()));
 	} else if (message instanceof MuteCallMessage) {
+	    MuteCallMessage msg = (MuteCallMessage) message;
+
 	    if (userListJFrame != null) {
-	        MuteCallMessage msg = (MuteCallMessage) message;
 	        userListJFrame.muteCall(msg.getCallID(), msg.isMuted());
 	    }
+
+	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
+
+	    if (info == null) {
+		logger.warning("No presence info for " + msg.getCallID());
+		return;
+	    }
+
+	    InputManager.inputManager().postEvent(
+	        new AvatarMuteEvent(info.userID.getUsername(), msg.isMuted()));
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}
