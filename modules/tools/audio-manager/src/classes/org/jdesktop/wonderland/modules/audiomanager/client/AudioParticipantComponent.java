@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import java.util.ArrayList;
+
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
@@ -34,9 +36,10 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.CallID;
+import org.jdesktop.wonderland.common.cell.CellID;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
@@ -59,7 +62,7 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
     @UsesCellComponent
     private ContextMenuComponent contextMenu;
 
-    private String[] menuItem = new String[] {"Volume"};  // TODO I18N
+    private static String[] menuItem = new String[] {"Volume"};  // TODO I18N
 
     public AudioParticipantComponent(Cell cell) {
         super(cell);
@@ -80,7 +83,7 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
                 msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
                     public void messageReceived(CellMessage message) {
                         AudioParticipantSpeakingMessage msg = (AudioParticipantSpeakingMessage) message;
-			logger.info(msg.getPresenceInfo()
+			logger.info(msg.getCellID()
 			    + (msg.isSpeaking() ? " Started speaking" : " Stopped speaking"));
                     }
                 };
@@ -90,26 +93,29 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
 
                 contextMenu.addMenuItem(menuItem, new ContextMenuListener() {
                     public void entityContextPerformed(ContextMenuEvent event) {
-                        adjustVolume();
+                        adjustVolume(event);
                     }
                 });
             }
 
 	    break;
-
         }
     }
     
-    VolumeControlJFrame volumeControlJFrame;
+    private VolumeControlJFrame volumeControlJFrame;
 
-    private void adjustVolume() {
+    private void adjustVolume(ContextMenuEvent event) {
+	if (event.getName().equals(menuItem[0]) == false) {
+	    return;
+	}
+
 	if (volumeControlJFrame == null) {
 	    volumeControlJFrame = new VolumeControlJFrame(this, cell.getName());
 	} 
 
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-	if (AudioManagerUtil.getCallID(cell.getCellID()).equals(sc.getCallID())) {
+	if (CallID.getCallID(cell.getCellID()).equals(sc.getCallID())) {
 	    volumeControlJFrame.setTitle("Master Volume for " + cell.getName());
 	} else {
 	    volumeControlJFrame.setTitle("Volume Control for " + cell.getName());

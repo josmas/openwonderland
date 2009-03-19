@@ -32,7 +32,6 @@ import org.jdesktop.wonderland.common.messages.Message;
 public class PlaceCallMessage extends Message {
 
     private PresenceInfo presenceInfo;
-    private String softphoneCallID;
     private String sipURL;	      // URL of softphone to call
     private double x;	      	      // location of the call
     private double y;
@@ -41,11 +40,10 @@ public class PlaceCallMessage extends Message {
     private boolean confirmAnswered;  // user has to press 1
 
     public PlaceCallMessage(PresenceInfo presenceInfo, 
-	    String softphoneCallID, String sipURL, double x, double y,
+	    String sipURL, double x, double y,
 	    double z, double direction, boolean confirmAnswered) {
 
 	this.presenceInfo = presenceInfo;
-	this.softphoneCallID = softphoneCallID;
 	this.sipURL = sipURL;
 	this.x = x;
 	this.y = y;
@@ -56,10 +54,6 @@ public class PlaceCallMessage extends Message {
 
     public PresenceInfo getPresenceInfo() {
 	return presenceInfo;
-    }
-
-    public String getSoftphoneCallID() {
-        return softphoneCallID;
     }
 
     public String getSipURL() {

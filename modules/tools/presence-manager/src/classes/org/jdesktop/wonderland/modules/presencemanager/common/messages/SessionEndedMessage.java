@@ -17,39 +17,29 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.common.messages;
 
-import java.math.BigInteger;
-
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
-
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
- * Message indicating a new session has ended
+ * Message indicating a new session has been created
  * @author jprovino
  */
 @ExperimentalAPI
 public class SessionEndedMessage extends CellMessage {
 
-    private BigInteger sessionID;
-    private WonderlandIdentity userID;
+    private PresenceInfo presenceInfo;
 
-    public SessionEndedMessage(CellID cellID, BigInteger sessionID, WonderlandIdentity userID) {
-	super(cellID);
+    public SessionEndedMessage(PresenceInfo presenceInfo) {
+	super(presenceInfo.cellID);
 
-	this.sessionID = sessionID;
-	this.userID = userID;
+	this.presenceInfo = presenceInfo;
     }
 
-    public BigInteger getSessionID() {
-	return sessionID;
-    }
-  
-    public WonderlandIdentity getUserID() {
-	return userID;
+    public PresenceInfo getPresenceInfo() {
+	return presenceInfo;
     }
 
 }

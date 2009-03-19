@@ -21,6 +21,8 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
@@ -29,20 +31,15 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 public class AudioParticipantSpeakingMessage extends CellMessage {
     
-    private PresenceInfo presenceInfo;
+    private CellID cellID;
     private boolean isSpeaking;
 
-    public AudioParticipantSpeakingMessage(PresenceInfo presenceInfo, boolean isSpeaking) {
-	super(presenceInfo.cellID);
+    public AudioParticipantSpeakingMessage(CellID cellID, boolean isSpeaking) {
+	super(cellID);
 	
-  	this.presenceInfo = presenceInfo;
 	this.isSpeaking = isSpeaking;
     }
     
-    public PresenceInfo getPresenceInfo() {
-	return presenceInfo;
-    }
-
     public boolean isSpeaking() {
 	return isSpeaking;
     }

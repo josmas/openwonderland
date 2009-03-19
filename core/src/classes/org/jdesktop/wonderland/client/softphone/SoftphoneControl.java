@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.softphone;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 import java.io.IOException;
 
 public interface SoftphoneControl {
@@ -35,6 +37,8 @@ public interface SoftphoneControl {
     public void setCallID(String callID);
 
     public String getCallID();
+
+    public boolean isSoftphoneCallID(CellID cellID);
 
     public void register(String registrarAddress) throws IOException;
 

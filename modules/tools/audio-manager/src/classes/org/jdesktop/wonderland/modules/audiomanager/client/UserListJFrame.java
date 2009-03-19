@@ -10,6 +10,8 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
@@ -27,6 +29,8 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
     private WonderlandSession session;
     private AudioManagerClient client;
 
+    private PresenceManager pm;
+
     /** Creates new form UserListJFrame */
     public UserListJFrame(WonderlandSession session, AudioManagerClient client) {
 	this.session = session;
@@ -35,6 +39,9 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
         initComponents();
 
 	setTitle("Users");
+
+	pm = PresenceManagerFactory.getPresenceManager(session);
+	pm.addPresenceManagerListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -79,8 +86,6 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
     private String[] userData;
 
     public void setUserList() {
-	PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
-
 	WonderlandIdentity[] userIDArray = pm.getAllUsers();
 
 	String[] userData = new String[userIDArray.length];
@@ -98,11 +103,20 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 	userList.setListData(userData);
     }
 
-    public void setSpeaking(String callID, String username, boolean isSpeaking) {
-	//System.out.println("Got message for " + callID + " username " + username
+    public void setSpeaking(String callID, boolean isSpeaking) {
+	//System.out.println("Got message for " + presenceInfo
 	//    + (isSpeaking ? " Started Speaking" : " Stopped Speaking"));
 
         PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
+
+	PresenceInfo info = pm.getPresenceInfo(callID);
+
+	if (info == null) {
+	    System.out.println("SetSpeaking unable to get username for callID " + callID);
+	    return;
+	}
+
+	String username = info.userID.getUsername();
 
         WonderlandIdentity[] userIDArray = pm.getAllUsers();
 
@@ -121,11 +135,19 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 	setUserList(userData);
     }
 
-    public void muteCall(String callID, String username, boolean isMuted) {
-	//System.out.println("callID " + callID + " username '" + username + "' "
-	//    + (isMuted ? "Muted" : "Unmuted"));
+    public void muteCall(String callID, boolean isMuted) {
+	//System.out.println(presenceInfo + (isMuted ? "Muted" : "Unmuted"));
 
         PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
+
+	PresenceInfo info = pm.getPresenceInfo(callID);
+
+	if (info == null) {
+	    System.out.println("SetSpeaking unable to get username for callID " + callID);
+	    return;
+	}
+
+	String username = info.userID.getUsername();
 
         WonderlandIdentity[] userIDArray = pm.getAllUsers();
 
@@ -144,11 +166,11 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 	setUserList(userData);
     }
 
-    public void userAdded(WonderlandIdentity userID) {
+    public void userAdded(PresenceInfo presenceInfo) {
 	setUserList();
     }
 
-    public void userRemoved(WonderlandIdentity userID) {
+    public void userRemoved(PresenceInfo presenceInfo) {
 	setUserList();
     }
 

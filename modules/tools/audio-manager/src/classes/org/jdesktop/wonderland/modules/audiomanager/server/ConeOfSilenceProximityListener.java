@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
@@ -28,6 +28,7 @@ import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 import com.jme.bounding.BoundingVolume;
@@ -63,7 +64,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
     }
 
     private void cellEntered(CellID softphoneCellID) {
-        cellEntered(AudioManagerUtil.getCallID(softphoneCellID));
+        cellEntered(CallID.getCallID(softphoneCellID));
     }
 
     public void cellEntered(String callId) {
@@ -107,7 +108,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
     }
 
     private void cellExited(CellID softphoneCellID) {
-        cellExited(AudioManagerUtil.getCallID(softphoneCellID));
+        cellExited(CallID.getCallID(softphoneCellID));
     }
 
     public void cellExited(String callId) {

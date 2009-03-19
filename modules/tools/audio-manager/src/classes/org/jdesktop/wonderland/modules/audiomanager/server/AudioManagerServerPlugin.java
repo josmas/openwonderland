@@ -18,10 +18,15 @@
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import java.util.logging.Logger;
+
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
+
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
+
 import org.jdesktop.wonderland.server.comms.CommsManager;
+
 
 /**
  * Pluging to support the audio manager
@@ -37,6 +42,7 @@ public class AudioManagerServerPlugin implements ServerPlugin {
 
         cm.registerClientHandler(AudioManagerConnectionHandler.getInstance());
 
+	CellManagerMO.getCellManager().registerAvatarCellComponent(AudioParticipantComponentMO.class);
 	logger.finest("audio manager initialized");
     }
     

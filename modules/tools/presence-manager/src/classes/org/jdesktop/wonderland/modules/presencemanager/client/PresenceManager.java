@@ -41,7 +41,7 @@ public interface PresenceManager {
      * @param BigInteger the Wonderland session ID
      * @param WonderlandIdentity the user ID
      */
-    public void addSession(CellID cellID, BigInteger sessionID, WonderlandIdentity userID);
+    public void addSession(PresenceInfo presenceInfo);
 
     /**
      * Tell the PresenceManager that a session has been removed.
@@ -49,48 +49,35 @@ public interface PresenceManager {
      * @param BigInteger the Wonderland session ID
      * @param WonderlandIdentity the user ID
      */
-    public void removeSession(CellID cellID, BigInteger sessionID, WonderlandIdentity userID);
+    public void removeSession(PresenceInfo presenceInfo);
 
     /**
-     * Get a WonderlandIdentity associated with a Wonderland session.
-     * @param BigInteger the Wonderland session ID
-     * @return WonderlandIdentity the WonderlandIdentity associated with the sessionID.
-     */
-    public WonderlandIdentity getUserID(BigInteger sessionID);
- 
-    /**
-     * Get a WonderlandIdentity from a cellID.  The cellID must be for a ViewCell.
+     * Get PresenceInfo from a cellID.  The cellID must be for a ViewCell.
      * @param CellID the CellID of the ViewCell
-     * @return WonderlandIdentity the WonderlandIdentity assoicated with the CellID.
+     * @return PresenceInfo the PresenceInfo assoicated with the CellID.
      */
-    public WonderlandIdentity getUserID(CellID cellID) throws IllegalArgumentException;
- 
+    public PresenceInfo getPresenceInfo(CellID cellID);
+
     /**
-     * Get a Wonderland session ID from a WonderlandIdentity.
-     * @param WonderlandIdentity the WonderlandIdentity
-     * @return BigInteger the Wonderland session ID associated with the WonderlandIdentity.
+     * Get PresenceInfo from a Wonderland sessionID.
+     * @param BigInteger the Wonderland sessionID
+     * @return PresenceInfo PresenceInfo associated with the sessionID.
      */
-    public BigInteger getSessionID(WonderlandIdentity userID);
- 
+    public PresenceInfo getPresenceInfo(BigInteger sessionID);
+
     /**
-     * Get a Wonderland session ID from a cellID.  The cellID must be for a ViewCell.
-     * @param CellID the CellID of the ViewCell.
-     * @ return BigInteger the Wonderland session ID associated with the CellID.
+     * Get PresenceInfo from a WonderlandIdentity.
+     * @param WonderlandIdentity userID
+     * @return PresenceInfo PresenceInfo associated with the WonderlandIdentity.
+    public PresenceInfo getPresenceInfo(WonderlandIdentity userID);
+
+    /**
+     * Get PresenceInfo from a callID.
+     * @param String callID
+     * @return PresenceInfo the PresenceInfo associated with the callID.
      */
-    public BigInteger getSessionID(CellID cellID) throws IllegalArgumentException;
- 
-    /**
-     * Get a CellID from a WonderlandIdentity.
-     *@param WonderlandIdentity the WonderlandIdentity
-     * @return CellID the CellID associated with the WonderlandIdentity.     */
-    public CellID getCellID(WonderlandIdentity userID);
- 
-    /**
-     * Get a CellID from a Wonderland session ID.
-     * @param BigInteger the Wonderland session ID
-     * @return CellID the cellID associated with the Wonderland session ID.
-     */
-    public CellID getCellID(BigInteger sessionID);
+    public PresenceInfo getPresenceInfo(String callID);
+
  
     /**
      * Get the WonderlandIdentity list of cells in range of the specified cellID.
@@ -110,17 +97,7 @@ public interface PresenceManager {
      * @param String user name
      * @return PresenceInfo[] presence information for user.  Should be only one entry.
      */
-    public PresenceInfo[] getPresenceInfo(String username);
-
-    /**
-     * Get the PresenceInfo for the given CellID.
-     */
-    public PresenceInfo getPresenceInfo(CellID cellID);
-
-    /**
-     * Get the PresenceInfo for the given WonderlandIdentity.
-     */
-    public PresenceInfo getPresenceInfo(WonderlandIdentity userID);
+    public PresenceInfo[] getUserPresenceInfo(String username);
 
     /**
      * Listener for changes

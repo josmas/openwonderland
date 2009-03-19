@@ -17,6 +17,10 @@
  */
 package org.jdesktop.wonderland.client.softphone;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
+import org.jdesktop.wonderland.common.cell.CallID;
+
 import java.io.BufferedOutputStream;
 
 import java.io.IOException;
@@ -55,9 +59,9 @@ public class SoftphoneControlImpl {
 
     private boolean isTooLoud;
 
-    private String callID;
-
     private static SoftphoneControlImpl softphoneControlImpl;
+
+    private String callID;
 
     private SoftphoneControlImpl() {
     }

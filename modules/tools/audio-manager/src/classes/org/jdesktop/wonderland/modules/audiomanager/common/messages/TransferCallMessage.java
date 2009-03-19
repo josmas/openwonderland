@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 import org.jdesktop.wonderland.common.messages.Message;
@@ -29,16 +31,16 @@ import org.jdesktop.wonderland.common.messages.Message;
 @ExperimentalAPI
 public class TransferCallMessage extends Message {
 
-    private String softphoneCallID;
+    private PresenceInfo presenceInfo;
     private String phoneNumber;
 
-    public TransferCallMessage(String softphoneCallID, String phoneNumber) {
-	this.softphoneCallID = softphoneCallID;
+    public TransferCallMessage(PresenceInfo presenceInfo, String phoneNumber) {
+	this.presenceInfo = presenceInfo;
 	this.phoneNumber = phoneNumber;
     }
 
-    public String getSoftphoneCallID() {
-        return softphoneCallID;
+    public PresenceInfo getPresenceInfo() {
+        return presenceInfo;
     }
 
     public String getPhoneNumber() {

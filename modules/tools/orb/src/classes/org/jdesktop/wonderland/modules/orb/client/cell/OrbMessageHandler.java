@@ -68,6 +68,8 @@ public class OrbMessageHandler {
 
     private OrbDialog orbDialog;
 
+    private String username;
+
     private String callID;
 
     public OrbMessageHandler(OrbCell orbCell) {
@@ -103,19 +105,14 @@ public class OrbMessageHandler {
 	logger.finest("process message " + message);
 
 	if (message instanceof OrbStartCallMessage) {
+	    username = ((OrbStartCallMessage) message).getUsername();
 	    callID = ((OrbStartCallMessage) message).getCallID();
 	}
     }
     
     public void orbSelected() {
 	if (orbDialog == null) {
-	    PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
-	
-	    PresenceInfo info = pm.getPresenceInfo(orbCell.getCellID());
-
-	    logger.finer("Creating new OrbDialog for " + info.userID);
-
-	    orbDialog = new OrbDialog(orbCell, channelComp, info.userID.getUsername());
+	    orbDialog = new OrbDialog(orbCell, channelComp, username);
 	} 
 
 	orbDialog.setVisible(true);

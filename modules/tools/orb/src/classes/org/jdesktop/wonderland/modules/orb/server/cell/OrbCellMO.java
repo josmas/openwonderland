@@ -49,6 +49,7 @@ public class OrbCellMO extends CellMO {
     private static final Logger logger =
             Logger.getLogger(OrbCellMO.class.getName());
     private ManagedReference<OrbMessageHandler> orbMessageHandlerRef;
+    private String username;
     private String callID;
     private boolean simulateCalls;
 
@@ -56,10 +57,13 @@ public class OrbCellMO extends CellMO {
         addComponent(new MovableComponentMO(this));
     }
 
-    public OrbCellMO(Vector3f center, float size, String callID, boolean simulateCalls) {
+    public OrbCellMO(Vector3f center, float size, String username, String callID, 
+	    boolean simulateCalls) {
+
         super(new BoundingBox(new Vector3f(), size, size, size),
                 new CellTransform(null, center));
 
+	this.username = username;
         this.callID = callID;
         this.simulateCalls = simulateCalls;
 
@@ -84,7 +88,7 @@ public class OrbCellMO extends CellMO {
         }
 
         orbMessageHandlerRef = AppContext.getDataManager().createReference(
-                new OrbMessageHandler(this, callID, simulateCalls));
+                new OrbMessageHandler(this, username, callID, simulateCalls));
     }
 
     @Override

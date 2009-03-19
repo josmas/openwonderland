@@ -15,34 +15,34 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.orb.common.messages;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  *
  * @author jprovino
  */
-public class OrbStartCallMessage extends CellMessage {   
+public class VoiceChatJoinAcceptedMessage extends VoiceChatMessage {
+ 
+    private PresenceInfo callee;
+    private ChatType chatType;
     
-    String username;
-    String callID;
+    public VoiceChatJoinAcceptedMessage(String group, PresenceInfo callee, 
+	    ChatType chatType) {
 
-    public OrbStartCallMessage(CellID cellID, String username, String callID) {
-	super(cellID);
+	super(group);
 
-	this.username = username;
-	this.callID = callID;
+	this.callee = callee;
+	this.chatType = chatType;
     }
 
-    public String getUsername() {
-	return username;
+    public PresenceInfo getCallee() {
+	return callee;
     }
 
-    public String getCallID() {
-	return callID;
+    public ChatType getChatType() {
+	return chatType;
     }
-
+    
 }

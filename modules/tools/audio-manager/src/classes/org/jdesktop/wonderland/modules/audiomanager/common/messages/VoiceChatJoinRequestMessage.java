@@ -28,7 +28,7 @@ public class VoiceChatJoinRequestMessage extends VoiceChatUserMessage {
     public VoiceChatJoinRequestMessage(String group, PresenceInfo caller, 
 	    PresenceInfo[] calleeList, ChatType chatType) {
 
-	super(group, caller, calleeList, chatType);
+        super(group, caller, calleeList, chatType);
     }
 
 }

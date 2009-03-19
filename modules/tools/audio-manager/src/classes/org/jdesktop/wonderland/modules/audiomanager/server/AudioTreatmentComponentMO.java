@@ -18,7 +18,9 @@
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import com.jme.math.Vector3f;
+
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
 
 import java.io.InputStreamReader;
@@ -31,34 +33,34 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-
 
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 
-import com.sun.voip.client.connector.CallStatus;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import com.sun.voip.client.connector.CallStatus;
 
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.Treatment;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
+import org.jdesktop.wonderland.common.cell.CallID;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
@@ -151,7 +153,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
         if (live == false) {
             channelComponent.removeMessageReceiver(AudioTreatmentMessage.class);
-            channelComponent.removeMessageReceiver(AudioVolumeMessage.class);
             return;
         }
 
@@ -159,7 +160,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
                 new ComponentMessageReceiverImpl(cellRef, this);
 
         channelComponent.addMessageReceiver(AudioTreatmentMessage.class, receiver);
-        channelComponent.addMessageReceiver(AudioVolumeMessage.class, receiver);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -186,7 +186,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
             logger.fine("Processing " + treatment);
 
-            String treatmentId = treatment;
+            String treatmentId = CallID.getCallID(cellRef.get().getCellID());
 
             if (treatment.startsWith("wls://")) {
                 /*
@@ -207,8 +207,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
                 logger.fine("Module:  " + moduleName + " treatment " + treatment);
 
-                treatmentId = treatment;
-
                 URL url;
 
                 try {
@@ -224,6 +222,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             }
 
             setup.treatment = treatment;
+	    setup.managedListenerRef = 
+		AppContext.getDataManager().createReference((ManagedCallStatusListener) this);
 
             if (setup.treatment == null || setup.treatment.length() == 0) {
                 logger.warning("Invalid treatment '" + setup.treatment + "'");
@@ -236,10 +236,12 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             setup.y = location.getY();
             setup.z = location.getZ();
 
-            logger.info("Starting treatment " + setup.treatment + " at (" + setup.x + ":" + setup.y + ":" + setup.z + ")");
+            logger.info("Starting treatment " + setup.treatment + " at (" + setup.x 
+		+ ":" + setup.y + ":" + setup.z + ")");
 
             try {
-                group.addTreatment(vm.createTreatment(treatmentId, setup));
+		Treatment t = vm.createTreatment(treatmentId, setup);
+                group.addTreatment(t);
             } catch (IOException e) {
                 logger.warning("Unable to create treatment " + setup.treatment + e.getMessage());
                 return;
@@ -263,44 +265,12 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         return zeroVolumeRadius;
     }
 
-    public void transformChanged(Vector3f location, double angle) {
-        logger.finer("Treatment moved to " + location + " angle " + angle);
-
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        for (int i = 0; i < treatments.length; i++) {
-            String treatmentId = treatments[i];
-
-            if (treatmentId.startsWith("wls://")) {
-                treatmentId = treatmentId.substring(6);
-            }
-
-            Player player = vm.getPlayer(treatmentId);
-
-            if (player == null) {
-                logger.warning("Can't find player for " + treatments[i]);
-            } else {
-                player.moved(location.getX(), location.getY(), location.getZ(),
-                        angle);
-            }
-        }
-    }
-
     @Override
     protected String getClientClass() {
         return "org.jdesktop.wonderland.modules.audiomanager.client.AudioTreatmentComponent";
     }
 
-    public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
-            CellMessage message) {
-
-        AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
-
-        logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
-    }
-
     private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
-
         private ManagedReference<AudioTreatmentComponentMO> compRef;
 
         public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellRef,
@@ -317,65 +287,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             if (message instanceof AudioTreatmentMessage) {
                 AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
                 logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
-                return;
-            }
-
-            if (message instanceof AudioVolumeMessage) {
-                AudioVolumeMessage msg = (AudioVolumeMessage) message;
-
-                CellID cellID = msg.getCellID();
-                String softphoneCallID = msg.getSoftphoneCallID();
-
-                double volume = msg.getVolume();
-
-                logger.fine("GOT Volume message:  call " + softphoneCallID + " cell " + cellID + " volume " + volume);
-
-                VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-                Player softphonePlayer = vm.getPlayer(softphoneCallID);
-
-                if (softphonePlayer == null) {
-                    logger.warning("Can't find softphone player, callID " + softphoneCallID);
-
-                    return;
-                }
-
-                if (softphoneCallID.equals(AudioManagerUtil.getCallID(cellID))) {
-                    logger.fine("Setting master volume for " + getCell().getName());
-                    softphonePlayer.setMasterVolume(volume);
-                    return;
-                }
-
-                DefaultSpatializer spatializer = new DefaultSpatializer();
-
-                AudioTreatmentComponentMO componentMO = compRef.get();
-
-                spatializer.setFullVolumeRadius(componentMO.getFullVolumeRadius());
-
-                if (componentMO.getZeroVolumeRadius() != 0) {
-                    spatializer.setZeroVolumeRadius(componentMO.getZeroVolumeRadius());
-                }
-
-                spatializer.setAttenuator(volume);
-
-                String[] treatments = componentMO.getTreatments();
-
-                for (int i = 0; i < treatments.length; i++) {
-                    String treatmentId = treatments[i];
-
-                    if (treatmentId.startsWith("wls://")) {
-                        treatmentId = treatmentId.substring(6);
-                    }
-
-                    Player player = vm.getPlayer(treatmentId);
-
-                    if (player == null) {
-                        logger.warning("Can't find player for " + treatments[i]);
-                    } else {
-                        softphonePlayer.setPrivateSpatializer(player, spatializer);
-                    }
-                }
-
                 return;
             }
 
