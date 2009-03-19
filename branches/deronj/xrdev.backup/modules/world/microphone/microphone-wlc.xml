@@ -1,0 +1,26 @@
+<microphone-cell>
+  <position-component>
+    <origin>
+	<x>22</x>
+        <y>0.05</y>
+        <z>0</z>
+    </origin>
+  </position-component>
+
+    <name>microphone1</name>
+
+    <fullVolumeRadius>22</fullVolumeRadius>
+
+    <scale>.42</scale>
+
+    <activeRadius>2</activeRadius>
+
+    <activeRadiusType>BOX</activeRadiusType>
+
+    <audio-treatment-component>
+  	<treatment>fubur</treatment>
+  	<treatment>fubur1</treatment>
+	<groupId>foo</groupId>
+    </audio-treatment-component>
+
+</microphone-cell>
