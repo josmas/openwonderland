@@ -692,7 +692,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 		playTreatment("help.au");
 		playTreatment(JOIN_CLICK);
 
-		new Orb(call.getId(), phone.phoneCellRef.get().getWorldBounds(), false);
+		new Orb(call.getId(), call.getId(), phone.phoneCellRef.get().getWorldBounds(), false);
 
 		state = ESTABLISHED;
             } catch (IOException e) {
