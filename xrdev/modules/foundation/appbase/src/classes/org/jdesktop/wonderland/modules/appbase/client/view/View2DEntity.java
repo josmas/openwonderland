@@ -162,7 +162,8 @@ public abstract class View2DEntity implements View2D {
     private Point offset = new Point(0, 0);
 
     /** The user translation. */
-    private Vector3f userTranslation = new Vector3f(0f, 0f, 0f);
+    // TODO: make private and add a getter for subclass to use. Do elsewhere as well.
+    protected Vector3f userTranslation = new Vector3f(0f, 0f, 0f);
 
     /** The previous user translation. */
     private Vector3f userTranslationPrev = new Vector3f(0f, 0f, 0f);
@@ -576,14 +577,24 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized float getDisplayerLocalWidth () {
-        // TODO: ignore size mode and user size for now - always track window size as specified by app
-        return getPixelScaleX() * sizeApp.width;
+        if (ortho) {
+            // TODO: for now
+            return sizeApp.width;
+        } else {
+            // TODO: ignore size mode and user size for now - always track window size as specified by app
+            return getPixelScaleX() * sizeApp.width;
+        }
     }
 
     /** {@inheritDoc} */
     public synchronized float getDisplayerLocalHeight () {
-        // TODO: ignore size mode and user size for now - always track window size as specified by app
-        return getPixelScaleY() * sizeApp.height;
+        if (ortho) {
+            // TODO: for now
+            return sizeApp.height;
+        } else {
+            // TODO: ignore size mode and user size for now - always track window size as specified by app
+            return getPixelScaleY() * sizeApp.height;
+        }
     }
 
     /** {@inheritDoc} */
@@ -861,15 +872,6 @@ public abstract class View2DEntity implements View2D {
         if ((changeMask & (CHANGED_SIZE | CHANGED_ORTHO)) != 0) {
             float width = getDisplayerLocalWidth();
             float height = getDisplayerLocalHeight();
-            // TODO
-            if (ortho) {
-                /*
-                width = 500f;
-                height = 200f;
-                */
-                width = 10f;
-                height = 10f;
-            }
             sgChangeGeometrySizeSet(geometryNode, width, height);
         }
 
@@ -910,6 +912,7 @@ public abstract class View2DEntity implements View2D {
         if ((changeMask & (CHANGED_USER_TRANSFORM | CHANGED_ORTHO)) != 0) {
             CellTransform deltaTransform;
 
+            System.err.println("^^^^^^^^^^^^^^^^ type = " + type);
             switch (type) {
             case PRIMARY:
                 deltaTransform = calcUserDeltaTransform();
@@ -1171,7 +1174,7 @@ public abstract class View2DEntity implements View2D {
         sgChanges.add(new SGChangeTransformUserPostMultiply(viewNode, deltaTransform));
     }
 
-    private synchronized void sgChangeTransformUserSet (Node viewNode, CellTransform transform) {
+    protected synchronized void sgChangeTransformUserSet (Node viewNode, CellTransform transform) {
         sgChanges.add(new SGChangeTransformUserSet(viewNode, transform));
     }
 
@@ -1256,7 +1259,8 @@ public abstract class View2DEntity implements View2D {
                              System.err.println("############## set user transform to identity");
                              viewNode.setLocalRotation(new Quaternion());
                              viewNode.setLocalScale(1.0f);
-                             viewNode.setLocalTranslation(new Vector3f(0f, 0f, 0f));
+                             //TODO:viewNode.setLocalTranslation(new Vector3f(300f, 300f, 0f));
+                             //TODO:viewNode.setLocalTranslation(new Vector3f(0f, 0f, 0f));
                          } else {
                          userTransform.mul(chg.transform);
                          Quaternion r = userTransform.getRotation(null);
@@ -1274,10 +1278,13 @@ public abstract class View2DEntity implements View2D {
                          SGChangeTransformUserSet chg = (SGChangeTransformUserSet) sgChange;
                          // TODO
                          if (ortho) {
-                             System.err.println("############## set user transform to identity");
                              viewNode.setLocalRotation(new Quaternion());
                              viewNode.setLocalScale(1.0f);
-                             viewNode.setLocalTranslation(new Vector3f(0f, 0f, 0f));
+                             //viewNode.setLocalTranslation(new Vector3f(300f, 300f, 0f));
+
+                             Vector3f t = chg.transform.getTranslation(null);
+                             viewNode.setLocalTranslation(t);
+                             System.err.println("############## set ortho user translation to " + t);
                          } else {
                          userTransform = chg.transform.clone(null);
                          Quaternion r = userTransform.getRotation(null);

@@ -783,7 +783,9 @@ public abstract class InputPicker {
 	Ray pickRayWorld = calcPickRayWorld(x, y);
 
 	// Note: pickAll is needed to in order to pick through transparent objects.
-	return collisionSys.pickAllWorldRay(pickRayWorld, true, false/*TODO:interp*/);
+	return collisionSys.pickAllWorldRay(pickRayWorld, true, false/*TODO:interp*/,
+                                            true, /* for now, always include ortho objects in picking */
+                                            cameraComp);
     }
 
     private GrabChangeType evaluateButtonGrabStateChange (int eventID, MouseEvent e) {

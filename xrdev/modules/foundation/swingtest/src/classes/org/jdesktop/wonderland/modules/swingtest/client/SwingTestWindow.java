@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.swingtest.client.cell.SwingTestCell;
+import com.jme.math.Vector3f;
 
 /**
  *
@@ -86,7 +87,7 @@ public class SwingTestWindow
         View2DEntity view = (View2DEntity) getView(cell);
 
         view.setOrtho(ortho, false);
-        // TODO: notyet        view.setTranslationUser(new Vector3f(300f, 300f, 0f), false);
+        view.setTranslationUser(new Vector3f(300f, 300f, 0f), false);
 
         // Test (TODO: use app size for now)
         //view.setSizeApp(500, 200, false);

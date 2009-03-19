@@ -235,6 +235,11 @@ public class View2DCell extends View2DEntity {
 
     @Override
     protected void updatePrimaryTransform (CellTransform userDeltaTransform) {
+        if (isOrtho()) {
+            // TODO: temp: just something to prod sgProcessChanges
+            sgChangeTransformUserSet(viewNode, 
+                                     new CellTransform(null, userTranslation, null));
+        } else {
         /*TODO: empty for nwo
         CellTransform cellTransform = cell.getLocalTransform();
         cellTransform.mul(userDeltaTransform);
@@ -249,6 +254,7 @@ public class View2DCell extends View2DEntity {
         }
         ///TODO:        mc.localMoveRequest(cellTransform);
         */
+        }
     }
 
     /** {@inheritDoc} */
