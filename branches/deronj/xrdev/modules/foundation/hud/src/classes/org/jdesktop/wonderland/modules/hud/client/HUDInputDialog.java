@@ -23,7 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
-import org.jdesktop.wonderland.modules.appbase.client.App;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
 /**
@@ -36,20 +36,20 @@ public class HUDInputDialog extends HUDComponent2D {
     private static final Logger logger = Logger.getLogger(HUDInputDialog.class.getName());
     private HUDInputDialogImpl dialogImpl;
     private WindowSwing window;
-    private App app;
+    private App2D app;
 
-    public HUDInputDialog(App app) {
+    public HUDInputDialog(App2D app) {
         super();
         this.app = app;
         initializeDialog();
     }
 
-    public HUDInputDialog(App app, String label) {
+    public HUDInputDialog(App2D app, String label) {
         this(app);
         dialogImpl.setLabelText(label);
     }
 
-    public HUDInputDialog(App app, String label, String value) {
+    public HUDInputDialog(App2D app, String label, String value) {
         this(app, label);
         dialogImpl.setValueText(value);
     }
@@ -66,12 +66,12 @@ public class HUDInputDialog extends HUDComponent2D {
                 window = new WindowSwing(app, dialogImpl.getWidth(), dialogImpl.getHeight(),
                         false, new Vector2f(0.02f, 0.02f));
                 window.setComponent(dialogImpl.getContentPane());
-                view = window.getPrimaryView();
+                //TODO: nigel: view = window.getPrimaryView();
                 HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
                 mainHUD.addComponent(this);
                 this.setLocation(500, 300);
                 this.setSize(dialogImpl.getWidth(), dialogImpl.getHeight() - 20);
-                window.setVisible(true);
+               //TODO: nigel: window.setVisible(true);
                 this.setVisible(true);
             } catch (Exception e) {
                 logger.log(Level.WARNING, "failed to create HUD dialog: " + e);
@@ -86,9 +86,9 @@ public class HUDInputDialog extends HUDComponent2D {
     public void setVisible(boolean visible) {
         if (visible == false) {
             // hack to make the view go away
-            view.setVisible(false);
-            view.setOnHUD(false);
-            window.setVisible(false);
+            view.setVisibleUser(false);
+            view.setOrtho(false);
+            //TODO: nigel: window.setVisible(false);
         } else {
             super.setVisible(visible);
         }
