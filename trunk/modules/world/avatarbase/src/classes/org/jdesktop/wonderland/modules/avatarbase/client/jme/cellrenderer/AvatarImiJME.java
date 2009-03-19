@@ -215,12 +215,19 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
             Vector3f dir = new Vector3f(0,0,-1);
             transform.getRotation(null).multLocal(dir);
             PMatrix local = avatarCharacter.getController().getModelInstance().getTransform().getLocalMatrix(true);
-            Vector3f currentPosition = local.getTranslation();
+            final Vector3f currentPosition = local.getTranslation();
             float currentDistance = currentPosition.distance(pos);
             if ( currentDistance < positionMaxDistanceForPull )
                 pos.set(currentPosition);
             PMatrix look = PMathUtils.lookAt(pos.add(dir), pos, Vector3f.UNIT_Y);
             avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(look);
+
+            SceneWorker.addWorker(new WorkCommit(){
+                public void commit() {
+                    nameTagRoot.setLocalTranslation(currentPosition);
+                    ClientContextJME.getWorldManager().addToUpdateList(nameTagRoot);
+                }
+            });
         }
 
     }
