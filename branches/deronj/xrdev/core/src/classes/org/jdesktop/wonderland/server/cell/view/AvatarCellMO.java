@@ -21,21 +21,15 @@ import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jmex.model.collada.schema.rotateType;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
-import java.io.Serializable;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.view.AvatarCellClientState;
-import org.jdesktop.wonderland.common.cell.view.ViewCellClientState;
 import org.jdesktop.wonderland.server.UserMO;
-import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO.CellTransformChangeListener;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -77,8 +71,6 @@ public class AvatarCellMO extends ViewCellMO {
         if (cellClientState == null) {
             cellClientState = new AvatarCellClientState(userRef.get().getIdentity(), avatarConfigURL);
         }
-
-        System.err.println("***************** "+cellClientState+"  "+avatarConfigURL);
 
         return super.getClientState(cellClientState, clientID, capabilities);
     }

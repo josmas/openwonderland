@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.input.InputManager;
@@ -343,7 +344,7 @@ public class SceneManager {
      * Global mouse listener for selection events. Reports back to the Selection
      * Manager on any updates.
      */
-    class MouseEventListener extends EventClassListener {
+    class MouseEventListener extends EventClassFocusListener {
         @Override
         public Class[] eventClassesToConsume() {
             return new Class[] { MouseEvent3D.class };

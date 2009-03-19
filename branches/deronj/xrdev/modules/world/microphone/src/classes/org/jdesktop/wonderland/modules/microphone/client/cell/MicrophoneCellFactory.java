@@ -26,6 +26,8 @@ import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerSta
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.ActiveArea;
 import com.jme.math.Vector3f;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 
 /**
@@ -59,15 +61,7 @@ public class MicrophoneCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-//        try {
-////        URL url = ConeOfSilenceCellPaletteInfo.class.getResource("resources/sample_preview.jpg");
-////        Logger.getLogger(ConeOfSilenceCellPaletteInfo.class.getName()).warning("INFO " + url.toString());
-//            URL url = new URL("file:///Users/jordanslott/Desktop/sample_preview.jpg");
-//            return Toolkit.getDefaultToolkit().createImage(url);
-//        } catch (MalformedURLException ex) {
-//            Logger.getLogger(ConeOfSilenceCellPaletteInfo.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return null;
-        return null;
+        URL url = MicrophoneCellFactory.class.getResource("resources/microphone_preview.png");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }

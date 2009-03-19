@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.common.cell;
 
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import java.io.Serializable;
 import org.jdesktop.wonderland.common.Math3DUtils;
 
 /**
@@ -27,7 +28,7 @@ import org.jdesktop.wonderland.common.Math3DUtils;
  *
  * @author paulby
  */
-public class ProximityListenerRecord {
+public class ProximityListenerRecord implements Serializable {
     protected ProximityListenerWrapper proximityListener;
     private BoundingVolume[] localProxBounds;
     private BoundingVolume[] worldProxBounds;
@@ -143,7 +144,7 @@ public class ProximityListenerRecord {
      * Wrapper for the listener, client and server listeners have a slightly
      * different interface
      */
-    public interface ProximityListenerWrapper {
+    public interface ProximityListenerWrapper extends Serializable {
         public void viewEnterExit(boolean enter, BoundingVolume proximityVolume, int proximityIndex, CellID viewCellID );
     }
 }

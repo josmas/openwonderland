@@ -28,8 +28,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
-import org.jdesktop.wonderland.common.AssetType;
-import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.ArtURI;
+import org.jdesktop.wonderland.common.ModuleURI;
 
 /**
  * The WlaURLConnection class is the URL connection to URLs that have the 'wla'
@@ -64,9 +64,13 @@ public class WlaURLConnection extends URLConnection {
     @Override
     public InputStream getInputStream() {
         try {
-            /* Forms an AssetURI given the URL and fetches from the asset manager */
-            AssetURI uri = new AssetURI(this.url.toExternalForm());
-            Asset asset = AssetManager.getAssetManager().getAsset(uri, AssetType.FILE);
+            // Since we know this asset belongs to a module, first create a
+            // factory to handle its loading.
+            ModuleURI uri = new ArtURI(this.url.toExternalForm());
+
+            // Next, we ask the asset manager for the asset and wait for it to
+            // be loaded
+            Asset asset = AssetManager.getAssetManager().getAsset(uri);
             if (asset == null || AssetManager.getAssetManager().waitForAsset(asset) == false) {
                 return null;
             }

@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Bounds.BoundsType;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scaling;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 
 /**
  * The BasicPositionComponentServerStateHelper class implements a collection of utility routines
@@ -49,13 +49,13 @@ public class PositionServerStateHelper {
      */
     public static BoundingVolume getCellBounds(PositionComponentServerState setup) {
         BoundsType type = setup.getBounds().type;
-        float radius = (float)setup.getBounds().radius;
+        float x = (float)setup.getBounds().x;
         
         if (type.equals(BoundsType.SPHERE) == true) {
-            return new BoundingSphere(radius, new Vector3f());
+            return new BoundingSphere(x, new Vector3f());
         }
         else if (type.equals(BoundsType.BOX) == true) {
-            return new BoundingBox(new Vector3f(), radius, radius, radius);
+            return new BoundingBox(new Vector3f(), x, (float)setup.getBounds().y, (float)setup.getBounds().z);
         }
         
         /* This should never happen, but in case it does... */
@@ -73,7 +73,7 @@ public class PositionServerStateHelper {
         /* Fetch the raw values from the setup class */
         Origin origin = setup.getOrigin();
         Rotation rotation = setup.getRotation();
-        Scaling scaling = setup.getScaling();
+        Scale scaling = setup.getScaling();
         
         /* Create a Quaternion object for the rotation */
         Vector3f axis  = new Vector3f((float)rotation.x, (float)rotation.y, (float)rotation.z);
@@ -98,12 +98,16 @@ public class PositionServerStateHelper {
         PositionComponentServerState.Bounds cellBounds = new PositionComponentServerState.Bounds();
         if (bounds instanceof BoundingSphere) {
             cellBounds.type = BoundsType.SPHERE;
-            cellBounds.radius = ((BoundingSphere)bounds).getRadius();
+            cellBounds.x = ((BoundingSphere)bounds).getRadius();
             return cellBounds;
         }
         else if (bounds instanceof BoundingBox) {
             cellBounds.type = BoundsType.BOX;
-            cellBounds.radius = ((BoundingBox)bounds).getExtent(null).x;
+            Vector3f extent = new Vector3f();
+            ((BoundingBox)bounds).getExtent(extent);
+            cellBounds.x = extent.x;
+            cellBounds.y = extent.y;
+            cellBounds.z = extent.z;
             return cellBounds;
         }
         
@@ -148,16 +152,16 @@ public class PositionServerStateHelper {
     }
     
     /**
-     * Given a (non-null) CellTranform class, returns the Scaling class that
+     * Given a (non-null) CellTranform class, returns the Scale class that
      * is used in the cell setup information.
      * 
      * @param transform The cell's transform
      * @return The scaling used in the cell setup information
      */
-    public static PositionComponentServerState.Scaling getSetupScaling(CellTransform transform) {
+    public static PositionComponentServerState.Scale getSetupScaling(CellTransform transform) {
         Vector3f scale = transform.getScaling(null);
         
-        PositionComponentServerState.Scaling scaling = new PositionComponentServerState.Scaling();
+        PositionComponentServerState.Scale scaling = new PositionComponentServerState.Scale();
         scaling.x = (double)scale.getX();
         scaling.y = (double)scale.getY();
         scaling.z = (double)scale.getZ();

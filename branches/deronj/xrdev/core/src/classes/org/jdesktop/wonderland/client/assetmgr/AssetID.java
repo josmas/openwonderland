@@ -17,35 +17,35 @@
  */
 package org.jdesktop.wonderland.client.assetmgr;
 
-import org.jdesktop.wonderland.common.ResourceURI;
+import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * An AssetID class represents a unique identification for an asset: assets
  * are uniquely identified by their URI and their (optional) checksum. This
  * class implements the equals() and hashCode() methods so that instances of
- * this class may be used as keys in hash tables, for example.
+ * this class may be used as keys in Maps, for example.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@InternalAPI
 public class AssetID {
-    /* The URI of the asset */
-    private ResourceURI assetURI = null;
-    
-    /* The optional checksum of the asset */
+
+    private AssetURI assetURI = null;
     private String checksum = null;
     
     /** Constructor, takes both URI and checksum */
-    public AssetID(ResourceURI assetURI, String checksum) {
+    public AssetID(AssetURI assetURI, String checksum) {
         this.assetURI = assetURI;
         this.checksum = checksum;
     }
     
     /**
-     * Returns the asset URI.
+     * Returns the asset uri.
      * 
-     * @return The ResourceURI
+     * @return The AssetURI object
      */
-    public ResourceURI getResourceURI() {
+    public AssetURI getAssetURI() {
         return this.assetURI;
     }
     
@@ -65,7 +65,7 @@ public class AssetID {
      */
     @Override
     public String toString() {
-        return this.assetURI.toString() + "[" + this.checksum + "]";
+        return assetURI + "[" + this.checksum + "]";
     }
     
     /**
@@ -87,7 +87,7 @@ public class AssetID {
         }
         
         /* Check to make sure the URIs are equals, return false if not */
-        if (this.assetURI.equals(this.getResourceURI()) == false) {
+        if (this.assetURI.equals(this.getAssetURI()) == false) {
             return false;
         }
         

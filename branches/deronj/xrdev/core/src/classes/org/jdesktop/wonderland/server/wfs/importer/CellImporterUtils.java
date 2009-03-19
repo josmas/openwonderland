@@ -74,7 +74,7 @@ public class CellImporterUtils {
             
             /* Read in and parse the cell setup information */
             InputStreamReader isr = new InputStreamReader(url.openStream());
-            return CellServerState.decode(isr, null, getServerFromURL(url));
+            return CellServerState.decode(isr, null);
         } catch (java.lang.Exception excp) {
             System.out.println(excp.toString());
             return null;
@@ -134,26 +134,5 @@ public class CellImporterUtils {
      */
     public static URL getWebServerURL() throws MalformedURLException {
         return new URL(System.getProperty("wonderland.web.server.url"));
-    }
-    
-    /**
-     * Given a base URL of the server (e.g. http://localhost:8080) returns
-     * the server name and port as a string (e.g. localhost:8080). Returns null
-     * if the host name is not present.
-     * 
-     * @return <server name>:<port>
-     * @throw MalformedURLException If the given string URL is invalid
-     */
-    public static String getServerFromURL(URL serverURL) {
-        String host = serverURL.getHost();
-        int port = serverURL.getPort();
-        
-        if (host == null) {
-            return null;
-        }
-        else if (port == -1) {
-            return host;
-        }
-        return host + ":" + port;
     }
 }

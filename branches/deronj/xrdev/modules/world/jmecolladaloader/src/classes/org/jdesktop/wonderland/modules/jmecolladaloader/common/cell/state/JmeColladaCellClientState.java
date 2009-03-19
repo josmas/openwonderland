@@ -30,19 +30,26 @@ import com.jme.math.Vector3f;
 public class JmeColladaCellClientState extends CellClientState {
     /* The unique URL that describes the model data */
     private String modelURI = null;
+    private String modelGroupURI = null;
     private Vector3f geometryTranslation;
     private Quaternion geometryRotation;
+    private Vector3f geometryScale=null;
     
     /** Default constructor */
     public JmeColladaCellClientState() {
     }
     
     /** Constructor, takes the model URI */
-    public JmeColladaCellClientState(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation) {
-        this.modelURI = modelURI;
-        this.geometryRotation = geometryRotation;
-        this.geometryTranslation = geometryTranslation;
-    }
+//    public JmeColladaCellClientState(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation) {
+//        this(modelURI, geometryTranslation, geometryRotation, null);
+//    }
+
+//    public JmeColladaCellClientState(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation, Vector3f geometryScale) {
+//        this.modelURI = modelURI;
+//        this.geometryRotation = geometryRotation;
+//        this.geometryTranslation = geometryTranslation;
+//        this.geometryScale = geometryScale;
+//    }
     
     /**
      * Returns the unique model URI, null if none.
@@ -77,4 +84,27 @@ public class JmeColladaCellClientState extends CellClientState {
     public Quaternion getGeometryRotation() {
         return geometryRotation;
     }
+
+    public Vector3f getGeometryScale() {
+        return geometryScale;
+    }
+
+    public void setGeometryScale(Vector3f geometryScale) {
+        this.geometryScale = geometryScale;
+    }
+
+    /**
+     * @return the modelSetURI
+     */
+    public String getModelGroupURI() {
+        return modelGroupURI;
+    }
+
+    /**
+     * @param modelSetURI the modelSetURI to set
+     */
+    public void setModelGroupURI(String modelSetURI) {
+        this.modelGroupURI = modelSetURI;
+    }
+
 }

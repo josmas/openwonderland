@@ -24,26 +24,32 @@
             </folders>
             <ide-actions>
                 <action name="build">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>jar</target>
                 </action>
                 <action name="clean">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>clean</target>
                 </action>
                 <action name="javadoc">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>javadoc</target>
                 </action>
                 <action name="run">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>run</target>
                 </action>
                 <action name="test">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>run-dbtest</target>
                 </action>
                 <action name="rebuild">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>clean</target>
                     <target>jar</target>
                 </action>
                 <action name="run.single">
-                    <script>nbproject/ide-file-targets.xml</script>
+                    <script>nbproject/nbjdk.xml</script>
                     <target>run-selected-file-in-classes</target>
                     <context>
                         <property>run.class</property>
@@ -56,23 +62,26 @@
                     </context>
                 </action>
                 <action name="debug">
-                    <script>nbproject/ide-targets.xml</script>
+                    <script>nbproject/nbjdk.xml</script>
                     <target>debug-nb</target>
                 </action>
             </ide-actions>
             <export>
                 <type>jar</type>
                 <location>build/lib/wonderland-client.jar</location>
+                <script>nbproject/nbjdk.xml</script>
                 <build-target>jar</build-target>
             </export>
             <export>
                 <type>jar</type>
                 <location>build/lib/wonderland-common.jar</location>
+                <script>nbproject/nbjdk.xml</script>
                 <build-target>jar</build-target>
             </export>
             <export>
                 <type>jar</type>
                 <location>build/lib/wonderland-server.jar</location>
+                <script>nbproject/nbjdk.xml</script>
                 <build-target>jar</build-target>
             </export>
             <view>

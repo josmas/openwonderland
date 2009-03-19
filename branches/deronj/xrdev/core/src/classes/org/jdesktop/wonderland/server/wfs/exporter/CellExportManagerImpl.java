@@ -42,4 +42,8 @@ public class CellExportManagerImpl implements CellExportManager {
     {
         service.exportCells(worldRoot, cellIDs, listener);
     }
+
+    public void createRecording(String name, Set<CellID> cells, RecordingCreationListener listener) {
+        service.createRecording(name, cells, listener);
+    }
 }

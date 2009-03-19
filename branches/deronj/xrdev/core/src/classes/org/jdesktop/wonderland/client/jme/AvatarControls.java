@@ -194,6 +194,6 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
     }
 
     public interface AvatarActionTrigger {
-        public void trigger(int trigger, boolean pressed);
+        public void trigger(int trigger, boolean pressed, String animationName);
     }
 }

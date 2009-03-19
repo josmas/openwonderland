@@ -46,6 +46,7 @@ import java.awt.Canvas;
 import java.awt.event.ComponentListener;
 import java.util.HashSet;
 import javax.swing.JPanel;
+import org.jdesktop.mtgame.BufferUpdater;
 import org.jdesktop.mtgame.RenderBuffer;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -157,6 +158,13 @@ public class ViewManager {
             }
         });
 
+        // Wait for the renderer to become ready
+        rb.setBufferUpdater(new BufferUpdater() {
+            public void init(RenderBuffer arg0) {
+                System.err.println("RENDERER IS READY !");
+            }
+        });
+
         createCameraEntity(ClientContextJME.getWorldManager());
         listener = new CellListener();
 
@@ -255,9 +263,8 @@ public class ViewManager {
             if (renderer instanceof BasicRenderer) {
                 BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
                 if (moveProc!=null) {
+                    moveProc.addToChain(cameraProcessor);
                     avatarControls.addToChain(moveProc);
-                    moveProc.setChained(true);
-                    avatarControls.addToChain(cameraProcessor);
                 }
             }
         }
@@ -274,8 +281,10 @@ public class ViewManager {
      * Detach the 3D view from the cell it's currently attached to.
      */
     public void detach() {
-        if (attachCell!=null)
-            throw new RuntimeException("View not attached to cell");
+        if (attachCell==null) {
+            Logger.getAnonymousLogger().warning("VIEW NOT ATTACHED TO A CELL (BUT CONTINUE ANYWAY)");
+            return;
+        }
         
         Entity entity = ((CellRendererJME)attachCell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
         entity.removeComponent(SimpleAvatarControls.class);
@@ -284,8 +293,8 @@ public class ViewManager {
         if (renderer!=null && renderer instanceof BasicRenderer) {
             BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
             if (moveProc!=null) {
+                moveProc.addToChain(cameraProcessor);
                 avatarControls.removeFromChain(moveProc);
-                avatarControls.removeFromChain(cameraProcessor);
             }
         }
         
@@ -305,7 +314,17 @@ public class ViewManager {
 
         this.cameraProcessor = cameraProcessor;
         cameraProcessor.initialize(cameraNode);
-        avatarControls.addToChain(cameraProcessor);
+        Entity entity = ((CellRendererJME)attachCell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
+
+        CellRendererJME renderer = (CellRendererJME) attachCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+
+            if (renderer instanceof BasicRenderer) {
+                BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
+                if (moveProc!=null) {
+                    moveProc.addToChain(cameraProcessor);
+                }
+            }
+
         cameraProcessor.viewMoved(primaryViewCell.getWorldTransform());
     }
 

@@ -19,8 +19,10 @@ package org.jdesktop.wonderland.client.jme;
 
 import java.util.HashMap;
 import org.jdesktop.mtgame.CollisionSystem;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.WorkProcessor;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
@@ -37,12 +39,18 @@ public class ClientContextJME extends ClientContext {
     private static WorldManager worldManager;
     private static HashMap<ServerSessionManager, HashMap<String, PhysicsSystem>> physicsSystems = new HashMap();
     private static HashMap<ServerSessionManager, HashMap<String, CollisionSystem>> collisionSystems = new HashMap();
-    
+
+    private static WorkProcessor workProcessor;
+
+    private static SceneWorker sceneWorker;
+
     static {
         worldManager = new WorldManager("Wonderland");
+        sceneWorker = new SceneWorker(worldManager);
         InputManager3D.getInputManager(); // worldManager must be instantiated first
         SceneManager.getSceneManager();
         System.setProperty("BafCacheDir", "file://"+getUserDirectory().getAbsolutePath());
+
     }
 
     /**
@@ -131,6 +139,10 @@ public class ClientContextJME extends ClientContext {
 
             return sessionCollisions.get(name);
         }
+    }
+
+    public static SceneWorker getSceneWorker() {
+        return sceneWorker;
     }
 
     /**

@@ -25,7 +25,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.modules.ModuleArtList;
-import org.jdesktop.wonderland.common.modules.ModuleChecksums;
+import org.jdesktop.wonderland.common.checksums.ChecksumList;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.common.modules.ModuleList;
 import org.jdesktop.wonderland.common.modules.ModuleRepository;
@@ -38,6 +38,7 @@ public class ModuleUtils {
     /* Prefixes for the module and asset web services */
     private static final String MODULE_PREFIX = "wonderland-web-modules/modules/";
     private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
+    private static final String CHECKSUM_PREFIX = "wonderland-web-checksums/checksums/modules/";
     
     /* The error logger for this class */
     private static Logger logger = Logger.getLogger(ModuleUtils.class.getName());
@@ -53,7 +54,7 @@ public class ModuleUtils {
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH MODULE INFO Failed", excp);
-            return new ModuleInfo();
+            return null;
         }
     }
     
@@ -91,7 +92,7 @@ public class ModuleUtils {
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH MODULE ART Failed", excp);
-            return new ModuleArtList();
+            return null;
         }
     }
     
@@ -108,7 +109,6 @@ public class ModuleUtils {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
             URL url = new URL(new URL(serverURL), ASSET_PREFIX + moduleName + "/repository");
-            logger.info("[MODULE] Fetching Repository list from " + url.toString());
             return ModuleRepository.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
@@ -126,12 +126,11 @@ public class ModuleUtils {
      * @param moduleName The unique name of a module
      * @return The checksum information for a module
      */
-    public static ModuleChecksums fetchModuleChecksums(String serverURL, String moduleName) {
+    public static ChecksumList fetchModuleChecksums(String serverURL, String moduleName) {
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
-            URL url = new URL(new URL(serverURL), ASSET_PREFIX + moduleName + "/checksums/get");
-            logger.info("[MODULES] Fetch modules from " + url.toString());
-            return ModuleChecksums.decode(new InputStreamReader(url.openStream()));
+            URL url = new URL(new URL(serverURL), CHECKSUM_PREFIX + moduleName + "/checksums/get");
+            return ChecksumList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH CHECKSUMS Failed", excp);
@@ -149,14 +148,14 @@ public class ModuleUtils {
      * @param assetType The name of the asset type (art, audio, client, etc.)
      * @return The checksum information for a module
      */
-    public static ModuleChecksums fetchAssetChecksums(String serverURL,
+    public static ChecksumList fetchAssetChecksums(String serverURL,
             String moduleName, String assetType) {
         
         try {
             /* Open an HTTP connection to the Jersey RESTful service */
             String uriPart = moduleName + "/checksums/get/" + assetType;
-            URL url = new URL(new URL(serverURL), ASSET_PREFIX + uriPart);
-            return ModuleChecksums.decode(new InputStreamReader(url.openStream()));
+            URL url = new URL(new URL(serverURL), CHECKSUM_PREFIX + uriPart);
+            return ChecksumList.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
             logger.log(Level.WARNING, "[MODULES] FETCH CHECKSUMS Failed", excp);

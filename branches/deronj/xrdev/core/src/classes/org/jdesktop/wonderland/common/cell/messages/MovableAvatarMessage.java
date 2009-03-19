@@ -31,27 +31,30 @@ public class MovableAvatarMessage extends MovableMessage {
 
     private int trigger;
     private boolean pressed;
+    private String animationName=null;
 
     protected MovableAvatarMessage(CellID cellID, ActionType action) {
         super(cellID, action);
     }
 
-    public static MovableAvatarMessage newMoveRequestMessage(CellID cellID, Vector3f position, Quaternion rotation, int trigger, boolean pressed) {
+    public static MovableAvatarMessage newMoveRequestMessage(CellID cellID, Vector3f position, Quaternion rotation, int trigger, boolean pressed, String animationName) {
         MovableAvatarMessage ret = new MovableAvatarMessage(cellID, ActionType.MOVE_REQUEST);
         ret.setTranslation(position);
         ret.setRotation(rotation);
         ret.setTrigger(trigger);
         ret.setPressed(pressed);
+        ret.setAnimationName(animationName);
 
         return ret;
     }
 
-    public static CellMessage newMovedMessage(CellID cellID, CellTransform transform, int trigger, boolean pressed) {
+    public static CellMessage newMovedMessage(CellID cellID, CellTransform transform, int trigger, boolean pressed, String animationName) {
         MovableAvatarMessage ret = new MovableAvatarMessage(cellID, ActionType.MOVED);
         ret.setTranslation(transform.getTranslation(null));
         ret.setRotation(transform.getRotation(null));
         ret.setTrigger(trigger);
         ret.setPressed(pressed);
+        ret.setAnimationName(animationName);
 
         return ret;
     }
@@ -82,5 +85,13 @@ public class MovableAvatarMessage extends MovableMessage {
      */
     protected void setPressed(boolean pressed) {
         this.pressed = pressed;
+    }
+
+    protected void setAnimationName(String animationName) {
+        this.animationName = animationName;
+    }
+
+    public String getAnimationName() {
+        return animationName;
     }
 }

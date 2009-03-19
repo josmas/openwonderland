@@ -54,6 +54,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  */
 @ExperimentalAPI
 public class Cell {
+
     private BoundingVolume cachedVWBounds;
     private BoundingVolume computedWorldBounds;
     private BoundingVolume localBounds;
@@ -63,12 +64,11 @@ public class Cell {
     private CellTransform local2VW = new CellTransform(null, null);
     private CellTransform worldTransform = new CellTransform(null, null);
     private CellID cellID;
-    private String name=null;
+    private String name = null;
     private CellStatus currentStatus = CellStatus.DISK;
     private CellCache cellCache;
-    
     private HashMap<Class, CellComponent> components = new HashMap<Class, CellComponent>();
-    
+
     /**
      * An enum representing the various render types supported by Wonderland.
      * A Cell represents the state, the renderer the visual representation of
@@ -93,17 +93,14 @@ public class Cell {
          * Low end 3D rendering, cell phone renderer etc, TBD
          */
     };
-    
     private HashMap<RendererType, CellRenderer> cellRenderers = new HashMap();
-    
     /**
      * The logger for Cell (and possibly it's subclasses)
      */
     protected static Logger logger = Logger.getLogger(Cell.class.getName());
-    
     private HashSet<TransformChangeListener> transformChangeListeners = null;
     private HashSet<ComponentChangeListener> componentChangeListeners = null;
-    
+
     /**
      * Instantiate a new cell
      * @param cellID the cells unique ID
@@ -112,10 +109,10 @@ public class Cell {
     public Cell(CellID cellID, CellCache cellCache) {
         this.cellID = cellID;
         this.cellCache = cellCache;
-        
+
         logger.fine("Cell: Creating new Cell ID=" + cellID);
     }
-    
+
     /**
      * Return the unique id of this cell
      * @return the cell id
@@ -123,7 +120,7 @@ public class Cell {
     public CellID getCellID() {
         return cellID;
     }
-    
+
     /**
      * Return the cells parent, or null if it have no parent
      * @return
@@ -131,21 +128,22 @@ public class Cell {
     public Cell getParent() {
         return parent;
     }
-    
+
     /**
      * Return the list of children for this cell, or an empty list if there
      * are no children
      * @return
      */
     public List<Cell> getChildren() {
-        if (children==null)
+        if (children == null) {
             return new ArrayList<Cell>(0);
-        
-        synchronized(children) {
+        }
+
+        synchronized (children) {
             return (List<Cell>) children.clone();
         }
     }
-    
+
     /**
      * Add the child to the set of children of this cell. Throws a MultipleParentException
      * if child is already a child to another cell
@@ -153,20 +151,20 @@ public class Cell {
      * @throws org.jdesktop.wonderland.common.cell.MultipleParentException
      */
     public void addChild(Cell child) throws MultipleParentException {
-        if (child.getParent()!=null) {
+        if (child.getParent() != null) {
             throw new MultipleParentException();
         }
-        
-        if (children==null) {
-            children=new ArrayList<Cell>();
+
+        if (children == null) {
+            children = new ArrayList<Cell>();
         }
-        
-        synchronized(children) {
+
+        synchronized (children) {
             children.add(child);
             child.setParent(this);
         }
     }
-    
+
     /**
      * Remove the specified cell from the set of children of this cell.
      * Returns silently if the supplied cell is not a child of this cell.
@@ -176,16 +174,17 @@ public class Cell {
      * @param child
      */
     public void removeChild(Cell child) {
-        if (children==null)
+        if (children == null) {
             return;
-        
-        synchronized(children) {
+        }
+
+        synchronized (children) {
             if (children.remove(child)) {
                 child.setParent(null);
-            }            
+            }
         }
     }
-    
+
     /**
      * Return this cells instance of the specified component class if defined. Otherwise
      * return null.
@@ -196,7 +195,7 @@ public class Cell {
     public <T extends CellComponent> T getComponent(Class<T> cellComponentClass) {
         return (T) components.get(cellComponentClass);
     }
-    
+
     /**
      * Add a component to this cell. Only a single instance of each component
      * class can be added to a cell. Adding duplicate components will result in
@@ -225,14 +224,15 @@ public class Cell {
      * @param component the componnet to be added
      */
     public void addComponent(CellComponent component, Class componentClass) {
-        CellComponent previous = components.put(componentClass,component);
-        if (previous!=null)
-            throw new IllegalArgumentException("Adding duplicate component of class "+component.getClass().getName());
+        CellComponent previous = components.put(componentClass, component);
+        if (previous != null) {
+            throw new IllegalArgumentException("Adding duplicate component of class " + component.getClass().getName());
+        }
 
-        synchronized(currentStatus) {
+        synchronized (currentStatus) {
             // If the cell is current more than just being on disk, then attempt
             // to find out what components it depends upon and add them
-            if (currentStatus.ordinal()>CellStatus.DISK.ordinal()) {
+            if (currentStatus.ordinal() > CellStatus.DISK.ordinal()) {
                 resolveAutoComponentAnnotationsForComponents(component);
             }
 
@@ -257,10 +257,12 @@ public class Cell {
      */
     public void removeComponent(Class<? extends CellComponent> componentClass) {
         CellComponent component = components.remove(componentClass);
-        component.setComponentStatus(CellStatus.DISK);
-        notifyComponentChangeListeners(ChangeType.REMOVED, component);
+        if (component != null) {
+            component.setComponentStatus(CellStatus.DISK);
+            notifyComponentChangeListeners(ChangeType.REMOVED, component);
+        }
     }
-    
+
     /**
      * Return a collection of all the components in this cell.
      * The collection is a clone of the internal data structure, so this is a
@@ -271,7 +273,7 @@ public class Cell {
     public Collection<CellComponent> getComponents() {
         return new ArrayList<CellComponent>(components.values());
     }
-    
+
     /**
      * Set the parent of this cell, called from addChild and removeChild
      * @param parent
@@ -279,31 +281,33 @@ public class Cell {
     void setParent(Cell parent) {
         this.parent = parent;
     }
-    
+
     /**
      * Return the number of children
      * 
      * @return
      */
     public int getNumChildren() {
-        if (children==null)
+        if (children == null) {
             return 0;
-        
-        synchronized(children) {
+        }
+
+        synchronized (children) {
             return children.size();
         }
     }
-    
+
     /**
      * Return the transform for this cell
      * @return
      */
     public CellTransform getLocalTransform() {
-        if (localTransform==null)
+        if (localTransform == null) {
             return null;
+        }
         return (CellTransform) localTransform.clone(null);
     }
-    
+
     /**
      * Set the transform for this cell.
      * 
@@ -314,64 +318,68 @@ public class Cell {
      */
     void setLocalTransform(CellTransform localTransform, TransformChangeListener.ChangeSource source) {
         // Don't process the same transform twice
-        if (this.localTransform!=null && this.localTransform.equals(localTransform))
+        if (this.localTransform != null && this.localTransform.equals(localTransform)) {
             return;
+        }
 
-        if (localTransform==null) {
-            this.localTransform=null;
+        if (localTransform == null) {
+            this.localTransform = null;
             // Get parent worldTransform
-            Cell current=getParent();
-            while(current!=null) {
+            Cell current = getParent();
+            while (current != null) {
                 CellTransform parentWorldTransform = current.getWorldTransform();
-                if (parentWorldTransform!=null) {
+                if (parentWorldTransform != null) {
                     setWorldTransform(parentWorldTransform, source);  // this method also calls notifyTransformChangeListeners
                     current = null;
-                } else
+                } else {
                     current = current.getParent();
+                }
             }
         } else {
             this.localTransform = (CellTransform) localTransform.clone(null);
-            if (parent!=null) {
+            if (parent != null) {
                 worldTransform = (CellTransform) localTransform.clone(null);
                 worldTransform = worldTransform.mul(parent.getWorldTransform());
                 cachedVWBounds = localBounds.clone(cachedVWBounds);
-                worldTransform.transform(cachedVWBounds);                
+                worldTransform.transform(cachedVWBounds);
 
                 local2VW = null;
-            } else if (parent==null) { // ROOT
-                worldTransform = (CellTransform)localTransform.clone(null);
+            } else if (parent == null) { // ROOT
+                worldTransform = (CellTransform) localTransform.clone(null);
                 local2VW = null;
-                
-                cachedVWBounds = localBounds.clone(cachedVWBounds);               
-                worldTransform.transform(cachedVWBounds);                
+
+                cachedVWBounds = localBounds.clone(cachedVWBounds);
+                worldTransform.transform(cachedVWBounds);
             }
-            
+
             notifyTransformChangeListeners(source);
         }
-        
-        if (cachedVWBounds==null) {
-            logger.warning("********** NULL cachedVWBounds "+getName() +"  "+localBounds+"  "+localTransform);
+
+        if (cachedVWBounds == null) {
+            logger.warning("********** NULL cachedVWBounds " + getName() + "  " + localBounds + "  " + localTransform);
             Thread.dumpStack();
         }
-                
-        for(Cell child : getChildren())
-            transformTreeUpdate(this, child, source);      
+
+        for (Cell child : getChildren()) {
+            transformTreeUpdate(this, child, source);
+        }
 
         // Notify Renderers that the cell has moved
-        for(CellRenderer rend : cellRenderers.values())
+        for (CellRenderer rend : cellRenderers.values()) {
             rend.cellTransformUpdate(worldTransform);
+        }
 
     }
-        
+
     /**
      * Return the local to Virtual World transform for this cell.
      * @return cells local to VWorld transform
      */
     public CellTransform getLocalToWorldTransform() {
-        if (local2VW==null) {
+        if (local2VW == null) {
             local2VW = worldTransform.clone(null);
             local2VW.invert();
-        } 
+        }
         return (CellTransform) local2VW.clone(null);
     }
 
@@ -381,10 +389,9 @@ public class Cell {
      * @return the world transform of this cell.
      */
     public CellTransform getWorldTransform() {
-        return (CellTransform)worldTransform.clone(null);
+        return (CellTransform) worldTransform.clone(null);
     }
-    
-    
+
     /**
      * Set the localToVWorld transform for this cell
      * @param localToVWorld
@@ -394,10 +401,10 @@ public class Cell {
         cachedVWBounds = localBounds.clone(cachedVWBounds);
         worldTransform.transform(cachedVWBounds);
         local2VW = null; // force local2VW to be recalculated
-        
+
         notifyTransformChangeListeners(source);
     }
-    
+
     /**
      * Compute the local to vworld of the cell, this for test purposes only
      * @param parent
@@ -420,7 +427,6 @@ public class Cell {
 //        
 //        return ret;
 //    }
-
     /**
      * Update local2VWorld and bounds of child and all its children recursively 
      * to reflect changes in a parent
@@ -433,26 +439,26 @@ public class Cell {
         CellTransform parentWorldTransform = parent.getWorldTransform();
 
         CellTransform childTransform = child.getLocalTransform();
-        
-        if (childTransform!=null) {
+
+        if (childTransform != null) {
             childTransform.mul(parentWorldTransform);
             child.setWorldTransform(childTransform, source);
         } else {
             child.setWorldTransform(parentWorldTransform, source);
         }
-        
+
         BoundingVolume ret = child.getWorldBounds();
-        
+
         Iterator<Cell> it = child.getChildren().iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             ret.mergeLocal(transformTreeUpdate(child, it.next(), source));
         }
-        
+
         child.setWorldBounds(ret);
-                
+
         return null;
     }
-    
+
     /**
      * Returns the world bounds, this is the local bounds transformed into VW 
      * coordinates. These bounds do not include the subgraph bounds. This call 
@@ -471,14 +477,15 @@ public class Cell {
     private void setWorldBounds(BoundingVolume cachedVWBounds) {
         this.cachedVWBounds = cachedVWBounds;
     }
-    
+
     /**
      * Return the name for this cell (defaults to cellID)
      * @return
      */
     public String getName() {
-        if (name==null)
+        if (name == null) {
             return cellID.toString();
+        }
         return name;
     }
 
@@ -515,7 +522,7 @@ public class Cell {
     public CellCache getCellCache() {
         return cellCache;
     }
-    
+
     /**
      * Returns the status of this cell
      * Cell states
@@ -531,7 +538,7 @@ public class Cell {
     public CellStatus getStatus() {
         return this.currentStatus;
     }
-    
+
     /**
      * Set the status of this cell
      *
@@ -557,36 +564,37 @@ public class Cell {
      * @return true if the status was changed, false if the new and previous status are the same
      */
     public boolean setStatus(CellStatus status) {
-        synchronized(currentStatus) {
-            if (currentStatus==status) {
+        synchronized (currentStatus) {
+            if (currentStatus == status) {
                 return false;
             }
 
-            if (status==CellStatus.BOUNDS) {
+            if (status == CellStatus.BOUNDS) {
                 resolveAutoComponentAnnotationsForCell();
                 CellComponent[] compList = components.values().toArray(new CellComponent[components.size()]);
-                for(CellComponent c : compList) {
+                for (CellComponent c : compList) {
                     resolveAutoComponentAnnotationsForComponents(c);
                 }
             }
 
             currentStatus = status;
 
-            for(CellComponent component : components.values())
+            for (CellComponent component : components.values()) {
                 component.setComponentStatus(status);
+            }
 
-            for(CellRenderer renderer : cellRenderers.values()) {
+            for (CellRenderer renderer : cellRenderers.values()) {
                 renderer.setStatus(status);
             }
 
-            switch(status) {
-                case DISK :
-                    if (transformChangeListeners!=null) {
+            switch (status) {
+                case DISK:
+                    if (transformChangeListeners != null) {
                         transformChangeListeners.clear();
                         transformChangeListeners = null;
                     }
 
-                    if (components!=null) {
+                    if (components != null) {
                         components.clear();
                     }
 
@@ -626,7 +634,7 @@ public class Cell {
      */
     private void resolveAutoComponentAnnotationsForComponents(CellComponent c) {
         Class clazz = c.getClass();
-        while(clazz!=CellComponent.class) {
+        while (clazz != CellComponent.class) {
             resolveAnnotations(clazz, c);
             clazz = clazz.getSuperclass();
         }
@@ -641,7 +649,7 @@ public class Cell {
      */
     private void resolveAutoComponentAnnotationsForCell() {
         Class clazz = this.getClass();
-        while(clazz!=Cell.class) {
+        while (clazz != Cell.class) {
             resolveAnnotations(clazz, this);
             clazz = clazz.getSuperclass();
         }
@@ -649,20 +657,21 @@ public class Cell {
 
     private void resolveAnnotations(Class clazz, Object o) {
         Field[] fields = clazz.getDeclaredFields();
-        for(Field f : fields) {
+        for (Field f : fields) {
             UsesCellComponent a = f.getAnnotation(UsesCellComponent.class);
 //            System.err.println("Field "+f.getName()+"  "+f.getType()+"   "+f.getAnnotations().length);
-            if (a!=null) {
-                if (logger.isLoggable(Level.FINE))
-                    logger.fine("****** GOT ANNOTATION for field "+f.getName()+"  "+f.getType());
+            if (a != null) {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("****** GOT ANNOTATION for field " + f.getName() + "  " + f.getType());
+                }
 
                 Class componentClazz = f.getType();
                 CellComponent comp = getComponent(componentClazz);
-                if (comp==null) {
+                if (comp == null) {
                     try {
                         comp = (CellComponent) componentClazz.getConstructor(Cell.class).newInstance(this);
                         addComponent(comp);
-                     } catch (IllegalArgumentException ex) {
+                    } catch (IllegalArgumentException ex) {
                         logger.log(Level.SEVERE, null, ex);
                     } catch (InvocationTargetException ex) {
                         logger.log(Level.SEVERE, null, ex);
@@ -700,10 +709,10 @@ public class Cell {
 
         // Sets the name of the cell
         this.setName(configData.getName());
-        
-        logger.fine("configure cell "+getCellID()+"  "+getClass());
+
+        logger.fine("configure cell " + getCellID() + "  " + getClass());
         // Install the CellComponents
-        for(String compClassname : configData.getClientComponentClasses()) {
+        for (String compClassname : configData.getClientComponentClasses()) {
             try {
                 // find the classloader associated with the server session
                 // manager that loaded this cell.  That classloader will
@@ -733,17 +742,16 @@ public class Cell {
                         component.setClientState(clientState);
                     }
                     addComponent(component, CellComponent.getLookupClass(component.getClass()));
-                }
-                else {
+                } else {
                     CellComponentClientState clientState = configData.getCellComponentClientState(compClassname);
                     if (clientState != null) {
                         component.setClientState(clientState);
                     }
                 }
             } catch (InstantiationException ex) {
-                logger.log(Level.SEVERE, "Instantiation exception for class "+compClassname+"  in cell "+getClass().getName(), ex);
+                logger.log(Level.SEVERE, "Instantiation exception for class " + compClassname + "  in cell " + getClass().getName(), ex);
             } catch (ClassNotFoundException ex) {
-                logger.log(Level.SEVERE, "Can't find component class "+compClassname, ex);
+                logger.log(Level.SEVERE, "Can't find component class " + compClassname, ex);
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
@@ -802,10 +810,10 @@ public class Cell {
      * @return the renderer for the specified type if available, or null
      */
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        Logger.getAnonymousLogger().warning(this.getClass().getName()+" createCellRenderer returning null");
+        Logger.getAnonymousLogger().warning(this.getClass().getName() + " createCellRenderer returning null");
         return null;
     }
-    
+
     /**
      * Return the renderer of the given type for this cell. If a renderer of the
      * requested type is not available null will be returned
@@ -814,17 +822,17 @@ public class Cell {
      */
     public CellRenderer getCellRenderer(RendererType rendererType) {
         CellRenderer ret = cellRenderers.get(rendererType);
-        if (ret==null) {
+        if (ret == null) {
             ret = createCellRenderer(rendererType);
-            if (ret!=null) {
+            if (ret != null) {
                 cellRenderers.put(rendererType, ret);
                 ret.setStatus(currentStatus);
             }
         }
-        
+
         return ret;
     }
-    
+
     /**
      * Add a TransformChangeListener to this cell. The listener will be
      * called for any changes to the cells transform
@@ -832,11 +840,12 @@ public class Cell {
      * @param listener to add
      */
     public void addTransformChangeListener(TransformChangeListener listener) {
-        if (transformChangeListeners==null)
+        if (transformChangeListeners == null) {
             transformChangeListeners = new HashSet();
+        }
         transformChangeListeners.add(listener);
     }
-    
+
     /**
      * Remove the specified listener.
      * @param listener to be removed
@@ -844,13 +853,15 @@ public class Cell {
     public void removeTransformChangeListener(TransformChangeListener listener) {
         transformChangeListeners.remove(listener);
     }
-    
+
     private void notifyTransformChangeListeners(TransformChangeListener.ChangeSource source) {
-        if (transformChangeListeners==null)
+        if (transformChangeListeners == null) {
             return;
-        
-        for(TransformChangeListener listener : transformChangeListeners)
+        }
+
+        for (TransformChangeListener listener : transformChangeListeners) {
             listener.transformChanged(this, source);
+        }
     }
 
     /**
@@ -860,8 +871,9 @@ public class Cell {
      * @param listener to add
      */
     public void addComponentChangeListener(ComponentChangeListener listener) {
-        if (componentChangeListeners==null)
+        if (componentChangeListeners == null) {
             componentChangeListeners = new HashSet();
+        }
         componentChangeListeners.add(listener);
     }
 
@@ -874,10 +886,12 @@ public class Cell {
     }
 
     private void notifyComponentChangeListeners(ComponentChangeListener.ChangeType source, CellComponent component) {
-        if (componentChangeListeners==null)
+        if (componentChangeListeners == null) {
             return;
+        }
 
-        for(ComponentChangeListener listener : componentChangeListeners)
+        for (ComponentChangeListener listener : componentChangeListeners) {
             listener.componentChanged(this, source, component);
+        }
     }
 }

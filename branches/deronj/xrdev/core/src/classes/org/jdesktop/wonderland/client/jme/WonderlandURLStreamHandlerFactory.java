@@ -43,7 +43,9 @@ public class WonderlandURLStreamHandlerFactory implements URLStreamHandlerFactor
         // hardcode the list of protocol handelers.  We do this because
         // trying to load a handler class that doesn't exist using
         // Class.forName() throws a ClassCircularityError.
-        String[] protocols = {"wla", "wlj", "wltexture", "wlzip"};
+        String[] protocols = {
+            "wla", "wlj", "wltexture", "wlzip", "wlcontent", "wlhttp"
+        };
         for (String p : protocols) {
             if (p.equalsIgnoreCase(protocol)) {
                 String className =

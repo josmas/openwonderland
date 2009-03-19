@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -35,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 public class MovableAvatarComponent extends MovableComponent {
     private int trigger;
     private boolean pressed;
+    private String animationName;
 
     public final static int NO_TRIGGER = -1;
 
@@ -45,29 +47,35 @@ public class MovableAvatarComponent extends MovableComponent {
 
     @Override
     public void localMoveRequest(CellTransform transform) {
-        localMoveRequest(transform, NO_TRIGGER, false, null);
+        localMoveRequest(transform, NO_TRIGGER, false, null, null);
     }
 
     @Override
     public void localMoveRequest(CellTransform transform,
                                  final CellMoveModifiedListener listener) {
-        localMoveRequest(transform, NO_TRIGGER, false, listener);
+        localMoveRequest(transform, NO_TRIGGER, false, null, listener);
     }
 
 
     public void localMoveRequest(CellTransform transform,
                                  int trigger,
                                  boolean pressed,
+                                 String animationName,
                                  CellMoveModifiedListener listener) {
 
         synchronized(this) {
             this.trigger = trigger;
             this.pressed = pressed;
+            this.animationName = animationName;
             if (trigger==NO_TRIGGER) {
                 // Just a transform update, so it can be throttled
                 super.localMoveRequest(transform, null);
             } else {
                 // State change, so no throttling
+                // first clear any messages in the throttle thread
+                if (throttle!=null)
+                    throttle.send(null);
+                // Now send the current change
                 channelComp.send(createMoveRequestMessage(transform));
 
                 // As we don't call super, make sure we update the cell transform
@@ -82,7 +90,8 @@ public class MovableAvatarComponent extends MovableComponent {
                                                     transform.getTranslation(null),
                                                     transform.getRotation(null),
                                                     trigger,
-                                                    pressed);
+                                                    pressed,
+                                                    animationName);
     }
 
     @Override
@@ -101,7 +110,7 @@ public class MovableAvatarComponent extends MovableComponent {
 
         MovableAvatarMessage mam = (MovableAvatarMessage) msg;
         if (mam.getTrigger()!=NO_TRIGGER) {
-            ((AvatarCell)cell).triggerAction(mam.getTrigger(), mam.isPressed());
+            ((AvatarCell)cell).triggerAction(mam.getTrigger(), mam.isPressed(), mam.getAnimationName());
         }
     }
 

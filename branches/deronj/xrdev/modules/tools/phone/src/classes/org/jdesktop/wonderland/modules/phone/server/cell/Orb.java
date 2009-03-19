@@ -17,6 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.phone.server.cell;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.DataManager;
+import com.sun.sgs.app.ManagedReference;
+
 import java.io.Serializable;
 
 import java.util.logging.Logger;
@@ -28,6 +32,7 @@ import org.jdesktop.wonderland.modules.orb.common.OrbCellServerState;
 
 import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
 
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 
 import com.jme.bounding.BoundingVolume;
@@ -43,7 +48,11 @@ public class Orb implements Serializable {
     private static final Logger logger =
         Logger.getLogger(Orb.class.getName());
      
-    public Orb(String externalCallID, BoundingVolume boundingVolume, 
+    private ManagedReference<OrbCellMO> orbCellMORef;
+
+    private CellID cellID;
+
+    public Orb(String username, String externalCallID, BoundingVolume boundingVolume, 
 	    boolean simulateCalls) {
 
 	/*
@@ -67,12 +76,14 @@ public class Orb implements Serializable {
 	    "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
 
         OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
-	    center, (float) .5, externalCallID, simulateCalls);
+	    center, (float) .5, username, externalCallID, simulateCalls);
 
 	if (orbCellMO == null) {
 	    logger.warning("Unable to spawn orb");
 	    return;
 	}
+
+	cellID = orbCellMO.getCellID();
 
 	try {
             orbCellMO.setServerState(new OrbCellServerState());
@@ -89,6 +100,21 @@ public class Orb implements Serializable {
 	    logger.warning("Can't insert orb in world:  " + e.getMessage());
 	    return;
 	}
+	
+	orbCellMORef = AppContext.getDataManager().createReference(orbCellMO);
     }
 
+    public CellID getCellID() {
+	return cellID;
+    }
+
+    public void done() {
+	if (orbCellMORef == null) {
+	    return;
+	}
+
+	CellManagerMO.getCellManager().removeCellFromWorld(orbCellMORef.get());
+
+	orbCellMORef = null;
+    }
 }

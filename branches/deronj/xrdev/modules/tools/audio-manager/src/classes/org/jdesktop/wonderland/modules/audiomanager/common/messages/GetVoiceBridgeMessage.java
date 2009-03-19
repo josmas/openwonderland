@@ -29,26 +29,8 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 @ExperimentalAPI
 public class GetVoiceBridgeMessage extends Message {
-    private String bridgeInfo;   // voice bridge information
-    private String username;
 
     public GetVoiceBridgeMessage() {
-    }
-
-    public void setBridgeInfo(String bridgeInfo) {
-	this.bridgeInfo = bridgeInfo;
-    }
-
-    public String getBridgeInfo() {
-	return bridgeInfo;
-    }
-
-    public void setUsername(String username) {
-	this.username = username;
-    }
-
-    public String getUsername() {
-	return username;
     }
 
 }

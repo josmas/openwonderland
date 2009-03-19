@@ -25,7 +25,6 @@ import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import com.jme.util.resource.ResourceLocator;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,13 +33,12 @@ import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JBulletCollisionComponent;
-import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
-import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.PhysicsComponent;
 import org.jdesktop.mtgame.PhysicsSystem;
+import org.jdesktop.mtgame.PostEventCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
@@ -48,12 +46,11 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -66,8 +63,6 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 @ExperimentalAPI
 public abstract class BasicRenderer implements CellRendererJME {
-    /** <server name>:<port> of the web server */
-    private String serverHostAndPort;
     
     protected static Logger logger = Logger.getLogger(BasicRenderer.class.getName());
     protected Cell cell;
@@ -89,7 +84,6 @@ public abstract class BasicRenderer implements CellRendererJME {
     public BasicRenderer(Cell cell) {
         this.cell = cell;
     }
-
 
     /**
      * Return the cell that contains this component
@@ -195,6 +189,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         Entity ret = new Entity(this.getClass().getName()+"_"+cell.getCellID());
 
         rootNode = new Node();
+        rootNode.setName("CellRoot_"+cell.getCellID());
         sceneRoot = createSceneGraph(ret);
         rootNode.attachChild(sceneRoot);
         applyTransform(rootNode, cell.getWorldTransform());
@@ -370,38 +365,16 @@ public abstract class BasicRenderer implements CellRendererJME {
     }
 
     /**
-     * Given a url, determine and return the full asset URL.
+     * Given a url, determine and return the full asset URL. This is a
+     * convenience method that invokes methods on AssetUtils using the session
+     * associated with the cell for this cell renderer
      * 
-     * @param origURL
-     * @return
-     * @throws java.net.MalformedURLException
+     * @param uri The asset URI
+     * @return A URL representing the uri
+     * @throws MalformedURLException Upon error forming the URL
      */
-    protected URL getAssetURL(String origURL) throws MalformedURLException {
-        // TODO: fix me?
-        if (!origURL.startsWith("wla")) {
-            return new URL(origURL);
-        }
-
-        // annotate wla URIs with the server name and port
-        if (serverHostAndPort == null) {
-            WonderlandSession session = cell.getCellCache().getSession();
-            ServerSessionManager manager = LoginManager.find(session);
-            if (manager==null) {
-                logger.severe("Unable to find manager for session "+session);
-                return null;
-            }
-            serverHostAndPort = manager.getServerNameAndPort();
-        }
-
-        try {
-            AssetURI uri = new AssetURI(origURL).getAnnotatedURI(serverHostAndPort);
-            return uri.toURL();
-        } catch (URISyntaxException use) {
-            MalformedURLException mue =
-                    new MalformedURLException("Error creating asset URI");
-            mue.initCause(use);
-            throw mue;
-        }
+    protected URL getAssetURL(String uri) throws MalformedURLException {
+        return AssetUtils.getAssetURL(uri, cell);
     }
 
     /**
@@ -484,9 +457,9 @@ public abstract class BasicRenderer implements CellRendererJME {
         private Vector3f tmp2V3f = new Vector3f();
         private Quaternion tmpQuat = new Quaternion();
 
+        private final long postId = ClientContextJME.getWorldManager().allocateEvent();
 
-        private boolean isChained = false;
-        private NewFrameCondition postCondition = new NewFrameCondition(this);
+        private PostEventCondition postCondition = new PostEventCondition(this, new long[] {postId});
         
         public MoveProcessor(WorldManager worldManager, Node node) {
             this.node = node;
@@ -499,21 +472,30 @@ public abstract class BasicRenderer implements CellRendererJME {
 
         @Override
         public void commit(ProcessorArmingCollection arg0) {
+            // The dirty flag is important for Avatars, as we chain
+            // the moveProcessor to the avatarcontrol which update per frame
+            // This needs breaking out at some point in the future
+
             synchronized(this) {
                 if (dirty) {
                     node.setLocalTranslation(cellTransform.getTranslation(tmpV3f));
                     node.setLocalRotation(cellTransform.getRotation(tmpQuat));
                     node.setLocalScale(cellTransform.getScaling(tmp2V3f));
-//                    System.err.println("BasicRenderer.cellMoved "+tmpV3f);
+//                    System.err.println("BasicRenderer.cellMoved "+tmpV3f+"  "+arg0.size());
                     dirty = false;
                     worldManager.addToUpdateList(node);
 //            System.err.println("--------------------------------");
                 }
             }
+
+            // Clear the triggering events
+            if (arg0.size() != 0) {
+               PostEventCondition pec = (PostEventCondition)arg0.get(0);
+               pec.getTriggerEvents();
+            }
         }
 
-        @Override
-        
+        @Override        
         public void initialize() {
             setArmingCondition(postCondition);
         }
@@ -527,17 +509,14 @@ public abstract class BasicRenderer implements CellRendererJME {
             synchronized(this) {
                 this.cellTransform = transform;
                 dirty = true;
-
-
+//                System.err.println("CellMoved "+postId);
+                ClientContextJME.getWorldManager().postEvent(postId);
             }
         }
 
-        public void setChained(boolean isChained) {
-            this.isChained = isChained;
-            if (isChained)
-                setArmingCondition(null);
-            else 
-                setArmingCondition(postCondition);
+        @Override
+        protected void finalize() {
+            ClientContextJME.getWorldManager().freeEvent(postId);
         }
     }
 }

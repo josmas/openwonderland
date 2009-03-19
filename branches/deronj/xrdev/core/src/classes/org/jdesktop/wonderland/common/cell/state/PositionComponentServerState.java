@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.common.cell.state;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.io.Serializable;
@@ -45,7 +48,7 @@ public class PositionComponentServerState extends CellComponentServerState {
 
     /* The (x, y, z) components of the scaling */
     @XmlElement(name="scale")
-    public Scaling scaling = new Scaling();
+    public Scale scaling = new Scale();
 
     /* The rotation about an (x, y, z) axis and angle (radians) */
     @XmlElement(name="rotation")
@@ -79,29 +82,43 @@ public class PositionComponentServerState extends CellComponentServerState {
         /* The bounds type, either SPHERE or BOX */
         @XmlElement(name="type") public BoundsType type = BoundsType.SPHERE;
 
-        /* The radius of the bounds */
-        @XmlElement(name="radius") public double radius = 1.0;
+        /* The x dimension or radius of the bounds */
+        @XmlElement(name="x") public double x = 1.0;
+        @XmlElement(name="y") public double y = 1.0;
+        @XmlElement(name="z") public double z = 1.0;
 
         /** Default constructor */
         public Bounds() {
         }
+
+        public Bounds(BoundingVolume bv) {
+            if (bv instanceof BoundingBox) {
+                type = BoundsType.BOX;
+                x = ((BoundingBox)bv).xExtent;
+                y = ((BoundingBox)bv).yExtent;
+                z = ((BoundingBox)bv).zExtent;
+            } else if (bv instanceof BoundingSphere) {
+                type = BoundsType.SPHERE;
+                x = ((BoundingSphere)bv).radius;
+            }
+        }
     }
 
     /**
-     * The Scaling static inner class stores the scaling for each of the
+     * The Scale static inner class stores the scaling for each of the
      * (x, y, z) components
      */
-    public static class Scaling implements Serializable {
+    public static class Scale implements Serializable {
         /* The (x, y, z) scaling components */
         @XmlElement(name="x") public double x = 1;
         @XmlElement(name="y") public double y = 1;
         @XmlElement(name="z") public double z = 1;
 
         /** Default constructor */
-        public Scaling() {
+        public Scale() {
         }
 
-        public Scaling(Vector3f scaling) {
+        public Scale(Vector3f scaling) {
             x = scaling.x;
             y = scaling.y;
             z = scaling.z;
@@ -186,12 +203,16 @@ public class PositionComponentServerState extends CellComponentServerState {
         this.bounds = bounds;
     }
 
+    public void setBounds(BoundingVolume boundingVolume) {
+        this.bounds = new Bounds(boundingVolume);
+    }
+
     /**
      * Returns the cell scaling.
      *
      * @return The cell scaing
      */
-    @XmlTransient public Scaling getScaling() {
+    @XmlTransient public Scale getScaling() {
         return this.scaling;
     }
 
@@ -201,7 +222,7 @@ public class PositionComponentServerState extends CellComponentServerState {
      *
      * @param scaling The new cell scaling
      */
-    public void setScaling(Scaling scaling) {
+    public void setScaling(Scale scaling) {
         this.scaling = scaling;
     }
 
@@ -230,6 +251,7 @@ public class PositionComponentServerState extends CellComponentServerState {
                 "," + this.origin.z + ") rotation=(" + this.rotation.x + "," +
                 this.rotation.y + "," + this.rotation.z + ") @ " + this.rotation.angle +
                 " scaling=(" + this.scaling.x + "," + this.scaling.y + "," +
-                this.scaling.z + ") bounds=" + this.bounds.type + "@" + this.bounds.radius;
+                this.scaling.z + ") bounds=" + this.bounds.type + "@" +
+                this.bounds.x+", "+this.bounds.y+" "+this.bounds.z;
     }
 }

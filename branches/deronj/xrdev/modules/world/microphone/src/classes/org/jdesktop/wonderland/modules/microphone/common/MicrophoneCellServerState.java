@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
@@ -36,8 +35,7 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Or
  */
 @XmlRootElement(name="microphone-cell")
 @ServerState
-public class MicrophoneCellServerState extends CellServerState
-        implements Serializable,  CellServerStateSPI {
+public class MicrophoneCellServerState extends CellServerState {
 
     @XmlElement(name="name")
     private String name;

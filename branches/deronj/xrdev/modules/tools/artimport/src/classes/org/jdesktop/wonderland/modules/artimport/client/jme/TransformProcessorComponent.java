@@ -21,6 +21,7 @@ import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import org.jdesktop.mtgame.NewFrameCondition;
+import org.jdesktop.mtgame.PostEventCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
@@ -35,12 +36,14 @@ public class TransformProcessorComponent extends ProcessorComponent {
         private Matrix3f rotation;
         private Vector3f translation;
         private Vector3f scale = new Vector3f(1,1,1);
-        private Node node;
+        private Node modelBG;
+        private Node rootBG;
         private WorldManager worldManager;
         private boolean updatePending = false;
         
-        public TransformProcessorComponent(WorldManager worldManager, Node node) {
-            this.node = node;
+        public TransformProcessorComponent(WorldManager worldManager, Node modelBG, Node rootBG) {
+            this.modelBG = modelBG;
+            this.rootBG = rootBG;
             this.worldManager = worldManager;
         }
         
@@ -53,18 +56,19 @@ public class TransformProcessorComponent extends ProcessorComponent {
         public void commit(ProcessorArmingCollection conditions) {
             synchronized(this) {
                 if (updatePending) {
-                    node.setLocalRotation(rotation);
-                    node.setLocalTranslation(translation);
-                    node.setLocalScale(scale);
+                    modelBG.setLocalRotation(rotation);
+                    rootBG.setLocalTranslation(translation);
+                    modelBG.setLocalScale(scale);
                     updatePending = false;
                 }
 
             }
-            worldManager.addToUpdateList(node);
+            worldManager.addToUpdateList(modelBG);
         }
 
         @Override
         public void initialize() {
+            // TODO this should be a post condition
             setArmingCondition(new NewFrameCondition(this));
         }
 
