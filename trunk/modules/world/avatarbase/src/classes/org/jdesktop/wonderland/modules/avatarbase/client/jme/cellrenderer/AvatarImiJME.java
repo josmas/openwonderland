@@ -92,10 +92,14 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
     private float positionMaxDistanceForPull    = 3.0f;
     private Node nameTagRoot=null;
 
+    String username;
+
     public AvatarImiJME(Cell cell) {
         super(cell);
         assert(cell!=null);
         final Cell c = cell;
+
+	username = ((AvatarCell) cell).getIdentity().getUsername();
 
         characterMotionListener = new CharacterMotionListener() {
                 public void transformUpdate(Vector3f translation, PMatrix rotation) {
@@ -125,16 +129,51 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
             };
 
         ClientContext.getInputManager().addGlobalEventListener(new EventClassListener() {
-            private Class[] consumeClasses = new Class[] { AvatarRendererChangeRequestEvent.class };
+            private Class[] consumeClasses = new Class[] { 
+		AvatarRendererChangeRequestEvent.class,
+		AvatarMuteEvent.class,
+		AvatarSpeakingEvent.class 
+	    };
 
             @Override
             public Class[] eventClassesToConsume () {
                 return consumeClasses;
             }
 
+	    @Override
+	    public void commitEvent(Event event) {
+		//System.out.println("COMMIT EVENT:  " + event);
+
+		if (event instanceof AvatarMuteEvent) {
+		    AvatarMuteEvent e = (AvatarMuteEvent) event;
+
+		    if (e.getUsername().equals(username)) {
+			if (e.isMuted()) {
+			    createNameTag("[" + username + "]");
+			} else {
+			    createNameTag(username);
+			}
+		    }
+		    return;
+		}
+
+		if (event instanceof AvatarSpeakingEvent) {
+		    AvatarSpeakingEvent e = (AvatarSpeakingEvent) event;
+
+		    if (e.getUsername().equals(username)) {
+			if (e.isSpeaking()) {
+			    createNameTag(username + "...");
+			} else {
+			    createNameTag(username);
+			}
+		    }
+		    return;
+		}
+	    }
+
             @Override
             public void computeEvent(Event evtIn) {
-                System.err.println("TODO - GOT EVENT "+evtIn);
+                //System.err.println("TODO - GOT EVENT "+evtIn);
             }
         });
     }
@@ -157,14 +196,25 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         return avatarCharacter;
     }
 
+    Entity labelEntity = new Entity("NameTag");
+
     void createNameTag() {
-        Entity labelEntity = new Entity("NameTag");
-        TextLabel2D label = new TextLabel2D(((AvatarCell)cell).getIdentity().getUsername());
+	createNameTag(username);
+    }
+
+    void createNameTag(String username) {
+        TextLabel2D label = new TextLabel2D(username);
         Spatial q = label.getBillboard(0.3f);
         q.setLocalTranslation(0f, 2f, 0f);
         Matrix3f rot = new Matrix3f();
         rot.fromAngleAxis((float) Math.PI, new Vector3f(0f,1f,0f));
         q.setLocalRotation(rot);
+
+	if (labelEntity != null) {
+            ClientContextJME.getWorldManager().removeEntity(labelEntity);
+            //labelEntity.removeComponent(RenderComponent.class, ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(nameTagRoot));
+            labelEntity.removeComponent(RenderComponent.class);
+	}
 
         nameTagRoot = new Node();
         nameTagRoot.attachChild(q);
