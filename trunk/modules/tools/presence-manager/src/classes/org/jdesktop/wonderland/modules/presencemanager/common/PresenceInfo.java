@@ -31,20 +31,23 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class PresenceInfo implements Serializable {
 
+    public CellID cellID;
     public BigInteger clientID;
     public WonderlandIdentity userID;
-    public CellID cellID;
+    public String callID;
 
-    public PresenceInfo(BigInteger clientID, WonderlandIdentity userID, CellID cellID) {
+    public PresenceInfo(CellID cellID, BigInteger clientID, WonderlandIdentity userID, 
+	    String callID) {
 
+        this.cellID = cellID;
 	this.clientID = clientID;
         this.userID = userID;
-        this.cellID = cellID;
+	this.callID = callID;
     }
 
     public String toString() {
-        return "clientID=" + clientID + ", userID=" + userID.toString()
-            + ", cellID=" + cellID ;
+        return "cellID=" + cellID + ", userID=" + userID.toString()
+            + ", clientID=" + clientID + " callID " + callID;
     }
 
 }

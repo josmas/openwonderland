@@ -378,7 +378,8 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
                     logger.fine("back from attenuate other groups");
                 }
             } else {
-                new Orb(externalCallID, phoneCellMO.getWorldBounds(), listing.simulateCalls());
+                Orb orb = new Orb(listing.getContactName(), externalCallID, 
+		    phoneCellMO.getWorldBounds(), listing.simulateCalls());
 	    }
 
             if (listing.simulateCalls() == false) {
@@ -440,7 +441,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
             sender.send(clientID, new JoinCallResponseMessage(
 		phoneCellMO.getCellID(), listing, true));
             
-            new Orb(externalCallID, phoneCellMO.getWorldBounds(), false);
+            new Orb(listing.getContactName(), externalCallID, phoneCellMO.getWorldBounds(), false);
 	    return;
 	}
 
@@ -508,7 +509,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 	synchronized (this) {
 	    callNumber++;
-
+	
             return getCell().getCellID() + "_" + callNumber;
 	}
     }

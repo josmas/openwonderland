@@ -31,23 +31,15 @@ import org.jdesktop.wonderland.common.messages.Message;
 public class MuteCallMessage extends Message {
 
     private String callID;
-    private PresenceInfo presenceInfo;
     private boolean isMuted;
 
-    public MuteCallMessage(String callID, PresenceInfo presenceInfo, 
-	    boolean isMuted) {
-
+    public MuteCallMessage(String callID, boolean isMuted) {
 	this.callID = callID;
-	this.presenceInfo = presenceInfo;
 	this.isMuted = isMuted;
     }
 
     public String getCallID() {
 	return callID;
-    }
-
-    public PresenceInfo getPresenceInfo() {
-	return presenceInfo;
     }
 
     public boolean isMuted() {

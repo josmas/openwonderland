@@ -52,7 +52,8 @@ public class PhoneCellFactory implements CellFactorySPI {
          */
         //cellServerState.setRotation(new Rotation(axis, (float) Math.PI / 4));
 
-        Logger.getLogger(PhoneCellFactory.class.getName()).warning("Virtual Phone!!!!");
+        Logger.getLogger(PhoneCellFactory.class.getName()).warning(
+	    "New Virtual Phone!!!!");
         return (T) cellServerState;
     }
 

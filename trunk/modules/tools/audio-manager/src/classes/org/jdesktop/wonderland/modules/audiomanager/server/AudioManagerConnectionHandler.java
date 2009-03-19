@@ -33,15 +33,17 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMess
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
-import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.UserManager;
-import org.jdesktop.wonderland.server.UserMO;
-
+import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
+
+import org.jdesktop.wonderland.server.WonderlandContext;
+
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 import java.io.Serializable;
 
@@ -72,8 +74,6 @@ import java.io.IOException;
 
 import java.math.BigInteger;
 
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-
 /**
  * Audio Manager
  * 
@@ -88,9 +88,6 @@ public class AudioManagerConnectionHandler
     private VoiceChatHandler voiceChatHandler = new VoiceChatHandler();
 
     private ConcurrentHashMap<BigInteger, String> sessionCallIDMap = 
-	new ConcurrentHashMap();
-
-    private ConcurrentHashMap<String, PresenceInfo> callIDPresenceInfoMap = 
 	new ConcurrentHashMap();
 
     private static AudioManagerConnectionHandler handler;
@@ -127,14 +124,6 @@ public class AudioManagerConnectionHandler
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	if (message instanceof CellStatusChangeMessage) {
-	    CellStatusChangeMessage msg = (CellStatusChangeMessage) message;
-
-	    if (msg.getActive()) {
-	        voiceChatHandler.addTransformChangeListener(msg.getCellID());
-	    } else {
-	        voiceChatHandler.removeTransformChangeListener(msg.getCellID());
-	    }
-
 	    return;
 	}
 
@@ -160,8 +149,6 @@ public class AudioManagerConnectionHandler
 
 	    PresenceInfo info = msg.getPresenceInfo();
 
-	    voiceChatHandler.addTransformChangeListener(info.cellID);
-
 	    CallSetup setup = new CallSetup();
 
 	    CallParticipant cp = new CallParticipant();
@@ -169,7 +156,7 @@ public class AudioManagerConnectionHandler
 	    setup.cp = cp;
 	    //setup.listener = this;
 
-	    String callID = msg.getSoftphoneCallID();
+	    String callID = info.callID;
 	
 	    vm.addCallStatusListener(this, callID);
 	
@@ -178,7 +165,6 @@ public class AudioManagerConnectionHandler
 	    if (callID == null) {
 	        logger.fine("Can't place call to " + msg.getSipURL()
 		    + ".  No cell for " + callID);
-	        voiceChatHandler.removeTransformChangeListener(msg.getPresenceInfo().cellID);
 		return;
 	    }
 
@@ -194,7 +180,6 @@ public class AudioManagerConnectionHandler
 	    cp.setCallAnsweredTreatment(null);
 
 	    sessionCallIDMap.put(clientID.getID(), callID);
-	    callIDPresenceInfoMap.put(callID, info);
 
 	    try {
 	        setupCall(callID, setup, msg.getX(), 
@@ -202,9 +187,7 @@ public class AudioManagerConnectionHandler
 	    } catch (IOException e) {
 		logger.warning("Unable to place call " + cp + " " 
 		    + e.getMessage());
-	        voiceChatHandler.removeTransformChangeListener(msg.getPresenceInfo().cellID);
 		sessionCallIDMap.remove(clientID.getID());
-		callIDPresenceInfoMap.remove(callID);
 	    }
 	    return;
 	}
@@ -229,27 +212,14 @@ public class AudioManagerConnectionHandler
 		return;
 	    }
 
-	    PresenceInfo info = callIDPresenceInfoMap.get(callID);
-
-	    if (info == null) {
-		logger.warning("Can't find presence info for " + callID);
-		return;
-	    }
-
-	    sender.send(new MuteCallMessage(callID, info, msg.isMuted()));
+	    sender.send(new MuteCallMessage(callID, msg.isMuted()));
 	    return;
 	}
 	
 	if (message instanceof TransferCallMessage) {
 	    TransferCallMessage msg = (TransferCallMessage) message;
 
-	    String callID = msg.getSoftphoneCallID();
-
-	    if (callID == null) {
-		logger.warning("Unable to transfer call.  Can't get callID for " 
-		    + callID);
-		return;
-	    }
+	    String callID = msg.getPresenceInfo().callID;
 
 	    Call call = vm.getCall(callID);
 
@@ -341,10 +311,6 @@ public class AudioManagerConnectionHandler
 	    player, info);
     }
 
-    public PresenceInfo getPresenceInfo(String callID) {
-	return callIDPresenceInfoMap.get(callID);
-    }
-
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
 	BigInteger sessionID = clientID.getID();
 
@@ -357,7 +323,6 @@ public class AudioManagerConnectionHandler
 	}
 
 	sessionCallIDMap.remove(sessionID);
-	callIDPresenceInfoMap.remove(callID);
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -393,8 +358,6 @@ public class AudioManagerConnectionHandler
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	PresenceInfo info = callIDPresenceInfoMap.get(callId);
-
 	switch (code) {
 	case CallStatus.ESTABLISHED:
 	    Call call = vm.getCall(callId);
@@ -416,21 +379,11 @@ public class AudioManagerConnectionHandler
 	    break;
 
         case CallStatus.STARTEDSPEAKING:
-	    if (info == null) {
-		logger.warning("Can't find presence info for " + callId);
-		return;
-	    }
-
-	    sender.send(new SpeakingMessage(callId, info, true));
+	    sender.send(new SpeakingMessage(callId, true));
             break;
 
         case CallStatus.STOPPEDSPEAKING:
-	    if (info == null) {
-		logger.warning("Can't find presence info for " + callId);
-		return;
-	    }
-
-	    sender.send(new SpeakingMessage(callId, info, false));
+	    sender.send(new SpeakingMessage(callId, false));
             break;
 
 	case CallStatus.ENDED:

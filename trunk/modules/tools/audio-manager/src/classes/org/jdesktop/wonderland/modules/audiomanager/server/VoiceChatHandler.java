@@ -29,15 +29,16 @@ import java.util.Set;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatEndMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
@@ -66,8 +67,6 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
-import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
-
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
@@ -89,8 +88,7 @@ import com.jme.math.Vector3f;
  * 
  * @author jprovino
  */
-public class VoiceChatHandler implements TransformChangeListenerSrv, 
-	Serializable {
+public class VoiceChatHandler implements Serializable {
 
     private static final Logger logger =
 	Logger.getLogger(VoiceChatHandler.class.getName());
@@ -137,12 +135,10 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
 
-	    String callID = AudioManagerUtil.getCallID(msg.getCaller().cellID);
-
-	    Player player = vm.getPlayer(callID);
+	    Player player = vm.getPlayer(msg.getCallee().callID);
 
 	    if (player == null) {
-		logger.warning("No player for " + msg.getCaller());
+		logger.warning("No player for " + msg.getCallee());
 
 	        if (audioGroup.getNumberOfPlayers() == 0) {
 		    endVoiceChat(vm, audioGroup);  // cleanup
@@ -171,6 +167,18 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    return;
 	}
 
+	if (message instanceof VoiceChatJoinAcceptedMessage == true) {
+	    if (audioGroup == null) {
+		logger.warning("Audio group " + group + " no longer exists");
+		return;
+	    }
+
+	    VoiceChatJoinAcceptedMessage msg = (VoiceChatJoinAcceptedMessage) message;
+
+	    addPlayerToChatGroup(vm, audioGroup, msg.getCallee(), msg.getChatType());
+	    return;
+	}
+
 	if (message instanceof VoiceChatJoinMessage == false) {
 	    logger.warning("Invalid message type " + message);
 	    return;
@@ -185,20 +193,11 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	    audioGroup = vm.createAudioGroup(group, setup);
 	}
 
-	String callerCallID = AudioManagerUtil.getCallID(msg.getCaller().cellID);
-
-	if (callerCallID == null) {
-	    logger.warning("No callID for " + msg.getCaller());
-	    endVoiceChat(vm, audioGroup);
-	    return;
-	}
-
 	PresenceInfo[] calleeList = msg.getCalleeList();
 
 	PresenceInfo caller = msg.getCaller();
 
-	boolean added = addPlayerToChatGroup(vm, audioGroup, caller, callerCallID, 
-	    msg.getChatType());
+	boolean added = addPlayerToChatGroup(vm, audioGroup, caller, msg.getChatType());
 
 	if (added == false && calleeList.length == 0) {
 	    endVoiceChat(vm, audioGroup);
@@ -214,7 +213,7 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 
 	    logger.fine("  callee:  " + calleeList[i]);
 
-	    String callID = AudioManagerUtil.getCallID(cellID);
+	    String callID = calleeList[i].callID;
 
 	    Player player = vm.getPlayer(callID);
 
@@ -271,13 +270,22 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
     private ConcurrentHashMap<String, PresenceInfo> playerMap = new ConcurrentHashMap();
 
     private boolean addPlayerToChatGroup(VoiceManager vm, AudioGroup audioGroup,
-	    PresenceInfo info, String callID, VoiceChatMessage.ChatType chatType) {
+	    PresenceInfo info, VoiceChatMessage.ChatType chatType) {
+
+	String callID = info.callID;
 
 	Player player = vm.getPlayer(callID);
 
 	if (player == null) {
 	    logger.warning("No player for " + callID);
 	    return false;
+	}
+
+	if (audioGroup.getPlayerInfo(player) != null) {
+	    logger.fine("Player " + info
+		+ " is already in audio group " + audioGroup);
+
+	    return true;
 	}
 
 	AudioGroupPlayerInfo.ChatType type;
@@ -651,44 +659,6 @@ public class VoiceChatHandler implements TransformChangeListenerSrv,
 	//    logger.fine("Can't tell orb to move:  " + e.getMessage());
 	//    e.printStackTrace();
 	//}
-    }
-
-    public void addTransformChangeListener(CellID cellID) {
-        CellManagerMO.getCell(cellID).addTransformChangeListener(this);
-    }
-
-    public void removeTransformChangeListener(CellID cellID) {
-        CellManagerMO.getCell(cellID).removeTransformChangeListener(this);
-    }
-
-    public void transformChanged(ManagedReference<CellMO> cellMORef, 
-	    final CellTransform localTransform, final CellTransform localToWorldTransform) {
-
-	String callID = AudioManagerUtil.getCallID(cellMORef.get().getCellID());
-
-	logger.fine("localTransform " + localTransform + " world " 
-	    + localToWorldTransform);
-
-	Player player = AppContext.getManager(VoiceManager.class).getPlayer(callID);
-
-	if (player == null) {
-	    logger.fine("got AvatarMovedMessage but can't find player for " + callID);
-	    return;
-	}
-
-	float[] angles = new float[3];
-
-	localToWorldTransform.getRotation(null).toAngles(angles);
-
-	double angle = Math.toDegrees(angles[1]) % 360 + 90;
-
-	Vector3f location = localToWorldTransform.getTranslation(null);
-	
-	logger.fine(player + " x " + location.getX()
-	    + " y " + location.getY() + " z " + location.getZ()
-	    + " angle " + angle);
-
-	player.moved(location.getX(), location.getY(), location.getZ(), angle);
     }
 
 }

@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
@@ -47,7 +48,7 @@ import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
@@ -101,8 +102,11 @@ public class AudioManagerClient extends BaseConnection implements
 
     private WonderlandSession session;
 
-    private CellID cellID;
     private boolean connected = true;
+
+    private PresenceInfo presenceInfo;
+
+    CellID cellID;
 
     /** 
      * Create a new AudioManagerClient
@@ -147,7 +151,7 @@ public class AudioManagerClient extends BaseConnection implements
     private UserListJFrame userListJFrame;
 
     public void showUsers(java.awt.event.ActionEvent evt) {
-	if (cellID == null) {
+	if (presenceInfo == null) {
 	    return;
 	}
 
@@ -183,6 +187,33 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void viewConfigured(LocalAvatar localAvatar) {
 	cellID = localAvatar.getViewCell().getCellID();
+
+	PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
+
+	presenceInfo = pm.getPresenceInfo(cellID);
+
+	if (presenceInfo == null) {
+	    /*
+	     * This happened when our viewConfigured() is called
+	     * before viewConfigured() in the PresenceManager.
+	     * 
+	     * We create the PresenceInfo here and tell the PresenceManager
+	     * about it.  When viewConfigured() is called in the PresenceManager,
+	     * the PresenceManager will send a message to the server about
+	     * a new session being created.
+	     */
+	    logger.warning("No Presence info for " + cellID);
+
+	    String callID = CallID.getCallID(cellID);
+
+            SoftphoneControlImpl.getInstance().setCallID(callID);
+
+            presenceInfo = new PresenceInfo(cellID, session.getID(),
+                session.getUserID(), callID);
+
+	    pm.addSession(presenceInfo);
+	}
+
 	connectSoftphone();
     }
 
@@ -217,7 +248,8 @@ public class AudioManagerClient extends BaseConnection implements
     public void mute(boolean isMuted) {
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 	sc.mute(isMuted);
-	session.send(this, new MuteCallMessage(sc.getCallID(), null, isMuted));
+
+	session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
     }
 
     private void toggleMute() {
@@ -227,12 +259,12 @@ public class AudioManagerClient extends BaseConnection implements
 	isMuted = !isMuted;
 
 	sc.mute(isMuted);
-	session.send(this, new MuteCallMessage(sc.getCallID(), null, isMuted));
+	session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
     }
 
     public void voiceChat() {
 	try {
-	    new VoiceChatDialog(this, session, cellID);
+	    new VoiceChatDialog(this, cellID, session, presenceInfo);
 	} catch (IOException e) {
 	    logger.warning("Unable to get voice chat dialog:  " + e.getMessage());
 	}
@@ -244,7 +276,7 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void softphoneMuted(boolean isMuted) {
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-	session.send(this, new MuteCallMessage(sc.getCallID(), null, sc.isMuted()));
+	session.send(this, new MuteCallMessage(sc.getCallID(), sc.isMuted()));
     }
 
     public void softphoneConnected(boolean connected) {
@@ -264,7 +296,7 @@ public class AudioManagerClient extends BaseConnection implements
     public void transferCall(String phoneNumber) {
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-	session.send(this, new TransferCallMessage(sc.getCallID(), phoneNumber));
+	session.send(this, new TransferCallMessage(presenceInfo, phoneNumber));
     }
 
     public void cancelCallTransfer() {
@@ -277,7 +309,7 @@ public class AudioManagerClient extends BaseConnection implements
 	if (message instanceof GetVoiceBridgeResponseMessage) {
 	    GetVoiceBridgeResponseMessage msg = (GetVoiceBridgeResponseMessage) message;
 
-	    logger.fine("Got voice bridge " + msg.getBridgeInfo());
+	    logger.warning("Got voice bridge " + msg.getBridgeInfo());
 
 	    SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
@@ -305,29 +337,36 @@ public class AudioManagerClient extends BaseConnection implements
 	        localAddress = ia.getHostAddress();
 	    } catch (UnknownHostException e) {
 	        logger.warning(e.getMessage());
-	    }
 
-	    PresenceInfo info = PresenceManagerFactory.getPresenceManager(session).getPresenceInfo(cellID);
+		logger.warning("The client is unable to connect to the bridge public address. "
+		    + " Trying the bridge private Address.");
+
+		try {
+	            InetAddress ia = NetworkAddress.getPrivateLocalAddress(
+		        "server:" + tokens[2] + ":" + tokens[4] + ":10000");
+
+	            localAddress = ia.getHostAddress();
+	        } catch (UnknownHostException ee) {
+	            logger.warning(ee.getMessage());
+		}
+	    }
 
 	    if (localAddress != null) {
 	        try {
 	            String sipURL = sc.startSoftphone(
-		        info.userID.getUsername(), registrarAddress, 10, localAddress, AudioQuality.VPN);
+		        presenceInfo.userID.getUsername(), registrarAddress, 10, localAddress, 
+			AudioQuality.VPN);
 
-		    String callID = AudioManagerUtil.getCallID(cellID);
-
-		    logger.fine("Softphone call id is " + callID);
-
-		    sc.setCallID(callID);
+		    logger.fine("Starting softphone:  " + presenceInfo);
 
 	            // XXX need location and direction
-	            session.send(this, new PlaceCallMessage(info, callID, sipURL, 0., 0., 0., 90., false));
+	            session.send(this, new PlaceCallMessage(presenceInfo, sipURL, 0., 0., 0., 90., false));
 	        } catch (IOException e) {
                     logger.warning(e.getMessage());
 	        }
 	    } else {
 		// XXX Put up a dialog box here
-		logger.warning("UNABLE TO START SOFTPHONE.  AUDIO WILL NOT WORK!!!!!!!!!!!!");
+		logger.warning("LOCAL ADDRESS IS NULL.  AUDIO WILL NOT WORK!!!!!!!!!!!!");
 		/*
 		 * Try again.
 		 */
@@ -341,7 +380,7 @@ public class AudioManagerClient extends BaseConnection implements
 
             if (voiceChatDialog == null) {
 		try {
-                    voiceChatDialog = new VoiceChatDialog(this, session, cellID);
+                    voiceChatDialog = new VoiceChatDialog(this, cellID, session, msg.getCaller());
 		} catch (IOException e) {
 	    	    logger.warning("Unable to get voice chat dialog:  " + e.getMessage());
 		    return;
@@ -368,14 +407,12 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof SpeakingMessage) {
 	    if (userListJFrame != null) {
 	        SpeakingMessage msg = (SpeakingMessage) message;
-		String username = msg.getPresenceInfo().userID.getUsername();
-		userListJFrame.setSpeaking(msg.getCallID(), username, msg.isSpeaking());
+		userListJFrame.setSpeaking(msg.getCallID(), msg.isSpeaking());
 	    }
 	} else if (message instanceof MuteCallMessage) {
 	    if (userListJFrame != null) {
 	        MuteCallMessage msg = (MuteCallMessage) message;
-		String username = msg.getPresenceInfo().userID.getUsername();
-	        userListJFrame.muteCall(msg.getCallID(), username, msg.isMuted());
+	        userListJFrame.muteCall(msg.getCallID(), msg.isMuted());
 	    }
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");

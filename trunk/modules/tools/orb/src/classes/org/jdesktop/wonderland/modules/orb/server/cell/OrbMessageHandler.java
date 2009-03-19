@@ -77,19 +77,29 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
     private static final Logger logger =
         Logger.getLogger(OrbCellMO.class.getName());
      
+    private CellID cellID;
+
+    private String username;
+
     private String callID;
 
     private boolean simulateCalls;
 
     private ManagedReference<OrbStatusListener> orbStatusListenerRef;
 
-    public OrbMessageHandler(OrbCellMO orbCellMO, String callID, boolean simulateCalls) {
+    public OrbMessageHandler(OrbCellMO orbCellMO, String username, String callID, 
+	    boolean simulateCalls) {
+
 	super(orbCellMO);
 
+	cellID = orbCellMO.getCellID();
+
+	this.username = username;
 	this.callID = callID;
 	this.simulateCalls = simulateCalls;
 
-	logger.info("Call id is " + callID + " simulateCalls " + simulateCalls);
+	logger.info("Username is " + username + " Call id is " + callID 
+	    + " simulateCalls " + simulateCalls);
 
         OrbStatusListener orbStatusListener = new OrbStatusListener(orbCellMO, callID);
 
@@ -139,6 +149,11 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	    }
 
 	    player = vm.getPlayer(callID);
+	}
+
+	if (message instanceof OrbStartCallMessage) {
+	    sender.send(clientID, new OrbStartCallMessage(cellID, username, callID));
+	    return;
 	}
 
 	if (message instanceof OrbEndCallMessage) {

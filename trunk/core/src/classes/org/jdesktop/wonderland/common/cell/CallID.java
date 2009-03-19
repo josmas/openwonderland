@@ -15,27 +15,30 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common;
+package org.jdesktop.wonderland.common.cell;
 
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * Utility class
+ * CallID provides a unique id for calls 
+ *  
  * @author jprovino
  */
-public class AudioManagerUtil {
-
-    private AudioManagerUtil() {
-    }
-
+@ExperimentalAPI
+public class CallID {
+    
     public static String getCallID(CellID cellID) {
-	String s = cellID.toString();
+	String callID = cellID.toString();
 
-	if (s.equals("0")) {
-	    s = "00";
+	if (callID.equals("0")) {
+	    /*
+	     * A callID of "0" is special cased by the voice bridge
+	     * to mean "all calls".
+	     */
+	    callID = "00";
 	}
-	
-	return s;
+
+	return callID;
     }
 
 }

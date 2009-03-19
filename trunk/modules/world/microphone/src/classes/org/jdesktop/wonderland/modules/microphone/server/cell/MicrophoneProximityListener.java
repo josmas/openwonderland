@@ -35,6 +35,7 @@ import java.lang.String;
 
 import java.util.logging.Logger;
 
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
@@ -75,8 +76,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
 	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
-	//String callId = AudioManagerUtil.getCallID(viewCellID);
-	String callId = viewCellID.toString();
+	String callId = CallID.getCallID(viewCellID);
 
 	if (entered) {
 	    if (proximityIndex == 0) {
@@ -154,7 +154,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
 
         audioGroup.removePlayer(player);
 
-        if (audioGroup.getNumberOfPlayers() == 0) {
+        if (audioGroup.getNumberOfPlayers() == 1) {
             vm.removeAudioGroup(audioGroup);
         }
 

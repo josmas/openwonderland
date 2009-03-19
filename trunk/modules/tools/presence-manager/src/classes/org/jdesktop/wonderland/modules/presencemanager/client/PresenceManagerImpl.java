@@ -30,6 +30,8 @@ import org.jdesktop.wonderland.client.cell.Cell;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -44,53 +46,13 @@ public class PresenceManagerImpl implements PresenceManager {
 
     private static final Logger logger = Logger.getLogger(PresenceManagerImpl.class.getName());
 
-    private class CellInfo {
-	public BigInteger sessionID;
-	public WonderlandIdentity userID;
+    private HashMap<CellID, PresenceInfo> cellIDMap = new HashMap();
 
-	public CellInfo(BigInteger sessionID, WonderlandIdentity userID) {
-	    this.sessionID = sessionID;
-	    this.userID = userID;
-	}
+    private HashMap<BigInteger, PresenceInfo> sessionIDMap = new HashMap();
 
-	public String toString() {
-	    return "sessionID=" + sessionID + ", userID=" + userID;
-	}
-    }
+    private HashMap<WonderlandIdentity, PresenceInfo> userIDMap = new HashMap();
 
-    private class SessionInfo {
-	public CellID cellID;
-	public WonderlandIdentity userID;
-
-	public SessionInfo(CellID cellID, WonderlandIdentity userID) {
-	    this.cellID = cellID;
-	    this.userID = userID;
-	}
-
-	public String toString() {
-	    return "cellID=" + cellID + ", userID=" + userID;
-	}
-    }
-
-    private class UserInfo {
-	public CellID cellID;
-	public BigInteger sessionID;
-
-	public UserInfo(CellID cellID, BigInteger sessionID) {
-	    this.cellID = cellID;
-	    this.sessionID = sessionID;
-	}
-
-	public String toString() {
-	    return "cellID=" + cellID + ", sessionID=" + sessionID;
-	}
-    }
-
-    private HashMap<CellID, CellInfo> cellIDMap = new HashMap();
-
-    private HashMap<BigInteger, SessionInfo> sessionIDMap = new HashMap();
-
-    private HashMap<WonderlandIdentity, UserInfo> userIDMap = new HashMap();
+    private HashMap<String, PresenceInfo> callIDMap = new HashMap();
 
     private ArrayList<PresenceManagerListener> listeners = new ArrayList();
 
@@ -100,171 +62,184 @@ public class PresenceManagerImpl implements PresenceManager {
 	this.session = session;
     }
 
-    public void addSession(CellID cellID, BigInteger sessionID, WonderlandIdentity userID) {
+    public void addSession(PresenceInfo presenceInfo) {
 	synchronized (cellIDMap) {
-	    synchronized(sessionIDMap) {
-		synchronized(userIDMap) {
-		    CellInfo cellInfo = cellIDMap.get(cellID);
-
-		    if (cellInfo != null && cellInfo.sessionID.equals(sessionID) == false
-			    && cellInfo.userID.equals(userID) == false) {
-
-			logger.warning("cellIDMap already has entry for cellID " 
-			    + cellID + ": " + cellInfo + " new sessionID=" + sessionID
-			    + ", new userID=" + userID);
+	    synchronized (sessionIDMap) {
+		synchronized (userIDMap) {
+		    synchronized (callIDMap) {
+			if (alreadyInMaps(presenceInfo) == false) {
+			    addPresenceInfo(presenceInfo);
+			}
 		    }
+	        }
+	    }
+	}
 
-	    	    cellIDMap.put(cellID, new CellInfo(sessionID, userID));
+	notifyListeners(presenceInfo, true);
+    }
 
-		    SessionInfo sessionInfo = sessionIDMap.get(sessionID);
+    private void addPresenceInfo(PresenceInfo presenceInfo) {
+	PresenceInfo info = cellIDMap.get(presenceInfo.cellID);
 
-		    if (sessionInfo != null && sessionInfo.userID.equals(userID) == false
-			    && sessionInfo.cellID.equals(cellID) == false) {
+	if (info != null && info.equals(presenceInfo) == false) {
+	    logger.warning("cellIDMap already has entry for " + info);
+	}
 
-			logger.warning("sessionIDMap already has entry for sessionID "
-			    + sessionID + ": " + sessionInfo + " new cellID=" + cellID
-			    + ", new userID=" + userID);
+	cellIDMap.put(presenceInfo.cellID, presenceInfo);
+
+	info = sessionIDMap.get(presenceInfo.clientID);
+
+	if (info != null && info.equals(presenceInfo) == false) {
+	    logger.warning("sessionIDMap already has entry for " + info);
+	}
+
+	sessionIDMap.put(presenceInfo.clientID, presenceInfo);
+
+	info = userIDMap.get(presenceInfo.userID);
+
+	if (info != null && info.equals(presenceInfo) == false) {
+	    logger.warning("userIDMap already has entry for " + info);
+	}
+
+	userIDMap.put(presenceInfo.userID, presenceInfo);
+
+	info = callIDMap.get(presenceInfo.callID);
+
+	if (info != null && info.equals(presenceInfo) == false) {
+	    logger.warning("callIDMap already has entry for " + info);
+	}
+
+	callIDMap.put(presenceInfo.callID, presenceInfo);
+    }
+
+    private boolean alreadyInMaps(PresenceInfo presenceInfo) {
+	PresenceInfo info = cellIDMap.get(presenceInfo.cellID);
+
+	if (info == null || info.equals(presenceInfo) == false) {
+	    return false;
+	}
+
+	info = sessionIDMap.get(presenceInfo.clientID);
+
+	if (info == null || info.equals(presenceInfo) == false) {
+	    return false;
+	}
+
+	info = userIDMap.get(presenceInfo.userID);
+
+	if (info == null || info.equals(presenceInfo) == false) {
+	    return false;
+	}
+
+	info = callIDMap.get(presenceInfo.callID);
+
+	if (info == null || info.equals(presenceInfo) == false) {
+	    return false;
+	}
+
+	return true;
+    }
+
+    private void notifyListeners(PresenceInfo presenceInfo, boolean added) {
+	/*
+	 * Notify listeners
+	 */
+	PresenceManagerListener[] listenerArray;
+
+	synchronized (listeners) {
+	    listenerArray = this.listeners.toArray(new PresenceManagerListener[0]);
+	}
+
+	for (int i = 0; i < listenerArray.length; i++) {
+	    if (added) {
+	        listenerArray[i].userAdded(presenceInfo);
+	    } else {
+	        listenerArray[i].userRemoved(presenceInfo);
+	    }
+	}
+    }
+
+    public void removeSession(PresenceInfo presenceInfo) {
+	synchronized (cellIDMap) {
+	    synchronized (sessionIDMap) {
+		synchronized (userIDMap) {
+		    synchronized (callIDMap) {
+	                cellIDMap.remove(presenceInfo.cellID);
+	    	        sessionIDMap.remove(presenceInfo.clientID);
+	    	        userIDMap.remove(presenceInfo.userID);
+			callIDMap.remove(presenceInfo.callID);
 		    }
-
-	    	    sessionIDMap.put(sessionID, new SessionInfo(cellID, userID));
-
-		    UserInfo userInfo = userIDMap.get(userID);
-
-		    if (userInfo != null && userInfo.sessionID.equals(sessionID) == false
-			    && userInfo.cellID.equals(cellID) == false) {
-
-			logger.warning("userIDMap already has entry for userID "
-			    + userID + ": " + userInfo + " new cellID=" + cellID
-			    + ", new sessionID=" + sessionID);
-		    }
-
-	    	    userIDMap.put(userID, new UserInfo(cellID, sessionID));
 		}
 	    }
 	}
 
-	for (PresenceManagerListener listener : listeners) {
-	    listener.userAdded(userID);
-	}
-    }
-
-    public void removeSession(CellID cellID, BigInteger sessionID, 
-	    WonderlandIdentity userID) {
-
-	synchronized (cellIDMap) {
-	    synchronized(sessionIDMap) {
-		synchronized(userIDMap) {
-	            cellIDMap.remove(cellID);
-	    	    sessionIDMap.remove(sessionID);
-	    	    userIDMap.remove(userID);
-		}
-	    }
-	}
-
-	for (PresenceManagerListener listener : listeners) {
-	    listener.userRemoved(userID);
-	}
+	notifyListeners(presenceInfo, false);
     }
 
     /**
-     * Get a WonderlandIdentity associated with a Wonderland session.
-     * @param BigInteger the Wonderland session ID
-     * @return WonderlandIdentity the WonderlandIdentity associated with the sessionID.
-     */
-    public WonderlandIdentity getUserID(BigInteger sessionID) {
-	synchronized (sessionIDMap) {
-	    SessionInfo info = sessionIDMap.get(sessionID);
-
-	    if (info == null) {
-		return null;
-	    }
-
-	    return info.userID;
-	}
-    }
-
-    /**
-     * Get a WonderlandIdentity from a cellID.  The cellID must be for a ViewCell.
+     * Get PresenceInfo from a cellID.  The cellID must be for a ViewCell.
      * @param CellID the CellID of the ViewCell
-     * @return WonderlandIdentity the WonderlandIdentity assoicated with the CellID.
+     * @return PresenceInfo the PresenceInfo assoicated with the CellID.
      */
-    public WonderlandIdentity getUserID(CellID cellID) throws IllegalArgumentException {
+    public PresenceInfo getPresenceInfo(CellID cellID) {
 	synchronized (cellIDMap) {
-	    CellInfo info = cellIDMap.get(cellID);
+	    PresenceInfo info = cellIDMap.get(cellID);
 
 	    if (info == null) {
 		return null;
 	    }
 
-	    return info.userID;
+	    return info;
 	}
     }
 
     /**
-     * Get a Wonderland session ID from a WonderlandIdentity.
-     * @param WonderlandIdentity the WonderlandIdentity
-     * @return BigInteger the Wonderland session ID associated with the WonderlandIdentity.
+     * Get PresenceInfo from a Wonderland sessionID.
+     * @param BigInteger the Wonderland sessionID
+     * @return PresenceInfo PresenceInfo associated with the sessionID.
      */
-    public BigInteger getSessionID(WonderlandIdentity userID) {
-	synchronized (userIDMap) {
-	    UserInfo info = userIDMap.get(userID);
-
-	    if (info == null) {
-		return null;
-	    }
-
-	    return info.sessionID;
-	}
-    }
-
-    /**
-     * Get a Wonderland session ID from a cellID.  The cellID must be for a ViewCell.
-     * @param CellID the CellID of the ViewCell.
-     * @ return BigInteger the Wonderland session ID associated with the CellID.
-     */
-    public BigInteger getSessionID(CellID cellID) throws IllegalArgumentException {
-	synchronized (cellIDMap) {
-	    CellInfo info = cellIDMap.get(cellID);
-
-	    if (info == null) {
-		return null;
-	    }
-
-	    return info.sessionID;
-	}
-    }
-
-    /**
-     * Get a CellID from a WonderlandIdentity.
-     *@param WonderlandIdentity the WonderlandIdentity
-     * @return CellID the CellID associated with the WonderlandIdentity.     
-     */
-    public CellID getCellID(WonderlandIdentity userID) {
-	synchronized (userIDMap) {
-	    UserInfo info = userIDMap.get(userID);
-
-	    if (info == null) {
-		return null;
-	    }
-
-	    return info.cellID;
-	}
-    }
-
-    /**
-     * Get a CellID from a Wonderland session ID.
-     * @param BigInteger the Wonderland session ID
-     * @return CellID the cellID associated with the Wonderland session ID.
-     */
-    public CellID getCellID(BigInteger sessionID) {
+    public PresenceInfo getPresenceInfo(BigInteger sessionID) {
 	synchronized (sessionIDMap) {
-	    SessionInfo info = sessionIDMap.get(sessionID);
+	    PresenceInfo info = sessionIDMap.get(sessionID);
 
 	    if (info == null) {
 		return null;
 	    }
 
-	    return info.cellID;
+	    return info;
+	}
+    }
+
+    /**
+     * Get PresenceInfo from a WonderlandIdentity.
+     * @param WonderlandIdentity userID
+     * @return PresenceInfo PresenceInfo associated with the WonderlandIdentity.
+    public PresenceInfo getPresenceInfo(WonderlandIdentity userID) {
+	synchronized (userIDMap) {
+	    PresenceInfo info = userIDMap.get(userID);
+
+	    if (info == null) {
+		return null;
+	    }
+
+	    return info;
+	}
+    }
+
+    /**
+     * Get PresenceInfo from a callID.
+     * @param String callID
+     * @return PresenceInfo the PresenceInfo associated with the callID.
+     */
+    public PresenceInfo getPresenceInfo(String callID) {
+	synchronized (callIDMap) {
+	    PresenceInfo info = callIDMap.get(callID);
+
+	    if (info == null) {
+	  	return null;
+	    }
+
+	    return info;
 	}
     }
 
@@ -293,7 +268,7 @@ public class PresenceManagerImpl implements PresenceManager {
      * Get PresenceInfo for a given username.  If there is more than one user
      * with the username, all of them are returned;
      */
-    public PresenceInfo[] getPresenceInfo(String username) {
+    public PresenceInfo[] getUserPresenceInfo(String username) {
 	WonderlandIdentity[] users;
 
 	synchronized (userIDMap) {
@@ -307,14 +282,14 @@ public class PresenceManagerImpl implements PresenceManager {
 		continue;
 	    }
 
-	    UserInfo info = userIDMap.get(users[i]);
+	    PresenceInfo info = userIDMap.get(users[i]);
 
 	    if (info == null) {
 		logger.warning("userIDMap does not have an entry for " + users[i]);
 		return null;
 	    }
 
-	    userList.add(new PresenceInfo(info.sessionID, users[i], info.cellID));   
+	    userList.add(info);
 	}
 
 	if (userList.size() > 0) {
@@ -325,44 +300,18 @@ public class PresenceManagerImpl implements PresenceManager {
     }
 
     /**
-     * Get the PresenceInfo for the given CellID.
-     */
-    public PresenceInfo getPresenceInfo(CellID cellID) {
-	CellInfo info = cellIDMap.get(cellID);
-
-	if (info == null) {
-	    logger.warning("cellIDMap does not have an entry for " + cellID);
-	    return null;
-	}
-
-	return new PresenceInfo(info.sessionID, info.userID, cellID);
-    }
-
-    /**
-     * Get the PresenceInfo for the given WonderlandIdentity.
-     */
-    public PresenceInfo getPresenceInfo(WonderlandIdentity userID) {
-	UserInfo info = userIDMap.get(userID);
-
-	if (info == null) {
-	    logger.warning("userIDMap does not have an entry for " + userID);
-	    return null;
-	}
-
-	return new PresenceInfo(info.sessionID, userID, info.cellID);
-    }
-
-    /**
      * Listener for changes
      * @param PresenceManagerListener the listener to be notified of a change
      */
     public void addPresenceManagerListener(PresenceManagerListener listener) {
-	if (listeners.contains(listener)) {
-	    logger.warning("Listener is already added:  " + listener);
-	    return;
-	}
+	synchronized (listeners) {
+	    if (listeners.contains(listener)) {
+	        logger.warning("Listener is already added:  " + listener);
+	        return;
+	    }
 
-	listeners.add(listener);
+	    listeners.add(listener);
+	}
     }
 
     /**
@@ -370,7 +319,9 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param PresenceManagerListener the listener to be removed
      */
     public void removePresenceManagerListener(PresenceManagerListener listener) {
-	listeners.remove(listener);
+	synchronized (listeners) {
+	    listeners.remove(listener);
+	}
     }
     
 }
