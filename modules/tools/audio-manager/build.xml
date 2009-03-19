@@ -23,6 +23,7 @@
     <pathconvert property="module-client.classpath">
         <path location="${current.dir}/lib/stun.jar"/>
         <path location="${current.dir}/../presence-manager/build/lib/client/presencemanager-client.jar"/>
+        <path location="${current.dir}/../../world/avatarbase/build/client/avatarbase-client.jar"/>
     </pathconvert>
 
     <!-- import common build file -->
