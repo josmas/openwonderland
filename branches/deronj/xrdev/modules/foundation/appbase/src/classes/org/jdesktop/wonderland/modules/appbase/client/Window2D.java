@@ -327,7 +327,6 @@ public abstract class Window2D {
     public synchronized void setParent(Window2D parent) {
         if (parent == this.parent) return;
 
-        System.err.println("&&&&&&&&&&&&&&&&& setting parent for window " + this + " to " + parent);
         /* HACK: for now, let a window be primary if it has no parent. Otherwise secondary.
         if (type != Type.PRIMARY) {
             this.parent = parent;
@@ -586,7 +585,6 @@ public abstract class Window2D {
         changeMask |= CHANGED_Z_ORDER;
         updateViews();
     }
-
 
     /**
      * Returns the window's Z order.
@@ -1037,9 +1035,6 @@ public abstract class Window2D {
             }
             if ((changeMask & CHANGED_PARENT) != 0) {
                 View2D parentView = null;
-                System.err.println("&&&&&&&&&&& parent has changed");
-                System.err.println("&&&&&&&&&&& this = " + this);
-                System.err.println("&&&&&&&&&&& parent = " + parent);
                 if (parent != null) {
                     parentView = parent.getView(view.getDisplayer());
                 }

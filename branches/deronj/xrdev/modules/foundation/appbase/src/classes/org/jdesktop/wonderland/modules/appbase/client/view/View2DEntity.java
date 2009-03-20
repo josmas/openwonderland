@@ -747,13 +747,11 @@ public abstract class View2DEntity implements View2D {
                     rc.setAttachPoint(null);
                     parentEntity.removeEntity(entity);
                     parentEntity = null;
-                    System.err.println("############ Detached from entity");
                 }
                 break;
             case ATTACHED_TO_WORLD:
                 logger.fine("Remove entity " + entity + " from world manager.");
                 ClientContextJME.getWorldManager().removeEntity(entity);
-                System.err.println("############ Detached from entity");
                 break;
             }
             attachState = AttachState.DETACHED;
@@ -795,7 +793,6 @@ public abstract class View2DEntity implements View2D {
                     logger.fine("Attach entity " + entity + " to world manager.");
                     ClientContextJME.getWorldManager().addEntity(entity);
                     attachState = AttachState.ATTACHED_TO_WORLD;
-                    System.err.println("############ Attached to world");
                 } else {
                     parentEntity = getParentEntity();
                     if (parentEntity != null) {
@@ -807,6 +804,8 @@ public abstract class View2DEntity implements View2D {
                         attachState = AttachState.ATTACHED_TO_ENTITY;
                     }
                 }
+                // MTGame: can currently only setOrtho on a visible rc
+                entity.getComponent(RenderComponent.class).setOrtho(ortho);
             }
 
             if ((chgMask & CHANGED_ORTHO) != 0) {
@@ -836,13 +835,11 @@ public abstract class View2DEntity implements View2D {
                     if (!hasFrame()) {
                         logger.fine("Attach frame");
                         attachFrame();
-                        System.err.println("############ Attached frame");
                     }
                 } else {
                     if (hasFrame()) {
                         logger.fine("Detach frame");
                         detachFrame();
-                        System.err.println("############ Detached frame");
                     }
                 }
             }
@@ -862,8 +859,10 @@ public abstract class View2DEntity implements View2D {
             logger.fine("Update ortho, ortho = " + ortho);
             logger.severe("entity = " + entity);
             logger.severe("entity.getComponent(RenderComponent.class) = " + entity.getComponent(RenderComponent.class));
-            entity.getComponent(RenderComponent.class).setOrtho(ortho);
-            System.err.println("############ Entity ortho set to " + ortho);
+            // MTGame: can currently only setOrtho on a visible rc
+            if (isActuallyVisible()) {
+                entity.getComponent(RenderComponent.class).setOrtho(ortho);
+            }
             sgChangeViewNodeOrthoSet(viewNode, ortho);
         }
 
@@ -912,7 +911,6 @@ public abstract class View2DEntity implements View2D {
         if ((changeMask & (CHANGED_USER_TRANSFORM | CHANGED_ORTHO)) != 0) {
             CellTransform deltaTransform;
 
-            System.err.println("^^^^^^^^^^^^^^^^ type = " + type);
             switch (type) {
             case PRIMARY:
                 deltaTransform = calcUserDeltaTransform();
@@ -920,13 +918,11 @@ public abstract class View2DEntity implements View2D {
                 break;
             case SECONDARY:
                 deltaTransform = calcUserDeltaTransform();
-                System.err.println("################# PC: ut post mul, deltaTransform = " + deltaTransform);
                 sgChangeTransformUserPostMultiply(viewNode, deltaTransform); 
                 break;
             case UNKNOWN:
             case POPUP:
                 // Always set to identity
-                System.err.println("################# PC: ut set to identity");
                 sgChangeTransformUserSet(viewNode, new CellTransform(null, null, null));
             }
         }
@@ -1208,7 +1204,6 @@ public abstract class View2DEntity implements View2D {
                          chg.geometryNode.setSize(chg.width, chg.height);
                          forceTextureIdAssignment(true);
                          logger.fine("Geometry node setSize, wh = " + chg.width + ", " + chg.height);
-                         System.err.println("############ setsize to wh = " + chg.width + ", " + chg.height);
                          break;
                      }
 
@@ -1226,7 +1221,6 @@ public abstract class View2DEntity implements View2D {
                              chg.geometryNode.setOrthoZOrder(chg.zOrder);
                          }
                          logger.fine("Geometry set ortho z order = " + chg.zOrder);
-                         System.err.println("############ Geometry ortho z order set to " + chg.zOrder);
                          break;
                      }
 
@@ -1234,10 +1228,8 @@ public abstract class View2DEntity implements View2D {
                          SGChangeViewNodeOrthoSet chg = (SGChangeViewNodeOrthoSet) sgChange;
                          if (chg.ortho) {
                              chg.viewNode.setCullHint(Spatial.CullHint.Never);
-                             System.err.println("############ Cull hint set to " + Spatial.CullHint.Never);
                          } else {
                              chg.viewNode.setCullHint(Spatial.CullHint.Inherit);
-                             System.err.println("############ Cull hint set to " + Spatial.CullHint.Inherit);
                          }
                          logger.fine("View node ortho cull hint set = " + chg.ortho);
                          break;
@@ -1256,7 +1248,6 @@ public abstract class View2DEntity implements View2D {
                          SGChangeTransformUserPostMultiply chg = (SGChangeTransformUserPostMultiply) sgChange;
                          // TODO
                          if (ortho) {
-                             System.err.println("############## set user transform to identity");
                              viewNode.setLocalRotation(new Quaternion());
                              viewNode.setLocalScale(1.0f);
                              //TODO:viewNode.setLocalTranslation(new Vector3f(300f, 300f, 0f));
@@ -1280,11 +1271,8 @@ public abstract class View2DEntity implements View2D {
                          if (ortho) {
                              viewNode.setLocalRotation(new Quaternion());
                              viewNode.setLocalScale(1.0f);
-                             //viewNode.setLocalTranslation(new Vector3f(300f, 300f, 0f));
-
                              Vector3f t = chg.transform.getTranslation(null);
                              viewNode.setLocalTranslation(t);
-                             System.err.println("############## set ortho user translation to " + t);
                          } else {
                          userTransform = chg.transform.clone(null);
                          Quaternion r = userTransform.getRotation(null);

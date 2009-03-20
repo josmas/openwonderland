@@ -43,7 +43,7 @@ import java.text.AttributedCharacterIterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.NewFrameCondition;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import java.lang.reflect.Method;
 import javax.media.opengl.GLContext;
 
@@ -55,7 +55,7 @@ import javax.media.opengl.GLContext;
  *
  * @author deronj
  */
-@ExperimentalAPI
+@InternalAPI
 public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
 
     private static final Logger logger = Logger.getLogger(DrawingSurfaceBufferedImage.class.getName());

@@ -115,10 +115,8 @@ class WindowSwingEmbeddedToolkit
                 Point pt;
                 if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
                     pt = view.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
-                    System.err.println("******** pt from calcIntersection = " + pt);
                 } else {
                     pt = view.calcPositionInPixelCoordinates(intersectionPointWorld, true);
-                    System.err.println("******** pt from calcPosition = " + pt);
                 }
 
                 

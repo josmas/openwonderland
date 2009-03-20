@@ -94,6 +94,7 @@ public class SwingTestWindow
 
         view.update();
 
+        /* TODO: remove
         Entity entity = view.getEntity();
         System.err.println("%%%%%%%%%% view entity = " + entity);
         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
@@ -104,9 +105,7 @@ public class SwingTestWindow
         System.err.println("%%%%%%%%%% sceneRoot = " + sceneRoot);
         boolean o = rc.getOrtho();
         System.err.println("%%%%%%%%%% ortho = " + o);
-        
-        Node viewNode = view.getNode();
-        GraphicsUtils.printNode(viewNode);
+        */        
     }
 
     /* TODO: for testing view.setVisible hack: uncomment the following
