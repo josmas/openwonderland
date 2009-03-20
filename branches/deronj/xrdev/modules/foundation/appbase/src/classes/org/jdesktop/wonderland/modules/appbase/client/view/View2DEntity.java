@@ -715,6 +715,7 @@ public abstract class View2DEntity implements View2D {
      * Update if specified.
      */
     public synchronized void setOrtho (boolean ortho, boolean update) {
+        Thread.dumpStack();
         this.ortho = ortho;
         changeMask |= CHANGED_ORTHO;
         if (update) {
@@ -856,9 +857,6 @@ public abstract class View2DEntity implements View2D {
         }
 
         if ((changeMask & CHANGED_ORTHO) != 0) {
-            logger.fine("Update ortho, ortho = " + ortho);
-            logger.severe("entity = " + entity);
-            logger.severe("entity.getComponent(RenderComponent.class) = " + entity.getComponent(RenderComponent.class));
             // MTGame: can currently only setOrtho on a visible rc
             if (isActuallyVisible()) {
                 entity.getComponent(RenderComponent.class).setOrtho(ortho);
@@ -1004,9 +1002,16 @@ public abstract class View2DEntity implements View2D {
 
     // Uses: userTranslation
     protected CellTransform calcUserTranslationDeltaTransform () {
+        /* TODO: for now, don't have this be a delta transform 
         Vector3f deltaTranslation = userTranslation.subtract(userTranslationPrev);
         CellTransform transDeltaTransform = new CellTransform(null, null, null);
         transDeltaTransform.setTranslation(deltaTranslation);
+        */
+        /**/
+        CellTransform transDeltaTransform = new CellTransform(null, null, null);
+        transDeltaTransform.setTranslation(userTranslation);
+        /**/
+
         return transDeltaTransform;
     }
 
@@ -1315,7 +1320,7 @@ public abstract class View2DEntity implements View2D {
         System.err.println("********** awt event = " + me3d.getAwtEvent());
         PickDetails pickDetails = me3d.getPickDetails();
         System.err.println("********** pt = " + pickDetails.getPosition());
-         */
+        */
 
         // No special processing is needed for wheel events. Just
         // send the 2D wheel event which is contained in the 3D event.

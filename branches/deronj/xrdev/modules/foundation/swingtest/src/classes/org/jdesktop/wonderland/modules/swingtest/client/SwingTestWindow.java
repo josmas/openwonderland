@@ -48,6 +48,12 @@ public class SwingTestWindow
     /** The cell in which this window is displayed. */
     private SwingTestCell cell;
 
+    /** Whether the window is currently displayed "on the glass". */
+    private boolean ortho;
+
+    /** The user translation when the window is displayed in the cell. */
+    private Vector3f userTranslationCell;
+
     /**
      * Create a new instance of SwingTestWindow.
      *
@@ -84,35 +90,33 @@ public class SwingTestWindow
     }
 
     public void setOrtho(boolean ortho) {
+        if (this.ortho == ortho) return;
+
         View2DEntity view = (View2DEntity) getView(cell);
 
-        view.setOrtho(ortho, false);
-        view.setTranslationUser(new Vector3f(300f, 300f, 0f), false);
+        if (ortho) {
+            
+            // First save the location in the cell
+            userTranslationCell = view.getTranslationUser();
 
-        // Test (TODO: use app size for now)
-        //view.setSizeApp(500, 200, false);
+            // In this test, the view in the ortho plane is at a fixed location.
+            view.setTranslationUser(new Vector3f(300f, 300f, 0f), false);
+            
+            // Move the window view into the ortho plane
+            view.setOrtho(true, false);
 
+        } else {
+
+            // Move the window back to its original location in the cell
+            view.setTranslationUser(userTranslationCell, false);
+
+            // Move the window view into the cell
+            view.setOrtho(false, false);
+        }
+
+        // Now make it all happen
         view.update();
 
-        /* TODO: remove
-        Entity entity = view.getEntity();
-        System.err.println("%%%%%%%%%% view entity = " + entity);
-        RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
-        System.err.println("%%%%%%%%%% rc = " + rc);
-        Node attachPoint = rc.getAttachPoint();
-        System.err.println("%%%%%%%%%% attachPoint = " + attachPoint);
-        Node sceneRoot = rc.getSceneRoot();
-        System.err.println("%%%%%%%%%% sceneRoot = " + sceneRoot);
-        boolean o = rc.getOrtho();
-        System.err.println("%%%%%%%%%% ortho = " + o);
-        */        
+        this.ortho = ortho;
     }
-
-    /* TODO: for testing view.setVisible hack: uncomment the following
-    public void setVisibleHack (boolean visible) {
-        Window2DViewWorld view = getPrimaryView();
-        System.err.println("************** Set view visible = " + visible);
-        view.setVisible(visible);
-    }
-    */
 }
