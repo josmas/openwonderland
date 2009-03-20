@@ -19,70 +19,38 @@ package org.jdesktop.wonderland.modules.presencemanager.client;
 
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
-
-import org.jdesktop.wonderland.client.cell.view.ViewCell;
-
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
-import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
-
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
-import org.jdesktop.wonderland.common.NetworkAddress;
-
 import org.jdesktop.wonderland.common.comms.ConnectionType;
-
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-
-import org.jdesktop.wonderland.client.input.InputManager;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassFocusListener;
-import org.jdesktop.wonderland.client.input.EventListener;
-
 import org.jdesktop.wonderland.common.messages.Message;
-
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerConnectionType;
-
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.SessionCreatedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.SessionEndedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientDisconnectedMessage;
-
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
-
-import java.io.IOException;
-
-import java.util.ArrayList;
-
 import java.util.logging.Logger;
 
 /**
  *
  * @author jprovino
  */
-public class PresenceManagerClient extends BaseConnection implements 
-	ViewCellConfiguredListener, CellStatusChangeListener {
+public class PresenceManagerClient extends BaseConnection implements
+        ViewCellConfiguredListener, CellStatusChangeListener {
 
     private static final Logger logger =
-        Logger.getLogger(PresenceManagerClient.class.getName());
-
+            Logger.getLogger(PresenceManagerClient.class.getName());
     private WonderlandSession session;
-
     private CellID cellID;
     private boolean connected = true;
-
     private PresenceManager presenceManager;
-
     private PresenceInfo presenceInfo;
 
     /** 
@@ -91,31 +59,31 @@ public class PresenceManagerClient extends BaseConnection implements
      * the CONNECTED state
      * @throws org.jdesktop.wonderland.client.comms.ConnectionFailureException
      */
-    public PresenceManagerClient(WonderlandSession session)  
-	    throws ConnectionFailureException {
+    public PresenceManagerClient(WonderlandSession session)
+            throws ConnectionFailureException {
 
-	this.session = session;
+        this.session = session;
 
-        LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
+        CellManager.getCellManager().addCellStatusChangeListener(this);
+
+        presenceManager = PresenceManagerFactory.getPresenceManager(session);
+
+        logger.fine("Starting PresenceManagerClient");
+
+        session.connect(this);
+
+        LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
         avatar.addViewCellConfiguredListener(this);
         if (avatar.getViewCell() != null) {
             // if the view is already configured, fake an event
             viewConfigured(avatar);
         }
-
-	CellManager.getCellManager().addCellStatusChangeListener(this);
-
-	presenceManager = PresenceManagerFactory.getPresenceManager(session);
-
-	logger.fine("Starting PresenceManagerClient");
-
-	session.connect(this);
     }
 
     public void cellStatusChanged(Cell cell, CellStatus status) {
-	if (cell.getCellID().equals(cellID) == false) {
-	    return;
-	}
+        if (cell.getCellID().equals(cellID) == false) {
+            return;
+        }
     }
 
     public synchronized void execute(final Runnable r) {
@@ -126,42 +94,42 @@ public class PresenceManagerClient extends BaseConnection implements
         // LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
         // avatar.removeViewCellConfiguredListener(this);
         super.disconnect();
-	session.send(this, new SessionEndedMessage(presenceInfo));
+        session.send(this, new SessionEndedMessage(presenceInfo));
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
-	cellID = localAvatar.getViewCell().getCellID();
+        cellID = localAvatar.getViewCell().getCellID();
 
-	String callID = CallID.getCallID(cellID);
+        String callID = CallID.getCallID(cellID);
 
-	SoftphoneControlImpl.getInstance().setCallID(callID);
+        SoftphoneControlImpl.getInstance().setCallID(callID);
 
-	presenceInfo = new PresenceInfo(cellID, session.getID(),
-	    session.getUserID(), callID);
-	
-	session.send(this, new SessionCreatedMessage(presenceInfo));
+        presenceInfo = new PresenceInfo(cellID, session.getID(),
+                session.getUserID(), callID);
+
+        session.send(this, new SessionCreatedMessage(presenceInfo));
     }
 
     @Override
     public void handleMessage(Message message) {
-	logger.fine("got a message...");
+        logger.fine("got a message...");
 
-	if (message instanceof SessionCreatedMessage) {
-	    SessionCreatedMessage m = (SessionCreatedMessage) message;
+        if (message instanceof SessionCreatedMessage) {
+            SessionCreatedMessage m = (SessionCreatedMessage) message;
 
-	    logger.fine("GOT SessionCreatedMessage for " + m.getPresenceInfo());
+            logger.fine("GOT SessionCreatedMessage for " + m.getPresenceInfo());
 
-	    presenceManager.addSession(m.getPresenceInfo());
-	    return;
-	}
+            presenceManager.addSession(m.getPresenceInfo());
+            return;
+        }
 
-	if (message instanceof SessionEndedMessage) {
-	    SessionEndedMessage m = (SessionEndedMessage) message;
+        if (message instanceof SessionEndedMessage) {
+            SessionEndedMessage m = (SessionEndedMessage) message;
 
-	    logger.fine("GOT SessionEndedMessage for " + m.getPresenceInfo());
-	    presenceManager.removeSession(m.getPresenceInfo());
-	    return;
-	}
+            logger.fine("GOT SessionEndedMessage for " + m.getPresenceInfo());
+            presenceManager.removeSession(m.getPresenceInfo());
+            return;
+        }
 
         throw new UnsupportedOperationException("Unknown message:  " + message);
     }
@@ -169,5 +137,4 @@ public class PresenceManagerClient extends BaseConnection implements
     public ConnectionType getConnectionType() {
         return PresenceManagerConnectionType.CONNECTION_TYPE;
     }
-
 }
