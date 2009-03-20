@@ -291,6 +291,7 @@ public abstract class GeometryNode extends Node {
      * @param planePoint A point on the plane.
      * @param planeNormal The plane normal vector.
      */
+    /**/
     protected Vector3f calcPlanarIntersection(Ray ray, Vector3f planePoint, Vector3f planeNormal) {
 
         // Uses the following formula:
@@ -320,5 +321,66 @@ public abstract class GeometryNode extends Node {
         Vector3f p = ray.getDirection().mult(t).add(ray.getOrigin());
         return p;
     }
+    /**/
+
+    /*
+    // TODO
+    // @param N The plane normal in world coords.
+
+    protected Vector3f calcPlanarIntersection(Ray ray, Vector3f planePoint, Vector3f N) {
+
+        // Uses the following formulae for Ray/Plane intersection:
+        //
+        // Ray Equation is P = P0 + t(V)
+        // Plane Equation is P.N + d = 0
+        //
+        // Where,
+        // P = Intersection Point
+        // P0 = Starting Point for Ray
+        // V = Direction of Ray
+        // t = distance along ray to intersection point
+        // N = Normal for plane
+        // d = from definition of plane
+        // 
+        // By substitution:
+        // 
+        // (P0 + t(V)).N + d = 0;
+        // P0.N + tV.N + d = 0;
+        // tV.N = -(P0.N + d);
+        // t = -(P0.N + d)/V.N;
+        // 
+        // Once you have t, simply substitute in the ray equation for P.
+        // 
+        // Source: Doug Twilleager. I'm not sure where he got it from.
+
+        Vector3f V = ray.getDirection();
+        Vector3f P0 = ray.getOrigin();
+
+        // First calculate the denominator: V dot N
+        float denominator = V.dot(N);
+        if (denominator == 0f) {
+            // No intersection
+            return null;
+        }
+
+        // t = -(P0.N +d)
+        // Once you have t, simply substitute in the ray equation for P.
+
+
+        // Now calculate the numerator: -(P0.N + d)
+        float dotTmp = P0.dot(N);
+>>>> left off here
+        Vector3f numerator = planePoint.subtract(ray.getOrigin(), new Vector3f());
+        float numerator = planeNormal.dot(vecTmp);
+
+        // Now calculate t
+        float t = numerator / denominator;
+
+        // Now plug t into the ray equation P = P0 + t * rayDirection
+        Vector3f p = ray.getDirection().mult(t).add(ray.getOrigin());
+        return p;
+    }
+    */
+
 }
 
