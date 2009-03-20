@@ -25,13 +25,13 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
  * @author dj
  */
 
-public abstract class AppCellRenderer extends BasicRenderer {
+public abstract class App2DCellRenderer extends BasicRenderer {
 
     /**
-     * Create a new instance of AppCellRenderer.
+     * Create a new instance of App2DCellRenderer.
      * @param cell The cell to be rendered.
      */
-    public AppCellRenderer (App2DCell cell) {
+    public App2DCellRenderer (App2DCell cell) {
         super(cell);
     }
 

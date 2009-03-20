@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
-import org.jdesktop.wonderland.modules.appbase.client.cell.AppCellRenderer;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCellRenderer;
 
 /**
  * A cell renderer which uses JME to render app cell contents. It creates
@@ -43,7 +43,7 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.AppCellRenderer;
  *
  * @author dj
  */
-public class AppCellRendererJME extends AppCellRenderer {
+public class App2DCellRendererJME extends App2DCellRenderer {
 
     /** The root node of the cell renderer. */
     protected Node acrjRootNode;
@@ -52,10 +52,10 @@ public class AppCellRendererJME extends AppCellRenderer {
     protected LightState lightState;
 
     /** 
-     * Create a new instance of AppCellRendererJME.
+     * Create a new instance of App2DCellRendererJME.
      * @param cell The cell to be rendered.
      */
-    public AppCellRendererJME(App2DCell cell) {
+    public App2DCellRendererJME(App2DCell cell) {
         super(cell);
 
         acrjRootNode = new Node("Root node for cell " + cell.getCellID().toString());
@@ -81,7 +81,7 @@ public class AppCellRendererJME extends AppCellRenderer {
             if (ke3d.isPressed()) {
                 KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
                 if (ke.getKeyCode() == KeyEvent.VK_P) {
-                    printEntitySceneGraphs(AppCellRendererJME.this.getEntity(), 0);
+                    printEntitySceneGraphs(App2DCellRendererJME.this.getEntity(), 0);
                 }
             }
         }
