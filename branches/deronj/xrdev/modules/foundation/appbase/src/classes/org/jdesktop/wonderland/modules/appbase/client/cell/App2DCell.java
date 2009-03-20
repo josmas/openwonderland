@@ -225,7 +225,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     public void logSceneGraph(RendererType rendererType) {
         switch (rendererType) {
             case RENDERER_JME:
-                ((AppCellRenderer) getCellRenderer(rendererType)).logSceneGraph();
+                ((App2DCellRenderer) getCellRenderer(rendererType)).logSceneGraph();
                 break;
             default:
                 throw new RuntimeException("Unsupported cell renderer type: " + rendererType);

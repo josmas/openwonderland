@@ -172,7 +172,7 @@ public class View2DCell extends View2DEntity {
     @Override
     protected Entity getParentEntity () {
         Entity cellEntity = 
-            ((AppCellRendererJME)cell.getCellRenderer(Cell.RendererType.RENDERER_JME)).getEntity();
+            ((App2DCellRendererJME)cell.getCellRenderer(Cell.RendererType.RENDERER_JME)).getEntity();
 
         switch (type) {
 
