@@ -188,7 +188,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         else
             logger.warning("NO RenderComponent for Avatar");
 
-        createNameTag();
+        createNameTag(username);
 
         // Remove the entity, it will be added when the cell status changes
         ClientContextJME.getWorldManager().removeEntity(avatarCharacter);
@@ -196,36 +196,45 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         return avatarCharacter;
     }
 
-    Entity labelEntity = new Entity("NameTag");
-
-    void createNameTag() {
-	createNameTag(username);
-    }
+    private Entity labelEntity;
+    private Spatial q;
 
     void createNameTag(String username) {
+	WorldManager worldManager = ClientContextJME.getWorldManager();
+
+	Vector3f localTranslation = null;
+
+	if (labelEntity != null) {
+            worldManager.removeEntity(labelEntity);
+            labelEntity.removeComponent(RenderComponent.class);
+	    nameTagRoot.detachChild(q);
+            worldManager.addToUpdateList(nameTagRoot);
+	    localTranslation = nameTagRoot.getLocalTranslation();
+	}
+
+	labelEntity = new Entity("NameTag");
         TextLabel2D label = new TextLabel2D(username);
-        Spatial q = label.getBillboard(0.3f);
+        q = label.getBillboard(0.3f);
         q.setLocalTranslation(0f, 2f, 0f);
         Matrix3f rot = new Matrix3f();
         rot.fromAngleAxis((float) Math.PI, new Vector3f(0f,1f,0f));
         q.setLocalRotation(rot);
 
-	if (labelEntity != null) {
-            ClientContextJME.getWorldManager().removeEntity(labelEntity);
-            //labelEntity.removeComponent(RenderComponent.class, ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(nameTagRoot));
-            labelEntity.removeComponent(RenderComponent.class);
-	}
-
         nameTagRoot = new Node();
         nameTagRoot.attachChild(q);
 
-        ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+        ZBufferState zbuf = (ZBufferState) worldManager.getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
         zbuf.setEnabled(true);
         zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
         nameTagRoot.setRenderState(zbuf);
 
-        labelEntity.addComponent(RenderComponent.class, ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(nameTagRoot));
+        labelEntity.addComponent(RenderComponent.class, worldManager.getRenderManager().createRenderComponent(nameTagRoot));
         ClientContextJME.getWorldManager().addEntity(labelEntity);
+
+	if (localTranslation != null) {
+	    nameTagRoot.setLocalTranslation(localTranslation);
+            worldManager.addToUpdateList(nameTagRoot);
+	}
     }
 
     void changeAvatar(WlAvatarCharacter newAvatar) {
