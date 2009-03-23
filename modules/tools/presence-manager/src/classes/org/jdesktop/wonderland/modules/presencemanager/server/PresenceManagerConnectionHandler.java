@@ -123,7 +123,7 @@ public class PresenceManagerConnectionHandler
 
 	sessions.put(info.clientID, info);
 
-	sendToAllClients(sender, message);
+	sender.send(message);
 
 	/*
 	 * Send back all of the PresenceInfo data to the new client
@@ -153,34 +153,7 @@ public class PresenceManagerConnectionHandler
 	    logger.warning("Can't find PresenceInfo for " + presenceInfo.clientID);
 	}
 
-	sendToAllClients(sender, new SessionEndedMessage(presenceInfo));
-    }
-
-    private void sendToAllClients(WonderlandClientSender sender, Message message) {
-	Iterator<BigInteger> it = sessions.keySet().iterator();
-
-	while (it.hasNext()) {
-	    BigInteger sessionID = it.next();
-
-	    String s;
-
-	    if (message instanceof SessionCreatedMessage) {
-		s = "CREATED";
-	    } else {
-		s = "ENDED";
-	    }
-
-	    //System.out.println("Sending SESSION " + s + " to " + sessions.get(sessionID));
-
-	    /*
-	     * We rely on clientID.getID() being equal to ClientSession.getID();
-	     */
-	    WonderlandClientID clientID = 
-		CommsManagerFactory.getCommsManager().getWonderlandClientID(sessionID);
-
-	    sender.send(clientID, message);
-	}
+	sender.send(new SessionEndedMessage(presenceInfo));
     }
 
 }
-

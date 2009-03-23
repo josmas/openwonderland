@@ -35,13 +35,7 @@ public class CellID implements Serializable {
     
     private static CellID invalidCellID = new CellID(Long.MIN_VALUE);
 
-    /*
-     * I have changed this from zero to one for now.  It should work fine
-     * until there's a new allocation scheme for cellID's.
-     * FIXME
-     * jprovino
-     */
-    private static long firstCellID = 1;
+    private static long firstCellID = 0;
     
     /**
      * Creates a new instance of CellID. Users should never call this, CellIDs
