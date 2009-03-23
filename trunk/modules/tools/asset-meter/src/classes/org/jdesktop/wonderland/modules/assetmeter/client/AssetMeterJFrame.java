@@ -80,8 +80,9 @@ public class AssetMeterJFrame extends javax.swing.JFrame {
         setTitle("Asset Meter");
         getContentPane().setLayout(new java.awt.GridLayout(1, 0));
 
-        loadingAssetPanel.setLayout(new java.awt.GridLayout());
+        loadingAssetPanel.setLayout(new java.awt.GridLayout(1, 0));
 
+        loadingAssetList.setBackground(new java.awt.Color(204, 204, 204));
         loadingAssetList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         loadingAssetList.setVisibleRowCount(10);
         loadingAssetPanel.add(loadingAssetList);
