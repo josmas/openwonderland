@@ -208,7 +208,8 @@ public class AudioManagerClient extends BaseConnection implements
 	     * the PresenceManager will send a message to the server about
 	     * a new session being created.
 	     */
-	    logger.warning("No Presence info for " + cellID);
+	    System.out.println("AudioManagerClient viewConfigured:  "
+		+ "No Presence info for " + cellID + " THIS SHOULDN'T HAPPEN!");
 
 	    String callID = CallID.getCallID(cellID);
 
