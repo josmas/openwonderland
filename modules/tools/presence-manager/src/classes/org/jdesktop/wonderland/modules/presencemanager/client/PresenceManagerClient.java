@@ -107,6 +107,7 @@ public class PresenceManagerClient extends BaseConnection implements
         presenceInfo = new PresenceInfo(cellID, session.getID(),
                 session.getUserID(), callID);
 
+	presenceManager.addSession(presenceInfo);
         session.send(this, new SessionCreatedMessage(presenceInfo));
     }
 

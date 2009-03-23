@@ -121,10 +121,6 @@ public class PresenceManagerConnectionHandler
 
 	logger.fine("SESSION CREATED " + info);
 
-	sessions.put(info.clientID, info);
-
-	sender.send(message);
-
 	/*
 	 * Send back all of the PresenceInfo data to the new client
 	 */
@@ -133,10 +129,6 @@ public class PresenceManagerConnectionHandler
 	while (it.hasNext()) {
 	    BigInteger sessionID = it.next();
 
-	    if (clientID.equals(sessionID)) {
-		continue;
-	    }
-
 	    PresenceInfo sessionInfo = sessions.get(sessionID);
 
 	    logger.fine("Sending session created message to " + sessionInfo.userID
@@ -144,6 +136,13 @@ public class PresenceManagerConnectionHandler
 
 	    sender.send(clientID, new SessionCreatedMessage(sessionInfo));
 	}
+
+	sessions.put(info.clientID, info);
+
+	/*
+	 * Send new client's presence info to all clients.
+	 */
+	sender.send(message);
     }
 
     private void sessionEnded(WonderlandClientSender sender, PresenceInfo presenceInfo) {
