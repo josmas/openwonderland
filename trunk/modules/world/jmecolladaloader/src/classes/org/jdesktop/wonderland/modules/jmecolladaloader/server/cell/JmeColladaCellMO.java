@@ -95,7 +95,7 @@ public class JmeColladaCellMO extends CellMO {
         // Override model URI if there is a property set for it
         Map<String, String> metadata = setup.getMetaData();
         if (metadata != null) {
-            String model = metadata.get("palette-model-uri");
+            String model = metadata.get("content-uri");
             if (model != null) {
                 this.modelURI = model;
             }

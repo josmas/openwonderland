@@ -11,8 +11,11 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
-    <!-- kmzload is dependent on the jmecolladaloader -->
-    <property name="module-client.classpath" value="${current.dir}/../jmecolladaloader/build/classes"/>
+    <!-- kmzload is dependent on the jmecolladaloader and content-repo -->
+    <pathconvert property="module-client.classpath">
+        <path location="${current.dir}/../jmecolladaloader/build/classes"/>
+        <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+    </pathconvert>
        
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,

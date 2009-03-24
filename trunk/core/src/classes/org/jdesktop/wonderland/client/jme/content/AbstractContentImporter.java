@@ -17,31 +17,24 @@
  */
 package org.jdesktop.wonderland.client.jme.content;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.content.spi.ContentImporterSPI;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
-import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 
 /**
  * An abstract base class that content importers may use to help implement the
@@ -59,22 +52,6 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
      * @inheritDoc()
      */
     public String importFile(File file, String extension) {
-        // First check to see whether the given extension matches one of the
-        // extension specified. This should never be false!
-        // Doesn't work for default importers!!!
-//        boolean isFound = false;
-//        for (String lookAtExtension : getExtensions()) {
-//            if (extension.equals(lookAtExtension) == true) {
-//                isFound = true;
-//                break;
-//            }
-//        }
-//        if (isFound == false) {
-//            logger.warning("Internal error: asked to import a file with an " +
-//                    extension + " extension, but this does not handle it");
-//            return null;
-//        }
-
 
         // Next check whether the content already exists and ask the user if
         // the upload should still proceed.
@@ -90,6 +67,17 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
             }
         }
 
+        // Display a dialog showing a wait message while we import. We need
+        // to do this in the SwingWorker thread so it gets drawn
+        JOptionPane waitMsg = new JOptionPane("Please wait while " +
+                file.getName() + " is being uploaded");
+        final JDialog dialog = waitMsg.createDialog(frame, "Uploading Content");
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                dialog.setVisible(true);
+            }
+        });
+
         // Next, do the actual upload of the file. This should display a
         // progress dialog if the upload is going to take a long time.
         String uri = null;
@@ -104,10 +92,15 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
             return null;
         }
 
-        // XXX Need to handle prep phase here?
-
+        // Close down the dialog indicating success
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                dialog.setVisible(false);
+            }
+        });
+        
         // Finally, go ahead and create the cell.
-        createCell(uri, extension);
+        createCell(uri);
         return uri;
     }
 
@@ -138,7 +131,17 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
      * @param uri The URI of the uploaded content
      * @param extension The file extension of the content
      */
-    public void createCell(String uri, String extension) {
+    public void createCell(String uri) {
+        // Figure out what the file extension is from the uri, looking for
+        // the final '.'.
+        logger.warning("URI " + uri);
+        int index = uri.lastIndexOf(".");
+        if (index == -1) {
+            logger.warning("Could not find extension for " + uri);
+            return;
+        }
+        String extension = uri.substring(index + 1);
+        
         // Next look for a cell type that handles content with this file
         // extension and create a new cell with it.
         CellRegistry registry = CellRegistry.getCellRegistry();
@@ -154,34 +157,11 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         metadata.put("content-uri", uri);
         state.setMetaData(metadata);
 
-        // Fetch the current transform from the view manager. Find the current
-        // position of the camera and its look direction.
-        ViewManager manager = ViewManager.getViewManager();
-        Vector3f cameraPosition = manager.getCameraPosition(null);
-        Vector3f cameraLookDirection = manager.getCameraLookDirection(null);
-
-        // Compute the new vector away from the camera position to be a certain
-        // number of scalar units away
-        float lengthSquared = cameraLookDirection.lengthSquared();
-        float factor = (5.0f * 5.0f) / lengthSquared;
-        Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
-
-        // Create a position component that will set the initial origin. For
-        // the initial rotation, assume the cell faces the +z direction and
-        // rotate it so that it faces the camera
-        PositionComponentServerState position = new PositionComponentServerState();
-        position.setOrigin(new Origin(origin));
-        Quaternion quaternion = new Quaternion();
-        quaternion.lookAt(cameraLookDirection.negate(), new Vector3f(0, 1, 0));
-        Vector3f axis = new Vector3f();
-        float angle = quaternion.toAngleAxis(axis);
-        position.setRotation(new Rotation(axis, angle));
-        state.addComponentServerState(position);
-
-        // Send the message to the server
-        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-        CellEditChannelConnection connection = (CellEditChannelConnection) session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-        CellCreateMessage msg = new CellCreateMessage(null, state);
-        connection.send(msg);
+        // Create the new cell at a distance away from the avatar
+        try {
+            CellUtils.createCell(state, 5.0f);
+        } catch (CellCreationException excp) {
+            logger.log(Level.WARNING, "Unable to create cell for uri " + uri, excp);
+        }
     }
 }

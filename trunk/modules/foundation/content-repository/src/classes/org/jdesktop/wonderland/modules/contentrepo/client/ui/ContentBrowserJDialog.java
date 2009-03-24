@@ -66,7 +66,6 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
     public ContentBrowserJDialog(ContentRepository repo) {
         this.repo = repo;
         initComponents();
-        setModal(true);
 
         fileList.setCellRenderer(new ContentRenderer());
         categoryList.setSelectedValue("Users", true);
@@ -140,6 +139,21 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         // Update the state of the GUI to represent the initially selected
         // directory
         changeListSelection();
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void setActionName(BrowserAction action, String name) {
+        switch (action) {
+            case OK_ACTION:
+                okButton.setText(name);
+                break;
+
+            case CANCEL_ACTION:
+                cancelButton.setText(name);
+                break;
+        }
     }
 
     private Set<ContentBrowserListener> listeners =
@@ -313,6 +327,10 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         topPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
         newCollectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/add_directory_icon.png"))); // NOI18N
+        newCollectionButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        newCollectionButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        newCollectionButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        newCollectionButton.setPreferredSize(new java.awt.Dimension(32, 32));
         newCollectionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newCollectionButtonActionPerformed(evt);
@@ -321,6 +339,10 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         topButtonPanel.add(newCollectionButton);
 
         deleteCollectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/delete_icon.png"))); // NOI18N
+        deleteCollectionButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        deleteCollectionButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        deleteCollectionButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        deleteCollectionButton.setPreferredSize(new java.awt.Dimension(32, 32));
         deleteCollectionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteCollectionButtonActionPerformed(evt);
@@ -329,6 +351,10 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         topButtonPanel.add(deleteCollectionButton);
 
         uploadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/upload_icon.png"))); // NOI18N
+        uploadButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        uploadButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        uploadButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        uploadButton.setPreferredSize(new java.awt.Dimension(32, 32));
         uploadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 uploadButtonActionPerformed(evt);
@@ -337,6 +363,10 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         topButtonPanel.add(uploadButton);
 
         downloadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/download_icon.png"))); // NOI18N
+        downloadButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        downloadButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        downloadButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        downloadButton.setPreferredSize(new java.awt.Dimension(32, 32));
         downloadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 downloadButtonActionPerformed(evt);
@@ -380,7 +410,7 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
 
         categoryList.setBackground(new java.awt.Color(153, 153, 255));
         categoryList.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        categoryList.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
+        categoryList.setFont(new java.awt.Font("Lucida Grande", 1, 12));
         categoryList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "System", "Users" };
             public int getSize() { return strings.length; }
@@ -427,7 +457,7 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         );
         previewPanelLayout.setVerticalGroup(
             previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 180, Short.MAX_VALUE)
+            .add(0, 192, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();

@@ -25,7 +25,6 @@ import java.awt.dnd.DragGestureListener;
 import java.awt.dnd.DragSource;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.palette.client.CellPalette;
 
 /**
  * Listener for the drag-start gesture for the cell palette preview image

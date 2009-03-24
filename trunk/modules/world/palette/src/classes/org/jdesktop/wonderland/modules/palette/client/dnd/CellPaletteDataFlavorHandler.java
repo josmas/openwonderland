@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.palette.client.dnd;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -26,17 +24,10 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
-import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.modules.palette.client.CellPalette;
 
 /**
@@ -66,38 +57,15 @@ public class CellPaletteDataFlavorHandler implements DataFlavorHandlerSPI {
             // create an instance of the cell on the server
             CellServerState state = (CellServerState) transferable.getTransferData(dataFlavor);
 
-            // Fetch the current transform from the view manager. Find the current
-            // position of the camera and its look direction.
-            ViewManager manager = ViewManager.getViewManager();
-            Vector3f cameraPosition = manager.getCameraPosition(null);
-            Vector3f cameraLookDirection = manager.getCameraLookDirection(null);
+            // Create the new cell at a distance away from the avatar
+            CellUtils.createCell(state, CellPalette.NEW_CELL_DISTANCE);
 
-            // Compute the new vector away from the camera position to be a certain
-            // number of scalar units away
-            float lengthSquared = cameraLookDirection.lengthSquared();
-            float factor = (CellPalette.NEW_CELL_DISTANCE * CellPalette.NEW_CELL_DISTANCE) / lengthSquared;
-            Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
-
-            // Create a position component that will set the initial origin
-            PositionComponentServerState position = new PositionComponentServerState();
-            position.setOrigin(new Origin(origin));
-            Quaternion quaternion = new Quaternion();
-            quaternion.lookAt(cameraLookDirection.negate(), new Vector3f(0, 1, 0));
-            Vector3f axis = new Vector3f();
-            float angle = quaternion.toAngleAxis(axis);
-            position.setRotation(new Rotation(axis, angle));
-            state.addComponentServerState(position);
-
-            // Send the message to the server
-            WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-            CellEditChannelConnection connection = (CellEditChannelConnection) session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-            CellCreateMessage msg = new CellCreateMessage(null, state);
-            connection.send(msg);
         } catch (UnsupportedFlavorException ex) {
             Logger.getLogger(CellPaletteDataFlavorHandler.class.getName()).log(Level.WARNING, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(CellPaletteDataFlavorHandler.class.getName()).log(Level.WARNING, null, ex);
+        } catch (CellCreationException ex) {
+            Logger.getLogger(CellPaletteDataFlavorHandler.class.getName()).log(Level.WARNING, null, ex);
         }
     }
-
 }
