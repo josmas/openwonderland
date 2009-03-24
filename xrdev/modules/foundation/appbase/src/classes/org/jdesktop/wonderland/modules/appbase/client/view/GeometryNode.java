@@ -30,11 +30,13 @@ import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import com.jme.image.Texture;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * If you want to customize the geometry of a displayer, implement
  * this interface and pass an instance to displayer.setGeometryNode.
  */
+@ExperimentalAPI
 public abstract class GeometryNode extends Node {
 
     private static final Logger logger = Logger.getLogger(GeometryNode.class.getName());

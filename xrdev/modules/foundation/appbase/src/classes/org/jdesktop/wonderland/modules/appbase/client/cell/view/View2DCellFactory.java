@@ -21,7 +21,9 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCellRenderer;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
+import org.jdesktop.wonderland.common.InternalAPI;
 
+@InternalAPI
 public interface View2DCellFactory {
     public App2DCellRenderer createCellRenderer (App2DCell cell);
     public View2DCell createView (App2DCell cell, Window2D window);

@@ -25,7 +25,9 @@ import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
+@ExperimentalAPI
 public interface View2D {
 
     /** The type of the view. */
@@ -122,11 +124,22 @@ public interface View2D {
     /** Returns the Z order. */
     public int getZOrder ();
 
-    /** Specify the portion of the window which is displayed by this view. */
-    // TODO: notyet: public void setWindowAperture (Rectangle aperture);
+    /** 
+     * Specify the portion of the window which is displayed by this view. 
+     * Update afterward.
+       TODO: notyet: public void setWindowAperture (Rectangle aperture);
+     */
 
-    /** Return the portion of the window which is displayed by this view. */
-    // TODO: notyet: public Rectangle getWindowAperture ();
+    /** 
+     * Specify the portion of the window which is displayed by this view.
+     * Update if specified.
+       TODO: notyet: public void setWindowAperture (Rectangle aperture, boolean update);
+     */
+
+    /** 
+     * Return the portion of the window which is displayed by this view.
+       TODO: notyet: public Rectangle getWindowAperture ();
+     */
 
     /** 
      * Specify a geometry node. If <code>geometryNode</code> is null the default geometry node is used.
@@ -168,13 +181,19 @@ public interface View2D {
     /** A restack operation which comes from the user. */
     // TODO: notyet: public void restackUser(RestackOp op, View2D view);
 
-    /** Specify the size of the displayed pixels. Update afterward. */
+    /** 
+     * Specify the size of the displayed pixels of this view.
+     * Update afterward. This defaults to the initial pixel scale of the window.
+     */
     public void setPixelScale (Vector2f pixelScale);
 
-    /** Specify the size of the displayed pixels. Update if specified. */
+    /** 
+     * Specify the size of the displayed pixels of this view.
+     * Update if specified. Defaults to the initial pixel scale of the window.
+     */
     public void setPixelScale (Vector2f pixelScale, boolean update);
 
-    /** Return the pixel scale. */
+    /** Return the pixel scale of this view. */
     public Vector2f getPixelScale ();
 
     /** 
@@ -192,13 +211,13 @@ public interface View2D {
     /** Returns the offset. */
     public Point getOffset ();
 
-    /** Specify the translation (comes from the user). Update afterward. */
+    /** Specify the user-specified translation of this view. Update afterward. */
     public void setTranslationUser (Vector3f translation);
 
-    /** Specify the translation (comes from the user). Update if specified. */
+    /** Specify the user-specified translation of this view. Update if specified. */
     public void setTranslationUser (Vector3f translation, boolean update);
 
-    /** Returns the user translation. */
+    /** Returns the user translation of this view. */
     public Vector3f getTranslationUser ();
 
     /** Apply all pending updates. */

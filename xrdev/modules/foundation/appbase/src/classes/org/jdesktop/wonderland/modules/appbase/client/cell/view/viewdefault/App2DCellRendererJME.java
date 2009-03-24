@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCellRenderer;
 
@@ -43,6 +44,7 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCellRenderer;
  *
  * @author dj
  */
+@InternalAPI
 public class App2DCellRendererJME extends App2DCellRenderer {
 
     /** The root node of the cell renderer. */

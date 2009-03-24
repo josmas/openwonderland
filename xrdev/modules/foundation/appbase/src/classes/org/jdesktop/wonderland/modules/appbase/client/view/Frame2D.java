@@ -17,8 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.view;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+/**
+ * The decoration of a window view displayed in an App cell.
+ */
+@ExperimentalAPI
 public interface Frame2D {
+
+    /** Returns the view to which this frame belongs. */
     public View2D getView ();
+
+    /** Specifies the title displayed in the frame header. */
     public void setTitle (String title);
+
+    /** Update the frame display based on frame and view attributes. */
     public void update () throws InstantiationException;
 }

@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An app which creates windows that can be drawn on by a Graphics2D.
+ * Usually used by an application that creates WindowSwings.
  *
  * @author deronj
  */

@@ -51,9 +51,6 @@ public class SwingTestWindow
     /** Whether the window is currently displayed "on the glass". */
     private boolean ortho;
 
-    /** The user translation when the window is displayed in the cell. */
-    private Vector3f userTranslationCell;
-
     /**
      * Create a new instance of SwingTestWindow.
      *
@@ -96,19 +93,17 @@ public class SwingTestWindow
 
         if (ortho) {
             
-            // First save the location in the cell
-            userTranslationCell = view.getTranslationUser();
-
             // In this test, the view in the ortho plane is at a fixed location.
-            view.setTranslationUser(new Vector3f(300f, 300f, 0f), false);
+            view.setLocationOrtho(new Vector2f(300f, 300f), false);
             
+            // Test
+            //view.setPixelScaleOrtho(2.0f, 2.0f);
+            //view.setPixelScaleOrtho(0.5f, 0.5f);
+
             // Move the window view into the ortho plane
             view.setOrtho(true, false);
 
         } else {
-
-            // Move the window back to its original location in the cell
-            view.setTranslationUser(userTranslationCell, false);
 
             // Move the window view into the cell
             view.setOrtho(false, false);
