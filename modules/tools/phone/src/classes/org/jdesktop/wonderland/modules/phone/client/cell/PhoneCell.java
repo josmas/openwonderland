@@ -82,29 +82,20 @@ public class PhoneCell extends Cell {
         }
 
         switch (status) {
-            case ACTIVE:
+        case ACTIVE:
+	    if (phoneMessageHandler == null) {
                 phoneMessageHandler = new PhoneMessageHandler(this);
-                break;
-            case DISK:
-                phoneMessageHandler.done();
-                phoneMessageHandler = null;
-                break;
+	    }
+            break;
+        case DISK:
+            phoneMessageHandler.done();
+            phoneMessageHandler = null;
+            break;
         }
 
         return changed;
     }
 
-//    public void cellStatusChanged(Cell cell, CellStatus status) {
-//	logger.fine("got status " + status + " for cell " + cell.getCellID());
-//
-//        if (cell.getCellID() != getCellID()) {
-//            return;
-//        }
-//
-//	if (status.equals(CellStatus.ACTIVE) && phoneMessageHandler == null) {
-//	} else if (status.equals(CellStatus.DISK) && phoneMessageHandler != null) {
-//	}
-//    }
     /**
      * Called when the cell is initially created and any time there is a 
      * major configuration change. The cell will already be attached to it's parent
