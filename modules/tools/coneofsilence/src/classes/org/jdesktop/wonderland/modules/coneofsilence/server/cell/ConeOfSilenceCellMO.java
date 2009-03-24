@@ -23,7 +23,6 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.modules.audiomanager.server.ConeOfSilenceComponentMO;
 
@@ -34,7 +33,6 @@ import org.jdesktop.wonderland.modules.audiomanager.server.ConeOfSilenceComponen
 public class ConeOfSilenceCellMO extends CellMO {
 
     public ConeOfSilenceCellMO() {
-        addComponent(new MovableComponentMO(this));
         addComponent(new ConeOfSilenceComponentMO(this));
     }
 
