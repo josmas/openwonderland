@@ -49,9 +49,7 @@ public class PhoneCellMO extends CellMO {
             Logger.getLogger(PhoneCellMO.class.getName());
     private String modelFileName;
     private final static double PRIVATE_DAMPING_COEFFICIENT = 0.5;
-
     private PhoneInfo phoneInfo;
-
     private ManagedReference<PhoneMessageHandler> phoneMessageHandlerRef;
 
     public PhoneCellMO() {
@@ -59,28 +57,26 @@ public class PhoneCellMO extends CellMO {
 
     public PhoneCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size),
-	    new CellTransform(null, center));
+                new CellTransform(null, center));
     }
 
     protected void setLive(boolean live) {
-	super.setLive(live);
+        super.setLive(live);
 
-	if (live == false) {
-	    if (phoneMessageHandlerRef != null) {
-		PhoneMessageHandler phoneMessageHandler = phoneMessageHandlerRef.get();
-		phoneMessageHandler.done();
-		AppContext.getDataManager().removeObject(phoneMessageHandler);
-		phoneMessageHandlerRef = null;
-	    }
-	    return;
-	}
+        if (live == false) {
+            if (phoneMessageHandlerRef != null) {
+                PhoneMessageHandler phoneMessageHandler = phoneMessageHandlerRef.get();
+                phoneMessageHandler.done();
+                AppContext.getDataManager().removeObject(phoneMessageHandler);
+                phoneMessageHandlerRef = null;
+            }
+            return;
+        }
 
-	addComponent(new MovableComponentMO(this));
+        IncomingCallHandler.getInstance().addPhone(getCellID(), phoneInfo);
 
-	IncomingCallHandler.getInstance().addPhone(getCellID(), phoneInfo);
-
-	phoneMessageHandlerRef = AppContext.getDataManager().createReference(
-            new PhoneMessageHandler(this));
+        phoneMessageHandlerRef = AppContext.getDataManager().createReference(
+                new PhoneMessageHandler(this));
     }
 
     @Override
@@ -95,10 +91,10 @@ public class PhoneCellMO extends CellMO {
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-	    cellClientState = new PhoneCellClientState();
+            cellClientState = new PhoneCellClientState();
         }
 
-        ((PhoneCellClientState)cellClientState).setPhoneInfo(phoneInfo);
+        ((PhoneCellClientState) cellClientState).setPhoneInfo(phoneInfo);
 
         return super.getClientState(cellClientState, clientID, capabilities);
     }
@@ -124,7 +120,7 @@ public class PhoneCellMO extends CellMO {
         if (cellServerState == null) {
             cellServerState = new PhoneCellServerState();
 
-	    ((PhoneCellServerState) cellServerState).setPhoneInfo(phoneInfo);
+            ((PhoneCellServerState) cellServerState).setPhoneInfo(phoneInfo);
         }
         return super.getServerState(cellServerState);
     }
@@ -133,8 +129,7 @@ public class PhoneCellMO extends CellMO {
         return phoneInfo;
     }
 
-    public void setPhoneInfo(PhoneInfo phoneInfo)  {
+    public void setPhoneInfo(PhoneInfo phoneInfo) {
         this.phoneInfo = phoneInfo;
     }
-
 }

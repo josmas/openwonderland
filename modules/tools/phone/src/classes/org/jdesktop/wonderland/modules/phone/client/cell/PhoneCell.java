@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
-import  org.jdesktop.wonderland.modules.phone.common.CallListing;
+import org.jdesktop.wonderland.modules.phone.common.CallListing;
 
 import com.sun.sgs.client.ClientChannel;
 
@@ -53,49 +53,58 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
  *
  * @author jkaplan
  */
-public class PhoneCell extends Cell implements CellStatusChangeListener {
+public class PhoneCell extends Cell {
 
     private static final Logger logger =
             Logger.getLogger(PhoneCell.class.getName());
-
     private PhoneForm phoneForm;
-    
     private static final float HOVERSCALE = 1.5f;
     private static final float NORMALSCALE = 1.25f;
-    
     private CallListing mostRecentCallListing;
-         
     //private boolean projectorState;
-    
     //private ProjectorStateUpdater projectorStateUpdater;
-        
     private PhoneInfo phoneInfo;
-
     private PhoneMessageHandler phoneMessageHandler;
 
     public PhoneCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
-	logger.fine("CREATED NEW PHONE CELL " + cellID);
+        logger.fine("CREATED NEW PHONE CELL " + cellID);
 
-	CellManager.getCellManager().addCellStatusChangeListener(this);
+//	CellManager.getCellManager().addCellStatusChangeListener(this);
     }
 
-    public void cellStatusChanged(Cell cell, CellStatus status) {
-	logger.fine("got status " + status + " for cell " + cell.getCellID());
+    public boolean setStatus(CellStatus status) {
+        boolean changed = super.setStatus(status);
 
-        if (cell.getCellID() != getCellID()) {
-            return;
+        if (!changed) {
+            return changed;
         }
 
-	if (status.equals(CellStatus.ACTIVE) && phoneMessageHandler == null) {
-	    phoneMessageHandler = new PhoneMessageHandler(this);
-	} else if (status.equals(CellStatus.DISK) && phoneMessageHandler != null) {
-	    phoneMessageHandler.done();
-	    phoneMessageHandler = null;
-	}
+        switch (status) {
+            case ACTIVE:
+                phoneMessageHandler = new PhoneMessageHandler(this);
+                break;
+            case DISK:
+                phoneMessageHandler.done();
+                phoneMessageHandler = null;
+                break;
+        }
+
+        return changed;
     }
 
+//    public void cellStatusChanged(Cell cell, CellStatus status) {
+//	logger.fine("got status " + status + " for cell " + cell.getCellID());
+//
+//        if (cell.getCellID() != getCellID()) {
+//            return;
+//        }
+//
+//	if (status.equals(CellStatus.ACTIVE) && phoneMessageHandler == null) {
+//	} else if (status.equals(CellStatus.DISK) && phoneMessageHandler != null) {
+//	}
+//    }
     /**
      * Called when the cell is initially created and any time there is a 
      * major configuration change. The cell will already be attached to it's parent
@@ -105,28 +114,28 @@ public class PhoneCell extends Cell implements CellStatusChangeListener {
      */
     @Override
     public void setClientState(CellClientState cellClientState) {
-	super.setClientState(cellClientState);
+        super.setClientState(cellClientState);
 
-	PhoneCellClientState phoneCellClientState = (PhoneCellClientState) cellClientState;
+        PhoneCellClientState phoneCellClientState = (PhoneCellClientState) cellClientState;
 
-	phoneInfo = phoneCellClientState.getPhoneInfo();
+        phoneInfo = phoneCellClientState.getPhoneInfo();
     }
 
     public PhoneInfo getPhoneInfo() {
-	return phoneInfo;
+        return phoneInfo;
     }
 
     public WonderlandSession getSession() {
-	return getCellCache().getSession();
+        return getCellCache().getSession();
     }
 
     public void phoneSelected() {
-	if (phoneMessageHandler == null) {
-	    logger.warning("No phoneMessageHandler");
-	    return;
-	}
+        if (phoneMessageHandler == null) {
+            logger.warning("No phoneMessageHandler");
+            return;
+        }
 
-	phoneMessageHandler.phoneSelected();
+        phoneMessageHandler.phoneSelected();
     }
 
     @Override
@@ -135,7 +144,6 @@ public class PhoneCell extends Cell implements CellStatusChangeListener {
             return new PhoneCellRenderer(this);
         }
 
-        throw new IllegalStateException("Cell does not support " + rendererType);
+        return super.createCellRenderer(rendererType);
     }
-
 }
