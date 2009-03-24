@@ -24,13 +24,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.content.ContentImportManager;
 import org.jdesktop.wonderland.client.content.spi.ContentImporterSPI;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -94,8 +89,7 @@ public class DesktopImportDataFlavorHandler implements DataFlavorHandlerSPI {
     }
 
     /**
-     * A thread that uploads content and displays a message dialog indicating
-     * the status of the upload
+     * A thread that uploads content
      */
     class UploadThread extends Thread {
         private File file = null;
@@ -110,26 +104,7 @@ public class DesktopImportDataFlavorHandler implements DataFlavorHandlerSPI {
 
         @Override
         public void run() {
-//            // Display a dialog showing a wait message while we import. We need
-//            // to do this in the SwingWorker thread so it gets drawn
-//            JOptionPane waitMsg = new JOptionPane("Please wait while " +
-//                    file.getName() + " is being uploaded");
-//            JFrame frame = JmeClientMain.getFrame().getFrame();
-//            final JDialog dialog = waitMsg.createDialog(frame, "Uploading Content");
-//            SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
-//                    dialog.setVisible(true);
-//                }
-//            });
-
-            String uri = importer.importFile(file, extension);
-
-//            // Close down the dialog indicating success
-//            SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
-//                    dialog.setVisible(false);
-//                }
-//            });
+            importer.importFile(file, extension);
         }
     }
 

@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.modules.imageviewer.common.cell.ImageViewerCellSe
 public class ImageViewerCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
-        return new String[] { "png" };
+        return new String[] { "png", "jpg" };
     }
 
     public <T extends CellServerState> T getDefaultCellServerState() {

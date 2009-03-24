@@ -53,6 +53,7 @@ public class DragAndDropManager {
         // in the default one to handle drag-and-drop of files from the desktop
         dataFlavorHandlerMap = new HashMap();
         registerDataFlavorHandler(new DesktopImportDataFlavorHandler());
+        registerDataFlavorHandler(new URLDataFlavorHandler());
     }
 
     /**
