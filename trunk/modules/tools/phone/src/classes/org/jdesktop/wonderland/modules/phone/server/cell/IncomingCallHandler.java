@@ -258,16 +258,6 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	    return;
 	}
 
-	if (phoneList.size() == 0) {
-	    try {
-	        call.playTreatment("tts:There are no phones!  Good Bye.");
-	        call.end(true);
-	    } catch (IOException e) {
-		logger.warning("Unable to play treatment or end call " + call + ": " + e.getMessage());
-	    }
-	    return;
-	}
-
 	callHandler = new CallHandler(call, status, timeout);
 
 	synchronized(callTable) {
