@@ -27,6 +27,14 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public interface ContentBrowserSPI {
 
+    /** Enumeration of actions that can be taken upon the content browser */
+    public enum BrowserAction { OK_ACTION, CANCEL_ACTION };
+
+    /**
+     * Sets the name of the button that represents the given action
+     */
+    public void setActionName(BrowserAction action, String name);
+
     /**
      * Adds a listener to the content browser to indicate the user's action. If
      * the listener has already been added, this method does nothing. The
@@ -51,6 +59,13 @@ public interface ContentBrowserSPI {
      */
     public void setVisible(boolean visible);
 
+    /**
+     * Sets whether the browser should be "modal" or not.
+     *
+     * @param modal True to make the browser model, false for not
+     */
+    public void setModal(boolean modal);
+    
     /**
      * The listener interface to report the result of the action taken on the
      * content browser. Generally, the content browser supports two actions,

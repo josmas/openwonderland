@@ -17,30 +17,24 @@
  */
 package org.jdesktop.wonderland.modules.palette.client;
 
-import com.jme.math.Vector3f;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
-import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
-import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.checksums.Checksum;
 import org.jdesktop.wonderland.common.checksums.ChecksumList;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
@@ -186,31 +180,15 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     // field.
     CellServerState setup = factory.getDefaultCellServerState();
     Map<String, String> metadata = new HashMap();
-    metadata.put("palette-model-uri", "wla://" + moduleName + "/" + artPath);
+    metadata.put("content-uri", "wla://" + moduleName + "/" + artPath);
     setup.setMetaData(metadata);
 
-    // Fetch the current transform from the view manager. Find the current
-    // position of the camera and its look direction.
-    ViewManager manager = ViewManager.getViewManager();
-    Vector3f cameraPosition = manager.getCameraPosition(null);
-    Vector3f cameraLookDirection = manager.getCameraLookDirection(null);
-
-    // Compute the new vector away from the camera position to be a certain
-    // number of scalar units away
-    float lengthSquared = cameraLookDirection.lengthSquared();
-    float factor = (NEW_CELL_DISTANCE * NEW_CELL_DISTANCE) / lengthSquared;
-    Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
-
-    // Create a position component that will set the initial origin
-    PositionComponentServerState position = new PositionComponentServerState();
-    position.setOrigin(new Origin(origin));
-    setup.addComponentServerState(position);
-    
-    // Send the message to the server
-    WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-    CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-    CellCreateMessage msg = new CellCreateMessage(null, setup);
-    connection.send(msg);
+    // Create the new cell at a distance away from the avatar
+    try {
+        CellUtils.createCell(setup, NEW_CELL_DISTANCE);
+    } catch (CellCreationException excp) {
+        logger.log(Level.WARNING, "Unable to create cell for artwork " + artPath, excp);
+    }
 }//GEN-LAST:event_createActionPerformed
 
     /**

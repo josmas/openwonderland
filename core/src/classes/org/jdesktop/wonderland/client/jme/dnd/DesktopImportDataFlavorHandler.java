@@ -110,26 +110,26 @@ public class DesktopImportDataFlavorHandler implements DataFlavorHandlerSPI {
 
         @Override
         public void run() {
-            // Display a dialog showing a wait message while we import. We need
-            // to do this in the SwingWorker thread so it gets drawn
-            JOptionPane waitMsg = new JOptionPane("Please wait while " +
-                    file.getName() + " is being uploaded");
-            JFrame frame = JmeClientMain.getFrame().getFrame();
-            final JDialog dialog = waitMsg.createDialog(frame, "Uploading Content");
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    dialog.setVisible(true);
-                }
-            });
+//            // Display a dialog showing a wait message while we import. We need
+//            // to do this in the SwingWorker thread so it gets drawn
+//            JOptionPane waitMsg = new JOptionPane("Please wait while " +
+//                    file.getName() + " is being uploaded");
+//            JFrame frame = JmeClientMain.getFrame().getFrame();
+//            final JDialog dialog = waitMsg.createDialog(frame, "Uploading Content");
+//            SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
+//                    dialog.setVisible(true);
+//                }
+//            });
 
             String uri = importer.importFile(file, extension);
 
-            // Close down the dialog indicating success
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    dialog.setVisible(false);
-                }
-            });
+//            // Close down the dialog indicating success
+//            SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
+//                    dialog.setVisible(false);
+//                }
+//            });
         }
     }
 

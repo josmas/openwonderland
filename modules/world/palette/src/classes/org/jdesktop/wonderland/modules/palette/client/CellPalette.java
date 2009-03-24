@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.palette.client;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.dnd.DnDConstants;
@@ -35,18 +33,11 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
-import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
+import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.modules.palette.client.dnd.PaletteDragGestureListener;
 
 /**
@@ -66,6 +57,7 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
 
     /* The handler for the drag source for the preview image */
     private PaletteDragGestureListener gestureListener = null;
+    
     /** Creates new form CellPalette */
     public CellPalette() {
         // Initialize the GUI components
@@ -83,6 +75,10 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         DragSource ds = DragSource.getDefaultDragSource();
         gestureListener = new PaletteDragGestureListener();
         ds.createDefaultDragGestureRecognizer(previewLabel,
+                DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+
+        // Add support for drag from the text list of cells
+        ds.createDefaultDragGestureRecognizer(cellList,
                 DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
 
     }
@@ -177,33 +173,14 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     CellFactorySPI factory = getCellFactory(cellDisplayName);
     CellServerState setup = factory.getDefaultCellServerState();
 
-    // Fetch the current transform from the view manager. Find the current
-    // position of the camera and its look direction.
-    ViewManager manager = ViewManager.getViewManager();
-    Vector3f cameraPosition = manager.getCameraPosition(null);
-    Vector3f cameraLookDirection = manager.getCameraLookDirection(null);
-
-    // Compute the new vector away from the camera position to be a certain
-    // number of scalar units away
-    float lengthSquared = cameraLookDirection.lengthSquared();
-    float factor = (NEW_CELL_DISTANCE * NEW_CELL_DISTANCE) / lengthSquared;
-    Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
-
-    // Create a position component that will set the initial origin
-    PositionComponentServerState position = new PositionComponentServerState();
-    position.setOrigin(new Origin(origin));
-    Quaternion quaternion = new Quaternion();
-    quaternion.lookAt(cameraLookDirection.negate(), new Vector3f(0, 1, 0));
-    Vector3f axis = new Vector3f();
-    float angle = quaternion.toAngleAxis(axis);
-    position.setRotation(new Rotation(axis, angle));
-    setup.addComponentServerState(position);
-    
-    // Send the message to the server
-    WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-    CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-    CellCreateMessage msg = new CellCreateMessage(null, setup);
-    connection.send(msg);
+    // Create the new cell at a distance away from the avatar
+    try {
+        CellUtils.createCell(setup, NEW_CELL_DISTANCE);
+    } catch (CellCreationException excp) {
+        Logger logger= Logger.getLogger(CellPalette.class.getName());
+        logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +
+                " using palette", excp);
+    }
 }//GEN-LAST:event_createActionPerformed
 
 
