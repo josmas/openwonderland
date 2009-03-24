@@ -825,7 +825,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Returns the previous user translation for the current mode */
-    protected Vector3f getTranslationUserPrev() {
+    protected Vector3f getTranslationUserPrevCurrent() {
         if (ortho) {
             return userTranslationOrthoPrev.clone();
         } else {
@@ -1167,7 +1167,7 @@ public abstract class View2DEntity implements View2D {
         transDeltaTransform.setTranslation(deltaTranslation);
         */
         /**/
-        Vector3f translation = getTranslationUser();
+        Vector3f translation = getTranslationUserCurrent();
         if (type == Type.PRIMARY && ortho) {
             translation.addLocal(new Vector3f(locationOrtho.x, locationOrtho.y, 0f));
         }
