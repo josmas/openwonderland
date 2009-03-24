@@ -10,8 +10,9 @@
 		</contributor>
 		<created>2009-01-20T15:18:27.937000</created>
 		<modified>2009-01-20T15:18:27.937000</modified>
-		<unit meter="0.01" name="centimeter"/>
-		<up_axis>Z_UP</up_axis>
+		<unit meter="1" name="centimeter"/>
+
+		<up_axis>Y_UP</up_axis>
 	</asset>
 	<library_cameras>
 		<camera id="Camera-Camera" name="Camera-Camera">
