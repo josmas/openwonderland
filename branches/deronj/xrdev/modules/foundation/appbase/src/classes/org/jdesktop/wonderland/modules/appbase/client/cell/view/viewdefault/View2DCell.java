@@ -235,8 +235,12 @@ public class View2DCell extends View2DEntity {
 
     @Override
     protected void updatePrimaryTransform (CellTransform userDeltaTransform) {
-        sgChangeTransformUserSet(viewNode, 
-                                 new CellTransform(null, userTranslation, null));
+        Vector3f translation = getTranslationUserCurrent();
+        if (type == Type.PRIMARY && isOrtho()) {
+            Vector2f locOrtho = getLocationOrtho();
+            translation.addLocal(new Vector3f(locOrtho.x, locOrtho.y, 0f));
+        }
+        sgChangeTransformUserSet(viewNode, new CellTransform(null, translation, null));
 
         /*TODO: need to figure this out
         if (isOrtho()) {

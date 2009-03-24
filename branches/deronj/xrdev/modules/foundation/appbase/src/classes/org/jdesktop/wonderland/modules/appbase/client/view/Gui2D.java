@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 
 /**
@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
  *
  * @author deronj
  */
-@ExperimentalAPI
+@InternalAPI
 public class Gui2D {
 
     private static final Logger logger = Logger.getLogger(Gui2D.class.getName());

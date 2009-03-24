@@ -28,10 +28,12 @@ import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A quad shaped geometry node.
  */
+@ExperimentalAPI
 class GeometryNodeQuad extends GeometryNode {
 
     private static final Logger logger = Logger.getLogger(GeometryNodeQuad.class.getName());

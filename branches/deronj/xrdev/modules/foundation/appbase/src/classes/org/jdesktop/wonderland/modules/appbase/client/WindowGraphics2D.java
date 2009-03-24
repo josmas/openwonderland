@@ -21,14 +21,14 @@ import com.jme.math.Vector2f;
 import com.jmex.awt.swingui.ImageGraphics;
 import java.awt.Graphics2D;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  * A window that provides a drawing surface (a buffered image) that can be drawn on by a Graphics2D. 
  *
  * @author deronj
  */
-@ExperimentalAPI
+@InternalAPI
 public class WindowGraphics2D extends Window2D {
 
     private static final Logger logger = Logger.getLogger(WindowGraphics2D.class.getName());

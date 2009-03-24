@@ -76,9 +76,8 @@ public abstract class Window2D {
     private static final int CHANGED_DECORATED   = 0x08;
     private static final int CHANGED_OFFSET      = 0x10;
     private static final int CHANGED_SIZE        = 0x20;
-    private static final int CHANGED_PIXEL_SCALE = 0x40;
-    private static final int CHANGED_TITLE       = 0x80;
-    private static final int CHANGED_Z_ORDER     = 0x100;
+    private static final int CHANGED_TITLE       = 0x40;
+    private static final int CHANGED_Z_ORDER     = 0x80;
 
     /** The type of the 2D window. */
     public enum Type {
@@ -454,19 +453,17 @@ public abstract class Window2D {
     }
 
     /**
-     * Specify the initial pixel scale of the window.
+     * Specify the initial pixel scale for the window's views when they are in cell mode.
      */
     public synchronized void setPixelScale(Vector2f pixelScale) {
         if (this.pixelScale.equals(pixelScale)) {
             return;
         }
         this.pixelScale = pixelScale.clone();
-        changeMask |= CHANGED_PIXEL_SCALE;
-        updateViews();
     }
 
     /** 
-     * Returns the initial pixel scale of the window.
+     * Returns the initial pixel scale of the window's views when they are in cell mode.
      */
     public synchronized Vector2f getPixelScale() {
         return pixelScale.clone();
@@ -494,6 +491,9 @@ public abstract class Window2D {
         return visibleApp;
     }
 
+    /**
+     * Specifies whether the user wants the window to be visible in the given displayer.
+     */
     public synchronized void setVisibleUser(View2DDisplayer displayer, boolean visible) {
         View2D view = getView(displayer);
         if (view != null) {
@@ -502,6 +502,9 @@ public abstract class Window2D {
         }
     }
 
+    /**
+     * Does the user want the window to be visible in the given displayer?
+     */
     public synchronized boolean isVisibleUser(View2DDisplayer displayer) {
         View2D view = getView(displayer);
         if (view != null) {
@@ -542,7 +545,6 @@ public abstract class Window2D {
 
     /**
      * Move this window to the top of the window stack.
-     * 
      */
     public synchronized void toFront() {
         // TODO
@@ -871,6 +873,7 @@ public abstract class Window2D {
         return eventListeners.contains(listener);
     }
 
+    /** Given a entity component class returns the corresponding entity component. */
     private EntityComponentEntry entityComponentEntryForClass(Class clazz) {
         for (EntityComponentEntry entry : entityComponents) {
             if (entry.clazz.equals(clazz)) {
@@ -980,11 +983,13 @@ public abstract class Window2D {
         views.clear();
     }
 
+    /** Add a new view for the displayer of the view. */
     private void addViewForDisplayer(View2D view) {
         View2DDisplayer displayer = view.getDisplayer();
         displayerToView.put(displayer, view);
     }
 
+    /** Remove a view for the displayer of the view. */
     private void removeViewForDisplayer(View2D view) {
         View2DDisplayer displayer = view.getDisplayer();
         displayerToView.remove(displayer);
@@ -1004,6 +1009,7 @@ public abstract class Window2D {
         return views.iterator();
     }
 
+    /** {@inheritDoc}
     @Override
     public String toString() {
         return getName();
@@ -1052,9 +1058,6 @@ public abstract class Window2D {
             }
             if ((changeMask & CHANGED_DECORATED) != 0) {
                 view.setDecorated(decorated, false);
-            }
-            if ((changeMask & CHANGED_PIXEL_SCALE) != 0) {
-                view.setPixelScale(pixelScale, false);
             }
             if ((changeMask & CHANGED_TITLE) != 0) {
                 view.setTitle(title, false);

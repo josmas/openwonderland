@@ -38,21 +38,13 @@ import com.jme.math.Vector3f;
  * @author deronj
  */
 @ExperimentalAPI
-public class SwingExampleWindow 
-    extends WindowSwing  
-    implements TestPanel.Container 
-{
+public class SwingExampleWindow extends WindowSwing {
+
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(SwingExampleWindow.class.getName());
 
     /** The cell in which this window is displayed. */
     private SwingExampleCell cell;
-
-    /** Whether the window is currently displayed "on the glass". */
-    private boolean ortho;
-
-    /** The user translation when the window is displayed in the cell. */
-    private Vector3f userTranslationCell;
 
     /**
      * Create a new instance of SwingExampleWindow.
@@ -78,38 +70,6 @@ public class SwingExampleWindow
 	// TODO: example without
        	JmeClientMain.getFrame().getCanvas3DPanel().add(examplePanel);
 
-        examplePanel.setContainer(this);
 	setComponent(examplePanel);
-    }
-
-    public void setOrtho(boolean ortho) {
-        if (this.ortho == ortho) return;
-
-        View2DEntity view = (View2DEntity) getView(cell);
-
-        if (ortho) {
-            
-            // First save the location in the cell
-            userTranslationCell = view.getTranslationUser();
-
-            // In this test, the view in the ortho plane is at a fixed location.
-            view.setTranslationUser(new Vector3f(300f, 300f, 0f), false);
-            
-            // Move the window view into the ortho plane
-            view.setOrtho(true, false);
-
-        } else {
-
-            // Move the window back to its original location in the cell
-            view.setTranslationUser(userTranslationCell, false);
-
-            // Move the window view into the cell
-            view.setOrtho(false, false);
-        }
-
-        // Now make it all happen
-        view.update();
-
-        this.ortho = ortho;
     }
 }

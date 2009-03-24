@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D.Type;
 import java.awt.Button;
+import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 
 /**
  * TODO
@@ -95,6 +96,7 @@ public abstract class View2DEntity implements View2D {
     protected static final int CHANGED_TITLE            = 0x200  | CHANGED_FRAME;
     protected static final int CHANGED_Z_ORDER          = 0x400  | CHANGED_OFFSET_STACK_TRANSFORM;
     protected static final int CHANGED_ORTHO            = 0x800;
+    protected static final int CHANGED_LOCATION_ORTHO   = 0x1000;
 
     protected static final int CHANGED_ALL = -1;
 
@@ -152,8 +154,14 @@ public abstract class View2DEntity implements View2D {
     /** The size of the view specified by the app. */
     private Dimension sizeApp = new Dimension(1, 1);
 
-    /** The size of the displayed pixels in local units. */
-    private Vector2f pixelScale;
+    /** The size of the displayed pixels (in local units) when view is in cell mode. */
+    private Vector2f pixelScaleCell;
+
+    /** The size of the displayed pixels (in local units) when view is in ortho mode. */
+    private Vector2f pixelScaleOrtho;
+
+    /** The location of the view when view is in ortho mode. */
+    private Vector2f locationOrtho;
 
     /** The interactive GUI object for this view. */
     private Gui2DInterior gui;
@@ -161,14 +169,21 @@ public abstract class View2DEntity implements View2D {
     /** The pixel offset translation from the top left corner of the parent. */
     private Point offset = new Point(0, 0);
 
-    /** The user translation. */
+    /** The user translation used when in cell mode. */
     // TODO: make private and add a getter for subclass to use. Do elsewhere as well.
-    protected Vector3f userTranslation = new Vector3f(0f, 0f, 0f);
+    protected Vector3f userTranslationCell = new Vector3f(0f, 0f, 0f);
 
-    /** The previous user translation. */
-    private Vector3f userTranslationPrev = new Vector3f(0f, 0f, 0f);
+    /** The user translation used when in ortho mode. */
+    // TODO: make private and add a getter for subclass to use. Do elsewhere as well.
+    protected Vector3f userTranslationOrtho = new Vector3f(0f, 0f, 0f);
 
-    /** A copy of the user transformation (i.e. the view node's tranformation). */
+    /** The previous cell mode user translation. */
+    private Vector3f userTranslationCellPrev = new Vector3f(0f, 0f, 0f);
+
+    /** The previous ortho mode user translation. */
+    private Vector3f userTranslationOrthoPrev = new Vector3f(0f, 0f, 0f);
+
+    /** A copy of the current user transformation (i.e. the view node's tranformation). */
     private CellTransform userTransform = new CellTransform(null, null, null);
 
     /** The event listeners which are attached to this view while the view is attached to its cell */
@@ -509,12 +524,18 @@ public abstract class View2DEntity implements View2D {
         return title;
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc}
+     * The Z order is the same for both cell and ortho modes.
+     */
     public synchronized void setZOrder(int zOrder) {
         setZOrder(zOrder, true);
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc}
+     * The Z order is the same for both cell and ortho modes.
+     */
     public synchronized void setZOrder(int zOrder, boolean update) {
         logger.info("change zOrder = " + zOrder);
         this.zOrder = zOrder;
@@ -528,6 +549,40 @@ public abstract class View2DEntity implements View2D {
     public synchronized int getZOrder () {
         return zOrder;
     }
+
+    /** 
+     * Specify the portion of the window which is displayed by this view when it is in cell mode.
+     * Update afterward.
+       TODO: notyet: public void setWindowAperture (Rectangle aperture);
+     */
+
+    /** 
+     * Specify the portion of the window which is displayed by this view when it is in cell mode. 
+     * Update if specified.
+       TODO: notyet: public void setWindowAperture (Rectangle aperture, boolean update);
+     */
+
+    /** 
+     * Return the portion of the window which is displayed by this view when it is in cell mode. 
+       TODO: notyet: public Rectangle getWindowAperture ();
+     */
+
+    /** 
+     * Specify the portion of the window which is displayed by this view when it is in ortho mode. 
+     * Update afterward.
+       TODO: notyet: public void setWindowApertureOrtho (Rectangle aperture);
+     */
+
+    /** 
+     * Specify the portion of the window which is displayed by this view when it is in ortho mode. 
+     * Update if specified.
+       TODO: notyet: public void setWindowApertureOrtho (Rectangle aperture, boolean update);
+     */
+
+    /** 
+     * Return the portion of the window which is displayed by this view when it is in ortho mode. 
+       TODO: notyet: public Rectangle getWindowApertureOrtho ();
+     */
 
     /** {@inheritDoc} */
     public synchronized void setGeometryNode (GeometryNode geometryNode) {
@@ -577,66 +632,125 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized float getDisplayerLocalWidth () {
-        if (ortho) {
-            // TODO: for now
-            return sizeApp.width;
-        } else {
-            // TODO: ignore size mode and user size for now - always track window size as specified by app
-            return getPixelScaleX() * sizeApp.width;
-        }
+        // TODO: ignore size mode and user size for now - always track window size as specified by app
+        return getPixelScaleCurrent().x * sizeApp.width;
     }
 
     /** {@inheritDoc} */
     public synchronized float getDisplayerLocalHeight () {
-        if (ortho) {
-            // TODO: for now
-            return sizeApp.height;
-        } else {
-            // TODO: ignore size mode and user size for now - always track window size as specified by app
-            return getPixelScaleY() * sizeApp.height;
-        }
+        // TODO: ignore size mode and user size for now - always track window size as specified by app
+        return getPixelScaleCurrent().y * sizeApp.height;
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * Specify the size of the displayed pixels used when the view is in cell mode. 
+     * Update afterward. This defaults to the initial pixel scale of the window.
+     */
     public synchronized void setPixelScale (Vector2f pixelScale) {
         setPixelScale(pixelScale, true);
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * Specify the size of the displayed pixels used when the view is in cell mode. 
+     * Update if specified. Defaults to the pixel scale of the window.
+     */
     public synchronized void setPixelScale (Vector2f pixelScale, boolean update) {
-        logger.info("change pixelScale = " + pixelScale);
-        this.pixelScale = pixelScale.clone();
+        logger.info("change pixelScale cell = " + pixelScale);
+        this.pixelScaleCell = pixelScale.clone();
         changeMask |= CHANGED_PIXEL_SCALE;
         if (update) {
             update();
         }
     }
 
-    /** {@inheritDoc} */
+    /** Return the pixel scale used when the view is displayed in cell mode. */
     public synchronized Vector2f getPixelScale () {
-        if (pixelScale == null) {
-            return new Vector2f(PIXEL_SCALE_DEFAULT, PIXEL_SCALE_DEFAULT);
+        if (pixelScaleCell == null) {
+            return window.getPixelScale();
         } else {
-            return pixelScale.clone();
+            return pixelScaleCell.clone();
         }
     }
 
-    /** Returns the X pixel scale. */
-    private synchronized float getPixelScaleX () {
-        if (pixelScale == null) {
-            return PIXEL_SCALE_DEFAULT;
-        } else {
-            return pixelScale.x;
-        }        
+    /** 
+     * Specify the size of the displayed pixels used when the view is in ortho mode. 
+     * Update afterward. This defaults to (1.0, 1.0).
+     */
+    public synchronized void setPixelScaleOrtho (Vector2f pixelScale) {
+        setPixelScaleOrtho(pixelScale, true);
     }
 
-    /** Returns the Y pixel scale. */
-    private synchronized float getPixelScaleY () {
-        if (pixelScale == null) {
-            return PIXEL_SCALE_DEFAULT;
+    /** 
+     * Specify the size of the displayed pixels used when the view is in ortho mode. 
+     * Update if specified. This defaults to (1.0, 1.0).
+     */
+    public synchronized void setPixelScaleOrtho (Vector2f pixelScale, boolean update) {
+        logger.info("change pixelScale ortho = " + pixelScale);
+        this.pixelScaleOrtho = pixelScale.clone();
+        changeMask |= CHANGED_PIXEL_SCALE;
+        if (update) {
+            update();
+        }
+    }
+
+    /** Return the pixel scale used when the view is displayed in ortho mode. */
+    public synchronized Vector2f getPixelScaleOrtho () {
+        if (pixelScaleOrtho == null) {
+            return new Vector2f(1f, 1f);
         } else {
-            return pixelScale.y;
-        }        
+            return pixelScaleOrtho.clone();
+        }
+    }
+
+    /** Returns the pixel scale vector for the current mode. */
+    private Vector2f getPixelScaleCurrent () {
+        Vector2f pixelScale;
+        if (ortho) {
+            pixelScale = getPixelScaleOrtho();
+        } else {
+            pixelScale = getPixelScale();
+        }
+        return pixelScale;
+    }
+
+    /**
+     * Specify the location of a primary view used when the view is in ortho mode.
+     * The location is an offset relative to the origin of the displayer and is in
+     * the coordinate system of the ortho plane. Update afterward.
+     * This attribute is ignored for non-primary views.
+     *
+     * Note: there is no corresponding attribute for cell mode because the cell itself automatically
+     * controls the location of a primary view within the cell (usually centered) and the cell location
+     * within the world is derived from WFS and other input. 
+     */
+    public synchronized void setLocationOrtho (Vector2f location) {
+        setLocationOrtho(location, true);
+    }
+
+    /**
+     * Specify the location of a primary view used when the view is in ortho mode.
+     * The location is an offset relative to the origin of the displayer and is in
+     * the coordinate system of the ortho plane. Update if specified.
+     * This attribute is ignored for non-primary views.
+     *
+     * Note: there is no corresponding attribute for cell mode because the cell itself automatically
+     * controls the location of a primary view within the cell (usually centered) and the cell location
+     * within the world is derived from WFS and other input. 
+     */
+    public synchronized void setLocationOrtho (Vector2f location, boolean update) {
+        logger.info("change location ortho = " + location);
+        this.locationOrtho = location.clone();
+        changeMask |= CHANGED_LOCATION_ORTHO;
+        if (update) {
+            update();
+        }
+    }
+
+    /**
+     * Returns the location used when this view is in ortho mode.
+     */
+    public synchronized Vector2f getLocationOrtho () {
+        return locationOrtho.clone();
     }
 
     /** {@inheritDoc} */
@@ -659,25 +773,64 @@ public abstract class View2DEntity implements View2D {
         return (Point) offset.clone();
     }
 
-    /** {@inheritDoc} */
+    /** Specify the user-specified translation used when in cell mode. Update afterward. */
     public synchronized void setTranslationUser (Vector3f translation) {
         setTranslationUser(translation, true);
     }
 
-    /** {@inheritDoc} */
+    /** Specify the user-specified translation used when in cell mode. Update if specified. */
     public synchronized void setTranslationUser (Vector3f translation, boolean update) {
-        logger.info("change translationUser = " + translation);
-        userTranslationPrev = userTranslation;
-        userTranslation = translation.clone();
+        logger.info("change translationUserCell = " + translation);
+        userTranslationCellPrev = userTranslationCell;
+        userTranslationCell = translation.clone();
         changeMask |= CHANGED_USER_TRANSLATION;
         if (update) {
             update();
         }
     }
 
-    /** {@inheritDoc} */
+    /** Returns the user translation used when in cell mode. */
     public synchronized Vector3f getTranslationUser () {
-        return userTranslation.clone();
+        return userTranslationCell.clone();
+    }
+
+    /** Specify the user-specified translation used when in ortho mode. Update afterward. */
+    public synchronized void setTranslationUserOrtho (Vector3f translation) {
+        setTranslationUserOrtho(translation, true);
+    }
+
+    /** Specify the user-specified translation used when in ortho mode. Update if specified. */
+    public synchronized void setTranslationUserOrtho (Vector3f translation, boolean update) {
+        logger.info("change translationUserOrtho = " + translation);
+        userTranslationOrthoPrev = userTranslationOrtho;
+        userTranslationOrtho = translation.clone();
+        changeMask |= CHANGED_USER_TRANSLATION;
+        if (update) {
+            update();
+        }
+    }
+
+    /** Returns the user translation used when in ortho mode. */
+    public synchronized Vector3f getTranslationUserOrtho () {
+        return userTranslationOrtho.clone();
+    }
+
+    /** Returns the user translation for the current mode */
+    protected Vector3f getTranslationUserCurrent() {
+        if (ortho) {
+            return userTranslationOrtho.clone();
+        } else {
+            return userTranslationCell.clone();
+        }
+    }
+
+    /** Returns the previous user translation for the current mode */
+    protected Vector3f getTranslationUserPrev() {
+        if (ortho) {
+            return userTranslationOrthoPrev.clone();
+        } else {
+            return userTranslationCellPrev.clone();
+        }
     }
 
     /** TODO: these are now deltas! */
@@ -695,7 +848,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     public synchronized void userMoveZUpdate (float dy) {
-    }
+   }
 
     public synchronized void userMoveZFinish () {
     }
@@ -715,7 +868,6 @@ public abstract class View2DEntity implements View2D {
      * Update if specified.
      */
     public synchronized void setOrtho (boolean ortho, boolean update) {
-        Thread.dumpStack();
         this.ortho = ortho;
         changeMask |= CHANGED_ORTHO;
         if (update) {
@@ -788,7 +940,6 @@ public abstract class View2DEntity implements View2D {
 
             // Now reattach geometry if view should be visible
             // Uses: visible, ortho
-            System.err.println("isActuallyVisible() = " + isActuallyVisible());
             if (isActuallyVisible()) {
                 if (ortho) {
                     logger.fine("Attach entity " + entity + " to world manager.");
@@ -827,7 +978,7 @@ public abstract class View2DEntity implements View2D {
         }
 
         // React to frame changes (must do before handling size changes)
-        if ((changeMask & (CHANGED_FRAME | CHANGED_ORTHO)) != 0) {
+        if ((changeMask & (CHANGED_FRAME | CHANGED_ORTHO)) != 0) { // TODO: CHANGED_PIXEL_SCALE
             logger.fine("Update frame");
             int chgMask = changeMask & ~CATEGORY_CHANGE_MASK;
 
@@ -866,7 +1017,7 @@ public abstract class View2DEntity implements View2D {
 
         // React to size related changes (must be done before handling transform changes)
         /// TODO       if ((changeMask & CHANGED_SIZE) != 0) {
-        if ((changeMask & (CHANGED_SIZE | CHANGED_ORTHO)) != 0) {
+        if ((changeMask & (CHANGED_SIZE | CHANGED_ORTHO | CHANGED_PIXEL_SCALE)) != 0) { 
             float width = getDisplayerLocalWidth();
             float height = getDisplayerLocalHeight();
             sgChangeGeometrySizeSet(geometryNode, width, height);
@@ -875,8 +1026,9 @@ public abstract class View2DEntity implements View2D {
         // React to texture coordinate changes
         // Uses: window, texture
         if ((changeMask & CHANGED_TEX_COORDS) != 0) {
-            // TODO: for now, texcoords only depend on app size
-            float width = (float) sizeApp.width;
+            // TODO: for now, texcoords only depend on app size. Eventually this should
+            // be the effective aperture rectangle width and height
+            float width = (float) sizeApp.width;    
             float height = (float) sizeApp.height;
             Image image = getWindow().getTexture().getImage();
             float widthRatio = width / image.getWidth();
@@ -887,7 +1039,8 @@ public abstract class View2DEntity implements View2D {
         // React to transform related changes
 
         // Uses: type, parent, pixelscale, size, offset
-        if ((changeMask & (CHANGED_OFFSET_STACK_TRANSFORM | CHANGED_ORTHO | CHANGED_Z_ORDER)) != 0) {
+        if ((changeMask & 
+             (CHANGED_OFFSET_STACK_TRANSFORM | CHANGED_ORTHO | CHANGED_Z_ORDER | CHANGED_PIXEL_SCALE)) != 0) {
             CellTransform transform = null;
 
             switch (type) {
@@ -906,7 +1059,7 @@ public abstract class View2DEntity implements View2D {
 
         // Uses: type, userTranslation
         //TODO: if ((changeMask & CHANGED_USER_TRANSFORM) != 0) {
-        if ((changeMask & (CHANGED_USER_TRANSFORM | CHANGED_ORTHO)) != 0) {
+        if ((changeMask & (CHANGED_USER_TRANSFORM | CHANGED_ORTHO | CHANGED_LOCATION_ORTHO | CHANGED_TYPE)) != 0) {
             CellTransform deltaTransform;
 
             switch (type) {
@@ -928,6 +1081,11 @@ public abstract class View2DEntity implements View2D {
         sgProcessChanges();
         
         frameUpdate();
+
+        /* For Debug 
+        System.err.println("************* After View2DEntity.processChanges, viewNode = ");
+        GraphicsUtils.printNode(viewNode);
+        */
     }
 
     /** {@inheritDoc} */
@@ -980,13 +1138,14 @@ public abstract class View2DEntity implements View2D {
         if (parent == null) return translation;
 
         // TODO: does the width/height need to include the scroll bars?
+        Vector2f pixelScale = getPixelScaleCurrent();
         Dimension parentSize = parent.getSizeApp();
-        translation.x = -parentSize.width * getPixelScaleX() / 2f;
-        translation.y = parentSize.height * getPixelScaleY() / 2f;
-        translation.x += sizeApp.width * getPixelScaleX() / 2f;
-        translation.y -= sizeApp.height * getPixelScaleY() / 2f;
-        translation.x += offset.x * getPixelScaleX();
-        translation.y -= offset.y * getPixelScaleY();
+        translation.x = -parentSize.width * pixelScale.x / 2f;
+        translation.y = parentSize.height * pixelScale.y / 2f;
+        translation.x += sizeApp.width * pixelScale.x / 2f;
+        translation.y -= sizeApp.height * pixelScale.y / 2f;
+        translation.x += offset.x * pixelScale.x;
+        translation.y -= offset.y * pixelScale.y;
 
         return translation;
     }
@@ -1003,13 +1162,17 @@ public abstract class View2DEntity implements View2D {
     // Uses: userTranslation
     protected CellTransform calcUserTranslationDeltaTransform () {
         /* TODO: for now, don't have this be a delta transform 
-        Vector3f deltaTranslation = userTranslation.subtract(userTranslationPrev);
+        Vector3f deltaTranslation = getUserTranslation().subtract(getUserTranslationPrev());
         CellTransform transDeltaTransform = new CellTransform(null, null, null);
         transDeltaTransform.setTranslation(deltaTranslation);
         */
         /**/
+        Vector3f translation = getTranslationUser();
+        if (type == Type.PRIMARY && ortho) {
+            translation.addLocal(new Vector3f(locationOrtho.x, locationOrtho.y, 0f));
+        }
         CellTransform transDeltaTransform = new CellTransform(null, null, null);
-        transDeltaTransform.setTranslation(userTranslation);
+        transDeltaTransform.setTranslation(translation);
         /**/
 
         return transDeltaTransform;

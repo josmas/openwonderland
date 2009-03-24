@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import javax.media.opengl.GLContext;
@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.modules.appbase.client.App2D;
  *
  * @author deronj
  */
-@ExperimentalAPI
+@InternalAPI
 public class Gui2DInterior extends Gui2D {
 
     private static final Logger logger = Logger.getLogger(Gui2DInterior.class.getName());
