@@ -22,9 +22,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO;
-import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwServerState;
-import org.jdesktop.wonderland.modules.xremwin.server.AppTypeMOXrw;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -42,14 +40,6 @@ public class AppCellMOXrw extends AppConventionalCellMO {
     /** Create an instance of AppCellMOXrw. */
     public AppCellMOXrw() {
         super();
-    }
-
-    /** 
-     * {@inheritDoc}
-     */
-    @Override
-    public AppTypeMO getAppType() {
-        return new AppTypeMOXrw();
     }
 
     /**
