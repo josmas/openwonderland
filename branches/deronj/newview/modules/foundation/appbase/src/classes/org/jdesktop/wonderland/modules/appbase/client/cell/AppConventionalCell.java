@@ -17,15 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.cell;
 
-import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.common.messages.OKMessage;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
 
@@ -38,15 +37,62 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSe
 public abstract class AppConventionalCell extends App2DCell {
 
     /** The session used by the cell cache of this cell to connect to the server */
-    private WonderlandSession session;
+    private WonderlandSession cellCacheSession;
     /** The user-visible app name */
     protected String appName;
     /** The connection info. */
-    protected Serializable connectionInfo;
+    protected String connectionInfo;
     /** The App Conventional connection to the server. */
-    private AppConventionalConnection connection;
+    private static AppConventionalConnection connection;
+    /** The current primary session. */
+    private static WonderlandSession currentPrimarySession;
 
-    // TODO: eventually: do we need to save client state in the cell?
+    /** 
+     * Perform user client startup initialization for conventional apps.
+     */
+    static void initialize (ServerSessionManager loginInfo) {
+        loginInfo.addLifecycleListener(new MySessionLifecycleListener());
+    }
+    
+    /**
+     * This listens for changes in the session life cycle.
+     */
+    private static class MySessionLifecycleListener implements SessionLifecycleListener {
+
+        /**
+         * {@inheritDoc}
+         */
+        public void sessionCreated(WonderlandSession session) {}
+
+        /**
+         * {@inheritDoc}
+         */
+        public void primarySession(WonderlandSession session) {
+            if (session == currentPrimarySession) return;
+
+            // Disconnect any existing app conventional connection from the previous primary session
+            if (currentPrimarySession != null && connection != null) {
+                connection.disconnect();
+                connection = null;
+            }
+
+            // Make new primary session current
+            currentPrimarySession = session;
+
+            // Create a new connection
+            connection = new AppConventionalConnection(session);
+
+            // Connect the connection
+            try {
+                connection.connect(session);
+            } catch (ConnectionFailureException ex) {
+                RuntimeException re = new RuntimeException("Cannot create App Conventional connection  exception = " + ex);
+                re.initCause(ex);
+                throw re;
+            }
+        }
+    }
+    
     /** 
      * Creates a new instance of AppConventionalCell.
      *
@@ -55,20 +101,7 @@ public abstract class AppConventionalCell extends App2DCell {
      */
     public AppConventionalCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        session = cellCache.getSession();
-
-        /* TODO: notyet
-        // The first cell of this type for this session creates the connection
-        connection = (AppConventionalConnection) session.getConnection(AppConventionalConnection.getConnectionTypeStatic());
-        if (connection == null) {
-            connection = new AppConventionalConnection(session);
-            try {
-                connection.connect(session);
-            } catch (ConnectionFailureException ex) {
-                throw new RuntimeException("Cannot create App Conventional connection, exception = " + ex);
-            }
-        }
-        */
+        cellCacheSession = cellCache.getSession();
     }
 
     /**
@@ -82,7 +115,7 @@ public abstract class AppConventionalCell extends App2DCell {
         appName = state.getAppName();
 
         if (state.getLaunchLocation().equalsIgnoreCase("user") &&
-            state.getLaunchUser().equals(session.getUserID().getUsername())) {
+            state.getLaunchUser().equals(cellCacheSession.getUserID().getUsername())) {
 
             // Master case
 
@@ -94,18 +127,21 @@ public abstract class AppConventionalCell extends App2DCell {
                 // TODO: what else to do? Delete the cell? If so, how?
                 return;
             }
+            logger.severe/*info*/("AppConventional cellID " + getCellID() + " connectionInfo = " + connectionInfo);
 
-            /* TODO: notyet
             // Notify server and clients of the new connection info.
             AppConventionalCellSetConnectionInfoMessage msg =
                 new AppConventionalCellSetConnectionInfoMessage(getCellID(), connectionInfo);
+            /* TODO: until we can figure out why we aren't receiving the OK message
             Message response = connection.sendAndWait(msg);
+            System.err.println("response = " + response);
             if (!(response instanceof OKMessage)) {
                 logger.warning("Cannot notify others of connection info for app + " + appName);
                 // TODO: what else to do? Delete the cell? If so, how?
                 return;
             }
             */
+            connection.send(msg);
 
         } else {
 
@@ -134,7 +170,7 @@ public abstract class AppConventionalCell extends App2DCell {
     /**
      * This is called when the server sends the connection info.
      */
-    synchronized void setConnectionInfo (Serializable connInfo) {
+    synchronized void setConnectionInfo (String connInfo) {
         
         // If we already know the connection info then we can skip this.
         // Note: this will happen if we are the master, or if this cell was created after
@@ -158,12 +194,12 @@ public abstract class AppConventionalCell extends App2DCell {
      * based on the viewer position at the time of client cell creation.
      * @return Subclass-specific data for making a peer-to-peer connection between master and slave.
      */
-    protected abstract Serializable startMaster(String appName, String command, boolean initInBestView);
+    protected abstract String startMaster(String appName, String command, boolean initInBestView);
 
     /** 
      * Launch a slave client.
      * @parem connectionInfo Subclass-specific data for making a peer-to-peer connection between 
      * master and slave.
      */
-    protected abstract void startSlave(Serializable connectionInfo);
+    protected abstract void startSlave(String connectionInfo);
 }

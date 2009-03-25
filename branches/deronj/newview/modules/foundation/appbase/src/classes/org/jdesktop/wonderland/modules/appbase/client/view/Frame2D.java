@@ -15,25 +15,22 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.server.cell;
+package org.jdesktop.wonderland.modules.appbase.client.view;
 
-import org.jdesktop.wonderland.modules.appbase.server.*;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * A server-side <code>app.base</code> app cell.
- *
- * @author deronj
+ * The decoration of a window view displayed in an App cell.
  */
 @ExperimentalAPI
-public abstract class AppCellMO extends CellMO {
+public interface Frame2D {
 
-    protected static final Logger logger = Logger.getLogger(AppCellMO.class.getName());
+    /** Returns the view to which this frame belongs. */
+    public View2D getView ();
 
-    /** Create an instance of AppCellMO. */
-    public AppCellMO() {
-        super();
-    }
+    /** Specifies the title displayed in the frame header. */
+    public void setTitle (String title);
+
+    /** Update the frame display based on frame and view attributes. */
+    public void update () throws InstantiationException;
 }

@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client;
 
 import javax.swing.JOptionPane;
 import com.jme.math.Vector2f;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -28,36 +28,32 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author deronj
  */
 @ExperimentalAPI
-public abstract class AppConventional extends App2D {
+public abstract class AppConventional extends AppGraphics2D {
 
-    /** The name of the app */
-    protected String appName;
+    private static final Logger logger = Logger.getLogger(AppConventional.class.getName());
+
     /** Should the first window made visible be moved to the best view position? (Master only) */
     private boolean initInBestView;
-    /** The app conventional connection to the server */
-    // TODO: notyet protected static AppConventionalConnection connection;
-    /** The session of the Wonderland server with which the app is associated */
-    protected static WonderlandSession session;
-
+    
     /**
-     * Create a new instance of AppConventional.
+     * Create a new instance of AppConventional with a default name.
      *
-     * @param appType The type of app to create.
-     * @param appName The name of the app.
      * @param controlArb The control arbiter to use. null means that all users can control at the same time.
      * @param pixelScale The size of the window pixels in world coordinates.
      */
-    public AppConventional(AppType appType, String appName, ControlArb controlArb, Vector2f pixelScale) {
-        super(appType, controlArb, pixelScale);
-        logger.severe("AppConventional: appType = " + appType);
-        this.appName = appName;
+    public AppConventional(ControlArb controlArb, Vector2f pixelScale) {
+        super(controlArb, pixelScale);
     }
 
     /**
-     * Returns the name of the app.
+     * Create a new instance of AppConventional with the given name.
+     *
+     * @param name The name of the app.
+     * @param controlArb The control arbiter to use. null means that all users can control at the same time.
+     * @param pixelScale The size of the window pixels in world coordinates.
      */
-    public String getName() {
-        return appName;
+    public AppConventional(String name, ControlArb controlArb, Vector2f pixelScale) {
+        super(name, controlArb, pixelScale);
     }
 
     /**

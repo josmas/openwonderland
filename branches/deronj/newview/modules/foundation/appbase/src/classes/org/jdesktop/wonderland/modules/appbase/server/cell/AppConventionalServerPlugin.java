@@ -17,23 +17,22 @@
  */
 package org.jdesktop.wonderland.modules.appbase.server.cell;
 
-import org.jdesktop.wonderland.modules.appbase.server.*;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.server.ServerPlugin;
+import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.comms.CommsManager;
 
 /**
- * A server-side <code>app.base</code> app cell.
- *
+ * Server Plugin to initialize conventional apps.
  * @author deronj
  */
-@ExperimentalAPI
-public abstract class AppCellMO extends CellMO {
+@Plugin
+public class AppConventionalServerPlugin implements ServerPlugin {
 
-    protected static final Logger logger = Logger.getLogger(AppCellMO.class.getName());
+    public void initialize() {
 
-    /** Create an instance of AppCellMO. */
-    public AppCellMO() {
-        super();
+        // Register the app conventional connection
+        CommsManager cm = WonderlandContext.getCommsManager();
+        cm.registerClientHandler(new AppConventionalConnectionHandler());
     }
 }

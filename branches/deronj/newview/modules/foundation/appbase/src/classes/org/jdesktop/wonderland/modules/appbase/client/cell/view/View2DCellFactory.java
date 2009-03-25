@@ -15,25 +15,16 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.server.cell;
+package org.jdesktop.wonderland.modules.appbase.client.cell.view;
 
-import org.jdesktop.wonderland.modules.appbase.server.*;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCellRenderer;
+import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
+import org.jdesktop.wonderland.common.InternalAPI;
 
-/**
- * A server-side <code>app.base</code> app cell.
- *
- * @author deronj
- */
-@ExperimentalAPI
-public abstract class AppCellMO extends CellMO {
-
-    protected static final Logger logger = Logger.getLogger(AppCellMO.class.getName());
-
-    /** Create an instance of AppCellMO. */
-    public AppCellMO() {
-        super();
-    }
+@InternalAPI
+public interface View2DCellFactory {
+    public App2DCellRenderer createCellRenderer (App2DCell cell);
+    public View2DCell createView (App2DCell cell, Window2D window);
 }
