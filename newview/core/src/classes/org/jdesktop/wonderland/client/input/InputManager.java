@@ -495,6 +495,16 @@ public abstract class InputManager
     }
 
     /**
+     * Returns true if the given entity is marked as having focus.
+     * @param event The event to be delivered.
+     * @param entity The entity to check if it is in the focus set.
+     */
+    @InternalAPI
+    public static boolean entityHasFocus (Event event, Entity entity) {
+        return EventDistributor.entityHasFocus(event, entity);
+    }
+
+    /**
      * Inject an event into the input system. The event doesn't have an associated entity. Therefore
      * it will only be distributed to the global event listeners.
      *
@@ -554,11 +564,11 @@ public abstract class InputManager
     }
 
     /** 
-     * An entity component which allows us to map a pick hit entity to a WindowSwing. 
+     * An entity component which allows us to identify a pick hit entity as a view of a WindowSwing. 
      * <br>
      * FOR APP BASE ONLY.
      */
-    public static class WindowSwingMarker extends EntityComponent {}
+    public static class WindowSwingViewMarker extends EntityComponent {}
 
     /**
      * Calculate a pick ray from the current eye position into the given
