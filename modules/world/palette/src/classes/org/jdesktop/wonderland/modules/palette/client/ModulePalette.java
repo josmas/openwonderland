@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -176,12 +177,10 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         return;
     }
 
-    // Fetch the default server state. We also want to populate the proper
-    // field.
-    CellServerState setup = factory.getDefaultCellServerState();
-    Map<String, String> metadata = new HashMap();
-    metadata.put("content-uri", "wla://" + moduleName + "/" + artPath);
-    setup.setMetaData(metadata);
+    // Fetch the default server state, inject the content uri
+    Properties props = new Properties();
+    props.put("content-uri", "wla://" + moduleName + "/" + artPath);
+    CellServerState setup = factory.getDefaultCellServerState(props);
 
     // Create the new cell at a distance away from the avatar
     try {

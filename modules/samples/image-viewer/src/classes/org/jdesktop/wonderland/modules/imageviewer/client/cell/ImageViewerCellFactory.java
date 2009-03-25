@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.imageviewer.client.cell;
 
 import java.awt.Image;
+import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -35,8 +36,16 @@ public class ImageViewerCellFactory implements CellFactorySPI {
         return new String[] { "png", "jpg" };
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState() {
+    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
        ImageViewerCellServerState state = new ImageViewerCellServerState();
+
+       // Look for the content-uri field and set if so
+       if (props != null) {
+           String uri = props.getProperty("content-uri");
+           if (uri != null) {
+               state.setImageURI(uri);
+           }
+       }
        return (T)state;
     }
 

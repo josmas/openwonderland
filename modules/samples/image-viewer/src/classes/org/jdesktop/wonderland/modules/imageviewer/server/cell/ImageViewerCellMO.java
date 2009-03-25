@@ -82,12 +82,6 @@ public class ImageViewerCellMO extends CellMO {
 
         ImageViewerCellServerState setup = (ImageViewerCellServerState)serverState;
         imageURI = setup.getImageURI();
-
-        // Check the meta data... hack! XXX
-        Map<String, String> metadata = serverState.getMetaData();
-        if (metadata.containsKey("content-uri") == true) {
-            imageURI = metadata.get("content-uri");
-        }
     }
 
     @Override
