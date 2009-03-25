@@ -56,7 +56,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
 
         // Next check whether the content already exists and ask the user if
         // the upload should still proceed.
-        JFrame frame = JmeClientMain.getFrame().getFrame();
+        final JFrame frame = JmeClientMain.getFrame().getFrame();
         if (isContentExists(file) == true) {
             int result = JOptionPane.showConfirmDialog(frame,
                     "The file " + file.getName() + " already exists in the " +
@@ -87,9 +87,16 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         } catch (java.io.IOException excp) {
             logger.log(Level.WARNING, "Failed to upload content file " +
                     file.getAbsolutePath(), excp);
-            JOptionPane.showMessageDialog(frame,
-                    "Failed to upload content file " + file.getName(),
-                    "Upload Failed", JOptionPane.ERROR_MESSAGE);
+
+            final String fileName = file.getName();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    dialog.setVisible(false);
+                    JOptionPane.showMessageDialog(frame,
+                            "Failed to upload content file " + fileName,
+                            "Upload Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            });
             return null;
         }
 

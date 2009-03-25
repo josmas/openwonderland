@@ -51,6 +51,14 @@ public class CellPaletteDataFlavorHandler implements DataFlavorHandlerSPI {
     /**
      * @inheritDoc()
      */
+    public boolean accept(Transferable transferable, DataFlavor dataFlavor) {
+       // Just accept everything sent out way
+        return true;
+    }
+
+    /**
+     * @inheritDoc()
+     */
     public void handleDrop(Transferable transferable, DataFlavor dataFlavor, Point dropLocation) {
         try {
             // Fetch the CellServerState from the dropped transferable and
