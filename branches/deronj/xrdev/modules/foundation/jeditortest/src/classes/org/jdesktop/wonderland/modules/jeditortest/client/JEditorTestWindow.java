@@ -56,9 +56,9 @@ public class JEditorTestWindow extends WindowSwing  {
 	
 	JPanel testPanel = new TestJEditorPane();
 
-	// Note: this seems to only be required for the swing set, but do it here for safety
-	// TODO: test without
+	// Parent to Wonderland main window for proper focus handling
        	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
+
 	setComponent(testPanel);
 
         // Note: This particular test panel only is laid out properly if forced size mode
