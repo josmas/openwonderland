@@ -208,7 +208,8 @@ public class View2DCell extends View2DEntity {
         if (isOrtho()) {
             return new Vector3f(0f, 0f, 0f);
         } else {
-            return new Vector3f(0f, 0f, zOrder * STACK_GAP);
+            // TODO: quick and dirty. Must eventually fix.
+            return new Vector3f(0f, 0f, (1-zOrder) * STACK_GAP);
         }
     }
 
