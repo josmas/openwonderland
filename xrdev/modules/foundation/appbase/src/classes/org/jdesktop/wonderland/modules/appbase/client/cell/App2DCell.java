@@ -75,14 +75,18 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      */
     public App2DCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        appCells.add(this);
+        synchronized (appCells) {
+            appCells.add(this);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void cleanup() {
-        appCells.remove(this);
+        synchronized (appCells) {
+            appCells.remove(this);
+        }
         view2DCellFactory = null;
         pixelScale = null;
         views.clear();

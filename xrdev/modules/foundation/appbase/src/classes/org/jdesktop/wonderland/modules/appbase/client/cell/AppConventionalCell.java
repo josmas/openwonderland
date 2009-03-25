@@ -93,8 +93,6 @@ public abstract class AppConventionalCell extends App2DCell {
         }
     }
     
-    // TODO: eventually: do we need to save client state in the cell?
-
     /** 
      * Creates a new instance of AppConventionalCell.
      *
