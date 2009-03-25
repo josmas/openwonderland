@@ -41,6 +41,16 @@ public interface DataFlavorHandlerSPI {
     public DataFlavor[] getDataFlavors();
 
     /**
+     * Returns true to accept the transferable. This method provides the handler
+     * the additional ability to either accept or reject the transferable. If
+     * rejected, the system tries to find another suitable data flavor handler
+     *
+     * @param transferable The dropped transferable
+     * @param dataFlavor The data flavor of the transferable
+     */
+    public boolean accept(Transferable transferable, DataFlavor dataFlavor);
+
+    /**
      * Handles when an item has been dropped into the world with a data flavor
      * supported by this class.
      *

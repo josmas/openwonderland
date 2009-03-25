@@ -22,7 +22,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.net.URL;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -50,6 +49,9 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
 
     private static Logger logger = Logger.getLogger(URLDataFlavorHandler.class.getName());
 
+    /**
+     * @inheritDoc()
+     */
     public DataFlavor[] getDataFlavors() {
         try {
             return new DataFlavor[] {
@@ -61,6 +63,33 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
         }
     }
 
+    /**
+     * @inheritDoc()
+     */
+    public boolean accept(Transferable transferable, DataFlavor dataFlavor) {
+        // We will accept all transferables, except those with the "file"
+        // protocol. We kick those out to the "flie list" data flavor handler
+        URL url = null;
+        try {
+            url = (URL)transferable.getTransferData(dataFlavor);
+        } catch (java.io.IOException excp) {
+            logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
+            return false;
+        } catch (UnsupportedFlavorException excp) {
+            logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
+            return false;
+        }
+
+        String protocol = url.getProtocol();
+        if (protocol.equals("file") == true) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @inheritDoc()
+     */
     public void handleDrop(Transferable transferable, DataFlavor dataFlavor, Point dropLocation) {
         // Fetch the url from the transferable using the flavor it is provided
         // (assuming it is a URL data flavor)
@@ -68,14 +97,16 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
         try {
             url = (URL)transferable.getTransferData(dataFlavor);
         } catch (java.io.IOException excp) {
+            logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
         } catch (UnsupportedFlavorException excp) {
+            logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
         }
-
+        System.out.println("URL " + url.toString());
         System.out.println("URL " + url.toExternalForm());
 
         // Fetch the file extension of the URL to figure out which Cell to
         // create
-        String extension = getFileExtension(url.getFile());
+        String extension = DragAndDropManager.getFileExtension(url.getFile());
 
         // Next look for a cell type that handles content with this file
         // extension and create a new cell with it.
@@ -103,21 +134,5 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
         } catch (CellCreationException excp) {
             logger.log(Level.WARNING, "Unable to create cell for uri " + url, excp);
         }
-
-    }
-
-    /**
-     * Returns the string extension name of the given file name. If none, return
-     * null. This simply looks for the final period (.) in the name.
-     *
-     * @param fileName The name of the file
-     * @return The file extension
-     */
-    private String getFileExtension(String fileName) {
-        int index = fileName.lastIndexOf(".");
-        if (index == -1) {
-            return null;
-        }
-        return fileName.substring(index + 1);
     }
 }

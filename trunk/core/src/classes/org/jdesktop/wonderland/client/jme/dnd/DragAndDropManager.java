@@ -18,12 +18,15 @@
 package org.jdesktop.wonderland.client.jme.dnd;
 
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,8 +56,8 @@ public class DragAndDropManager {
         // Create the hash map to hold all of the data flavor handlers and add
         // in the default one to handle drag-and-drop of files from the desktop
         dataFlavorHandlerMap = new HashMap();
-        registerDataFlavorHandler(new DesktopImportDataFlavorHandler());
-//        registerDataFlavorHandler(new URLDataFlavorHandler());
+        registerDataFlavorHandler(new FileListImportDataFlavorHandler());
+        registerDataFlavorHandler(new URLDataFlavorHandler());
     }
 
     /**
@@ -128,6 +131,21 @@ public class DragAndDropManager {
     public DataFlavorHandlerSPI getDataFlavorHandler(DataFlavor dataFlavor) {
         return dataFlavorHandlerMap.get(dataFlavor);
     }
+
+    /**
+     * Returns the string extension name of the given file name. If none, return
+     * null. This simply looks for the final period (.) in the name.
+     *
+     * @param fileName The name of the file
+     * @return The file extension
+     */
+    public static String getFileExtension(String fileName) {
+        int index = fileName.lastIndexOf(".");
+        if (index == -1) {
+            return null;
+        }
+        return fileName.substring(index + 1);
+    }
     
     /**
      * Adapter for the drop target event. Dispatches to the various handlers
@@ -136,27 +154,49 @@ public class DragAndDropManager {
     private class JmeDropTarget extends DropTargetAdapter {
 
         public void drop(DropTargetDropEvent dtde) {
-            List<DataFlavor> flavorList = dtde.getCurrentDataFlavorsAsList();
-            for (DataFlavor df : flavorList) {
-                System.out.println("FLAVOR: " + df.toString());
-            }
 
             // Fetch the data flavors supported by the transferable as a list
             // (presumably ordered). Look to see if that flavor is handled by
-            // a flavor in our map.
+            // a flavor in our map. We create an ordered list of these to
+            // check later
+            List<DataFlavor> flavorList = dtde.getCurrentDataFlavorsAsList();
+            List<DataFlavor> supportedFlavors = new LinkedList();
             for (DataFlavor dataFlavor : flavorList) {
                 DataFlavorHandlerSPI handler = getDataFlavorHandler(dataFlavor);
                 if (handler != null) {
-                    System.out.println("HANDLING WITH " + handler.toString());
-                    dtde.acceptDrop(DnDConstants.ACTION_MOVE);
-                    handler.handleDrop(dtde.getTransferable(), dataFlavor, dtde.getLocation());
+                    supportedFlavors.add(dataFlavor);
+                }
+            }
+
+            // Check to make sure there is at least one supported flavor,
+            // otherwise, we reject the drop
+            if (supportedFlavors.isEmpty() == true) {
+                dtde.rejectDrop();
+            }
+
+            // At this point, if there is at least one supported flavor, we
+            // accept the drop on the presumption that at least one can really
+            // handle it. It is possible that each decides to reject the drop,
+            // but that is the rare case. In that event, we would acceptDrop(),
+            // but later dropComplete(false), which isn't too bad I think.
+            dtde.acceptDrop(DnDConstants.ACTION_MOVE);
+            Transferable transferable = dtde.getTransferable();
+            Point location = dtde.getLocation();
+
+            for (DataFlavor dataFlavor : supportedFlavors) {
+                // Check to see whether the handler will accept the drop,
+                // if not just go into the next in the list
+                DataFlavorHandlerSPI handler = getDataFlavorHandler(dataFlavor);
+                if (handler.accept(transferable, dataFlavor) == true) {
+                    handler.handleDrop(transferable, dataFlavor, location);
+                    dtde.dropComplete(true);
                     return;
                 }
             }
 
-            // If we have reached here, then there is no handler to support
-            // the data flavor and we should reject the drop
-            dtde.rejectDrop();
+            // Otherwise if we reach here, it turns out that none of the handlers
+            // could really deal with the drop, so we set failure
+            dtde.dropComplete(false);
         }
     }
 }

@@ -23,6 +23,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.content.ContentImportManager;
 import org.jdesktop.wonderland.client.content.spi.ContentImporterSPI;
@@ -37,14 +38,28 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
-public class DesktopImportDataFlavorHandler implements DataFlavorHandlerSPI {
+public class FileListImportDataFlavorHandler implements DataFlavorHandlerSPI {
 
-    private static Logger logger = Logger.getLogger(DesktopImportDataFlavorHandler.class.getName());
+    private static Logger logger = Logger.getLogger(FileListImportDataFlavorHandler.class.getName());
 
+    /**
+     * @inheritDoc()
+     */
     public DataFlavor[] getDataFlavors() {
         return new DataFlavor[] { DataFlavor.javaFileListFlavor };
     }
+    
+    /**
+     * @inheritDoc()
+     */
+    public boolean accept(Transferable transferable, DataFlavor dataFlavor) {
+        // Just accept everything sent our way
+        return true;
+    }
 
+    /**
+     * @inheritDoc()
+     */
     public void handleDrop(Transferable transferable, DataFlavor dataFlavor, Point dropLocation) {
 
         // Fetch the list of files from the transferable using the flavor
@@ -53,7 +68,9 @@ public class DesktopImportDataFlavorHandler implements DataFlavorHandlerSPI {
         try {
             fileList = (List<File>) transferable.getTransferData(dataFlavor);
         } catch (java.io.IOException excp) {
+            logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
         } catch (UnsupportedFlavorException excp) {
+            logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
         }
 
         // Check to see that we have at least one file. If not signal an
@@ -67,7 +84,7 @@ public class DesktopImportDataFlavorHandler implements DataFlavorHandlerSPI {
         // none, then signal an error and return since we do not know who
         // handles this file type.
         final File file = fileList.get(0);
-        final String extension = getFileExtension(file.getName());
+        final String extension = DragAndDropManager.getFileExtension(file.getName());
         if (extension == null) {
             logger.warning("No file extension found for " + file.getAbsolutePath());
             return;
@@ -85,41 +102,11 @@ public class DesktopImportDataFlavorHandler implements DataFlavorHandlerSPI {
         // Kick off a thread to upload the content. We put this in its own
         // thread to let this method complete (since we are running on the
         // AWT event queue.
-        new UploadThread(file, extension, importer).start();
-    }
-
-    /**
-     * A thread that uploads content
-     */
-    class UploadThread extends Thread {
-        private File file = null;
-        private String extension = null;
-        private ContentImporterSPI importer;
-
-        public UploadThread(File file, String extension, ContentImporterSPI importer) {
-            this.file = file;
-            this.extension = extension;
-            this.importer = importer;
-        }
-
-        @Override
-        public void run() {
-            importer.importFile(file, extension);
-        }
-    }
-
-    /**
-     * Returns the string extension name of the given file name. If none, return
-     * null. This simply looks for the final period (.) in the name.
-     *
-     * @param fileName The name of the file
-     * @return The file extension
-     */
-    private String getFileExtension(String fileName) {
-        int index = fileName.lastIndexOf(".");
-        if (index == -1) {
-            return null;
-        }
-        return fileName.substring(index + 1);
+        new Thread() {
+            @Override
+            public void run() {
+                importer.importFile(file, extension);
+            }
+        }.start();
     }
 }
