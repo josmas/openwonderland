@@ -23,7 +23,6 @@ import org.jdesktop.wonderland.modules.appbase.client.ProcessReporterFactory;
 import org.jdesktop.wonderland.modules.sas.provider.SasProvider;
 import org.jdesktop.wonderland.modules.sas.provider.SasProviderConnectionListener;
 import org.jdesktop.wonderland.modules.sas.provider.SasProviderSession;
-import org.jdesktop.wonderland.modules.xremwin.client.AppXrwConnectionInfo;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwMaster;
 
 /**
@@ -72,16 +71,16 @@ public class SasXrwProviderMain implements SasProviderConnectionListener {
     /**
      * {@inheritDoc}
      */
-    public AppXrwConnectionInfo launch (String appName, String command, Vector2f pixelScale) {
+    public String launch (String appName, String command, Vector2f pixelScale) {
         AppXrwMaster app = null;
         try {
-            app = new AppXrwMaster(null, appName, command, pixelScale, 
+            app = new AppXrwMaster(appName, command, pixelScale, 
                                    ProcessReporterFactory.getFactory().create(appName), session);
         } catch (InstantiationException ex) {
             return null;
         }
 
-        return app.getConnectionInfo();
+        return app.getConnectionInfo().toString();
     }
 }
 
