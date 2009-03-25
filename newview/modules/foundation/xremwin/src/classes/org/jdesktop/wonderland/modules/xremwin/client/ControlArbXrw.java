@@ -22,17 +22,19 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbAlways;
 
 /**
- * The Xremwin ControlArb class. This currently doesn't implement
- * polite control arbitration--control is simply stolen.
+ * The Xremwin ControlArb class. 
+ *
+ * TODO: someday: This currently doesn't implement polite control 
+ * arbitration--control is simply stolen.
  *
  * @author deronj
  */
 @ExperimentalAPI
-public class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
+public class ControlArbXrw extends ControlArbAppFocus {
 
     /** The default take control politeness mode */
     private static boolean TAKE_CONTROL_IMPOLITE = true;
@@ -121,6 +123,7 @@ public class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
      * controlArb will be called with the user name of this client. 
      */
     private synchronized void take(boolean impolite) {
+        AppXrw.logger.severe("Enter take");
 
         // Enable our client to send events to the server ("event ahead").
         // If control is refused the events will just be ignored.
@@ -141,6 +144,8 @@ public class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
      * Tell the server to release control.
      */
     private synchronized void release() {
+        AppXrw.logger.severe("Enter release");
+
         eventsEnabled = false;
         takeControlPending = false;
 
@@ -157,6 +162,8 @@ public class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
      * attempt was polite get confirmation from the user to continue.
      */
     synchronized void controlRefused() {
+        AppXrw.logger.severe("Control refused");
+
         String currentController = serverProxy.getControllingUser();
 
         if (!takeControlPending) {
@@ -186,6 +193,8 @@ public class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
      * The server has told us that our request for control has succeeded. 
      */
     synchronized void controlGained() {
+        AppXrw.logger.severe("Control gained");
+
         String currentController = serverProxy.getControllingUser();
 
         if (!takeControlPending) {
@@ -205,6 +214,7 @@ public class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
      * The server has taken control away from us.
      */
     synchronized void controlLost() {
+        AppXrw.logger.severe("Control lost");
         takeControlPending = false;
         eventsEnabled = false;
         appControl = false;
@@ -233,6 +243,7 @@ public class ControlArbXrw extends /*TODO ControlArbSingle*/ ControlArbAlways {
     /**
      * {@inheritDoc}
      */
+    @Override
     protected synchronized void setController(String controller) {
         // TODO: super.setController(controller);
     }

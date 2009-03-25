@@ -63,7 +63,6 @@ public class AppXrwMaster
     /**
      * Create a new instance of AppXrwMaster.
      *
-     * @param appType The type of app (this will always be AppTypeXrw).
      * @param appName The name of the application.
      * @param command The operating system command to execute to start app program.
      * @param pixelScale The size of the window pixels.
@@ -71,12 +70,11 @@ public class AppXrwMaster
      * @param session This app's Wonderland session.
      * @throws InstantiationException Could not launch app
      */
-    public AppXrwMaster(AppTypeXrw appType, String appName, String command, Vector2f pixelScale,
+    public AppXrwMaster(String appName, String command, Vector2f pixelScale,
             ProcessReporter reporter, WonderlandSession session)
             throws InstantiationException {
 
-        super(appType, appName, new ControlArbXrw(), pixelScale);
-        AppXrw.logger.severe("AppXrwMaster: appType = " + appType);
+        super(appName, new ControlArbXrw(), pixelScale);
         AppXrw.logger.severe("appName = " + appName);
         controlArb.setApp(this);
 
@@ -207,7 +205,7 @@ public class AppXrwMaster
             appProcess = null;
         }
 
-        deallocAppInstance(appName, appInstance);
+        deallocAppInstance(getName(), appInstance);
     }
 
     /**
