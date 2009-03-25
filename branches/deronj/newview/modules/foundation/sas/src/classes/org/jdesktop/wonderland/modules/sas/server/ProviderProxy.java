@@ -68,7 +68,7 @@ class ProviderProxy implements Serializable {
     /** 
      * See if this provider will launch the app.
      */
-    Serializable tryLaunch (CellID cellID, String executionCapability, String appName, 
+    String tryLaunch (CellID cellID, String executionCapability, String appName, 
                                    String command) {
         logger.severe("**** Provider tryLaunch, clientID = " + clientID);
         logger.severe("command = " + command);
