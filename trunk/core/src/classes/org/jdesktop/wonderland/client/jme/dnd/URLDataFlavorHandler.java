@@ -23,6 +23,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.net.URL;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,12 +90,12 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
             return;
         }
         CellFactorySPI factory = factories.iterator().next();
-        CellServerState state = factory.getDefaultCellServerState();
 
-        // Get the meta data and set
-        Map<String, String> metadata = state.getMetaData();
-        metadata.put("content-uri", url.toExternalForm());
-        state.setMetaData(metadata);
+        // Get the cell server state, injecting the content URI into it via
+        // the properties
+        Properties props = new Properties();
+        props.put("content-uri", url.toExternalForm());
+        CellServerState state = factory.getDefaultCellServerState(props);
 
         // Create the new cell at a distance away from the avatar
         try {

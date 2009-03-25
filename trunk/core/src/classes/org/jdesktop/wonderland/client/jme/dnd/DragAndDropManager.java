@@ -24,6 +24,7 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
@@ -53,7 +54,7 @@ public class DragAndDropManager {
         // in the default one to handle drag-and-drop of files from the desktop
         dataFlavorHandlerMap = new HashMap();
         registerDataFlavorHandler(new DesktopImportDataFlavorHandler());
-        registerDataFlavorHandler(new URLDataFlavorHandler());
+//        registerDataFlavorHandler(new URLDataFlavorHandler());
     }
 
     /**
@@ -135,15 +136,20 @@ public class DragAndDropManager {
     private class JmeDropTarget extends DropTargetAdapter {
 
         public void drop(DropTargetDropEvent dtde) {
-            // For each of the data flavors that are supported by the drag-and-
-            // drop manager, see if the dropped item supports the data flavor
-            // and dispatch to the first one found after accepting the drop
-            Set<DataFlavor> flavorSet = getDataFlavors();
-            for (DataFlavor flavor : flavorSet) {
-                if (dtde.isDataFlavorSupported(flavor) == true) {
-                    DataFlavorHandlerSPI handler = getDataFlavorHandler(flavor);
+            List<DataFlavor> flavorList = dtde.getCurrentDataFlavorsAsList();
+            for (DataFlavor df : flavorList) {
+                System.out.println("FLAVOR: " + df.toString());
+            }
+
+            // Fetch the data flavors supported by the transferable as a list
+            // (presumably ordered). Look to see if that flavor is handled by
+            // a flavor in our map.
+            for (DataFlavor dataFlavor : flavorList) {
+                DataFlavorHandlerSPI handler = getDataFlavorHandler(dataFlavor);
+                if (handler != null) {
+                    System.out.println("HANDLING WITH " + handler.toString());
                     dtde.acceptDrop(DnDConstants.ACTION_MOVE);
-                    handler.handleDrop(dtde.getTransferable(), flavor, dtde.getLocation());
+                    handler.handleDrop(dtde.getTransferable(), dataFlavor, dtde.getLocation());
                     return;
                 }
             }
