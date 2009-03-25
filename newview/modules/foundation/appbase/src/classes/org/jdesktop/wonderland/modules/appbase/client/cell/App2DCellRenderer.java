@@ -15,25 +15,29 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.server.cell;
+package org.jdesktop.wonderland.modules.appbase.client.cell;
 
-import org.jdesktop.wonderland.modules.appbase.server.*;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 
 /**
- * A server-side <code>app.base</code> app cell.
+ * A cell renderer for app cells which allows views to be attached to it.
  *
- * @author deronj
+ * @author dj
  */
-@ExperimentalAPI
-public abstract class AppCellMO extends CellMO {
 
-    protected static final Logger logger = Logger.getLogger(AppCellMO.class.getName());
+public abstract class App2DCellRenderer extends BasicRenderer {
 
-    /** Create an instance of AppCellMO. */
-    public AppCellMO() {
-        super();
+    /**
+     * Create a new instance of App2DCellRenderer.
+     * @param cell The cell to be rendered.
+     */
+    public App2DCellRenderer (App2DCell cell) {
+        super(cell);
     }
+
+    /**
+     * Log this cell renderer's scene graph.
+     */
+    public abstract void logSceneGraph ();
+
 }

@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.common.cell;
 
-import java.io.Serializable;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -43,7 +42,7 @@ public class AppConventionalCellClientState extends App2DCellClientState {
     /** The command which launches the app. */
     protected String command;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
-    protected Serializable connectionInfo;
+    protected String connectionInfo;
 
     /** Create an instance of AppConventionalCellClientState. */
     public AppConventionalCellClientState() {
@@ -90,11 +89,11 @@ public class AppConventionalCellClientState extends App2DCellClientState {
         this.command = command;
     }
 
-    public void setConnectionInfo(Serializable connectionInfo) {
+    public void setConnectionInfo(String connectionInfo) {
         this.connectionInfo = connectionInfo;
     }
 
-    public Serializable getConnectionInfo() {
+    public String getConnectionInfo() {
         return connectionInfo;
     }
 }

@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An app which creates windows that can be drawn on by a Graphics2D.
+ * Usually used by an application that creates WindowSwings.
  *
  * @author deronj
  */
@@ -29,14 +30,24 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public class AppGraphics2D extends App2D {
 
     /**
-     * Create a new instance of AppGraphics2D.
+     * Create a new instance of AppGraphics2D with a default name.
      *
-     * @param appType The type of 2D graphics app to create.
      * @param controlArb The control arbiter to use. null means that all users can control at the same time.
      * @param pixelScale The size of the window pixels in world coordinates.
      */
-    public AppGraphics2D(AppType appType, ControlArb controlArb, Vector2f pixelScale) {
-        super(appType, controlArb, pixelScale);
+    public AppGraphics2D(ControlArb controlArb, Vector2f pixelScale) {
+        super(controlArb, pixelScale);
+    }
+
+    /**
+     * Create a new instance of AppGraphics2D with the given name.
+     *
+     * @param name The name of the app.
+     * @param controlArb The control arbiter to use. null means that all users can control at the same time.
+     * @param pixelScale The size of the window pixels in world coordinates.
+     */
+    public AppGraphics2D(String name, ControlArb controlArb, Vector2f pixelScale) {
+        super(name, controlArb, pixelScale);
     }
 
     /** 

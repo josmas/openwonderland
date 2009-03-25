@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author deronj
  */
 @ExperimentalAPI
-public class WindowStack {
+class WindowStack {
 
     /** The list of windows in the stack. Windows in the list appear in top to bottom order */
     protected LinkedList<Window2D> stack = new LinkedList<Window2D>();
