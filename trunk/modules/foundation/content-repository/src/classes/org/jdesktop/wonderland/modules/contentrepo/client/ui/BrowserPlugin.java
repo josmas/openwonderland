@@ -21,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,12 +107,11 @@ public class BrowserPlugin implements ClientPlugin {
                                 logger.warning("Could not find cell factory for " + extension);
                             }
                             CellFactorySPI factory = factories.iterator().next();
-                            CellServerState state = factory.getDefaultCellServerState();
 
-                            // Get the meta data and set
-                            Map<String, String> metadata = state.getMetaData();
-                            metadata.put("content-uri", uri);
-                            state.setMetaData(metadata);
+                            // Create the cell, inject the content uri
+                            Properties props = new Properties();
+                            props.put("content-uri", uri);
+                            CellServerState state = factory.getDefaultCellServerState(props);
 
                             // Create the new cell at a distance away from the avatar
                             try {

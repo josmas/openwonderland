@@ -43,7 +43,7 @@ public class PaletteDragGestureListener implements DragGestureListener {
     public void dragGestureRecognized(DragGestureEvent dge) {
         // From the Cell Palette fetch the cell factory and image that
         // corresponds to the currently selected item
-        CellServerState state = cellFactory.getDefaultCellServerState();
+        CellServerState state = cellFactory.getDefaultCellServerState(null);
 
         // Initialize the transferable with the default cell server state from
         // the factory

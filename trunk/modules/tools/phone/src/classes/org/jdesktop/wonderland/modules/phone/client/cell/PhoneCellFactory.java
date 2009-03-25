@@ -26,6 +26,7 @@ import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
+import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 
 /**
@@ -40,7 +41,7 @@ public class PhoneCellFactory implements CellFactorySPI {
         return new String[] {};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState() {
+    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         // Create a setup with some default values
         PhoneCellServerState cellServerState = new PhoneCellServerState();
         cellServerState.setPhoneInfo(new PhoneInfo(false, "100", "foo",

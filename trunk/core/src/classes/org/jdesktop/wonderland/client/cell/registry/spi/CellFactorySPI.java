@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.cell.registry.spi;
 
 import java.awt.Image;
+import java.util.Properties;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
@@ -30,7 +31,15 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  * </ol>
  * Classes that implement this interface must also annotate themselves with
  * @CellFactory.
- *
+ * <p>
+ * The main purpose of implements of this class is to generate a CellServerState
+ * that is used to create an instance of the Cell. The getDefaultCelServerState()
+ * is used for this purpose and takes a set of properties. These properties are
+ * used to initialize the values inside the CellServerState. The following key
+ * values are defined:
+ * <p>
+ * content-uri: Used to inject a URI of content to associated with the cell
+ * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public interface CellFactorySPI {
@@ -45,11 +54,15 @@ public interface CellFactorySPI {
     public String[] getExtensions();
     
     /**
-     * Returns a default cell setup class for this cell type.
-     * 
-     * @return A cell setup class with default values
+     * Returns a default cell server state class for this cell type, given a
+     * (possibly null) set of properties. The properties carries a collection
+     * of key-value pairs used to initialize the state of the cell. The key
+     * values are defined by a standard mapping.
+     *
+     * @param props A set of initial properties
+     * @return A cell server state class with default values
      */
-    public <T extends CellServerState> T getDefaultCellServerState();
+    public <T extends CellServerState> T getDefaultCellServerState(Properties props);
     
     /**
      * Returns the human-readable display name of the cell type to display in
