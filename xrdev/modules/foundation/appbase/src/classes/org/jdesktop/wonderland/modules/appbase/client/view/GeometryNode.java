@@ -62,15 +62,12 @@ public abstract class GeometryNode extends Node {
 
     /**
      * Clean up resources. Any resources you allocate for the
-     * object should be detached in here.
+     * object should be detached in here. Must be called in a render loop safe way.
      *
      * NOTE: It is normal for one ViewObjectGeometry to get stuck in
      * the Java heap (because it is reference by Wonderland picker last
      * picked node). So make sure there aren't large objects, such as a
      * texture, attached to it.
-     *
-     * NOTE: for cleanliness, call super.cleanup() in your constructor.
-     * (This is optional).
      */
     public void cleanup() {
         view = null;
@@ -78,7 +75,7 @@ public abstract class GeometryNode extends Node {
 
     /**
      * Specify the size of the geometry node. In your subclass method you should make the 
-     * corresponding change to your geometry. This must be called in a render loop safe way
+     * corresponding change to your geometry. This must be called in a render loop safe way.
      * (i.e. from inside a render updater or commit method).
      */
     public abstract void setSize (float width, float height);
@@ -93,7 +90,7 @@ public abstract class GeometryNode extends Node {
 
     /**
      * Specify the texture coordinates to be used. You should use widthRatio and heightRatio to update
-     * the texture coordinates of your geometry. Must be called in a render loop safe way
+     * the texture coordinates of your geometry. Must be called in a render loop safe way.
      * @param widthRatio The ratio of the displayer width to the rounded up size of the texture width.
      * @param heightRatio The ratio of the displayer height to the rounded up size of the texture height.
      */
@@ -101,7 +98,7 @@ public abstract class GeometryNode extends Node {
 
     /**
      * Specifies the transform of the geometry node. 
-     * Must be called in a render loop safe way
+     * Must be called in a render loop safe way.
      */
     public void setTransform (CellTransform transform) {
         setLocalRotation(transform.getRotation(null));
@@ -211,6 +208,7 @@ public abstract class GeometryNode extends Node {
 
     /** 
      * Set the ortho Z order (used only when the geometry's render component is in ortho mode).
+     * Must be called in a render loop safe way.
      */
     public abstract void setOrthoZOrder (int zOrder);
 

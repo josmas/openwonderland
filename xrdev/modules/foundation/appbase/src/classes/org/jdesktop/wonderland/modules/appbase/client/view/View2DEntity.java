@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.client.view;
 
 import org.jdesktop.mtgame.Entity;
 import com.jme.image.Image;
-import com.jme.image.Texture;
+import com.jme.image.Texture2D;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
@@ -51,7 +51,6 @@ import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D.Type;
 import java.awt.Button;
-import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 
 /**
  * TODO
@@ -287,7 +286,6 @@ public abstract class View2DEntity implements View2D {
         if (geometryNode != null) {
             viewNode.detachChild(geometryNode);
             if (geometrySelfCreated) {
-                
                 geometryNode.cleanup();
                 geometrySelfCreated = false;
             }
@@ -897,7 +895,7 @@ public abstract class View2DEntity implements View2D {
                 if (parentEntity != null) {
                     logger.fine("Remove entity " + entity + " from parent entity " + parentEntity);
                     RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
-                    rc.setAttachPoint(null);
+                    sgChangeAttachPointSet(rc, null);
                     parentEntity.removeEntity(entity);
                     parentEntity = null;
                 }
@@ -915,7 +913,7 @@ public abstract class View2DEntity implements View2D {
                     // Note: don't need to do in RenderUpdater because we've detached our entity
                     sgChangeGeometryDetachFromView(viewNode, geometryNode);
                     if (geometrySelfCreated) {
-                        geometryNode.cleanup();
+                        sgChangeGeometryCleanup(geometryNode);
                         geometrySelfCreated = false;
                     }
                 }
@@ -934,7 +932,7 @@ public abstract class View2DEntity implements View2D {
             if ((chgMask & CHANGED_TEXTURE) != 0) {
                 logger.fine("Update texture");
                 if (geometryNode != null) {
-                    geometryNode.setTexture(getWindow().getTexture());
+                    sgChangeGeometryTextureSet(geometryNode, getWindow().getTexture());
                 }
             }
 
@@ -951,8 +949,9 @@ public abstract class View2DEntity implements View2D {
                         logger.fine("Attach entity " + entity + " to parent entity " + parentEntity);
                         parentEntity.addEntity(entity);
                         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
-                        RenderComponent rcParent = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
-                        rc.setAttachPoint(rcParent.getSceneRoot());
+                        RenderComponent rcParent = 
+                            (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+                        sgChangeAttachPointSet(rc, rcParent.getSceneRoot());
                         attachState = AttachState.ATTACHED_TO_ENTITY;
                     }
                 }
@@ -1186,11 +1185,14 @@ public abstract class View2DEntity implements View2D {
         GEOMETRY_DETACH_FROM_VIEW,
         GEOMETRY_SIZE_SET, 
         GEOMETRY_TEX_COORDS_SET,
+        GEOMETRY_TEXTURE_SET,
         GEOMETRY_ORTHO_Z_ORDER_SET,
-        VIEW_NODE_ORTHO_SET,
         GEOMETRY_TRANSFORM_OFFSET_STACK_SET,
+        GEOMETRY_CLEANUP,
+        VIEW_NODE_ORTHO_SET,
         TRANSFORM_USER_POST_MULT,
         TRANSFORM_USER_SET,
+        ATTACH_POINT_SET
     };
 
     private static class SGChange {
@@ -1248,6 +1250,16 @@ public abstract class View2DEntity implements View2D {
         }
     }
 
+    private static class SGChangeGeometryTextureSet extends SGChange {
+        private GeometryNode geometryNode;
+        private Texture2D texture;
+        private SGChangeGeometryTextureSet (GeometryNode geometryNode, Texture2D texture) {
+            super(SGChangeOp.GEOMETRY_TEXTURE_SET);
+            this.geometryNode = geometryNode;
+            this.texture = texture;
+        }
+    }
+
     private static class SGChangeGeometryOrthoZOrderSet extends SGChange {
         private GeometryNode geometryNode;
         private int zOrder;
@@ -1255,6 +1267,14 @@ public abstract class View2DEntity implements View2D {
             super(SGChangeOp.GEOMETRY_ORTHO_Z_ORDER_SET);
             this.geometryNode = geometryNode;
             this.zOrder = zOrder;
+        }
+    }
+
+    private static class SGChangeGeometryCleanup extends SGChange {
+        private GeometryNode geometryNode;
+        private SGChangeGeometryCleanup (GeometryNode geometryNode) {
+            super(SGChangeOp.GEOMETRY_CLEANUP);
+            this.geometryNode = geometryNode;
         }
     }
 
@@ -1292,6 +1312,16 @@ public abstract class View2DEntity implements View2D {
        }
     }
 
+    private static class SGChangeAttachPointSet extends SGChange {
+        private RenderComponent rc;
+        private Node node;
+        private SGChangeAttachPointSet (RenderComponent rc, Node node) {
+            super(SGChangeOp.ATTACH_POINT_SET);
+            this.rc = rc;
+            this.node = node;
+       }
+    }
+
     private static class SGChangeTransformUserPostMultiply extends SGChangeTransform {
         private Node viewNode;
         private SGChangeTransformUserPostMultiply (Node viewNode, CellTransform transform) {
@@ -1320,8 +1350,16 @@ public abstract class View2DEntity implements View2D {
         sgChanges.add(new SGChangeGeometryTexCoordsSet(geometryNode, widthRatio, heightRatio));
     }
 
+    private synchronized void sgChangeGeometryTextureSet(GeometryNode geometryNode, Texture2D texture) {
+        sgChanges.add(new SGChangeGeometryTextureSet(geometryNode, texture));
+    }
+
     private synchronized void sgChangeGeometryOrthoZOrderSet(GeometryNode geometryNode, int zOrder) {
         sgChanges.add(new SGChangeGeometryOrthoZOrderSet(geometryNode, zOrder));
+    }
+
+    private synchronized void sgChangeGeometryCleanup(GeometryNode geometryNode) {
+        sgChanges.add(new SGChangeGeometryCleanup(geometryNode));
     }
 
     private synchronized void sgChangeViewNodeOrthoSet(Node viewNode, boolean ortho) {
@@ -1340,6 +1378,10 @@ public abstract class View2DEntity implements View2D {
 
     protected synchronized void sgChangeTransformUserSet (Node viewNode, CellTransform transform) {
         sgChanges.add(new SGChangeTransformUserSet(viewNode, transform));
+    }
+
+    protected synchronized void sgChangeAttachPointSet (RenderComponent rc, Node node) {
+        sgChanges.add(new SGChangeAttachPointSet(rc, node));
     }
 
     private synchronized void sgProcessChanges () {
@@ -1378,8 +1420,15 @@ public abstract class View2DEntity implements View2D {
                      case GEOMETRY_TEX_COORDS_SET: {
                          SGChangeGeometryTexCoordsSet chg = (SGChangeGeometryTexCoordsSet) sgChange;
                          chg.geometryNode.setTexCoords(chg.widthRatio, chg.heightRatio);
-                         logger.fine("Geometry node setSize, whRatio = " + chg.widthRatio + ", " + 
+                         logger.fine("Geometry node setTexCoords, whRatio = " + chg.widthRatio + ", " + 
                                      chg.heightRatio);
+                         break;
+                     }
+
+                     case GEOMETRY_TEXTURE_SET: {
+                         SGChangeGeometryTextureSet chg = (SGChangeGeometryTextureSet) sgChange;
+                         chg.geometryNode.setTexture(chg.texture);
+                         logger.fine("Geometry node setTexture, texture = " + chg.texture);
                          break;
                      }
 
@@ -1389,6 +1438,13 @@ public abstract class View2DEntity implements View2D {
                              chg.geometryNode.setOrthoZOrder(chg.zOrder);
                          }
                          logger.fine("Geometry set ortho z order = " + chg.zOrder);
+                         break;
+                     }
+
+                     case GEOMETRY_CLEANUP: {
+                         SGChangeGeometryCleanup chg = (SGChangeGeometryCleanup) sgChange;
+                         chg.geometryNode.cleanup();
+                         logger.fine("Geometry node cleanup");
                          break;
                      }
 
@@ -1453,6 +1509,13 @@ public abstract class View2DEntity implements View2D {
                          }
                          break;
                      }
+
+                     case ATTACH_POINT_SET: {
+                         SGChangeAttachPointSet chg = (SGChangeAttachPointSet) sgChange;
+                         chg.rc.setAttachPoint(chg.node);
+                         break;
+                     }
+
                      }
                  }
 
@@ -1469,6 +1532,7 @@ public abstract class View2DEntity implements View2D {
          }, null);
 
          // Wait until all changes are performed
+         // TODO: replace with a synchronous RU above
          synchronized (sgChanges) {
              while (sgChanges.size() > 0) {
                  try { sgChanges.wait(); } catch (InterruptedException ex) {}
