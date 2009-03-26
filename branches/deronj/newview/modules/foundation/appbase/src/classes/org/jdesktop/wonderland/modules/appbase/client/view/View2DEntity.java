@@ -1569,9 +1569,9 @@ public abstract class View2DEntity implements View2D {
         Point point;
         if (me3d.getID() == MouseEvent.MOUSE_DRAGGED) {
             MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) me3d;
-            point = geometryNode.calcWorldPositionInPixelCoordinates(de3d.getHitIntersectionPointWorld(), true);
+            point = geometryNode.calcPositionInPixelCoordinates(de3d.getHitIntersectionPointWorld(), true);
         } else {
-            point = geometryNode.calcWorldPositionInPixelCoordinates(me3d.getIntersectionPointWorld(), false);
+            point = geometryNode.calcPositionInPixelCoordinates(me3d.getIntersectionPointWorld(), false);
         }
         if (point == null) {
             // Event was outside our panel so do nothing
@@ -1613,7 +1613,7 @@ public abstract class View2DEntity implements View2D {
         if (geometryNode == null) {
             return null;
         }
-        return geometryNode.calcWorldPositionInPixelCoordinates(point, clamp);
+        return geometryNode.calcPositionInPixelCoordinates(point, clamp);
     }
 
     /** {@inheritDoc} */
