@@ -284,8 +284,10 @@ public class Gui2D {
             case TOGGLE_CONTROL:
                 ControlArb controlArb = view.getWindow().getApp().getControlArb();
                 if (controlArb.hasControl()) {
+                    logger.info("Release control");
                     controlArb.releaseControl();
                 } else {
+                    logger.info("Take control");
                     controlArb.takeControl();
                 }
                 break;
