@@ -120,12 +120,9 @@ public class Gui2DInterior extends Gui2D {
 
             // Always consume the control change event over the interior even when the app 
             // doesn't have control and the app entity doesn't have focus
-            if (event instanceof MouseEvent3D) {
-                MouseEvent3D me3d = (MouseEvent3D) event;
-                MouseEvent me = (MouseEvent) me3d.getAwtEvent();
-                if (isChangeControlEvent(me)) {
-                    return true;
-                }
+            MouseEvent3D me3d = (MouseEvent3D) event;
+            if (isChangeControlEvent((MouseEvent) me3d.getAwtEvent())) {
+                return true;
             }
 
             if (!app.getControlArb().hasControl()) {
@@ -166,6 +163,17 @@ public class Gui2DInterior extends Gui2D {
             try {
 
                 if (view.getWindow().getApp().getControlArb().hasControl()) {
+
+                    // TEMPORARY HACK: release control if we get Shift-Left click.
+                    MouseEvent me = (MouseEvent)me3d.getAwtEvent();
+                    if (isChangeControlEvent(me)) {
+                        Action action = determineIfMiscAction(me, me3d);
+                        if (action != null) {
+                            performMiscAction(action, me, me3d);
+                            return;
+                        }
+                    }
+
                     view.deliverEvent((Window2D) view.getWindow(), me3d);
                     return;
                 }
