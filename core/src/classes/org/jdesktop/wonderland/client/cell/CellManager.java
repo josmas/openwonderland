@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
@@ -39,7 +40,7 @@ public class CellManager {
 //    private Set<CellMoveListener> moveListeners=Collections.synchronizedSet(new LinkedHashSet());            
 ;
 
-    private Set<CellStatusChangeListener> statusChangeListeners = null;
+    private Set<CellStatusChangeListener> statusChangeListeners = new CopyOnWriteArraySet();
     
     private CellManager() {
     }
@@ -56,9 +57,6 @@ public class CellManager {
      * @param status
      */
     void notifyCellStatusChange(Cell cell, CellStatus status) {
-        if (statusChangeListeners==null)
-            return;
-        
         for(CellStatusChangeListener listener : statusChangeListeners)
             listener.cellStatusChanged(cell, status);
     }
@@ -70,10 +68,7 @@ public class CellManager {
      * @param listener to be added
      */
     public void addCellStatusChangeListener(CellStatusChangeListener listener) {
-        if (statusChangeListeners==null)
-            statusChangeListeners = Collections.synchronizedSet(new HashSet());
-        
-        statusChangeListeners.add(listener);        
+        statusChangeListeners.add(listener);
     }
     
     /**
@@ -81,45 +76,7 @@ public class CellManager {
      * @param listener to be removed
      */
     public void removeCellStatusChangeListener(CellStatusChangeListener listener) {
-        if (statusChangeListeners!=null) {
-            statusChangeListeners.remove(listener);
-        }
+        statusChangeListeners.remove(listener);
     }
     
-    /**
-     * Called by the MovableCell to notify the system that it has moved.
-     * @param cell
-     * @param fromServer
-     */
-//    void notifyCellMoved(Cell cell, boolean fromServer) {
-//        for(CellMoveListener listener : moveListeners)
-//            listener.cellMoved(cell, fromServer);
-//    }
-    
-//    /**
-//     * Add a listener that will be notified of entity cell movement
-//     * @param listener
-//     */
-//    public synchronized void addCellMoveListener(CellMoveListener listener) {
-//        moveListeners.add(listener);
-//    }
-//    
-//    /**
-//     * Remove the specified entity cell listener
-//     * @param listener
-//     */
-//    public synchronized void removeCellMoveListener(CellMoveListener listener) {
-//        moveListeners.remove(listener);
-//    }
-    
-//    @ExperimentalAPI
-//    public interface CellMoveListener {
-//        /**
-//         * Notification that an MovableCell has moved. 
-//         * @param cell the cell that moved
-//         * @param fromServer, if true then the move came from the server, otherwise
-//         * the move originated on this client
-//         */
-//        public void cellMoved(Cell cell, boolean fromServer);
-//    }
 }
