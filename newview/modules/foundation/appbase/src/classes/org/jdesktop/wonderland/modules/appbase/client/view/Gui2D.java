@@ -246,7 +246,7 @@ public class Gui2D {
     /**
      * Is this the event which takes or releases control of an app group (which for this LAF is Shift-Left-click)?
      */
-    private boolean isChangeControlEvent(MouseEvent me) {
+    protected boolean isChangeControlEvent(MouseEvent me) {
         return me.getID() == MouseEvent.MOUSE_CLICKED &&
                 me.getButton() == MouseEvent.BUTTON1 &&
                 (me.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0;

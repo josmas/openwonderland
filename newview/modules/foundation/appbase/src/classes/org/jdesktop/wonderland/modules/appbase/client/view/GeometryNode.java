@@ -47,7 +47,7 @@ public abstract class GeometryNode extends Node {
     /** The texture to be displayed. */
     private Texture2D texture;
 
-    /** Used by calcWorldPositionInPixelCoordinates. */
+    /** Used by calcPositionInPixelCoordinates. */
     private Point lastPosition = null;
 
     /**
@@ -127,7 +127,7 @@ public abstract class GeometryNode extends Node {
      * position is outside of the geometry's rectangle. Otherwise, return null if these conditions hold.
      * @return the 2D position of the pixel space the window's image.
      */
-    public Point calcWorldPositionInPixelCoordinates(Vector3f point, boolean clamp) {
+    public Point calcPositionInPixelCoordinates(Vector3f point, boolean clamp) {
         if (point == null) {
             if (clamp) {
                 return lastPosition;
@@ -251,7 +251,7 @@ public abstract class GeometryNode extends Node {
 
         // TODO: opt: we can optimize the following by reusing some of the intermediate
         // results from the previous steps
-        Point pt = calcWorldPositionInPixelCoordinates(intPointWorld, false);
+        Point pt = calcPositionInPixelCoordinates(intPointWorld, false);
         return pt;
     }
 

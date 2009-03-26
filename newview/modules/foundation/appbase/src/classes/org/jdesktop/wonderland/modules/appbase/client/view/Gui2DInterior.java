@@ -118,6 +118,16 @@ public class Gui2DInterior extends Gui2D {
             }
             logger.fine("Event is meant for this listener, event = " + event);
 
+            // Always consume the control change event over the interior even when the app 
+            // doesn't have control and the app entity doesn't have focus
+            if (event instanceof MouseEvent3D) {
+                MouseEvent3D me3d = (MouseEvent3D) event;
+                MouseEvent me = (MouseEvent) me3d.getAwtEvent();
+                if (isChangeControlEvent(me)) {
+                    return true;
+                }
+            }
+
             if (!app.getControlArb().hasControl()) {
                 return false;
             }
