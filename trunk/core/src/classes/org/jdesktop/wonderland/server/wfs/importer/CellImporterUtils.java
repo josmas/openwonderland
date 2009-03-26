@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.server.WonderlandContext;
 
 
 /**
@@ -90,6 +91,7 @@ public class CellImporterUtils {
             URL url = new URL(getWebServerURL(), WFS_PREFIX + root + "/directory/");
             return CellList.decode("", url.openStream());
         } catch (java.lang.Exception excp) {
+            System.err.println(excp);
             return null;
         }            
     }
@@ -133,6 +135,6 @@ public class CellImporterUtils {
      * Returns the base URL of the web server.
      */
     public static URL getWebServerURL() throws MalformedURLException {
-        return new URL(System.getProperty("wonderland.web.server.url"));
+        return WonderlandContext.getWebServerURL();
     }
 }
