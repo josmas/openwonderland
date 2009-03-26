@@ -116,13 +116,17 @@ public class Gui2DInterior extends Gui2D {
                 // Not meant for us
                 return false;
             }
+            logger.fine("Event is meant for this listener, event = " + event);
 
             if (!app.getControlArb().hasControl()) {
                 return false;
             }
+            logger.fine("User has control of app");
 
             // When the app has control only consume if app has focus.
-            return InputManager3D.entityHasFocus(event, appFocusEntity);
+            boolean entityHasFocus = InputManager3D.entityHasFocus(event, appFocusEntity);
+            logger.fine("Entity has focus = " + entityHasFocus);
+            return entityHasFocus;
         }
 
         @Override
