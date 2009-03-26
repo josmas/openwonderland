@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Spatial;
+import com.jme.scene.Node;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.mtgame.RenderUpdater;
@@ -109,27 +110,14 @@ public class FrameResizeCorner extends FrameComponent {
         updateLayout();
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-
             public void update(Object arg0) {
-
-                // Update position
-                // TODO: wa: for now do this. Ultimately use a synchronous render updater
-                if (horizBar != null) {
-                    horizBar.setLocalTranslation(new Vector3f(horizX, horizY, Z_OFFSET));
-                }
-                // TODO: wa: for now do this. Ultimately use a synchronous render updater
-                if (vertBar != null) {
-                    vertBar.setLocalTranslation(new Vector3f(vertX, vertY, Z_OFFSET));
-                }
-
-                // TODO: wa: for now do this. Ultimately use a synchronous render updater
-                if (localToCellNode != null) {
-                    // Translate the resize corner's coordinate system
-                    localToCellNode.setLocalTranslation(origin);
-                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
-                }
+                // Translate the resize corner's coordinate system
+                localToCellNode.setLocalTranslation(origin);
+                horizBar.setLocalTranslationNoUpdater(new Vector3f(horizX, horizY, Z_OFFSET));
+                vertBar.setLocalTranslationNoUpdater(new Vector3f(vertX, vertY, Z_OFFSET));
+                ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
             }
-        }, null, true);
+        }, null);
 
         // Update size
         horizBar.resize(horizWidth, horizHeight);
@@ -147,12 +135,12 @@ public class FrameResizeCorner extends FrameComponent {
         rightSide.updateLayout();
         bottomSide.updateLayout();
 
+        float viewWidth = view.getDisplayerLocalWidth();
+        float viewHeight = view.getDisplayerLocalHeight();
+
         // Origin of the resize corner coordinate system is the lower right
         // corner of the view.
         origin = new Vector3f(0f, 0f, Z_OFFSET);
-
-        float viewWidth = view.getDisplayerLocalWidth();
-        float viewHeight = view.getDisplayerLocalHeight();
 
         horizX = (viewWidth - Frame2DCell.RESIZE_CORNER_WIDTH) / 2f;
         horizY = (-viewHeight - Frame2DCell.SIDE_THICKNESS) / 2f;
@@ -229,14 +217,14 @@ public class FrameResizeCorner extends FrameComponent {
         if (horizBar == null) {
             horizBar = new FrameRect("HorizontalBar", view, gui, horizWidth, horizHeight);
         }
-        Spatial horizSpatial = horizBar.getSpatials()[0];
+        Node horizNode = horizBar.getNode();
 
         if (vertBar == null) {
             vertBar = new FrameRect("Vertical Bar", view, gui, vertWidth, vertHeight);
         }
-        Spatial vertSpatial = vertBar.getSpatials()[0];
+        Node vertNode = vertBar.getNode();
 
-        return new Spatial[]{horizSpatial, vertSpatial};
+        return new Node[]{horizNode, vertNode};
     }
 }
 

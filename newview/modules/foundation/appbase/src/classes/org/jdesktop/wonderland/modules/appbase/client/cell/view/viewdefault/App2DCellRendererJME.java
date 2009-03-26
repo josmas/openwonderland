@@ -150,6 +150,9 @@ public class App2DCellRendererJME extends App2DCellRenderer {
 
         }
 
+        /** 
+         * For Debug: only enable when we need to see the entity tree. 
+         * Otherwise this prints out too much info. (It prints out the scene graph multiple times!)
         int numChildren = entity.numEntities();
         for (int i = 0; i < numChildren; i++) {
             Entity child = entity.getEntity(i);
@@ -161,6 +164,7 @@ public class App2DCellRendererJME extends App2DCellRenderer {
             printIndentLevel(indentLevel);
             System.err.println("==================");
         }
+        */
     }
 
     /**

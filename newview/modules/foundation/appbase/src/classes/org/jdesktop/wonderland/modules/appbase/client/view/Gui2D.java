@@ -396,7 +396,9 @@ public class Gui2D {
      * @param me3d The 3D mouse event.
      */
     protected void performConfigAction(Action action, MouseEvent me, MouseEvent3D me3d) {
+        return;
 
+        /*
         switch (action.type) {
 
         case DRAG_START:
@@ -407,11 +409,9 @@ public class Gui2D {
             case MOVING_Z:
                 view.userMoveZStart(dragVectorEye.y);
                 break;
-                /* TODO
             case ROTATING_Y:
                 view.userRotateYStart(dragVectorEye.y);
                 break;
-                 */
             }
             break;
 
@@ -423,11 +423,9 @@ public class Gui2D {
             case MOVING_Z:
                 view.userMoveZUpdate(dragVectorEye.y);
                 break;
-                /* TODO
             case ROTATING_Y:
                 view.userRotateYUpdate(dragVectorEye.y);
                 break;
-                */
             }
             break;
 
@@ -439,17 +437,16 @@ public class Gui2D {
             case MOVING_Z:
                 view.userMoveZFinish();
                 break;
-                /* TODO
             case ROTATING_Y:
                 view.userRotateYFinish();
                 break;
-                */
             }
             break;
 
         default:
             throw new RuntimeException("Unrecognized action");
         }
+        */
     }
 
     /**
