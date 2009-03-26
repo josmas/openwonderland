@@ -28,6 +28,8 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
+import org.jdesktop.mtgame.RenderUpdater;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
  * The generic superclass of window frame components.
@@ -100,6 +102,13 @@ public abstract class FrameComponent {
     }
 
     /**
+     * Return's this component's scene graph node.
+     */
+    public Node getNode () {
+        return localToCellNode;
+    }
+
+    /**
      * Initialize this component's entity.
      */
     protected void initEntity() {
@@ -146,10 +155,15 @@ public abstract class FrameComponent {
         rc.setEntity(entity);
 
         // Attach the subclass spatials to the localToCell node
-        Spatial[] spatials = getSpatials();
-        for (Spatial spatial : spatials) {
-            localToCellNode.attachChild(spatial);
-        }
+        final Spatial[] spatials = getSpatials();
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                for (Spatial spatial : spatials) {
+                    localToCellNode.attachChild(spatial);
+                }
+                ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+            }
+        }, null, true); // Topology change. Must wait for it to complete.
     }
 
     /**
@@ -261,13 +275,19 @@ public abstract class FrameComponent {
     public void setLocalTranslation(final Vector3f trans) {
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
-                // TODO: wa: for now do this. Ultimately use a synchronous render updater
-                if (localToCellNode != null) {
-                    localToCellNode.setLocalTranslation(trans);
-                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
-                }
+                setLocalTranslationNoUpdater(trans);
+                ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
             }
-        }, null, true);
+        }, null);
+    }
+
+    /**
+     * Sets the localToCell translation of this component.
+     *
+     * @param trans The translation vector.
+     */
+    public void setLocalTranslationNoUpdater(final Vector3f trans) {
+        localToCellNode.setLocalTranslation(trans);
     }
 
     /**

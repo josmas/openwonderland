@@ -103,26 +103,15 @@ public class FrameRect extends FrameComponent {
     public synchronized void update() throws InstantiationException {
         updateLayout();
 
-        if (quad == null) {
-            quad = new Quad("FrameRect-Quad", width, height);
-            quad.setModelBound(new BoundingBox());
-            quad.updateModelBound();
-            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-                public void update(Object arg0) {
-                    localToCellNode.attachChild(quad);
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                if (quad != null) {
+                    quad.resize(width, height);
+                    quad.updateModelBound();
+                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
-            }, null, true);
-        } else {
-            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-                public void update(Object arg0) {
-                    // TODO: wa: for now do this. Ultimately use a synchronous render updater
-                    if (quad != null) {
-                        quad.resize(width, height);
-                        quad.updateModelBound();
-                    }
-                }
-            }, null, true);
-        }
+            }
+        }, null);
 
         super.update();
     }
@@ -170,19 +159,16 @@ public class FrameRect extends FrameComponent {
         if (quad != null) {
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
                 public void update(Object arg0) {
-                    // TODO: wa: for now do this. Ultimately use a synchronous render updater
-                    if (quad != null) {
-                        MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
-                        if (ms == null) {
-                            ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
-                            quad.setRenderState(ms);
-                        }
-                        ms.setAmbient(new ColorRGBA(color));
-                        ms.setDiffuse(new ColorRGBA(color));
-                        ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                    MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
+                    if (ms == null) {
+                        ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
+                        quad.setRenderState(ms);
                     }
+                    ms.setAmbient(new ColorRGBA(color));
+                    ms.setDiffuse(new ColorRGBA(color));
+                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
-            }, null, true);
+            }, null); 
         }
     }
 
@@ -225,7 +211,12 @@ public class FrameRect extends FrameComponent {
      */
     @Override
     protected Spatial[] getSpatials() {
-        return new Node[]{localToCellNode};
+        if (quad == null) {
+            quad = new Quad("FrameRect-Quad", width, height);
+            quad.setModelBound(new BoundingBox());
+            quad.updateModelBound();
+        }
+        return new Spatial[]{quad};
     }
 }
 

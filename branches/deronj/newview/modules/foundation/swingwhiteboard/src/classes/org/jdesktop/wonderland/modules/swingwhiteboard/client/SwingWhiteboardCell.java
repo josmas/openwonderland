@@ -97,9 +97,8 @@ public class SwingWhiteboardCell extends App2DCell {
 
                 // This app has only one window, so it is always top-level 
                 try {
-                    // TODO: mtgame bug workaround: make this window undecorated for now
                     whiteboardWin = new SwingWhiteboardWindow(this, swaApp, clientState.getPreferredWidth(), 
-                                                              clientState.getPreferredHeight(), /*true*/false, 
+                                                              clientState.getPreferredHeight(), true, 
                                                               pixelScale, commComponent);
                 } catch (InstantiationException ex) {
                     throw new RuntimeException(ex);

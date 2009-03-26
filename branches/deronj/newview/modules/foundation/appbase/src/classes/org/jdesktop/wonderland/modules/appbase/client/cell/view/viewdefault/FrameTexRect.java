@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
+import com.jme.scene.Spatial;
 
 /**
  * A textured rectangle component derived from <code>FrameRect</code>.
@@ -96,21 +97,15 @@ public class FrameTexRect extends FrameRect {
     public void update() throws InstantiationException {
         updateLayout();
 
-        if (quad == null) {
-            quad = new TexturedQuad(texture, "FrameTexRect-Quad", width, height);
-            quad.setModelBound(new BoundingBox());
-            quad.updateModelBound();
-        } else {
-            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-                public void update(Object arg0) {
-                    // TODO: wa: for now do this. Ultimately use a synchronous render updater
-                    if (quad != null) {
-                        quad.resize(width, height);
-                        quad.updateModelBound();
-                    }
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                if (quad != null) {
+                    quad.resize(width, height);
+                    quad.updateModelBound();
+                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
-            }, null, true);
-        }
+            }
+        }, null);
 
         // This should be the same as FrameComponent.update
         updateColor();
@@ -133,5 +128,18 @@ public class FrameTexRect extends FrameRect {
      */
     public Texture getTexture() {
         return texture;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Spatial[] getSpatials() {
+        if (quad == null) {
+            quad = new TexturedQuad(texture, "FrameTexRect-Quad", width, height);
+            quad.setModelBound(new BoundingBox());
+            quad.updateModelBound();
+        }
+        return new Spatial[]{quad};
     }
 }

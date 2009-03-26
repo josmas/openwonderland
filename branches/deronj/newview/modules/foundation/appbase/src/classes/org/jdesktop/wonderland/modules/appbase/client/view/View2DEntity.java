@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseWheelEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
@@ -323,6 +324,12 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized Window2D getWindow () {
+        return getWindowUnsynchronized();
+    }
+
+    /** INTERNAL API */
+    @InternalAPI
+    public Window2D getWindowUnsynchronized () {
         return window;
     }
 
@@ -1662,7 +1669,7 @@ public abstract class View2DEntity implements View2D {
                     // The JME magic - must be called from within the render loop
                     ts.load();
                 }
-            }, null, true);
+           }, null, true);  // Note: a rare case in which we must wait for the render updater to complete
         }
 
         /* For debug: Verify that ID was actually allocated 
