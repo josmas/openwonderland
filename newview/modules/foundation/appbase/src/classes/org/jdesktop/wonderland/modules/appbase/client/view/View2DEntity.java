@@ -929,7 +929,7 @@ public abstract class View2DEntity implements View2D {
             }
 
             // Uses: window
-            if ((chgMask & CHANGED_TEXTURE) != 0) {
+            if ((chgMask & (CHANGED_TEXTURE | CHANGED_GEOMETRY)) != 0) {
                 logger.fine("Update texture");
                 if (geometryNode != null) {
                     sgChangeGeometryTextureSet(geometryNode, getWindow().getTexture());
@@ -1024,7 +1024,7 @@ public abstract class View2DEntity implements View2D {
 
         // React to texture coordinate changes
         // Uses: window, texture
-        if ((changeMask & CHANGED_TEX_COORDS) != 0) {
+        if ((changeMask & (CHANGED_TEX_COORDS|CHANGED_GEOMETRY)) != 0) {
             // TODO: for now, texcoords only depend on app size. Eventually this should
             // be the effective aperture rectangle width and height
             float width = (float) sizeApp.width;    
@@ -1420,6 +1420,7 @@ public abstract class View2DEntity implements View2D {
                      case GEOMETRY_TEX_COORDS_SET: {
                          SGChangeGeometryTexCoordsSet chg = (SGChangeGeometryTexCoordsSet) sgChange;
                          chg.geometryNode.setTexCoords(chg.widthRatio, chg.heightRatio);
+                         logger.fine("viewNode = " + viewNode);
                          logger.fine("Geometry node setTexCoords, whRatio = " + chg.widthRatio + ", " + 
                                      chg.heightRatio);
                          break;
