@@ -56,9 +56,16 @@ public class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
     private final TimeBasedCache<String, Set<Principal>> cache;
 
     /**
+     * Get an instance of this singleton
+     */
+    public static WebServiceUserPrincipalResolver getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
+
+    /**
      * Singleton constructor -- use getInstance() instead
      */
-    public WebServiceUserPrincipalResolver() {
+    protected WebServiceUserPrincipalResolver() {
         String cacheTime = System.getProperty(CACHE_TIMEOUT_PROP, 
                                               CACHE_TIMEOUT_DEFAULT);
         cache = new TimeBasedCache<String, Set<Principal>>(Long.parseLong(cacheTime));
@@ -125,5 +132,10 @@ public class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
         }
 
         return baseURL;
+    }
+
+    private static final class SingletonHolder {
+        private static final WebServiceUserPrincipalResolver INSTANCE =
+                new WebServiceUserPrincipalResolver();
     }
 }
