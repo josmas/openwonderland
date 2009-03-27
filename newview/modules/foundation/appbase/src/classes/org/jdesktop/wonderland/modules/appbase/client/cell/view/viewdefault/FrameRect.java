@@ -159,14 +159,16 @@ public class FrameRect extends FrameComponent {
         if (quad != null) {
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
                 public void update(Object arg0) {
-                    MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
-                    if (ms == null) {
-                        ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
-                        quad.setRenderState(ms);
+                    if (quad != null) {
+                        MaterialState ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);
+                        if (ms == null) {
+                            ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
+                            quad.setRenderState(ms);
+                        }
+                        ms.setAmbient(new ColorRGBA(color));
+                        ms.setDiffuse(new ColorRGBA(color));
+                        ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                     }
-                    ms.setAmbient(new ColorRGBA(color));
-                    ms.setDiffuse(new ColorRGBA(color));
-                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
             }, null); 
         }

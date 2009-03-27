@@ -270,6 +270,16 @@ public abstract class View2DEntity implements View2D {
     /** {@inheritDoc} */
     public synchronized void cleanup () {
 
+        /* TODO: must block while there is an active render updater making changes 
+         // Wait until all changes are performed
+         // TODO: replace with a synchronous RU above
+         synchronized (sgChanges) {
+             while (sgChanges.size() > 0) {
+                 try { sgChanges.wait(); } catch (InterruptedException ex) {}
+             }
+         }
+        */
+
         /* TODO: attach state, use sgchanges */
 
         if (gui != null) {
@@ -1540,7 +1550,6 @@ public abstract class View2DEntity implements View2D {
          }, null);
 
          // Wait until all changes are performed
-         // TODO: replace with a synchronous RU above
          synchronized (sgChanges) {
              while (sgChanges.size() > 0) {
                  try { sgChanges.wait(); } catch (InterruptedException ex) {}
