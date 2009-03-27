@@ -59,6 +59,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
+import com.sun.mpk20.voicelib.app.BridgeInfo;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
@@ -128,17 +129,23 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof GetVoiceBridgeMessage) {
-	    String voiceBridge;
+	    BridgeInfo bridgeInfo;
 
 	    try {
-	        voiceBridge = vm.getVoiceBridge().toString();
-	        logger.info("Got voice bridge '" + voiceBridge + "'");
+		bridgeInfo = vm.getVoiceBridge();
+
+		if (bridgeInfo == null) {
+		    logger.warning("There are no voice bridges online");
+		    return;
+		}
+
+	        logger.info("Got voice bridge '" + bridgeInfo + "'");
 	    } catch (IOException e) {
 		logger.warning("unable to get voice bridge:  " + e.getMessage());
 		return;
 	    }
 
-	    sender.send(clientID, new GetVoiceBridgeResponseMessage(voiceBridge));
+	    sender.send(clientID, new GetVoiceBridgeResponseMessage(bridgeInfo.toString()));
 	    return;
 	}
 
