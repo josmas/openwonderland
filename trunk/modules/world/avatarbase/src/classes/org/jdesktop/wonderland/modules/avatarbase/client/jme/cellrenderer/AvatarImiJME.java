@@ -90,10 +90,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
     private float positionMinDistanceForPull    = 0.1f;
     private float positionMaxDistanceForPull    = 3.0f;
+    private Node nameTagRoot=null;
 
     String username;
-
-    private NameTag nameTag;
 
     public AvatarImiJME(Cell cell) {
         super(cell);
@@ -102,7 +101,19 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
 	username = ((AvatarCell) cell).getIdentity().getUsername();
 
-	nameTag = new NameTag(cell, username);
+        characterMotionListener = new CharacterMotionListener() {
+                public void transformUpdate(Vector3f translation, PMatrix rotation) {
+                    ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
+
+                    final Vector3f pos = new Vector3f(translation);
+                    SceneWorker.addWorker(new WorkCommit(){
+                        public void commit() {
+                            nameTagRoot.setLocalTranslation(pos);
+                            ClientContextJME.getWorldManager().addToUpdateList(nameTagRoot);
+                        }
+                    });
+                }
+        };
 
         // This info will be sent to the other clients to animate the avatar
         gameContextListener = new GameContextListener() {
@@ -137,7 +148,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 		    AvatarMuteEvent e = (AvatarMuteEvent) event;
 
 		    if (e.getUsername().equals(username)) {
-			nameTag.setMute(e.isMuted());
+			if (e.isMuted()) {
+			    createNameTag("[" + username + "]");
+			} else {
+			    createNameTag(username);
+			}
 		    }
 		    return;
 		}
@@ -146,7 +161,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 		    AvatarSpeakingEvent e = (AvatarSpeakingEvent) event;
 
 		    if (e.getUsername().equals(username)) {
-			nameTag.setSpeaking(e.isSpeaking());
+			if (e.isSpeaking()) {
+			    createNameTag(username + "...");
+			} else {
+			    createNameTag(username);
+			}
 		    }
 		    return;
 		}
@@ -169,12 +188,53 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         else
             logger.warning("NO RenderComponent for Avatar");
 
-        nameTag.setNameTag(username);
+        createNameTag(username);
 
         // Remove the entity, it will be added when the cell status changes
         ClientContextJME.getWorldManager().removeEntity(avatarCharacter);
 
         return avatarCharacter;
+    }
+
+    private Entity labelEntity;
+    private Spatial q;
+
+    void createNameTag(String username) {
+	WorldManager worldManager = ClientContextJME.getWorldManager();
+
+	Vector3f localTranslation = null;
+
+	if (labelEntity != null) {
+            worldManager.removeEntity(labelEntity);
+            labelEntity.removeComponent(RenderComponent.class);
+	    nameTagRoot.detachChild(q);
+            worldManager.addToUpdateList(nameTagRoot);
+	    localTranslation = nameTagRoot.getLocalTranslation();
+	}
+
+	labelEntity = new Entity("NameTag");
+        TextLabel2D label = new TextLabel2D(username);
+        q = label.getBillboard(0.3f);
+        q.setLocalTranslation(0f, 2f, 0f);
+        Matrix3f rot = new Matrix3f();
+        rot.fromAngleAxis((float) Math.PI, new Vector3f(0f,1f,0f));
+        q.setLocalRotation(rot);
+
+        nameTagRoot = new Node();
+        nameTagRoot.attachChild(q);
+
+        ZBufferState zbuf = (ZBufferState) worldManager.getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+        zbuf.setEnabled(true);
+        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+        nameTagRoot.setRenderState(zbuf);
+
+        labelEntity.addComponent(RenderComponent.class, worldManager.getRenderManager().createRenderComponent(nameTagRoot));
+        ClientContextJME.getWorldManager().addEntity(labelEntity);
+
+	if (localTranslation != null) {
+	    nameTagRoot.setLocalTranslation(localTranslation);
+            worldManager.addToUpdateList(nameTagRoot);
+	}
     }
 
     void changeAvatar(WlAvatarCharacter newAvatar) {
@@ -223,7 +283,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
             SceneWorker.addWorker(new WorkCommit(){
                 public void commit() {
-                    nameTag.setLocalTranslation(currentPosition);
+                    nameTagRoot.setLocalTranslation(currentPosition);
+                    ClientContextJME.getWorldManager().addToUpdateList(nameTagRoot);
                 }
             });
         }
@@ -351,5 +412,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
             }
         }
     }
+
 
 }
