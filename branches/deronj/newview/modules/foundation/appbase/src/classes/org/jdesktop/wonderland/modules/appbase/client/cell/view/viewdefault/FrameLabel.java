@@ -119,9 +119,11 @@ public class FrameLabel extends FrameTexRect {
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
-                // Update position relative to view
-                localToCellNode.setLocalTranslation(new Vector3f(x, y, Z_OFFSET));
-                ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                if (localToCellNode != null) {
+                    // Update position relative to view
+                    localToCellNode.setLocalTranslation(new Vector3f(x, y, Z_OFFSET));
+                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                }
             }
         }, null);
     }

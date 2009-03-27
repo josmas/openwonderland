@@ -99,8 +99,10 @@ public class FrameSide extends FrameComponent {
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
-                localToCellNode.setLocalTranslation(new Vector3f(x, y, 0f));
-                ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                if (localToCellNode != null) {
+                    localToCellNode.setLocalTranslation(new Vector3f(x, y, 0f));
+                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                }
             }
         }, null);
 

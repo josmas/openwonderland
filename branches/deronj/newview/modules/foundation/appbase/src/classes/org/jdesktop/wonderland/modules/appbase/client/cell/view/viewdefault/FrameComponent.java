@@ -158,10 +158,12 @@ public abstract class FrameComponent {
         final Spatial[] spatials = getSpatials();
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
-                for (Spatial spatial : spatials) {
-                    localToCellNode.attachChild(spatial);
+                if (localToCellNode != null) {
+                    for (Spatial spatial : spatials) {
+                        localToCellNode.attachChild(spatial);
+                    }
+                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
-                ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
             }
         }, null, true); // Topology change. Must wait for it to complete.
     }
@@ -275,8 +277,10 @@ public abstract class FrameComponent {
     public void setLocalTranslation(final Vector3f trans) {
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
-                setLocalTranslationNoUpdater(trans);
-                ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                if (localToCellNode != null) {
+                    setLocalTranslationNoUpdater(trans);
+                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                }
             }
         }, null);
     }

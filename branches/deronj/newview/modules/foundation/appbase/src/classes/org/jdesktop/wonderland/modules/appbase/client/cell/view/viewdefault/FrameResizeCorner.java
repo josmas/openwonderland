@@ -111,11 +111,16 @@ public class FrameResizeCorner extends FrameComponent {
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
-                // Translate the resize corner's coordinate system
-                localToCellNode.setLocalTranslation(origin);
-                horizBar.setLocalTranslationNoUpdater(new Vector3f(horizX, horizY, Z_OFFSET));
-                vertBar.setLocalTranslationNoUpdater(new Vector3f(vertX, vertY, Z_OFFSET));
-                ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                if (horizBar != null) {
+                    horizBar.setLocalTranslationNoUpdater(new Vector3f(horizX, horizY, Z_OFFSET));
+                }
+                if (vertBar != null) {
+                    vertBar.setLocalTranslationNoUpdater(new Vector3f(vertX, vertY, Z_OFFSET));
+                }
+                if (localToCellNode != null) {
+                    localToCellNode.setLocalTranslation(origin);
+                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
+                }
             }
         }, null);
 
