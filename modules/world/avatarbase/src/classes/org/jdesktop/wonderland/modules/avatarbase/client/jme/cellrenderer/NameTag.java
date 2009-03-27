@@ -65,12 +65,31 @@ public class NameTag implements CellMoveListener {
 
 	MovableComponent component = cell.getComponent(MovableComponent.class);
 
-	System.out.println("MOVABLE COMPONENT FOR " + cell.getName());
-
 	if (component != null) {
 	    component.addServerCellMoveListener(this);
 	}
 
+	WorldManager worldManager = ClientContextJME.getWorldManager();
+
+	Vector3f translation = new Vector3f();
+
+	cell.getLocalTransform().getTranslation(translation);
+
+        nameTagRoot = new Node();
+	nameTagRoot.setLocalTranslation(translation);
+
+        ZBufferState zbuf = (ZBufferState) 
+	    worldManager.getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+        zbuf.setEnabled(true);
+        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+        nameTagRoot.setRenderState(zbuf);
+
+	labelEntity = new Entity("NameTag");
+        labelEntity.addComponent(RenderComponent.class, 
+	    worldManager.getRenderManager().createRenderComponent(nameTagRoot));
+        worldManager.addEntity(labelEntity);
+
+        worldManager.addToUpdateList(nameTagRoot);
 	setNameTag(name);
     }
 
@@ -83,9 +102,10 @@ public class NameTag implements CellMoveListener {
     }
 
     public void setLocalTranslation(Vector3f pos) {
-	System.out.println("Set local pos " + nameTagRoot + " " + pos);
-	nameTagRoot.setLocalTranslation(pos);
-	ClientContextJME.getWorldManager().addToUpdateList(nameTagRoot);
+	if (nameTagRoot != null) {
+	    nameTagRoot.setLocalTranslation(pos);
+	    ClientContextJME.getWorldManager().addToUpdateList(nameTagRoot);
+	}
     }
 
     public void setSpeaking(boolean isSpeaking) {
@@ -109,18 +129,11 @@ public class NameTag implements CellMoveListener {
     }
 
     private Node nameTagRoot;
-
     private Entity labelEntity;
     private Spatial q;
 
     public void done() {
-	if (labelEntity != null) {
-	    WorldManager worldManager = ClientContextJME.getWorldManager();
-            worldManager.removeEntity(labelEntity);
-            labelEntity.removeComponent(RenderComponent.class);
-	    nameTagRoot.detachChild(q);
-            worldManager.addToUpdateList(nameTagRoot);
-	}
+	removeNameTag();
 
 	MovableComponent component = cell.getComponent(MovableComponent.class);
 
@@ -129,53 +142,38 @@ public class NameTag implements CellMoveListener {
 	}
     }
 
-    public void setNameTag(String name) {
-	System.out.println("SETTING  NAME TAG TO " + name);
-
-	WorldManager worldManager = ClientContextJME.getWorldManager();
-
-	Vector3f localTranslation = null;
-
-	if (labelEntity != null) {
-            worldManager.removeEntity(labelEntity);
-            labelEntity.removeComponent(RenderComponent.class);
-	    nameTagRoot.detachChild(q);
-            worldManager.addToUpdateList(nameTagRoot);
-	    localTranslation = nameTagRoot.getLocalTranslation();
-	    System.out.println("TRANSLATION:  " + localTranslation);
+    private void removeNameTag() {
+	if (nameTagRoot == null) {
+	    return;
 	}
 
-	labelEntity = new Entity("NameTag");
+	WorldManager worldManager = ClientContextJME.getWorldManager();
+        worldManager.removeEntity(labelEntity);
+        labelEntity.removeComponent(RenderComponent.class);
+	nameTagRoot.detachChild(q);
+        worldManager.addToUpdateList(nameTagRoot);
+	return;
+    }
+
+    public void setNameTag(String name) {
+	if (q != null) {
+	    nameTagRoot.detachChild(q);
+	}
+
         TextLabel2D label = new TextLabel2D(name);
         q = label.getBillboard(0.3f);
+        q.setLocalTranslation(0, height, 0);
 
-	Vector3f translation = new Vector3f();
-
-	cell.getLocalTransform().getTranslation(translation);
-
-	System.out.println("CELL TRANSLATION " + translation);
-        q.setLocalTranslation(translation.getX(), translation.getY() + height, translation.getZ());
-
-        //q.setLocalTranslation(0f, 2f, 0f);
         Matrix3f rot = new Matrix3f();
         rot.fromAngleAxis((float) Math.PI, new Vector3f(0f,1f,0f));
         q.setLocalRotation(rot);
 
-        nameTagRoot = new Node();
         nameTagRoot.attachChild(q);
 
-        ZBufferState zbuf = (ZBufferState) worldManager.getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-        zbuf.setEnabled(true);
-        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-        nameTagRoot.setRenderState(zbuf);
-
-        labelEntity.addComponent(RenderComponent.class, worldManager.getRenderManager().createRenderComponent(nameTagRoot));
-        worldManager.addEntity(labelEntity);
-
-	if (localTranslation != null) {
-	    nameTagRoot.setLocalTranslation(localTranslation);
-            worldManager.addToUpdateList(nameTagRoot);
-	}
+	Vector3f pos = new Vector3f();
+	cell.getLocalTransform().getTranslation(pos);
+	nameTagRoot.setLocalTranslation(pos);
+	ClientContextJME.getWorldManager().addToUpdateList(nameTagRoot);
     }
 
 }
