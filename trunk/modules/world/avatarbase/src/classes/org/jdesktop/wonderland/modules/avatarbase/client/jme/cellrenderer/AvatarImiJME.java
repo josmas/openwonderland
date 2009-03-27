@@ -352,5 +352,4 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         }
     }
 
-
 }
