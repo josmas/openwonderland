@@ -17,12 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
-import com.jme.math.Vector2f;
+import java.awt.Component;
 import java.beans.PropertyChangeListener;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
@@ -60,37 +57,6 @@ public class HUDInputDialog extends HUDComponent2D {
     private void initializeDialog() {
         if (dialogImpl == null) {
             dialogImpl = new HUDInputDialogImpl(null, false);
-
-            try {
-                logger.log(Level.FINE, "creating WindowSwing: " + dialogImpl.getWidth() + "x" + dialogImpl.getHeight());
-                window = new WindowSwing(app, dialogImpl.getWidth(), dialogImpl.getHeight(),
-                        false, new Vector2f(0.02f, 0.02f));
-                window.setComponent(dialogImpl.getContentPane());
-                //TODO: nigel: view = window.getPrimaryView();
-                HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
-                mainHUD.addComponent(this);
-                this.setLocation(500, 300);
-                this.setSize(dialogImpl.getWidth(), dialogImpl.getHeight() - 20);
-               //TODO: nigel: window.setVisible(true);
-                this.setVisible(true);
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "failed to create HUD dialog: " + e);
-            }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setVisible(boolean visible) {
-        if (visible == false) {
-            // hack to make the view go away
-            view.setVisibleUser(false);
-            view.setOrtho(false);
-            //TODO: nigel: window.setVisible(false);
-        } else {
-            super.setVisible(visible);
         }
     }
 
@@ -140,5 +106,9 @@ public class HUDInputDialog extends HUDComponent2D {
      */
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         dialogImpl.removePropertyChangeListener(listener);
+    }
+
+    public Component getComponent() {
+        return dialogImpl;
     }
 }
