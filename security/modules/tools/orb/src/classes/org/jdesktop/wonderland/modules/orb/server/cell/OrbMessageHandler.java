@@ -63,7 +63,6 @@ import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbStartCallMessage;
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**

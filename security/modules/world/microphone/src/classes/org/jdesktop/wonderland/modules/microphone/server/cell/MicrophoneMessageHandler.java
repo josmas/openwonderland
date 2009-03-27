@@ -64,7 +64,6 @@ import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneCellMO;
 
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**

@@ -19,8 +19,9 @@ package org.jdesktop.wonderland.modules.security.common;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -30,17 +31,16 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author jkaplan
  */
 @XmlRootElement(name="permissions-set")
-public class PermissionsSet implements Serializable {
-    private Set<Permissions> permissions      = new LinkedHashSet<Permissions>();
-    private Set<Principal> owners             = new LinkedHashSet<Principal>();
-    private Set<ActionDTO> allPermissions     = new LinkedHashSet<ActionDTO>();
-    private Set<ActionDTO> defaultPermissions = new LinkedHashSet<ActionDTO>();
+public class CellPermissions implements Serializable {
+    private SortedSet<Permission> permissions = new TreeSet<Permission>();
+    private Set<Principal> owners             = new TreeSet<Principal>();
+    private Set<ActionDTO> allPermissions     = new TreeSet<ActionDTO>();
 
-    public PermissionsSet() {
+    public CellPermissions() {
     }
 
     @XmlTransient
-    public Set<Permissions> getPermissions() {
+    public Set<Permission> getPermissions() {
         return permissions;
     }
 
@@ -50,22 +50,17 @@ public class PermissionsSet implements Serializable {
     }
 
     @XmlTransient
-    public Set<ActionDTO> getAllPermissions() {
+    public Set<ActionDTO> getAllActions() {
         return allPermissions;
     }
 
-    @XmlTransient
-    public Set<ActionDTO> getDefaultPermissions() {
-        return defaultPermissions;
-    }
-
     @XmlElement
-    public Permissions[] getPermissionsInternal() {
-        return permissions.toArray(new Permissions[0]);
+    public Permission[] getPermissionsInternal() {
+        return permissions.toArray(new Permission[0]);
     }
 
-    public void setPermissionsInternal(Permissions[] permissions) {
-        this.permissions = new LinkedHashSet<Permissions>();
+    public void setPermissionsInternal(Permission[] permissions) {
+        this.permissions = new TreeSet<Permission>();
         this.permissions.addAll(Arrays.asList(permissions));
     }
 
@@ -75,27 +70,17 @@ public class PermissionsSet implements Serializable {
     }
 
     public void setOwnersInternal(Principal[] owners) {
-        this.owners = new LinkedHashSet<Principal>();
+        this.owners = new TreeSet<Principal>();
         this.owners.addAll(Arrays.asList(owners));
     }
 
     @XmlElement
-    public ActionDTO[] getAllPermissionsInternal() {
+    public ActionDTO[] getAllActionsInternal() {
         return allPermissions.toArray(new ActionDTO[0]);
     }
 
-    public void setAllPermissionsInternal(ActionDTO[] defaultPermissions) {
-        this.allPermissions = new LinkedHashSet<ActionDTO>();
+    public void setAllActionsInternal(ActionDTO[] defaultPermissions) {
+        this.allPermissions = new TreeSet<ActionDTO>();
         this.allPermissions.addAll(Arrays.asList(defaultPermissions));
-    }
-
-    @XmlElement
-    public ActionDTO[] getDefaultPermissionsInternal() {
-        return defaultPermissions.toArray(new ActionDTO[0]);
-    }
-
-    public void setDefaultPermissionsInternal(ActionDTO[] defaultPermissions) {
-        this.defaultPermissions = new LinkedHashSet<ActionDTO>();
-        this.defaultPermissions.addAll(Arrays.asList(defaultPermissions));
     }
 }

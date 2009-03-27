@@ -34,7 +34,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -57,8 +59,11 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.OKMessage;
+import org.jdesktop.wonderland.common.security.annotation.Actions;
 import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
+import org.jdesktop.wonderland.common.cell.security.ModifyAction;
+import org.jdesktop.wonderland.common.cell.security.ViewAction;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
@@ -71,6 +76,7 @@ import org.jdesktop.wonderland.server.state.PositionServerStateHelper;
  * @author paulby
  */
 @ExperimentalAPI
+@Actions({ViewAction.class, ModifyAction.class})
 public abstract class CellMO implements ManagedObject, Serializable {
 
     private ManagedReference<CellMO> parentRef=null;
@@ -105,7 +111,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
     private boolean isMovable=false;            // Is this cell movable
     private boolean isParentMovable = false;    // Is a parent of this cell movable
     private HashSet<TransformChangeListenerSrv> transformChangeListeners=null;
-    
+
+    private final Set<ComponentChangeListenerSrv> componentChangeListeners =
+            new LinkedHashSet<ComponentChangeListenerSrv>();
+
     /** Default constructor, used when the cell is created via WFS */
     public CellMO() {
         this.localBounds = null;
@@ -543,13 +552,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         if (getComponent(ChannelComponentMO.class)!=null)
             return;
 
-        if (parentRef==null) {
-            // Root node
-            addComponent(new ChannelComponentImplMO(this));
-        } else {
-            // Not a root node
-            addComponent(new ChannelComponentRefMO(this));
-        }
+        addComponent(new ChannelComponentMO(this));
     }
 
     /**
@@ -842,7 +845,15 @@ public abstract class CellMO implements ManagedObject, Serializable {
             return null;
         return (T) comp.get();
     }
-    
+
+    /**
+     * Get all cell components associated with this cell
+     * @return a collection of ManagedReferences to cell components
+     */
+    public Collection<ManagedReference<CellComponentMO>> getAllComponentRefs() {
+        return components.values();
+    }
+
     /**
      * Add a component to this cell. Only a single instance of each component
      * class can be added to a cell. Adding duplicate components will result in
@@ -862,6 +873,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 AppContext.getDataManager().createReference(component));
         if (previous != null)
             throw new IllegalArgumentException("Adding duplicate component of class " + component.getClass().getName());
+
+        // Notify listeners -- note the component is not live at this point
+        fireComponentChangeEvent(ComponentChangeListenerSrv.ChangeType.ADDED,
+                                 component);
 
         // If the cell is live, then tell the clients to create all of the
         // components.
@@ -898,11 +913,52 @@ public abstract class CellMO implements ManagedObject, Serializable {
         Class clazz = CellComponentMO.getLookupClass(component.getClass());
         components.remove(clazz);
 
+        // Notify listeners
+        fireComponentChangeEvent(ComponentChangeListenerSrv.ChangeType.REMOVED,
+                                 component);
+
         // Finally, tell all of the clients to remove the component, if there
         // is a client-side class
         String clientClass = component.getClientClass();
         if (clientClass != null) {
             sendCellMessage(null, CellClientComponentMessage.newRemoveMessage(cellID, clientClass));
+        }
+    }
+
+    /**
+     * Add a component change listener to this cell.  This listener will be
+     * notified any time a component is added or removed from this cell.
+     * The listener can either be a Serializable object or and instance of
+     * ManagedObject.
+     * @param listener the listener to add
+     */
+    public void addComponentChangeListener(ComponentChangeListenerSrv listener) {
+        // wrap managed objects
+        if (listener instanceof ManagedObject) {
+            listener = new ManagedComponentChangeListenerSrv(listener);
+        }
+
+        componentChangeListeners.add(listener);
+    }
+
+    /**
+     * Remove a component change listener.
+     * @param listener the listener to remove
+     */
+    public void removeComponentChangeListener(ComponentChangeListenerSrv listener) {
+        componentChangeListeners.remove(listener);
+    }
+
+    /**
+     * Notification of a component change event
+     * @param type the type of event (addition or removal)
+     * @param component the component that was added or removed
+     */
+    protected void fireComponentChangeEvent(ComponentChangeListenerSrv.ChangeType type,
+                                            CellComponentMO component)
+    {
+        for (ComponentChangeListenerSrv listener : componentChangeListeners) {
+            listener.componentChanged(this, type, component);
         }
     }
 
@@ -1141,6 +1197,43 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 logger.log(Level.WARNING, "Cannot find component class", excp);
                 sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
             }
+        }
+    }
+
+    /** Wrapper to use a managed object to notify a listener */
+    private static class ManagedComponentChangeListenerSrv
+        implements ComponentChangeListenerSrv
+    {
+        private ManagedReference<ComponentChangeListenerSrv> ref;
+
+        public ManagedComponentChangeListenerSrv(ComponentChangeListenerSrv listener) {
+            ref = AppContext.getDataManager().createReference(listener);
+        }
+
+        public void componentChanged(CellMO cell, ChangeType type,
+                                     CellComponentMO component)
+        {
+            ref.get().componentChanged(cell, type, component);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof ComponentChangeListenerSrv)) {
+                return false;
+            }
+
+            if (o instanceof ManagedComponentChangeListenerSrv) {
+                return ref.equals(((ManagedComponentChangeListenerSrv) o).ref);
+            } else {
+                return ref.get().equals(o);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 83 * hash + (this.ref != null ? this.ref.hashCode() : 0);
+            return hash;
         }
     }
 }

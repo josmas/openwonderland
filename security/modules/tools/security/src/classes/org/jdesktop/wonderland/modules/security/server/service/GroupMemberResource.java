@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.security.server.service;
 
 import com.sun.sgs.kernel.ComponentRegistry;
+import java.io.Serializable;
 import java.util.Set;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.security.Action;
@@ -30,7 +31,7 @@ import org.jdesktop.wonderland.server.security.Resource;
  * or the admin group, but not to others.
  * @author jkaplan
  */
-public class GroupMemberResource implements Resource {
+public class GroupMemberResource implements Resource, Serializable {
     private final String group;
 
     public GroupMemberResource(String group) {

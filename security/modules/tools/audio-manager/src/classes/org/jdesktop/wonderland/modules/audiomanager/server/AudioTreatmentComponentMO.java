@@ -61,7 +61,6 @@ import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;

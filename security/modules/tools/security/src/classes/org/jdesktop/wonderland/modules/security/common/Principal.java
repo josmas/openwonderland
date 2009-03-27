@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author jkaplan
  */
 @XmlRootElement(name="principal")
-public class Principal implements Serializable {
+public class Principal implements Serializable, Comparable {
     public enum Type { USER, GROUP };
 
     private String id;
@@ -90,5 +90,21 @@ public class Principal implements Serializable {
     @Override
     public String toString() {
         return "Principal{" + getType() + ": " + getId() + "}";
+    }
+
+    public int compareTo(Object o) {
+        if (!(o instanceof Principal)) {
+            return 0;
+        }
+
+        Principal op = (Principal) o;
+
+        // first compare types
+        if (getType() != op.getType()) {
+            return getType().compareTo(op.getType());
+        } else {
+            // if the types are the same, compare ids
+            return getId().compareTo(op.getId());
+        }
     }
 }

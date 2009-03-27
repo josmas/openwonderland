@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.server.auth.ServerAuthentication;
  * web services API.
  * @author jkaplan
  */
-class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
+public class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
     private static final Logger logger =
             Logger.getLogger(WebServiceUserPrincipalResolver.class.getName());
     
@@ -55,14 +55,10 @@ class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
     // lasts for a maximum of 10 minutes before being queried again
     private final TimeBasedCache<String, Set<Principal>> cache;
 
-    public static WebServiceUserPrincipalResolver getInstance() {
-        return SingletonHolder.INSTANCE;
-    }
-
     /**
      * Singleton constructor -- use getInstance() instead
      */
-    protected WebServiceUserPrincipalResolver() {
+    public WebServiceUserPrincipalResolver() {
         String cacheTime = System.getProperty(CACHE_TIMEOUT_PROP, 
                                               CACHE_TIMEOUT_DEFAULT);
         cache = new TimeBasedCache<String, Set<Principal>>(Long.parseLong(cacheTime));
@@ -129,10 +125,5 @@ class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
         }
 
         return baseURL;
-    }
-
-    private static final class SingletonHolder {
-        private static final WebServiceUserPrincipalResolver INSTANCE =
-                new WebServiceUserPrincipalResolver();
     }
 }

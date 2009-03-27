@@ -256,51 +256,11 @@ public class WonderlandSessionListener
         ResourceMap request = new ResourceMap();
         request.put(resource.getId(), am);
 
-        // create a binding for the listener so we can retrieve it in the
-        // SecureTask
-        final String bindingName = getBindingName();
-
         // perform the security check
-        security.doSecure(request, new SecureTask() {
-            public void run(ResourceMap granted) {
-                ActionMap am = granted.get(resource.getId());
-
-                // make sure all actions were granted
-                Set<Action> grantedActions = new HashSet<Action>(am.values());
-
-                // get the binding for the session listener
-                WonderlandSessionListener listener = (WonderlandSessionListener)
-                        AppContext.getDataManager().getBinding(bindingName);
-
-                // use the client ID to get the values we need to pass in
-                // to the handler
-                SecureClientConnectionHandler handler =
-                        (SecureClientConnectionHandler) listener.getHandler(clientID);
-                WonderlandClientSender sender = listener.senders.get(clientID);
-                WonderlandClientID wID = listener.getWonderlandClientID();
-
-                // test if the request was granted -- we do this by simply
-                // comparing the size of the requested actions set to the
-                // size of the granted action set, since we don't care
-                // which specific actions were granted or not
-                if (actions.size() == grantedActions.size()) {
-                    // request was accepted -- continue processing
-                    handler.messageReceived(sender, wID, message);
-                } else {
-                    // the message was rejected -- notify the handler
-                    logger.fine("Session " + listener.getSession().getName() +
-                                " permission denied for message " + message);
-
-                    if (handler.messageRejected(sender, wID, message, actions,
-                                                grantedActions))
-                    {
-                        // the handler isn't sending an error, so we need to
-                        listener.sendError(message.getMessageID(), clientID,
-                                           "Permission denied.");
-                    }
-                }
-            }
-        });
+        security.doSecure(request, new ReceiveSecureTask(resource.getId(),
+                                                         clientID, actions,
+                                                         message,
+                                                         getBindingName()));
     }
 
     /**
@@ -514,38 +474,11 @@ public class WonderlandSessionListener
         ResourceMap request = new ResourceMap();
         request.put(resource.getId(), am);
 
-        // create a binding for the listener so we can retrieve it in the
-        // SecureTask
-        final String bindingName = getBindingName();
-
         // perform the security check
-        security.doSecure(request, new SecureTask() {
-            public void run(ResourceMap granted) {
-                ActionMap am = granted.get(resource.getId());
-                
-                // get the binding for the session listener
-                WonderlandSessionListener listener = (WonderlandSessionListener)
-                        AppContext.getDataManager().getBinding(bindingName);
-
-                if (am.containsKey(ConnectAction.getInstance().getName())) {
-                    // request was accepted -- continue processing
-                    listener.finishAttach(messageID, type, properties, ref);
-                } else {
-                    logger.fine("Session " + listener.getSession().getName() +
-                                " permission denied for client type " + type);
-
-                    // notify the handler of the rejection
-                    SecureClientConnectionHandler handler =
-                            (SecureClientConnectionHandler) ref.get();
-                    WonderlandClientID clientID = listener.getWonderlandClientID();
-                    handler.connectionRejected(clientID);
-
-                    // send an error back to the sender
-                    listener.sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
-                                       "Permission denied for " + type);
-                }
-            }
-        });
+        security.doSecure(request, new AttachSecureTask(resource.getId(),
+                                                        messageID, type,
+                                                        properties, ref,
+                                                        getBindingName()));
     }
 
     /**
@@ -1113,5 +1046,109 @@ public class WonderlandSessionListener
     static class ClientSessionSet extends HashSet<ManagedReference<ClientSession>> 
             implements ManagedObject
     {
+    }
+
+    static class ReceiveSecureTask implements SecureTask, Serializable {
+        private String resourceID;
+        private short clientID;
+        private Set<Action> actions;
+        private Message message;
+        private String bindingName;
+
+        public ReceiveSecureTask(String resourceID, short clientID,
+                                 Set<Action> actions, Message message,
+                                 String bindingName)
+        {
+            this.resourceID = resourceID;
+            this.clientID = clientID;
+            this.actions = actions;
+            this.message = message;
+            this.bindingName = bindingName;
+        }
+
+        public void run(ResourceMap granted) {
+            ActionMap am = granted.get(resourceID);
+
+            // make sure all actions were granted
+            Set<Action> grantedActions = new HashSet<Action>(am.values());
+
+            // get the binding for the session listener
+            WonderlandSessionListener listener = (WonderlandSessionListener)
+                    AppContext.getDataManager().getBinding(bindingName);
+
+            // use the client ID to get the values we need to pass in
+            // to the handler
+            SecureClientConnectionHandler handler =
+                    (SecureClientConnectionHandler) listener.getHandler(clientID);
+            WonderlandClientSender sender = listener.senders.get(clientID);
+            WonderlandClientID wID = listener.getWonderlandClientID();
+
+            // test if the request was granted -- we do this by simply
+            // comparing the size of the requested actions set to the
+            // size of the granted action set, since we don't care
+            // which specific actions were granted or not
+            if (actions.size() == grantedActions.size()) {
+                // request was accepted -- continue processing
+                handler.messageReceived(sender, wID, message);
+            } else {
+                // the message was rejected -- notify the handler
+                logger.fine("Session " + listener.getSession().getName() +
+                        " permission denied for message " + message);
+
+                if (handler.messageRejected(sender, wID, message, actions,
+                        grantedActions)) {
+                    // the handler isn't sending an error, so we need to
+                    listener.sendError(message.getMessageID(), clientID,
+                            "Permission denied.");
+                }
+            }
+        }
+    }
+
+    private static class AttachSecureTask implements SecureTask, Serializable {
+        private String resourceID;
+        private MessageID messageID;
+        private ConnectionType type;
+        private Properties properties;
+        private ClientHandlerRef ref;
+        private String bindingName;
+
+        public AttachSecureTask(String resourceID, MessageID messageID,
+                                ConnectionType type, Properties properties,
+                                ClientHandlerRef ref, String bindingName)
+        {
+            this.resourceID = resourceID;
+            this.messageID = messageID;
+            this.type = type;
+            this.properties = properties;
+            this.ref = ref;
+            this.bindingName = bindingName;
+        }
+
+        public void run(ResourceMap granted) {
+            ActionMap am = granted.get(resourceID);
+
+            // get the binding for the session listener
+            WonderlandSessionListener listener = (WonderlandSessionListener)
+                    AppContext.getDataManager().getBinding(bindingName);
+
+            if (am.containsKey(ConnectAction.getInstance().getName())) {
+                // request was accepted -- continue processing
+                listener.finishAttach(messageID, type, properties, ref);
+            } else {
+                logger.fine("Session " + listener.getSession().getName() +
+                        " permission denied for client type " + type);
+
+                // notify the handler of the rejection
+                SecureClientConnectionHandler handler =
+                        (SecureClientConnectionHandler) ref.get();
+                WonderlandClientID clientID = listener.getWonderlandClientID();
+                handler.connectionRejected(clientID);
+
+                // send an error back to the sender
+                listener.sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
+                        "Permission denied for " + type);
+            }
+        }
     }
 }

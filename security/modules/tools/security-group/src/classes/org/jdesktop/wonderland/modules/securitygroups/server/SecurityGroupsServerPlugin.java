@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.securitygroups.server;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.annotation.Plugin;
-import org.jdesktop.wonderland.modules.security.server.service.UserPrincipals;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -35,6 +34,5 @@ public class SecurityGroupsServerPlugin implements ServerPlugin {
     public void initialize() {
         CommsManager cm = WonderlandContext.getCommsManager();
         cm.registerClientHandler(new SecurityCacheConnectionHandler());
-        UserPrincipals.registerResolver(WebServiceUserPrincipalResolver.getInstance());
     }
 }

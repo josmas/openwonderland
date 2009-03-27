@@ -19,8 +19,17 @@ package org.jdesktop.wonderland.modules.security.client;
 
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.modules.security.common.ActionDTO;
+import org.jdesktop.wonderland.modules.security.common.CellPermissions;
+import org.jdesktop.wonderland.modules.security.common.Permission;
+import org.jdesktop.wonderland.modules.security.common.Principal;
 import org.jdesktop.wonderland.modules.security.common.SecurityComponentServerState;
+import org.jdesktop.wonderland.common.cell.security.ModifyAction;
+import org.jdesktop.wonderland.common.cell.security.ViewAction;
 
 /**
  * The cell component factory for the sample cell component.
@@ -37,6 +46,28 @@ public class SecurityComponentFactory implements CellComponentFactorySPI
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
         SecurityComponentServerState state = new SecurityComponentServerState();
+
+        CellPermissions perms = new CellPermissions();
+
+        // add the current user as an owner
+        ServerSessionManager primarySM = LoginManager.getPrimary();
+        if (primarySM != null) {
+            WonderlandSession primarySession = primarySM.getPrimarySession();
+            if (primarySession != null) {
+                Principal owner = new Principal(primarySession.getUserID().getUsername(),
+                                                Principal.Type.USER);
+                perms.getOwners().add(owner);
+            }
+        }
+
+        // add view permissions for all users
+        Principal p = new Principal("users", Principal.Type.GROUP);
+        ActionDTO view = new ActionDTO(new ViewAction());
+        perms.getPermissions().add(new Permission(p, view, Permission.Access.GRANT));
+        ActionDTO modify = new ActionDTO(new ModifyAction());
+        perms.getPermissions().add(new Permission(p, modify, Permission.Access.DENY));
+
+        state.setPermissions(perms);
         return (T) state;
     }
 
