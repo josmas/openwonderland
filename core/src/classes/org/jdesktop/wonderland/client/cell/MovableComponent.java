@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
@@ -254,6 +255,10 @@ public class MovableComponent extends CellComponent {
      */
     class MessageThrottle extends Thread {
         private CellMessage msg;
+
+        public MessageThrottle() {
+            super(ThreadManager.getThreadGroup(), "MessageThrottle");
+        }
 
         public void send(CellMessage msg) {
             synchronized(this) {
