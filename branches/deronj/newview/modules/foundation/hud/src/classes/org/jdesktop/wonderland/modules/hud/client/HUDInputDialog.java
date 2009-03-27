@@ -20,8 +20,7 @@ package org.jdesktop.wonderland.modules.hud.client;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.modules.appbase.client.App2D;
-import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 
 /**
  * A simple dialog for requesting a text value from the user.
@@ -32,22 +31,19 @@ public class HUDInputDialog extends HUDComponent2D {
 
     private static final Logger logger = Logger.getLogger(HUDInputDialog.class.getName());
     private HUDInputDialogImpl dialogImpl;
-    private WindowSwing window;
-    private App2D app;
 
-    public HUDInputDialog(App2D app) {
-        super();
-        this.app = app;
+    public HUDInputDialog(View2DEntity view) {
+        super(view);
         initializeDialog();
     }
 
-    public HUDInputDialog(App2D app, String label) {
-        this(app);
+    public HUDInputDialog(View2DEntity view, String label) {
+        this(view);
         dialogImpl.setLabelText(label);
     }
 
-    public HUDInputDialog(App2D app, String label, String value) {
-        this(app, label);
+    public HUDInputDialog(View2DEntity view, String label, String value) {
+        this(view, label);
         dialogImpl.setValueText(value);
     }
 
@@ -109,6 +105,6 @@ public class HUDInputDialog extends HUDComponent2D {
     }
 
     public Component getComponent() {
-        return dialogImpl;
+        return dialogImpl.getContentPane();
     }
 }
