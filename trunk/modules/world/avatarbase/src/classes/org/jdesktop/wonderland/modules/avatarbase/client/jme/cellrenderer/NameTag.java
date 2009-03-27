@@ -34,6 +34,8 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
+import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 
 import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
 
@@ -48,36 +50,40 @@ import imi.character.CharacterMotionListener;
 /**
  * @author jprovino
  */
-public class NameTag {
+public class NameTag implements CellMoveListener {
     
     private Entity entity;
 
     private final Cell cell;
     private final String name;
+    private final float height;
 
-    public NameTag(Cell cell, String name) {
+    public NameTag(Cell cell, String name, float height) {
 	this.cell = cell;
 	this.name = name;
+	this.height = height;
+
+	MovableComponent component = cell.getComponent(MovableComponent.class);
+
+	System.out.println("MOVABLE COMPONENT FOR " + cell.getName());
+
+	if (component != null) {
+	    component.addServerCellMoveListener(this);
+	}
+
+	setNameTag(name);
     }
 
-    private CharacterMotionListener characterMotionListener;
+    public void cellMoved(CellTransform transform, CellMoveSource source) {
+	System.out.println("CELL MOVED " + cell.getName());
 
-    private void addGlobalListener() {
-        characterMotionListener = new CharacterMotionListener() {
-            public void transformUpdate(Vector3f translation, PMatrix rotation) {
-                ((MovableAvatarComponent)cell.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
-
-                final Vector3f pos = new Vector3f(translation);
-                SceneWorker.addWorker(new WorkCommit() {
-                    public void commit() {
-			setLocalTranslation(pos);
-                    }
-                });
-            }
-        };
+	Vector3f translation = new Vector3f();
+	transform.getTranslation(translation);
+	setLocalTranslation(translation);
     }
 
     public void setLocalTranslation(Vector3f pos) {
+	System.out.println("Set local pos " + nameTagRoot + " " + pos);
 	nameTagRoot.setLocalTranslation(pos);
 	ClientContextJME.getWorldManager().addToUpdateList(nameTagRoot);
     }
@@ -115,9 +121,17 @@ public class NameTag {
 	    nameTagRoot.detachChild(q);
             worldManager.addToUpdateList(nameTagRoot);
 	}
+
+	MovableComponent component = cell.getComponent(MovableComponent.class);
+
+	if (component != null) {
+	    component.removeServerCellMoveListener(this);
+	}
     }
 
     public void setNameTag(String name) {
+	System.out.println("SETTING  NAME TAG TO " + name);
+
 	WorldManager worldManager = ClientContextJME.getWorldManager();
 
 	Vector3f localTranslation = null;
@@ -128,6 +142,7 @@ public class NameTag {
 	    nameTagRoot.detachChild(q);
             worldManager.addToUpdateList(nameTagRoot);
 	    localTranslation = nameTagRoot.getLocalTranslation();
+	    System.out.println("TRANSLATION:  " + localTranslation);
 	}
 
 	labelEntity = new Entity("NameTag");
@@ -138,7 +153,8 @@ public class NameTag {
 
 	cell.getLocalTransform().getTranslation(translation);
 
-        q.setLocalTranslation(translation.getX(), translation.getY() + (float) .17, translation.getZ());
+	System.out.println("CELL TRANSLATION " + translation);
+        q.setLocalTranslation(translation.getX(), translation.getY() + height, translation.getZ());
 
         //q.setLocalTranslation(0f, 2f, 0f);
         Matrix3f rot = new Matrix3f();
@@ -154,13 +170,12 @@ public class NameTag {
         nameTagRoot.setRenderState(zbuf);
 
         labelEntity.addComponent(RenderComponent.class, worldManager.getRenderManager().createRenderComponent(nameTagRoot));
-        ClientContextJME.getWorldManager().addEntity(labelEntity);
+        worldManager.addEntity(labelEntity);
 
 	if (localTranslation != null) {
 	    nameTagRoot.setLocalTranslation(localTranslation);
+            worldManager.addToUpdateList(nameTagRoot);
 	}
-
-        worldManager.addToUpdateList(nameTagRoot);
     }
 
 }
