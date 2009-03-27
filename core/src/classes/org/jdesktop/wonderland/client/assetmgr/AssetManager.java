@@ -41,6 +41,7 @@ import org.jdesktop.wonderland.client.assetmgr.modules.ModuleAssetRepositoryFact
 import org.jdesktop.wonderland.common.AssetType;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.ThreadManager;
 
 /**
  * AssetManager provides services for downloading and maintaining the latest
@@ -664,7 +665,7 @@ public class AssetManager {
         final Thread threads[] = new Thread[uris.length];
         for (int i = 0; i < uris.length; i++) {
             final int j = i;
-            threads[i] = new Thread() {
+            threads[i] = new Thread(ThreadManager.getThreadGroup(), "AssetMgrDownloader") {
                 @Override
                 public void run() {
                     Logger logger = Logger.getLogger(AssetManager.class.getName());
