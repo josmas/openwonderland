@@ -18,18 +18,17 @@
 package org.jdesktop.wonderland.modules.security.server.service;
 
 import java.util.Set;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.security.common.Principal;
 
 /**
- * A registry class where providers can register a resolver.
+ * A factory class for resolving a username into a set of principals
  * @author jkaplan
  */
 public class UserPrincipals {
-    private static final Logger logger =
-            Logger.getLogger(UserPrincipals.class.getName());
-
-    private static UserPrincipalResolver resolver;
+    private static final String RESOLVER_CLASS_PROP =
+            UserPrincipals.class.getName() + ".UserPrincipalResolver";
+    private static final String DEFAULT_RESOLVER_CLASS =
+            "org.jdesktop.wonderland.modules.securitygroups.server.WebServiceUserPrincipalResolver";
 
     /**
      * Get all principals (user and group) for the given user name. The blocking
@@ -45,19 +44,29 @@ public class UserPrincipals {
      * is set to false, null indicates that the values can't be read.
      */
     public static Set<Principal> getUserPrincipals(String username, boolean blocking) {
-        return resolver.getPrincipals(username, blocking);
+        return SingletonHolder.INSTANCE.getPrincipals(username, blocking);
     }
 
     /**
-     * Register a resolver
-     * @param resolver the resolver to use
-     * @throws IllegalStateException if the resolver is already set
+     * Create a resolver by class name
+     * @return the created resolver
      */
-    public synchronized static void registerResolver(UserPrincipalResolver resolver) {
-        if (UserPrincipals.resolver != null) {
-            throw new IllegalStateException("Resolver already registered");
+    private static UserPrincipalResolver createResolver() {
+        String clazz = System.getProperty(RESOLVER_CLASS_PROP,
+                                          DEFAULT_RESOLVER_CLASS);
+        try {
+            Class c = Class.forName(clazz);
+            return (UserPrincipalResolver) c.newInstance();
+        } catch (InstantiationException ex) {
+            throw new IllegalStateException("Error instantiating " + clazz, ex);
+        } catch (IllegalAccessException ex) {
+            throw new IllegalStateException("Illegal access to " + clazz, ex);
+        } catch (ClassNotFoundException ex) {
+            throw new IllegalStateException("Class not found " + clazz, ex);
         }
+    }
 
-        UserPrincipals.resolver = resolver;
+    private static final class SingletonHolder {
+        private static final UserPrincipalResolver INSTANCE = createResolver();
     }
 }

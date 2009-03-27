@@ -17,6 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.security.server.service;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.Task;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.impl.util.AbstractService.Version;
@@ -28,10 +32,11 @@ import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
+import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -177,9 +182,15 @@ public class SecurityService extends AbstractService {
             // this transaction
             task.run(grant);
         } else {
-            // schedule the request in a separate thread
-            ScheduledRequest req = new ScheduledRequest(id, task, grant,
-                                                        schedule);
+            // schedule the request in a separate thread.  First store
+            // a task that can be referrred to later once the calculation
+            // is complete
+            RunSecureTask runTask = new RunSecureTask(task);
+            ManagedReference<RunSecureTask> runTaskRef =
+                    AppContext.getDataManager().createReference(runTask);
+
+            ScheduledRequest req = new ScheduledRequest(id, runTaskRef.getId(),
+                                                        grant, schedule);
             ctxFactory.joinTransaction().add(req);
         }
     }
@@ -258,16 +269,16 @@ public class SecurityService extends AbstractService {
 
     class ScheduledRequest implements Runnable {
         private WonderlandServerIdentity identity;
-        private SecureTask task;
+        private BigInteger taskId;
         private ResourceMap grant;
         private ResourceMap schedule;
 
         public ScheduledRequest(WonderlandServerIdentity identity,
-                                SecureTask task, ResourceMap grant,
+                                BigInteger taskId, ResourceMap grant,
                                 ResourceMap schedule)
         {
             this.identity = identity;
-            this.task = task;
+            this.taskId = taskId;
             this.grant = grant;
             this.schedule = schedule;
         }
@@ -297,7 +308,7 @@ public class SecurityService extends AbstractService {
             try {
                 // response now has the proper set of permissions, so create
                 // a new transaction to call back into the secure task
-                transactionScheduler.runTask(new RunSecureTask(task, grant),
+                transactionScheduler.runTask(new SecureTaskKernelRunner(taskId, grant),
                                              identity);
             } catch (Exception ex) {
                 logger.logThrow(Level.WARNING, ex, "Unable to run secure task");
@@ -305,12 +316,12 @@ public class SecurityService extends AbstractService {
         }
     }
 
-    static class RunSecureTask implements KernelRunnable {
-        private SecureTask task;
+    private class SecureTaskKernelRunner implements KernelRunnable {
+        private BigInteger taskId;
         private ResourceMap response;
 
-        public RunSecureTask(SecureTask task, ResourceMap response) {
-            this.task = task;
+        public SecureTaskKernelRunner(BigInteger taskId, ResourceMap response) {
+            this.taskId = taskId;
             this.response = response;
         }
 
@@ -319,7 +330,52 @@ public class SecurityService extends AbstractService {
         }
 
         public void run() throws Exception {
-            task.run(response);
+            // create a managed reference from the task id we were given
+            // earlier
+            ManagedReference<RunSecureTask> taskRef = (ManagedReference<RunSecureTask>)
+                    dataService.createReferenceForId(taskId);
+            RunSecureTask task = taskRef.getForUpdate();
+            
+            // set the response and run the task
+            task.setGranted(response);
+            task.run();
+
+            // clean up the task in the data store
+            dataService.removeObject(task);
+        }
+    }
+
+    static class RunSecureTask implements Task, ManagedObject, Serializable {
+        private SecureTask task;
+        private ResourceMap granted;
+
+        public RunSecureTask(SecureTask task) {
+            // wrap the task if it is a mananged object
+            if (task instanceof ManagedObject) {
+                task = new SecureTaskWrapper(task);
+            }
+
+            this.task = task;
+        }
+
+        public void setGranted(ResourceMap granted) {
+            this.granted = granted;
+        }
+
+        public void run() throws Exception {
+            task.run(granted);
+        }
+    }
+
+    static class SecureTaskWrapper implements SecureTask {
+        private ManagedReference<SecureTask> taskRef;
+
+        public SecureTaskWrapper(SecureTask task) {
+            taskRef = AppContext.getDataManager().createReference(task);
+        }
+
+        public void run(ResourceMap granted) {
+            taskRef.get().run(granted);
         }
     }
 }

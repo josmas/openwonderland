@@ -19,25 +19,38 @@
 package org.jdesktop.wonderland.modules.security.client;
 
 import java.awt.Component;
-import java.util.Enumeration;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.ListModel;
+import javax.swing.JTable;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
 import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.security.common.PermissionsSet;
+import org.jdesktop.wonderland.modules.security.common.ActionDTO;
+import org.jdesktop.wonderland.modules.security.common.CellPermissions;
+import org.jdesktop.wonderland.modules.security.common.Permission;
 import org.jdesktop.wonderland.modules.security.common.Principal;
 import org.jdesktop.wonderland.modules.security.common.Principal.Type;
 import org.jdesktop.wonderland.modules.security.common.SecurityComponentServerState;
@@ -51,17 +64,27 @@ public class SecurityComponentProperties extends JPanel
         implements CellComponentPropertiesSPI
 {
     private CellPropertiesEditor editor = null;
-    private DefaultListModel owners;
+    private PermTableModel perms = new PermTableModel();
+    private EditPermsTableModel editPerms = null;
 
     /** Creates new form SecurityComponentProperties */
     public SecurityComponentProperties() {
         // Initialize the GUI
         initComponents();
 
-        ownersList.setCellRenderer(new PrincipalCellRender());
-        ownersList.addListSelectionListener(
-                            new PrincipalSelectionListener(ownersList,
-                                                           ownersRemoveButton));
+        permsTable.setModel(perms);
+        permsTable.getSelectionModel().addListSelectionListener(
+                new RemoveButtonSelectionListener());
+        permsTable.getSelectionModel().addListSelectionListener(
+                new EditButtonSelectionListener());
+        perms.addTableModelListener(new TableDirtyListener());
+
+        editPermsTable.setDefaultRenderer(ActionDTO.class,
+                                          new PermissionTableCellRenderer());
+        editPermsTable.setDefaultRenderer(Permission.Access.class,
+                                          new AccessTableCellRenderer());
+        editPermsTable.setDefaultEditor(Permission.Access.class,
+                                        new AccessTableCellEditor());
 
         addNameTF.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -113,12 +136,7 @@ public class SecurityComponentProperties extends JPanel
                 cellServerState.getComponentServerState(SecurityComponentServerState.class);
 
         // set the lists up based on the model
-        owners = new DefaultListModel();
-        for (Principal p : state.getPermissions().getOwners()) {
-            owners.addElement(owners);
-        }
-        owners.addListDataListener(new ModelChangeListener());
-        ownersList.setModel(owners);
+        perms.fromPermissions(state.getPermissions());
     }
 
     /**
@@ -133,21 +151,10 @@ public class SecurityComponentProperties extends JPanel
             state = new SecurityComponentServerState();
         }
 
-        PermissionsSet perms = toPermissions();
+        CellPermissions out = perms.toPermissions();
 
-        state.setPermissions(perms);
+        state.setPermissions(out);
         cellServerState.addComponentServerState(state);
-    }
-
-    private PermissionsSet toPermissions() {
-        PermissionsSet out = new PermissionsSet();
-
-        for (Enumeration e = owners.elements(); e.hasMoreElements();) {
-            Principal p = (Principal) e.nextElement();
-            out.getOwners().add(p);
-        }
-
-        return out;
     }
 
     /** This method is called from within the constructor to
@@ -169,11 +176,17 @@ public class SecurityComponentProperties extends JPanel
         addOKButton = new javax.swing.JButton();
         addSearchButton = new javax.swing.JButton();
         addBG = new javax.swing.ButtonGroup();
+        editPermsDialog = new javax.swing.JDialog();
+        editPermsOKButton = new javax.swing.JButton();
+        editPermsCancelButton = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        editPermsTable = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
+        addButton = new javax.swing.JButton();
+        removeButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        ownersList = new javax.swing.JList();
-        ownersAddButton = new javax.swing.JButton();
-        ownersRemoveButton = new javax.swing.JButton();
+        permsTable = new javax.swing.JTable();
+        editButton = new javax.swing.JButton();
 
         jLabel2.setText("Type:");
 
@@ -211,25 +224,29 @@ public class SecurityComponentProperties extends JPanel
             .add(addPrincipalDialogLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(addPrincipalDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(addPrincipalDialogLayout.createSequentialGroup()
-                        .add(6, 6, 6)
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(addUserRB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(addGroupRB)
-                        .add(178, 178, 178))
-                    .add(addPrincipalDialogLayout.createSequentialGroup()
-                        .add(jLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(addNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(addSearchButton)
-                        .addContainerGap())
+                    .add(addPrincipalDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(addPrincipalDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(addPrincipalDialogLayout.createSequentialGroup()
+                                .add(6, 6, 6)
+                                .add(jLabel2)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(addUserRB)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(addGroupRB)
+                                .add(178, 178, 178))
+                            .add(addPrincipalDialogLayout.createSequentialGroup()
+                                .add(jLabel3)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(addNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(addSearchButton)
+                                .addContainerGap()))
+                        .add(org.jdesktop.layout.GroupLayout.TRAILING, addPrincipalDialogLayout.createSequentialGroup()
+                            .add(addCancelButton)
+                            .addContainerGap()))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, addPrincipalDialogLayout.createSequentialGroup()
                         .add(addOKButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(addCancelButton))))
+                        .add(99, 99, 99))))
         );
         addPrincipalDialogLayout.setVerticalGroup(
             addPrincipalDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -239,34 +256,132 @@ public class SecurityComponentProperties extends JPanel
                     .add(jLabel3)
                     .add(addNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(addSearchButton))
-                .add(6, 6, 6)
-                .add(addPrincipalDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(addUserRB)
-                    .add(addGroupRB))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(addPrincipalDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addCancelButton)
-                    .add(addOKButton)))
+                .add(addPrincipalDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, addPrincipalDialogLayout.createSequentialGroup()
+                        .add(6, 6, 6)
+                        .add(addPrincipalDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(jLabel2)
+                            .add(addUserRB)
+                            .add(addGroupRB))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(addOKButton))
+                    .add(addCancelButton))
+                .addContainerGap())
         );
 
-        jLabel1.setText("Owners:");
-
-        ownersList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        jScrollPane1.setViewportView(ownersList);
-
-        ownersAddButton.setText("Add...");
-        ownersAddButton.addActionListener(new java.awt.event.ActionListener() {
+        editPermsOKButton.setText("OK");
+        editPermsOKButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ownersAddButtonActionPerformed(evt);
+                editPermsOKButtonActionPerformed(evt);
             }
         });
 
-        ownersRemoveButton.setText("Remove");
-        ownersRemoveButton.setEnabled(false);
-        ownersRemoveButton.addActionListener(new java.awt.event.ActionListener() {
+        editPermsCancelButton.setText("Cancel");
+        editPermsCancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ownersRemoveButtonActionPerformed(evt);
+                editPermsCancelButtonActionPerformed(evt);
+            }
+        });
+
+        editPermsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Name", "Permission"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane2.setViewportView(editPermsTable);
+
+        org.jdesktop.layout.GroupLayout editPermsDialogLayout = new org.jdesktop.layout.GroupLayout(editPermsDialog.getContentPane());
+        editPermsDialog.getContentPane().setLayout(editPermsDialogLayout);
+        editPermsDialogLayout.setHorizontalGroup(
+            editPermsDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(editPermsDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(editPermsDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, editPermsDialogLayout.createSequentialGroup()
+                        .add(editPermsCancelButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editPermsOKButton))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        editPermsDialogLayout.setVerticalGroup(
+            editPermsDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, editPermsDialogLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(editPermsDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(editPermsOKButton)
+                    .add(editPermsCancelButton))
+                .addContainerGap())
+        );
+
+        jLabel1.setText("Permissions:");
+
+        addButton.setText("Add...");
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
+
+        removeButton.setText("Remove");
+        removeButton.setEnabled(false);
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeButtonActionPerformed(evt);
+            }
+        });
+
+        permsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Type", "Name", "Owner?", "Permissions"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.Boolean.class, java.lang.String.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, true, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        permsTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jScrollPane1.setViewportView(permsTable);
+
+        editButton.setText("Edit...");
+        editButton.setEnabled(false);
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
             }
         });
 
@@ -277,14 +392,16 @@ public class SecurityComponentProperties extends JPanel
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 189, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(jLabel1)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
+                        .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(ownersRemoveButton)
-                            .add(ownersAddButton)))
-                    .add(jLabel1))
-                .addContainerGap(192, Short.MAX_VALUE))
+                            .add(editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -294,26 +411,27 @@ public class SecurityComponentProperties extends JPanel
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(ownersAddButton)
+                        .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(ownersRemoveButton))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(223, Short.MAX_VALUE))
+                        .add(removeButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editButton))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void ownersAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ownersAddButtonActionPerformed
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         addNameTF.setText("");
         addUserRB.setSelected(true);
+        addPrincipalDialog.pack();
         addPrincipalDialog.setVisible(true);
-    }//GEN-LAST:event_ownersAddButtonActionPerformed
+}//GEN-LAST:event_addButtonActionPerformed
 
-    private void ownersRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ownersRemoveButtonActionPerformed
-        Principal p = (Principal) ownersList.getSelectedValue();
-        if (p != null) {
-            owners.removeElement(p);
-        }
-    }//GEN-LAST:event_ownersRemoveButtonActionPerformed
+    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+        int curRow = permsTable.getSelectedRow();
+        perms.removeRow(curRow);
+}//GEN-LAST:event_removeButtonActionPerformed
 
     private void addCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addCancelButtonActionPerformed
         addPrincipalDialog.setVisible(false);
@@ -329,11 +447,35 @@ public class SecurityComponentProperties extends JPanel
             type = Type.GROUP;
         }
 
-        owners.addElement(new Principal(addNameTF.getText(), type));
+        perms.addRow(new Principal(addNameTF.getText(), type));
     }//GEN-LAST:event_addOKButtonActionPerformed
+
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+        int curRow = permsTable.getSelectedRow();
+
+        Principal p = perms.getPrincipal(curRow);
+        SortedSet<Permission> ps = perms.getPerms(curRow);
+        Set<ActionDTO> aps = perms.getAllPerms();
+
+        editPerms = new EditPermsTableModel(p, aps, ps);
+        editPermsTable.setModel(editPerms);
+        editPermsDialog.pack();
+        editPermsDialog.setVisible(true);
+    }//GEN-LAST:event_editButtonActionPerformed
+
+    private void editPermsOKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPermsOKButtonActionPerformed
+        editPermsDialog.setVisible(false);
+
+        perms.setPerms(editPerms.getPrincipal(), editPerms.toPermissions());
+    }//GEN-LAST:event_editPermsOKButtonActionPerformed
+
+    private void editPermsCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPermsCancelButtonActionPerformed
+        editPermsDialog.setVisible(false);
+    }//GEN-LAST:event_editPermsCancelButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup addBG;
+    private javax.swing.JButton addButton;
     private javax.swing.JButton addCancelButton;
     private javax.swing.JRadioButton addGroupRB;
     private javax.swing.JTextField addNameTF;
@@ -341,13 +483,18 @@ public class SecurityComponentProperties extends JPanel
     private javax.swing.JDialog addPrincipalDialog;
     private javax.swing.JButton addSearchButton;
     private javax.swing.JRadioButton addUserRB;
+    private javax.swing.JButton editButton;
+    private javax.swing.JButton editPermsCancelButton;
+    private javax.swing.JDialog editPermsDialog;
+    private javax.swing.JButton editPermsOKButton;
+    private javax.swing.JTable editPermsTable;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton ownersAddButton;
-    private javax.swing.JList ownersList;
-    private javax.swing.JButton ownersRemoveButton;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable permsTable;
+    private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
     class PrincipalCellRender extends DefaultListCellRenderer {
@@ -363,37 +510,406 @@ public class SecurityComponentProperties extends JPanel
         }
     }
     
-    class PrincipalSelectionListener implements ListSelectionListener {
-        private JList list;
-        private JButton removeButton;
-        
-        public PrincipalSelectionListener(JList list, JButton removeButton) {
-            this.list = list;
-            this.removeButton = removeButton;
+    class PermTableModel extends AbstractTableModel {
+        private List<Principal> principals = new LinkedList<Principal>();
+        private List<Boolean> owner = new LinkedList<Boolean>();
+        private List<SortedSet<Permission>> perms = new LinkedList<SortedSet<Permission>>();
+        private Set<ActionDTO> allPerms = new LinkedHashSet<ActionDTO>();
+
+        public void addRow(Principal p) {
+            principals.add(p);
+            owner.add(false);
+            perms.add(new TreeSet<Permission>());
+            
+            this.fireTableRowsInserted(principals.size() - 1,
+                                       principals.size() - 1);
         }
         
+        public void removeRow(int index) {
+            principals.remove(index);
+            owner.remove(index);
+            
+            this.fireTableRowsDeleted(index, index);
+        }
+
+        public Principal getPrincipal(int index) {
+            return principals.get(index);
+        }
+
+        public boolean isOwner(int index) {
+            return owner.get(index);
+        }
+
+        public Set<ActionDTO> getAllPerms() {
+            return allPerms;
+        }
+
+        public SortedSet<Permission> getPerms(int index) {
+            return perms.get(index);
+        }
+
+        public void setPerms(Principal p, SortedSet<Permission> ps) {
+            int index = principals.indexOf(p);
+            if (index == -1) {
+                return;
+            }
+
+            perms.set(index, ps);
+            fireTableCellUpdated(index, 3);
+        }
+
+        public CellPermissions toPermissions() {
+            CellPermissions out = new CellPermissions();
+            
+            for (int i = 0; i < principals.size(); i++) {
+                Principal p = principals.get(i);
+                if (owner.get(i)) {
+                    out.getOwners().add(p);
+                } else {
+                    out.getPermissions().addAll(perms.get(i));
+                }
+            }
+            
+            return out;
+        }
+        
+        public void fromPermissions(CellPermissions in) {
+            principals.clear();
+            owner.clear();
+            perms.clear();
+            
+            for (Principal p : in.getOwners()) {
+                principals.add(p);
+                owner.add(true);
+                perms.add(new TreeSet<Permission>());
+            }
+            
+            Map<Principal, SortedSet<Permission>> pm =
+                    new LinkedHashMap<Principal, SortedSet<Permission>>();
+            for (Permission p : in.getPermissions()) {
+                SortedSet<Permission> ps = pm.get(p.getPrincipal());
+                if (ps == null) {
+                    ps = new TreeSet<Permission>();
+                    pm.put(p.getPrincipal(), ps);
+                }
+                ps.add(p);
+            }
+            
+            for (Entry<Principal, SortedSet<Permission>> e : pm.entrySet()) {
+                principals.add(e.getKey());
+                owner.add(false);
+                perms.add(e.getValue());
+            }
+
+            allPerms = in.getAllActions();
+
+            this.fireTableDataChanged();
+        }
+         
+        public int getRowCount() {
+            return principals.size();
+        }
+
+        public int getColumnCount() {
+            return 4;
+        }
+
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            Principal p;
+           
+            switch (columnIndex) {
+                case 0:
+                    p = principals.get(rowIndex);
+                    return p.getType().name();
+                case 1:
+                    p = principals.get(rowIndex);
+                    return p.getId();
+                case 2:
+                    return owner.get(rowIndex);
+                case 3:
+                    return perms.get(rowIndex).size();
+                default:
+                    throw new IllegalStateException("Request for unknown " +
+                                                    "column " + columnIndex);
+            }
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            switch (columnIndex) {
+                case 2:
+                    owner.set(rowIndex, (Boolean) aValue);
+                    fireTableCellUpdated(rowIndex, columnIndex);
+                    return;
+                default:
+                    throw new IllegalStateException("Column " + columnIndex +
+                                                    " not editable."); 
+            }
+        }
+
+        @Override
+        public Class<?> getColumnClass(int column) {
+            switch (column) {
+                case 0:
+                    return String.class;
+                case 1:
+                    return String.class;
+                case 2:
+                    return Boolean.class;
+                case 3:
+                    return String.class;
+                default:
+                    throw new IllegalStateException("Unknown column " + column);
+            }
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            switch (column) {
+                case 0:
+                    return "Type";
+                case 1:
+                    return "Name";
+                case 2:
+                    return "Owner?";
+                case 3:
+                    return "Permissions";
+                default:
+                    throw new IllegalStateException("Unknown column " + column);
+            }
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return (columnIndex == 2);
+        }
+    }
+
+    class EditPermsTableModel extends AbstractTableModel {
+        private Principal principal;
+        private List<Permission.Access> perms;
+        private List<ActionDTO> allPerms;
+
+        public EditPermsTableModel(Principal principal,
+                                   Set<ActionDTO> allPerms,
+                                   SortedSet<Permission> sortedPerms)
+        {
+            this.principal = principal;
+            this.allPerms = new ArrayList<ActionDTO>(allPerms);
+
+            // order the permissions list correctly
+            this.perms = new ArrayList<Permission.Access>(allPerms.size());
+            for (ActionDTO a : allPerms) {
+                Permission p = new Permission(principal, a, null);
+                
+                SortedSet<Permission> tail = sortedPerms.tailSet(p);
+                if (tail.isEmpty()) {
+                    perms.add(null);
+                } else {
+                    perms.add(tail.first().getAccess());
+                }
+            }
+        }
+
+        public Principal getPrincipal() {
+            return principal;
+        }
+
+        public SortedSet<Permission> toPermissions() {
+            SortedSet<Permission> out = new TreeSet<Permission>();
+            for (int i = 0; i < allPerms.size(); i++) {
+                ActionDTO action = allPerms.get(i);
+                Permission.Access access = perms.get(i);
+
+                if (access != null) {
+                    out.add(new Permission(principal, action, access));
+                }
+            }
+
+            return out;
+        }
+
+        public int getRowCount() {
+            return allPerms.size();
+        }
+
+        public int getColumnCount() {
+            return 2;
+        }
+
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            switch (columnIndex) {
+                case 0:
+                    return allPerms.get(rowIndex);
+                case 1:
+                    return perms.get(rowIndex);
+                default:
+                    throw new IllegalArgumentException("Unknown column " +
+                                                       columnIndex);
+            }
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            switch (columnIndex) {
+                case 1:
+                    perms.set(rowIndex, (Permission.Access) aValue);
+                    fireTableCellUpdated(rowIndex, columnIndex);
+                    return;
+                default:
+                    throw new IllegalStateException("Column " + columnIndex +
+                                                    " not editable.");
+            }
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            switch (column) {
+                case 0:
+                    return "Permission";
+                case 1:
+                    return "Value";
+                default:
+                    throw new IllegalStateException("Unknown column " + column);
+            }
+        }
+
+        @Override
+        public Class<?> getColumnClass(int column) {
+            switch (column) {
+                case 0:
+                    return ActionDTO.class;
+                case 1:
+                    return Permission.Access.class;
+                default:
+                    throw new IllegalStateException("Unknown column " + column);
+            }
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return (columnIndex == 1);
+        }
+    }
+
+    class PermissionTableCellRenderer extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row, int column)
+        {
+            ActionDTO a = (ActionDTO) value;
+            String name = a.getDisplayName();
+            if (name == null) {
+                name = a.getName();
+            }
+
+            Component c = super.getTableCellRendererComponent(table, name, isSelected,
+                                                              hasFocus, row, column);
+            if (c instanceof JComponent) {
+                ((JComponent) c).setToolTipText(a.getToolTip());
+            }
+
+            return c;
+        }
+
+    }
+
+    class AccessTableCellRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected,
+                                                       boolean hasFocus,
+                                                       int row, int column)
+        {
+            Permission.Access a = (Permission.Access) value;
+            String name = "Unspecified";
+
+            if (a != null) {
+                switch (a) {
+                    case GRANT:
+                        name = "Granted";
+                        break;
+                    case DENY:
+                        name = "Denied";
+                        break;
+                }
+            }
+
+            return super.getTableCellRendererComponent(table, name, isSelected,
+                                                       hasFocus, row, column);
+        }
+    }
+
+    static class AccessTableCellEditor extends DefaultCellEditor {
+        public AccessTableCellEditor() {
+            super (createComboBox());
+        }
+
+        private static JComboBox createComboBox() {
+            JComboBox jcb = new JComboBox(new Object[] {
+                null, Permission.Access.GRANT, Permission.Access.DENY });
+            jcb.setRenderer(new AccessCBRenderer());
+            return jcb;
+        }
+    }
+
+    static class AccessCBRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value,
+                                                      int index, boolean isSelected,
+                                                      boolean cellHasFocus)
+        {
+            Permission.Access a = (Permission.Access) value;
+            String name = "Unspecified";
+
+            if (a != null) {
+                switch (a) {
+                    case GRANT:
+                        name = "Granted";
+                        break;
+                    case DENY:
+                        name = "Denied";
+                        break;
+                }
+            }
+
+            return super.getListCellRendererComponent(list, name, index,
+                                                      isSelected, cellHasFocus);
+        }
+    }
+
+    class RemoveButtonSelectionListener implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
             boolean enabled = false;
             
             if (!e.getValueIsAdjusting()) {
-                enabled = (list.getSelectedValue() != null);
+                enabled = (permsTable.getSelectedRow() >= 0);
             }
             
             removeButton.setEnabled(enabled);
         }        
     }
+
+    class EditButtonSelectionListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            boolean enabled = false;
+
+            if (!e.getValueIsAdjusting()) {
+                int row = permsTable.getSelectedRow();
+                enabled = (row >= 0 && !perms.isOwner(row));
+            }
+
+            editButton.setEnabled(enabled);
+        }
+    }
     
-    class ModelChangeListener implements ListDataListener {
-        public void intervalAdded(ListDataEvent e) {
+    class TableDirtyListener implements TableModelListener {
+        public void tableChanged(TableModelEvent tme) {
             editor.setPanelDirty(SecurityComponentProperties.class, true);
-        }
-
-        public void intervalRemoved(ListDataEvent e) {
-            editor.setPanelDirty(SecurityComponentProperties.class, true);        
-        }
-
-        public void contentsChanged(ListDataEvent e) {
-            editor.setPanelDirty(SecurityComponentProperties.class, true);        
         }
     }
 }

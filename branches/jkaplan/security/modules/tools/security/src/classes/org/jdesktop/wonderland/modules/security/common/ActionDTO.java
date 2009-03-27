@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.security.common;
 
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -28,7 +30,11 @@ import org.jdesktop.wonderland.common.security.Action;
  * @author jkaplan
  */
 @XmlRootElement(name = "action")
-public class ActionDTO implements Serializable {
+public class ActionDTO implements Serializable, Comparable {
+    private static final Logger logger =
+            Logger.getLogger(ActionDTO.class.getName());
+
+    private String clazz;
     private String name;
     private String parent;
     private String displayName;
@@ -38,10 +44,20 @@ public class ActionDTO implements Serializable {
     }
 
     public ActionDTO(Action action) {
+        this.clazz = action.getClass().getName();
         this.name = action.getName();
         this.parent = action.getParent();
         this.displayName = action.getDisplayName();
         this.toolTip = action.getToolTip();
+    }
+
+    @XmlElement
+    public String getActionClass() {
+        return clazz;
+    }
+
+    public void setActionClass(String clazz) {
+        this.clazz = clazz;
     }
 
     @XmlElement
@@ -82,7 +98,48 @@ public class ActionDTO implements Serializable {
 
     @XmlTransient
     public Action getAction() {
-        return new Action(getName(), getParent(),
-                          getDisplayName(), getToolTip());
+        try {
+            Class c = getClass().getClassLoader().loadClass(getActionClass());
+            return (Action) c.newInstance();
+        } catch (InstantiationException ex) {
+            logger.log(Level.SEVERE, "Error creating action", ex);
+        } catch (IllegalAccessException ex) {
+            logger.log(Level.SEVERE, "Error creating action", ex);
+        } catch (ClassNotFoundException ex) {
+            logger.log(Level.SEVERE, "Error creating action", ex);
+        }
+
+        return null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ActionDTO other = (ActionDTO) obj;
+        if ((this.clazz == null) ? (other.clazz != null) : !this.clazz.equals(other.clazz)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + (this.clazz != null ? this.clazz.hashCode() : 0);
+        return hash;
+    }
+
+    public int compareTo(Object o) {
+        if (!(o instanceof ActionDTO)) {
+            return 0;
+        }
+
+        ActionDTO oa = (ActionDTO) o;
+        return getActionClass().compareTo(oa.getActionClass());
     }
 }

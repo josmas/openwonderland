@@ -18,7 +18,14 @@
 package org.jdesktop.wonderland.server.security;
 
 /**
- * A task to execute after security checks are completed.
+ * A task to execute after security checks are completed.  SecureTask is
+ * similar to the Darkstar built-in Task type, but with the extra security
+ * constraints.  Like Task, SecureTask instances must either be Serializable
+ * or implement ManagedObject.  For tasks that are Serializable, the
+ * SecurityManager will automatically persist the task.  For tasks that
+ * implement ManagedObject, the caller is assumed to manage adding and
+ * removing the object from persistence.
+ *
  * @author jkaplan
  */
 public interface SecureTask {

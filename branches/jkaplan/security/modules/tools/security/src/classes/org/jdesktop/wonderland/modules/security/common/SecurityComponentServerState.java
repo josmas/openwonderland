@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @XmlRootElement(name="security-component")
 @ServerState
 public class SecurityComponentServerState extends CellComponentServerState {
-    private PermissionsSet permissions = new PermissionsSet();
+    private CellPermissions permissions = new CellPermissions();
 
     /** Default constructor */
     public SecurityComponentServerState() {
@@ -42,11 +42,11 @@ public class SecurityComponentServerState extends CellComponentServerState {
     }
     
     @XmlElement
-    public PermissionsSet getPermissions() {
+    public CellPermissions getPermissions() {
         return permissions;
     }
 
-    public void setPermissions(PermissionsSet permissions) {
+    public void setPermissions(CellPermissions permissions) {
         this.permissions = permissions;
     }
 }

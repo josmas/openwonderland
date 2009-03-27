@@ -44,7 +44,7 @@ public class DisappearTestMO extends SimpleShapeCellMO {
 
     public DisappearTestMO (Vector3f center, float size) {
         super(center, size);
-        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+        //addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
         addComponent(new MovableComponentMO(this));
     }
     
