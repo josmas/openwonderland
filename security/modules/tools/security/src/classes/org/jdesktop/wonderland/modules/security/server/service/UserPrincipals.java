@@ -17,7 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.security.server.service;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.security.common.Principal;
 
 /**
@@ -56,11 +60,23 @@ public class UserPrincipals {
                                           DEFAULT_RESOLVER_CLASS);
         try {
             Class c = Class.forName(clazz);
-            return (UserPrincipalResolver) c.newInstance();
-        } catch (InstantiationException ex) {
-            throw new IllegalStateException("Error instantiating " + clazz, ex);
+            Method getInstance = c.getMethod("getInstance");
+            return (UserPrincipalResolver) getInstance.invoke(null);
         } catch (IllegalAccessException ex) {
-            throw new IllegalStateException("Illegal access to " + clazz, ex);
+            throw new IllegalStateException("Error invoking getInstance() on " +
+                                            clazz, ex);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalStateException("Error invoking getInstance() on " +
+                                            clazz, ex);
+        } catch (InvocationTargetException ex) {
+            throw new IllegalStateException("Error invoking getInstance() on " +
+                                            clazz, ex);
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException("No such method getInstance() on " +
+                                            clazz, ex);
+        } catch (SecurityException ex) {
+            throw new IllegalStateException("Security error invoking " +
+                                            "getInstance() on " + clazz, ex);
         } catch (ClassNotFoundException ex) {
             throw new IllegalStateException("Class not found " + clazz, ex);
         }
