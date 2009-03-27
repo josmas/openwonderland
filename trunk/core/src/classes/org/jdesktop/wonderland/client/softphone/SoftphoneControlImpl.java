@@ -614,7 +614,7 @@ public class SoftphoneControlImpl {
      */
     class Pinger extends Thread {
         public Pinger() {
-            super("Softphone pinger");
+            super(ThreadManager.getThreadGroup(), "Softphone pinger");
         }
         
         public void run() {
