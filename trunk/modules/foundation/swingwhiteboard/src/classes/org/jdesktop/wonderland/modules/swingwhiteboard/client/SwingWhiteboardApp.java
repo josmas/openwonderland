@@ -17,9 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.swingwhiteboard.client;
 
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -40,16 +39,12 @@ public class SwingWhiteboardApp extends AppGraphics2D  {
      * Create a new instance of SwingWhiteboardApp. This in turn creates
      * and makes visible the single window used by the app.
      *
-     * @param appType The type of app (should be SwingWhiteboardAppType).
-     * @param pixelScale The horizontal and vertical pixel sizes
-     * (in world meters per pixel).
+     * @param name The name of the app.
+     * @param pixelScale The horizontal and vertical pixel sizes (in world meters per pixel).
      * @param commComponent The communications component for communicating with the server.
      */
-    public SwingWhiteboardApp (AppType appType, Vector2f pixelScale,
-                               SwingWhiteboardComponent commComponent) {
-
-	// configWorld can be null because the server cell is already configured
-	super(appType, new ControlArbMulti(), pixelScale);
+    public SwingWhiteboardApp (String name, Vector2f pixelScale, SwingWhiteboardComponent commComponent) {
+	super(name, new ControlArbAppFocus(), pixelScale);
 	controlArb.setApp(this);
     }
 

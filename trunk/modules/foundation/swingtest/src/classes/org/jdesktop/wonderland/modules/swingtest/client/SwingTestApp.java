@@ -17,9 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.swingtest.client;
 
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -36,13 +35,11 @@ public class SwingTestApp extends AppGraphics2D {
      * Create a new instance of SwingTestApp. This in turn creates
      * and makes visible the single window used by the app.
      *
-     * @param appType The type of app (should be SwingTestAppType).
+     * @param name The name of the app.
      * @param pixelScale The horizontal and vertical pixel sizes (in world meters per pixel).
      */
-    public SwingTestApp(AppType appType, Vector2f pixelScale) {
-
-        // configWorld can be null because the server cell is already configured
-        super(appType, new ControlArbMulti(), pixelScale);
+    public SwingTestApp(String name, Vector2f pixelScale) {
+        super(name, new ControlArbAppFocus(), pixelScale);
         controlArb.setApp(this);
     }
 }

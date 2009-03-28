@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.appbase.common.AppConventionalConnectionType;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
 
@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSe
  * @author deronj
  */
 
-@ExperimentalAPI
+@InternalAPI
 public class AppConventionalConnection extends BaseConnection {
 
     private static final Logger logger = Logger.getLogger(AppConventionalConnection.class.getName());
@@ -75,6 +75,14 @@ public class AppConventionalConnection extends BaseConnection {
 	    return super.sendAndWait(message);
 	} catch (InterruptedException ex) {}
         return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void send(Message message) {
+        super.send(message);
     }
 
     /**

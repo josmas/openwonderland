@@ -37,9 +37,7 @@ import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCompound
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardAction.Action;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.SwingWhiteboardCellClientState;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCommand.Command;
-import org.jdesktop.wonderland.modules.swingwhiteboard.common.SwingWhiteboardTypeName;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
-import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
@@ -81,13 +79,6 @@ public class SwingWhiteboardCellMO extends App2DCellMO {
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.swingwhiteboard.client.SwingWhiteboardCell";
-    }
-
-    /** 
-     * {@inheritDoc}
-     */
-    public AppTypeMO getAppType() {
-        return new SwingWhiteboardAppTypeMO();
     }
 
     /** 
