@@ -17,11 +17,16 @@
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+
+import org.jdesktop.wonderland.common.cell.CellID;
+
+import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 
 /**
  *
@@ -30,8 +35,8 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 public class OrbDialog extends javax.swing.JDialog {
 
     private OrbCell orbCell;
-   
     private ChannelComponent channelComp;
+    private CellID avatarCellID;
 
     private String username;
 
@@ -41,12 +46,12 @@ public class OrbDialog extends javax.swing.JDialog {
         initComponents();
     }
 
-    public OrbDialog(OrbCell orbCell, ChannelComponent channelComp, 
-	    String username) {
-
+    public OrbDialog(OrbCell orbCell, ChannelComponent channelComp, CellID avatarCellID) {
 	this.orbCell = orbCell;
 	this.channelComp = channelComp;
-	this.username = username;
+	this.avatarCellID = avatarCellID;
+
+	username = orbCell.getUsername();
 	
 	initComponents();
 
@@ -128,12 +133,11 @@ public class OrbDialog extends javax.swing.JDialog {
                         .add(endCallButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(18, 18, 18)
                         .add(muteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 84, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 24, Short.MAX_VALUE)
-                        .add(attachButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 75, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(25, 25, 25)
-                        .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                .addContainerGap(36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(18, 18, 18)
+                        .add(attachButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)
+                        .add(18, 18, 18)
+                        .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 94, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -148,8 +152,8 @@ public class OrbDialog extends javax.swing.JDialog {
                 .add(33, 33, 33)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(muteButton)
-                    .add(attachButton)
                     .add(endCallButton)
+                    .add(attachButton)
                     .add(okButton))
                 .addContainerGap(27, Short.MAX_VALUE))
         );
@@ -164,12 +168,15 @@ private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_endCallButtonActionPerformed
 
 private void attachButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attachButtonActionPerformed
+    
     if (attachButton.getText().equals("Attach")) {
         System.out.println("Attach Orb...");
 	attachButton.setText("Detach");
+        channelComp.send(new OrbAttachMessage(orbCell.getCellID(), avatarCellID, true));
     } else {
         System.out.println("Detach Orb...");
 	attachButton.setText("Attach");
+        channelComp.send(new OrbAttachMessage(orbCell.getCellID(), avatarCellID, false));
     }
 }//GEN-LAST:event_attachButtonActionPerformed
 

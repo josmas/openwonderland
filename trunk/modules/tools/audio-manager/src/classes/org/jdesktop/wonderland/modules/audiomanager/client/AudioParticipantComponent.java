@@ -44,7 +44,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
 
 /**
  * A component that provides audio participant control
@@ -91,11 +91,13 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
                 channelComp = cell.getComponent(ChannelComponent.class);
                 channelComp.addMessageReceiver(AudioParticipantSpeakingMessage.class, msgReceiver);
 
-                contextMenu.addMenuItem(menuItem, new ContextMenuListener() {
-                    public void entityContextPerformed(ContextMenuEvent event) {
-                        adjustVolume(event);
-                    }
-                });
+		if (cell instanceof OrbCell == false) {
+                    contextMenu.addMenuItem(menuItem, new ContextMenuListener() {
+                        public void entityContextPerformed(ContextMenuEvent event) {
+                            adjustVolume(event);
+                        }
+                    });
+		}
             }
 
 	    break;
@@ -109,16 +111,23 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
 	    return;
 	}
 
+	if (cell instanceof OrbCell) {
+	    return;  // Orb's have their own volume dialog
+	}
+
+	String callID = CallID.getCallID(cell.getCellID());
+	String username = cell.getName();
+
 	if (volumeControlJFrame == null) {
-	    volumeControlJFrame = new VolumeControlJFrame(this, cell.getName());
+	    volumeControlJFrame = new VolumeControlJFrame(this, username);
 	} 
 
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-	if (CallID.getCallID(cell.getCellID()).equals(sc.getCallID())) {
-	    volumeControlJFrame.setTitle("Master Volume for " + cell.getName());
+	if (callID.equals(sc.getCallID())) {
+	    volumeControlJFrame.setTitle("Master Volume for " + username);
 	} else {
-	    volumeControlJFrame.setTitle("Volume Control for " + cell.getName());
+	    volumeControlJFrame.setTitle("Volume Control for " + username);
 	}
 
 	volumeControlJFrame.setVisible(true);

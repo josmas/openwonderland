@@ -23,7 +23,6 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerConnectionType;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.SessionCreatedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.SessionEndedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectedMessage;

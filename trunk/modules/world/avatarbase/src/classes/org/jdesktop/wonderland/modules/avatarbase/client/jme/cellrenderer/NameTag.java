@@ -32,10 +32,8 @@ import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.ClientContext;
 
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
-import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
-import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 
 import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
 
@@ -50,7 +48,7 @@ import imi.character.CharacterMotionListener;
 /**
  * @author jprovino
  */
-public class NameTag implements CellMoveListener {
+public class NameTag implements TransformChangeListener {
     
     private Entity entity;
 
@@ -63,11 +61,7 @@ public class NameTag implements CellMoveListener {
 	this.name = name;
 	this.height = height;
 
-	MovableComponent component = cell.getComponent(MovableComponent.class);
-
-	if (component != null) {
-	    component.addServerCellMoveListener(this);
-	}
+	cell.addTransformChangeListener(this);
 
 	WorldManager worldManager = ClientContextJME.getWorldManager();
 
@@ -93,11 +87,14 @@ public class NameTag implements CellMoveListener {
 	setNameTag(name);
     }
 
-    public void cellMoved(CellTransform transform, CellMoveSource source) {
-	System.out.println("CELL MOVED " + cell.getName());
+    public void transformChanged(Cell cell, ChangeSource source) {
+	if (cell.getCellID().equals(this.cell.getCellID()) == false) {
+	    System.out.println("SHOULDN'T HAPPEN!");
+	    return;
+	}
 
 	Vector3f translation = new Vector3f();
-	transform.getTranslation(translation);
+	cell.getLocalTransform().getTranslation(translation);
 	setLocalTranslation(translation);
     }
 
@@ -135,11 +132,7 @@ public class NameTag implements CellMoveListener {
     public void done() {
 	removeNameTag();
 
-	MovableComponent component = cell.getComponent(MovableComponent.class);
-
-	if (component != null) {
-	    component.removeServerCellMoveListener(this);
-	}
+	cell.removeTransformChangeListener(this);
     }
 
     private void removeNameTag() {

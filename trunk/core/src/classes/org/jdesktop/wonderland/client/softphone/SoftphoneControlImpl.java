@@ -46,7 +46,7 @@ public class SoftphoneControlImpl {
     private ProcOutputListener stdErrListener;
     private Pinger pinger;
     
-    private String userName;
+    private String username;
     private String registrar;
     private int registrarTimeout;
     private String localHost;
@@ -84,10 +84,10 @@ public class SoftphoneControlImpl {
     /**
      * Start up the softphone
      */
-    public String startSoftphone(String userName, String registrar,
+    public String startSoftphone(String username, String registrar,
 	    int registrarTimeout, String localHost, AudioQuality quality) throws IOException {
     
-	this.userName = userName.replaceAll("\\p{Punct}", "_");
+	this.username = username.replaceAll("\\p{Punct}", "_");
 
 	String previousRegistrar = this.registrar;
 
@@ -129,7 +129,7 @@ public class SoftphoneControlImpl {
 	exitNotificationSent = false;
 
         // launch the sucker!
-        String[] command = getSoftphoneCommand(userName, registrar,
+        String[] command = getSoftphoneCommand(username, registrar,
 	    registrarTimeout, localHost, quality);
 
 	if (command == null) {
@@ -247,7 +247,7 @@ public class SoftphoneControlImpl {
      * softphone program on behalf of a particular user
      * @param username the name of the user to display in the softphone
      */
-    private String[] getSoftphoneCommand(String userName,
+    private String[] getSoftphoneCommand(String username,
 	    String registrar, int registrarTimeout, String localHost,
             AudioQuality quality) {
 
@@ -295,7 +295,7 @@ public class SoftphoneControlImpl {
         command[3] = softphonePath;
         command[4] = "-mc";
         command[5] = "-u";
-        command[6] = userName;
+        command[6] = username;
 	command[7] = "-r";
 	command[8] = registrar;
 	command[9] = "-stun";

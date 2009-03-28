@@ -34,7 +34,6 @@ import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -50,21 +49,13 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
  *
  * @author jkaplan
  */
-public class ConeOfSilenceCell extends Cell implements CellStatusChangeListener {
+public class ConeOfSilenceCell extends Cell {
 
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceCell.class.getName());
 
     public ConeOfSilenceCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-
-	CellManager.getCellManager().addCellStatusChangeListener(this);
-    }
-
-    public void cellStatusChanged(Cell cell, CellStatus status) {
-        if (cell.getCellID() != getCellID()) {
-            return;
-        }
     }
 
     /**

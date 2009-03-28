@@ -15,35 +15,34 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.orb.common.messages;
 
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
 
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- * The initial message that a client must send to the Wonderland server
- * in order to specify a communications protocol to use.
+ *
  * @author jprovino
  */
-@ExperimentalAPI
-public class CellStatusChangeMessage extends Message {
+public class OrbAttachMessage extends CellMessage {   
+    
+    private CellID avatarCellID;
+    private boolean isAttached;
 
-    private CellID cellID;
-    private boolean active;
+    public OrbAttachMessage(CellID cellID, CellID avatarCellID, boolean isAttached) {
+	super(cellID);
 
-	public CellStatusChangeMessage(CellID cellID, boolean active) {
-	this.cellID = cellID;
-	this.active = active;
+	this.avatarCellID = avatarCellID;
+	this.isAttached = isAttached;
+    }
+    
+    public CellID getAvatarCellID() {
+	return avatarCellID;
     }
 
-    public CellID getCellID() {
-	return cellID;
-    }
-  
-    public boolean getActive() {
-	return active;
+    public boolean isAttached() {
+	return isAttached;
     }
 
 }
