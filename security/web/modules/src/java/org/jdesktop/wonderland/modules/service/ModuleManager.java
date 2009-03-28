@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jdesktop.wonderland.common.modules.ModuleRequires;
+import org.jdesktop.wonderland.utils.RunUtil;
 
 
 /**
@@ -84,16 +85,13 @@ public class ModuleManager {
     
     /** Constructor */
     private ModuleManager() {
-        /* Find the base modules/ directory in which all modules exist */
-        String baseDir = ModuleManager.getModuleDirectory();
-        if (baseDir == null) {
-            logger.warning("ModuleManager: no wonderland.webserver.modules.dir");
-        }
-        logger.info("wonderland.webserver.modules.root=" + baseDir);
+        // Put the "modules/" directory underneath the content directory
+        File contentDir = RunUtil.getContentDir();
+        root = new File(contentDir, "modules");
+        logger.info("Wonderland modules base directory: " + root.getAbsolutePath());
         
         /* Set the base directory for the module system, create it if necessary */
         try {
-            this.root = new File(baseDir);
             if (this.root.exists() == false) {
                 ModuleManagerUtils.makeDirectory(this.root);
             }

@@ -58,8 +58,6 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
 
     void setLive(boolean isLive, final CellMO cell, UniverseManager mgr) {
         if (isLive) {
-            ServerProximityListenerWrapper rec = (ServerProximityListenerWrapper) proximityListener;
-            rec.setUniverseManager(mgr);
             mgr.addTransformChangeListener(cell, this);
             mgr.addViewUpdateListener(cell, this);
 
@@ -96,23 +94,14 @@ public class ServerProximityListenerRecord extends ProximityListenerRecord imple
             return cellID;
         }
 
-        /**
-         * Set the universe manager, which will be used to invoke the listener
-         * callback in a transaction if necessary
-         * 
-         * @param universeManager
-         */
-        void setUniverseManager(UniverseManager universeManager) {
-            this.universeManager = universeManager;
-        }
-
         public void viewEnterExit(boolean enter,
                                   BoundingVolume proximityVolume,
                                   int proximityIndex,
                                   CellID viewCellID) {
             if (listenerRef!=null) {
-                ProximityNotifierTask tsk = new ProximityNotifierTask(listenerRef, enter, proximityVolume, proximityIndex, cellID, viewCellID);
-                universeManager.scheduleTask(tsk);
+//                ProximityNotifierTask tsk = new ProximityNotifierTask(listenerRef, enter, proximityVolume, proximityIndex, cellID, viewCellID);
+//                AppContext.getManager(UniverseManager.class).scheduleTask(tsk);
+                listenerRef.get().viewEnterExit(enter, cellID, viewCellID, proximityVolume, proximityIndex);
             } else {
                 listener.viewEnterExit(enter, cellID, viewCellID, proximityVolume, proximityIndex);
             }

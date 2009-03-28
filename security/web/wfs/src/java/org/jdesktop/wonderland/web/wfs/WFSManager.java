@@ -73,6 +73,14 @@ public class WFSManager {
     /* The logger for the module manager */
     private static final Logger logger = Logger.getLogger(WFSManager.class.getName());
 
+    /* Filter for hidden files */
+    private static final FileFilter HIDDEN_FILE_FILTER = new FileFilter() {
+            //We don't want invisible directories such as .DS_Store on the Mac
+            public boolean accept(File aFile) {
+                return !aFile.isHidden();
+            }
+        };
+
     /** Constructor */
     private WFSManager() {
         /* Load in all of the Wonderland file systems */
@@ -413,7 +421,7 @@ public class WFSManager {
     private File[] getSnapshotDirectories() {
         // return an empty array if the directory doesn't exist, otherwise
         // we get NullPointerExceptions
-        File[] res = snapshotFile.listFiles();
+        File[] res = snapshotFile.listFiles(HIDDEN_FILE_FILTER);
         if (res == null) {
             res = new File[0];
         }
@@ -428,14 +436,7 @@ public class WFSManager {
     private File[] getRecordingDirectories() {
         // return an empty array if the directory doesn't exist, otherwise
         // we get NullPointerExceptions
-        FileFilter filter = new FileFilter() {
-            //We don't want invisible directories such as .DS_Store on the Mac
-            public boolean accept(File aFile) {
-                return !aFile.isHidden();
-            }
-        };
-
-        File[] res = recordingFile.listFiles(filter);
+        File[] res = recordingFile.listFiles(HIDDEN_FILE_FILTER);
         if (res == null) {
             res = new File[0];
         }

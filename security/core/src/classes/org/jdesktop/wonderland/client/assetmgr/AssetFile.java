@@ -19,11 +19,13 @@ package org.jdesktop.wonderland.client.assetmgr;
 
 import java.io.File;
 import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
  *
  * @author paulby
  */
+@InternalAPI
 public class AssetFile extends Asset<File> {
 
     /**

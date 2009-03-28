@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.client.modules;
 
-import org.jdesktop.wonderland.common.ResourceURI;
+import org.jdesktop.wonderland.common.ModuleURI;
 import org.jdesktop.wonderland.common.modules.ModuleRepository.Repository;
 
 /**
@@ -35,8 +35,8 @@ public class RepositoryUtils {
      * @param assetURI The URI of the asset to download
      * @return The full URL of the asset to download
      */
-    public static String getAssetURL(Repository repository, ResourceURI assetURI) {
-        return RepositoryUtils.stripTrailingSlash(repository.url) + "/" + assetURI.getRelativePath();
+    public static String getAssetURL(Repository repository, ModuleURI assetURI) {
+        return RepositoryUtils.stripTrailingSlash(repository.url) + "/" + assetURI.getRelativePathInModule();
     }
     
     /**

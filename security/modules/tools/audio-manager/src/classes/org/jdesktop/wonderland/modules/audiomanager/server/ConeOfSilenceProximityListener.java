@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
@@ -26,6 +28,7 @@ import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 import com.jme.bounding.BoundingVolume;
@@ -61,7 +64,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
     }
 
     private void cellEntered(CellID softphoneCellID) {
-        cellEntered(softphoneCellID.toString());
+        cellEntered(CallID.getCallID(softphoneCellID));
     }
 
     public void cellEntered(String callId) {
@@ -105,7 +108,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
     }
 
     private void cellExited(CellID softphoneCellID) {
-        cellExited(softphoneCellID.toString());
+        cellExited(CallID.getCallID(softphoneCellID));
     }
 
     public void cellExited(String callId) {
@@ -129,8 +132,8 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
 
         audioGroup.removePlayer(player);
 
-        if (audioGroup.getPlayers().size() == 0) {
-            vm.removeAudioGroup(name);
+        if (audioGroup.getNumberOfPlayers() == 0) {
+            vm.removeAudioGroup(audioGroup);
         }
 
         player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,

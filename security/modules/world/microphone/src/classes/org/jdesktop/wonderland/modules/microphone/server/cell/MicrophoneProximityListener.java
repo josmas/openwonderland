@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.microphone.server.cell;
 
+//import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerUtil;
+
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
@@ -33,6 +35,7 @@ import java.lang.String;
 
 import java.util.logging.Logger;
 
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
@@ -73,7 +76,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
 	System.out.println("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
-	String callId = viewCellID.toString();
+	String callId = CallID.getCallID(viewCellID);
 
 	if (entered) {
 	    if (proximityIndex == 0) {
@@ -151,8 +154,8 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Manage
 
         audioGroup.removePlayer(player);
 
-        if (audioGroup.getPlayers().size() == 0) {
-            vm.removeAudioGroup(name);
+        if (audioGroup.getNumberOfPlayers() == 1) {
+            vm.removeAudioGroup(audioGroup);
         }
 
         player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,

@@ -21,6 +21,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
+import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState.Shape;
@@ -38,7 +39,7 @@ public class SimpleShapeCellFactory implements CellFactorySPI {
         return new String[] {};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState() {
+    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         // Create a setup with some default values
         SimpleShapeCellServerState cellServerState = new SimpleShapeCellServerState();
         cellServerState.setShape(Shape.CONE);

@@ -8,7 +8,7 @@ sgs.server=http://localhost:8080/
 avatar.detail=high
 
 # Desired frame rate for client
-wonderland.client.fps = 30   
+wonderland.client.fps = 30
 
 # Control the size of the client window. The form should be WIDTHxHEIGHT (ie 640x480) or fullscreen
 wonderland.client.windowSize = 1024x768

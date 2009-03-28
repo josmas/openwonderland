@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.service.resources;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -29,6 +30,7 @@ import javax.ws.rs.core.Response;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.common.modules.ModuleList;
 import org.jdesktop.wonderland.modules.Module;
+import org.jdesktop.wonderland.modules.service.DeployManager;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 
 /**
@@ -74,12 +76,17 @@ public class GetModuleListResource {
         }
         else if (state.equals("installed") == true) {
             Map<String, Module> modules = manager.getInstalledModules();
+
+            // sort in dependecy order
+            List<String> ordered = DeployManager.getDeploymentOrder(modules);
+
+            // create the list of infos in the correct order
             Collection<ModuleInfo> list = new LinkedList();
-            Iterator<Map.Entry<String, Module>> it = modules.entrySet().iterator();
-            while (it.hasNext() == true) {
-                Map.Entry<String, Module> entry = it.next();
-                list.add(entry.getValue().getInfo());
+            for (String moduleName : ordered) {
+                Module module = modules.get(moduleName);
+                list.add(module.getInfo());
             }
+
             moduleList.setModuleInfos(list.toArray(new ModuleInfo[] {}));
             return Response.ok(moduleList).build();
         }

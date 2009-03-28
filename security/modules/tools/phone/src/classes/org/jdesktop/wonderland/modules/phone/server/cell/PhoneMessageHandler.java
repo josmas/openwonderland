@@ -47,6 +47,7 @@ import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
 import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
 
 import com.sun.sgs.app.AppContext;
@@ -196,6 +197,8 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 	String audioGroupId = null;
 
+	VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
+
 	if (softphoneCallID != null) {
 	    softphoneCall = vm.getCall(softphoneCallID);
 
@@ -283,8 +286,9 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 		}
 
 		cp.setPhoneNumber(listing.getContactNumber());
+		cp.setName(listing.getContactName());
 		cp.setCallId(externalCallID);
-		cp.setConferenceId(vm.getConferenceId());
+		cp.setConferenceId(parameters.conferenceId);
 		cp.setVoiceDetection(true);
 		cp.setDtmfDetection(true);
 		cp.setVoiceDetectionWhileMuted(true);
@@ -294,7 +298,8 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
             	    FakeVoiceManager.getInstance().addCallStatusListener(
 			phoneStatusListenerRef.get(), externalCallID);
 		} else {
-		    setup.listener = phoneStatusListenerRef.get();
+		    //setup.listener = phoneStatusListenerRef.get();
+		    vm.addCallStatusListener(phoneStatusListenerRef.get(), externalCallID);
 		}
 
 		try {
@@ -309,11 +314,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 		externalCall.setPlayer(externalPlayer);
 
-		logger.fine("set external player");
-
 		externalPlayer.setCall(externalCall);
-
-		logger.fine("set external call");
 
                 if (listing.isPrivate()) {
 		    /*
@@ -331,14 +332,14 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 		        AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
 		} else {
 		    AudioGroup defaultLivePlayerAudioGroup = 
-		        vm.getDefaultLivePlayerAudioGroup();
+		        parameters.livePlayerAudioGroup;
 
 		    defaultLivePlayerAudioGroup.addPlayer(externalPlayer, 
 		        new AudioGroupPlayerInfo(true, 
 		        AudioGroupPlayerInfo.ChatType.PUBLIC));
 
 		    AudioGroup defaultStationaryPlayerAudioGroup = 
-		        vm.getDefaultStationaryPlayerAudioGroup();
+		        parameters.stationaryPlayerAudioGroup;
 
 		    defaultStationaryPlayerAudioGroup.addPlayer(externalPlayer, 
 		        new AudioGroupPlayerInfo(false, 
@@ -376,7 +377,8 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
                     logger.fine("back from attenuate other groups");
                 }
             } else {
-                new Orb(externalCallID, phoneCellMO.getWorldBounds(), listing.simulateCalls());
+                Orb orb = new Orb(listing.getContactName(), externalCallID, 
+		    phoneCellMO.getWorldBounds(), listing.simulateCalls());
 	    }
 
             if (listing.simulateCalls() == false) {
@@ -411,15 +413,13 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 		        + e.getMessage());
 	        }
 
-		AudioGroup defaultLivePlayerAudioGroup = 
-		    vm.getDefaultLivePlayerAudioGroup();
+		AudioGroup defaultLivePlayerAudioGroup = parameters.livePlayerAudioGroup;
 
 		defaultLivePlayerAudioGroup.addPlayer(externalPlayer, 
 		    new AudioGroupPlayerInfo(true, 
 		    AudioGroupPlayerInfo.ChatType.PUBLIC));
 
-		AudioGroup defaultStationaryPlayerAudioGroup = 
-		    vm.getDefaultStationaryPlayerAudioGroup();
+		AudioGroup defaultStationaryPlayerAudioGroup = parameters.stationaryPlayerAudioGroup;
 
 		defaultStationaryPlayerAudioGroup.addPlayer(externalPlayer, 
 		    new AudioGroupPlayerInfo(false, 
@@ -429,7 +429,9 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 		    AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
 		    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
 
-	        vm.removeAudioGroup(audioGroupId);
+		audioGroup.removePlayer(externalPlayer);
+		audioGroup.removePlayer(softphonePlayer);
+	        vm.removeAudioGroup(audioGroup);
             }
             
             listing.setPrivateClientName("");
@@ -438,7 +440,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
             sender.send(clientID, new JoinCallResponseMessage(
 		phoneCellMO.getCellID(), listing, true));
             
-            new Orb(externalCallID, phoneCellMO.getWorldBounds(), false);
+            new Orb(listing.getContactName(), externalCallID, phoneCellMO.getWorldBounds(), false);
 	    return;
 	}
 
@@ -466,7 +468,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 		    	    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
 	            }
 
-	            vm.removeAudioGroup(audioGroupId);
+	            vm.removeAudioGroup(audioGroup);
 		}
             } else {                
                 FakeVoiceManager.getInstance().endCall(externalCallID);
@@ -506,7 +508,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 	synchronized (this) {
 	    callNumber++;
-
+	
             return getCell().getCellID() + "_" + callNumber;
 	}
     }

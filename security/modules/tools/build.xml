@@ -9,6 +9,7 @@
         <file name="darkstar/build.xml"/>
         <file name="security-group/build.xml"/>
         <file name="security-session-noauth/build.xml"/>
+        <file name="presence-manager/build.xml"/>
         <file name="voicebridge/build.xml"/>
         <file name="server-manager/build.xml"/>
         <file name="audio-manager/build.xml"/>
@@ -18,11 +19,11 @@
         <file name="coneofsilence/build.xml"/>
         <file name="phone/build.xml"/>
         <file name="artimport/build.xml"/>
-        <file name="content-repository/build.xml"/>
         <file name="webdav/build.xml"/>
         <file name="snapshot-manager/build.xml"/>
+        <file name="asset-meter/build.xml"/>
     </filelist>
-    
+
     <!-- build and package all subprojects -->
     <target name="dist">
         <build-subprojects fileset="all.projects" target="dist"/>

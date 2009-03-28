@@ -34,6 +34,7 @@ public class JmeColladaCell extends Cell {
     
     /* The URI of the model asset */
     private String modelURI = null;
+    private String modelGroupURI = null;
     private Vector3f geometryTranslation;
     private Quaternion geometryRotation;
     private Vector3f geometryScale;
@@ -54,13 +55,11 @@ public class JmeColladaCell extends Cell {
         super.setClientState(config);
         JmeColladaCellClientState colladaConfig = (org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellClientState)config;
         this.modelURI = colladaConfig.getModelURI();
+        this.modelGroupURI = colladaConfig.getModelGroupURI();
         this.geometryRotation = colladaConfig.getGeometryRotation();
         this.geometryTranslation = colladaConfig.getGeometryTranslation();
         this.geometryScale = colladaConfig.getGeometryScale();
         logger.info("[CELL] JME COLLADA CELL " + this.modelURI);
-        Vector3f axis = new Vector3f();
-        float angle = geometryRotation.toAngleAxis(axis);
-        System.err.println("JME CELL "+geometryTranslation+"  "+angle+"  "+axis);
     }
     
     @Override
@@ -89,6 +88,10 @@ public class JmeColladaCell extends Cell {
         return this.modelURI;
     }
 
+    public String getModelGroupURI() {
+        return modelGroupURI;
+    }
+    
     public Vector3f getGeometryTranslation() {
         return geometryTranslation;
     }

@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.server.comms;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedObject;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -100,4 +101,9 @@ class CommsManagerImpl
     public WonderlandClientSender getSender(ConnectionType clientType) {
         return WonderlandSessionListener.getSender(clientType);
     }
+
+    public WonderlandClientID getWonderlandClientID(BigInteger sessionID) {
+	return SessionMapManagerFactory.getSessionMapManager().getClientID(sessionID);
+    }
+
 }

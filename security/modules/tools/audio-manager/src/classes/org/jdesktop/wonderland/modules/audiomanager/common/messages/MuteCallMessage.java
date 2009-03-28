@@ -17,11 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 import org.jdesktop.wonderland.common.messages.Message;
-
-import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  * Message indicating whether someone is muted or unmuted
@@ -31,7 +31,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 public class MuteCallMessage extends Message {
 
     private String callID;
-
     private boolean isMuted;
 
     public MuteCallMessage(String callID, boolean isMuted) {

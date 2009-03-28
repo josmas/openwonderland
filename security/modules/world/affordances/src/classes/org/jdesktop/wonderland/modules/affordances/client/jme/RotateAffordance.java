@@ -31,16 +31,22 @@ import com.jme.scene.shape.Tube;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import java.util.logging.Logger;
+import java.util.Formatter;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -307,8 +313,32 @@ public class RotateAffordance extends Affordance {
         // center of the afforance
         private Vector3f dragStartVectorWorld;
 
+        // The label (and frame) to display the current rotation amount
+        private JFrame labelFrame = null;
+        private JLabel rotationLabel = null;
+
         public RotationDragListener(RotateAxis direction) {
             this.direction = direction;
+
+            // Tell the processor component super class that we are going to
+            // post some Swing UI
+            setSwingSafe(true);
+
+            // Create a label to display the current drag amount
+            labelFrame = new JFrame();
+            labelFrame.setResizable(false);
+            labelFrame.setUndecorated(true);
+            labelFrame.getContentPane().setLayout(new GridLayout(1, 1));
+            JPanel labelPanel = new JPanel();
+            labelPanel.setBackground(Color.WHITE);
+            labelPanel.setOpaque(true);
+            labelFrame.getContentPane().add(labelPanel);
+            labelPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+            labelPanel.setLayout(new GridLayout());
+            rotationLabel = new JLabel("0.00 degrees");
+            labelPanel.add(rotationLabel);
+            labelPanel.invalidate();
+            labelFrame.pack();
         }
 
         @Override
@@ -318,21 +348,22 @@ public class RotateAffordance extends Affordance {
 
         @Override
         public void commitEvent(Event event) {
-            Logger logger = Logger.getLogger(RotateAffordance.class.getName());
-            MouseEvent3D me = (MouseEvent3D) event;
+            // Fetch and cast some event objects
+            MouseEvent3D mouseEvent = (MouseEvent3D)event;
+            MouseEvent awtMouseEvent = (MouseEvent)mouseEvent.getAwtEvent();
 
             // Figure out where the initial mouse button press happened and
             // store the initial position. We also store the center of the
             // affordance.
             CellTransform transform = cell.getLocalTransform();
             if (event instanceof MouseButtonEvent3D) {
-                MouseButtonEvent3D be = (MouseButtonEvent3D)event;
-                if (be.isPressed() && be.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+                MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D)event;
+                if (buttonEvent.isPressed() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
                     // Figure out where the button press is in screen and world
                     // coordinates. Also fetch the current rotation for cell.
-                    MouseEvent awtButtonEvent = (MouseEvent)be.getAwtEvent();
+                    MouseEvent awtButtonEvent = (MouseEvent)buttonEvent.getAwtEvent();
                     dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
-                    dragStartWorld = be.getIntersectionPointWorld();
+                    dragStartWorld = buttonEvent.getIntersectionPointWorld();
                     rotationOnPress = transform.getRotation(null);
                     
                     // Figure out the world coordinates of the center of the
@@ -344,6 +375,15 @@ public class RotateAffordance extends Affordance {
                     // Compute the vector from the starting point of the drag
                     // to the center of the affordance in world coordinates.
                     dragStartVectorWorld = dragStartWorld.subtract(centerWorld);
+
+                    // Set the initial value of the label to 0.0 and display
+                    setLabelPosition(awtMouseEvent);
+                    labelFrame.toFront();
+                    labelFrame.setVisible(true);
+                    labelFrame.repaint();
+                }
+                else if (buttonEvent.isReleased() == true) {
+                    labelFrame.setVisible(false);
                 }
                 return;
             }
@@ -403,11 +443,34 @@ public class RotateAffordance extends Affordance {
             Vector3f crossProduct = v2.cross(v1);
             double angle = Math.atan2(normal.dot(crossProduct), dotProduct);
 
+            // Set the label with the amount that we have rotated it. We display
+            // the rotated amount to two decimal points
+            StringBuilder rotateString = new StringBuilder();
+            Formatter formatter = new Formatter(rotateString);
+            formatter.format("%.2f degrees", angle);
+            rotationLabel.setText(rotateString.toString());
+            labelFrame.pack();
+
+            // Figure out where to place the label based upon the location of
+            // the event.
+            setLabelPosition(awtMouseEvent);
+
             // Rotate the object along the defined axis and angle.
             Quaternion q = new Quaternion().fromAngleAxis((float)angle, axis);
             Quaternion newRotation = rotationOnPress.mult(q);
             transform.setRotation(newRotation);
             movableComp.localMoveRequest(transform);
+        }
+
+        /**
+         * Sets the location of the frame holding the label given the current
+         * mouse event, using its location
+         */
+        private void setLabelPosition(MouseEvent mouseEvent) {
+            Component component = mouseEvent.getComponent();
+            Point parentPoint = new Point(component.getLocationOnScreen());
+            parentPoint.translate(mouseEvent.getX() + 10, mouseEvent.getY() - 15);
+            labelFrame.setLocation(parentPoint);
         }
     }
 }

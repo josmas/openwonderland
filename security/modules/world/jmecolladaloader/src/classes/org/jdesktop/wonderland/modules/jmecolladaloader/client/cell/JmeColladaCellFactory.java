@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
 
 import java.awt.Image;
+import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -34,8 +35,17 @@ public class JmeColladaCellFactory implements CellFactorySPI {
         return new String[] { "dae" };
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState() {
-        return (T)new JmeColladaCellServerState();
+    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+        JmeColladaCellServerState state = new JmeColladaCellServerState();
+
+       // Look for the content-uri field and set if so
+       if (props != null) {
+           String uri = props.getProperty("content-uri");
+           if (uri != null) {
+               state.setModel(uri);
+           }
+       }
+        return (T)state;
     }
 
     public String getDisplayName() {

@@ -28,7 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
-import org.jdesktop.wonderland.common.AssetType;
+import org.jdesktop.wonderland.client.assetmgr.modules.ModuleAssetRepositoryFactory;
 import org.jdesktop.wonderland.common.JarURI;
 
 /**
@@ -68,9 +68,14 @@ public class WljURLConnection extends URLConnection {
     @Override
     public InputStream getInputStream() {
         try {
-            /* Forms an ResourceURI given the URL and fetches from the asset manager */
+            // Since we know this asset belongs to a module, first create a
+            // factory to handle its loading.
             JarURI uri = new JarURI(this.url.toExternalForm());
-            Asset asset = AssetManager.getAssetManager().getAsset(uri, AssetType.FILE);
+            ModuleAssetRepositoryFactory factory = new ModuleAssetRepositoryFactory(uri);
+
+            // Next, we ask the asset manager for the asset and wait for it to
+            // be loaded
+            Asset asset = AssetManager.getAssetManager().getAsset(uri, factory);
             if (asset == null || AssetManager.getAssetManager().waitForAsset(asset) == false) {
                 return null;
             }

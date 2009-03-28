@@ -32,9 +32,17 @@ import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
+import java.util.Formatter;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
@@ -87,7 +95,8 @@ public class ResizeAffordance extends Affordance {
     private GeometricUpdateListener updateListener = null;
 
     /**
-     * TBD
+     * Constructor, create a new resize affordance entity given the Cell to
+     * attach it to.
      */
     public ResizeAffordance(Cell cell) throws AffordanceException {
         super("Resize", cell);
@@ -261,7 +270,30 @@ public class ResizeAffordance extends Affordance {
         // The original scaling of the cell when the drag started
         private Vector3f dragStartScaling;
 
+        // The label (and frame) to display the current drag amount
+        private JFrame labelFrame = null;
+        private JLabel resizeLabel = null;
+
         public ResizeDragListener() {
+            // Tell the processor component super class that we are going to
+            // post some Swing UI
+            setSwingSafe(true);
+
+            // Create a label to display the current drag amount
+            labelFrame = new JFrame();
+            labelFrame.setResizable(false);
+            labelFrame.setUndecorated(true);
+            labelFrame.getContentPane().setLayout(new GridLayout(1, 1));
+            JPanel labelPanel = new JPanel();
+            labelPanel.setBackground(Color.WHITE);
+            labelPanel.setOpaque(true);
+            labelFrame.getContentPane().add(labelPanel);
+            labelPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+            labelPanel.setLayout(new GridLayout());
+            resizeLabel = new JLabel("0.00x");
+            labelPanel.add(resizeLabel);
+            labelPanel.invalidate();
+            labelFrame.pack();
         }
 
         @Override
@@ -271,8 +303,9 @@ public class ResizeAffordance extends Affordance {
 
         @Override
         public void commitEvent(Event event) {
-            Logger logger = Logger.getLogger(RotateAffordance.class.getName());
-            MouseEvent3D me = (MouseEvent3D) event;
+            // Fetch and cast some event objects
+            MouseEvent3D mouseEvent = (MouseEvent3D)event;
+            MouseEvent awtMouseEvent = (MouseEvent)mouseEvent.getAwtEvent();
 
             // Figure out where the initial mouse button press happened and
             // store the initial position. We also store the center of the
@@ -300,6 +333,14 @@ public class ResizeAffordance extends Affordance {
                     // to the center of the affordance in world coordinates.
                     dragStartVectorWorld = dragStartWorld.subtract(centerWorld);
                     dragStartRadius = dragStartVectorWorld.length();
+
+                    // Set the initial value of the label to 0.0 and display
+                    setLabelPosition(awtMouseEvent);
+                    labelFrame.toFront();
+                    labelFrame.setVisible(true);
+                    labelFrame.repaint();
+                } else if (be.isReleased() == true) {
+                    labelFrame.setVisible(false);
                 }
                 return;
             }
@@ -327,10 +368,33 @@ public class ResizeAffordance extends Affordance {
             // will give us the amount to scale the cell
             float scale = dragEndRadius / dragStartRadius;
 
+            // Set the label with the amount that we have scaled it. We display
+            // the scaled amount to two decimal points
+            StringBuilder resizeString = new StringBuilder();
+            Formatter formatter = new Formatter(resizeString);
+            formatter.format("%.2fx", scale);
+            resizeLabel.setText(resizeString.toString());
+            labelFrame.pack();
+
+            // Figure out where to place the label based upon the location of
+            // the event.
+            setLabelPosition(awtMouseEvent);
+
             // Rotate the object along the defined axis and angle.
             Vector3f scaling = dragStartScaling.mult(scale);
             transform.setScaling(scaling);
             movableComp.localMoveRequest(transform);
+        }
+
+        /**
+         * Sets the location of the frame holding the label given the current
+         * mouse event, using its location
+         */
+        private void setLabelPosition(MouseEvent mouseEvent) {
+            Component component = mouseEvent.getComponent();
+            Point parentPoint = new Point(component.getLocationOnScreen());
+            parentPoint.translate(mouseEvent.getX() + 10, mouseEvent.getY() - 15);
+            labelFrame.setLocation(parentPoint);
         }
     }
 }

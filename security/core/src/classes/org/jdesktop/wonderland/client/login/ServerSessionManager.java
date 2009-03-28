@@ -125,8 +125,8 @@ public class ServerSessionManager {
     }
 
     /**
-     * Get the server URL as a string: <server name>:<port>
-     * @return <server name>:<port>
+     * Get the server URL as a string: &lt;server name&gt;:&lt;port&gt;
+     * @return &lt;server name&gt;:&lt;port&gt;
      */
     public String getServerNameAndPort() {
         try {

@@ -17,11 +17,13 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import org.jdesktop.wonderland.common.messages.Message;
 
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
 import org.jdesktop.wonderland.common.cell.CellID;
+
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
  *
@@ -29,6 +31,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class AudioParticipantSpeakingMessage extends CellMessage {
     
+    private CellID cellID;
     private boolean isSpeaking;
 
     public AudioParticipantSpeakingMessage(CellID cellID, boolean isSpeaking) {

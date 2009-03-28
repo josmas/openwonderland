@@ -32,8 +32,11 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 import org.jdesktop.wonderland.common.NetworkAddress;
 
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
@@ -45,10 +48,10 @@ import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AvatarCellIDMessage;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetUserListMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
@@ -66,6 +69,11 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import java.io.IOException;
 
 import java.net.InetAddress;
@@ -77,8 +85,13 @@ import java.util.ArrayList;
 
 import java.util.logging.Logger;
 
+import java.awt.event.KeyEvent;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarMuteEvent;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarSpeakingEvent;
 
 /**
  *
@@ -92,10 +105,13 @@ public class AudioManagerClient extends BaseConnection implements
 
     private WonderlandSession session;
 
-    private CellID cellID;
     private boolean connected = true;
 
-    private UserListJFrame userListJFrame;
+    private PresenceInfo presenceInfo;
+
+    private CellID cellID;
+
+    private PresenceManager pm;
 
     /** 
      * Create a new AudioManagerClient
@@ -107,6 +123,9 @@ public class AudioManagerClient extends BaseConnection implements
 	    throws ConnectionFailureException {
 
 	this.session = session;
+
+	pm = PresenceManagerFactory.getPresenceManager(session);
+
 	session.connect(this);
 
         LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
@@ -116,15 +135,40 @@ public class AudioManagerClient extends BaseConnection implements
             viewConfigured(avatar);
         }
 
-        SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
-
         JmeClientMain.getFrame().addToToolMenu(AudioMenu.getAudioMenu(this));
+
+	javax.swing.JMenuItem userListJMenuItem = new javax.swing.JMenuItem();
+        userListJMenuItem.setText("Show Users");
+        userListJMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showUsers(evt);
+            }
+        });
         
+        JmeClientMain.getFrame().addToToolMenu(userListJMenuItem);
+
 	CellManager.getCellManager().addCellStatusChangeListener(this);
 
-	InputManager.inputManager().addGlobalEventListener(new MouseEventListener());
+        SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
+
+	InputManager.inputManager().addGlobalEventListener(new MyEventListener());
 
 	logger.fine("Starting AudioManagerCLient");
+    }
+
+    private UserListJFrame userListJFrame;
+
+    public void showUsers(java.awt.event.ActionEvent evt) {
+	if (presenceInfo == null) {
+	    return;
+	}
+
+        if (userListJFrame == null) {
+            userListJFrame = new UserListJFrame(session, this);
+	}
+
+	userListJFrame.setUserList();
+        userListJFrame.setVisible(true);
     }
 
     public void cellStatusChanged(Cell cell, CellStatus status) {
@@ -151,14 +195,37 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void viewConfigured(LocalAvatar localAvatar) {
 	cellID = localAvatar.getViewCell().getCellID();
+
+	presenceInfo = pm.getPresenceInfo(cellID);
+
+	if (presenceInfo == null) {
+	    /*
+	     * This happened when our viewConfigured() is called
+	     * before viewConfigured() in the PresenceManager.
+	     * 
+	     * We create the PresenceInfo here and tell the PresenceManager
+	     * about it.  When viewConfigured() is called in the PresenceManager,
+	     * the PresenceManager will send a message to the server about
+	     * a new session being created.
+	     */
+	    System.out.println("AudioManagerClient viewConfigured:  "
+		+ "No Presence info for " + cellID + " THIS SHOULDN'T HAPPEN!");
+
+	    String callID = CallID.getCallID(cellID);
+
+            SoftphoneControlImpl.getInstance().setCallID(callID);
+
+            presenceInfo = new PresenceInfo(cellID, session.getID(),
+                session.getUserID(), callID);
+
+	    pm.addSession(presenceInfo);
+	}
+
 	connectSoftphone();
     }
 
     public void connectSoftphone() {
-	session.send(this, new AvatarCellIDMessage(cellID));
-
  	logger.fine("Sending message to server to get voice bridge...");
-
 	session.send(this, new GetVoiceBridgeMessage());
     }
 
@@ -188,18 +255,35 @@ public class AudioManagerClient extends BaseConnection implements
     public void mute(boolean isMuted) {
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 	sc.mute(isMuted);
+
+	session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
+    }
+
+    private void toggleMute() {
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+	boolean isMuted = sc.isMuted();
+
+	isMuted = !isMuted;
+
+	sc.mute(isMuted);
 	session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
     }
 
     public void voiceChat() {
-	new VoiceChatDialog(this, session, cellID);
+	try {
+	    new VoiceChatDialog(this, cellID, session, presenceInfo);
+	} catch (IOException e) {
+	    logger.warning("Unable to get voice chat dialog:  " + e.getMessage());
+	}
     }
 
     public void softphoneVisible(boolean isVisible) {
         AudioMenu.updateSoftphoneCheckBoxMenuItem(isVisible);
     }
 
-    public void softphoneMuted(boolean muted) {
+    public void softphoneMuted(boolean isMuted) {
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+	session.send(this, new MuteCallMessage(sc.getCallID(), sc.isMuted()));
     }
 
     public void softphoneConnected(boolean connected) {
@@ -219,7 +303,7 @@ public class AudioManagerClient extends BaseConnection implements
     public void transferCall(String phoneNumber) {
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-	session.send(this, new TransferCallMessage(sc.getCallID(), phoneNumber));
+	session.send(this, new TransferCallMessage(presenceInfo, phoneNumber));
     }
 
     public void cancelCallTransfer() {
@@ -229,10 +313,10 @@ public class AudioManagerClient extends BaseConnection implements
     public void handleMessage(Message message) {
 	logger.fine("got a message...");
 
-	if (message instanceof GetVoiceBridgeMessage) {
-	    GetVoiceBridgeMessage msg = (GetVoiceBridgeMessage) message;
+	if (message instanceof GetVoiceBridgeResponseMessage) {
+	    GetVoiceBridgeResponseMessage msg = (GetVoiceBridgeResponseMessage) message;
 
-	    logger.fine("Got voice bridge " + msg.getBridgeInfo());
+	    logger.warning("Got voice bridge " + msg.getBridgeInfo());
 
 	    SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
@@ -260,28 +344,36 @@ public class AudioManagerClient extends BaseConnection implements
 	        localAddress = ia.getHostAddress();
 	    } catch (UnknownHostException e) {
 	        logger.warning(e.getMessage());
+
+		logger.warning("The client is unable to connect to the bridge public address. "
+		    + " Trying the bridge private Address.");
+
+		try {
+	            InetAddress ia = NetworkAddress.getPrivateLocalAddress(
+		        "server:" + tokens[2] + ":" + tokens[4] + ":10000");
+
+	            localAddress = ia.getHostAddress();
+	        } catch (UnknownHostException ee) {
+	            logger.warning(ee.getMessage());
+		}
 	    }
 
 	    if (localAddress != null) {
 	        try {
 	            String sipURL = sc.startSoftphone(
-		        msg.getUsername(), registrarAddress, 10, localAddress, AudioQuality.VPN);
+		        presenceInfo.userID.getUsername(), registrarAddress, 10, localAddress, 
+			AudioQuality.VPN);
 
-	            CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
-
-		    logger.fine("Softphone call id is " + cellID.toString());
-
-		    sc.setCallID(cellID.toString());
+		    logger.fine("Starting softphone:  " + presenceInfo);
 
 	            // XXX need location and direction
-	            session.send(this, new PlaceCallMessage(
-		        cellID.toString(), sipURL, 0., 0., 0., 90., false));
+	            session.send(this, new PlaceCallMessage(presenceInfo, sipURL, 0., 0., 0., 90., false));
 	        } catch (IOException e) {
                     logger.warning(e.getMessage());
 	        }
 	    } else {
 		// XXX Put up a dialog box here
-		logger.warning("UNABLE TO START SOFTPHONE.  AUDIO WILL NOT WORK!!!!!!!!!!!!");
+		logger.warning("LOCAL ADDRESS IS NULL.  AUDIO WILL NOT WORK!!!!!!!!!!!!");
 		/*
 		 * Try again.
 		 */
@@ -294,8 +386,12 @@ public class AudioManagerClient extends BaseConnection implements
                 VoiceChatDialog.getVoiceChatDialog(msg.getGroup());
 
             if (voiceChatDialog == null) {
-	        CellID cellID = ((CellClientSession)session).getLocalAvatar().getViewCell().getCellID();
-                voiceChatDialog = new VoiceChatDialog(this, session, cellID);
+		try {
+                    voiceChatDialog = new VoiceChatDialog(this, cellID, session, msg.getCaller());
+		} catch (IOException e) {
+	    	    logger.warning("Unable to get voice chat dialog:  " + e.getMessage());
+		    return;
+		}
             }
 
             voiceChatDialog.requestToJoin(msg.getGroup(), msg.getCaller(), 
@@ -303,55 +399,50 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof VoiceChatBusyMessage) {
 	    VoiceChatBusyMessage msg = (VoiceChatBusyMessage) message;
 
-	    new VoiceChatBusyDialog(msg.getGroup(), msg.getCaller());
+	    new VoiceChatBusyDialog(msg.getGroup(), msg.getCallee());
 	} else if (message instanceof VoiceChatInfoResponseMessage) {
 	    VoiceChatInfoResponseMessage msg = (VoiceChatInfoResponseMessage) message;
 
             VoiceChatDialog voiceChatDialog =
                 VoiceChatDialog.getVoiceChatDialog(msg.getGroup());
 
-            logger.fine("response " + msg.getChatInfo());
-
             if (voiceChatDialog == null) {
-                logger.warning(
-                    "No voiceChatDialog for " + msg.getGroup());
+                logger.warning("No voiceChatDialog for " + msg.getGroup());
             } else {
-                voiceChatDialog.setChatters(msg.getChatInfo());
+                voiceChatDialog.setChatters(msg.getChatters());
             }
 	} else if (message instanceof SpeakingMessage) {
 	    SpeakingMessage msg = (SpeakingMessage) message;
 
-	    logger.info("CallId " + msg.getCallID() 
-		+ (msg.isSpeaking() ? " Started Speaking" : " Stopped Speaking"));
-
 	    if (userListJFrame != null) {
 		userListJFrame.setSpeaking(msg.getCallID(), msg.isSpeaking());
 	    }
-	} else if (message instanceof GetUserListMessage) {
-	    if (userListJFrame == null) {
-	    	userListJFrame = 
-		    new UserListJFrame(((GetUserListMessage) message).getLocation());
 
-		new UserListUpdater(this);
+	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
+
+	    if (info == null) {
+		logger.warning("No presence info for " + msg.getCallID());
+		return;
 	    }
 
-	    ArrayList<String> userList = ((GetUserListMessage) message).getUserList();
-
-	    String s = "";
-
-	    for (String user : userList) {
-		s += user + " ";
-	    }
-
-	    userList.remove("servermanager");  // not a real user.
-	    userListJFrame.setListData(userList.toArray(new String[0]));
-	    userListJFrame.setVisible(true);
+	    InputManager.inputManager().postEvent(
+	        new AvatarSpeakingEvent(info.userID.getUsername(), msg.isSpeaking()));
 	} else if (message instanceof MuteCallMessage) {
 	    MuteCallMessage msg = (MuteCallMessage) message;
 
 	    if (userListJFrame != null) {
-		userListJFrame.setMute(msg.getCallID(), msg.isMuted());
+	        userListJFrame.muteCall(msg.getCallID(), msg.isMuted());
 	    }
+
+	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
+
+	    if (info == null) {
+		logger.warning("No presence info for " + msg.getCallID());
+		return;
+	    }
+
+	    InputManager.inputManager().postEvent(
+	        new AvatarMuteEvent(info.userID.getUsername(), msg.isMuted()));
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}
@@ -362,45 +453,23 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     private void inputEvent(Event event) {
-	//System.out.println("Got event " + event);
-    }
+	if (event instanceof KeyEvent3D) {
+	    KeyEvent3D e = (KeyEvent3D) event;
 
-    class UserListUpdater extends Thread {
-	
-	private AudioManagerClient client;
-
-	private boolean done;
-
-	public UserListUpdater(AudioManagerClient client) {
-	    this.client = client;
-	    start();
-	}
-
-	public void done() {
-	    done = true;
-	}
-
-	public void run() {
-	    while (!done) {
-	        try {
-		    Thread.sleep(2000);
-	        } catch (InterruptedException e) {
-	        }
-
-	        session.send(client, new GetUserListMessage(null));
+	    if (e.isPressed() && e.getKeyChar() == '[') {
+		toggleMute();		
 	    }
 	}
-
     }
 
     /**
-     * Global mouse listener for selection events. Reports back to the Selection
+     * Global listener for keyboard and mouse events. Reports back to the Selection
      * Manager on any updates.
      */
-    class MouseEventListener extends EventClassFocusListener {
+    class MyEventListener extends EventClassFocusListener {
         @Override
         public Class[] eventClassesToConsume() {
-            return new Class[] { MouseEvent3D.class };
+            return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
         }
 
         // Note: we don't override computeEvent because we don't do any computation in this listener.
@@ -409,6 +478,7 @@ public class AudioManagerClient extends BaseConnection implements
         public void commitEvent(Event event) {
             inputEvent(event);
         }
+
     }
 
 }

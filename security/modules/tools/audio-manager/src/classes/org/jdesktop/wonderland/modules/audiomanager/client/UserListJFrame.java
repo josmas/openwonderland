@@ -6,6 +6,16 @@
 
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+
 import java.util.ArrayList;
 
 import java.awt.Point;
@@ -14,17 +24,24 @@ import java.awt.Point;
  *
  * @author  jp
  */
-public class UserListJFrame extends javax.swing.JFrame {
+public class UserListJFrame extends javax.swing.JFrame implements PresenceManagerListener {
+
+    private WonderlandSession session;
+    private AudioManagerClient client;
+
+    private PresenceManager pm;
 
     /** Creates new form UserListJFrame */
-    public UserListJFrame(Point location) {
+    public UserListJFrame(WonderlandSession session, AudioManagerClient client) {
+	this.session = session;
+	this.client = client;
+
         initComponents();
 
 	setTitle("Users");
 
-	if (location != null) {
-	    setLocation(location);
-	}
+	pm = PresenceManagerFactory.getPresenceManager(session);
+	pm.addPresenceManagerListener(this);
     }
 
     /** This method is called from within the constructor to
@@ -62,32 +79,99 @@ public class UserListJFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    public void setSpeaking(String id, boolean isSpeaking) {
-	System.out.println("UserList " + id + ":  " 
-	    + (isSpeaking ? "Started Speaking" : "Stopped Speaking"));
+    public void done() {
+	setVisible(false);
     }
 
-    public void setMute(String id, boolean isMuted) {
-	System.out.println("UserList " + id + ":  " 
-	    + (isMuted ? "Muted" : "Unmuted"));
+    private String[] userData;
+
+    public void setUserList() {
+	WonderlandIdentity[] userIDArray = pm.getAllUsers();
+
+	String[] userData = new String[userIDArray.length];
+
+	for (int i = 0; i < userIDArray.length; i++) {
+	    userData[i] = userIDArray[i].getUsername();
+	}
+
+	setUserList(userData);
     }
 
-    String[] listData;
+    public void setUserList(String[] userData) {
+	this.userData = userData;
 
-    public void setListData(String[] listData) {
-	this.listData = listData;
-	userList.setListData(listData);
+	userList.setListData(userData);
     }
 
-    /**
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new UserListJFrame(new Point(0, 0)).setVisible(true);
-            }
-        });
+    public void setSpeaking(String callID, boolean isSpeaking) {
+	//System.out.println("Got message for " + presenceInfo
+	//    + (isSpeaking ? " Started Speaking" : " Stopped Speaking"));
+
+        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
+
+	PresenceInfo info = pm.getPresenceInfo(callID);
+
+	if (info == null) {
+	    System.out.println("SetSpeaking unable to get username for callID " + callID);
+	    return;
+	}
+
+	String username = info.userID.getUsername();
+
+        WonderlandIdentity[] userIDArray = pm.getAllUsers();
+
+        String[] userData = new String[userIDArray.length];
+
+        for (int i = 0; i < userIDArray.length; i++) {
+	    String user = userIDArray[i].getUsername();
+
+	    if (username.equals(user) && isSpeaking) {
+		user += "...";
+	    } 
+
+            userData[i] = user;
+        }
+
+	setUserList(userData);
+    }
+
+    public void muteCall(String callID, boolean isMuted) {
+	//System.out.println(presenceInfo + (isMuted ? "Muted" : "Unmuted"));
+
+        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
+
+	PresenceInfo info = pm.getPresenceInfo(callID);
+
+	if (info == null) {
+	    System.out.println("SetSpeaking unable to get username for callID " + callID);
+	    return;
+	}
+
+	String username = info.userID.getUsername();
+
+        WonderlandIdentity[] userIDArray = pm.getAllUsers();
+
+        String[] userData = new String[userIDArray.length];
+
+        for (int i = 0; i < userIDArray.length; i++) {
+	    String user = userIDArray[i].getUsername();
+
+	    if (username.equals(user) && isMuted) {
+		user = "[" + user + "]";
+	    } 
+
+            userData[i] = user;
+        }
+
+	setUserList(userData);
+    }
+
+    public void userAdded(PresenceInfo presenceInfo) {
+	setUserList();
+    }
+
+    public void userRemoved(PresenceInfo presenceInfo) {
+	setUserList();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

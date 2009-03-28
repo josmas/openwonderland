@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import com.jme.math.Matrix3f;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,12 +25,18 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
+import com.jme.scene.shape.Quad;
+import com.jme.scene.state.RenderState;
+import com.jme.scene.state.ZBufferState;
 import imi.character.CharacterAttributes;
 import imi.character.CharacterMotionListener;
 import imi.character.avatar.FemaleAvatarAttributes;
 import imi.character.avatar.MaleAvatarAttributes;
 import imi.character.statemachine.GameContextListener;
+import imi.character.statemachine.corestates.CycleActionState;
 import imi.scene.PMatrix;
+import imi.scene.PTransform;
 import imi.scene.processors.JSceneEventProcessor;
 import imi.utils.PMathUtils;
 import imi.utils.input.AvatarControlScheme;
@@ -40,6 +47,7 @@ import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -54,8 +62,12 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarInputSelector;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
 
 /**
  * Renderer for Avatars, using the new avatar system
@@ -78,17 +90,30 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
     private float positionMinDistanceForPull    = 0.1f;
     private float positionMaxDistanceForPull    = 3.0f;
+    private Node nameTagRoot=null;
+
+    String username;
 
     public AvatarImiJME(Cell cell) {
         super(cell);
         assert(cell!=null);
         final Cell c = cell;
 
+	username = ((AvatarCell) cell).getIdentity().getUsername();
+
         characterMotionListener = new CharacterMotionListener() {
                 public void transformUpdate(Vector3f translation, PMatrix rotation) {
                     ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
+
+                    final Vector3f pos = new Vector3f(translation);
+                    SceneWorker.addWorker(new WorkCommit(){
+                        public void commit() {
+                            nameTagRoot.setLocalTranslation(pos);
+                            ClientContextJME.getWorldManager().addToUpdateList(nameTagRoot);
+                        }
+                    });
                 }
-            };
+        };
 
         // This info will be sent to the other clients to animate the avatar
         gameContextListener = new GameContextListener() {
@@ -97,22 +122,58 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
                         currentTrigger = trigger;
                         currentPressed = pressed;
                     }
-                   ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, null);
+                    String animationName = avatarCharacter.getContext().getState(CycleActionState.class).getAnimationName();
+                   ((MovableAvatarComponent)c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, animationName, null);
                 }
 
             };
 
         ClientContext.getInputManager().addGlobalEventListener(new EventClassListener() {
-            private Class[] consumeClasses = new Class[] { AvatarRendererChangeRequestEvent.class };
+            private Class[] consumeClasses = new Class[] { 
+		AvatarRendererChangeRequestEvent.class,
+		AvatarMuteEvent.class,
+		AvatarSpeakingEvent.class 
+	    };
 
             @Override
             public Class[] eventClassesToConsume () {
                 return consumeClasses;
             }
 
+	    @Override
+	    public void commitEvent(Event event) {
+		//System.out.println("COMMIT EVENT:  " + event);
+
+		if (event instanceof AvatarMuteEvent) {
+		    AvatarMuteEvent e = (AvatarMuteEvent) event;
+
+		    if (e.getUsername().equals(username)) {
+			if (e.isMuted()) {
+			    createNameTag("[" + username + "]");
+			} else {
+			    createNameTag(username);
+			}
+		    }
+		    return;
+		}
+
+		if (event instanceof AvatarSpeakingEvent) {
+		    AvatarSpeakingEvent e = (AvatarSpeakingEvent) event;
+
+		    if (e.getUsername().equals(username)) {
+			if (e.isSpeaking()) {
+			    createNameTag(username + "...");
+			} else {
+			    createNameTag(username);
+			}
+		    }
+		    return;
+		}
+	    }
+
             @Override
             public void computeEvent(Event evtIn) {
-                System.err.println("TODO - GOT EVENT "+evtIn);
+                //System.err.println("TODO - GOT EVENT "+evtIn);
             }
         });
     }
@@ -127,17 +188,65 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         else
             logger.warning("NO RenderComponent for Avatar");
 
+        createNameTag(username);
+
         // Remove the entity, it will be added when the cell status changes
         ClientContextJME.getWorldManager().removeEntity(avatarCharacter);
 
         return avatarCharacter;
     }
 
+    private Entity labelEntity;
+    private Spatial q;
+
+    void createNameTag(String username) {
+	WorldManager worldManager = ClientContextJME.getWorldManager();
+
+	Vector3f localTranslation = null;
+
+	if (labelEntity != null) {
+            worldManager.removeEntity(labelEntity);
+            labelEntity.removeComponent(RenderComponent.class);
+	    nameTagRoot.detachChild(q);
+            worldManager.addToUpdateList(nameTagRoot);
+	    localTranslation = nameTagRoot.getLocalTranslation();
+	}
+
+	labelEntity = new Entity("NameTag");
+        TextLabel2D label = new TextLabel2D(username);
+        q = label.getBillboard(0.3f);
+        q.setLocalTranslation(0f, 2f, 0f);
+        Matrix3f rot = new Matrix3f();
+        rot.fromAngleAxis((float) Math.PI, new Vector3f(0f,1f,0f));
+        q.setLocalRotation(rot);
+
+        nameTagRoot = new Node();
+        nameTagRoot.attachChild(q);
+
+        ZBufferState zbuf = (ZBufferState) worldManager.getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+        zbuf.setEnabled(true);
+        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+        nameTagRoot.setRenderState(zbuf);
+
+        labelEntity.addComponent(RenderComponent.class, worldManager.getRenderManager().createRenderComponent(nameTagRoot));
+        ClientContextJME.getWorldManager().addEntity(labelEntity);
+
+	if (localTranslation != null) {
+	    nameTagRoot.setLocalTranslation(localTranslation);
+            worldManager.addToUpdateList(nameTagRoot);
+	}
+    }
+
     void changeAvatar(WlAvatarCharacter newAvatar) {
+        ViewManager.getViewManager().detach();
         WorldManager wm = ClientContextJME.getWorldManager();
         wm.removeEntity(avatarCharacter);
 
+        PMatrix currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
+
         avatarCharacter = newAvatar;
+
+        avatarCharacter.getModelInst().setTransform(new PTransform(currentLocation));
 
         RenderComponent rc = (RenderComponent) avatarCharacter.getComponent(RenderComponent.class);
         if (rc!=null)
@@ -146,7 +255,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
             logger.warning("NO RenderComponent for Avatar");
 
         wm.addEntity(avatarCharacter);
-        avatarCharacter.selectForInput();
+
+        ViewManager.getViewManager().attach(cell);
+        selectForInput(selectedForInput);
     }
 
     @Override
@@ -163,12 +274,19 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
             Vector3f dir = new Vector3f(0,0,-1);
             transform.getRotation(null).multLocal(dir);
             PMatrix local = avatarCharacter.getController().getModelInstance().getTransform().getLocalMatrix(true);
-            Vector3f currentPosition = local.getTranslation();
+            final Vector3f currentPosition = local.getTranslation();
             float currentDistance = currentPosition.distance(pos);
             if ( currentDistance < positionMaxDistanceForPull )
                 pos.set(currentPosition);
             PMatrix look = PMathUtils.lookAt(pos.add(dir), pos, Vector3f.UNIT_Y);
             avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(look);
+
+            SceneWorker.addWorker(new WorkCommit(){
+                public void commit() {
+                    nameTagRoot.setLocalTranslation(currentPosition);
+                    ClientContextJME.getWorldManager().addToUpdateList(nameTagRoot);
+                }
+            });
         }
 
     }
@@ -191,7 +309,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         WonderlandSession session = cell.getCellCache().getSession();
         ServerSessionManager manager = session.getSessionManager();
         String serverHostAndPort = manager.getServerNameAndPort();
-        String baseURL = "wla://avatarbase@"+serverHostAndPort+"/";
+        String baseURL = "wla://avatarbaseart@"+serverHostAndPort+"/";
         attributes.setBaseURL(baseURL);
 
         URL avatarConfigURL = ((AvatarCell)cell).getAvatarConfigURL();
@@ -203,7 +321,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         // Create the character, but don't add the entity to wm
         // TODO this will change to take the config
         if (avatarConfigURL==null) {
-            File defaultConfig = AvatarConfigFrame.getDefaultAvatarConfigFile();
+            File defaultConfig = AvatarConfigManager.getDefaultAvatarConfigFile();
             if (defaultConfig.exists()) {
                 try {
                     avatarCharacter = new WlAvatarCharacter(defaultConfig.toURI().toURL(), ClientContextJME.getWorldManager(), baseURL);
@@ -224,7 +342,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
                 });
             }
         } else {
-            avatarCharacter = new WlAvatarCharacter(avatarConfigURL, wm, "wla://avatarbase@"+serverHostAndPort+"/");
+            avatarCharacter = new WlAvatarCharacter(avatarConfigURL, wm, "wla://avatarbaseart@"+serverHostAndPort+"/");
         }
         avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(origin);
 
@@ -276,16 +394,18 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
     }
 
-    public void trigger(int trigger, boolean pressed) {
+    public void trigger(int trigger, boolean pressed, String animationName) {
         if (!selectedForInput && avatarCharacter!=null) {
             // Sync to avoid concurrent updates of currentTrigger and currentPressed
             synchronized(this) {
                 if (currentTrigger==trigger && currentPressed==pressed)
                     return;
 
-                if (pressed)
+                if (pressed) {
+                    if (animationName!=null)
+                        ((WlAvatarContext)avatarCharacter.getContext()).setMiscAnimation(animationName);
                     avatarCharacter.getContext().triggerPressed(trigger);
-                else
+                } else
                     avatarCharacter.getContext().triggerReleased(trigger);
                 currentTrigger = trigger;
                 currentPressed = pressed;
