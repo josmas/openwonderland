@@ -80,8 +80,6 @@ public class SwingWhiteboardCell extends App2DCell {
     public boolean setStatus(CellStatus status) {
         boolean ret = super.setStatus(status);
 
-        System.err.println("HERE !!!! "+commComponent);
-
         switch (status) {
 
             // The cell is now visible

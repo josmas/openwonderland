@@ -52,6 +52,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D.Type;
 import java.awt.Button;
+import org.jdesktop.mtgame.WorldManager;
 
 /**
  * TODO
@@ -1101,6 +1102,17 @@ public abstract class View2DEntity implements View2D {
         /* For Debug 
         System.err.println("************* After View2DEntity.processChanges, viewNode = ");
         GraphicsUtils.printNode(viewNode);
+        */
+
+        /* For debug of ortho entities which should be visible 
+        WorldManager wm = ClientContextJME.getWorldManager();
+        for (int i=0; i < wm.numEntities(); i++) {
+            Entity e = wm.getEntity(i);
+            if (e.toString().equals("<Plug the name of the window in here")) {
+                System.err.println("e = " + e);
+                RenderComponent rc = (RenderComponent) e.getComponent(RenderComponent.class);
+            }
+        }
         */
     }
 
