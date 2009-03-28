@@ -39,8 +39,24 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  */
 public class OrbCellClientState extends CellClientState {
 
+    private String username;
+    private String callID;
+
     /** Default constructor */
     public OrbCellClientState() {
     }
     
+    public OrbCellClientState(String username, String callID) {
+	this.username = username;
+	this.callID = callID;
+    }
+
+    public String getUsername() {
+	return username;
+    }
+
+    public String getCallID() {
+	return callID;
+    }
+
 }

@@ -23,7 +23,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectio
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
@@ -58,6 +57,7 @@ import java.util.Properties;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 
+import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.BridgeInfo;
 import com.sun.mpk20.voicelib.app.Call;
@@ -81,13 +81,11 @@ import java.math.BigInteger;
  * @author jprovino
  */
 public class AudioManagerConnectionHandler 
-        implements ClientConnectionHandler, Serializable, ManagedCallStatusListener
-{
+        implements ClientConnectionHandler, Serializable, ManagedCallStatusListener {
+
     private static final Logger logger =
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
     
-    private VoiceChatHandler voiceChatHandler = new VoiceChatHandler();
-
     private ConcurrentHashMap<BigInteger, String> sessionCallIDMap = 
 	new ConcurrentHashMap();
 
@@ -123,10 +121,6 @@ public class AudioManagerConnectionHandler
 	    WonderlandClientID clientID, Message message) {
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	if (message instanceof CellStatusChangeMessage) {
-	    return;
-	}
 
 	if (message instanceof GetVoiceBridgeMessage) {
 	    BridgeInfo bridgeInfo;
@@ -166,7 +160,7 @@ public class AudioManagerConnectionHandler
 	    String callID = info.callID;
 	
 	    vm.addCallStatusListener(this, callID);
-	
+
 	    logger.fine("callID " + callID);
 
 	    if (callID == null) {
@@ -264,7 +258,7 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof VoiceChatMessage) {
-	    voiceChatHandler.processVoiceChatMessage(sender, clientID, 
+	    VoiceChatHandler.getInstance().processVoiceChatMessage(sender, clientID, 
 		(VoiceChatMessage) message);
 	    return;
 	}
@@ -306,16 +300,14 @@ public class AudioManagerConnectionHandler
         player.setCall(call);
 
         vm.getVoiceManagerParameters().livePlayerAudioGroup.addPlayer(player,
-            new AudioGroupPlayerInfo(true, 
-	    AudioGroupPlayerInfo.ChatType.PUBLIC));
+            new AudioGroupPlayerInfo(true, AudioGroupPlayerInfo.ChatType.PUBLIC));
 
-        AudioGroupPlayerInfo info = new AudioGroupPlayerInfo(false,
-            AudioGroupPlayerInfo.ChatType.PUBLIC);
+        AudioGroupPlayerInfo info = 
+	    new AudioGroupPlayerInfo(false, AudioGroupPlayerInfo.ChatType.PUBLIC);
 
         info.defaultSpeakingAttenuation = 0;
 
-        vm.getVoiceManagerParameters().stationaryPlayerAudioGroup.addPlayer(
-	    player, info);
+        vm.getVoiceManagerParameters().stationaryPlayerAudioGroup.addPlayer(player, info);
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {

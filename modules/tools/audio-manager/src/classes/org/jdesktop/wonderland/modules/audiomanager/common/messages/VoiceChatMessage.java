@@ -28,6 +28,7 @@ public class VoiceChatMessage extends Message {
     private String group;
 
     public enum ChatType {
+	EXCLUSIVE,
 	SECRET,
 	PRIVATE,
 	PUBLIC

@@ -11,10 +11,8 @@
         <include name="audio-manager/build.xml"/>
         <include name="sharedstate/build.xml"/>
         <include name="artimport/build.xml"/>
-        <include name="orb/build.xml"/>
         <include name="coneofsilence/build.xml"/>
         <include name="phone/build.xml"/>
-        <include name="audiorecorder/build.xml"/>
         <include name="artimport/build.xml"/>
         <include name="content-repository/build.xml"/>
         <include name="webdav/build.xml"/>
@@ -26,9 +24,14 @@
         <include name="presence-manager/build.xml"/>
     </fileset>
 
+    <fileset dir="${current.dir}" id="orb">
+        <include name="orb/build.xml"/>
+    </fileset>
+
     <!-- build and package all subprojects -->
     <target name="dist">
         <build-subprojects fileset="presence.manager" target="dist"/>
+        <build-subprojects fileset="orb" target="dist"/>
         <build-subprojects fileset="all.projects" target="dist"/>
     </target>
     

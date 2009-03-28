@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.phone.server.cell;
 
+import org.jdesktop.wonderland.modules.orb.server.cell.Orb;
+
 import com.sun.sgs.app.ManagedReference;
 
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
@@ -87,10 +89,6 @@ import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
-
-import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
-
-import org.jdesktop.wonderland.modules.orb.common.OrbCellServerState;
 
 import com.jme.bounding.BoundingVolume;
 
@@ -378,8 +376,14 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
                     logger.fine("back from attenuate other groups");
                 }
             } else {
-                Orb orb = new Orb(listing.getContactName(), externalCallID, 
-		    phoneCellMO.getWorldBounds(), listing.simulateCalls());
+		Vector3f center = new Vector3f();
+
+		phoneCellMO.getWorldBounds().getCenter(center);
+
+        	center.setY((float)1.5);
+
+                new Orb(listing.getContactName(), externalCallID, 
+		    center, .1, listing.simulateCalls());
 	    }
 
             if (listing.simulateCalls() == false) {
@@ -441,7 +445,13 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
             sender.send(clientID, new JoinCallResponseMessage(
 		phoneCellMO.getCellID(), listing, true));
             
-            new Orb(listing.getContactName(), externalCallID, phoneCellMO.getWorldBounds(), false);
+	    Vector3f center = new Vector3f();
+
+	    phoneCellMO.getWorldBounds().getCenter(center);
+
+            center.setY((float) 1.5);
+
+            new Orb(listing.getContactName(), externalCallID, center, .1, false);
 	    return;
 	}
 

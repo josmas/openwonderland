@@ -54,6 +54,8 @@ import com.sun.voip.client.connector.CallStatusListener;
 
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 
+import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
+
 /**
  *
  * @author jprovino
@@ -223,7 +225,15 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    logger.fine("localTransform " + localTransform + " world " 
 	        + localToWorldTransform);
 
-	    String callID = CallID.getCallID(cellRef.get().getCellID());
+	    String callID;
+
+	    CellMO cellMO = cellRef.get();
+
+	    if (cellMO instanceof OrbCellMO) {
+		callID = ((OrbCellMO) cellMO).getCallID();
+	    } else {
+	        callID = CallID.getCallID(cellRef.get().getCellID());
+	    }
 
 	    float[] angles = new float[3];
 

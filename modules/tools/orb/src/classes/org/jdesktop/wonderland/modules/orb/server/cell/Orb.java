@@ -15,16 +15,18 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.phone.server.cell;
+package org.jdesktop.wonderland.modules.orb.server.cell;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.ManagedObject;
 
 import java.io.Serializable;
 
 import java.util.logging.Logger;
 
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 
@@ -43,40 +45,28 @@ import com.jme.math.Vector3f;
  * Spawn an orb at a specified location
  * @author jprovino
  */
-public class Orb implements Serializable {
+public class Orb implements ManagedObject, Serializable {
 
     private static final Logger logger =
         Logger.getLogger(Orb.class.getName());
      
     private ManagedReference<OrbCellMO> orbCellMORef;
 
+    private String username;
     private CellID cellID;
 
-    public Orb(String username, String externalCallID, BoundingVolume boundingVolume, 
-	    boolean simulateCalls) {
+    public Orb(String username, String externalCallID, Vector3f center, 
+	    double size, boolean simulateCalls) {
 
-	/*
-	 * XXX I was trying to get this to delay for 2 seconds,
-	 * But there are no managers in the system context in which run() runs.
-	 */
-        //Spawn the Orb to represent the new public call.
+	this.username = username;
 
-	logger.fine("Spawning orb...");
-
-	Vector3f center = new Vector3f();
-
-	boundingVolume.getCenter(center);
-
-	center.setY((float)1.5);
-
-	logger.fine("phone bounding volume:  " + boundingVolume
-	    + " orb center " + center);
+	logger.fine("orb center :  " + center + " size " + size);
 
         String cellType = 
 	    "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
 
         OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
-	    center, (float) .5, username, externalCallID, simulateCalls);
+	    center, (float) size, username, externalCallID, simulateCalls);
 
 	if (orbCellMO == null) {
 	    logger.warning("Unable to spawn orb");
@@ -108,6 +98,14 @@ public class Orb implements Serializable {
 	return cellID;
     }
 
+    public OrbCellMO getOrbCellMO() {
+	return orbCellMORef.get();
+    }
+
+    public void addComponent(CellComponentMO component) {
+	getOrbCellMO().addComponent(component);
+    }
+
     public void done() {
 	if (orbCellMORef == null) {
 	    return;
@@ -117,4 +115,9 @@ public class Orb implements Serializable {
 
 	orbCellMORef = null;
     }
+
+    public String toString() {
+	return username;
+    }
+
 }

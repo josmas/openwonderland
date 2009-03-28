@@ -40,7 +40,7 @@ public class MicrophoneCellRenderer extends JmeColladaRenderer {
     @Override
     protected Node createSceneGraph(Entity entity) {
 
-	System.out.println("MICROPHONE:  createSceneGraph");
+	//System.out.println("MICROPHONE:  createSceneGraph");
 
         try {
             Node ret = loadColladaAsset(cell.getCellID().toString(), getAssetURL("wla://microphone/models/Microphone.dae"));

@@ -59,6 +59,7 @@ import org.jdesktop.wonderland.server.UserManager;
 
 import com.jme.math.Vector3f;
 
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
@@ -110,6 +111,7 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 
         ChannelComponentMO channelComponentMO = getChannelComponent();
 
+        channelComponentMO.addMessageReceiver(OrbAttachMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbStartCallMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbEndCallMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbMuteCallMessage.class, this);
@@ -120,6 +122,7 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
     public void done() {
 	ChannelComponentMO channelComponentMO = getChannelComponent();
 
+	channelComponentMO.removeMessageReceiver(OrbAttachMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbStartCallMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbEndCallMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbMuteCallMessage.class);
@@ -171,12 +174,17 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	}
 
 	if (message instanceof OrbMuteCallMessage) {
-	    try {
-	        call.mute(((OrbMuteCallMessage)message).isMuted());
-	    } catch (IOException e) {
-		logger.warning("Unable to mute call " + call + ": " 
-		    + e.getMessage());
+	    if (call != null) {
+	        try {
+	            call.mute(((OrbMuteCallMessage)message).isMuted());
+	        } catch (IOException e) {
+		    logger.warning("Unable to mute call " + call + ": " 
+		        + e.getMessage());
+		    return;
+	        }
 	    }
+
+	    sender.send(clientID, message);
 	    return;
 	}
 
@@ -221,7 +229,20 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 
 	    logger.info("Call " + callID 
 		+ (isSpeaking ? "Started Speaking" : "Stopped Speaking"));
+	    return;
 	}
+
+	if (message instanceof OrbAttachMessage) {
+	    OrbAttachMessage msg = (OrbAttachMessage) message;
+	    
+	    boolean isAttached = msg.isAttached();
+
+	    System.out.println("Orb attached to " + msg.getAvatarCellID()
+		+ " is " + msg.isAttached());
+	    return;
+	}
+
+	logger.warning("Unknown message:  " + message);
     }
 
 }
