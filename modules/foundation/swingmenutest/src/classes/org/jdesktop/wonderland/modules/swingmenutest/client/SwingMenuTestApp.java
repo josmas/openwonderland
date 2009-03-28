@@ -17,12 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.swingmenutest.client;
 
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.cell.AppCell;
 
 /**
  *
@@ -38,13 +36,11 @@ public class SwingMenuTestApp extends AppGraphics2D  {
      * Create a new instance of SwingMenuTestApp. This in turn creates
      * and makes visible the single window used by the app.
      *
-     * @param appType The type of app (should be SwingMenuTestAppType).
+     * @param name The name of the app.
      * @param pixelScale The horizontal and vertical pixel sizes (in world meters per pixel).
      */
-    public SwingMenuTestApp (AppType appType, Vector2f pixelScale) {
-
-	// configWorld can be null because the server cell is already configured
-	super(appType, new ControlArbMulti(), pixelScale);
+    public SwingMenuTestApp (String name, Vector2f pixelScale) {
+	super(name, new ControlArbMulti(), pixelScale);
 	controlArb.setApp(this);
     }
 

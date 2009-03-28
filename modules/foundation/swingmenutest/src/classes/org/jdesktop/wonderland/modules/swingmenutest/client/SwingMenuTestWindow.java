@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.swingmenutest.client;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.modules.appbase.client.App;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
 import javax.swing.JPanel;
@@ -47,7 +47,7 @@ public class SwingMenuTestWindow extends WindowSwing  {
      * @param topLevel Whether the window is top-level (e.g. is decorated) with a frame.
      * @param pixelScale The size of the window pixels.
      */
-    public SwingMenuTestWindow (final App app, int width, int height, boolean topLevel, Vector2f pixelScale)
+    public SwingMenuTestWindow (App2D app, int width, int height, boolean topLevel, Vector2f pixelScale)
         throws InstantiationException
     {
 	super(app, width, height, topLevel, pixelScale);

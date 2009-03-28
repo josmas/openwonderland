@@ -82,7 +82,6 @@ class ServerProxySlave implements ServerProxy {
     private DataBufferQueue bufQueue = new DataBufferQueue();
     /** Which user is currently controlling the app */
     private String controllingUserName = null;
-    private byte[] helloBuf = new byte[Proto.HELLO_MESSAGE_SIZE];
     private byte[] keyEventBuf = new byte[Proto.KEY_EVENT_MESSAGE_SIZE];
     private byte[] pointerEventBuf = new byte[Proto.POINTER_EVENT_MESSAGE_SIZE];
     private byte[] takeControlBuf = new byte[Proto.TAKE_CONTROL_MESSAGE_SIZE];
@@ -157,6 +156,7 @@ class ServerProxySlave implements ServerProxy {
                 bufQueue.enqueue(message);
             } else {
                 if (message[0] == ServerMessageType.WELCOME.ordinal()) {
+                    bufQueue.enqueue(message);
                     welcomeReceived = true;
                 }
             }
@@ -170,35 +170,24 @@ class ServerProxySlave implements ServerProxy {
 
     private void initialHandshake() {
 
-        System.err.println("In slave initialHandshake");
-
         String userName = session.getUserID().getUsername();
         int strLen = userName.length();
 
         // Inform the server  that we have connected by sending a hello message
         // with the name of this user
-        int n = 0;
-        helloBuf[n++] = (byte) Proto.ClientMessageType.HELLO.ordinal();
-        helloBuf[n++] = (byte) 0; // pad
-        helloBuf[n++] = (byte) ((strLen >> 8) & 0xff);
-        helloBuf[n++] = (byte) (strLen & 0xff);
-
-        // Send the hello header (command and user name string length)
+        byte[] helloBuf = new byte[Proto.HELLO_MESSAGE_SIZE + strLen];
+        helloBuf[0] = (byte) Proto.ClientMessageType.HELLO.ordinal();
+        helloBuf[1] = (byte) 0; // pad
+        helloBuf[2] = (byte) ((strLen >> 8) & 0xff);
+        helloBuf[3] = (byte) (strLen & 0xff);
+        System.arraycopy(userName.getBytes(), 0, helloBuf, 4, strLen);
         try {
             slaveSocket.send(helloBuf);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
 
-        // Then send the user name string
-        byte[] strBytes = userName.getBytes();
-        try {
-            slaveSocket.send(strBytes);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-
-        System.err.println("Broadcast slave Hello message");
+        AppXrw.logger.info("Broadcast slave Hello message for user " + userName);
 
         // Get the welcome message from the server. This contains the client id
         // Note: because the master hub broadcasts to all slaves, there is a chance
@@ -214,12 +203,9 @@ class ServerProxySlave implements ServerProxy {
 
         ServerMessageType type = null;
         do {
-            System.err.println("Waiting for a message");
             type = getMessageType();
-            System.err.println("type = " + type);
         } while (type != ServerMessageType.WELCOME);
         // TODO: eventually we should add a timeout
-        System.err.println("Received WELCOME from slave");
 
         // Skip 3 bytes of pad
         bufQueue.nextByte();
@@ -270,6 +256,8 @@ class ServerProxySlave implements ServerProxy {
         int transientFor = bufQueue.nextInt();
         System.err.println("transientFor = " + transientFor);
          */
+        // TODO: 0.4 protocol: skip isTransient
+        int transientFor = bufQueue.nextInt();
 
         crtMsgArgs.decorated = (bufQueue.nextByte() == 1) ? true : false;
         System.err.println("client = " + client);
@@ -278,6 +266,10 @@ class ServerProxySlave implements ServerProxy {
 
         // Make sure window is ready to receive data on creation
         win = client.createWindow(crtMsgArgs);
+        if (win == null) {
+            AppXrw.logger.warning("Cannot create slave window for " + crtMsgArgs.wid);
+            return;
+        }
 
         /* TODO: window config 
         win.setRotateY(rotY);
@@ -304,13 +296,13 @@ class ServerProxySlave implements ServerProxy {
                 pixels[srcLineOffset + x] = bufQueue.nextInt();
             }
         }
-        // TODO: win.displayPixels(0, 0, srcWidth, srcHeight, pixels);
+        win.displayPixels(0, 0, srcWidth, srcHeight, pixels);
 
         /* TODO: 0.4 protocol:
         WindowXrw winTransientFor = client.lookupWindow(transientFor);
-        win.setVisible(show, winTransientFor);
+        win.setVisibleApp(show, winTransientFor);
          */
-        win.setVisible(show, null);
+        win.setVisibleApp(show);
 
         if (stackPos >= 0) {
             winStackOrder[stackPos] = win;
@@ -337,8 +329,9 @@ class ServerProxySlave implements ServerProxy {
     }
 
     public Proto.ServerMessageType getMessageType() {
-        //System.err.println("Enter ServerProxySlave.getMessageByte");
-        return Proto.ServerMessageType.values()[(int) bufQueue.nextByte()];
+        int msgCode = (int) bufQueue.nextByte();
+        Proto.ServerMessageType msgType = Proto.ServerMessageType.values()[msgCode];
+        return msgType;
     }
 
     public void getData(CreateWindowMsgArgs msgArgs) {
@@ -923,5 +916,15 @@ class ServerProxySlave implements ServerProxy {
         slaveCloseWindowBuf[n++] = (byte) (wid & 0xff);
 
         slaveSocket.send(slaveCloseWindowBuf);
+    }
+
+
+    // For Debug
+    private static void print10bytes(byte[] bytes) {
+        int n = (bytes.length > 10) ? 10 : bytes.length;
+        for (int i = 0; i < n; i++) {
+            System.err.print(Integer.toHexString(bytes[i] & 0xff) + " ");
+        }
+        System.err.println();
     }
 }

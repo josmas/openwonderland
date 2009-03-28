@@ -20,9 +20,8 @@ package org.jdesktop.wonderland.modules.xremwin.client;
 import com.jme.math.Vector2f;
 import java.math.BigInteger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.App;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.WindowConventional;
-import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DView;
 
 /**
  * The Xremwin window class. 
@@ -35,14 +34,10 @@ public class WindowXrw extends WindowConventional {
     /** The X11 window ID */
     private int wid;
     /** 
-     * Non-zero indicates that the window is a transient window and the value is the window it is transient for.
-     * TODO: write code that uses this.
+     * Non-zero indicates that the window is a transient window and the value is the window it is 
+     * transient for. TODO: write code that uses this.
      */
     private WindowXrw winTransientFor;
-    /** The X11 x coordinate of the top-left corner window */
-    private int x;
-    /** The X11 y coordinate of the top-left corner window */
-    private int y;
     /** A temporary buffer used by syncSlavePixels. */
     private byte[] tmpPixelBytes;
 
@@ -58,14 +53,13 @@ public class WindowXrw extends WindowConventional {
      * @param wid The X11 window ID.
      * @throws Instantiation if the window cannot be created.
      */
-    WindowXrw(App app, int x, int y, int width, int height, int borderWidth,
-            boolean decorated, Vector2f pixelScale, int wid)
-            throws InstantiationException {
+    WindowXrw(App2D app, int x, int y, int width, int height, int borderWidth,
+              boolean decorated, Vector2f pixelScale, int wid) 
+        throws InstantiationException {
 
-        // In X11, decorated windows are top-level and have a frame
-        super(app, width, height, decorated, borderWidth, pixelScale);
-        this.x = x;
-        this.y = y;
+        super(app, width, height, decorated, borderWidth, pixelScale,
+              "WindowXrw " + wid + " for app " + app.getName());
+
         this.wid = wid;
 
         // Determine whether this window is transient for another
@@ -73,6 +67,8 @@ public class WindowXrw extends WindowConventional {
         if (transientForWid != 0) {
             winTransientFor = AppXrw.widToWindow.get(transientForWid);
         }
+
+        setOffset(x, y);
     }
 
     /**
@@ -89,78 +85,6 @@ public class WindowXrw extends WindowConventional {
      */
     public int getWid() {
         return wid;
-    }
-
-    /**
-     * Sets the window's location within the window system screen.
-     * This routine makes the corresponding update the the visual representation of the window.
-     *
-     * @param x The X coordinate of the window (relative to its parent).
-     * @param y The Y coordinate of the window (relative to its parent).
-     */
-    public void setLocation(int x, int y) {
-        update(setLocationNoUpdate(x, y));
-    }
-
-    /**
-     * Sets the window's location within the window system screen.
-     * This routine doesn't change visual representation of the window.
-     *
-     * @param x The X coordinate of the window (relative to its parent).
-     * @param y The Y coordinate of the window (relative to its parent).
-     */
-    public int setLocationNoUpdate(int x, int y) {
-        if (this.x != x || this.y != y) {
-            this.x = x;
-            this.y = y;
-            return Window2DView.CHANGED_TRANSFORM;
-        }
-        return 0;
-    }
-
-    /** 
-     * Returns the window's screen x location 
-     */
-    public int getX() {
-        return x;
-    }
-
-    /** 
-     * Returns the window's screen y location 
-     */
-    public int getY() {
-        return y;
-    }
-
-    /**
-     * Set both the window size and the sibling above in the stack in the same call.
-     * This routine makes the corresponding update the the visual representation of the window.
-     *
-     * @param x The X coordinate of the window (relative to its parent).
-     * @param y The Y coordinate of the window (relative to its parent).
-     * @param width The width of the window (in pixels).
-     * @param height The height of the window (in pixels).
-     * @param If non-null, the window that is to be positioned below this window in the window stack.
-     */
-    public void configure(int x, int y, int width, int height, WindowXrw sibWin) {
-        update(configureNoUpdate(x, y, width, height, sibWin));
-    }
-
-    /**
-     * Set both the window size and the sibling above in the stack in the same call.
-     * This routine doesn't change visual representation of the window.
-     *
-     * @param x The X coordinate of the window (relative to its parent).
-     * @param y The Y coordinate of the window (relative to its parent).
-     * @param width The width of the window (in pixels).
-     * @param height The height of the window (in pixels).
-     * @param If non-null, the window that is to be positioned below this window in the window stack.
-     */
-    protected int configureNoUpdate(int x, int y, int width, int height, WindowXrw sibWin) {
-        int chgMask = 0;
-        chgMask |= setLocationNoUpdate(x, y);
-        chgMask |= super.configureNoUpdate(width, height, sibWin);
-        return chgMask;
     }
 
     /**
@@ -192,9 +116,9 @@ public class WindowXrw extends WindowConventional {
      * @param winTransientFor If non-null, the window whose visibility is being changed
      * is a transient window for winTransientFor.
      */
-    public void setVisible(boolean visible, WindowXrw winTransientFor) {
+    public void setVisibleApp(boolean visible, WindowXrw winTransientFor) {
         this.winTransientFor = winTransientFor;
-        super.setVisible(visible);
+        super.setVisibleApp(visible);
     }
 
     /** 
@@ -237,13 +161,13 @@ public class WindowXrw extends WindowConventional {
     public void syncSlavePixels(BigInteger slaveID) {
 
         // Resize temporary buffer (if necessary)
-        int numBytes = width * height * 4;
+        int numBytes = getWidth() * getHeight() * 4;
         if (tmpPixelBytes == null || tmpPixelBytes.length < numBytes) {
             tmpPixelBytes = new byte[numBytes];
         }
 
         // Get pixels in a byte array
-        getPixelBytes(tmpPixelBytes, 0, 0, width, height);
+        getPixelBytes(tmpPixelBytes, 0, 0, getWidth(), getHeight());
 
         ClientXrw client = ((AppXrw) app).getClient();
         ((ClientXrwMaster) client).writeSyncSlavePixels(slaveID, tmpPixelBytes);

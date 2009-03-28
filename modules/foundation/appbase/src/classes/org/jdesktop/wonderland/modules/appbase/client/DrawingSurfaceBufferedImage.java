@@ -43,11 +43,13 @@ import java.text.AttributedCharacterIterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.NewFrameCondition;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 import java.lang.reflect.Method;
 import javax.media.opengl.GLContext;
 
 /**
+ * INTERNAL API 
+ * <br><br>
  * A type of drawing surface is based on using an AWT Graphics2D to draw to an AWT BufferedImage
  * and then copies the rendering into an ImageGraphics and, ultimately, the Texture. This is not as
  * optimal as DrawingSurfaceImageGraphics, but because it uses a normal AWT Graphics2D its rendering
@@ -55,7 +57,7 @@ import javax.media.opengl.GLContext;
  *
  * @author deronj
  */
-@ExperimentalAPI
+@InternalAPI
 public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
 
     private static final Logger logger = Logger.getLogger(DrawingSurfaceBufferedImage.class.getName());

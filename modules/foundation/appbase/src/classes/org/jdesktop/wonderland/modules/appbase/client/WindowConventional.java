@@ -54,7 +54,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
     private BufferedImage tempImage;
 
     /** 
-     * Create a new instance of WindowConventional.
+     * Create a new instance of WindowConventional with a default name.
      *
      * @param app The app to which the window belongs.
      * @param width The width of the window (in pixels). This does NOT include the borderWidth.
@@ -62,12 +62,30 @@ public abstract class WindowConventional extends WindowGraphics2D {
      * @param topLevel Whether the window is top left (that is, is decorated).
      * @param borderWidth The border width of the window.
      * @param pixelScale The size of the window pixels in world coordinates.
-     * @throws InstantiationException if the the window cannot be created.
      */
-    public WindowConventional(App app, int width, int height, boolean topLevel, int borderWidth, Vector2f pixelScale)
-            throws InstantiationException {
+    public WindowConventional(App2D app, int width, int height, boolean topLevel, int borderWidth, 
+                              Vector2f pixelScale) {
         super(app, width, height, topLevel, pixelScale,
-                new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
+              new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
+        this.borderWidth = borderWidth;
+        appConventional = (AppConventional) app;
+    }
+
+    /** 
+     * Create a new instance of WindowConventional with the given  name.
+     *
+     * @param app The app to which the window belongs.
+     * @param width The width of the window (in pixels). This does NOT include the borderWidth.
+     * @param height The height of the window (in pixels). This does NOT include the borderWidth.
+     * @param topLevel Whether the window is top left (that is, is decorated).
+     * @param borderWidth The border width of the window.
+     * @param pixelScale The size of the window pixels in world coordinates.
+     * @param name The name of the window.
+     */
+    public WindowConventional(App2D app, int width, int height, boolean topLevel, int borderWidth, 
+                              Vector2f pixelScale, String name) {
+        super(app, width, height, topLevel, pixelScale, name,
+              new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
         this.borderWidth = borderWidth;
         appConventional = (AppConventional) app;
     }
@@ -90,12 +108,23 @@ public abstract class WindowConventional extends WindowGraphics2D {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void configure(int width, int height, Window2D sibWin) {
+        setSize(width, height);
+        super.configure(width, height, sibWin);
+    }
+
+    /**
      * Specify a new border width.
      * The visual representations of the window are updated accordingly.
      *
      * @param borderWidth The new border width.
      */
     public void setBorderWidth(int borderWidth) {
+        int width = getWidth();
+        int height = getHeight();
         width -= 2 * borderWidth;
         height -= 2 * borderWidth;
         this.borderWidth = borderWidth;
@@ -107,21 +136,6 @@ public abstract class WindowConventional extends WindowGraphics2D {
      */
     public int getBorderWidth() {
         return borderWidth;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setVisible(boolean visible) {
-        super.setVisible(visible);
-
-        if (visible && appConventional.getInitInBestView()) {
-            moveToBestView();
-            appConventional.setInitInBestView(false);
-        }
-
-    // TODO: ensureIsAboveFloor();
     }
 
     /** TODO: promote to parent! */
@@ -146,7 +160,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
 
         // Grow temp image if necessary
         if (tempImage == null ||
-                tempImage.getWidth() < w || tempImage.getHeight() < h) {
+            tempImage.getWidth() != w || tempImage.getHeight() != h) {
             tempImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         }
 
@@ -159,12 +173,10 @@ public abstract class WindowConventional extends WindowGraphics2D {
             return;
         }
         int srcIdx = 0;
-        //        int dstIdx = y * dstWidth + x;
         int dstIdx = 0;
         int dstNextLineIdx = dstIdx;
         for (int srcY = 0; srcY < h; srcY++) {
             dstNextLineIdx += dstWidth;
-            System.err.println("dstNextLineIdx = " + dstNextLineIdx);
             for (int srcX = 0; srcX < w; srcX++) {
                 dstPixels[dstIdx++] = pixels[srcIdx++];
             }

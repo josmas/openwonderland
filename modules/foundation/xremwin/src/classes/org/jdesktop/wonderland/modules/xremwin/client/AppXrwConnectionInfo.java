@@ -17,7 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.xremwin.client;
 
-import java.io.Serializable;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
 import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
@@ -27,16 +28,48 @@ import org.jdesktop.wonderland.common.InternalAPI;
  * @author deronj
  */
 @InternalAPI
-public class AppXrwConnectionInfo implements Serializable {
+public class AppXrwConnectionInfo {
 
-    /** The name of the host to which the slave should connect. */
+    /** The string format delimiter. */
+    private static String DELIMITER = "/";
+
+       /** The name of the host to which the slave should connect. */
     private String hostName;
     /** The port number to which the slave should connect. */
     private int portNum;
 
     /**
      * Create a new instance of AppXrwConnectionInfo.
-     *
+     * @param connInfo A string in AppXrwConnectionInfo string format (see toString).
+     */
+    public AppXrwConnectionInfo(String connInfo) {
+        StringTokenizer st = new StringTokenizer(connInfo, DELIMITER);
+
+        try {
+
+            // Skip the first token, which should be "AppXrwConnectionInfo".
+            st.nextToken();
+
+            // Parse the host name
+            hostName = st.nextToken();
+
+            // Parse the port number
+            portNum = Integer.parseInt(st.nextToken());
+
+        } catch (NoSuchElementException ex) {
+            RuntimeException re = new RuntimeException("Missing field in AppXrwConnectionInfo string");
+            re.initCause(ex);
+            throw re;
+        } catch (NumberFormatException ex) {
+            RuntimeException re = new RuntimeException("Invalid port number field in AppXrwConnectionInfo string");
+            re.initCause(ex);
+            throw re;
+        }
+    }
+
+
+    /**
+     * Create a new instance of AppXrwConnectionInfo.
      * @param hostName The name of the host to which the slave should connect.
      * @param portNum The port number to which the slave should connect.
      */
@@ -59,5 +92,9 @@ public class AppXrwConnectionInfo implements Serializable {
      */
     int getPortNum() {
         return portNum;
+    }
+
+    public String toString () {
+        return "AppXrwConnectionInfo" + DELIMITER + hostName + DELIMITER + portNum;
     }
 }

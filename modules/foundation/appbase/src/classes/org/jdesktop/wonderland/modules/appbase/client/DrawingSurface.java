@@ -19,12 +19,14 @@ package org.jdesktop.wonderland.modules.appbase.client;
 
 import com.jme.image.Texture;
 import java.awt.Graphics2D;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
+ * INTERNAL API.
+ * <br>br>
  * A rectangular, pixel-based drawing surface (image) onto which 2D graphics can be drawn.  You can draw
  * on the surface's image using the Graphics2D returned by <code>getGraphics</code>.
- *
+ * <br>br>
  * When this drawing surface is associated with a texture (via <code>setTexture</code>) and updating
  * is enabled (via <code>setUpdateEnable</code>) the contents of the surface are continually copied 
  * into the texture. To be specific, once per frame all of the newly drawn pixels in the surface's image
@@ -32,7 +34,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  *
  * @author paulby, deronj
  */
-@ExperimentalAPI
+@InternalAPI
 public interface DrawingSurface {
 
     /**

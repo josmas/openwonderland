@@ -36,9 +36,4 @@ public abstract class AppCellMO extends CellMO {
     public AppCellMO() {
         super();
     }
-
-    /** 
-     * Return the app type of this cell.
-     */
-    public abstract AppTypeMO getAppType();
 }
