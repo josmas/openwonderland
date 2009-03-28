@@ -137,6 +137,7 @@ public class SecurityComponentProperties extends JPanel
 
         // set the lists up based on the model
         perms.fromPermissions(state.getPermissions());
+        permsTable.repaint();
     }
 
     /**
@@ -457,10 +458,18 @@ public class SecurityComponentProperties extends JPanel
         SortedSet<Permission> ps = perms.getPerms(curRow);
         Set<ActionDTO> aps = perms.getAllPerms();
 
+        // clear existing rows
+        if (editPerms != null) {
+            editPerms.clear();
+        }
+
         editPerms = new EditPermsTableModel(p, aps, ps);
         editPermsTable.setModel(editPerms);
+        editPermsTable.clearSelection();
+
         editPermsDialog.pack();
         editPermsDialog.setVisible(true);
+        editPermsTable.repaint();
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void editPermsOKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPermsOKButtonActionPerformed
@@ -574,9 +583,7 @@ public class SecurityComponentProperties extends JPanel
         }
         
         public void fromPermissions(CellPermissions in) {
-            principals.clear();
-            owner.clear();
-            perms.clear();
+            clear();
             
             for (Principal p : in.getOwners()) {
                 principals.add(p);
@@ -603,9 +610,21 @@ public class SecurityComponentProperties extends JPanel
 
             allPerms = in.getAllActions();
 
-            this.fireTableDataChanged();
+            fireTableRowsInserted(0, principals.size());
+            fireTableDataChanged();
         }
-         
+
+        public void clear() {
+            int size = principals.size();
+
+            principals.clear();
+            owner.clear();
+            perms.clear();
+
+            fireTableRowsDeleted(0, size);
+            fireTableDataChanged();
+        }
+
         public int getRowCount() {
             return principals.size();
         }
@@ -727,6 +746,16 @@ public class SecurityComponentProperties extends JPanel
             }
 
             return out;
+        }
+
+        public void clear() {
+            int size = perms.size();
+
+            perms.clear();
+            allPerms.clear();
+
+            fireTableRowsDeleted(0, size);
+            fireTableDataChanged();
         }
 
         public int getRowCount() {
