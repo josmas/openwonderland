@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.AssetURIAdapter;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
@@ -202,31 +201,26 @@ public abstract class CellServerState implements Serializable {
      * @throw JAXBException Upon error reading the XML data
      */
     public static CellServerState decode(Reader r) throws JAXBException {
-        return decode(r, null, null);
+        return decode(r, null);
     }
 
     /**
      * Takes the input reader of the XML file and instantiates an instance of
-     * the CellServerState class. Also takes the class loader and server name
-     * associated with the context.
+     * the CellServerState class. Also takes the class loader associated with
+     * the context.
      * <p>
      * @param r The input data of the version XML data
      * @param cl The class loader
-     * @param server The name of the server
      * @throw ClassCastException If the input data does not map to CellServerState
      * @throw JAXBException Upon error reading the XML data
      */
-    public static CellServerState decode(Reader r, ScannedClassLoader cl, String server) throws JAXBException {
+    public static CellServerState decode(Reader r, ScannedClassLoader cl) throws JAXBException {
         /*
          * De-serialize from XML. We set up an adapter to handle XML elements
          * of type AssetURI. This will properly decode them and also fill in
          * the name of the server context.
          */
         Unmarshaller u = CellServerStateFactory.getUnmarshaller(cl);
-        if (server != null) {
-            AssetURIAdapter adapter = new AssetURIAdapter(server);
-            u.setAdapter(adapter);
-        }
         CellServerState setup = (CellServerState)u.unmarshal(r);
         
         /* Convert metadata to internal representation */

@@ -25,7 +25,7 @@ import java.util.HashMap;
 
 /**
  *
- * Overload AvatarContext to add playAnimation
+ * Overload AvatarContext to add playMiscAnimation
  *
  * @author paulby
  */
@@ -50,11 +50,8 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
         return actionMap.keySet();
     }
 
-    void playAnimation(String name) {
-        currentActionInfo = actionMap.get(name);
-        ActionState action = (ActionState) gameStates.get(CycleActionState.class);
-        action.setAnimationSetBoolean(false);
-        currentActionInfo.apply(action);
+    void playMiscAnimation(String name) {
+        setMiscAnimation(name);
 
         // Force the trigger, note that this transition is so fast that the
         // state machine may not actually change state. Therefore in triggerAlert
@@ -62,6 +59,13 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
         triggerReleased(TriggerNames.MiscAction.ordinal());
         triggerPressed(TriggerNames.MiscAction.ordinal());
         triggerReleased(TriggerNames.MiscAction.ordinal());
+    }
+
+    void setMiscAnimation(String animationName) {
+        currentActionInfo = actionMap.get(animationName);
+        ActionState action = (ActionState) gameStates.get(CycleActionState.class);
+        action.setAnimationSetBoolean(false);
+        currentActionInfo.apply(action);
     }
 
     @Override

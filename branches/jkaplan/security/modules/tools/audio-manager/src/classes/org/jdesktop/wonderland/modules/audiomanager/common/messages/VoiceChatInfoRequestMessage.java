@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.common.messages.Message;
-
 /**
  *
  * @author jprovino

@@ -150,7 +150,6 @@ public class JmeClientMain {
 
 
         WorldManager worldManager = ClientContextJME.getWorldManager();
-        worldManager.addUserData(Repository.class, new Repository(worldManager));
 
         String requestedFPS = System.getProperty(DESIRED_FPS_PROP, DESIRED_FPS_DEFAULT);
         if (requestedFPS!=null) {
@@ -158,6 +157,7 @@ public class JmeClientMain {
                 desiredFrameRate = Integer.parseInt(requestedFPS);
             } catch(NumberFormatException e) {
                 // No action required, the default has already been set.
+                logger.warning(DESIRED_FPS_PROP+" property format error for '"+requestedFPS+"', using default");
             }
         }
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);

@@ -30,16 +30,22 @@ import com.jme.scene.shape.Arrow;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import java.util.logging.Logger;
+import java.util.Formatter;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -313,8 +319,32 @@ public class TranslateAffordance extends Affordance {
         // The translation of the cell when the mouse button is first pressed.
         private Vector3f translationOnPress = null;
 
+        // The label (and frame) to display the current drag amount
+        private JFrame labelFrame = null;
+        private JLabel positionLabel = null;
+
         public TranslateDragListener(TranslateAxis direction) {
             this.direction = direction;
+
+            // Tell the processor component super class that we are going to
+            // post some Swing UI
+            setSwingSafe(true);
+
+            // Create a label to display the current drag amount
+            labelFrame = new JFrame();
+            labelFrame.setResizable(false);
+            labelFrame.setUndecorated(true);
+            labelFrame.getContentPane().setLayout(new GridLayout(1, 1));
+            JPanel labelPanel = new JPanel();
+            labelPanel.setBackground(Color.WHITE);
+            labelPanel.setOpaque(true);
+            labelFrame.getContentPane().add(labelPanel);
+            labelPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+            labelPanel.setLayout(new GridLayout());
+            positionLabel = new JLabel("0.00");
+            labelPanel.add(positionLabel);
+            labelPanel.invalidate();
+            labelFrame.pack();
         }
 
         @Override
@@ -324,6 +354,9 @@ public class TranslateAffordance extends Affordance {
 
         @Override
         public void commitEvent(Event event) {
+            // Fetch and cast some event objects
+            MouseEvent3D mouseEvent = (MouseEvent3D)event;
+            MouseEvent awtMouseEvent = (MouseEvent)mouseEvent.getAwtEvent();
 
             // Figure out where the initial mouse button press happened and
             // store the initial position
@@ -331,10 +364,21 @@ public class TranslateAffordance extends Affordance {
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
                 if (buttonEvent.isPressed() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+                    // Fetch the initial location of the mouse drag event and
+                    // store away the necessary information
                     MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
                     dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
                     dragStartWorld = buttonEvent.getIntersectionPointWorld();
                     translationOnPress = transform.getTranslation(null);
+                    
+                    // Set the initial value of the label to 0.0 and display
+                    setLabelPosition(awtMouseEvent);
+                    labelFrame.toFront();
+                    labelFrame.setVisible(true);
+                    labelFrame.repaint();
+                }
+                else if (buttonEvent.isReleased() == true) {
+                    labelFrame.setVisible(false);
                 }
                 return;
             }
@@ -347,22 +391,60 @@ public class TranslateAffordance extends Affordance {
             // Get the vector of the drag motion from the initial starting
             // point in world coordinates.
             MouseDraggedEvent3D dragEvent = (MouseDraggedEvent3D) event;
-            Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen,
-                    new Vector3f());
+            Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld,
+                    dragStartScreen, new Vector3f());
 
             // Figure out how to translate based upon the axis of the affordance
             Vector3f addVector;
+            float moved = 0.0f;
             switch (direction) {
-                case X_AXIS: addVector = new Vector3f(dragVector.x, 0, 0); break;
-                case Y_AXIS: addVector = new Vector3f(0, dragVector.y, 0); break;
-                case Z_AXIS: addVector = new Vector3f(0, 0, dragVector.z); break;
-                default: addVector = new Vector3f(); break;
+                case X_AXIS: 
+                    addVector = new Vector3f(dragVector.x, 0, 0);
+                    moved = dragVector.x;
+                    break;
+
+                case Y_AXIS:
+                    addVector = new Vector3f(0, dragVector.y, 0);
+                    moved = dragVector.y;
+                    break;
+
+                case Z_AXIS:
+                    addVector = new Vector3f(0, 0, dragVector.z);
+                    moved = dragVector.z;
+                    break;
+
+                default:
+                    addVector = new Vector3f();
+                    break;
             }
+
+            // Set the label with the amount that we have dragged it. We display
+            // the dragged amount to two decimal points
+            StringBuilder movedString = new StringBuilder();
+            Formatter formatter = new Formatter(movedString);
+            formatter.format("%.2f", moved);
+            positionLabel.setText(movedString.toString());
+            labelFrame.pack();
+
+            // Figure out where to place the label based upon the location of
+            // the event.
+            setLabelPosition(awtMouseEvent);
 
             // Move the cell via the moveable comopnent
             Vector3f newTranslation = translationOnPress.add(addVector);
             transform.setTranslation(newTranslation);
             movableComp.localMoveRequest(transform);
+        }
+
+        /**
+         * Sets the location of the frame holding the label given the current
+         * mouse event, using its location
+         */
+        private void setLabelPosition(MouseEvent mouseEvent) {
+            Component component = mouseEvent.getComponent();
+            Point parentPoint = new Point(component.getLocationOnScreen());
+            parentPoint.translate(mouseEvent.getX() + 10, mouseEvent.getY() - 15);
+            labelFrame.setLocation(parentPoint);
         }
     }
 }

@@ -31,15 +31,9 @@ public class AssetManagerTest {
 
     private AssetManager assetManager;
     
-    private static final String WONDERLAND_WORLD="http://192.18.37.42/compiled_models";
-    
     /* URLs to download */
     private static final String urls[] = {
-        "wla://mpk20/mpk20.jme.gz",
-        "wla://mpk20/mpk20.jme.gz",
-        "wla://mpk20/mpk20.jme.gz",
-        "wla://mpk20/mpk20.jme.gz",
-        "wla://mpk20/mpk20.jme.gz",
+        "wla://shape/MountainPicture.png",
     };
     
     public AssetManagerTest() {

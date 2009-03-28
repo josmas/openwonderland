@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  *
@@ -25,16 +25,16 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 public class VoiceChatInfoResponseMessage extends VoiceChatMessage {
     
-    private String chatInfo;
+    private PresenceInfo[] chatters;
 
-    public VoiceChatInfoResponseMessage(String group, String chatInfo) {
+    public VoiceChatInfoResponseMessage(String group, PresenceInfo[] chatters) {
 	super(group);
 
-	this.chatInfo = chatInfo;
+	this.chatters = chatters;
     }
     
-    public String getChatInfo() {
-	return chatInfo;
-    }
+    public PresenceInfo[] getChatters() {
+	return chatters;
+    } 
 
 }

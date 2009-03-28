@@ -27,7 +27,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import org.jdesktop.wonderland.common.AssetURI;
+import org.jdesktop.wonderland.common.ModuleURI;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
@@ -50,7 +50,7 @@ public class CellServerStateFactory {
     /* A list of core cell setup class names, currently only for components */
     private static Class[] coreSetupClasses = {
         PositionComponentServerState.class,
-        AssetURI.class
+        ModuleURI.class
     };
     
     /* The JAXB contexts used to create marshallers and unmarshallers */

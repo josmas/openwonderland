@@ -45,4 +45,7 @@ public class Constants {
 
     /** whether admin authentication is enabled in the web UI */
     public static final String WEBSERVER_LOGIN_ENABLED = "wonderland.security.login.enabled";
+
+    /** location beneath RUN_DIR_PROP of where to locate content repository */
+    public static final String WEBSERVER_CONTENT_DIR_PROP = "wonderland.webserver.content.dir";
 }

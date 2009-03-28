@@ -34,6 +34,7 @@ public class CellID implements Serializable {
     private transient String str=null;
     
     private static CellID invalidCellID = new CellID(Long.MIN_VALUE);
+
     private static long firstCellID = 0;
     
     /**

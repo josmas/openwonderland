@@ -55,16 +55,16 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 
     private CellID cellID;
 
-    public OrbStatusListener(OrbCellMO orbCellMO) {
+    public OrbStatusListener(OrbCellMO orbCellMO, String callID) {
 	cellID = orbCellMO.getCellID();
+
+	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, callID);
     }
 
     private boolean muteMessageSpoken;
     private boolean isMuted;
 
-    public void addCallStatusListener(String callID) {
-	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, callID);
-    }
+    private boolean ended;
 
     public void callStatusChanged(CallStatus status) {
 	logger.finest("Orb Status:  " + status);
@@ -129,6 +129,14 @@ public class OrbStatusListener implements ManagedCallStatusListener,
     }
 
     public void endCall(String callID) {
+	if (ended) {
+	    return;
+	}
+
+	ended = true;
+
+	AppContext.getManager(VoiceManager.class).removeCallStatusListener(this, callID);
+
 	CellManagerMO.getCellManager().removeCellFromWorld(
 	    CellManagerMO.getCellManager().getCell(cellID));
     }

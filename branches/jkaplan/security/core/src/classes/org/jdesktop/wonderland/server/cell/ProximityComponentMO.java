@@ -129,7 +129,7 @@ public class ProximityComponentMO extends CellComponentMO {
     public void removeProximityListener(ProximityListenerSrv listener) {
         ServerProximityListenerRecord rec;
         if (listener instanceof ManagedObject) {
-            rec = proximityListenersRef.remove(listener);
+            rec = proximityListenersRef.remove(AppContext.getDataManager().createReference(listener));
         } else {
             rec = proximityListeners.remove(listener);
         }

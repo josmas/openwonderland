@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.server;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -64,5 +66,14 @@ public class WonderlandContext {
     public static CommsManager getCommsManager() {
         return CommsManagerFactory.getCommsManager();
     }
-    
+
+    /**
+     * Returns the base URL of the web server.
+     *
+     * @return The URL of the web server
+     * @throws MalformedURLException Upon an invalid URL
+     */
+    public static URL getWebServerURL() throws MalformedURLException {
+        return new URL(System.getProperty("wonderland.web.server.url"));
+    }
 }

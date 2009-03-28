@@ -17,11 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.palette.client;
 
-import com.jme.math.Vector3f;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
+import java.awt.Toolkit;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragSource;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -33,17 +33,12 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
-import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
+import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.modules.palette.client.dnd.PaletteDragGestureListener;
 
 /**
  * A palette of cell types available to create in the world.
@@ -55,16 +50,37 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
     private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
 
     /* The scalar distance from the camera to place new cells */
-    private static final float NEW_CELL_DISTANCE = 5.0f;
+    public static final float NEW_CELL_DISTANCE = 5.0f;
 
+    /* The "No Preview Available" image */
+    private Image noPreviewAvailableImage = null;
+
+    /* The handler for the drag source for the preview image */
+    private PaletteDragGestureListener gestureListener = null;
+    
     /** Creates new form CellPalette */
     public CellPalette() {
         // Initialize the GUI components
         initComponents();
-        
+
+        // Create the icon for the "No Preview Available" image
+        URL url = CellPalette.class.getResource("resources/nopreview.png");
+        noPreviewAvailableImage = Toolkit.getDefaultToolkit().createImage(url);
+
         // Listen for list selection events and update the preview panel with
         // the selected item's image
         cellList.addListSelectionListener(this);
+
+        // Add support for drag from the preview image label
+        DragSource ds = DragSource.getDefaultDragSource();
+        gestureListener = new PaletteDragGestureListener();
+        ds.createDefaultDragGestureRecognizer(previewLabel,
+                DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+
+        // Add support for drag from the text list of cells
+        ds.createDefaultDragGestureRecognizer(cellList,
+                DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+
     }
 
     @Override
@@ -74,7 +90,6 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         super.setVisible(b);
     }
 
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -156,30 +171,16 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     // From the selected value, find the proper means to create the object
     String cellDisplayName = (String) cellList.getSelectedValue();
     CellFactorySPI factory = getCellFactory(cellDisplayName);
-    CellServerState setup = factory.getDefaultCellServerState();
+    CellServerState setup = factory.getDefaultCellServerState(null);
 
-    // Fetch the current transform from the view manager. Find the current
-    // position of the camera and its look direction.
-    ViewManager manager = ViewManager.getViewManager();
-    Vector3f cameraPosition = manager.getCameraPosition(null);
-    Vector3f cameraLookDirection = manager.getCameraLookDirection(null);
-
-    // Compute the new vector away from the camera position to be a certain
-    // number of scalar units away
-    float lengthSquared = cameraLookDirection.lengthSquared();
-    float factor = (NEW_CELL_DISTANCE * NEW_CELL_DISTANCE) / lengthSquared;
-    Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
-
-    // Create a position component that will set the initial origin
-    PositionComponentServerState position = new PositionComponentServerState();
-    position.setOrigin(new Origin(origin));
-    setup.addComponentServerState(position);
-    
-    // Send the message to the server
-    WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-    CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-    CellCreateMessage msg = new CellCreateMessage(null, setup);
-    connection.send(msg);
+    // Create the new cell at a distance away from the avatar
+    try {
+        CellUtils.createCell(setup, NEW_CELL_DISTANCE);
+    } catch (CellCreationException excp) {
+        Logger logger= Logger.getLogger(CellPalette.class.getName());
+        logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +
+                " using palette", excp);
+    }
 }//GEN-LAST:event_createActionPerformed
 
 
@@ -206,12 +207,12 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             } catch (java.lang.Exception excp) {
                 // Just ignore, but log a message
                 Logger logger = Logger.getLogger(CellPalette.class.getName());
-                logger.log(Level.WARNING, "[PALETTE] No Display Name for Cell " +
-                        "Factory " + cellFactory, excp);
+                logger.log(Level.WARNING, "No Display Name for Cell Factory " +
+                        cellFactory, excp);
             }
         }
         cellList.setListData(listNames.toArray(new String[] {}));
-        //cellList.setDragEnabled(true);        
+        cellList.setDragEnabled(true);        
     }
 
     /**
@@ -234,22 +235,6 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         }
         return null;
     }
-
-    /**
-     * Resizes an image using a Graphics2D object backed by a BufferedImage.
-     * @param srcImg - source image to scale
-     * @param w - desired width
-     * @param h - desired height
-     * @return - the new resized image
-     */
-    private Image getScaledImage(Image srcImg, int w, int h) {
-        BufferedImage resizedImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = resizedImg.createGraphics();
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2.drawImage(srcImg, 0, 0, w, h, null);
-        g2.dispose();
-        return resizedImg;
-    }
     
     /**
      * Handles when a selection has been made of the list of cell type names.
@@ -258,19 +243,25 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     public void valueChanged(ListSelectionEvent e) {
         // Create a JLabel with the image, resized to be 128x128.
         String selectedName = (String)cellList.getSelectedValue();
-        Logger logger = Logger.getLogger(CellPalette.class.getName());
         if (selectedName != null) {
             CellFactorySPI cellFactory = cellFactoryMap.get(selectedName);
             if (cellFactory != null) {
-                Image image = cellFactory.getPreviewImage();
-                if (image != null) {
-                    ImageIcon icon = new ImageIcon(image);
+                Image previewImage = cellFactory.getPreviewImage();
+                if (previewImage != null) {
+                    ImageIcon icon = new ImageIcon(previewImage);
                     previewLabel.setIcon(icon);
-                    previewLabel.setText(null);
+                    
+                    // Pass the necessary information for drag and drop
+                    gestureListener.cellFactory = cellFactory;
+                    gestureListener.previewImage = previewImage;
                 }
                 else {
-                    previewLabel.setIcon(null);
-                    previewLabel.setText("<html><center>No Preview<br>Available</center></html>");
+                    ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
+                    previewLabel.setIcon(icon);
+
+                    // Pass the necessary information for drag and drop
+                    gestureListener.cellFactory = cellFactory;
+                    gestureListener.previewImage = noPreviewAvailableImage;
                 }
             }
         }
@@ -285,5 +276,4 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     private javax.swing.JLabel previewLabel;
     private javax.swing.JPanel previewPanel;
     // End of variables declaration//GEN-END:variables
-
 }

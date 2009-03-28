@@ -118,6 +118,12 @@ public class WebServerLauncher {
             System.exit(-1);
         }
 
+        // If the web server port property has not been set at this point, then
+        // set it to the default
+        if (System.getProperty(Constants.WEBSERVER_PORT_PROP) == null) {
+            System.setProperty(Constants.WEBSERVER_PORT_PROP, "8080");
+        }
+
         // start the killswitch
         String killSwitchStr = System.getProperty(WEBSERVER_KILLSWITCH_PROPERTY);
         if (killSwitchStr != null) {
@@ -233,8 +239,6 @@ public class WebServerLauncher {
         // override the port and directory if specified
         if (port != null) {
             System.setProperty(Constants.WEBSERVER_PORT_PROP, port);
-        } else {
-            System.setProperty(Constants.WEBSERVER_PORT_PROP, "8080");
         }
 
         if (directory != null) {

@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -42,11 +43,14 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
  * @author jprovino
  */
 @ExperimentalAPI
-public class AudioTreatmentComponent extends CellComponent implements VolumeChangeListener {
+public class AudioTreatmentComponent extends AudioParticipantComponent {
 
     private static Logger logger = Logger.getLogger(AudioTreatmentComponent.class.getName());
+
     private ChannelComponent channelComp;
+
     private ChannelComponent.ComponentMessageReceiver msgReceiver;
+
     private ArrayList<AudioTreatmentDoneListener> listeners = new ArrayList();
 
     @UsesCellComponent
@@ -61,54 +65,28 @@ public class AudioTreatmentComponent extends CellComponent implements VolumeChan
     @Override
     public void setStatus(CellStatus status) {
         super.setStatus(status);
+
         switch (status) {
-            case DISK:
-                if (msgReceiver != null) {
-                    channelComp.removeMessageReceiver(AudioTreatmentMessage.class);
-                    msgReceiver = null;
-                    contextMenu.removeMenuItem(menuItem);
-                }
-                break;
+	case DISK:
+            if (msgReceiver != null) {
+                channelComp.removeMessageReceiver(AudioTreatmentMessage.class);
+                msgReceiver = null;
+            }
+            break;
 
-            case BOUNDS:
-                if (msgReceiver == null) {
-                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+        case BOUNDS:
+            if (msgReceiver == null) {
+                msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+                    public void messageReceived(CellMessage message) {
+                        AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
+                    }
+                };
 
-                        public void messageReceived(CellMessage message) {
-                            AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
-                        }
-                    };
-
-                    channelComp = cell.getComponent(ChannelComponent.class);
-                    channelComp.addMessageReceiver(AudioTreatmentMessage.class, msgReceiver);
-                    contextMenu.addMenuItem(menuItem, new ContextMenuListener() {
-
-                        public void entityContextPerformed(ContextMenuEvent event) {
-			    adjustVolume();
-                        }
-                    });
-
-                }
-                break;
-
+                channelComp = cell.getComponent(ChannelComponent.class);
+                channelComp.addMessageReceiver(AudioTreatmentMessage.class, msgReceiver);
+            }
+            break;
         }
-    }
-
-    VolumeControlJFrame volumeControlJFrame;
-
-    private void adjustVolume() {
-	if (volumeControlJFrame == null) {
-	    volumeControlJFrame = new VolumeControlJFrame(this, cell.getName());
-	} 
-
-	volumeControlJFrame.setTitle("Volume Control for " + cell.getName());
-	volumeControlJFrame.setVisible(true);
-    }
-
-    public void volumeChanged(double volume) {
-	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-
-	channelComp.send(new AudioVolumeMessage(cell.getCellID(), sc.getCallID(), volume));
     }
 
     /**

@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.sample.client;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
+import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -37,7 +38,7 @@ public class SampleCellFactory implements CellFactorySPI {
         return new String[] {};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState() {
+    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         SampleCellServerState state = new SampleCellServerState();
         state.setShapeType("SPHERE");
         return (T)state;

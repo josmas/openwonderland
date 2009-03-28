@@ -44,9 +44,9 @@ public class MicrophoneCellRenderer extends JmeColladaRenderer {
 
         try {
             Node ret = loadColladaAsset(cell.getCellID().toString(), getAssetURL("wla://microphone/models/Microphone.dae"));
-            Matrix3f rot = new Matrix3f();
-            rot.fromAngleAxis((float) -Math.PI/2, new Vector3f(1,0,0));
-            ret.setLocalRotation(rot);
+            //Matrix3f rot = new Matrix3f();
+            //rot.fromAngleAxis((float) -Math.PI/2, new Vector3f(1,0,0));
+            //ret.setLocalRotation(rot);
             return ret;
         } catch (MalformedURLException ex) {
             Logger.getLogger(MicrophoneCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
