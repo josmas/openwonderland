@@ -152,6 +152,7 @@ public class TexturedQuad extends Quad {
 	initializeTexture();
 	this.width = width;
 	this.height = height;
+        updateModelBound();
     }
 
     /**

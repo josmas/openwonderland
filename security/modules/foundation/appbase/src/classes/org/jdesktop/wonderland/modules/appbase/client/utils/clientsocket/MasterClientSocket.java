@@ -47,4 +47,12 @@ class MasterClientSocket extends ClientSocket {
             statReporter.stop();
         }
     }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
+
+    public boolean isEnabled() {
+        return enable;
+    }
 }

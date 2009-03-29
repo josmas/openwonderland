@@ -271,8 +271,9 @@ public class MonitoredProcess {
             return null;
         }
 
-        for (int i = 0; i < tok.countTokens(); i++) {
-            als.add(tok.nextToken());
+        for (int i = 0; i < numTokens; i++) {
+            String s = tok.nextToken();
+            als.add(s);
         }
 
         return als;

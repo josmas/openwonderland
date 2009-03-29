@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.jeditortest.client;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.modules.appbase.client.App;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
 import javax.swing.JPanel;
@@ -47,7 +47,7 @@ public class JEditorTestWindow extends WindowSwing  {
      * @param topLevel Whether the window is top-level (e.g. is decorated) with a frame.
      * @param pixelScale The size of the window pixels.
      */
-    public JEditorTestWindow (final App app, int width, int height, boolean topLevel, Vector2f pixelScale)
+    public JEditorTestWindow (App2D app, int width, int height, boolean topLevel, Vector2f pixelScale)
         throws InstantiationException
     {
 	super(app, width, height, topLevel, pixelScale);
@@ -56,9 +56,9 @@ public class JEditorTestWindow extends WindowSwing  {
 	
 	JPanel testPanel = new TestJEditorPane();
 
-	// Note: this seems to only be required for the swing set, but do it here for safety
-	// TODO: test without
+	// Parent to Wonderland main window for proper focus handling
        	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
+
 	setComponent(testPanel);
 
         // Note: This particular test panel only is laid out properly if forced size mode

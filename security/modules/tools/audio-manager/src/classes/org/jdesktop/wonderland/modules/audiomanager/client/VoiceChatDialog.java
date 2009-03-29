@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoi
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
@@ -68,7 +69,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 
     private Flasher flasher;
 
-    private VoiceChatMessage.ChatType chatType = VoiceChatMessage.ChatType.PRIVATE;
+    private ChatType chatType = ChatType.PRIVATE;
 
     private AudioManagerClient client;
     private WonderlandSession session;
@@ -156,7 +157,7 @@ public class VoiceChatDialog extends javax.swing.JFrame {
     }
 
     public void requestToJoin(String group, PresenceInfo caller, 
-	    PresenceInfo[] calleeList, VoiceChatMessage.ChatType chatType) {
+	    PresenceInfo[] calleeList, ChatType chatType) {
 
 	this.caller = caller;
 	this.chatType = chatType;
@@ -177,11 +178,11 @@ public class VoiceChatDialog extends javax.swing.JFrame {
 	chatterText.setText(caller.userID.getUsername() + " " + s);
 	chatterText.setEnabled(false);
 
-	if (chatType == VoiceChatMessage.ChatType.SECRET) {
+	if (chatType == ChatType.SECRET) {
 	    secretRadioButton.setSelected(true);
-	} else if (chatType == VoiceChatMessage.ChatType.PRIVATE) {
+	} else if (chatType == ChatType.PRIVATE) {
 	    privateRadioButton.setSelected(true);
-	} else if (chatType == VoiceChatMessage.ChatType.PUBLIC) {
+	} else if (chatType == ChatType.PUBLIC) {
 	    publicRadioButton.setSelected(true);
 	}
 	
@@ -486,7 +487,7 @@ private void chatGroupTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_chatGroupTextActionPerformed
 
 private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privateRadioButtonActionPerformed
-    chatType = VoiceChatMessage.ChatType.PRIVATE;
+    chatType = ChatType.PRIVATE;
     
     if (leaveButton.isEnabled() == true) {
 	joinButtonActionPerformed(evt);
@@ -509,7 +510,7 @@ private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 }//GEN-LAST:event_leaveButtonActionPerformed
 
 private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
-    chatType = VoiceChatMessage.ChatType.SECRET;
+    chatType = ChatType.SECRET;
     
     if (leaveButton.isEnabled() == true) {
 	joinButtonActionPerformed(evt);
@@ -517,7 +518,7 @@ private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 }//GEN-LAST:event_secretRadioButtonActionPerformed
 
 private void publicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_publicRadioButtonActionPerformed
-    chatType = VoiceChatMessage.ChatType.PUBLIC;
+    chatType = ChatType.PUBLIC;
     
     if (leaveButton.isEnabled() == true) {
 	joinButtonActionPerformed(evt);

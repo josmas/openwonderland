@@ -27,16 +27,21 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 
+import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
+
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbStartCallMessage;
+
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
 
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
@@ -60,11 +65,11 @@ public class OrbMessageHandler {
     private static final Logger logger =
             Logger.getLogger(OrbMessageHandler.class.getName());
 
-    private WonderlandSession session;
-
     private ChannelComponent channelComp;
         
     private OrbCell orbCell;
+
+    private WonderlandSession session;
 
     private OrbDialog orbDialog;
 
@@ -72,8 +77,11 @@ public class OrbMessageHandler {
 
     private String callID;
 
-    public OrbMessageHandler(OrbCell orbCell) {
+    private NameTag nameTag;
+
+    public OrbMessageHandler(OrbCell orbCell, WonderlandSession session) {
 	this.orbCell = orbCell;
+	this.session = session;
 
         channelComp = orbCell.getComponent(ChannelComponent.class);
 
@@ -91,6 +99,8 @@ public class OrbMessageHandler {
         channelComp.addMessageReceiver(OrbMuteCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbSpeakingMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbSetVolumeMessage.class, msgReceiver);
+
+	nameTag = new NameTag(orbCell, orbCell.getUsername(), (float) .17);
     }
 
     public void done() {
@@ -99,6 +109,8 @@ public class OrbMessageHandler {
 	channelComp.removeMessageReceiver(OrbMuteCallMessage.class);
         channelComp.removeMessageReceiver(OrbSpeakingMessage.class);
 	channelComp.removeMessageReceiver(OrbSetVolumeMessage.class);
+
+	nameTag.done();
     }
 
     public void processMessage(final Message message) {
@@ -107,12 +119,32 @@ public class OrbMessageHandler {
 	if (message instanceof OrbStartCallMessage) {
 	    username = ((OrbStartCallMessage) message).getUsername();
 	    callID = ((OrbStartCallMessage) message).getCallID();
+	    return;
+	}
+
+	if (message instanceof OrbSpeakingMessage) {
+	    OrbSpeakingMessage msg = (OrbSpeakingMessage) message;
+
+	    logger.info("Orb speaking " + msg.isSpeaking());
+
+	    nameTag.setSpeaking(msg.isSpeaking());
+	    return;
+	}
+
+	if (message instanceof OrbMuteCallMessage) {
+	    OrbMuteCallMessage msg = (OrbMuteCallMessage) message;
+
+            nameTag.setMute(msg.isMuted());
+	    return;
 	}
     }
     
     public void orbSelected() {
+
 	if (orbDialog == null) {
-	    orbDialog = new OrbDialog(orbCell, channelComp, username);
+	    LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
+	    
+	    orbDialog = new OrbDialog(orbCell, channelComp, avatar.getViewCell().getCellID());
 	} 
 
 	orbDialog.setVisible(true);

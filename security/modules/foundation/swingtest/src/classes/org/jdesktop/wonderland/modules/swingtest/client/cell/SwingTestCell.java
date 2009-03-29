@@ -21,13 +21,11 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.swingtest.common.cell.SwingTestCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.swingtest.client.SwingTestApp;
-import org.jdesktop.wonderland.modules.swingtest.client.SwingTestAppType;
 import org.jdesktop.wonderland.modules.swingtest.client.SwingTestWindow;
 
 /**
@@ -55,13 +53,6 @@ public class SwingTestCell extends App2DCell {
         super(cellID, cellCache);
     }
 
-    /** 
-     * {@inheritDoc}
-     */
-    public AppType getAppType() {
-        return new SwingTestAppType();
-    }
-
     /**
      * Initialize the cell with parameters from the server.
      *
@@ -85,28 +76,29 @@ public class SwingTestCell extends App2DCell {
             // The cell is now visible
             case ACTIVE:
 
-                SwingTestApp stApp = new SwingTestApp(getAppType(), clientState.getPixelScale());
+                SwingTestApp stApp = new SwingTestApp("Swing Test", clientState.getPixelScale());
                 setApp(stApp);
 
-                // Associate the app with this cell (must be done before making it visible)
-                stApp.setDisplayer(this);
+                // Tell the app to be displayed in this cell.
+                stApp.addDisplayer(this);
 
                 // This app has only one window, so it is always top-level
                 try {
-                    window = new SwingTestWindow(stApp, clientState.getPreferredWidth(), 
+                    window = new SwingTestWindow(this, stApp, clientState.getPreferredWidth(), 
                                                  clientState.getPreferredHeight(), 
                                                  /*TODO: until debugged: true*/ false, pixelScale);
                 } catch (InstantiationException ex) {
                     throw new RuntimeException(ex);
                 }
 
-                // Make the app window visible
-                window.setVisible(true);
+                // Both the app and the user want this window to be visible
+                window.setVisibleApp(true);
+                window.setVisibleUser(this, true);
                 break;
 
             // The cell is no longer visible
             case DISK:
-                window.setVisible(false);
+                window.setVisibleApp(false);
                 window = null;
                 break;
         }

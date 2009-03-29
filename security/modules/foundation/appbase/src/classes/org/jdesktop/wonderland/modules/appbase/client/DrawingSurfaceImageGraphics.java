@@ -279,15 +279,26 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
         public void commit(ProcessorArmingCollection collection) {
             synchronized (DrawingSurfaceImageGraphics.this) {
                 // TODO: doug: okay to be doing a lock and this much work in a commit?
+                if (texture == null) {
+                    return;
+                }
                 if (texture.getTextureId() == 0) {
+                    logger.warning("Trying to draw to texture whose ID hasn't been allocated");
+                    stop();
+                    return;
+                    /* TODO: just report, don't try to force allocate at this point. If it hasn't
+                       been allocated up until now it probably won't be.
+                       >>>> I think I can remove this now. But I'm leaving it in a bit longer to be sure.
                     if (window == null) {
                         return;
                     }
                     window.forceTextureIdAssignment();
                     if (texture.getTextureId() == 0) {
-                        Thread.dumpStack();
-                        logger.severe("********* imageGraphics.update when texture id is still unassigned!!!!");
+                        stop();
+                        logger.warning("Destination texture = " + texture);
+                        throw new RuntimeException("imageGraphics.update when texture id is still unassigned!!!!");
                     }
+                    */
                 }
 
                 if (checkForUpdate()) {

@@ -18,12 +18,18 @@
 package org.jdesktop.wonderland.modules.swingtest.client;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.modules.appbase.client.App;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
+import com.jme.scene.Node;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DViewWorld;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
+import org.jdesktop.wonderland.modules.swingtest.client.cell.SwingTestCell;
+import com.jme.math.Vector3f;
 
 /**
  *
@@ -39,19 +45,28 @@ public class SwingTestWindow
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(SwingTestWindow.class.getName());
 
+    /** The cell in which this window is displayed. */
+    private SwingTestCell cell;
+
+    /** Whether the window is currently displayed "on the glass". */
+    private boolean ortho;
+
     /**
      * Create a new instance of SwingTestWindow.
      *
+     * @param cell The cell in which this window is displayed.
      * @param app The app which owns the window.
      * @param width The width of the window (in pixels).
      * @param height The height of the window (in pixels).
      * @param topLevel Whether the window is top-level (e.g. is decorated) with a frame.
      * @param pixelScale The size of the window pixels.
      */
-    public SwingTestWindow (final App app, int width, int height, boolean topLevel, Vector2f pixelScale)
+    public SwingTestWindow (SwingTestCell cell, App2D app, int width, int height, boolean topLevel, 
+                            Vector2f pixelScale)
         throws InstantiationException
     {
 	super(app, width, height, topLevel, pixelScale);
+        this.cell = cell;
 
 	setTitle("Swing Test");
 
@@ -65,29 +80,38 @@ public class SwingTestWindow
 	setComponent(testPanel);
         setTitle("Swing Test");
 
-
         /* Test Force a the preferred size
         System.err.println("test panel size = " + width + ", " + height);
         setSize(width, height);
         */
     }
 
-    public void setHud (boolean onHUD) {
-        // TODO: eventually this will involve specifying a specific destination HUD
-        Window2DViewWorld view = getPrimaryView();
-        view.setHUDLocation(300, 300);
+    public void setOrtho(boolean ortho) {
+        if (this.ortho == ortho) return;
 
-        // Test
-        //view.setHUDSize(500, 200);
+        View2DEntity view = (View2DEntity) getView(cell);
 
-        view.setOnHUD(onHUD);
+        if (ortho) {
+            
+            // In this test, the view in the ortho plane is at a fixed location.
+            view.setLocationOrtho(new Vector2f(300f, 300f), false);
+            
+            // Test
+            //view.setPixelScaleOrtho(2.0f, 2.0f);
+            //view.setPixelScaleOrtho(0.5f, 0.5f);
+
+            // Move the window view into the ortho plane
+            view.setOrtho(true, false);
+
+        } else {
+
+            // Move the window view into the cell
+            view.setOrtho(false, false);
+        }
+
+        // Now make it all happen
+        view.update();
+
+        this.ortho = ortho;
     }
-
-    /* TODO: for testing view.setVisible hack: uncomment the following
-    public void setVisibleHack (boolean visible) {
-        Window2DViewWorld view = getPrimaryView();
-        System.err.println("************** Set view visible = " + visible);
-        view.setVisible(visible);
-    }
-    */
 }

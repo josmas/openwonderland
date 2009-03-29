@@ -32,7 +32,6 @@ import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -48,7 +47,7 @@ import org.jdesktop.wonderland.modules.orb.common.OrbCellClientState;
  *
  * @author jprovino
  */
-public class OrbCell extends Cell implements CellStatusChangeListener {
+public class OrbCell extends Cell {
 
     private static final Logger logger =
             Logger.getLogger(OrbCell.class.getName());
@@ -60,28 +59,35 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
 
     private OrbMessageHandler orbMessageHandler;
 
+    private String username;
+    private String callID;
+
     public OrbCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
 	logger.fine("CREATED NEW ORB CELL " + cellID);
-
-	CellManager.getCellManager().addCellStatusChangeListener(this);
     }
 
-    public void cellStatusChanged(Cell cell, CellStatus status) {
-        logger.finer("callStatusChanged got status " + status + " for cell " + cell.getCellID());
+    @Override
+    public boolean setStatus(CellStatus status) {
+	boolean changed = super.setStatus(status);
 
-        if (cell.getCellID() != getCellID()) {
-            return;
-        }
-
-        if (status.equals(CellStatus.ACTIVE) && orbMessageHandler == null) {
-	    logger.fine("Creating orb Message handler for " + cell.getCellID());
-            orbMessageHandler = new OrbMessageHandler(this);
-        } else if (status.equals(CellStatus.DISK) && orbMessageHandler != null) {
-	    orbMessageHandler.done();
-	    orbMessageHandler = null;
+	switch (status) {
+	case ACTIVE:
+            if (orbMessageHandler == null) {
+	        logger.fine("Creating orb Message handler for " + getCellID());
+                orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession());
+	    }
+	    break;
+        case DISK:
+	    if (orbMessageHandler != null) {
+	        orbMessageHandler.done();
+	        orbMessageHandler = null;
+	    }
+	    break;
 	}
+
+	return changed;
     }
 
     /**
@@ -97,20 +103,30 @@ public class OrbCell extends Cell implements CellStatusChangeListener {
 
 	logger.fine("ORB is configured");
 	OrbCellClientState orbCellClientState = (OrbCellClientState) cellClientState;
+
+	username = orbCellClientState.getUsername();
+	callID = orbCellClientState.getCallID();
     }
 
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-	WonderlandSession session = getCellCache().getSession();
-
 	logger.fine("Create cell renderer...");
 
         if (rendererType == RendererType.RENDERER_JME) {
 	    orbCellRenderer = new OrbCellRenderer(this);
+	    logger.info("Created Renderer");
 	    return orbCellRenderer;
         }
 
         throw new IllegalStateException("Cell does not support " + rendererType);
+    }
+
+    public String getUsername() {
+	return username;
+    }
+
+    public String getCallID() {
+	return callID;
     }
 
     public void removeMouseListener() {

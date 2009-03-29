@@ -30,7 +30,7 @@ public class TestPanel extends javax.swing.JPanel {
     
     public interface Container {
         public void validate();
-        public void setHud(boolean enable);
+        public void setOrtho(boolean ortho);
         // TODO: for testing view.setVisible hack
         //public void setVisibleHack (boolean visible);
     }
@@ -87,8 +87,8 @@ public class TestPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         add(jLabel1, gridBagConstraints);
 
-        jButton1.setText("Move to HUD");
-	jButton1.setToolTipText("This button moves the window into the HUD");
+        jButton1.setText("Move to Glass");
+	jButton1.setToolTipText("This button moves the window onto the monitor glass");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -182,24 +182,24 @@ public class TestPanel extends javax.swing.JPanel {
         //System.out.println("Panel focus Gained");
     }//GEN-LAST:event_formFocusGained
 
-    private boolean inHud = false;
+    private boolean ortho = false;
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
 
-        inHud = ! inHud;
+        ortho = ! ortho;
 
-        if (inHud) {
+        if (ortho) {
             jButton1.setText("Move to World");
             jButton1.setToolTipText("This button moves the window into the world.");
         } else {
-            jButton1.setText("Move to HUD");
-            jButton1.setToolTipText("This button moves the window into the HUD.");
+            jButton1.setText("Move to Glass");
+            jButton1.setToolTipText("This button moves the window onto the monitor glass");
         }
 
         jPanel1.invalidate();
 
         if (container != null) {
-            container.setHud(inHud);
+            container.setOrtho(ortho);
         }
 
     }//GEN-LAST:event_jButton1ActionPerformed

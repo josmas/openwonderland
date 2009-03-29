@@ -175,6 +175,9 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
         // Now tell the server so it can tell the slave clients
         try {
             AppXrw.logger.finer("Write set window title to server");
+	    if (title == null || title.length() <= 0) {
+		title = " ";
+	    }
             serverProxy.writeSetWindowTitle(wid, title);
         } catch (IOException ex) {
             AppXrw.logger.warning("Master cannot set window title for wid " + wid);
