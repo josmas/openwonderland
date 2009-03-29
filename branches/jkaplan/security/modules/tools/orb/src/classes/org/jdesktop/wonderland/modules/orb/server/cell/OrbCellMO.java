@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
-import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
 
 import com.jme.math.Vector3f;
 
@@ -60,16 +60,13 @@ public class OrbCellMO extends CellMO {
     public OrbCellMO(Vector3f center, float size, String username, String callID, 
 	    boolean simulateCalls) {
 
-        super(new BoundingBox(new Vector3f(), size, size, size),
-                new CellTransform(null, center));
+	super(new BoundingSphere(size, center), new CellTransform(null, center));
 
 	this.username = username;
         this.callID = callID;
         this.simulateCalls = simulateCalls;
 
         addComponent(new MovableComponentMO(this));
-
-        logger.fine("Orb center " + center + " size " + size);
     }
 
     @Override
@@ -79,9 +76,12 @@ public class OrbCellMO extends CellMO {
         if (live == false) {
             if (orbMessageHandlerRef != null) {
                 OrbMessageHandler orbMessageHandler = orbMessageHandlerRef.get();
-                orbMessageHandler.done();
+
                 AppContext.getDataManager().removeObject(orbMessageHandler);
+
                 orbMessageHandlerRef = null;
+
+                orbMessageHandler.done();
             }
 
             return;
@@ -103,7 +103,7 @@ public class OrbCellMO extends CellMO {
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new OrbCellClientState();
+            cellClientState = new OrbCellClientState(username, callID);
         }
         return super.getClientState(cellClientState, clientID, capabilities);
     }
@@ -125,9 +125,17 @@ public class OrbCellMO extends CellMO {
     public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new OrbCellServerState();
+            cellServerState = new OrbCellServerState(username, callID);
         }
         return super.getServerState(cellServerState);
+    }
+
+    public String getUsername() {
+	return username;
+    }
+   
+    public String getCallID() {
+	return callID;
     }
 
     public void endCall() {

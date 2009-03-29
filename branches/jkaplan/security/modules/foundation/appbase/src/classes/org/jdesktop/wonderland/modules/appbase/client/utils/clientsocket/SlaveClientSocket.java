@@ -30,9 +30,6 @@ public class SlaveClientSocket extends ClientSocket {
         super(clientId, s, listener);
         master = false;
 
-        // This is not enabled until the master client has sent all of the welcome message contents.
-        setEnable(false);
-
         if (ENABLE_STATS) {
             statReporter = new StatisticsReporter(30, /* secs */
                     new ReadStatistics(this),
@@ -48,5 +45,14 @@ public class SlaveClientSocket extends ClientSocket {
         if (ENABLE_STATS) {
             statReporter.stop();
         }
+    }
+
+    @Override
+    public boolean initialize () {
+        boolean ret = super.initialize();
+        if (ret) {
+            start();
+        }
+        return ret;
     }
 }

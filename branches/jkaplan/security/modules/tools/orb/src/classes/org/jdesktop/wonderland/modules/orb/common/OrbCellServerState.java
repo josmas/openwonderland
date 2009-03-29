@@ -37,10 +37,26 @@ import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
 public class OrbCellServerState extends CellServerState
         implements Serializable, CellServerStateSPI {
 
+    private String username;
+    private String callID;
+
     /** Default constructor */
     public OrbCellServerState() {
     }
     
+    public OrbCellServerState(String username, String callID) {
+	this.username = username;
+	this.callID = callID;
+    }
+    
+    public String getUsername() {
+	return username;
+    }
+
+    public String getCallID() {
+	return callID;
+    }
+
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
     }

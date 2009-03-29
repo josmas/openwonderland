@@ -49,7 +49,6 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.CellStatusChangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
@@ -62,7 +61,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInf
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellManager;
-import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
@@ -98,7 +96,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.Avatar
  * @author jprovino
  */
 public class AudioManagerClient extends BaseConnection implements 
-	AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener, CellStatusChangeListener {
+	AudioMenuListener, SoftphoneListener, ViewCellConfiguredListener {
 
     private static final Logger logger =
         Logger.getLogger(AudioManagerClient.class.getName());
@@ -147,8 +145,6 @@ public class AudioManagerClient extends BaseConnection implements
         
         JmeClientMain.getFrame().addToToolMenu(userListJMenuItem);
 
-	CellManager.getCellManager().addCellStatusChangeListener(this);
-
         SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
 
 	InputManager.inputManager().addGlobalEventListener(new MyEventListener());
@@ -169,11 +165,6 @@ public class AudioManagerClient extends BaseConnection implements
 
 	userListJFrame.setUserList();
         userListJFrame.setVisible(true);
-    }
-
-    public void cellStatusChanged(Cell cell, CellStatus status) {
-	session.send(this, new CellStatusChangeMessage(cell.getCellID(), 
-	    status.equals(CellStatus.ACTIVE)));
     }
 
     public synchronized void execute(final Runnable r) {
@@ -421,7 +412,7 @@ public class AudioManagerClient extends BaseConnection implements
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
 	    if (info == null) {
-		logger.warning("No presence info for " + msg.getCallID());
+		System.out.println("No presence info for " + msg.getCallID());
 		return;
 	    }
 
@@ -437,7 +428,7 @@ public class AudioManagerClient extends BaseConnection implements
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
 	    if (info == null) {
-		logger.warning("No presence info for " + msg.getCallID());
+		System.out.println("No presence info for " + msg.getCallID());
 		return;
 	    }
 

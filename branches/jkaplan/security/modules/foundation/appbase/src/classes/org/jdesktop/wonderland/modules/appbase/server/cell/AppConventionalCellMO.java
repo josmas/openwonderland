@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.server.cell;
 
-import java.io.Serializable;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -29,6 +28,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
+import java.util.logging.Logger;
 
 /**
  * TODO: rework
@@ -71,6 +71,8 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSe
 @ExperimentalAPI
 public abstract class AppConventionalCellMO extends App2DCellMO {
 
+    private static Logger logger = Logger.getLogger(AppConventionalCellMO.class.getName());
+
     /** The name of the Darkstar binding we use to store the reference to the SAS. */
     private static String APP_SERVER_LAUNCHER_BINDING_NAME = 
         "org.jdesktop.wonderland.modules.appbase.server.cell.AppServerLauncher";
@@ -80,9 +82,9 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     /** The parameters given to the client. */
     AppConventionalCellClientState clientState;
     /** The app conventional connection handler */
-    private AppConventionalConnectionHandler connectionHandler;
+    private static AppConventionalConnectionHandler connectionHandler;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
-    protected Serializable connectionInfo;
+    protected String connectionInfo;
 
     /**
      * The SAS server must implement this.
@@ -95,9 +97,10 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
          * @param executionCapability The type of execution capability needed (xremwin, vnc, etc.)
          * @param appName The name of the app.
          * @param command The execution command.
+         * @return Subclass-specific data for making a peer-to-peer connection between master and slave.
          */
-        public Serializable appLaunch (CellID cellID, String executionCapability, String appname, 
-                                       String command);
+        public String appLaunch (CellID cellID, String executionCapability, String appname, 
+                                 String command);
         
         /**
          * Stop a running server shared application.
@@ -217,20 +220,6 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
         super.setLive(live);
 
-        // For both user and server cells
-        if (live) {
-            // Register the connection handler when the first cell is created
-            if (connectionHandler == null) {
-                connectionHandler = new AppConventionalConnectionHandler();
-                WonderlandContext.getCommsManager().registerClientHandler(connectionHandler);
-            }
-        } else {
-            if (connectionHandler != null) {
-                WonderlandContext.getCommsManager().unregisterClientHandler(connectionHandler);
-                connectionHandler = null;
-            }
-        }
-
         if (!"server".equalsIgnoreCase(serverState.launchLocation)) {
             return;
         }
@@ -270,7 +259,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         }
     }
 
-    void setConnectionInfo (Serializable connInfo) {
+    void setConnectionInfo (String connInfo) {
+        logger.warning("Connection info for cellID " + cellID + " = " + connInfo);
         connectionInfo = connInfo;
         if (clientState != null) {
             clientState.setConnectionInfo(connectionInfo);

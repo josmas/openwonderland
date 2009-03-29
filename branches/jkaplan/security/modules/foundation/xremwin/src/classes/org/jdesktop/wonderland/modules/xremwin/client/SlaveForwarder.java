@@ -126,9 +126,6 @@ class SlaveForwarder {
         public void run() {
             int clientId = allocateClientId(userName);
 
-            System.err.print("Welcome slave " + userName + ", ");
-            System.err.println("clientId = " + clientId);
-
             int n = 0;
             welcomeBuf[n++] = (byte) Proto.ServerMessageType.WELCOME.ordinal();
             welcomeBuf[n++] = 0;
@@ -190,37 +187,40 @@ class SlaveForwarder {
                     ? controllingUser.length() : 0;
 
             System.err.println("wid = " + win.getWid());
-            System.err.println("xy = " + win.getX() + " " + win.getY());
+            System.err.println("xy = " + win.getOffsetX() + " " + win.getOffsetY());
             System.err.println("wh = " + win.getWidth() + " " + win.getHeight());
             System.err.println("bw = " + win.getBorderWidth());
-            System.err.println("decorated = " + win.isTopLevel());
-            System.err.println("showing = " + win.isVisible());
+            System.err.println("decorated = " + win.isDecorated());
+            System.err.println("showing = " + win.isVisibleApp());
             System.err.println("controlling user = " + controllingUser);
             System.err.println("stackPos = " + win.getStackPosition());
 
-            Vector3f userDispl = win.getUserDisplacement();
+            /*TODO:
             System.err.println("rotY = " + win.getRotateY());
-            System.err.println("userDispl = " + userDispl);
+            System.err.println("userTranslation = " + win.getUserTranslation());
+             */
 
             // Send basic window attributes
             encode(syncBuf, 0, win.getWid());
-            encode(syncBuf, 4, win.getX());
-            encode(syncBuf, 8, win.getY());
+            encode(syncBuf, 4, win.getOffsetX());
+            encode(syncBuf, 8, win.getOffsetY());
             encode(syncBuf, 12, win.getWidth());
             encode(syncBuf, 16, win.getHeight());
             encode(syncBuf, 20, win.getBorderWidth());
             encode(syncBuf, 24, controllingUserLen);
             encode(syncBuf, 28, win.getStackPosition());
-            encode(syncBuf, 32, win.getRotateY());
+            /* TODO:
+             encode(syncBuf, 32, win.getRotateY());
             encode(syncBuf, 36, userDispl.x);
             encode(syncBuf, 40, userDispl.y);
             encode(syncBuf, 44, userDispl.z);
+             */
             /* TODO: 0.4 protocol:
             encode(syncBuf, 48, win.getTransientFor().getWid());
              */
             encode(syncBuf, 48, 0);
-            syncBuf[52] = (byte) (win.isTopLevel() ? 1 : 0);
-            syncBuf[53] = (byte) (win.isVisible() ? 1 : 0);
+            syncBuf[52] = (byte) (win.isDecorated() ? 1 : 0);
+            syncBuf[53] = (byte) (win.isVisibleApp() ? 1 : 0);
 
             unicastSend(slaveID, syncBuf);
             //System.err.println("Call unicastMessage with " + syncBuf.length + " bytes");
@@ -234,6 +234,8 @@ class SlaveForwarder {
             // the window this may block until the next frame tick.
             win.syncSlavePixels(slaveID);
 
+            // It is safe to write to a slave socket only when the master has enqueued 
+            // all welcome message buffers.
             socketSet.setEnable(slaveID, true);
         }
     }
@@ -262,11 +264,19 @@ class SlaveForwarder {
     private class MyListener implements ClientSocketListener {
 
         public void receivedMessage(BigInteger otherClientID, byte[] message) {
+            System.err.println("Received slave message, message = " + message);
 
-            // First part of Hello message from slave: request type and string length
+            // See this is the hello message from the slave
             if (message[0] == (byte) Proto.ClientMessageType.HELLO.ordinal()) {
-                // TODO
-                String userName = new String(message);
+                int strLen = (int)(message[2] << 8) | (int)message[3];
+                if (strLen <= 0) {
+                    AppXrw.logger.warning("Invalid slave user name string length");
+                    return;
+                }
+                byte[] userNameBuf = new byte[strLen];
+                System.arraycopy(message, 4, userNameBuf, 0, strLen);
+                String userName = new String(userNameBuf);
+
                 serverProxy.addIncomingSlaveHelloMessage(otherClientID, userName);
                 return;
             }

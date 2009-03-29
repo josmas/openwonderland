@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
+import com.jme.math.Vector2f;
+import com.jme.math.Vector3f;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -31,7 +33,7 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
 import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
 import org.jdesktop.wonderland.client.hud.HUDComponentListener;
-import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DViewWorld;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 
 /**
  * A HUDComponent2D is a 2D object that can be displayed on the HUD.
@@ -47,7 +49,7 @@ public class HUDComponent2D implements HUDComponent {
     private static final Logger logger = Logger.getLogger(HUDComponent2D.class.getName());
     protected boolean enabled = true;
     protected List<HUDComponentListener> listeners;
-    protected Window2DViewWorld view;
+    protected View2DEntity view;
     protected HUDComponentEvent event;
 
     public HUDComponent2D() {
@@ -55,18 +57,21 @@ public class HUDComponent2D implements HUDComponent {
         event = new HUDComponentEvent(this);
     }
 
-    public HUDComponent2D(Window2DViewWorld view) {
+    public HUDComponent2D(View2DEntity view) {
         this();
         this.view = view;
-        logger.log(Level.INFO, "view HUD size: " + view.getHUDWidth() + "x" + view.getHUDHeight() + " at " +
-                view.getHUDX() + ", " + view.getHUDY());
+        logger.log(Level.INFO, "view HUD size: " + view.getDisplayerLocalWidth() + "x" + view.getDisplayerLocalHeight() + " at " +
+                view.getTranslationUser().x + ", " + view.getTranslationUser().y);
     }
 
     /**
      * {@inheritDoc}
      */
     public void setBounds(Rectangle bounds) {
-        view.setHUDBounds(bounds);
+        setX(bounds.x);
+        setY(bounds.y);
+        setWidth(bounds.width);
+        setHeight(bounds.height);
         notifyListeners(ComponentEventType.RESIZED);
     }
 
@@ -81,7 +86,7 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public void setLocation(int x, int y) {
-        view.setHUDLocation(x, y);
+        view.setLocationOrtho(new Vector2f((float) x, (float) y));
         notifyListeners(ComponentEventType.MOVED);
     }
 
@@ -89,7 +94,7 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public void setLocation(Point p) {
-        view.setHUDLocation(p.x, p.y);
+        view.setLocationOrtho(new Vector2f(p.x, p.y));
         notifyListeners(ComponentEventType.MOVED);
     }
 
@@ -97,14 +102,15 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public Point getLocation() {
-        return new Point(view.getHUDX(), view.getHUDY());
+        return new Point((int) view.getTranslationUser().x, (int) view.getTranslationUser().y);
     }
 
     /**
      * {@inheritDoc}
      */
     public void setX(int x) {
-        view.setHUDLocation(x, view.getHUDY());
+        Vector3f transl = view.getTranslationUser();
+        view.setTranslationUser(new Vector3f((float) x, transl.y, 0f));
         notifyListeners(ComponentEventType.MOVED);
     }
 
@@ -112,14 +118,15 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public int getX() {
-        return view.getHUDX();
+        return (int) view.getTranslationUser().x;
     }
 
     /**
      * {@inheritDoc}
      */
     public void setY(int y) {
-        view.setHUDLocation(view.getHUDX(), y);
+        Vector3f transl = view.getTranslationUser();
+        view.setTranslationUser(new Vector3f(transl.x, (float) y, 0f));
         notifyListeners(ComponentEventType.MOVED);
     }
 
@@ -127,14 +134,14 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public int getY() {
-        return view.getHUDY();
+        return (int) view.getTranslationUser().y;
     }
 
     /**
      * {@inheritDoc}
      */
     public void setWidth(int width) {
-        view.setHUDSize(width, view.getHUDHeight());
+        view.setSizeApp(new Dimension(width, getHeight()));
         notifyListeners(ComponentEventType.RESIZED);
     }
 
@@ -142,14 +149,14 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public int getWidth() {
-        return view.getHUDWidth();
+        return (int) view.getSizeApp().getWidth();
     }
 
     /**
      * {@inheritDoc}
      */
     public void setHeight(int height) {
-        view.setHUDSize(view.getHUDWidth(), height);
+        view.setSizeApp(new Dimension(getWidth(), height));
         notifyListeners(ComponentEventType.RESIZED);
     }
 
@@ -157,14 +164,14 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public int getHeight() {
-        return view.getHUDHeight();
+        return (int) view.getSizeApp().getHeight();
     }
 
     /**
      * {@inheritDoc}
      */
     public void setSize(int width, int height) {
-        view.setHUDSize(width, height);
+        view.setSizeApp(new Dimension(width, height));
         notifyListeners(ComponentEventType.RESIZED);
     }
 
@@ -172,7 +179,7 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public void setSize(Dimension dimension) {
-        view.setHUDSize(dimension.width, dimension.height);
+        view.setSizeApp(dimension);
         notifyListeners(ComponentEventType.RESIZED);
     }
 
@@ -180,15 +187,21 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public Dimension getSize() {
-        return new Dimension(view.getHUDWidth(), view.getHUDHeight());
+        Dimension size = new Dimension();
+
+        if (view != null) {
+            size = view.getSizeApp();
+        }
+        return size;
     }
 
     /**
      * {@inheritDoc}
      */
     public void setVisible(boolean visible) {
-        view.setOnHUD(visible);
-        view.setVisible(visible);
+        view.setOrtho(visible);
+        view.setVisibleUser(visible);
+        view.update();
         notifyListeners((visible == true) ? ComponentEventType.APPEARED
                 : ComponentEventType.DISAPPEARED);
     }
@@ -197,7 +210,7 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public boolean isVisible() {
-        return view.getVisible();
+        return view.isVisibleUser();
     }
 
     /**

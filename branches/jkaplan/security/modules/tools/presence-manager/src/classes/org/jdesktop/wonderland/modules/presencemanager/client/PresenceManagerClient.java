@@ -35,7 +35,6 @@ import org.jdesktop.wonderland.modules.presencemanager.common.messages.SessionCr
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.SessionEndedMessage;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellManager;
-import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import java.util.logging.Logger;
 
 /**
@@ -43,7 +42,7 @@ import java.util.logging.Logger;
  * @author jprovino
  */
 public class PresenceManagerClient extends BaseConnection implements
-        ViewCellConfiguredListener, CellStatusChangeListener {
+        ViewCellConfiguredListener {
 
     private static final Logger logger =
             Logger.getLogger(PresenceManagerClient.class.getName());
@@ -64,8 +63,6 @@ public class PresenceManagerClient extends BaseConnection implements
 
         this.session = session;
 
-        CellManager.getCellManager().addCellStatusChangeListener(this);
-
         presenceManager = PresenceManagerFactory.getPresenceManager(session);
 
         logger.fine("Starting PresenceManagerClient");
@@ -77,12 +74,6 @@ public class PresenceManagerClient extends BaseConnection implements
         if (avatar.getViewCell() != null) {
             // if the view is already configured, fake an event
             viewConfigured(avatar);
-        }
-    }
-
-    public void cellStatusChanged(Cell cell, CellStatus status) {
-        if (cell.getCellID().equals(cellID) == false) {
-            return;
         }
     }
 

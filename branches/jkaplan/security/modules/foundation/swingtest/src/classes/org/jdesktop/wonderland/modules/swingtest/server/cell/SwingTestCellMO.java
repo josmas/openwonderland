@@ -22,11 +22,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
 import org.jdesktop.wonderland.modules.swingtest.common.cell.SwingTestCellClientState;
 import org.jdesktop.wonderland.modules.swingtest.common.cell.SwingTestCellServerState;
-import org.jdesktop.wonderland.modules.swingtest.server.SwingTestAppTypeMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -53,13 +51,6 @@ public class SwingTestCellMO extends App2DCellMO {
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.swingtest.client.cell.SwingTestCell";
-    }
-
-    /** 
-     * {@inheritDoc}
-     */
-    public AppTypeMO getAppType() {
-        return new SwingTestAppTypeMO();
     }
 
     /** 

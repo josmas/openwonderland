@@ -21,7 +21,7 @@ import com.jme.math.Vector2f;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.modules.appbase.client.App;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
 /**
@@ -34,10 +34,10 @@ public class HUDFrame2D extends HUDComponent2D {
     private static final Logger logger = Logger.getLogger(HUDFrame2D.class.getName());
     private HUDFrame2DImpl frame2DImpl;
     private WindowSwing window;
-    private App app;
+    private App2D app;
     private HUDComponent2D component;
 
-    public HUDFrame2D(App app, HUDComponent2D component) {
+    public HUDFrame2D(App2D app, HUDComponent2D component) {
         super();
         this.app = app;
         this.component = component;
@@ -56,13 +56,13 @@ public class HUDFrame2D extends HUDComponent2D {
                 window = new WindowSwing(app, frame2DImpl.getWidth(), frame2DImpl.getHeight(),
                         false, new Vector2f(0.02f, 0.02f));
                 window.setComponent(frame2DImpl);
-                view = window.getPrimaryView();
+                // TODO: nigel: view = window.getPrimaryView();
                 HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
                 mainHUD.addComponent(this);
                 this.setLocation(500, 300);
                 this.setSize(frame2DImpl.getWidth(), frame2DImpl.getHeight() - 20);
                 this.setVisible(true);
-                window.setVisible(true);
+                //TODO: nigel: probably need to set view visibleUser: window.setVisible(true);
             } catch (Exception e) {
                 logger.log(Level.WARNING, "failed to create HUD frame: " + e);
             }

@@ -83,20 +83,14 @@ public class ClientSocket {
     private long numBytesRead;
     protected StatisticsReporter statReporter;
     private long numBytesWritten;
+
+    // Master Only: Don't write anything until this socket is enabled
     protected boolean enable = false;
 
     protected ClientSocket(BigInteger clientID, Socket socket, ClientSocketListener listener) {
         myClientID = clientID;
         this.socket = socket;
         this.listener = listener;
-    }
-
-    public void setEnable(boolean enable) {
-        this.enable = enable;
-    }
-
-    public boolean isEnabled() {
-        return enable;
     }
 
     /**
@@ -281,6 +275,8 @@ public class ClientSocket {
      * @param len The number of bytes to send.
      */
     public void send(byte[] buf, int len) throws IOException {
+
+        // On the master only, don't write anything until enabled
         if (master && !enable) {
             return;
         }

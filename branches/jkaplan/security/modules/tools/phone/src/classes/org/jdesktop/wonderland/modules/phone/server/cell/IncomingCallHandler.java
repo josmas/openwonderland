@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.phone.server.cell;
 
+import org.jdesktop.wonderland.modules.orb.server.cell.Orb;
+
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 
@@ -247,7 +249,50 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 	setup.cp = new CallParticipant();	
 	setup.cp.setCallId(callId);
 	setup.cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
-	setup.cp.setPhoneNumber(status.getCallInfo());
+
+	String callInfo = status.getCallInfo();
+
+	/*
+	 * When a call is internal from our PBX caller ID is
+	 *
+	 * <last name>,<first name>@<10 digit phone number>@<gateway IP address>
+	 *
+	 * When we get a call from an outside line, the caller ID is
+	 *
+	 * sip:<10 digit phone number>@<gateway IP address>@<10 digit phone number>@<gateway IP address>
+	 */
+	String name;
+	String phoneNumber;
+
+	if (callInfo.startsWith("sip:")) {
+	    callInfo = callInfo.substring(4);
+	    String[] tokens = callInfo.split("@");
+
+	    name = tokens[0];
+	    phoneNumber = callInfo;
+	} else {
+	    int ix = callInfo.indexOf("@");
+
+	    if (ix > 0) {
+	        name = callInfo.substring(0, ix);
+
+	        String[] tokens = name.split(",");
+
+	        if (tokens.length == 2) {
+		    name = tokens[1] + " " + tokens[0];
+	        } else {
+		    name = callInfo;
+	        }
+
+	        phoneNumber = callInfo.substring(ix + 1);
+	    } else {
+		name = callInfo;
+		phoneNumber = callInfo;
+	    }
+	}
+
+	setup.cp.setPhoneNumber(phoneNumber);
+	setup.cp.setName(name);
 
 	Call call;
 
@@ -681,8 +726,22 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
 		playTreatment("help.au");
 		playTreatment(JOIN_CLICK);
+        
+	 	Vector3f center = new Vector3f();
 
-		new Orb(call.getId(), call.getId(), phone.phoneCellRef.get().getWorldBounds(), false);
+		phone.phoneCellRef.get().getWorldBounds().getCenter(center);
+
+        	center.setY((float)1.5);
+
+		String username = call.getSetup().cp.getName();
+
+		logger.info("USERNAME:  " + username);
+
+		if (username == null) {
+		    username = call.getId();
+		}
+
+		new Orb(username, call.getId(), center, .1, false);
 
 		state = ESTABLISHED;
             } catch (IOException e) {

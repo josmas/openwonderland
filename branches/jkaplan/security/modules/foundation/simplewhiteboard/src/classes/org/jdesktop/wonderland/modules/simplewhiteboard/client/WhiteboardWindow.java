@@ -23,16 +23,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
 import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardDrawingSurface;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardTool.Tool;
 import com.jme.math.Vector2f;
-import java.math.BigInteger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.simplewhiteboard.client.cell.WhiteboardCell;
 
 /**
@@ -46,12 +44,15 @@ public class WhiteboardWindow extends WindowGraphics2D {
 
     /** The logger used by this class */
     private static final Logger logger = Logger.getLogger(WhiteboardWindow.class.getName());
+    /** The cell in which the window is displayed. */
+    private WhiteboardCell cell;
     /** The image which is drawn on */
     private WhiteboardDrawingSurface wbSurface;
 
     /**
      * Create a new instance of WhiteboardWindow.
      *
+     * @param cell The cell in which the window is displayed.
      * @param app The whiteboard app which owns the window.
      * @param width The width of the window (in pixels).
      * @param height The height of the window (in pixels).
@@ -59,16 +60,21 @@ public class WhiteboardWindow extends WindowGraphics2D {
      * @param pixelScale The size of the window pixels.
      * @param commComponent The communications component for communicating with the server.
      */
-    public WhiteboardWindow(final App app, int width, int height, boolean topLevel, Vector2f pixelScale,
-            final WhiteboardComponent commComponent)
+    public WhiteboardWindow(WhiteboardCell cell, App2D app, int width, int height, boolean topLevel,
+                            Vector2f pixelScale, final WhiteboardComponent commComponent)
             throws InstantiationException {
-        super(app, width, height, topLevel, pixelScale, new WhiteboardDrawingSurface(width, height));
-        initializeSurface();
+
+        super(app, width, height, topLevel, pixelScale, 
+              "Main window for Whiteboard",
+              new WhiteboardDrawingSurface(width, height));
+        this.cell = cell;
 
         // For debug
         setTitle("WHITEBOARD WINDOW");
 
         wbSurface = (WhiteboardDrawingSurface) getSurface();
+
+        initializeSurface();
 
         addMouseMotionListener(new MouseMotionListener() {
 
@@ -78,7 +84,9 @@ public class WhiteboardWindow extends WindowGraphics2D {
                 dragTo(e.getPoint());
 
                 // notify other clients
-                WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(app), getCellID(app),
+                WhiteboardCellMessage msg = 
+                    new WhiteboardCellMessage(WhiteboardWindow.this.cell.getClientID(), 
+                                              WhiteboardWindow.this.cell.getCellID(),
                         WhiteboardAction.DRAG_TO,
                         e.getPoint());
                 commComponent.sendMessage(msg);
@@ -90,7 +98,9 @@ public class WhiteboardWindow extends WindowGraphics2D {
                 moveTo(e.getPoint());
 
                 // notify other clients
-                WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(app), getCellID(app),
+                WhiteboardCellMessage msg = 
+                    new WhiteboardCellMessage(WhiteboardWindow.this.cell.getClientID(), 
+                                              WhiteboardWindow.this.cell.getCellID(),
                         WhiteboardAction.MOVE_TO,
                         e.getPoint());
                 commComponent.sendMessage(msg);
@@ -110,19 +120,22 @@ public class WhiteboardWindow extends WindowGraphics2D {
                 switch (wbSurface.getActionType()) {
                     case COLOR:
                         logger.info("select color: " + wbSurface.getPenColor());
-                        msg = new WhiteboardCellMessage(getClientID(app), getCellID(app),
+                        msg = new WhiteboardCellMessage(WhiteboardWindow.this.cell.getClientID(), 
+                                                        WhiteboardWindow.this.cell.getCellID(),
                                 WhiteboardAction.SET_COLOR,
                                 wbSurface.getPenColor());
                         break;
                     case TOOL:
                         logger.info("select tool: " + wbSurface.getTool());
-                        msg = new WhiteboardCellMessage(getClientID(app), getCellID(app),
+                        msg = new WhiteboardCellMessage(WhiteboardWindow.this.cell.getClientID(), 
+                                                        WhiteboardWindow.this.cell.getCellID(),
                                 WhiteboardAction.SET_TOOL,
                                 wbSurface.getTool());
                         break;
                     case COMMAND:
                         logger.info("execute command: " + wbSurface.getCommand());
-                        msg = new WhiteboardCellMessage(getClientID(app), getCellID(app),
+                        msg = new WhiteboardCellMessage(WhiteboardWindow.this.cell.getClientID(), 
+                                                        WhiteboardWindow.this.cell.getCellID(),
                                 WhiteboardAction.EXECUTE_COMMAND,
                                 wbSurface.getCommand());
                         break;
@@ -144,20 +157,6 @@ public class WhiteboardWindow extends WindowGraphics2D {
             public void mouseExited(MouseEvent e) {
             }
         });
-    }
-
-    /**
-     * Return the client id of this window's cell.
-     */
-    private BigInteger getClientID(App app) {
-        return ((WhiteboardCell) app.getDisplayer()).getClientID();
-    }
-
-    /**
-     * Return the ID of this window's cell.
-     */
-    private CellID getCellID(App app) {
-        return ((WhiteboardCell) app.getDisplayer()).getCellID();
     }
 
     /**

@@ -32,11 +32,9 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.Action;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
-import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCellClientState;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
-import org.jdesktop.wonderland.modules.simplewhiteboard.server.WhiteboardAppTypeMO;
 import org.jdesktop.wonderland.modules.simplewhiteboard.server.WhiteboardComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -85,10 +83,6 @@ public class WhiteboardCellMO extends App2DCellMO {
     /** 
      * {@inheritDoc}
      */
-    public AppTypeMO getAppType() {
-        return new WhiteboardAppTypeMO();
-    }
-
     @Override
     protected void setLive(boolean live) {
         super.setLive(live);
