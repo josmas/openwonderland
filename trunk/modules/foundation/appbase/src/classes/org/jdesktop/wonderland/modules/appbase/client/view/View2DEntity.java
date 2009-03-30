@@ -885,6 +885,7 @@ public abstract class View2DEntity implements View2D {
      * Update if specified.
      */
     public synchronized void setOrtho (boolean ortho, boolean update) {
+        if (this.ortho == ortho) return;
         this.ortho = ortho;
         changeMask |= CHANGED_ORTHO;
         if (update) {
