@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.sample.client;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
@@ -46,8 +47,7 @@ public class SampleRenderer extends BasicRenderer {
 
         node.detachAllChildren();
         node.attachChild(this.getShapeMesh(name, shapeType));
-        node.setModelBound(new BoundingBox());
-        node.updateModelBound();
+        updateModelBound(shapeType);
 
         ClientContextJME.getWorldManager().addToUpdateList(node);
     }
@@ -82,10 +82,20 @@ public class SampleRenderer extends BasicRenderer {
         /* Create the scene graph object and set its wireframe state */
         node = new Node();
         node.attachChild(mesh);
-        node.setModelBound(new BoundingBox());
-        node.updateModelBound();
+        updateModelBound(shapeType);
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
         return node;
+    }
+
+    private void updateModelBound(String shapeType) {
+        // Set the model bound based upon the type of shape
+        if (shapeType.equals("BOX") == true) {
+            node.setModelBound(new BoundingBox());
+        }
+        else if (shapeType.equals("SPHERE") == true) {
+            node.setModelBound(new BoundingSphere());
+        }
+        node.updateModelBound();
     }
 }
