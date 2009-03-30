@@ -193,7 +193,9 @@ public class SharedStateComponentMO extends CellComponentMO {
         return "org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent";
     }
 
-    private static class SharedMessageReceiver implements ComponentMessageReceiver {
+    private static class SharedMessageReceiver 
+            implements ComponentMessageReceiver, ManagedObject
+    {
         /** the map of maps we know about, indexed by name */
         private final ManagedReference<MapOfMaps> mapsRef =
                 AppContext.getDataManager().createReference(new MapOfMaps());
