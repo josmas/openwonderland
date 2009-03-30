@@ -71,10 +71,7 @@ public class SwingTestWindow
 	setTitle("Swing Test");
 
 	TestPanel testPanel = new TestPanel();
-	// Note: this seems to only be required for the swing set, but do it here for safety
-	// TODO: test without
        	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
-
         testPanel.setContainer(this);
 
 	setComponent(testPanel);

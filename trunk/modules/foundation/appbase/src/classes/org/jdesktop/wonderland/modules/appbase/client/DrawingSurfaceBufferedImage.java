@@ -46,6 +46,8 @@ import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.lang.reflect.Method;
 import javax.media.opengl.GLContext;
+import java.nio.ByteBuffer;
+import com.jme.image.Image;
 
 /**
  * INTERNAL API 
@@ -242,6 +244,12 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
                 }
             }
 
+            /*
+            System.err.println("&&&&&&&&&&&&&&&& DBSI: Drawing to texture " + getTexture());
+            int texid = getTexture().getTextureId();
+            System.err.println("&&&&&&&&&&&&&&&& Drawing to texture id " + texid);
+            */
+
             // In this implementation, we need to check our DirtyTrackingGraphics to see whether it is dirty.
             // If it is dirty, we copy the entire buffered image into the imageGraphics.
             g.executeAtomic(new Runnable() {
@@ -262,6 +270,7 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
                         dirtyRect.width, dirtyRect.width,
                         null)) {
                          */
+                        //debugPrintBufImage(); 
                         if (!imageGraphics.drawImage(bufImage, 0, 0,
                                 bufImage.getWidth(), bufImage.getHeight(), null)) {
                             logger.warning("drawImage returned false. Skipping image rendering.");
@@ -288,6 +297,35 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
 
         private void stop() {
             setArmingCondition(null);
+        }
+    }
+
+    private void debugPrintBufImage () {
+        int x = 0;
+        int y = 0;
+        int width = bufImage.getWidth();
+        int height = bufImage.getHeight();
+
+        WritableRaster srcRas = bufImage.getRaster();
+        DataBufferInt srcDataBuf = (DataBufferInt) srcRas.getDataBuffer();
+        int[] srcPixels = srcDataBuf.getData();
+        int srcLineWidth = width;
+
+        int dstIdx = 0;
+        int srcIdx = y * srcLineWidth + x;
+        int srcNextLineIdx = srcIdx;
+
+        width = (width > 20) ? 20 : width;
+        height = (height > 20) ? 20 : height;
+
+        for (int srcY = 0; srcY < height; srcY++) {
+            srcNextLineIdx += srcLineWidth;
+            for (int srcX = 0; srcX < width; srcX++) {
+                int pixel = srcPixels[srcIdx++];
+                System.err.print(Integer.toHexString(pixel) + " ");
+            }
+            srcIdx = srcNextLineIdx;
+            System.err.println();
         }
     }
 

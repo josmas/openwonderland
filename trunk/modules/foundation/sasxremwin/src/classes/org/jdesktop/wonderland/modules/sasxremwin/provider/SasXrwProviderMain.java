@@ -45,6 +45,8 @@ public class SasXrwProviderMain implements SasProviderConnectionListener {
 
     private SasXrwProviderMain () {
 
+        System.err.println("****** Enter SasXrwProviderMain");
+
         // TODO: parse args
 
         String userName = "sasxprovider";

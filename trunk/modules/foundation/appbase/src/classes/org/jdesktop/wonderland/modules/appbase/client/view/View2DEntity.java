@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.client.view;
 import org.jdesktop.mtgame.Entity;
 import com.jme.image.Image;
 import com.jme.image.Texture2D;
+import com.jme.image.Texture;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
@@ -1678,7 +1679,7 @@ public abstract class View2DEntity implements View2D {
             return;
         }
 
-        logger.fine("texid alloc: ts.getTexture() = " + ts.getTexture());
+        logger.info("texid alloc: ts.getTexture() = " + ts.getTexture());
 
         if (inRenderLoop) {
             // We're already in the render loop
@@ -1693,9 +1694,10 @@ public abstract class View2DEntity implements View2D {
            }, null, true);  // Note: a rare case in which we must wait for the render updater to complete
         }
 
-        /* For debug: Verify that ID was actually allocated 
+        /* For debug: Verify that ID was actually allocated
         Texture tex = geometryNode.getTexture();
         int texid = tex.getTextureId();
+        logger.severe("&&&&&&&&&&&& V2E: texid alloc: texid = " + texid);
         if (texid == 0) {
             logger.severe("Failed to allocated texture ID");
         }

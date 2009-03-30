@@ -35,6 +35,8 @@ import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCellRenderer;
+import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 
 /**
  * A cell renderer which uses JME to render app cell contents. It creates
@@ -84,6 +86,16 @@ public class App2DCellRendererJME extends App2DCellRenderer {
                 KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
                 if (ke.getKeyCode() == KeyEvent.VK_P) {
                     printEntitySceneGraphs(App2DCellRendererJME.this.getEntity(), 0);
+                } else if (ke.getKeyCode() == KeyEvent.VK_O) {
+                    // Print ortho nodes attachd to the world manager
+                    WorldManager wm = ClientContextJME.getWorldManager();
+                    for (int i=0; i < wm.numEntities(); i++) {
+                        Entity e = wm.getEntity(i);
+                        RenderComponent rc = (RenderComponent) e.getComponent(RenderComponent.class);
+                        if (rc == null || !rc.getOrtho()) continue;
+                        System.err.println("Ortho entity = " + entity);
+                        GraphicsUtils.printNode(rc.getSceneRoot());
+                    }
                 }
             }
         }
