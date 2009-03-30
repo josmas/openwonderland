@@ -17,23 +17,33 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.AppContext;
 import java.io.Serializable;
 import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
+import org.jdesktop.wonderland.common.security.Action;
+import org.jdesktop.wonderland.server.comms.SecureClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.server.security.Resource;
 
 /**
  * Handles CellMessages sent by the Wonderland client
  * @author jkaplan
  */
-class CellChannelConnectionHandler implements ClientConnectionHandler, Serializable {
+class CellChannelConnectionHandler 
+        implements SecureClientConnectionHandler, Serializable
+{
+    private static final Logger logger =
+            Logger.getLogger(CellChannelConnectionHandler.class.getName());
 
     public ConnectionType getConnectionType() {
         return CellChannelConnectionType.CLIENT_TYPE;
@@ -43,20 +53,47 @@ class CellChannelConnectionHandler implements ClientConnectionHandler, Serializa
         // ignore
     }
 
+    public Resource checkConnect(WonderlandClientID clientID,
+                                 Properties properties)
+    {
+        // anyone can connect, permissions are enforced per-message
+        return null;
+    }
+
     public void clientConnected(WonderlandClientSender sender,
-            WonderlandClientID clientID, Properties properties) {
+                                WonderlandClientID clientID,
+                                Properties properties)
+    {
+        // ignore
+    }
+
+    public void connectionRejected(WonderlandClientID clientID) {
         // ignore
     }
 
     public void clientDisconnected(WonderlandClientSender sender,
-            WonderlandClientID clientID) {
+            WonderlandClientID clientID)
+    {
         // ignore
     }
 
+    public Resource checkMessage(WonderlandClientID clientID,
+                                 Message message)
+    {
+        if (message instanceof CellMessage) {
+            CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
+            CellID id = ((CellMessage) message).getCellID();
+            Resource rsrc = crm.getCellResource(id);
+            return rsrc;
+        }
+
+        return null;
+    }
+
     public void messageReceived(WonderlandClientSender sender,
-            WonderlandClientID clientID,
-            
-            Message message) {
+                                WonderlandClientID clientID,
+                                Message message)
+    {
         if (message instanceof CellMessage) {
             messageReceived(sender, clientID, (CellMessage) message);
         } else {
@@ -76,9 +113,9 @@ class CellChannelConnectionHandler implements ClientConnectionHandler, Serializa
     
      */
     public void messageReceived(WonderlandClientSender sender,
-            WonderlandClientID clientID,
-            CellMessage message) {
-        
+                                WonderlandClientID clientID,
+                                CellMessage message)
+    {
         // find the appropriate cell
         CellMO cell = CellManagerMO.getCell(message.getCellID());
 
@@ -99,5 +136,15 @@ class CellChannelConnectionHandler implements ClientConnectionHandler, Serializa
 
         // dispatch the message
         channelComponent.messageReceived(sender, clientID, message);
+    }
+
+    public boolean messageRejected(WonderlandClientSender sender,
+                                   WonderlandClientID clientID,
+                                   Message message, Set<Action> requested,
+                                   Set<Action> granted)
+    {
+        logger.log(Level.WARNING, "Message " + message + " rejected from " +
+                   clientID);
+        return true;
     }
 }

@@ -75,7 +75,7 @@ public class CellComponentMessageReceiver implements ComponentMessageReceiver {
             // manager that loaded this cell.  That classloader will
             // have all the module classes
             WonderlandSession session = cell.getCellCache().getSession();
-            ServerSessionManager ssm = LoginManager.find(session);
+            ServerSessionManager ssm = session.getSessionManager();
             ClassLoader cl = ssm.getClassloader();
 
             // us the classloader we found to load the component class
@@ -126,7 +126,7 @@ public class CellComponentMessageReceiver implements ComponentMessageReceiver {
         // manager that loaded this cell.  That classloader will
         // have all the module classes
         WonderlandSession session = cell.getCellCache().getSession();
-        ServerSessionManager ssm = LoginManager.find(session);
+        ServerSessionManager ssm = session.getSessionManager();
         ClassLoader cl = ssm.getClassloader();
 
         // Find the class associated with the client component and remove it

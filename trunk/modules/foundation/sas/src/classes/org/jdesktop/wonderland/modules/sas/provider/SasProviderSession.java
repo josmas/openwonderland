@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -36,13 +37,13 @@ public class SasProviderSession extends WonderlandSessionImpl {
     private SasProviderConnection connection;
     private SasProviderConnectionListener listener;
 
-    public SasProviderSession(WonderlandServerInfo serverInfo, SasProviderConnectionListener listener) {
-        this (serverInfo, null, listener);
+    public SasProviderSession(ServerSessionManager sessionManager, WonderlandServerInfo serverInfo, SasProviderConnectionListener listener) {
+        this (sessionManager, serverInfo, null, listener);
     }
     
-    public SasProviderSession(WonderlandServerInfo serverInfo, ClassLoader loader,
+    public SasProviderSession(ServerSessionManager sessionManager, WonderlandServerInfo serverInfo, ClassLoader loader,
                               SasProviderConnectionListener listener) {
-        super (serverInfo, loader);
+        super (sessionManager, serverInfo, loader);
         connection = new SasProviderConnection(listener);        
         listener.setSession(this);
     }

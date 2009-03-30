@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.client.cell.registry.CellComponentRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerComponentResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerStateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerStateResponseMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -529,6 +530,9 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
                 String displayName = propertiesSPI.getDisplayName();
                 componentPropertiesMap.put(displayName, propertiesSPI);
                 listModel.addElement(displayName);
+
+                // make sure the property's GUI is up-to-date
+                propertiesSPI.updateGUI(cellServerState);
             }
         }
     }
@@ -566,9 +570,10 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
             return;
         }
 
-        if (response instanceof OKMessage) {
+        if (response instanceof CellServerComponentResponseMessage) {
             // If successful, add the component to the GUI
-            addComponentToPanelSet(spi, state);
+            CellServerComponentResponseMessage cscrm = (CellServerComponentResponseMessage) response;
+            addComponentToPanelSet(spi, cscrm.getCellComponentServerState());
         }
         else if (response instanceof ErrorMessage) {
             // Log an error. Eventually we should display a dialog

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.login;
 
+import org.jdesktop.wonderland.common.login.AuthenticationInfo;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;

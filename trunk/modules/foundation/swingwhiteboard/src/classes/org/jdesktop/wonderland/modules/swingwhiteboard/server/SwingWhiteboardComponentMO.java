@@ -57,6 +57,8 @@ public class SwingWhiteboardComponentMO extends CellComponentMO {
         super.setLive(isLive);
 
         if (isLive) {
+            // force a local channel
+            channelComponentRef.get().addLocalChannelRequest(SwingWhiteboardComponentMO.class.getName());
             channelComponentRef.getForUpdate().addMessageReceiver(WhiteboardCompoundCellMessage.class,
                             new ComponentMessageReceiverImpl(this, cellRef));
         } else {

@@ -22,6 +22,9 @@
         <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
         <path location="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
         <path location="${web.dir}/wfs/dist/wonderland-wfs.jar"/>
+        <path location="${core.dir}/build/lib/wonderland-client.jar"/>
+        <path location="${core.dir}/build/lib/wonderland-common.jar"/>
+        <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
     </pathconvert>   
 
     <pathconvert property="module-web.classpath">

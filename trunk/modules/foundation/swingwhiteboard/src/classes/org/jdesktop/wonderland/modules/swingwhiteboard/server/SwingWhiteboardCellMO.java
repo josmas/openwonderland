@@ -39,7 +39,6 @@ import org.jdesktop.wonderland.modules.swingwhiteboard.common.SwingWhiteboardCel
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 
 /**
@@ -56,7 +55,6 @@ public class SwingWhiteboardCellMO extends App2DCellMO {
     // so that when new clients join, they receive the current state
     private static LinkedList<WhiteboardCompoundCellMessage> messages;
     private static WhiteboardCompoundCellMessage lastMessage;
-
     /** The communications component used to broadcast to all clients */
     @UsesCellComponentMO(SwingWhiteboardComponentMO.class)
     private ManagedReference<SwingWhiteboardComponentMO> commComponentRef = null;
@@ -69,7 +67,7 @@ public class SwingWhiteboardCellMO extends App2DCellMO {
     public SwingWhiteboardCellMO() {
         super();
         // Force the whiteboard to have a its own channel
-        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+        // addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
         messages = new LinkedList<WhiteboardCompoundCellMessage>();
     }
 

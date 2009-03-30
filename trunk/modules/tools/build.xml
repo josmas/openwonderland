@@ -4,34 +4,28 @@
     <dirname property="current.dir" file="${ant.file.wonderland-modules-tools}"/>
     
     <!-- all projects -->
-    <fileset dir="${current.dir}" id="all.projects">
-        <include name="darkstar/build.xml"/>
-        <include name="voicebridge/build.xml"/>
-        <include name="server-manager/build.xml"/>
-        <include name="audio-manager/build.xml"/>
-        <include name="sharedstate/build.xml"/>
-        <include name="artimport/build.xml"/>
-        <include name="coneofsilence/build.xml"/>
-        <include name="phone/build.xml"/>
-        <include name="artimport/build.xml"/>
-        <include name="content-repository/build.xml"/>
-        <include name="webdav/build.xml"/>
-        <include name="snapshot-manager/build.xml"/>
-        <include name="asset-meter/build.xml"/>
-    </fileset>
+    <filelist dir="${current.dir}" id="all.projects">
+        <file name="security/build.xml"/>
+        <file name="darkstar/build.xml"/>
+        <file name="security-group/build.xml"/>
+        <file name="security-session-noauth/build.xml"/>
+        <file name="presence-manager/build.xml"/>
+        <file name="orb/build.xml"/>
+        <file name="voicebridge/build.xml"/>
+        <file name="server-manager/build.xml"/>
+        <file name="audio-manager/build.xml"/>
+        <file name="sharedstate/build.xml"/>
+        <file name="artimport/build.xml"/>
+        <file name="orb/build.xml"/>
+        <file name="coneofsilence/build.xml"/>
+        <file name="phone/build.xml"/>
+        <file name="artimport/build.xml"/>
+        <file name="webdav/build.xml"/>
+        <file name="snapshot-manager/build.xml"/>
+        <file name="asset-meter/build.xml"/>
+    </filelist>
     
-    <fileset dir="${current.dir}" id="presence.manager">
-        <include name="presence-manager/build.xml"/>
-    </fileset>
-
-    <fileset dir="${current.dir}" id="orb">
-        <include name="orb/build.xml"/>
-    </fileset>
-
-    <!-- build and package all subprojects -->
     <target name="dist">
-        <build-subprojects fileset="presence.manager" target="dist"/>
-        <build-subprojects fileset="orb" target="dist"/>
         <build-subprojects fileset="all.projects" target="dist"/>
     </target>
     
@@ -50,7 +44,7 @@
         <attribute name="target"/>
         <sequential>
             <subant target="@{target}" inheritall="false">
-                <fileset refid="@{fileset}"/>
+                <filelist refid="@{fileset}"/>
             </subant>
         </sequential>
     </macrodef>

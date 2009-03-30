@@ -97,6 +97,9 @@ public class RunUtil {
                     if (System.getProperty(Constants.RUN_DIR_CLEANUP_PROP) == null) {
                         System.setProperty(Constants.RUN_DIR_CLEANUP_PROP, "true");
                     }
+
+                    // set the system property
+                    System.setProperty(Constants.RUN_DIR_PROP, baseDir.getAbsolutePath());
                 }
                     
                 baseDir.delete();

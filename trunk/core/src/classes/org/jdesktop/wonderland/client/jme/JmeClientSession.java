@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.jme;
 
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  * An extension of CellClientSession to work with JME.  Primarily, this
@@ -28,9 +29,11 @@ import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 public class JmeClientSession extends CellClientSession {
     private JmeCellCache jmeCellCache;
     
-    public JmeClientSession(WonderlandServerInfo serverInfo,
-            ClassLoader loader) {
-        super(serverInfo, loader);
+    public JmeClientSession(ServerSessionManager manager,
+                            WonderlandServerInfo serverInfo,
+                            ClassLoader loader)
+    {
+        super(manager, serverInfo, loader);
     }
 
     @Override

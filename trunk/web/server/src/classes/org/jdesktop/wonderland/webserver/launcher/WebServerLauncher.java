@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.webserver.launcher;
 
 import org.jdesktop.wonderland.utils.FileListUtil;
-import java.net.URLConnection;
 import org.jdesktop.wonderland.utils.RunUtil;
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,14 +28,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.URLDecoder;
-import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -186,6 +181,8 @@ public class WebServerLauncher {
         
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error loading web server", ex);
+            System.out.println("Error " + ex + " starting web server");
+            ex.printStackTrace();
             System.exit(-1);
         }
     }
@@ -355,90 +352,6 @@ public class WebServerLauncher {
         @Override
         public void addURL(URL url) {
             super.addURL(url);
-        }
-
-        // workaround for Windows issues -- see below
-        @Override
-        public URL[] getURLs() {
-            NoProtocolURLStreamHandler npush =
-                    new NoProtocolURLStreamHandler();
-
-            URL[] out = super.getURLs();
-            for (int i = 0; i < out.length; i++) {
-                if (out[i].getProtocol().equals("file")) {
-                    try {
-                        out[i] = new URL(out[i], "", npush);
-                    } catch (MalformedURLException ex) {
-                        // ignore, leave URL as is
-                    }
-                }
-            }
-
-            return out;
-        }
-    }
-
-    /**
-     * Workaround for windows issue in Glassfish.  On Windows, Glassfish
-     * creates the sytem classpath by appending URLs together separated
-     * by the system path separator.  On Windows, that looks like:
-     * <code>file:URL1;file:URL2</code>
-     * On other platforms, you get:
-     * <code>file:URL1:file:URL2</code>
-     * This is done in <code>ASClassLoaderUtils.addLibrariesFromLibs()</code>.
-     * <p>
-     * Later, Jasper (the JSP compiler) tries to figure out the classpath
-     * by tokenizing the URL strings on the system path separator, and
-     * treating the result as a file.  On Windows, this doesn't work,
-     * because the list ends up being:
-     * <code>file:URL1, file:URL2</code>
-     * Whereas on other platforms it is:
-     * <code>file, URL1, file, URL2</code>
-     * This is done in <code>org.apache.jasper.Compiler.generateClass()</code>
-     * <p>
-     * The  short term soltution is to return URLs that don't include the
-     * protocol in their toString() method.  This obviously only works for
-     * file: URLs, but Glassfish wouldn't support http: URLs anyway.
-     */
-    static class NoProtocolURLStreamHandler extends URLStreamHandler {
-        @Override
-        protected URLConnection openConnection(URL u) throws IOException {
-            return new FileURLConnection(u);
-        }
-
-        @Override
-        protected String toExternalForm(URL u) {
-            // de-URLEncode the result. The path on Windows will be
-            // of the form:
-            // /C:/Documents%20and%20Settings/whatever
-            // Which is not a valid path.  Replace it with
-            // /C:/Documents and Settings/whatever
-
-            try {
-                return URLDecoder.decode(u.getPath(), "UTF-8");
-            } catch (UnsupportedEncodingException uee) {
-                logger.log(Level.WARNING, "Unable to decode " + u.getPath(), uee);
-                return u.getPath();
-            }
-        }
-    }
-
-    static class FileURLConnection extends URLConnection {
-        public FileURLConnection(URL url) {
-            super (toFileURL(url));
-        }
-
-        @Override
-        public void connect() throws IOException {
-            // do nothing
-        }
-
-        public static URL toFileURL(URL u) {
-            try {
-                return new URL("file:" + u.toExternalForm());
-            } catch (MalformedURLException mue) {
-                return u;
-            }
         }
     }
 

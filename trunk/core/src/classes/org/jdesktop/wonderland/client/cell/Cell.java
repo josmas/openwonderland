@@ -718,8 +718,7 @@ public class Cell {
                 // manager that loaded this cell.  That classloader will
                 // have all the module classes
                 WonderlandSession session = getCellCache().getSession();
-                ServerSessionManager ssm = LoginManager.find(session);
-                ClassLoader cl = ssm.getClassloader();
+                ClassLoader cl = session.getSessionManager().getClassloader();
 
                 // us the classloader we found to load the component class
                 Class compClazz = cl.loadClass(compClassname);

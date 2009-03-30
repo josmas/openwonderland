@@ -22,6 +22,8 @@ import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.security.MoveAction;
+import org.jdesktop.wonderland.common.security.annotation.Actions;
 
 /**
  * Messages to/from MovableCells
@@ -29,6 +31,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author paulby
  */
 @InternalAPI
+@Actions(MoveAction.class)
 public class MovableMessage extends CellMessage {
 
     private Vector3f translation;

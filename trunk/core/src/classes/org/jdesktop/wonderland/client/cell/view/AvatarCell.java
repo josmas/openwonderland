@@ -72,7 +72,7 @@ public class AvatarCell extends ViewCell {
             String str = ((AvatarCellClientState) cellClientState).getAvatarConfigURL();
             if (str!=null) {
                 WonderlandSession session = getCellCache().getSession();
-                ServerSessionManager manager = LoginManager.find(session);
+                ServerSessionManager manager = session.getSessionManager();
                 String serverHostAndPort = manager.getServerNameAndPort();
                 avatarConfigURL = new URL("wla://avatarbaseart@"+serverHostAndPort+"/"+str);
             }

@@ -73,8 +73,8 @@ public class MovableAvatarComponent extends MovableComponent {
             } else {
                 // State change, so no throttling
                 // first clear any messages in the throttle thread
-                if (throttle!=null)
-                    throttle.send(null);
+                throttle.clear();
+
                 // Now send the current change
                 channelComp.send(createMoveRequestMessage(transform));
 
@@ -96,6 +96,10 @@ public class MovableAvatarComponent extends MovableComponent {
 
     @Override
     protected ResponseListener createMoveResponseListener(final CellMoveModifiedListener listener) {
+        if (listener == null) {
+            return super.createMoveResponseListener(null);
+        }
+
         throw new RuntimeException("Not supported");
     }
 
