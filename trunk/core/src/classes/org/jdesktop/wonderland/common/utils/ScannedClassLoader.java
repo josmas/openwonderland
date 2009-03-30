@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.common.utils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
@@ -142,7 +143,7 @@ public class ScannedClassLoader extends URLClassLoader {
 
                     try {
                         Class loaded = loadClass(className);
-                        if (clazz.isAssignableFrom(loaded)) {
+                        if (clazz.isAssignableFrom(loaded) && !Modifier.isAbstract(clazz.getModifiers())) {
                             next = (T) loaded.newInstance();
                         }
                     } catch (InstantiationException ex) {
