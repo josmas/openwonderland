@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.cell;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import java.util.logging.Logger;
@@ -26,12 +27,13 @@ import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
+import org.jdesktop.wonderland.client.utils.Throttle;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessageResponse;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
@@ -41,7 +43,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  */
 @ExperimentalAPI
 public class MovableComponent extends CellComponent {
-    protected MessageThrottle throttle = null;
+    protected final Throttle throttle = new Throttle(2, TimeUnit.SECONDS);
 
     protected static Logger logger = Logger.getLogger(MovableComponent.class.getName());
     protected ArrayList<CellMoveListener> serverMoveListeners = null;
@@ -110,11 +112,6 @@ public class MovableComponent extends CellComponent {
     public void localMoveRequest(CellTransform transform, 
                                  CellMoveModifiedListener listener) {
     
-        if (throttle==null) {
-            throttle = new MessageThrottle();
-            throttle.start();
-        }
-
         // make sure we are connected to the server
         if (channelComp == null || 
                 channelComp.getStatus() != ClientConnection.Status.CONNECTED) {
@@ -124,14 +121,15 @@ public class MovableComponent extends CellComponent {
         }
 
         // TODO throttle sends, we should only send so many times a second.
-        if (listener!=null) {
-            logger.warning("MovableComponnet messages with response listener are not throttled yet !");
-            channelComp.send(
-                createMoveRequestMessage(transform),
-                createMoveResponseListener(listener));
-        } else {
-            throttle.send(createMoveRequestMessage(transform));
-        }
+        final CellMessage req = createMoveRequestMessage(transform);
+        final ResponseListener resp = createMoveResponseListener(listener);
+
+        throttle.schedule(new Runnable() {
+            public void run() {
+                //System.out.println("Sending move at " + System.currentTimeMillis());
+                channelComp.send(req, resp);
+            }
+        });
 
         applyLocalTransformChange(transform, TransformChangeListener.ChangeSource.LOCAL);
     }
@@ -142,17 +140,36 @@ public class MovableComponent extends CellComponent {
     }
 
     protected ResponseListener createMoveResponseListener(final CellMoveModifiedListener listener) {
-        return new ResponseListener() {
-
-                    public void responseReceived(ResponseMessage response) {
-                        MovableMessageResponse msg = (MovableMessageResponse)response;
-                        CellTransform requestedTransform = null;
-                        CellTransform actualTransform = new CellTransform(msg.getRotation(), msg.getTranslation(), msg.getScale());
-                        int reason = 1;
-                        listener.moveModified(requestedTransform, reason, actualTransform);
-                        // TODO Trigger a cell move with the SERVER_ADJUST source
+        if (listener == null) {
+            return new ResponseListener() {
+                public void responseReceived(ResponseMessage response) {
+                    if (response instanceof ErrorMessage) {
+                        ErrorMessage error = (ErrorMessage) response;
+                        logger.log(Level.WARNING, "Error sending move: " +
+                                   error.getErrorMessage(),
+                                   error.getErrorCause());
                     }
-                };
+                }
+            };
+        }
+
+        return new ResponseListener() {
+            public void responseReceived(ResponseMessage response) {
+                CellTransform requestedTransform = null;
+                CellTransform actualTransform = null;
+
+                if (response instanceof MovableMessageResponse) {
+                    MovableMessageResponse msg = (MovableMessageResponse) response;
+                    actualTransform = new CellTransform(msg.getRotation(),
+                                                        msg.getTranslation(),
+                                                        msg.getScale());
+                }
+               
+                int reason = 1;
+                listener.moveModified(requestedTransform, reason, actualTransform);
+                // TODO Trigger a cell move with the SERVER_ADJUST source
+             }
+        };
     }
 
     /**
@@ -248,40 +265,5 @@ public class MovableComponent extends CellComponent {
          * @param actualTransform
          */
         public void moveModified(CellTransform requestedTransform, int reason, CellTransform actualTransform);
-    }
-
-    /**
-     * Temporary throttle. TODO we should not have a thread for every MovableAvatarComponnet
-     */
-    class MessageThrottle extends Thread {
-        private CellMessage msg;
-
-        public MessageThrottle() {
-            super(ThreadManager.getThreadGroup(), "MessageThrottle");
-        }
-
-        public void send(CellMessage msg) {
-            synchronized(this) {
-                this.msg = msg;
-            }
-        }
-
-        @Override
-        public void run() {
-            while(true) {
-                synchronized(this) {
-                    if (msg!=null) {
-                        channelComp.send(msg);
-                        msg = null;
-                    }
-                }
-
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(MovableAvatarComponent.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
     }
 }

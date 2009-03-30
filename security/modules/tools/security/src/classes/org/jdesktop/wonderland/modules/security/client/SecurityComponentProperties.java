@@ -537,6 +537,7 @@ public class SecurityComponentProperties extends JPanel
         public void removeRow(int index) {
             principals.remove(index);
             owner.remove(index);
+            perms.remove(index);
             
             this.fireTableRowsDeleted(index, index);
         }
@@ -722,7 +723,7 @@ public class SecurityComponentProperties extends JPanel
                 Permission p = new Permission(principal, a, null);
                 
                 SortedSet<Permission> tail = sortedPerms.tailSet(p);
-                if (tail.isEmpty()) {
+                if (tail.isEmpty() || !tail.first().equals(p)) {
                     perms.add(null);
                 } else {
                     perms.add(tail.first().getAccess());
@@ -830,15 +831,15 @@ public class SecurityComponentProperties extends JPanel
                                                        int row, int column)
         {
             ActionDTO a = (ActionDTO) value;
-            String name = a.getDisplayName();
+            String name = a.getAction().getDisplayName();
             if (name == null) {
-                name = a.getName();
+                name = a.getAction().getName();
             }
 
             Component c = super.getTableCellRendererComponent(table, name, isSelected,
                                                               hasFocus, row, column);
             if (c instanceof JComponent) {
-                ((JComponent) c).setToolTipText(a.getToolTip());
+                ((JComponent) c).setToolTipText(a.getAction().getToolTip());
             }
 
             return c;

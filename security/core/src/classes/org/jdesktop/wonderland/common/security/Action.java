@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.common.security;
 
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An action that a user can perform on a resource.  This is the common
@@ -30,11 +32,18 @@ import java.io.Serializable;
  * @author jkaplan
  */
 public abstract class Action implements Serializable {
+    /** logger */
+    private static final Logger logger =
+            Logger.getLogger(Action.class.getName());
+
     /** actions are uniquely identified by name */
     private String name;
 
-    /** the name of the parent for this action */
-    private String parent;
+    /** the class of the parent for this action */
+    private Class parentClass;
+
+    /** an instance of the parent, created lazily */
+    private transient Action parent;
 
     /** the display name for this action */
     private String displayName;
@@ -53,22 +62,22 @@ public abstract class Action implements Serializable {
     /**
      * Create a new action with the given name and parent
      * @param name the name of the action to create
-     * @param parent the name of this action's parent
+     * @param parentClass the class of this action's parent
      */
-    protected Action(String name, String parent) {
-        this (name, parent, null, null);
+    protected Action(String name, Class parentClass) {
+        this (name, parentClass, null, null);
     }
 
     /**
      * Create a new action with the given name and parent
      * @param name the name of the action to create
-     * @param parent the name of this action's parent
+     * @param parentClass the class of this action's parent
      */
-    protected Action(String name, String parent, String displayName,
+    protected Action(String name, Class parentClass, String displayName,
                   String toolTip)
     {
         this.name        = name;
-        this.parent      = parent;
+        this.parentClass = parentClass;
         this.displayName = displayName;
         this.toolTip     = toolTip;
     }
@@ -82,13 +91,29 @@ public abstract class Action implements Serializable {
     }
 
     /**
-     * Get the parent of this action.  By default, an action is assigned
+     * Get this actions parent
+     * @return this action's parent, or null if this action is the top-level
+     */
+    public synchronized Action getParent() {
+        if (parent != null) {
+            return parent;
+        }
+
+        if (getParentClass() != null) {
+            parent = getInstance(getParentClass());
+        }
+
+        return parent;
+    }
+
+    /**
+     * Get the class of this action's parent.  By default, an action is assigned
      * the same value as its parent.
-     * @return the name of this action's parent, or null if this action
+     * @return the class of this action's parent, or null if this action
      * is the top-level
      */
-    public String getParent() {
-        return parent;
+    public Class getParentClass() {
+        return parentClass;
     }
 
     /**
@@ -136,5 +161,22 @@ public abstract class Action implements Serializable {
         int hash = 7;
         hash = 47 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
+    }
+
+    /**
+     * Instantiate an action class
+     * @param class the action class to instantiate
+     * @return the instantiated action
+     */
+    public static <T extends Action> T getInstance(Class<T> actionClazz) {
+        try {
+            return (T) actionClazz.newInstance();
+        } catch (InstantiationException ex) {
+            logger.log(Level.SEVERE, "Error creating action", ex);
+        } catch (IllegalAccessException ex) {
+            logger.log(Level.SEVERE, "Error creating action", ex);
+        }
+
+        return null;
     }
 }

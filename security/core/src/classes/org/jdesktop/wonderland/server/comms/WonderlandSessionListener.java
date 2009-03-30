@@ -214,6 +214,13 @@ public class WonderlandSessionListener
             // get the actions associated with this message
             Set<Action> actions = getActions(m.getClass());
 
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest("Session " + getSession().getName() +
+                              " security for message " + m +
+                              " resource: " + resource +
+                              " actions: " + actions.size());
+            }
+
             // if the resource is not null and the message requires actions,
             // we need to query the resource for the given actions, and only
             // handle the message if the query returns the required
@@ -675,6 +682,11 @@ public class WonderlandSessionListener
                                 " actions for " + clazz, iae);
                     }
                 }
+            }
+
+            // walk up the object tree searching for actions
+            if (clazz.getSuperclass() != null) {
+                out.addAll(getActions(clazz.getSuperclass()));
             }
 
             // add to the cache

@@ -83,7 +83,8 @@ class CellChannelConnectionHandler
         if (message instanceof CellMessage) {
             CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
             CellID id = ((CellMessage) message).getCellID();
-            return crm.getCellResource(id);
+            Resource rsrc = crm.getCellResource(id);
+            return rsrc;
         }
 
         return null;

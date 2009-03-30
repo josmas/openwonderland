@@ -35,20 +35,13 @@ public class ActionDTO implements Serializable, Comparable {
             Logger.getLogger(ActionDTO.class.getName());
 
     private String clazz;
-    private String name;
-    private String parent;
-    private String displayName;
-    private String toolTip;
+    private Action action;
 
     public ActionDTO() {
     }
 
     public ActionDTO(Action action) {
         this.clazz = action.getClass().getName();
-        this.name = action.getName();
-        this.parent = action.getParent();
-        this.displayName = action.getDisplayName();
-        this.toolTip = action.getToolTip();
     }
 
     @XmlElement
@@ -60,56 +53,16 @@ public class ActionDTO implements Serializable, Comparable {
         this.clazz = clazz;
     }
 
-    @XmlElement
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @XmlElement
-    public String getParent() {
-        return parent;
-    }
-
-    public void setParent(String parent) {
-        this.parent = parent;
-    }
-
-    @XmlElement
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    @XmlElement
-    public String getToolTip() {
-        return toolTip;
-    }
-
-    public void setToolTip(String toolTip) {
-        this.toolTip = toolTip;
-    }
-
     @XmlTransient
     public Action getAction() {
         try {
             Class c = getClass().getClassLoader().loadClass(getActionClass());
-            return (Action) c.newInstance();
-        } catch (InstantiationException ex) {
-            logger.log(Level.SEVERE, "Error creating action", ex);
-        } catch (IllegalAccessException ex) {
-            logger.log(Level.SEVERE, "Error creating action", ex);
+            return Action.getInstance(c);
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE, "Error creating action", ex);
         }
 
-        return null;
+        return action;
     }
 
     @Override
