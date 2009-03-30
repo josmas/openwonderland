@@ -50,6 +50,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerStateResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerStateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellClientStateMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerComponentResponseMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -1162,26 +1163,47 @@ public abstract class CellMO implements ManagedObject, Serializable {
                     comp.setServerState(state);
                     cellMO.addComponent(comp);
 
+                    // Now ask the component for its server state.  This may
+                    // be different than the one we just set, for example if
+                    // the cell does some work to calculate new properties when
+                    // the state is set.  If the component returns null, just
+                    // use the state that was passed in to avoid errors.
+                    CellComponentServerState newState = comp.getServerState(null);
+                    if (newState != null) {
+                        state = newState;
+                    }
+
                     // Send a response message back to the client indicating
                     // success
-                    sender.send(clientID, new OKMessage(message.getMessageID()));
-
-                    // Send the same server state object to all clients as an
-                    // asynchronous event
-                    cellMO.sendCellMessage(clientID, message);
+                    sender.send(clientID, new CellServerComponentResponseMessage(
+                                                    message.getMessageID(), state));
+                } else {
+                    // Otherwise, the component already exists, so send an error
+                    // message back to the client.
+                    sender.send(clientID, new ErrorMessage(message.getMessageID(),
+                                "The Component " + className + " already exists."));
                     return;
                 }
-
-                // Otherwise, the component already exists, so send an error
-                // message back to the client.
-                sender.send(clientID, new ErrorMessage(message.getMessageID(),
-                        "The Component " + className + " already exists."));
             } catch (java.lang.Exception excp) {
+                // Rethrow runtime exceptions so we don't mess up Darkstar
+                if (excp instanceof RuntimeException) {
+                    throw (RuntimeException) excp;
+                }
+
                 // Log an error in the log and send back an error message.
                 logger.log(Level.WARNING, "Unable to add component " +
                         className + " for cell " + cellMO.getName(), excp);
                 sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
+                return;
             }
+
+            // If we made it here, everything worked.  Send the updated server
+            // state object to all clients as an asynchronous event
+            CellServerComponentMessage out = message;
+            if (state != null) {
+                out = new CellServerComponentMessage(message.getCellID(), state);
+            }
+            cellMO.sendCellMessage(clientID, out);
         }
 
         /**

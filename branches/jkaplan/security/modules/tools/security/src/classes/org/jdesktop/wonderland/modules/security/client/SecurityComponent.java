@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.security.client;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -28,6 +29,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.modules.security.common.ActionDTO;
 import org.jdesktop.wonderland.modules.security.common.messages.PermissionsChangedMessage;
 import org.jdesktop.wonderland.modules.security.common.messages.PermissionsRequestMessage;
@@ -48,7 +50,7 @@ public class SecurityComponent extends CellComponent
      * The set of permissions this user has for this cell.  If this value
      * is null, it means the permissions are not yet calculated.
      */
-    private Set<ActionDTO> granted;
+    private Set<Action> granted;
 
     /** 
      * The channel to listen for messages over
@@ -84,14 +86,17 @@ public class SecurityComponent extends CellComponent
      * @return the set of permissions for this user, or null if the
      * permissions are not calculated
      */
-    public synchronized Set<ActionDTO> getPermissions()
+    public synchronized Set<Action> getPermissions()
         throws InterruptedException
     {
         if (granted == null) {
             // request the permissions from the server
             ResponseMessage rm = channel.sendAndWait(new PermissionsRequestMessage());
             if (rm instanceof PermissionsResponseMessage) {
-                granted = ((PermissionsResponseMessage) rm).getGranted();
+                granted = new LinkedHashSet<Action>();
+                for (ActionDTO a : ((PermissionsResponseMessage) rm).getGranted()) {
+                    granted.add(a.getAction());
+                }
             }
         }
         

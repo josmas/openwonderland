@@ -228,8 +228,8 @@ public class SecurityComponentMO extends CellComponentMO
             out.getAllActions().add(new ActionDTO(a));
         }
 
-        logger.warning("[SecurityComponentMO] writing " + out.getPermissions().size() +
-                       "permissions.");
+        logger.fine("[SecurityComponentMO] writing " +
+                    out.getPermissions().size() + " permissions.");
 
         return out;
     }
@@ -288,13 +288,7 @@ public class SecurityComponentMO extends CellComponentMO
 
         if (classActions != null) {
             for (Class ac : classActions.value()) {
-                try {
-                    actions.add((Action) ac.newInstance());
-                } catch (InstantiationException ex) {
-                    logger.log(Level.WARNING, "Error instiating " + ac, ex);
-                } catch (IllegalAccessException ex) {
-                    logger.log(Level.WARNING, "Error instantiating " + ac, ex);
-                }
+                actions.add(Action.getInstance(ac));
             }
         }
 

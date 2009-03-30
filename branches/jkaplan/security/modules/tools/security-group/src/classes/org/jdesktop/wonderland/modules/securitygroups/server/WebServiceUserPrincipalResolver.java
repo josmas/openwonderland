@@ -51,9 +51,17 @@ public class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
     private static final String CACHE_TIMEOUT_DEFAULT =
             String.valueOf(10 * 60 * 1000);
 
+    // property for default group name
+    private static final String DEFAULT_GROUP_PROP =
+            WebServiceUserPrincipalResolver.class.getName() + ".DefaultGroup";
+    private static final String DEFAULT_GROUP_DEFAULT = "users";
+
     // the cache of principals by username.  This is a timed cache, so data
     // lasts for a maximum of 10 minutes before being queried again
     private final TimeBasedCache<String, Set<Principal>> cache;
+
+    // the default group name
+    private final String defaultGroup;
 
     /**
      * Get an instance of this singleton
@@ -69,6 +77,8 @@ public class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
         String cacheTime = System.getProperty(CACHE_TIMEOUT_PROP, 
                                               CACHE_TIMEOUT_DEFAULT);
         cache = new TimeBasedCache<String, Set<Principal>>(Long.parseLong(cacheTime));
+        defaultGroup = System.getProperty(DEFAULT_GROUP_PROP,
+                                          DEFAULT_GROUP_DEFAULT);
     }
 
     public Set<Principal> getPrincipals(String username, boolean blocking) {
@@ -92,7 +102,12 @@ public class WebServiceUserPrincipalResolver implements UserPrincipalResolver {
     
     public Set<Principal> getRemotePrincipals(String username) {
         Set<Principal> out = new LinkedHashSet<Principal>();
+        
+        // add the user principal based on this user's username
         out.add(new Principal(username, Type.USER));
+
+        // add the default group principal
+        out.add(new Principal(defaultGroup, Type.GROUP));
 
         // get the credential manager to use
         CredentialManager cm = ServerAuthentication.getAuthenticationService();

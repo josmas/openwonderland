@@ -131,6 +131,11 @@ public class CellResourceService extends AbstractService {
         CellResourceContext ctx = ctxFactory.joinTransaction();
         CellResourceImpl rsrc = ctx.getResource(cellID);
         if (rsrc != null) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Found resource " + rsrc + " for " +
+                           cellID);
+            }
+
             // we found a resource.  Before we return it, make sure it's not
             // the placeholder for a null
             if (rsrc == NULL_RESOURCE) {
@@ -145,6 +150,11 @@ public class CellResourceService extends AbstractService {
         CellMO cell = CellManagerMO.getCell(cellID);
         SecurityComponentMO sc = cell.getComponent(SecurityComponentMO.class);
         if (sc == null) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "No security component for cell " +
+                           cellID);
+            }
+
             // there is no security component for this cell.  Add a null
             // entry to the cache, so we won't try to look it up every
             // time
@@ -157,6 +167,10 @@ public class CellResourceService extends AbstractService {
         rsrc.setOwners(sc.getOwners());
         rsrc.setPermissions(sc.getPermissions());
         ctx.addResource(cellID, rsrc);
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Created resource for cell " + cellID);
+        }
 
         // return the newly created resource
         return rsrc;
@@ -172,11 +186,20 @@ public class CellResourceService extends AbstractService {
     public void updateCellResource(CellID cellID, Set<Principal> owners,
                                    SortedSet<Permission> permissions)
     {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Update resource for cell " + cellID);
+        }
+
         CellResourceContext ctx = ctxFactory.joinTransaction();
         CellResourceImpl rsrc = ctx.getResource(cellID);
-        if (rsrc == null) {
+        if (rsrc == null || rsrc == NULL_RESOURCE) {
             rsrc = new CellResourceImpl(cellID.toString());
             ctx.addResource(cellID, rsrc);
+
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "Update created resource for cell " +
+                           cellID);
+            }
         }
 
         rsrc.setOwners(owners);
@@ -189,6 +212,10 @@ public class CellResourceService extends AbstractService {
      * @param cellID the cell id to update
      */
     public void invalidateCellResource(CellID cellID) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Invalidate resource for cell " + cellID);
+        }
+            
         CellResourceContext ctx = ctxFactory.joinTransaction();
         ctx.removeResource(cellID);
     }
@@ -353,6 +380,14 @@ public class CellResourceService extends AbstractService {
             return getPermission(userPrincipals, action);
         }
 
+        /**
+         * Return true if any of the given principals have the requested
+         * permission.
+         * @param userPrincipals a set of principals to check.
+         * @param action the action to check for.
+         * @return true if any of the specified principals have the given
+         * permission, or false if the result is denied or undefined.
+         */
         protected boolean getPermission(Set<Principal> userPrincipals,
                                         Action action)
         {
@@ -362,24 +397,53 @@ public class CellResourceService extends AbstractService {
                     return true;
                 }
 
-                // construct a prototype permission to search for
-                Permission search = new Permission(p, new ActionDTO(action),
-                                                   null);
-
-                // use the sorted set to find the first matching permission.
-                // This will correspond to the permission for this user
-                // if it is defined.
-                Permission perm = permissions.tailSet(search).first();
-
-                // if the permission was granted, return that we have
-                // the permission
-                if (perm.getAccess() == Access.GRANT) {
+                // now see if this particular principal has this permission
+                if (getPermission(p, action)) {
                     return true;
                 }
             }
 
             // the permission wasn't found or was denied to all principals
             // for this cell
+            return false;
+        }
+
+        /**
+         * Return whether a principal has the permission for the given action.
+         * This will iterate up the action if the given action is not
+         * specified but has a parent.
+         * @param p the principal to search
+         * @param action the action to search for
+         * @return true if the given principal has permission for the given
+         * action, or false if it is denied or undefined.
+         */
+        protected boolean getPermission(Principal p, Action action) {
+            // construct a prototype permission to search for
+            Permission search = new Permission(p, new ActionDTO(action), null);
+
+            // use the sorted set to find the first matching permission.
+            // This will correspond to the permission for this user
+            // if it is defined.
+            Permission perm = null;
+            SortedSet<Permission> perms = permissions.tailSet(search);
+            if (!perms.isEmpty() && perms.first().equals(search)) {
+                perm = perms.first();
+            }
+            
+            // if the permission exists, return its value
+            if (perm != null) {
+                return (perm.getAccess() == Access.GRANT);
+            }
+
+            // If we get here, it means the permission was not specified.
+            // If this is a sub-permission, iterate up the tree testing for
+            // any parent permissions
+            if (action.getParent() != null) {
+                return getPermission(p, action.getParent());
+            }
+
+            // if we get here, the permission was a top-level permission that
+            // was not specified.  Default to deny.
             return false;
         }
     }
