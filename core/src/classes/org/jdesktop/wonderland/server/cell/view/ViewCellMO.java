@@ -36,7 +36,7 @@ public abstract class ViewCellMO extends CellMO {
     
     public ViewCellMO(BoundingVolume localBounds, CellTransform transform) {
         super(localBounds, transform);
-        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+        addComponent(new ChannelComponentMO(this), ChannelComponentMO.class);
         addComponent(new MovableAvatarComponentMO(this), MovableComponentMO.class);
     }
     

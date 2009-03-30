@@ -47,13 +47,8 @@ import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
-import org.jdesktop.wonderland.client.jme.input.InputManager3D;
-import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 
@@ -204,7 +199,7 @@ public class JmeClientMain {
         physicsMI.setSelected(false);
         physicsMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                PhysicsSystem phySystem = ClientContextJME.getPhysicsSystem(LoginManager.find(curSession), "Default");
+                PhysicsSystem phySystem = ClientContextJME.getPhysicsSystem(curSession.getSessionManager(), "Default");
                 if (phySystem instanceof JBulletPhysicsSystem) {
                     ((JBulletPhysicsSystem)phySystem).setStarted(((JCheckBoxMenuItem)e.getSource()).isSelected());
                 } else {
@@ -228,7 +223,7 @@ public class JmeClientMain {
         logout();
 
         // get the login manager for the given server
-        ServerSessionManager lm = LoginManager.getInstance(serverURL);
+        ServerSessionManager lm = LoginManager.getSessionManager(serverURL);
 
         // Register default collision and physics systems for this session
 //        JBulletDynamicCollisionSystem collisionSystem = (JBulletDynamicCollisionSystem)
@@ -260,8 +255,8 @@ public class JmeClientMain {
         curSession.addSessionStatusListener(new SessionStatusListener() {
             public void sessionStatusChanged(WonderlandSession session, Status status) {
                 if (status==Status.DISCONNECTED) {
-                    ClientContextJME.removeAllPhysicsSystems(LoginManager.find(session));
-                    ClientContextJME.removeAllCollisionSystems(LoginManager.find(session));
+                    ClientContextJME.removeAllPhysicsSystems(session.getSessionManager());
+                    ClientContextJME.removeAllCollisionSystems(session.getSessionManager());
                 }
             }
         });

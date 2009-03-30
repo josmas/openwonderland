@@ -17,13 +17,12 @@
  */
 package org.jdesktop.wonderland.webserver;
 
-import com.sun.enterprise.deployment.archivist.WebArchivist;
-import com.sun.enterprise.web.WebDeployer;
+import com.sun.enterprise.util.net.NetUtils;
 import org.jdesktop.wonderland.utils.AppServerMonitor;
 import org.jdesktop.wonderland.utils.RunUtil;
 import org.jdesktop.wonderland.webserver.launcher.WebServerLauncher;
-import com.sun.hk2.component.InhabitantsParser;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -34,24 +33,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.embed.App;
-import org.glassfish.embed.AppServer;
 import org.glassfish.embed.EmbeddedException;
-import org.glassfish.embed.EmbeddedHttpListener;
-import org.glassfish.embed.EmbeddedVirtualServer;
-import org.glassfish.server.ServerEnvironmentImpl;
+import org.glassfish.embed.EmbeddedFileSystem;
+import org.glassfish.embed.EmbeddedInfo;
 import org.jdesktop.wonderland.client.jme.WonderlandURLStreamHandlerFactory;
 import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
@@ -60,11 +46,8 @@ import org.jdesktop.wonderland.modules.ModuleAttributes;
 import org.jdesktop.wonderland.modules.service.ModuleManager;
 import org.jdesktop.wonderland.modules.service.ModuleManager.TaggedModule;
 import org.jdesktop.wonderland.utils.Constants;
-import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 import org.jdesktop.wonderland.utils.FileListUtil;
-import org.jvnet.hk2.component.Habitat;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
 /**
  *
@@ -77,13 +60,6 @@ public class RunAppServer {
     
     // singleton instance
     private static WonderlandAppServer appServer;
-    private static int port;
-
-    static {
-        String portStr = SystemPropertyUtil.getProperty(Constants.WEBSERVER_PORT_PROP,
-                                                        "8080");
-        port = Integer.parseInt(portStr);
-    }
     
     public RunAppServer() throws IOException {
         // set up URL handlers for Wonderland types
@@ -106,11 +82,20 @@ public class RunAppServer {
             writeWebApps();
         }
 
+        // create and start the appserver -- the hostname will be set
+        // as a sideeffect of the start call
+        try {
+            createAppServer();
+            getAppServer().start();
+        } catch (EmbeddedException ee) {
+            throw new IOException(ee);
+        }
+
         // deploy built-in web apps
         deployWebApps();
 
-        // mark the app server as started
-        getAppServer().setStarted(true);
+        // notify the deployer that we are ready to start deploying other apps
+        getAppServer().setDeployable(true);
 
         // redeploy any other modules, including web modules,
         // that haven't yet been deployed.  This will also
@@ -125,11 +110,34 @@ public class RunAppServer {
     /**
      * Set up some important properties needed everywhere, like the hostname
      * and webserver URL
+     * @param appServerHostname the hostname as detected by the application
+     * server.  This will be used, unless we have specified another value.
      */
     private void setupProperties() {
-    // set the public hostname for this server based on a lookup
-        System.setProperty(Constants.WEBSERVER_HOST_PROP,
-                resolveAddress(System.getProperty(Constants.WEBSERVER_HOST_PROP)));
+
+        String host = System.getProperty(Constants.WEBSERVER_HOST_PROP);
+        if (host != null) {
+            // a host was specified -- resolve it
+            host = resolveAddress(host);
+        }
+        
+        // if the host does not exist or does not resolve, try glassfish's
+        // guess
+        if (host == null) {
+            try {
+                host = NetUtils.getCanonicalHostName();
+            } catch (UnknownHostException uhe) {
+                // ignore
+            }
+        }
+        
+        // still no luck -- use our best guess
+        if (host == null) {
+            host = resolveAddress(null);
+        }
+        
+        // set the system property
+        System.setProperty(Constants.WEBSERVER_HOST_PROP, host);
 
         // set the web server URL based on the hostname and port
         if (System.getProperty(Constants.WEBSERVER_URL_PROP) == null) {
@@ -137,6 +145,18 @@ public class RunAppServer {
                 "http://" + System.getProperty(Constants.WEBSERVER_HOST_PROP).trim() +
                 ":" + System.getProperty(Constants.WEBSERVER_PORT_PROP).trim() + "/");
         }
+
+        // make sure we load all libraries in the embedded Glassfish instance
+        System.setProperty("org.glassfish.embed.Server.IncludeAllLibs", "true");
+
+        // output the derby log file to a sensible location
+        System.setProperty("derby.stream.error.file",
+                           new File(RunUtil.getRunDir(), "derby.log").getPath());
+
+        // set the run directory to the subsituted value, so that it can
+        // be used in domain.xml
+        System.setProperty(Constants.RUN_DIR_PROP,
+                           SystemPropertyUtil.getProperty(Constants.RUN_DIR_PROP));
     }
 
     /**
@@ -185,11 +205,12 @@ public class RunAppServer {
 
         // deploy all webapps
         File deployDir = new File(RunUtil.getRunDir(), "deploy");
-        for (File war : deployDir.listFiles()) {
+        for (File war : deployDir.listFiles(WAR_FILTER)) {
             try {
                 as.deploy(war);
             } catch (Exception excp) {
                 // ignore any exception and continue
+                logger.log(Level.WARNING, "Error deploying " + war, excp);
             }
         }
     }
@@ -363,95 +384,50 @@ public class RunAppServer {
 
     // get the main instance
     synchronized static WonderlandAppServer getAppServer() {
-        if (appServer == null) {
-            appServer = new WonderlandAppServer(port);
-        }
-
         return appServer;
     }
-    
-    static class WonderlandAppServer extends AppServer {
-        private boolean started = false;
 
-        public WonderlandAppServer(int port) {
-            super (port);
+    synchronized static void createAppServer()
+        throws EmbeddedException, IOException
+    {
+        if (appServer != null) {
+            throw new IllegalStateException("App server already created.");
         }
 
-        public synchronized boolean isStarted() {
-            return started;
-        }
+        File install_dir = new File(RunUtil.getRunDir(), "web_install");
+        File instance_dir = new File(RunUtil.getRunDir(), "web_run");
+        File docroot_dir = new File(RunUtil.getRunDir(), "docRoot");
 
-        synchronized void setStarted(boolean started) {
-            this.started = started;
-        }
+        // set environment variables that will be substituted into
+        // domain.xml
+        System.setProperty("org.jdesktop.wonderland.docRoot",
+                           docroot_dir.toString());
 
-        public Habitat getHabitat() {
-            return habitat;
-        }
-        
-        public DirServerEnvironment getServerEnvironment() {
-            return (DirServerEnvironment) this.env;
-        }
-        
-        @Override
-        protected InhabitantsParser decorateInhabitantsParser(InhabitantsParser parser) {
-            InhabitantsParser out = super.decorateInhabitantsParser(parser);
+        // make directories
+        install_dir.mkdirs();
+        instance_dir.mkdirs();
 
-            // replace the default ServerEvironmentImpl with one of our own
-            // that uses the Wonderland temp directory instead of "."
-            parser.replace(ServerEnvironmentImpl.class, DirServerEnvironment.class);
-            
-            // repace the web archivist with one that ignores external
-            // DTDs
-            parser.replace(WebArchivist.class, LocalOnlyWebArchivist.class);
-            parser.replace(WebDeployer.class, LocalOnlyWebDeployer.class);
-            
-            return out;
-        }
+        // created embedded info
+        EmbeddedInfo info = new EmbeddedInfo();
 
-        @Override
-        public App deploy(File archive) throws IOException {
-            return deploy(archive, null);
-        }
-        
-        public App deploy(File archive, Properties props) throws IOException {
-            // override because we know this will always be a
-            // a directory, and we don't want it extracted to
-            // the current working directory
-            ReadableArchive a = archiveFactory.openArchive(archive);
-            return deploy(a, props);
-        }
+        // create filesystem
+        EmbeddedFileSystem efs = info.getFileSystem();
+        efs.setInstallRoot(install_dir);
+        efs.setInstanceRoot(instance_dir);
+        efs.setDomainXmlSource(RunUtil.extract(RunAppServer.class,
+                "/domain.xml", install_dir));
 
-        @Override
-        public EmbeddedVirtualServer createVirtualServer(final EmbeddedHttpListener listener) {
-            EmbeddedVirtualServer out = super.createVirtualServer(listener);
+        File logDir = new File(SystemPropertyUtil.getProperty("wonderland.log.dir"));
+        File logFile = new File(logDir, "webserver.log");
+        efs.setLogFile(logFile);
 
-            // override the document root to forward to the
-            // Wonderland front page.
-            try {
-                File docRoot = new File(RunUtil.getRunDir(), "docRoot");
-                docRoot.mkdirs();
-
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                Document d = dbf.newDocumentBuilder().parse(domainXmlUrl.toExternalForm());
-                XPath xpath = XPathFactory.newInstance().newXPath();
-
-                Element v = (Element) xpath.evaluate("//http-service/virtual-server/property[@name='docroot']", d, XPathConstants.NODE);
-                v.setAttribute("value", docRoot.getCanonicalPath());
-
-                /**
-                 * Write domain.xml to a temporary file. UGLY UGLY UGLY.
-                 */
-                File domainFile = File.createTempFile("wonderlanddomain", "xml");
-                domainFile.deleteOnExit();
-                Transformer t = TransformerFactory.newInstance().newTransformer();
-                t.transform(new DOMSource(d), new StreamResult(domainFile));
-                domainXmlUrl = domainFile.toURI().toURL();
-            } catch (Exception ex) {
-                throw new EmbeddedException(ex);
-            }
-
-            return out;
-        }
+        // setup and launch
+        appServer = new WonderlandAppServer(info);
     }
+    
+    private static final FilenameFilter WAR_FILTER = new FilenameFilter() {
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".war");
+        }
+    };
 }

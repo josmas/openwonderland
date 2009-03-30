@@ -44,6 +44,11 @@ import org.jdesktop.wonderland.common.modules.ModulePluginList;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
 import org.jdesktop.wonderland.common.JarURI;
 import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.common.login.AuthenticationException;
+import org.jdesktop.wonderland.common.login.AuthenticationInfo;
+import org.jdesktop.wonderland.common.login.AuthenticationManager;
+import org.jdesktop.wonderland.common.login.AuthenticationService;
+import org.jdesktop.wonderland.common.login.CredentialManager;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
@@ -94,10 +99,10 @@ public class ServerSessionManager {
         try {
             URL detailsURL = new URL(new URL(serverURL), DETAILS_URL);
 
-	    URLConnection detailsURLConn = detailsURL.openConnection();
-	    detailsURLConn.setRequestProperty("Accept", "application/xml");
+            URLConnection detailsURLConn = detailsURL.openConnection();
+            detailsURLConn.setRequestProperty("Accept", "application/xml");
 
-	    this.details = ServerDetails.decode(new InputStreamReader(detailsURLConn.getInputStream()));
+            this.details = ServerDetails.decode(new InputStreamReader(detailsURLConn.getInputStream()));
         } catch (JAXBException jbe) {
             IOException ioe = new IOException("Error reading server details " +
                                               "from: " + serverURL);
@@ -174,6 +179,19 @@ public class ServerSessionManager {
         return loginControl.getUsername();
     }
 
+    /**
+     * Get the credential manager for making secure connections back to this
+     * server.  Only valid after login has completed.
+     * @return the credential manager, or null if this session manager is
+     * not yet connected.
+     */
+    public CredentialManager getCredentialManager() {
+        if (loginControl == null) {
+            return null;
+        }
+
+        return loginControl.getCredentialManager();
+    }
 
     /**
      * Create a new WonderlandSession using the default session creator
@@ -216,11 +234,8 @@ public class ServerSessionManager {
                 new WonderlandServerInfo(ds.getHostname(), ds.getPort());
 
         // use the session creator to create a new session
-        T session = creator.createSession(serverInfo,
+        T session = creator.createSession(this, serverInfo,
                                           loginControl.getClassLoader());
-
-        // Register this session with LoginManager
-        LoginManager.addSession(session, this);
 
         // log in to the session
         session.login(loginControl.getLoginParameters());
@@ -335,11 +350,11 @@ public class ServerSessionManager {
     protected LoginControl createLoginControl(AuthenticationInfo info) {
          switch (info.getType()) {
             case NONE:
-                return new NoAuthLoginControl();
+                return new NoAuthLoginControl(info);
             case WEB_SERVICE:
-                return new UserPasswordLoginControl();
+                return new UserPasswordLoginControl(info);
             case WEB:
-                return new WebURLLoginControl(info.getAuthURL());
+                return new WebURLLoginControl(info);
             default:
                 throw new IllegalStateException("Unknown login type " +
                                                 info.getType());
@@ -455,12 +470,30 @@ public class ServerSessionManager {
     }
 
     public abstract class LoginControl {
+        private AuthenticationInfo authInfo;
+
         private boolean started = false;
         private boolean finished = false;
         private boolean success = false;
 
         private LoginParameters params;
         private ScannedClassLoader classLoader;
+
+        /**
+         * Create a new login control for the given server
+         * @param authInfo the authentication server
+         */
+        public LoginControl(AuthenticationInfo authInfo) {
+            this.authInfo = authInfo;
+        }
+
+        /**
+         * Get the authentication info for this login
+         * @return the authentication info
+         */
+        protected AuthenticationInfo getAuthInfo() {
+            return authInfo;
+        }
 
         /**
          * Get the server URL for this login control object
@@ -532,6 +565,12 @@ public class ServerSessionManager {
         public abstract String getUsername();
 
         /**
+         * Get the credential manager associated with this login control.
+         * @return the credential manager
+         */
+        public abstract CredentialManager getCredentialManager();
+
+        /**
          * Indicate that the login attempt was successful, and pass in
          * the LoginParameters that should be sent to the Darkstar server
          * to create a session.
@@ -586,67 +625,131 @@ public class ServerSessionManager {
         }
     }
 
-    public class NoAuthLoginControl extends LoginControl {
+    public abstract class WebServiceLoginControl extends LoginControl {
         private String username;
+        private AuthenticationService authService;
 
-        @Override
-        public void requestLogin(LoginUI ui) {
-            super.requestLogin(ui);
-            ui.requestLogin(this);
-        }
-
-        public void authenticate(String username, String fullname)
-            throws LoginFailureException
-        {
-            this.username = username;
-
-            // no other authentication to do, just do the Darkstar login
-            // with all the data packed into the username
-            String packed = formatUsername(username, fullname);
-            loginComplete(new LoginParameters(packed, new char[0]));
+        public WebServiceLoginControl(AuthenticationInfo authInfo) {
+            super (authInfo);
         }
 
         public String getUsername() {
             return username;
         }
 
-        /**
-         * Combine values into a single username argument that can be
-         * passed to the Darkstar server to populate our identity.
-         */
-        protected String formatUsername(String username, String fullname) {
-            StringBuffer sb = new StringBuffer();
-            sb.append("un=" + username + ";");
-            sb.append("fn=" + fullname + ";");
-            return sb.toString();
+        protected void setUsername(String username) {
+            this.username = username;
+        }
+
+        public CredentialManager getCredentialManager() {
+            return authService;
+        }
+
+        protected void setAuthService(AuthenticationService authService) {
+            this.authService = authService;
+        }
+
+        protected boolean needsLogin() {
+            // check if we already have valid credentials
+            synchronized (this) {
+                if (authService == null) {
+                    authService = AuthenticationManager.get(getAuthInfo().getAuthURL());
+                }
+            }
+
+            try {
+                if (authService != null && authService.isTokenValid()) {
+                    // if this is the case, we already have a valid login
+                    // for this server.  Set things up properly.
+                    loginComplete(authService.getUsername(),
+                                  authService.getAuthenticationToken());
+
+                    // all set
+                    return false;
+                }
+            } catch (AuthenticationException ee) {
+                // ignore -- we'll just retry the login
+                logger.log(Level.WARNING, "Error checking exiting service", ee);
+            }
+
+            // if we get here, there is no valid auth service for this server
+            // url
+            return true;
+        }
+
+        protected void loginComplete(String username, String token) {
+            setUsername(username);
+
+            LoginParameters lp = new LoginParameters(token, new char[0]);
+            super.loginComplete(lp);
         }
     }
 
-    public class UserPasswordLoginControl extends LoginControl {
+    public class NoAuthLoginControl extends WebServiceLoginControl {
+        public NoAuthLoginControl(AuthenticationInfo info) {
+            super (info);
+        }
+
         @Override
         public void requestLogin(LoginUI ui) {
             super.requestLogin(ui);
-            ui.requestLogin(this);
+            
+            // only request credentials from the user if we don't have them
+            // from an existing AuthenticationService
+            if (needsLogin()) {
+                ui.requestLogin(this);
+            }
         }
 
-        public boolean authenticate(String username, char[] password) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public void authenticate(String username, String fullname)
+            throws LoginFailureException
+        {
+            try {
+                AuthenticationService authService =
+                        AuthenticationManager.login(getAuthInfo(), username,
+                                                    fullname);
+                setAuthService(authService);
+                loginComplete(username, authService.getAuthenticationToken());
+            } catch (AuthenticationException ae) {
+                throw new LoginFailureException(ae);
+            }
+        }
+    }
+
+    public class UserPasswordLoginControl extends WebServiceLoginControl {
+        public UserPasswordLoginControl(AuthenticationInfo info) {
+            super (info);
         }
 
-        public String getUsername() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        @Override
+        public void requestLogin(LoginUI ui) {
+            super.requestLogin(ui);
+
+            // only request credentials from the user if we don't have them
+            // from an existing AuthenticationService
+            if (needsLogin()) {
+                ui.requestLogin(this);
+            }
+        }
+
+        public void authenticate(String username, String password)
+            throws LoginFailureException
+        {
+            try {
+                AuthenticationService authService =
+                        AuthenticationManager.login(getAuthInfo(), username,
+                                                    password);
+                setAuthService(authService);
+                loginComplete(username, authService.getAuthenticationToken());
+            } catch (AuthenticationException ae) {
+                throw new LoginFailureException(ae);
+            }
         }
     }
 
     public class WebURLLoginControl extends LoginControl {
-        private String url;
-
-        public WebURLLoginControl(String url) {
-            this.url = url;
-        }
-
-        public String getURL() {
-            return url;
+        public WebURLLoginControl(AuthenticationInfo info) {
+            super (info);
         }
 
         @Override
@@ -656,6 +759,11 @@ public class ServerSessionManager {
         }
 
         public String getUsername() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public CredentialManager getCredentialManager() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
@@ -663,10 +771,11 @@ public class ServerSessionManager {
     public static class DefaultSessionCreator
             implements SessionCreator<WonderlandSession>
     {
-        public WonderlandSession createSession(WonderlandServerInfo serverInfo,
+        public WonderlandSession createSession(ServerSessionManager manager,
+                                               WonderlandServerInfo serverInfo,
                                                ClassLoader loader)
         {
-            return new WonderlandSessionImpl(serverInfo, loader);
+            return new WonderlandSessionImpl(manager, serverInfo, loader);
         }
     }
 }

@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCellClientState;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.server.WhiteboardComponentMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -53,6 +53,9 @@ public class WhiteboardCellMO extends App2DCellMO {
     // so that when new clients join, they receive the current state
     private static LinkedList<WhiteboardCompoundCellMessage> messages;
     private static WhiteboardCompoundCellMessage lastMessage;
+    /** the channel component for this cell */
+    @UsesCellComponentMO(ChannelComponentMO.class)
+    private ManagedReference<ChannelComponentMO> channelComponentRef;
     /** The communications component used to broadcast to all clients */
     private ManagedReference<WhiteboardComponentMO> commComponentRef = null;
     /** The preferred width (from the WFS file) */
@@ -63,7 +66,6 @@ public class WhiteboardCellMO extends App2DCellMO {
     /** Default constructor, used when the cell is created via WFS */
     public WhiteboardCellMO() {
         super();
-        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
         WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
         commComponentRef = AppContext.getDataManager().createReference(commComponent);
         addComponent(commComponent);
@@ -76,6 +78,17 @@ public class WhiteboardCellMO extends App2DCellMO {
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.simplewhiteboard.client.cell.WhiteboardCell";
+    }
+
+    /** 
+     * {@inheritDoc}
+     */
+    @Override
+    protected void setLive(boolean live) {
+        super.setLive(live);
+
+        // force a local channel
+        channelComponentRef.get().addLocalChannelRequest(WhiteboardCellMO.class.getName());
     }
 
     /** 

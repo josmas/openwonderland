@@ -35,15 +35,11 @@ import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.LoginUI;
-import org.jdesktop.wonderland.client.login.PluginFilter;
 import org.jdesktop.wonderland.client.login.SessionCreator;
 import org.jdesktop.wonderland.front.admin.ServerInfo;
 import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
+import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin;
+import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin.DarkstarServerListener;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.RunManager.RunnerListener;
 import org.jdesktop.wonderland.runner.Runner;
@@ -55,8 +51,7 @@ import org.jdesktop.wonderland.runner.Runner.Status;
  * @author jkaplan
  */
 public class PingDataCollector 
-        implements PingListener, RunnerListener,
-                   RunnerStatusListener, SessionStatusListener
+        implements PingListener, DarkstarServerListener, SessionStatusListener
 {
     private Logger logger =
             Logger.getLogger(PingDataCollector.class.getName());
@@ -69,23 +64,12 @@ public class PingDataCollector
     
     // a map from Darkstar runners to the session associated with that
     // runner
-    private Map<DarkstarRunner, ServerManagerSession> sessions =
+    private final Map<DarkstarRunner, ServerManagerSession> sessions =
             Collections.synchronizedMap(
                 new HashMap<DarkstarRunner, ServerManagerSession>());
     
     public PingDataCollector() {
-        LoginManager.setLoginUI(new ServerManagerLoginUI());
-        LoginManager.setPluginFilter(new PluginFilter.NoPluginFilter());
-
-        // listen for runners
-        RunManager.getInstance().addRunnerListener(this);
-
-        // if any runners already exist, add them
-        Collection<DarkstarRunner> runners =
-                RunManager.getInstance().getAll(DarkstarRunner.class);
-        for (DarkstarRunner dr : runners) {
-            runnerAdded(dr);
-        }
+        DarkstarWebLogin.getInstance().addDarkstarServerListener(this);
     }
 
     /**
@@ -166,23 +150,6 @@ public class PingDataCollector
     }
     
     /**
-     * Handle when a runner starts up or shuts down.
-     * @param runner the runner that changed status
-     * @param status the new status
-     */
-    public void statusChanged(final Runner runner, final Status status) {
-        if (status == Status.RUNNING) {
-            new Thread(new Runnable() {
-                public void run() {
-                    connectTo((DarkstarRunner) runner);
-                }
-            }).start();
-        } else {
-            disconnectFrom((DarkstarRunner) runner);
-        }
-    }
-
-    /**
      * Notification that a session's status has changed
      * @param session the session with the changed status
      * @param status the session's status
@@ -205,7 +172,7 @@ public class PingDataCollector
             }
             
             if (dr != null) {
-                disconnectFrom(dr);
+                serverStopped(dr);
             }
         }
     }
@@ -223,45 +190,31 @@ public class PingDataCollector
      */
     public synchronized void shutdown() {
         // remove runner listener
-        RunManager.getInstance().removeRunnerListener(this);
+        DarkstarWebLogin.getInstance().removeDarkstarServerListener(this);
 
-        // remove status listeners
-        Collection<DarkstarRunner> runners = 
-                RunManager.getInstance().getAll(DarkstarRunner.class);
-        for (DarkstarRunner dr : runners) {
-            dr.removeStatusListener(this);
-        }
-        
         // shutdown sessions
         for (ServerManagerSession session : sessions.values()) {
             session.logout();
         }
     }
 
-    public void runnerAdded(Runner runner) {
-        if (!(runner instanceof DarkstarRunner)) {
-            return;
-        }
-
-        Status status = runner.addStatusListener(this);
-        if (status == Status.RUNNING) {
-            connectTo((DarkstarRunner) runner);
-        }
-    }
-
     // connect to a server
-    protected void connectTo(DarkstarRunner dr) {
+    public void serverStarted(DarkstarRunner dr, ServerSessionManager ssm) {
+        logger.warning("Connect to server " + dr.getHostname() + " " +
+                       dr.getPort());
+
         // TODO: connect to a particular Darkstar server
         try {
-            ServerSessionManager lm = LoginManager.getInstance(ServerInfo.getServerURL());
-            ServerManagerSession session = lm.createSession(
+            ServerManagerSession session = ssm.createSession(
                     new SessionCreator<ServerManagerSession>()
             {
                 public ServerManagerSession createSession(
-                        WonderlandServerInfo serverInfo, ClassLoader loader)
+                        ServerSessionManager manager,
+                        WonderlandServerInfo serverInfo,
+                        ClassLoader loader)
                 {
                     // use our classloader
-                    return new ServerManagerSession(serverInfo,
+                    return new ServerManagerSession(manager, serverInfo,
                                                    getClass().getClassLoader());
                 }
             });
@@ -281,22 +234,11 @@ public class PingDataCollector
         } catch (LoginFailureException le) {
             logger.log(Level.WARNING, "Unable to log in to server " +
                        ServerInfo.getServerURL(), le);
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error logging in to server " +
-                       ServerInfo.getServerURL(), ioe);
         }
     }
 
-    public void runnerRemoved(Runner runner) {
-        if (!(runner instanceof DarkstarRunner)) {
-            return;
-        }
-
-        disconnectFrom((DarkstarRunner) runner);
-    }
-    
     // disconnect from the server
-    protected void disconnectFrom(DarkstarRunner dr) {
+    public void serverStopped(DarkstarRunner dr) {
         // TODO get from runner
         String serverHost = dr.getHostname();
         int serverPort = dr.getPort();
@@ -320,10 +262,11 @@ public class PingDataCollector
     class ServerManagerSession extends WonderlandSessionImpl {
         private ServerManagerConnection smc;
         
-        public ServerManagerSession(WonderlandServerInfo server,
+        public ServerManagerSession(ServerSessionManager manager,
+                                    WonderlandServerInfo server,
                                     ClassLoader classLoader) 
         {
-            super (server, classLoader);
+            super (manager, server, classLoader);
         }
 
         @Override
@@ -343,24 +286,6 @@ public class PingDataCollector
                                                 "manager connection", cfe);
             }
             
-        }
-    }
-
-    class ServerManagerLoginUI implements LoginUI {
-        public void requestLogin(NoAuthLoginControl control) {
-            try {
-                control.authenticate("servermanager", "Server Manager");
-            } catch (LoginFailureException lfe) {
-                logger.log(Level.WARNING, "Error connecting to " +
-                           control.getServerURL(), lfe);
-                control.cancel();
-            }
-        }
-
-        public void requestLogin(UserPasswordLoginControl control) {
-        }
-
-        public void requestLogin(WebURLLoginControl control) {
         }
     }
 }

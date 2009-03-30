@@ -48,7 +48,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         initComponents();
 
         WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
-        ServerSessionManager manager = LoginManager.find(session);
+        ServerSessionManager manager = session.getSessionManager();
         avatarManager = AvatarConfigManager.getAvatarConigManager();
         DefaultListModel listModel = (DefaultListModel) avatarList.getModel();
 
@@ -236,7 +236,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             attributes = new MaleAvatarAttributes(name, true);
 
         WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
-        ServerSessionManager manager = LoginManager.find(session);
+        ServerSessionManager manager = session.getSessionManager();
         String serverHostAndPort = manager.getServerNameAndPort();
         attributes.setBaseURL("wla://avatarbaseart@"+serverHostAndPort+"/");
 

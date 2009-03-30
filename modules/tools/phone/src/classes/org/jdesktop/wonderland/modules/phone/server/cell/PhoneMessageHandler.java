@@ -94,7 +94,6 @@ import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
 
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**

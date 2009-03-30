@@ -29,7 +29,7 @@ import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ParameterNames;
-import org.glassfish.embed.App;
+import org.glassfish.embed.EmbeddedException;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.modules.spi.ModuleDeployerSPI;
@@ -71,7 +71,7 @@ public class WebDeployer implements ModuleDeployerSPI {
      * Web modules are always deployable if the server is running
      */
     public boolean isDeployable(String type, Module module, ModulePart part) {
-        return RunAppServer.getAppServer().isStarted();
+        return RunAppServer.getAppServer().isDeployable();
     }
 
     /**
@@ -171,7 +171,7 @@ public class WebDeployer implements ModuleDeployerSPI {
     protected void doExtract(File war, File extractDir) throws IOException {
         // extract the war into the directory
         JarInputStream jin = new JarInputStream(new FileInputStream(war));
-	try {
+        try {
             RunUtil.extractZip(jin, extractDir);
         } finally {
             jin.close();
@@ -192,9 +192,13 @@ public class WebDeployer implements ModuleDeployerSPI {
         props.put(ParameterNames.CONTEXT_ROOT, contextRoot);
 
         // finally, deploy the application to the web server
-        App app = RunAppServer.getAppServer().deploy(record.getFile(),
-                                                     props);
-        record.setApp(app);
+        try {
+            String name = RunAppServer.getAppServer().deploy(record.getFile(),
+                                                             props);
+            record.setAppName(name);
+        } catch (EmbeddedException ee) {
+            throw new IOException(ee);
+        }
     }
 
     /**
@@ -257,9 +261,13 @@ public class WebDeployer implements ModuleDeployerSPI {
     }
 
     protected void doUndeploy(DeployRecord remove) {
-        // undeploy the app
-        if (remove.getApp() != null) {
-            remove.getApp().undeploy();
+        try {
+            // undeploy the app
+            if (remove.getAppName() != null) {
+                RunAppServer.getAppServer().getDeployer().undeploy(remove.getAppName());
+            }
+        } catch (EmbeddedException ee) {
+            logger.log(Level.WARNING, "Error undeploying " + remove, ee);
         }
     }
 
@@ -306,7 +314,7 @@ public class WebDeployer implements ModuleDeployerSPI {
         private File file;
 
         // the deployed app
-        private App app;
+        private String appName;
 
         public DeployRecord(String moduleName, String warName) {
             this (moduleName, warName, null);
@@ -347,12 +355,12 @@ public class WebDeployer implements ModuleDeployerSPI {
             this.file = file;
         }
 
-        public App getApp() {
-            return app;
+        public String getAppName() {
+            return appName;
         }
 
-        public void setApp(App app) {
-            this.app = app;
+        public void setAppName(String appName) {
+            this.appName = appName;
         }
 
 
@@ -393,7 +401,7 @@ public class WebDeployer implements ModuleDeployerSPI {
         @Override
         public String toString() {
             return "[ module: " + moduleName + ", war: " + warName +
-                   "  app: " + ((app == null)?"no":"yes") + " ]";
+                   "  app: " + appName + " ]";
         }
     }
 }

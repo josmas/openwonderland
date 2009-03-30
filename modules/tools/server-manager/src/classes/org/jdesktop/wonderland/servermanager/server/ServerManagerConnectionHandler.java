@@ -18,14 +18,19 @@
 package org.jdesktop.wonderland.servermanager.server;
 
 import java.util.Properties;
+import java.util.Set;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.security.server.service.GroupMemberResource;
+import org.jdesktop.wonderland.server.comms.SecureClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.server.security.Resource;
 import org.jdesktop.wonderland.servermanager.common.PingRequestMessage;
 import org.jdesktop.wonderland.servermanager.common.PingResponseMessage;
 import org.jdesktop.wonderland.servermanager.common.ServerManagerConnectionType;
@@ -36,13 +41,19 @@ import org.jdesktop.wonderland.servermanager.common.ServerManagerConnectionType;
  * @author paulby
  */
 public class ServerManagerConnectionHandler 
-        implements ClientConnectionHandler, Serializable
+        implements SecureClientConnectionHandler, Serializable
 {
     private static final Logger logger =
             Logger.getLogger(ServerManagerConnectionHandler.class.getName());
     
     public ServerManagerConnectionHandler() {
         super();
+    }
+
+    public Resource checkConnect(WonderlandClientID clientID,
+                                 Properties properties)
+    {
+        return new GroupMemberResource("admin");
     }
 
     public ConnectionType getConnectionType() {
@@ -60,6 +71,14 @@ public class ServerManagerConnectionHandler
         logger.fine("ServerManager client connected");
     }
 
+    public void connectionRejected(WonderlandClientID clientID) {
+        logger.fine("ServerManager client rejected");
+    }
+
+    public Resource checkMessage(WonderlandClientID clientID, Message message) {
+        return null;
+    }
+
     public void messageReceived(WonderlandClientSender sender, 
                                 WonderlandClientID clientID,
                                 Message message) 
@@ -70,6 +89,15 @@ public class ServerManagerConnectionHandler
             PingResponseMessage resp = new PingResponseMessage(req);
             sender.send(clientID, resp);
         }
+    }
+
+
+    public boolean messageRejected(WonderlandClientSender sender,
+                                   WonderlandClientID clientID, Message message,
+                                   Set<Action> requested, Set<Action> granted)
+    {
+        logger.fine("ServerManager message rejected");
+        return true;
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {

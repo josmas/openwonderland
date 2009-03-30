@@ -55,7 +55,7 @@ public class AssetUtils {
         // From the cell, find out what the associated wonderland session is
         // and fetch the server host name and port from that
         WonderlandSession session = cell.getCellCache().getSession();
-        ServerSessionManager manager = LoginManager.find(session);
+        ServerSessionManager manager = session.getSessionManager();
         if (manager == null) {
             logger.warning("Unable to find manager for session " + session);
             return new URL(uri);

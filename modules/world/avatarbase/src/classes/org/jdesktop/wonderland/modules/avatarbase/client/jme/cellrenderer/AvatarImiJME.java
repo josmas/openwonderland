@@ -263,7 +263,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
         // Set the base URL
         WonderlandSession session = cell.getCellCache().getSession();
-        ServerSessionManager manager = LoginManager.find(session);
+        ServerSessionManager manager = session.getSessionManager();
         String serverHostAndPort = manager.getServerNameAndPort();
         String baseURL = "wla://avatarbaseart@"+serverHostAndPort+"/";
         attributes.setBaseURL(baseURL);

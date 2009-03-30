@@ -50,6 +50,7 @@
             <fileset dir="${current.dir}">
                 <include name="web-default.properties"/>
                 <include name="web-logging.properties"/>
+                <include name="domain.xml"/>
             </fileset>
             
             <filterset begintoken="%" endtoken="%">
@@ -106,6 +107,7 @@
             <checksumfileset file="${core.common.dir}/stun.jar" prefix="webserver"/>
             <checksumfileset file="${core.common.dir}/scannotation-1.0.2.jar" prefix="webserver"/>
             <checksumfileset file="${core.common.dir}/javassist.jar" prefix="webserver"/>
+            <checksumfileset file="${core.common.dir}/derby.jar" prefix="webserver"/>
 
             <!-- contents of the document root -->
             <checksumfileset dir="${current.dir}/web" prefix="docroot"/>

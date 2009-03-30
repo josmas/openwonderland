@@ -30,10 +30,13 @@ public interface SessionCreator<T extends WonderlandSession> {
      * Create a new WonderlandSession for the given server and classloader.
      * This gives the user-interface a hook to listen for session-related
      * events.
+     * @param sessionManager the server session manager that is creating
+     * this session
      * @param serverInfo the information about the server to connect to
      * @param loader the classloader with all modules loaded
      * @return the newly created Wonderland session
      */
-    public T createSession(WonderlandServerInfo serverInfo,
+    public T createSession(ServerSessionManager sessionManager,
+                           WonderlandServerInfo serverInfo,
                            ClassLoader loader);
 }

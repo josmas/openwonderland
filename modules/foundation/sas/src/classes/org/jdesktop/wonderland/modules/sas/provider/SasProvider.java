@@ -76,7 +76,7 @@ public class SasProvider {
 
         ServerSessionManager lm;
         try {
-            lm = LoginManager.getInstance(serverUrl);
+            lm = LoginManager.getSessionManager(serverUrl);
         } catch (IOException ioe) {
             RuntimeException re = new RuntimeException("Cannot get login manager instance");
             re.initCause(ioe);
@@ -136,8 +136,11 @@ public class SasProvider {
         }
 
         // The LoginManager calls this to create the SAS provider session
-        public SasProviderSession createSession(WonderlandServerInfo server, ClassLoader loader) {
-            return new SasProviderSession(server, loader, listener);
+        public SasProviderSession createSession(ServerSessionManager sessionManager,
+                                                WonderlandServerInfo server,
+                                                ClassLoader loader)
+        {
+            return new SasProviderSession(sessionManager, server, loader, listener);
         }
     }
 }

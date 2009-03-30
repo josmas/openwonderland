@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginCont
 import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.WebURLLoginControl;
 import org.jdesktop.wonderland.client.login.LoginUI;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionCreator;
 
 
@@ -78,9 +79,10 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public JmeClientSession createSession(WonderlandServerInfo server,
+    public JmeClientSession createSession(ServerSessionManager manager,
+                                          WonderlandServerInfo server,
                                           ClassLoader loader)
     {
-        return new JmeClientSession(server, loader);
+        return new JmeClientSession(manager, server, loader);
     }
 }

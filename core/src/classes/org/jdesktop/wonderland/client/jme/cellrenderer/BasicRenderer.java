@@ -240,7 +240,7 @@ public abstract class BasicRenderer implements CellRendererJME {
             }
 
             WonderlandSession session = cell.getCellCache().getSession();
-            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(LoginManager.find(session), "Default");
+            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Default");
 
             rootNode.updateWorldBound();
 
