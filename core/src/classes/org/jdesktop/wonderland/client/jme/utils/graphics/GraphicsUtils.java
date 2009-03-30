@@ -98,7 +98,7 @@ public class GraphicsUtils {
             return;
         }
 
-        System.err.println("id = " + texture.getTextureId());
+        System.err.println("texture id = " + texture.getTextureId());
         System.err.println("apply = " + texture.getApply());
         System.err.println("wrapS = " + texture.getWrap(Texture.WrapAxis.S));
         System.err.println("wrapT = " + texture.getWrap(Texture.WrapAxis.T));
