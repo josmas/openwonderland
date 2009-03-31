@@ -143,7 +143,7 @@ public class ScannedClassLoader extends URLClassLoader {
 
                     try {
                         Class loaded = loadClass(className);
-                        if (clazz.isAssignableFrom(loaded) /* && !Modifier.isAbstract(clazz.getModifiers()) */ ) {
+                        if (clazz.isAssignableFrom(loaded) && !Modifier.isAbstract(loaded.getModifiers())) {
                             next = (T) loaded.newInstance();
                         }
                     } catch (InstantiationException ex) {
