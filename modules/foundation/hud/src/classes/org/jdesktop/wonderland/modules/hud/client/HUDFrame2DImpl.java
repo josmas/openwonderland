@@ -46,7 +46,6 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
 
         controlsPanel = new javax.swing.JPanel();
         closeButton = new javax.swing.JButton();
-        maximizeButton = new javax.swing.JButton();
         minimizeButton = new javax.swing.JButton();
         contentPanel = new javax.swing.JPanel();
         grabPanel = new javax.swing.JPanel();
@@ -61,18 +60,6 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
         closeButton.setMaximumSize(new java.awt.Dimension(16, 16));
         closeButton.setMinimumSize(new java.awt.Dimension(2, 2));
 
-        maximizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/maximize16x16.png"))); // NOI18N
-        maximizeButton.setBorderPainted(false);
-        maximizeButton.setIconTextGap(0);
-        maximizeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        maximizeButton.setMaximumSize(new java.awt.Dimension(16, 16));
-        maximizeButton.setMinimumSize(new java.awt.Dimension(2, 2));
-        maximizeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                maximizeButtonActionPerformed(evt);
-            }
-        });
-
         minimizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/minimize16x16.png"))); // NOI18N
         minimizeButton.setBorderPainted(false);
         minimizeButton.setIconTextGap(0);
@@ -84,19 +71,19 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
         controlsPanel.setLayout(controlsPanelLayout);
         controlsPanelLayout.setHorizontalGroup(
             controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(maximizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(controlsPanelLayout.createSequentialGroup()
+                .add(controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         controlsPanelLayout.setVerticalGroup(
             controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(controlsPanelLayout.createSequentialGroup()
                 .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(maximizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(10, Short.MAX_VALUE))
+                .add(11, 11, 11))
         );
 
         contentPanel.setBackground(new java.awt.Color(255, 255, 255));
@@ -106,11 +93,11 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
         contentPanel.setLayout(contentPanelLayout);
         contentPanelLayout.setHorizontalGroup(
             contentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 361, Short.MAX_VALUE)
+            .add(0, 373, Short.MAX_VALUE)
         );
         contentPanelLayout.setVerticalGroup(
             contentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 70, Short.MAX_VALUE)
+            .add(0, 51, Short.MAX_VALUE)
         );
 
         grabButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/grab19x500.png"))); // NOI18N
@@ -133,33 +120,27 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
         );
         grabPanelLayout.setVerticalGroup(
             grabPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(grabButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
+            .add(grabButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(grabPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(0, 0, 0)
                 .add(contentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(0, 0, 0)
                 .add(controlsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 70, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, controlsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(grabPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(contentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(grabPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(contentPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, Short.MAX_VALUE)
+            .add(controlsPanel, 0, 51, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void maximizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_maximizeButtonActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_maximizeButtonActionPerformed
 
     private void grabButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grabButtonActionPerformed
         // TODO add your handling code here:
@@ -172,7 +153,6 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
     private javax.swing.JPanel controlsPanel;
     private javax.swing.JButton grabButton;
     private javax.swing.JPanel grabPanel;
-    private javax.swing.JButton maximizeButton;
     private javax.swing.JButton minimizeButton;
     // End of variables declaration//GEN-END:variables
 

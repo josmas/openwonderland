@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.hud.client;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 
 /**
@@ -53,6 +54,7 @@ public class HUDInputDialog extends HUDComponent2D {
     private void initializeDialog() {
         if (dialogImpl == null) {
             dialogImpl = new HUDInputDialogImpl(null, false);
+            JmeClientMain.getFrame().getCanvas3DPanel().add(dialogImpl.getContentPane());
         }
     }
 
