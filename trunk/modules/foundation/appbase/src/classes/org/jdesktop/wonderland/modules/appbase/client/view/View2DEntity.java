@@ -54,6 +54,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D.Type;
 import java.awt.Button;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
 /**
  * TODO
@@ -461,6 +462,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setVisibleUser (boolean visible, boolean update) {
+        if (visibleUser == visible) return;
         logger.info("change visibleUser = " + visible);
         visibleUser = visible;
         changeMask |= CHANGED_VISIBLE;
@@ -903,6 +905,7 @@ public abstract class View2DEntity implements View2D {
     /** Processes attribute changes. Should be called within a synchronized block. */
     protected void processChanges () {
         // Note: all of the scene graph changes are queued up and executed at the end
+        boolean windowNeedsValidate = false;
 
         // React to topology related changes
         if ((changeMask & (CHANGED_TOPOLOGY | CHANGED_ORTHO)) != 0) {
@@ -953,6 +956,7 @@ public abstract class View2DEntity implements View2D {
                 logger.fine("Update texture");
                 if (geometryNode != null) {
                     sgChangeGeometryTextureSet(geometryNode, getWindow().getTexture());
+                    windowNeedsValidate = true;
                 }
             }
 
@@ -1053,6 +1057,7 @@ public abstract class View2DEntity implements View2D {
             float widthRatio = width / image.getWidth();
             float heightRatio = height / image.getHeight();
             sgChangeGeometryTexCoordsSet(geometryNode, widthRatio, heightRatio);
+            windowNeedsValidate = true;
         }
 
         // React to transform related changes
@@ -1116,6 +1121,16 @@ public abstract class View2DEntity implements View2D {
             }
         }
         */
+
+        // In certain situations, especially after we change the texture, WindowSwings
+        // need to be repainted into that texture.
+        if (windowNeedsValidate) {
+            if (window instanceof WindowSwing) {
+                ((WindowSwing)window).validate();
+            }
+        }
+
+
     }
 
     /** {@inheritDoc} */
