@@ -69,7 +69,9 @@ public abstract class AssetURI implements Serializable {
     
     /**
      * Returns a relative path of the asset so that it exists in a unique
-     * location within a cache. The path does not have a leading "/".
+     * location within a cache. The path does not have a leading "/". This
+     * method should return either forward or backward slashes depending
+     * upon the platform.
      * 
      * @return A unique relative path for the URI
      */

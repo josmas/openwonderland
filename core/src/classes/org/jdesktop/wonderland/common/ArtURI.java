@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.common;
 
-import java.io.File;
 import java.net.URISyntaxException;
 
 /**
@@ -49,6 +48,6 @@ public class ArtURI extends ModuleURI {
     
     @Override
     public String getRelativePathInModule() {
-        return "art" + File.separator + this.getAssetPath();
+        return "art/" + this.getAssetPath();
     }
 }
