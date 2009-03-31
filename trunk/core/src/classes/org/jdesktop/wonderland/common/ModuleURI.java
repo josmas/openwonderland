@@ -107,7 +107,8 @@ public abstract class ModuleURI extends AssetURI {
 
     /**
      * Returns the raw relative path of the asset, without prepending any
-     * assumed directory like "art/". It has no leading "/".
+     * assumed directory like "art/". It has no leading "/". This method
+     * should return all forward-slashes.
      */
     public String getAssetPath() {
         return assetPath;
@@ -356,7 +357,8 @@ public abstract class ModuleURI extends AssetURI {
     /**
      * Returns the relative path of the resource specified by the URI within
      * the module. The relative path does not being with any forward "/". This
-     * method adds any directories before the relative asset path.
+     * method adds any directories before the relative asset path. This method
+     * should return all forward-slashes.
      * 
      * @return The relative path within the URI
      */

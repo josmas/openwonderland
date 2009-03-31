@@ -128,7 +128,7 @@ public class ContentURI extends AssetURI {
      * Returns the relative resource path beneath some base repository URL
      */
     public String getRelativePath() {
-        return getRoot() + File.separator + getAssetPath();
+        return getRoot() + "/" + getAssetPath();
     }
     
     /**
