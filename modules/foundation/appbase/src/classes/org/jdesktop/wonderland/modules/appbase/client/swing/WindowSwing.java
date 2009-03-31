@@ -395,11 +395,10 @@ public class WindowSwing extends WindowGraphics2D {
      * affect the layout of the contained component.
      */
     public void validate () {
-        if (embeddedPeer == null) {
-            throw new RuntimeException("You must first set a component for this WindowSwing.");
+        if (embeddedPeer != null) {
+            embeddedPeer.validate();
+            embeddedPeer.repaint();
         }
-        embeddedPeer.validate();
-        embeddedPeer.repaint();
     }
 
     /**
