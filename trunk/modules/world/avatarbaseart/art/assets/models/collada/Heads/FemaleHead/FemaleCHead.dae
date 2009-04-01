@@ -1694,7 +1694,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
                       </extra>
                     </node>
                     <node id="rightEye" name="rightEye" sid="bone12" type="JOINT">
-                      <matrix sid="transform">-1 0 0 -10.000083 0 0.985514 -0.169593 0.002495 0 -0.169593 -0.985514 -0.000234 0 0 0 1</matrix>
+                      <matrix sid="transform">-1 0 0 -0.000083 0 0.985514 -0.169593 0.002495 0 -0.169593 -0.985514 -0.000234 0 0 0 1</matrix>
                       <extra>
                         <technique profile="MAYA">
                           <dynamic_attributes>
