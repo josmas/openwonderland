@@ -17,12 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.kmzloader.client;
 
-import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import com.jme.scene.Spatial;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jmex.model.collada.ColladaImporter;
@@ -45,11 +43,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import org.jdesktop.mtgame.processor.TransScaleProcessor;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
@@ -60,12 +54,11 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Sc
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
 //import org.jdesktop.wonderland.modules.kmzloader.client.kml_22.AbstractFeatureType;
 //import org.jdesktop.wonderland.modules.kmzloader.client.kml_22.AbstractGeometryType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.GeometryType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.KmlType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.ModelType;
-import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.PlacemarkType;
+//import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
+//import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
+//import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.GeometryType;
+//import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.ModelType;
+//import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.PlacemarkType;
 
 /**
  *
@@ -98,31 +91,40 @@ class KmzLoader implements ModelLoader {
         try {
             ZipFile zipFile = new ZipFile(file);
             ZipEntry docKmlEntry = zipFile.getEntry("doc.kml");
-            JAXBContext jc = JAXBContext.newInstance("org.jdesktop.wonderland.modules.kmzloader.client.kml_21",
-                                                     getClass().getClassLoader());
-            Unmarshaller u = jc.createUnmarshaller();
-            JAXBElement docKml = (JAXBElement) u.unmarshal(zipFile.getInputStream(docKmlEntry));
-            
-            KmlType kml = (KmlType) docKml.getValue();
-            
-            ArrayList<ModelType> models=new ArrayList();
-            FeatureType feature = kml.getFeature().getValue();
-            // For the 2.2 version of KML
-            //AbstractFeatureType feature = kml.getAbstractFeatureGroup().getValue();
-            if (feature instanceof FolderType) {
-                findModels(models, (FolderType)feature);
-            }
+//            JAXBContext jc = JAXBContext.newInstance("org.jdesktop.wonderland.modules.kmzloader.client.kml_21",
+//                                                     getClass().getClassLoader());
+//            Unmarshaller u = jc.createUnmarshaller();
+//            JAXBElement docKml = (JAXBElement) u.unmarshal(zipFile.getInputStream(docKmlEntry));
+//
+//            KmlType kml = (KmlType) docKml.getValue();
+//
+//            ArrayList<ModelType> models=new ArrayList();
+//            FeatureType feature = kml.getFeature().getValue();
+//            // For the 2.2 version of KML
+//            //AbstractFeatureType feature = kml.getAbstractFeatureGroup().getValue();
+//            if (feature instanceof FolderType) {
+//                findModels(models, (FolderType)feature);
+//            }
+//
+//            if (models.size()==0) {
+//                logger.severe("No models found in KMZ File");
+//                return null;
+//            }
 
-            if (models.size()==0) {
-                logger.severe("No models found in KMZ File");
-                return null;
+            KmlParser parser = new KmlParser();
+            InputStream in = zipFile.getInputStream(docKmlEntry);
+            try {
+                parser.decodeKML(in);
+            } catch (Exception ex) {
+                Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
+            List<KmlParser.KmlModel> models = parser.getModels();
+
             if (models.size()==1) {
                 modelNode = load(zipFile, models.get(0));
             } else {
                 modelNode = new Node();
-                for(ModelType model : models) {
+                for(KmlParser.KmlModel model : models) {
                     modelNode.attachChild(load(zipFile, model));
                 }
             }
@@ -133,17 +135,14 @@ class KmzLoader implements ModelLoader {
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
             throw ex;
-        } catch (JAXBException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw new IOException("JAXB Error");
-        }
+        } 
         
         return modelNode;
     }
     
-    private Node load(ZipFile zipFile, ModelType model) throws IOException {
+    private Node load(ZipFile zipFile, KmlParser.KmlModel model) throws IOException {
 
-        String filename = model.getLink().getHref();
+        String filename = model.getHref();
         String zipHost = WlzipManager.getWlzipManager().addZip(zipFile);
         ZipResourceLocator zipResource = new ZipResourceLocator(zipHost, zipFile);
         ResourceLocatorTool.addResourceLocator(
@@ -184,26 +183,26 @@ class KmzLoader implements ModelLoader {
      * @param models
      * @param folder
      */
-    private void findModels(ArrayList<ModelType> models, FolderType folder) {
-        List<JAXBElement<? extends FeatureType>> features = folder.getFeature();
-        for(JAXBElement<? extends FeatureType> featureJAXB : features) {
-            FeatureType feature = featureJAXB.getValue();
-
-            if (feature instanceof FolderType) {
-                findModels(models, (FolderType)feature);
-            } else if (feature instanceof PlacemarkType) {
-                if (((PlacemarkType)feature).getGeometry()!=null) {
-                    GeometryType geometryType = ((PlacemarkType)feature).getGeometry().getValue();
-                    if (geometryType instanceof ModelType) {
-                        models.add((ModelType)geometryType);
-                    } else {
-                        logger.info("Unsupported GeometryType "+geometryType);
-                    }
-                }
-            } else
-                logger.info("Skipping feature "+feature);
-        }
-    }
+//    private void findModels(ArrayList<ModelType> models, FolderType folder) {
+//        List<JAXBElement<? extends FeatureType>> features = folder.getFeature();
+//        for(JAXBElement<? extends FeatureType> featureJAXB : features) {
+//            FeatureType feature = featureJAXB.getValue();
+//
+//            if (feature instanceof FolderType) {
+//                findModels(models, (FolderType)feature);
+//            } else if (feature instanceof PlacemarkType) {
+//                if (((PlacemarkType)feature).getGeometry()!=null) {
+//                    GeometryType geometryType = ((PlacemarkType)feature).getGeometry().getValue();
+//                    if (geometryType instanceof ModelType) {
+//                        models.add((ModelType)geometryType);
+//                    } else {
+//                        logger.info("Unsupported GeometryType "+geometryType);
+//                    }
+//                }
+//            } else
+//                logger.info("Skipping feature "+feature);
+//        }
+//    }
 
     // For the 2.2 version of KML
 //    private void findModels22(ArrayList<ModelType> models, FolderType folder) {
