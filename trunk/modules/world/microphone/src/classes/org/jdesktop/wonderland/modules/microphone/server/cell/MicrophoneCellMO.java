@@ -21,17 +21,13 @@ import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.FullVolumeArea;
@@ -42,13 +38,15 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
-import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import java.util.Arrays;
+import org.jdesktop.wonderland.modules.microphone.common.messages.MicrophoneEnterCellMessage;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 
 /**
  * A server cell that provides conference microphone functionality
@@ -62,69 +60,64 @@ public class MicrophoneCellMO extends CellMO {
     private String name;
     private FullVolumeArea fullVolumeArea;
     private ActiveArea activeArea;
-    private ManagedReference<MicrophoneMessageHandler> microphoneMessageHandlerRef;
+    
+    private MicrophoneProximityListener proxListener;
+
+    @UsesCellComponentMO(ProximityComponentMO.class)
     private ManagedReference<ProximityComponentMO> proxRef;
 
+    @UsesCellComponentMO(ChannelComponentMO.class)
+    private ManagedReference<ChannelComponentMO> channelRef;
+
     public MicrophoneCellMO() {
-        addComponents();
     }
 
     public MicrophoneCellMO(Vector3f center, float size) {
         super(new BoundingBox(new Vector3f(), size, size, size),
                 new CellTransform(null, center));
-
-        addComponents();
-    }
-
-    private void addComponents() {
-        addComponent(new MovableComponentMO(this));
-
-        ProximityComponentMO prox = new ProximityComponentMO(this);
-
-        addComponent(prox);
-
-        proxRef = AppContext.getDataManager().createReference(prox);
     }
 
     @Override
     protected void setLive(boolean live) {
         super.setLive(live);
 
-        if (live == false) {
-            if (microphoneMessageHandlerRef != null) {
-                MicrophoneMessageHandler microphoneMessageHandler = microphoneMessageHandlerRef.get();
-                microphoneMessageHandler.done();
-                AppContext.getDataManager().removeObject(microphoneMessageHandler);
-                microphoneMessageHandlerRef = null;
+        if (live) {
+            channelRef.getForUpdate().addMessageReceiver(MicrophoneEnterCellMessage.class,
+                                                         new MicrophoneMessageHandler(this, name));
+
+            BoundingVolume[] bounds = new BoundingVolume[2];
+            if (fullVolumeArea.areaType.equalsIgnoreCase("Sphere")) {
+                bounds[0] = new BoundingSphere((float) fullVolumeArea.xExtent / 2, new Vector3f());
+            } else {
+                bounds[0] = new BoundingBox(new Vector3f(), (float) fullVolumeArea.xExtent,
+                (float) fullVolumeArea.yExtent, (float) fullVolumeArea.zExtent);
             }
 
-            return;
-        }
+            Vector3f activeOrigin = new Vector3f((float) activeArea.origin.x,
+                                                 (float) activeArea.origin.y,
+                                                 (float) activeArea.origin.z);
+            if (activeArea.areaType.equalsIgnoreCase("Sphere")) {
+                bounds[1] = new BoundingSphere((float) 2, activeOrigin);
+            } else {
+                bounds[1] = new BoundingBox(activeOrigin, (float) activeArea.xExtent,
+                                                          (float) activeArea.yExtent,
+                                                          (float) activeArea.zExtent);
+            }
 
-        microphoneMessageHandlerRef = AppContext.getDataManager().createReference(
-                new MicrophoneMessageHandler(this, name));
+            System.out.println("Microphone bounds: " + Arrays.toString(bounds));
 
-        BoundingVolume[] bounds = new BoundingVolume[2];
-
-        if (fullVolumeArea.areaType.equalsIgnoreCase("Sphere")) {
-            bounds[0] = new BoundingSphere((float) fullVolumeArea.xExtent / 2, new Vector3f());
+            proxListener =
+                new MicrophoneProximityListener(name, bounds);
+            proxRef.getForUpdate().addProximityListener(proxListener, bounds);
         } else {
-            bounds[0] = new BoundingBox(new Vector3f(), (float) fullVolumeArea.xExtent,
-		(float) fullVolumeArea.yExtent, (float) fullVolumeArea.zExtent);
-	}
-	
- 	Vector3f activeOrigin = new Vector3f((float) activeArea.origin.x,
-	    (float) activeArea.origin.y, (float) activeArea.origin.z);
 
-	if (activeArea.areaType.equalsIgnoreCase("Sphere")) {
-            bounds[1] = new BoundingSphere((float) 2, activeOrigin);
-	} else {
-  	    bounds[1] = new BoundingBox(activeOrigin, (float) activeArea.xExtent,
-	        (float) activeArea.yExtent, (float) activeArea.zExtent);
-	}
+            channelRef.getForUpdate().removeMessageReceiver(MicrophoneEnterCellMessage.class);
 
-        MicrophoneProximityListener microphoneProximityListener =
-                new MicrophoneProximityListener(name, proxRef, bounds);
+            if (proxListener != null) {
+                proxRef.getForUpdate().removeProximityListener(proxListener);
+                proxListener = null;
+            }
+        }
     }
 
     @Override
