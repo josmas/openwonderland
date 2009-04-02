@@ -23,6 +23,7 @@ import imi.utils.instruments.Instrumentation;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -31,14 +32,18 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellCacheConnection;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 
 /**
  *
@@ -59,7 +64,17 @@ public class AvatarPlugin implements ClientPlugin {
         
         ClientContextJME.getAvatarRenderManager().registerRenderer(AvatarImiJME.class);
 
-//        AvatarConfigManager.getAvatarConigManager().addServer(loginManager);
+        // Workaround to guarntee that the webdav module has been initialized
+        loginManager.addLifecycleListener(new SessionLifecycleListener() {
+            public void sessionCreated(WonderlandSession session) {
+            }
+
+            public void primarySession(WonderlandSession session) {
+                // We need a primary session, so wait for it
+                AvatarConfigManager.getAvatarConigManager().addServer(session.getSessionManager());
+            }
+        });
+
 
         ClientContextJME.getViewManager().addViewManagerListener(new ViewManagerListener() {
             public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
@@ -129,6 +144,8 @@ public class AvatarPlugin implements ClientPlugin {
                 });
 
                 JmeClientMain.getFrame().addToEditMenu(instrumentFrameMI);
+
+                AvatarConfigManager.getAvatarConigManager().setViewCell(newViewCell);
             }
         });
 
