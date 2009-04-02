@@ -14,22 +14,19 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 import imi.character.CharacterAttributes;
 import imi.character.avatar.FemaleAvatarAttributes;
 import imi.character.avatar.MaleAvatarAttributes;
+import java.awt.Cursor;
 import java.awt.EventQueue;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCompute;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.SceneWorker;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager.AvatarManagerListener;
@@ -46,6 +43,9 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     private AvatarConfigManager avatarManager;
 
     private String currentAvatarSelection = null;
+
+    private Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+    private Cursor normalCursor = Cursor.getDefaultCursor();
 
     /** Creates new form AvatarConfigFrame */
     public AvatarConfigFrame(AvatarImiJME avatarRenderer) {
@@ -95,6 +95,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         avatarList = new javax.swing.JList();
         applyDefaultB = new javax.swing.JButton();
         deleteB = new javax.swing.JButton();
+        viewB = new javax.swing.JButton();
 
         setTitle("Avatar Configuration");
 
@@ -198,6 +199,14 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             }
         });
 
+        viewB.setText("View");
+        viewB.setToolTipText("View selected avatar");
+        viewB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewBActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -208,7 +217,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .add(18, 18, 18)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(applyDefaultB)
-                    .add(deleteB))
+                    .add(deleteB)
+                    .add(viewB))
                 .addContainerGap(45, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -218,6 +228,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .add(viewB)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(deleteB)
                         .add(18, 18, 18)
                         .add(applyDefaultB))))
@@ -248,8 +260,12 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void randomizeBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_randomizeBActionPerformed
+        final JFrame f = this;
+        f.setCursor(waitCursor);
+
         EventQueue.invokeLater(new Runnable() {
             public void run() {
+
                 WlAvatarCharacter avatarCharacter;
                 CharacterAttributes attributes;
                 String name = avatarNameTF.getText();
@@ -276,6 +292,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 }
 
                 avatarRenderer.changeAvatar(avatarCharacter);
+                f.setCursor(normalCursor);
            }
         });
 
@@ -308,26 +325,53 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 }//GEN-LAST:event_addBActionPerformed
 
     private void applyDefaultBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyDefaultBActionPerformed
-        String selected = (String) avatarList.getSelectedValue();
+        final String selected = (String) avatarList.getSelectedValue();
 
         if (selected==null)
             return;
 
-        AvatarConfigManager.getAvatarConigManager().setDefaultAvatarName(selected);
-        AvatarConfigComponent configComponent = avatarRenderer.getCell().getComponent(AvatarConfigComponent.class);
-        URL selectedURL = AvatarConfigManager.getAvatarConigManager().getNamedAvatarServerURL(
-                        (String)avatarList.getSelectedValue(),
-                        avatarRenderer.getCell().getCellCache().getSession().getSessionManager());
-        if (selectedURL!=null)
-            configComponent.requestConfigChange(selectedURL);
-        else
-            Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Unable to apply null default avatar");
+        final JFrame f = this;
+        f.setCursor(waitCursor);
+
+        Thread t = new Thread() {
+            public void run() {
+                AvatarConfigManager.getAvatarConigManager().setDefaultAvatarName(selected);
+                AvatarConfigComponent configComponent = avatarRenderer.getCell().getComponent(AvatarConfigComponent.class);
+                URL selectedURL = AvatarConfigManager.getAvatarConigManager().getNamedAvatarServerURL(
+                                (String)avatarList.getSelectedValue(),
+                                avatarRenderer.getCell().getCellCache().getSession().getSessionManager());
+                if (selectedURL!=null)
+                    configComponent.requestConfigChange(selectedURL);
+                else
+                    Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Unable to apply null default avatar");
+                f.setCursor(normalCursor);
+            }
+        };
+        t.start();
 }//GEN-LAST:event_applyDefaultBActionPerformed
 
     private void avatarListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_avatarListValueChanged
         if (evt.getValueIsAdjusting())
             return;
 
+
+    }//GEN-LAST:event_avatarListValueChanged
+
+    private void deleteBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBActionPerformed
+        String selected = (String) avatarList.getSelectedValue();
+        if (selected == null)
+            return;
+
+        int index = avatarList.getSelectedIndex();
+        avatarManager.deleteAvatar(selected);
+
+        if (index>1)
+            avatarList.setSelectedIndex(index-1);
+        else
+            avatarList.setSelectedIndex(0);
+    }//GEN-LAST:event_deleteBActionPerformed
+
+    private void viewBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewBActionPerformed
         String selected = (String) avatarList.getSelectedValue();
 
         if (selected==null || selected.equals(currentAvatarSelection))
@@ -348,21 +392,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         });
 
         currentAvatarSelection = selected;
-    }//GEN-LAST:event_avatarListValueChanged
-
-    private void deleteBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBActionPerformed
-        String selected = (String) avatarList.getSelectedValue();
-        if (selected == null)
-            return;
-
-        int index = avatarList.getSelectedIndex();
-        avatarManager.deleteAvatar(selected);
-
-        if (index>1)
-            avatarList.setSelectedIndex(index-1);
-        else
-            avatarList.setSelectedIndex(0);
-    }//GEN-LAST:event_deleteBActionPerformed
+}//GEN-LAST:event_viewBActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -379,6 +409,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton maleRB;
     private javax.swing.JButton randomizeB;
+    private javax.swing.JButton viewB;
     // End of variables declaration//GEN-END:variables
 
 }

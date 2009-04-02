@@ -86,6 +86,7 @@ public class AvatarConfigManager {
     private static final Logger logger = Logger.getLogger(AvatarConfigManager.class.getName());
 
     AvatarConfigManager() {
+        logger.setLevel(Level.ALL);
         localContent = ContentRepositoryRegistry.getInstance().getLocalRepository();
         try {
             localAvatarsDir = (ContentCollection) localContent.getChild("avatars");
@@ -229,9 +230,11 @@ public class AvatarConfigManager {
     private void loadConfigSettings() {
         try {
             ContentResource f = (ContentResource) localContent.getChild(CONFIG_FILENAME);
-            ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(f.getInputStream()));
-            configSettings = (AvatarConfigSettings) in.readObject();
-            in.close();
+            if (f!=null) {
+                ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(f.getInputStream()));
+                configSettings = (AvatarConfigSettings) in.readObject();
+                in.close();
+            }
         } catch (Exception ex) {
             Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.WARNING, "Unable to load avatar config settings", ex);
             configSettings = new AvatarConfigSettings();
@@ -415,7 +418,11 @@ public class AvatarConfigManager {
         }
 
         public String toString() {
-            return avatarName+" : "+version;
+            try {
+                return avatarName + " : " + version + "  " + (resource == null ? "null" : resource.getURL().toExternalForm());
+            } catch (ContentRepositoryException ex) {
+                return avatarName + " : " + version + "  nullURL";
+            }
         }
 
         public void setResource(ContentResource resource) {
@@ -513,6 +520,7 @@ public class AvatarConfigManager {
         }
 
         public void scheduleUpload(AvatarConfigFile upload) {
+            System.err.println("Scheduling update "+upload);
             jobQueue.add(Job.newUploadJob(upload));
         }
 
@@ -528,19 +536,20 @@ public class AvatarConfigManager {
         }
 
         private void getURLImpl(Job job) {
-//            System.err.println("List size "+serverAvatars.size()+"  "+job.filename);
-//            for(String f : serverAvatars.keySet())
-//                System.err.println(f);
+            System.err.println("List size "+serverAvatars.size()+"  "+job.filename);
+            for(AvatarConfigFile f : serverAvatars.values())
+                System.err.println(f);
             
             AvatarConfigFile r = serverAvatars.get(job.filename);
             if (r==null) {
                 System.err.println(this);
                 Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.SEVERE, "No record of avatar on server "+job.filename);
+                job.returnURL(null);
             }
             try {
                 job.returnURL(r.resource.getURL());
             } catch (ContentRepositoryException ex) {
-                Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.WARNING, "Unable to find avatar "+job.filename, ex);
             }
         }
 
@@ -555,8 +564,11 @@ public class AvatarConfigManager {
                     if (a instanceof ContentResource) {
                         AvatarConfigFile serverAvatar =  new AvatarConfigFile((ContentResource)a);
                         AvatarConfigFile previous = serverAvatars.put(serverAvatar.avatarName, serverAvatar);
-                        if (previous!=null && previous.version>serverAvatar.version)
+                        if (previous!=null && previous.version>serverAvatar.version) {
                             serverAvatars.put(previous.avatarName, previous);
+                            System.err.println("REMOVING OLD AVATAR CONFIG "+serverAvatar.getFilename());
+                            avatarsDir.removeChild(serverAvatar.getFilename());
+                        }
                     }
                 }
 
@@ -634,6 +646,8 @@ public class AvatarConfigManager {
         private void uploadFileImpl(AvatarConfigFile upload) throws IOException, ContentRepositoryException {
             ContentResource serverFile = (ContentResource)avatarsDir.createChild(upload.resource.getName(), Type.RESOURCE);
             serverFile.put(new BufferedInputStream(upload.resource.getURL().openStream()));
+            System.err.println("UPLOADED "+upload);
+            serverAvatars.put(upload.avatarName, upload);
         }
 
     }
@@ -678,7 +692,7 @@ public class AvatarConfigManager {
         }
 
         public void returnURL(URL url) {
-//            System.err.println("JOB got "+url);
+            System.err.println("JOB got "+url);
             this.url = url;
             jobDone.release();
         }
