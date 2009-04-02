@@ -340,7 +340,7 @@ public class AvatarConfigManager {
             avatar.saveConfiguration(out);
         } catch (JAXBException ex) {
             Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.SEVERE, null, ex);
-            throw new IOException(ex);
+            throw new IOException(ex.getMessage());
         }
         out.close();
         file.put(out.toByteArray());
