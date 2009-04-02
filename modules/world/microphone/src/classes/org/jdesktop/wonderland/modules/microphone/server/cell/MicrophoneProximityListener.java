@@ -29,7 +29,6 @@ import com.sun.mpk20.voicelib.app.VoiceManager;
 
 import com.sun.sgs.app.AppContext;
 
-import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 
 import java.lang.String;
 
@@ -38,35 +37,27 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 
-import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 
 import com.jme.bounding.BoundingVolume;
 
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.ManagedObject;
+import java.io.Serializable;
 
 /**
  * A server cell that provides a microphone proximity listener
  * @author jprovino
  */
-public class MicrophoneProximityListener implements ProximityListenerSrv, ManagedObject {
+public class MicrophoneProximityListener implements ProximityListenerSrv, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(MicrophoneProximityListener.class.getName());
+
     String name;
-
-    ManagedReference<ProximityComponentMO> proxRef;
-
     BoundingVolume[] bounds;
 
-    public MicrophoneProximityListener(String name,
-	    ManagedReference<ProximityComponentMO> proxRef, 
-	    BoundingVolume[] bounds) {
-
+    public MicrophoneProximityListener(String name, BoundingVolume[] bounds) {
         this.name = name;
-	this.proxRef = proxRef;
-	this.bounds = bounds;
+        this.bounds = bounds;
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,

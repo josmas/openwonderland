@@ -101,7 +101,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author jprovino
  */
 public class PhoneMessageHandler extends AbstractComponentMessageReceiver
-	implements Serializable {
+	implements ManagedObject, Serializable {
 
     private static final Logger logger =
         Logger.getLogger(PhoneMessageHandler.class.getName());

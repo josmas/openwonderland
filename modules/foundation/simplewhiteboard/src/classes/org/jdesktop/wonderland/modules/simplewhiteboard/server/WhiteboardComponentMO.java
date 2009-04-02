@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageRe
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.server.cell.WhiteboardCellMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -40,6 +41,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 public class WhiteboardComponentMO extends CellComponentMO {
 
     /** A managed reference to the cell channel communications component */
+    @UsesCellComponentMO(ChannelComponentMO.class)
     private ManagedReference<ChannelComponentMO> channelComponentRef = null;
 
     /** 
@@ -49,15 +51,18 @@ public class WhiteboardComponentMO extends CellComponentMO {
      */
     public WhiteboardComponentMO(WhiteboardCellMO cell) {
         super(cell);
+    }
 
-        ChannelComponentMO channelComponent = (ChannelComponentMO) cell.getComponent(ChannelComponentMO.class);
-        if (channelComponent == null) {
-            throw new IllegalStateException("Cell does not have a ChannelComponent");
+    @Override
+    protected void setLive(boolean live) {
+        if (live) {
+            channelComponentRef.getForUpdate().addMessageReceiver(
+                    WhiteboardCompoundCellMessage.class,
+                    new ComponentMessageReceiverImpl(this, cellRef));
+        } else {
+            channelComponentRef.getForUpdate().removeMessageReceiver(
+                    WhiteboardCompoundCellMessage.class);
         }
-        channelComponentRef = AppContext.getDataManager().createReference(channelComponent);
-
-        channelComponent.addMessageReceiver(WhiteboardCompoundCellMessage.class,
-                new ComponentMessageReceiverImpl(this, cellRef));
     }
 
     /**
@@ -68,7 +73,7 @@ public class WhiteboardComponentMO extends CellComponentMO {
      */
     public void sendAllClients(WonderlandClientID clientID, WhiteboardCompoundCellMessage message) {
         CellMO cell = cellRef.getForUpdate();
-        ChannelComponentMO channelComponent = channelComponentRef.getForUpdate();
+        ChannelComponentMO channelComponent = channelComponentRef.get();
         channelComponent.sendAll(clientID, message);
     }
 

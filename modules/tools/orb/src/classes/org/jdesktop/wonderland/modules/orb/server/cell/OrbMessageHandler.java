@@ -59,6 +59,7 @@ import org.jdesktop.wonderland.server.UserManager;
 
 import com.jme.math.Vector3f;
 
+import com.sun.sgs.app.ManagedObject;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
@@ -72,7 +73,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author jprovino
  */
 public class OrbMessageHandler extends AbstractComponentMessageReceiver
-	implements Serializable {
+	implements ManagedObject, Serializable {
 
     private static final Logger logger =
         Logger.getLogger(OrbCellMO.class.getName());
