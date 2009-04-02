@@ -181,6 +181,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     public void addServerURLListener(ServerURLListener listener) {
         serverListener = listener;
     }
+    
+    public void setMessageLabel(String msg) {
+        messageLabel.setText(msg);
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -199,6 +204,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         goButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        messageLabel = new javax.swing.JTextField();
+        jPanel3 = new javax.swing.JPanel();
         fpsLabel = new javax.swing.JLabel();
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
@@ -241,8 +249,23 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         getContentPane().add(serverPanel, java.awt.BorderLayout.NORTH);
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        messageLabel.setColumns(20);
+        messageLabel.setEditable(false);
+        messageLabel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                messageLabelActionPerformed(evt);
+            }
+        });
+        jPanel2.add(messageLabel);
+
+        jPanel1.add(jPanel2, java.awt.BorderLayout.WEST);
+
         fpsLabel.setText(bundle.getString("FPS_:")); // NOI18N
-        jPanel1.add(fpsLabel);
+        jPanel3.add(fpsLabel);
+
+        jPanel1.add(jPanel3, java.awt.BorderLayout.CENTER);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
@@ -343,6 +366,10 @@ private void cameraChangedActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
 }//GEN-LAST:event_cameraChangedActionPerformed
 
+private void messageLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_messageLabelActionPerformed
+    // TODO add your handling code here:
+}//GEN-LAST:event_messageLabelActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup cameraButtonGroup;
     private javax.swing.JPanel centerPanel;
@@ -355,9 +382,12 @@ private void cameraChangedActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JButton goButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JMenuItem logoutMI;
     private javax.swing.JMenuBar mainMenuBar;
+    private javax.swing.JTextField messageLabel;
     private javax.swing.JTextField serverField;
     private javax.swing.JLabel serverLabel;
     private javax.swing.JPanel serverPanel;
