@@ -165,6 +165,10 @@ public class AvatarConfigManager {
         saveConfigSettings();
     }
 
+    public String getDefaultAvatarName() {
+        return configSettings.getDefaultAvatarConfig();
+    }
+
     public static AvatarConfigManager getAvatarConigManager() {
         if (avatarConfigManager==null)
             avatarConfigManager = new AvatarConfigManager();

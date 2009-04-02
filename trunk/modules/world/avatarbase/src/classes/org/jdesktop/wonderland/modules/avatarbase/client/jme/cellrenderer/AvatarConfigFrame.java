@@ -71,6 +71,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 ((DefaultListModel) avatarList.getModel()).removeElement(name);
             }
         });
+
+        defaultAvatarTF.setText(AvatarConfigManager.getAvatarConigManager().getDefaultAvatarName());
     }
 
     /** This method is called from within the constructor to
@@ -96,6 +98,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         applyDefaultB = new javax.swing.JButton();
         deleteB = new javax.swing.JButton();
         viewB = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        defaultAvatarTF = new javax.swing.JTextField();
 
         setTitle("Avatar Configuration");
 
@@ -185,6 +189,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         applyDefaultB.setText("Apply as Default");
         applyDefaultB.setToolTipText("Make selection your default avatar");
+        applyDefaultB.setEnabled(false);
         applyDefaultB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 applyDefaultBActionPerformed(evt);
@@ -193,6 +198,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         deleteB.setText("Delete");
         deleteB.setToolTipText("Delete selected avatar");
+        deleteB.setEnabled(false);
         deleteB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteBActionPerformed(evt);
@@ -201,11 +207,14 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         viewB.setText("View");
         viewB.setToolTipText("View selected avatar");
+        viewB.setEnabled(false);
         viewB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 viewBActionPerformed(evt);
             }
         });
+
+        jLabel2.setText("Default Avatar :");
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -213,26 +222,37 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 159, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(applyDefaultB)
-                    .add(deleteB)
-                    .add(viewB))
-                .addContainerGap(45, Short.MAX_VALUE))
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 159, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(18, 18, 18)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(viewB)
+                            .add(deleteB)
+                            .add(applyDefaultB)))
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(defaultAvatarTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 141, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(66, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                    .add(jPanel2Layout.createSequentialGroup()
+                        .add(24, 24, 24)
                         .add(viewB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(deleteB)
-                        .add(18, 18, 18)
-                        .add(applyDefaultB))))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(applyDefaultB))
+                    .add(avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(defaultAvatarTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(45, Short.MAX_VALUE))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -253,7 +273,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         pack();
@@ -299,6 +319,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_randomizeBActionPerformed
 
     private void addBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBActionPerformed
+        final JFrame f = this;
+        f.setCursor(waitCursor);
         try {
             if (avatarManager.exists(avatarNameTF.getText())) {
                 int option = JOptionPane.showConfirmDialog(this, "An avatar with name exists, overwrite ?", "Avatar Exists", JOptionPane.OK_CANCEL_OPTION);
@@ -321,6 +343,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            f.setCursor(normalCursor);
         }
 }//GEN-LAST:event_addBActionPerformed
 
@@ -335,16 +359,20 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         Thread t = new Thread() {
             public void run() {
-                AvatarConfigManager.getAvatarConigManager().setDefaultAvatarName(selected);
-                AvatarConfigComponent configComponent = avatarRenderer.getCell().getComponent(AvatarConfigComponent.class);
-                URL selectedURL = AvatarConfigManager.getAvatarConigManager().getNamedAvatarServerURL(
-                                (String)avatarList.getSelectedValue(),
-                                avatarRenderer.getCell().getCellCache().getSession().getSessionManager());
-                if (selectedURL!=null)
-                    configComponent.requestConfigChange(selectedURL);
-                else
-                    Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Unable to apply null default avatar");
-                f.setCursor(normalCursor);
+                try {
+                    AvatarConfigManager.getAvatarConigManager().setDefaultAvatarName(selected);
+                    AvatarConfigComponent configComponent = avatarRenderer.getCell().getComponent(AvatarConfigComponent.class);
+                    URL selectedURL = AvatarConfigManager.getAvatarConigManager().getNamedAvatarServerURL(
+                                    (String)avatarList.getSelectedValue(),
+                                    avatarRenderer.getCell().getCellCache().getSession().getSessionManager());
+                    if (selectedURL!=null)
+                        configComponent.requestConfigChange(selectedURL);
+                    else
+                        Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Unable to apply null default avatar");
+                    defaultAvatarTF.setText(selected);
+                } finally {
+                    f.setCursor(normalCursor);
+                }
             }
         };
         t.start();
@@ -354,7 +382,9 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         if (evt.getValueIsAdjusting())
             return;
 
-
+        viewB.setEnabled(true);
+        deleteB.setEnabled(true);
+        applyDefaultB.setEnabled(true);
     }//GEN-LAST:event_avatarListValueChanged
 
     private void deleteBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBActionPerformed
@@ -377,6 +407,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         if (selected==null || selected.equals(currentAvatarSelection))
             return;
 
+        final JFrame f = this;
+        f.setCursor(waitCursor);
         URL selectedURL = AvatarConfigManager.getAvatarConigManager().getNamedAvatarURL((String)avatarList.getSelectedValue());
         WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
         ServerSessionManager manager = session.getSessionManager();
@@ -387,7 +419,11 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
-                avatarRenderer.changeAvatar(avatarCharacter);
+                try {
+                    avatarRenderer.changeAvatar(avatarCharacter);
+                } finally {
+                    f.setCursor(normalCursor);
+                }
             }
         });
 
@@ -401,10 +437,12 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     private javax.swing.JList avatarList;
     private javax.swing.JScrollPane avatarListScrollPane;
     private javax.swing.JTextField avatarNameTF;
+    private javax.swing.JTextField defaultAvatarTF;
     private javax.swing.JButton deleteB;
     private javax.swing.JRadioButton femaleRB;
     private javax.swing.ButtonGroup genderGrou;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton maleRB;
