@@ -14,6 +14,7 @@
         <path location="${core.jme.dir}/target/jme-collada.jar"/>
         <path location="${core.jme.dir}/target/jme-xml.jar"/>
         <path location="${core.jme.dir}/target/jme-terrain.jar"/>
+        <path location="${core.jme.dir}/target/jme-font.jar"/>
         <path location="${core.jme.dir}/lib/lwjgl/lwjgl_util.jar"/>
         
         <!-- jogl -->

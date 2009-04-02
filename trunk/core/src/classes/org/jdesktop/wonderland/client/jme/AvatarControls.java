@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import javolution.util.FastList;
 import org.jdesktop.mtgame.NewFrameCondition;
+import org.jdesktop.mtgame.PostEventCondition;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
@@ -48,7 +49,7 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
     private final LinkedList<Event> events = new LinkedList();
 
     private HashSet<Integer> pressedKeys = new HashSet();
-    
+    private long postId = ClientContextJME.getWorldManager().allocateEvent();
     
     public AvatarControls() {
         AvatarEventListener listener = new AvatarEventListener();
@@ -79,7 +80,8 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
                     eventAwt.add(((InputEvent3D)evt).getAwtEvent());
                 }
             }
-            
+
+//            System.err.println("Sending events "+m_scheme+" "+eventAwt.size());
             m_scheme.processEvents(eventAwt.toArray());
             events.clear();
         }
@@ -130,6 +132,8 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
 
     @Override
     public void initialize() {
+        System.err.println("******** AvatarControls init");
+//        setArmingCondition(new PostEventCondition(this, new long[]{postId}));
         setArmingCondition(new NewFrameCondition(this));
 
         // Run in the renderer to guarantee that the avatar move and camera
@@ -185,6 +189,7 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
             synchronized(events) {
                 events.add(event);
             }
+//            ClientContextJME.getWorldManager().postEvent(postId);
         }
         
     }
