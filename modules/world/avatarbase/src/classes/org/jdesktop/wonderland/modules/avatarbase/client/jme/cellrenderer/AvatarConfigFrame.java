@@ -12,25 +12,28 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import imi.character.CharacterAttributes;
-import imi.character.avatar.Avatar;
 import imi.character.avatar.FemaleAvatarAttributes;
 import imi.character.avatar.MaleAvatarAttributes;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
-import javax.swing.ListModel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCompute;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager.AvatarManagerListener;
-import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
+import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 
 /**
@@ -42,14 +45,16 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     private AvatarImiJME avatarRenderer;
     private AvatarConfigManager avatarManager;
 
+    private String currentAvatarSelection = null;
+
     /** Creates new form AvatarConfigFrame */
     public AvatarConfigFrame(AvatarImiJME avatarRenderer) {
         this.avatarRenderer = avatarRenderer;
         initComponents();
 
         WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
-        ServerSessionManager manager = session.getSessionManager();
         avatarManager = AvatarConfigManager.getAvatarConigManager();
+
         DefaultListModel listModel = (DefaultListModel) avatarList.getModel();
 
         Iterable<String> avatars = avatarManager.getAvatars();
@@ -82,13 +87,14 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         maleRB = new javax.swing.JRadioButton();
         femaleRB = new javax.swing.JRadioButton();
-        saveB = new javax.swing.JButton();
+        addB = new javax.swing.JButton();
         avatarNameTF = new javax.swing.JTextField();
         randomizeB = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         avatarListScrollPane = new javax.swing.JScrollPane();
         avatarList = new javax.swing.JList();
-        jButton1 = new javax.swing.JButton();
+        applyDefaultB = new javax.swing.JButton();
+        deleteB = new javax.swing.JButton();
 
         setTitle("Avatar Configuration");
 
@@ -103,14 +109,14 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         genderGrou.add(femaleRB);
         femaleRB.setText("Female");
 
-        saveB.setText("Save Avatar");
-        saveB.addActionListener(new java.awt.event.ActionListener() {
+        addB.setText("Add to My Avatars");
+        addB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveBActionPerformed(evt);
+                addBActionPerformed(evt);
             }
         });
 
-        avatarNameTF.setText("jTextField1");
+        avatarNameTF.setText("my_avatar");
 
         randomizeB.setText("Randomize");
         randomizeB.addActionListener(new java.awt.event.ActionListener() {
@@ -123,7 +129,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 249, Short.MAX_VALUE)
+            .add(0, 292, Short.MAX_VALUE)
             .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
@@ -134,7 +140,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                                 .add(jPanel1Layout.createSequentialGroup()
                                     .add(jLabel1)
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(avatarNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(avatarNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE))
                                 .add(jPanel1Layout.createSequentialGroup()
                                     .add(maleRB)
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -142,8 +148,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                         .add(jPanel1Layout.createSequentialGroup()
                             .add(randomizeB)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(saveB)))
-                    .addContainerGap(8, Short.MAX_VALUE)))
+                            .add(addB)))
+                    .add(8, 8, 8)))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -161,9 +167,11 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                     .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(randomizeB)
-                        .add(saveB))
+                        .add(addB))
                     .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("My Avatars"));
 
         avatarList.setModel(new DefaultListModel());
         avatarList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -174,10 +182,19 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         });
         avatarListScrollPane.setViewportView(avatarList);
 
-        jButton1.setText("Apply as Default");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        applyDefaultB.setText("Apply as Default");
+        applyDefaultB.setToolTipText("Make selection your default avatar");
+        applyDefaultB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                applyDefaultBActionPerformed(evt);
+            }
+        });
+
+        deleteB.setText("Delete");
+        deleteB.setToolTipText("Delete selected avatar");
+        deleteB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteBActionPerformed(evt);
             }
         });
 
@@ -189,8 +206,10 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 159, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
-                .add(jButton1)
-                .addContainerGap(57, Short.MAX_VALUE))
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(applyDefaultB)
+                    .add(deleteB))
+                .addContainerGap(45, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -198,7 +217,10 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jButton1)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .add(deleteB)
+                        .add(18, 18, 18)
+                        .add(applyDefaultB))))
         );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -219,81 +241,144 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void randomizeBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_randomizeBActionPerformed
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                WlAvatarCharacter avatarCharacter;
+                CharacterAttributes attributes;
+                String name = avatarNameTF.getText();
 
-        CharacterAttributes attributes;
-        String name = "foo";
+                if (femaleRB.isSelected())
+                    attributes = new FemaleAvatarAttributes(name, true);
+                else
+                    attributes = new MaleAvatarAttributes(name, true);
 
-        if (femaleRB.isSelected())
-            attributes = new FemaleAvatarAttributes(name, true);
-        else
-            attributes = new MaleAvatarAttributes(name, true);
+                WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
+                ServerSessionManager manager = session.getSessionManager();
+                String serverHostAndPort = manager.getServerNameAndPort();
+                attributes.setBaseURL("wla://avatarbaseart@"+serverHostAndPort+"/");
 
-        WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
-        ServerSessionManager manager = session.getSessionManager();
-        String serverHostAndPort = manager.getServerNameAndPort();
-        attributes.setBaseURL("wla://avatarbaseart@"+serverHostAndPort+"/");
+                LoadingInfo.startedLoading(avatarRenderer.getCell().getCellID(), name);
+                try {
+                    WorldManager wm = ClientContextJME.getWorldManager();
+                    avatarCharacter = new WlAvatarCharacter(attributes, wm);
 
-        WorldManager wm = ClientContextJME.getWorldManager();
-        WlAvatarCharacter avatarCharacter = new WlAvatarCharacter(attributes, wm);
+                    System.err.println("HEAD "+avatarCharacter.getAttributes().getHeadAttachment());
 
-        avatarRenderer.changeAvatar(avatarCharacter);
-//        avatarRenderer.getAvatarCharacter().setAttributes
+                } finally {
+                    LoadingInfo.finishedLoading(avatarRenderer.getCell().getCellID(), name);
+                }
+
+                avatarRenderer.changeAvatar(avatarCharacter);
+           }
+        });
+
     }//GEN-LAST:event_randomizeBActionPerformed
 
-    private void saveBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveBActionPerformed
-
-//        File saveFile = getDefaultAvatarConfigFile();
-
-        File saveFile = new File(AvatarConfigManager.getAvatarConfigDir(), avatarNameTF.getText());
-
-        if (saveFile.exists()) {
-            // TOOD overwriting default file, ask user
-            // if they really intended to
-        }
-
-        avatarRenderer.getAvatarCharacter().saveConfiguration(saveFile);
+    private void addBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBActionPerformed
         try {
             if (avatarManager.exists(avatarNameTF.getText())) {
-                System.err.println("FILE EXISTS !");
-            } else {
-                avatarManager.saveFile(avatarNameTF.getText(), saveFile);
+                int option = JOptionPane.showConfirmDialog(this, "An avatar with name exists, overwrite ?", "Avatar Exists", JOptionPane.OK_CANCEL_OPTION);
+                if (option == JOptionPane.CANCEL_OPTION) {
+                    avatarNameTF.selectAll();
+                    return;
+                }
             }
+
+            avatarRenderer.getAvatarCharacter().getAttributes().setName(avatarNameTF.getText());
+            avatarManager.saveAvatar(avatarNameTF.getText(), avatarRenderer.getAvatarCharacter());
+            currentAvatarSelection = avatarNameTF.getText();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    avatarList.setSelectedValue(avatarNameTF.getText(), rootPaneCheckingEnabled);
+                }
+            });
+            
         } catch (ContentRepositoryException ex) {
             Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
-}//GEN-LAST:event_saveBActionPerformed
+}//GEN-LAST:event_addBActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void applyDefaultBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyDefaultBActionPerformed
+        String selected = (String) avatarList.getSelectedValue();
+
+        if (selected==null)
+            return;
+
+        AvatarConfigManager.getAvatarConigManager().setDefaultAvatarName(selected);
+        AvatarConfigComponent configComponent = avatarRenderer.getCell().getComponent(AvatarConfigComponent.class);
+        URL selectedURL = AvatarConfigManager.getAvatarConigManager().getNamedAvatarServerURL(
+                        (String)avatarList.getSelectedValue(),
+                        avatarRenderer.getCell().getCellCache().getSession().getSessionManager());
+        if (selectedURL!=null)
+            configComponent.requestConfigChange(selectedURL);
+        else
+            Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Unable to apply null default avatar");
+}//GEN-LAST:event_applyDefaultBActionPerformed
 
     private void avatarListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_avatarListValueChanged
-        System.err.println("Selected "+avatarList.getSelectedValue());
+        if (evt.getValueIsAdjusting())
+            return;
+
+        String selected = (String) avatarList.getSelectedValue();
+
+        if (selected==null || selected.equals(currentAvatarSelection))
+            return;
+
+        URL selectedURL = AvatarConfigManager.getAvatarConigManager().getNamedAvatarURL((String)avatarList.getSelectedValue());
+        WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
+        ServerSessionManager manager = session.getSessionManager();
+        String serverHostAndPort = manager.getServerNameAndPort();
+        final WlAvatarCharacter avatarCharacter = new WlAvatarCharacter(selectedURL,
+                ClientContextJME.getWorldManager(),
+                "wla://avatarbaseart@"+serverHostAndPort+"/");
+
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                avatarRenderer.changeAvatar(avatarCharacter);
+            }
+        });
+
+        currentAvatarSelection = selected;
     }//GEN-LAST:event_avatarListValueChanged
+
+    private void deleteBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBActionPerformed
+        String selected = (String) avatarList.getSelectedValue();
+        if (selected == null)
+            return;
+
+        int index = avatarList.getSelectedIndex();
+        avatarManager.deleteAvatar(selected);
+
+        if (index>1)
+            avatarList.setSelectedIndex(index-1);
+        else
+            avatarList.setSelectedIndex(0);
+    }//GEN-LAST:event_deleteBActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addB;
+    private javax.swing.JButton applyDefaultB;
     private javax.swing.JList avatarList;
     private javax.swing.JScrollPane avatarListScrollPane;
     private javax.swing.JTextField avatarNameTF;
+    private javax.swing.JButton deleteB;
     private javax.swing.JRadioButton femaleRB;
     private javax.swing.ButtonGroup genderGrou;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton maleRB;
     private javax.swing.JButton randomizeB;
-    private javax.swing.JButton saveB;
     // End of variables declaration//GEN-END:variables
 
 }
