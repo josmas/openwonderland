@@ -34,9 +34,9 @@
                 </clientjar> 
             </client>
 
-            <!--
             <server>
                 <serverjar name="avatarbase-server" basedir="${build.classes.dir}">
+                    <serverplugin provider="org.jdesktop.wonderland.modules.avatarbase.server.cell.AvatarPluginSrv"/>
                     <cellsetup>
                         <provider classname="${module.plugin.cellsetup}"/>
                     </cellsetup>
@@ -44,7 +44,6 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
-            -->
         </module>
     </target>
 
