@@ -22,13 +22,14 @@ import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 /**
  * State object for avatar cell
  *
+ * @deprecated 
  * @author paulby
  */
 public class AvatarCellClientState extends ViewCellClientState {
 
     private String avatarConfigURL=null;
 
-    public AvatarCellClientState(WonderlandIdentity identity, String avatarConfigURL) {
+    public AvatarCellClientState(WonderlandIdentity identity) {
         super(identity);
         this.avatarConfigURL = avatarConfigURL;
     }

@@ -18,14 +18,11 @@
 package org.jdesktop.wonderland.server.cell;
 
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
-import com.sun.sgs.app.ClientSession;
 import java.io.Serializable;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellCacheConnectionType;
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.ViewCreateResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -46,10 +43,11 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
     
     private  String viewID=null;
     private static final Logger logger = Logger.getLogger(CellCacheConnectionHandler.class.getName());
+    private Properties connectionProperties;
     
     protected static final ConnectionType CLIENT_TYPE =
             CellCacheConnectionType.CLIENT_TYPE;
-    
+
     public ConnectionType getConnectionType() {
         return CLIENT_TYPE;
     }
@@ -62,6 +60,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
                                 WonderlandClientID clientID,
                                 Properties properties)   
     {
+        connectionProperties = properties;
         // Nothing to do, setup is done when we get the SET_VIEW
         // message
     }
@@ -132,6 +131,9 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
             user.putAvatar(clientID, viewID, avatar);
         }
         
+        // Set the properties for this connection in the cell cache
+        avatar.getCellCache().setConnectionProperties(connectionProperties);
+        
         avatar.getCellCache().login(sender, clientID);
         
         return new ViewCreateResponseMessage(msg.getMessageID(), avatar.getCellID());
@@ -144,4 +146,5 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
     public static WonderlandClientSender getSender() {
         return WonderlandContext.getCommsManager().getSender(CLIENT_TYPE);
     }
+
 }

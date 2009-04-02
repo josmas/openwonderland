@@ -287,17 +287,24 @@ public class ViewManager {
         }
         
         Entity entity = ((CellRendererJME)attachCell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
-        entity.removeComponent(SimpleAvatarControls.class);
+        entity.removeComponent(AvatarControls.class);
         
         CellRendererJME renderer = (CellRendererJME) attachCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-        if (renderer!=null && renderer instanceof BasicRenderer) {
-            BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
-            if (moveProc!=null) {
-                moveProc.addToChain(cameraProcessor);
-                avatarControls.removeFromChain(moveProc);
+        if (renderer!=null) {
+            if (renderer instanceof AvatarControls.AvatarInputSelector) {
+                ((AvatarControls.AvatarInputSelector)renderer).selectForInput(false);
+            }
+
+            if (renderer instanceof BasicRenderer) {
+                BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
+                if (moveProc!=null) {
+                    moveProc.removeFromChain(cameraProcessor);
+                    avatarControls.removeFromChain(moveProc);
+                }
             }
         }
-        
+
+        entity.removeComponent(AvatarControls.class);
         attachCell.removeTransformChangeListener(listener);
         attachCell = null;
     }

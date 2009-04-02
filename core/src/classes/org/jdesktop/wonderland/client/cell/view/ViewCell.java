@@ -72,11 +72,11 @@ public class ViewCell extends Cell {
     public void setClientState(CellClientState cellClientState) {
         super.setClientState(cellClientState);
 
-	identity = ((ViewCellClientState) cellClientState).getIdentity();
+        identity = ((ViewCellClientState) cellClientState).getIdentity();
     }
 
     public WonderlandIdentity getIdentity() {
-	return identity;
+        return identity;
     }
 
 

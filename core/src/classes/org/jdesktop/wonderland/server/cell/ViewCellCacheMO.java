@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import java.util.Properties;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
@@ -92,6 +93,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private static final boolean AGGREGATE_MESSAGES = true;
             
     private HashSet<ViewCellCacheRevalidationListener> revalidationsListeners = new HashSet();
+
+    private Properties connectionProperties=null;
     
     /**
      * Creates a new instance of ViewCellCacheMO
@@ -200,6 +203,24 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             scheduler.schedule(op);
         }
         scheduler.endRevalidate();
+    }
+
+    void setConnectionProperties(Properties connectionProperties) {
+        this.connectionProperties = connectionProperties;
+    }
+
+    /**
+     * Return the property from the connection handler for this cache.
+     * The properties are set when the client creates the connection
+     * 
+     * @param key
+     * @return
+     */
+    public String getConnectionProperty(String key) {
+        if (connectionProperties==null)
+            return null;
+
+        return connectionProperties.getProperty(key);
     }
 
 

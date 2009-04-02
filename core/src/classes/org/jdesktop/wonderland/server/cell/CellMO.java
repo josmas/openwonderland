@@ -119,6 +119,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         this.localTransform = null;
         this.cellID = WonderlandContext.getCellManager().createCellID(this);
 
+        // This is here, rather than in AvatarCellMO because getAvatarCellComponentClasses is package private
         if (this instanceof AvatarCellMO) {
             Iterable<Class<? extends CellComponentMO>> avatarComponentClasses = CellManagerMO.getCellManager().getAvatarCellComponentClasses();
 

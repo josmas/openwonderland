@@ -17,24 +17,18 @@
  */
 package org.jdesktop.wonderland.client.cell.view;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.jme.AvatarRenderManager.RendererUnavailable;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarJME;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.view.AvatarCellClientState;
 
 /**
  * A cell representing the users avatar
@@ -42,8 +36,6 @@ import org.jdesktop.wonderland.common.cell.view.AvatarCellClientState;
  * @author paulby
  */
 public class AvatarCell extends ViewCell {
-
-    private URL avatarConfigURL;
 
     public AvatarCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -67,22 +59,6 @@ public class AvatarCell extends ViewCell {
     @Override
     public void setClientState(CellClientState cellClientState) {
         super.setClientState(cellClientState);
-
-        try {
-            String str = ((AvatarCellClientState) cellClientState).getAvatarConfigURL();
-            if (str!=null) {
-                WonderlandSession session = getCellCache().getSession();
-                ServerSessionManager manager = session.getSessionManager();
-                String serverHostAndPort = manager.getServerNameAndPort();
-                avatarConfigURL = new URL("wla://avatarbaseart@"+serverHostAndPort+"/"+str);
-            }
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(AvatarCell.class.getName()).log(Level.SEVERE, "Bad Avatar Config URL ", ex);
-        }
-    }
-
-    public URL getAvatarConfigURL() {
-        return avatarConfigURL;
     }
 
     @Override
