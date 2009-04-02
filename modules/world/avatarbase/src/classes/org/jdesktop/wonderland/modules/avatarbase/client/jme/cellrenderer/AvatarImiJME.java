@@ -199,10 +199,13 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
     @Override
     public void setStatus(CellStatus status) {
+        super.setStatus(status);
         switch(status) {
             case DISK :
                 if (nameTag!=null)
                     nameTag.done();
+                if (entity!=null)
+                    ClientContextJME.getWorldManager().removeEntity(entity);
                 break;
         }
     }
@@ -222,12 +225,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         // Remove the entity, it will be added when the cell status changes
         ClientContextJME.getWorldManager().removeEntity(avatarCharacter);
 
-        logger.info("Creating new name tag...");
         nameTag = new NameTag(cell, username, 2, avatarCharacter);
         return avatarCharacter;
     }
 
     void changeAvatar(WlAvatarCharacter newAvatar) {
+        System.err.println("CHANGE AVATAR "+newAvatar);
         LoadingInfo.startedLoading(cell.getCellID(), newAvatar.getName());
         ViewManager viewManager = ViewManager.getViewManager();
 
@@ -236,13 +239,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         }
         PMatrix currentLocation = null;
 
+        WorldManager wm = ClientContextJME.getWorldManager();
         if (avatarCharacter != null) {
             currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
+            wm.removeEntity(avatarCharacter);
+            avatarCharacter.destroy();
         }
-
-        WorldManager wm = ClientContextJME.getWorldManager();
-        wm.removeEntity(avatarCharacter);
-        avatarCharacter.destroy();
 
         avatarCharacter = newAvatar;
         
@@ -258,6 +260,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         if (currentLocation != null) {
             avatarCharacter.getModelInst().setTransform(new PTransform(currentLocation));
         }
+
         wm.addEntity(avatarCharacter);
 
         entity = newAvatar;     // This needs to be set before calls to the viewmanager
@@ -305,7 +308,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
     public void cellTransformUpdate(CellTransform transform) {
         // Don't call super, we don't use a MoveProcessor for avatars
 
-        if (!selectedForInput && avatarCharacter != null) {
+        if (!selectedForInput && avatarCharacter != null && avatarCharacter.getController()!=null ) {
             Vector3f pos = transform.getTranslation(null);
             Vector3f dir = new Vector3f(0, 0, -1);
             transform.getRotation(null).multLocal(dir);
@@ -346,27 +349,28 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
         URL avatarConfigURL = cell.getComponent(AvatarConfigComponent.class).getAvatarConfigURL();
 
-//        System.err.println("AVATAR CONFIG URL "+avatarConfigURL);
+        System.err.println("AVATAR CONFIG URL "+avatarConfigURL);
 
         LoadingInfo.startedLoading(cell.getCellID(), username);
         try {
         // Create the character, but don't add the entity to wm
         // TODO this will change to take the config
         if (avatarConfigURL == null) {
-            File defaultConfig = AvatarConfigManager.getDefaultAvatarConfigFile();
-            if (defaultConfig.exists()) {
-                try {
-                    avatarCharacter = new WlAvatarCharacter(defaultConfig.toURI().toURL(), ClientContextJME.getWorldManager(), baseURL);
-                } catch (MalformedURLException ex) {
-                    avatarCharacter = null;
-                    Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, "Error loading default config file" + defaultConfig, ex);
-                }
-            }
+//            File defaultConfig = AvatarConfigManager.getDefaultAvatarConfigFile();
+//            if (defaultConfig.exists()) {
+//                try {
+//                    avatarCharacter = new WlAvatarCharacter(defaultConfig.toURI().toURL(), ClientContextJME.getWorldManager(), baseURL);
+//                } catch (MalformedURLException ex) {
+//                    avatarCharacter = null;
+//                    Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, "Error loading default config file" + defaultConfig, ex);
+//                }
+//            }
 
             if (avatarCharacter == null) {
                 CharacterAttributes attributes = new MaleAvatarAttributes(name, true);
                 attributes.setBaseURL(baseURL);
-                avatarCharacter = new WlAvatarCharacter(attributes, wm);                
+                avatarCharacter = new WlAvatarCharacter(attributes, wm);
+                System.err.println("****  DEFAULT AVATAR");
             }
 
         } else {
