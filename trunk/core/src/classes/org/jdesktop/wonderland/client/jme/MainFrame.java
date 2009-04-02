@@ -74,6 +74,8 @@ public interface MainFrame {
      */
     public void addServerURLListener(ServerURLListener listener);
 
+    public void setMessageLabel(String msg);
+
     /**
      * A listener that will be notified when the server URL changes
      */
