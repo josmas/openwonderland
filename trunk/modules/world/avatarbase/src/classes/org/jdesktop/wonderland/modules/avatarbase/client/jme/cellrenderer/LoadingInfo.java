@@ -17,11 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Point;
 import java.util.HashMap;
-import javax.swing.JFrame;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -45,12 +42,7 @@ public class LoadingInfo extends javax.swing.JFrame {
             if (!isVisible()) {
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        JFrame mainFrame = JmeClientMain.getFrame().getFrame();
-                        Point loc = mainFrame.getLocationOnScreen();
-                        Dimension size = mainFrame.getSize();
-                        setLocation(loc.x+size.width/2-getWidth()/2, loc.y+size.height/2-getHeight()/2);
-                        setAlwaysOnTop(true);
-                        setVisible(true);
+                        JmeClientMain.getFrame().setMessageLabel("Loading Avatar...");
                     }
                 });
             }
@@ -63,7 +55,7 @@ public class LoadingInfo extends javax.swing.JFrame {
             if (currentlyLoading.size()==0)
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        setVisible(false);
+                        JmeClientMain.getFrame().setMessageLabel("");
                     }
                 });
         }
@@ -130,16 +122,6 @@ public class LoadingInfo extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new LoadingInfo().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;

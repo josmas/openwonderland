@@ -67,6 +67,7 @@ import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent.AvatarConfigChangeListener;
@@ -194,6 +195,16 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
             }
         });
 
+    }
+
+    @Override
+    public void setStatus(CellStatus status) {
+        switch(status) {
+            case DISK :
+                if (nameTag!=null)
+                    nameTag.done();
+                break;
+        }
     }
 
     @Override
