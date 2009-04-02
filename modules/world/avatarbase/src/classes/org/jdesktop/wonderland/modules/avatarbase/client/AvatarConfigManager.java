@@ -325,19 +325,15 @@ public class AvatarConfigManager {
      */
     public void saveAvatar(String avatarName, WlAvatarCharacter avatar) throws ContentRepositoryException, IOException {
         AvatarConfigFile existing = localAvatars.get(avatarName);
-        System.err.println("EXISTING "+existing);
         boolean newFile = false;
         if (existing==null) {
             existing = new AvatarConfigFile(avatarName, 1);
             newFile = true;
         } else {
-            System.err.println("BEFORE "+existing);
             // Increase version number
             existing.incrementVersion();
-            System.err.println("AFTER "+existing);
         }
 
-        System.err.println("Attempting to create "+existing.getFilename());
         ContentResource file = (ContentResource) localAvatarsDir.createChild(existing.getFilename(), Type.RESOURCE);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
