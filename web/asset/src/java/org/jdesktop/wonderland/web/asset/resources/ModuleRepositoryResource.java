@@ -85,8 +85,8 @@ public class ModuleRepositoryResource {
              * file, then create a fallback response with this server as the
              * master.
              */
-            logger.warning("ModuleManager: null repository for module: " + moduleName);
-            logger.warning("ModuleManager: sending this server as fallback: " + hostname);
+            logger.info("A repository.xml file does not exist for module: " + moduleName);
+            logger.info("Sending this server as fallback: " + hostname);
             ModuleRepository newRepository = new ModuleRepository();
             Repository rep = new Repository();
             rep.url = hostname;
