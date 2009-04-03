@@ -95,7 +95,6 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         avatarListScrollPane = new javax.swing.JScrollPane();
         avatarList = new javax.swing.JList();
-        applyDefaultB = new javax.swing.JButton();
         deleteB = new javax.swing.JButton();
         viewB = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
@@ -187,15 +186,6 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         });
         avatarListScrollPane.setViewportView(avatarList);
 
-        applyDefaultB.setText("Apply as Default");
-        applyDefaultB.setToolTipText("Make selection your default avatar");
-        applyDefaultB.setEnabled(false);
-        applyDefaultB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                applyDefaultBActionPerformed(evt);
-            }
-        });
-
         deleteB.setText("Delete");
         deleteB.setToolTipText("Delete selected avatar");
         deleteB.setEnabled(false);
@@ -205,8 +195,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             }
         });
 
-        viewB.setText("View");
-        viewB.setToolTipText("View selected avatar");
+        viewB.setText("Apply");
+        viewB.setToolTipText("Apply selected avatar");
         viewB.setEnabled(false);
         viewB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -214,7 +204,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             }
         });
 
-        jLabel2.setText("Default Avatar :");
+        jLabel2.setText("Current Avatar :");
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -225,28 +215,25 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 159, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(viewB)
-                            .add(deleteB)
-                            .add(applyDefaultB)))
+                            .add(deleteB)))
                     .add(jPanel2Layout.createSequentialGroup()
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(defaultAvatarTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 141, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addContainerGap(142, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel2Layout.createSequentialGroup()
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(24, 24, 24)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(viewB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(deleteB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(applyDefaultB))
+                        .add(deleteB))
                     .add(avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -332,10 +319,10 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
             avatarRenderer.getAvatarCharacter().getAttributes().setName(avatarNameTF.getText());
             avatarManager.saveAvatar(avatarNameTF.getText(), avatarRenderer.getAvatarCharacter());
-            currentAvatarSelection = avatarNameTF.getText();
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     avatarList.setSelectedValue(avatarNameTF.getText(), rootPaneCheckingEnabled);
+                    applyToServer(avatarNameTF.getText());
                 }
             });
             
@@ -348,10 +335,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         }
 }//GEN-LAST:event_addBActionPerformed
 
-    private void applyDefaultBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyDefaultBActionPerformed
-        final String selected = (String) avatarList.getSelectedValue();
-
-        if (selected==null)
+    private void applyToServer(final String selected) {
+        if (selected.equals(currentAvatarSelection))
             return;
 
         final JFrame f = this;
@@ -370,13 +355,14 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                     else
                         Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Unable to apply null default avatar");
                     defaultAvatarTF.setText(selected);
+                    currentAvatarSelection = selected;
                 } finally {
                     f.setCursor(normalCursor);
                 }
             }
         };
         t.start();
-}//GEN-LAST:event_applyDefaultBActionPerformed
+    }
 
     private void avatarListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_avatarListValueChanged
         if (evt.getValueIsAdjusting())
@@ -384,7 +370,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         viewB.setEnabled(true);
         deleteB.setEnabled(true);
-        applyDefaultB.setEnabled(true);
+//        applyDefaultB.setEnabled(true);
     }//GEN-LAST:event_avatarListValueChanged
 
     private void deleteBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBActionPerformed
@@ -427,13 +413,12 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             }
         });
 
-        currentAvatarSelection = selected;
+        applyToServer(selected);
 }//GEN-LAST:event_viewBActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addB;
-    private javax.swing.JButton applyDefaultB;
     private javax.swing.JList avatarList;
     private javax.swing.JScrollPane avatarListScrollPane;
     private javax.swing.JTextField avatarNameTF;
