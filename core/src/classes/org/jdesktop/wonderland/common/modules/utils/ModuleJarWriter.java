@@ -145,7 +145,7 @@ public class ModuleJarWriter {
             Iterator<Map.Entry<String, File>> it = moduleArt.entrySet().iterator();
             while (it.hasNext() == true) {
                 Map.Entry<String, File> mapEntry = it.next();
-                String path = "art/" + mapEntry.getKey();
+                String path = "art" + File.separator + mapEntry.getKey();
                 writeDirectory(jos, path, writtenPaths);
                 JarEntry entry = new JarEntry(path);
                 jos.putNextEntry(entry);
@@ -190,7 +190,7 @@ public class ModuleJarWriter {
     private void writeDirectory(JarOutputStream jos, String path, Set<String> written) throws IOException {
         // Creates directory entries for each subpath of the given path,
         // excluding the final token (assumed to be the file name)
-        String tokens[] = path.split("/");
+        String tokens[] = path.split(File.separator);
         if (tokens == null) {
             return;
         }
