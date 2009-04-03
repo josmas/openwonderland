@@ -650,6 +650,7 @@ public class AvatarConfigManager {
         private void uploadFileImpl(AvatarConfigFile upload) throws IOException, ContentRepositoryException {
             ContentResource serverFile = (ContentResource)avatarsDir.createChild(upload.resource.getName(), Type.RESOURCE);
             serverFile.put(new BufferedInputStream(upload.resource.getURL().openStream()));
+            upload.resource = serverFile;
             System.err.println("UPLOADED "+upload);
             serverAvatars.put(upload.avatarName, upload);
         }
