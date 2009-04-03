@@ -447,7 +447,7 @@ public class RotateAffordance extends Affordance {
             // the rotated amount to two decimal points
             StringBuilder rotateString = new StringBuilder();
             Formatter formatter = new Formatter(rotateString);
-            formatter.format("%.2f degrees", angle);
+            formatter.format("%.2f degrees", Math.toDegrees(angle));
             rotationLabel.setText(rotateString.toString());
             labelFrame.pack();
 
