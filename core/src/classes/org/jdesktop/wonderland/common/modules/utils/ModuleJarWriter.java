@@ -175,6 +175,12 @@ public class ModuleJarWriter {
                 writeDirectoryTree(jos, f, parentTrimStart, written);
             } else {
                 String path = f.getAbsolutePath().substring(parentTrimStart, f.getAbsolutePath().length());
+                
+                // make sure to replace '\' with '/' on Windows
+                if (File.separatorChar == '\\') {
+                    path = path.replace('\\', '/');
+                }
+                
                 jos.putNextEntry(new JarEntry(path));
                 FileUtils.copyFile(new FileInputStream(f), jos);
             }
