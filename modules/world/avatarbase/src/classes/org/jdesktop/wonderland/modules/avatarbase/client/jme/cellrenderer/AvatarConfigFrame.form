@@ -181,11 +181,10 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="avatarListScrollPane" min="-2" pref="159" max="-2" attributes="0"/>
-                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="viewB" min="-2" max="-2" attributes="0"/>
-                              <Component id="deleteB" min="-2" max="-2" attributes="0"/>
-                              <Component id="applyDefaultB" min="-2" max="-2" attributes="0"/>
+                              <Component id="deleteB" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
@@ -194,7 +193,7 @@
                           <Component id="defaultAvatarTF" min="-2" pref="141" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace pref="66" max="32767" attributes="0"/>
+                  <EmptySpace pref="142" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -202,13 +201,11 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="viewB" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="deleteB" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="applyDefaultB" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Component id="avatarListScrollPane" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -243,16 +240,6 @@
             </Component>
           </SubComponents>
         </Container>
-        <Component class="javax.swing.JButton" name="applyDefaultB">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Apply as Default"/>
-            <Property name="toolTipText" type="java.lang.String" value="Make selection your default avatar"/>
-            <Property name="enabled" type="boolean" value="false"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="applyDefaultBActionPerformed"/>
-          </Events>
-        </Component>
         <Component class="javax.swing.JButton" name="deleteB">
           <Properties>
             <Property name="text" type="java.lang.String" value="Delete"/>
@@ -265,8 +252,8 @@
         </Component>
         <Component class="javax.swing.JButton" name="viewB">
           <Properties>
-            <Property name="text" type="java.lang.String" value="View"/>
-            <Property name="toolTipText" type="java.lang.String" value="View selected avatar"/>
+            <Property name="text" type="java.lang.String" value="Apply"/>
+            <Property name="toolTipText" type="java.lang.String" value="Apply selected avatar"/>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
@@ -275,7 +262,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel2">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Default Avatar :"/>
+            <Property name="text" type="java.lang.String" value="Current Avatar :"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="defaultAvatarTF">
