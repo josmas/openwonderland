@@ -80,7 +80,8 @@ public class ModuleJarWriter {
         if (moduleArt == null) {
             moduleArt = new HashMap<String, File>();
         }
-        moduleArt.put(path, file);
+
+        moduleArt.put(fixPath(path), file);
     }
     
     public Map<String, File> getArtFiles() {
@@ -109,7 +110,7 @@ public class ModuleJarWriter {
     
     public void removeArtFile(String path) {
         if (moduleArt != null) {
-            moduleArt.remove(path);
+            moduleArt.remove(fixPath(path));
         }
     }
     
@@ -145,9 +146,9 @@ public class ModuleJarWriter {
             Iterator<Map.Entry<String, File>> it = moduleArt.entrySet().iterator();
             while (it.hasNext() == true) {
                 Map.Entry<String, File> mapEntry = it.next();
-                String path = "art" + File.separator + mapEntry.getKey();
+                String path = "art/" + mapEntry.getKey();
                 writeDirectory(jos, path, writtenPaths);
-                JarEntry entry = new JarEntry(path);
+                JarEntry entry = new JarEntry(fixPath(path));
                 jos.putNextEntry(entry);
                 FileUtils.copyFile(new FileInputStream(mapEntry.getValue()), jos);
             }
@@ -164,7 +165,8 @@ public class ModuleJarWriter {
 
     private void writeDirectoryTree(JarOutputStream jos, File dir, int parentTrimStart, Set<String> written) throws IOException {
         String dirName = dir.getAbsolutePath().substring(parentTrimStart, dir.getAbsolutePath().length());
-        jos.putNextEntry(new JarEntry(dirName+"/"));
+        JarEntry entry = new JarEntry(fixPath(dirName + "/"));
+        jos.putNextEntry(entry);
 
         File[] files = dir.listFiles();
         if (files==null)
@@ -174,14 +176,9 @@ public class ModuleJarWriter {
             if (f.isDirectory()) {
                 writeDirectoryTree(jos, f, parentTrimStart, written);
             } else {
-                String path = f.getAbsolutePath().substring(parentTrimStart, f.getAbsolutePath().length());
-                
-                // make sure to replace '\' with '/' on Windows
-                if (File.separatorChar == '\\') {
-                    path = path.replace('\\', '/');
-                }
-                
-                jos.putNextEntry(new JarEntry(path));
+                String path = f.getAbsolutePath().substring(parentTrimStart, f.getAbsolutePath().length()); 
+                JarEntry fileEntry = new JarEntry(fixPath(path));                
+                jos.putNextEntry(fileEntry);
                 FileUtils.copyFile(new FileInputStream(f), jos);
             }
         }
@@ -190,7 +187,7 @@ public class ModuleJarWriter {
     private void writeDirectory(JarOutputStream jos, String path, Set<String> written) throws IOException {
         // Creates directory entries for each subpath of the given path,
         // excluding the final token (assumed to be the file name)
-        String tokens[] = path.split(File.separator);
+        String tokens[] = fixPath(path).split("/");
         if (tokens == null) {
             return;
         }
@@ -226,5 +223,19 @@ public class ModuleJarWriter {
         mjw.addArtFile("models/castle.tiff", new File("/Users/jordanslott/Desktop/yuval.tiff"));
         mjw.addArtFile("models/castle/mystuff.tiff", new File("/Users/jordanslott/Desktop/yuval.tiff"));
         mjw.writeToJar(new File("mymodule.jar"));
+    }
+
+    /**
+     * Fix issues with paths on Windows
+     * @param path the path to fix
+     * @return the fixed path
+     */
+    private String fixPath(String path) {
+        // make sure to replace '\' with '/' on Windows
+        if (File.separatorChar == '\\') {
+            path = path.replace('\\', '/');
+        }
+
+        return path;
     }
 }
