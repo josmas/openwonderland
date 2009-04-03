@@ -1,0 +1,15 @@
+Index: clientlib/src/java/org/apache/webdav/lib/methods/XMLResponseMethodBase.java
+===================================================================
+--- clientlib/src/java/org/apache/webdav/lib/methods/XMLResponseMethodBase.java	(revision 74)
++++ clientlib/src/java/org/apache/webdav/lib/methods/XMLResponseMethodBase.java	(working copy)
+@@ -315,7 +315,9 @@
+         // Also accept OK sent by buggy servers in reply to a PROPFIND or
+         // REPORT (Xythos, Catacomb, ...?).
+         if (getStatusCode() == WebdavStatus.SC_MULTI_STATUS
+-            || (this instanceof PropFindMethod || this instanceof ReportMethod)) {
++            || (this instanceof PropFindMethod || this instanceof ReportMethod)
++            && getStatusCode() == HttpStatus.SC_OK)
++        {
+             try {
+                 parseXMLResponse(input);
+             } catch (IOException e) {
