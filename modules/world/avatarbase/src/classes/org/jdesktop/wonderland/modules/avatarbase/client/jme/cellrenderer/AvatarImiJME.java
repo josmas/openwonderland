@@ -197,6 +197,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
     }
 
+    /**
+     * TODO remove once we attach the nametag to the avatar scene
+     * @param status
+     */
     @Override
     public void setStatus(CellStatus status) {
         super.setStatus(status);
@@ -230,7 +234,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
     }
 
     void changeAvatar(WlAvatarCharacter newAvatar) {
-        System.err.println("CHANGE AVATAR "+newAvatar);
         LoadingInfo.startedLoading(cell.getCellID(), newAvatar.getName());
         ViewManager viewManager = ViewManager.getViewManager();
 
@@ -274,31 +277,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
     }
 
-//    void removeAvatar() {
-//        ViewManager.getViewManager().detach();
-//        selectForInput(false);
-//        WorldManager wm = ClientContextJME.getWorldManager();
-//        wm.removeEntity(avatarCharacter);
-//        avatarCharacter.destroy();
-//        avatarCharacter = null;
-//    }
-//
-//    void setAvatar(WlAvatarCharacter newAvatar) {
-//        avatarCharacter = newAvatar;
-//        RenderComponent rc = (RenderComponent) avatarCharacter.getComponent(RenderComponent.class);
-//        if (rc != null) {
-//            addDefaultComponents(avatarCharacter, rc.getSceneRoot());
-//        } else {
-//            logger.warning("NO RenderComponent for Avatar");
-//        }
-//
-//        WorldManager wm = ClientContextJME.getWorldManager();
-//
-//        wm.addEntity(avatarCharacter);
-//
-//        ViewManager.getViewManager().attach(cell);
-//        selectForInput(selectedForInput);
-//    }
     @Override
     protected void addRenderState(Node node) {
         // Nothing to do
@@ -308,7 +286,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
     public void cellTransformUpdate(CellTransform transform) {
         // Don't call super, we don't use a MoveProcessor for avatars
 
-        if (!selectedForInput && avatarCharacter != null && avatarCharacter.getController()!=null ) {
+        if (!selectedForInput && avatarCharacter != null && avatarCharacter.getController().getModelInstance()!=null ) {
             Vector3f pos = transform.getTranslation(null);
             Vector3f dir = new Vector3f(0, 0, -1);
             transform.getRotation(null).multLocal(dir);
@@ -349,7 +327,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
         URL avatarConfigURL = cell.getComponent(AvatarConfigComponent.class).getAvatarConfigURL();
 
-        System.err.println("AVATAR CONFIG URL "+avatarConfigURL);
+        logger.fine("AVATAR CONFIG URL "+avatarConfigURL);
 
         LoadingInfo.startedLoading(cell.getCellID(), username);
         try {
@@ -370,7 +348,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
                 CharacterAttributes attributes = new MaleAvatarAttributes(name, true);
                 attributes.setBaseURL(baseURL);
                 avatarCharacter = new WlAvatarCharacter(attributes, wm);
-                System.err.println("****  DEFAULT AVATAR");
             }
 
         } else {
@@ -450,18 +427,23 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
                     return;
                 }
 
-                if (pressed) {
-                    if (animationName != null) {
-                        ((WlAvatarContext) avatarCharacter.getContext()).setMiscAnimation(animationName);
+                try {
+                    if (pressed) {
+                        if (animationName != null) {
+                            ((WlAvatarContext) avatarCharacter.getContext()).setMiscAnimation(animationName);
+                        }
+
+                        avatarCharacter.getContext().triggerPressed(trigger);
+                    } else {
+                        avatarCharacter.getContext().triggerReleased(trigger);
                     }
 
-                    avatarCharacter.getContext().triggerPressed(trigger);
-                } else {
-                    avatarCharacter.getContext().triggerReleased(trigger);
+                    currentTrigger = trigger;
+                    currentPressed = pressed;
+                } catch(Exception e) {
+                    // We can get this if a user is viewing a female avatar but
+                    // has not yet set female as the default. 
                 }
-
-                currentTrigger = trigger;
-                currentPressed = pressed;
             }
         }
     }
