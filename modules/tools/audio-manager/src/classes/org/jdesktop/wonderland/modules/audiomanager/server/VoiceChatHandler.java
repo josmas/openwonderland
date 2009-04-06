@@ -31,9 +31,12 @@ import java.util.Set;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatEndMessage;
@@ -93,7 +96,8 @@ import com.jme.math.Vector3f;
 /**
  * @author jprovino
  */
-public class VoiceChatHandler implements VirtualPlayerListener, Serializable {
+public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListener, 
+	Serializable {
 
     private static final Logger logger =
 	Logger.getLogger(VoiceChatHandler.class.getName());
@@ -165,7 +169,7 @@ public class VoiceChatHandler implements VirtualPlayerListener, Serializable {
 
 	    if (audioGroup.getNumberOfPlayers() <= 1) {
 		endVoiceChat(vm, audioGroup);
-	    }
+	    } 
 
 	    vm.dump("all");
 	    return;
@@ -206,6 +210,7 @@ public class VoiceChatHandler implements VirtualPlayerListener, Serializable {
 	    setup.spatializer = new FullVolumeSpatializer();
 	    setup.spatializer.setAttenuator(DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
 	    setup.virtualPlayerListener = this;
+	    setup.audioGroupListener = this;
 	    audioGroup = vm.createAudioGroup(group, setup);
 	}
 
@@ -271,11 +276,11 @@ public class VoiceChatHandler implements VirtualPlayerListener, Serializable {
 	    /*
 	     * put callee first in the list
 	     */
-	    PresenceInfo pi = calleeList[0];
+	    //PresenceInfo pi = calleeList[0];
 
-	    calleeList[0] = info;
+	    //calleeList[0] = info;
 
-	    calleeList[i] = info;
+	    //calleeList[i] = info;
 
 	    requestPlayerJoinAudioGroup(sender, id, group, caller,
 		calleeList, msg.getChatType());
@@ -323,9 +328,18 @@ public class VoiceChatHandler implements VirtualPlayerListener, Serializable {
 	    PresenceInfo[] calleeList, ChatType chatType) {
 
 	VoiceChatMessage message = new VoiceChatJoinRequestMessage(group, 
-	    caller, calleeList, chatType);
+	    caller, getChatters(group), chatType);
 
         sender.send(clientID, message);
+    }
+
+    public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
+	//System.out.println("Player added " + player + " group " + audioGroup);
+
+	WonderlandClientSender sender = 
+	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
+
+	sendVoiceChatInfo(sender, audioGroup.getId());
     }
 
     private void sendVoiceChatBusyMessage(WonderlandClientSender sender,
@@ -337,18 +351,58 @@ public class VoiceChatHandler implements VirtualPlayerListener, Serializable {
         sender.send(clientID, message);
     }
 
+    public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
+	//System.out.println("Player removed " + player + " group " + audioGroup);
+
+	WonderlandClientSender sender = 
+	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
+
+	sendVoiceChatInfo(sender, audioGroup.getId());
+    }
+
+    private void sendVoiceChatInfo(WonderlandClientSender sender, String group) {
+	PresenceInfo[] chatters = getChatters(group);
+
+	if (chatters == null || chatters.length == 0) {
+	    return;
+	}
+
+	CommsManager cm = CommsManagerFactory.getCommsManager();
+	    
+        VoiceChatInfoResponseMessage message = new VoiceChatInfoResponseMessage(group, chatters);
+
+	for (int i = 0; i < chatters.length; i++) {
+            WonderlandClientID clientID = cm.getWonderlandClientID(chatters[i].clientID);
+
+	    if (clientID == null) {
+		System.out.println("Can't find WonderlandClientID for " + chatters[i]);
+		continue;
+	    }
+
+            sender.send(clientID, message);
+	}
+    }
+
     private void sendVoiceChatInfo(WonderlandClientSender sender,
 	    WonderlandClientID clientID, String group) {
 
-	String chatInfo = "";
+ 	PresenceInfo[] chatters = getChatters(group);
 
+	if (chatters == null || chatters.length == 0) {
+	    return;
+	}
+
+        sender.send(clientID, new VoiceChatInfoResponseMessage(group, chatters));
+    }
+
+    private PresenceInfo[] getChatters(String group) {
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	AudioGroup audioGroup = vm.getAudioGroup(group);
 
 	if (audioGroup == null) {
 	    logger.warning("Can't find audio group " + group);
-	    return;
+	    return null;
 	}
 
 	ArrayList<PresenceInfo> chatters = new ArrayList();
@@ -366,10 +420,7 @@ public class VoiceChatHandler implements VirtualPlayerListener, Serializable {
 	    chatters.add(info);
 	}
 
-        VoiceChatMessage msg = new VoiceChatInfoResponseMessage(group, 
-	    chatters.toArray(new PresenceInfo[0]));
-
-        sender.send(clientID, msg);
+	return chatters.toArray(new PresenceInfo[0]);
     }
 
     private void removePlayerFromAudioGroups(String callId) {

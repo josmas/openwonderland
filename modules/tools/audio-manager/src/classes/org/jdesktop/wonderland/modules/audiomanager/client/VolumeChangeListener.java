@@ -24,6 +24,6 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
  */
 public interface VolumeChangeListener {
 
-    public void volumeChanged(double volume);
+    public void volumeChanged(String userName, double volume);
 
 }

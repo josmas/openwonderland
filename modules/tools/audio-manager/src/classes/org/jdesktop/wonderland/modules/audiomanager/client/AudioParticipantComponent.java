@@ -133,7 +133,7 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
 	volumeControlJFrame.setVisible(true);
     }
 
-    public void volumeChanged(double volume) {
+    public void volumeChanged(String userName, double volume) {
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
 	channelComp.send(new AudioVolumeMessage(cell.getCellID(), sc.getCallID(), volume));

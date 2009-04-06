@@ -13,17 +13,19 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 public class VolumeControlJFrame extends javax.swing.JFrame {
 
     private VolumeChangeListener listener;
+    private String userName;
 
     /** Creates new form VolumeControlJFrame */
     public VolumeControlJFrame() {
         initComponents();
     }
 
-    public VolumeControlJFrame(VolumeChangeListener listener, String title) {
+    public VolumeControlJFrame(VolumeChangeListener listener, String userName) {
         initComponents();
 
-	setTitle(title);
+	setTitle(userName);
 	this.listener = listener;
+	this.userName = userName;
     }
 
     /** This method is called from within the constructor to
@@ -75,7 +77,7 @@ public class VolumeControlJFrame extends javax.swing.JFrame {
 private void volumeControlSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeControlSliderStateChanged
 	javax.swing.JSlider source = (javax.swing.JSlider) evt.getSource();
 
-	listener.volumeChanged(source.getValue() / 5.0);
+	listener.volumeChanged(userName, source.getValue() / 5.0);
 }//GEN-LAST:event_volumeControlSliderStateChanged
 
     /**
