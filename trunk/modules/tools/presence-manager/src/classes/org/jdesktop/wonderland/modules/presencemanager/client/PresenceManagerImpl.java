@@ -304,6 +304,8 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param PresenceManagerListener the listener to be notified of a change
      */
     public void addPresenceManagerListener(PresenceManagerListener listener) {
+	PresenceInfo[] info;
+
 	synchronized (listeners) {
 	    if (listeners.contains(listener)) {
 	        logger.warning("Listener is already added:  " + listener);
@@ -311,6 +313,11 @@ public class PresenceManagerImpl implements PresenceManager {
 	    }
 
 	    listeners.add(listener);
+	    info = cellIDMap.values().toArray(new PresenceInfo[0]);
+	}
+
+	for (int i = 0; i < info.length; i++) {
+	    listener.userAdded(info[i]);
 	}
     }
 
@@ -325,4 +332,3 @@ public class PresenceManagerImpl implements PresenceManager {
     }
     
 }
-

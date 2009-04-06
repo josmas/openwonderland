@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.client.cell.Cell;
+
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 
@@ -31,8 +33,6 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 import org.jdesktop.wonderland.common.NetworkAddress;
-
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
@@ -107,7 +107,7 @@ public class AudioManagerClient extends BaseConnection implements
 
     private PresenceInfo presenceInfo;
 
-    private CellID cellID;
+    private Cell cell;
 
     private PresenceManager pm;
 
@@ -160,7 +160,7 @@ public class AudioManagerClient extends BaseConnection implements
 	}
 
         if (userListJFrame == null) {
-            userListJFrame = new UserListJFrame(session, this);
+            userListJFrame = new UserListJFrame(pm, cell);
 	}
 
 	userListJFrame.setUserList();
@@ -185,7 +185,9 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
-	cellID = localAvatar.getViewCell().getCellID();
+	cell = localAvatar.getViewCell();
+
+	CellID cellID = cell.getCellID();
 
 	presenceInfo = pm.getPresenceInfo(cellID);
 
@@ -261,8 +263,12 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void voiceChat() {
+	if (cell == null) {
+	    return;
+	}
+
 	try {
-	    new VoiceChatDialog(this, cellID, session, presenceInfo);
+	    new VoiceChatDialog(this, cell.getCellID(), session, presenceInfo);
 	} catch (IOException e) {
 	    logger.warning("Unable to get voice chat dialog:  " + e.getMessage());
 	}
@@ -378,7 +384,7 @@ public class AudioManagerClient extends BaseConnection implements
 
             if (voiceChatDialog == null) {
 		try {
-                    voiceChatDialog = new VoiceChatDialog(this, cellID, session, msg.getCaller());
+                    voiceChatDialog = new VoiceChatDialog(this, cell.getCellID(), session, msg.getCaller());
 		} catch (IOException e) {
 	    	    logger.warning("Unable to get voice chat dialog:  " + e.getMessage());
 		    return;

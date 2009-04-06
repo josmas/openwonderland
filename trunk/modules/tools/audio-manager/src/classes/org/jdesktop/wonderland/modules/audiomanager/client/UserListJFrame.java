@@ -6,17 +6,25 @@
 
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
+
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+
+import org.jdesktop.wonderland.common.cell.CellID;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import java.awt.Point;
 
@@ -24,24 +32,35 @@ import java.awt.Point;
  *
  * @author  jp
  */
-public class UserListJFrame extends javax.swing.JFrame implements PresenceManagerListener {
+public class UserListJFrame extends javax.swing.JFrame implements PresenceManagerListener,
+        VolumeChangeListener {
 
-    private WonderlandSession session;
-    private AudioManagerClient client;
+    private ChannelComponent channelComp;
 
     private PresenceManager pm;
 
+    private String username;
+
     /** Creates new form UserListJFrame */
-    public UserListJFrame(WonderlandSession session, AudioManagerClient client) {
-	this.session = session;
-	this.client = client;
+    public UserListJFrame(PresenceManager pm, Cell cell) {
+	this.pm = pm;
 
         initComponents();
 
+	channelComp = cell.getComponent(ChannelComponent.class);
+
 	setTitle("Users");
 
-	pm = PresenceManagerFactory.getPresenceManager(session);
 	pm.addPresenceManagerListener(this);
+
+	PresenceInfo info = pm.getPresenceInfo(cell.getCellID());
+
+	if (info == null) {
+	    System.out.println("No Presence info for cell " + cell.getCellID());
+	    return;
+	}
+
+	username = info.userID.getUsername();
     }
 
     /** This method is called from within the constructor to
@@ -61,6 +80,11 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        userList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                userListValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(userList);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -78,6 +102,48 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private HashMap<String, VolumeControlJFrame> userMap = new HashMap();
+
+private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
+        Object[] selectedValues = userList.getSelectedValues();
+        
+        for (int i = 0; i < selectedValues.length; i++) {
+	    String username = (String) selectedValues[i];
+
+	    VolumeControlJFrame volumeControl = userMap.get(username);
+
+	    if (volumeControl == null) {
+                volumeControl = new VolumeControlJFrame(this, username);
+		volumeControl.setLocation(new Point((int) (getLocation().getX() + getWidth()),
+		    (int) getLocation().getY()));
+		userMap.put(username, volumeControl);
+
+		if (username.equals(this.username)) {
+		    volumeControl.setTitle("Master Volume"); 
+		} else {
+		    volumeControl.setTitle("Private Volume for " + username);
+		}
+	    }
+	
+	    volumeControl.setVisible(true);
+        }
+
+	userList.clearSelection();
+    }//GEN-LAST:event_userListValueChanged
+
+    public void volumeChanged(String userName, double volume) {
+	PresenceInfo[] info = pm.getUserPresenceInfo(userName);
+
+	if (info == null) {
+	    System.out.println("volumeChanged unable to get presence info for " + userName);
+	    return;
+	}
+
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+
+        channelComp.send(new AudioVolumeMessage(info[0].cellID, sc.getCallID(), volume));
+    }
 
     public void done() {
 	setVisible(false);
@@ -107,8 +173,6 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 	//System.out.println("Got message for " + presenceInfo
 	//    + (isSpeaking ? " Started Speaking" : " Stopped Speaking"));
 
-        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
-
 	PresenceInfo info = pm.getPresenceInfo(callID);
 
 	if (info == null) {
@@ -137,8 +201,6 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 
     public void muteCall(String callID, boolean isMuted) {
 	//System.out.println(presenceInfo + (isMuted ? "Muted" : "Unmuted"));
-
-        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
 
 	PresenceInfo info = pm.getPresenceInfo(callID);
 
