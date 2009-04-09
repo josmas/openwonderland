@@ -40,7 +40,7 @@ public class SampleCellFactory implements CellFactorySPI {
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         SampleCellServerState state = new SampleCellServerState();
-        state.setShapeType("SPHERE");
+        state.setShapeType("BOX");
         return (T)state;
     }
 

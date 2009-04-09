@@ -18,9 +18,22 @@
 
 package org.jdesktop.wonderland.modules.sample.client;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
@@ -28,6 +41,9 @@ import org.jdesktop.wonderland.client.content.ContentBrowserManager;
 import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI;
 import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI.ContentBrowserListener;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.contentrepo.client.utils.ContentRepositoryUtils;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
 
 /**
@@ -67,6 +83,16 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
                 browser.setVisible(true);
             }
         });
+        
+        // Listen for when the Edit button is selected and display a simple
+        // text editor with the URI in the text field
+        editButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String uri = uriTextField.getText();
+                SimpleTextEditor editor = new SimpleTextEditor(uri);
+                editor.setVisible(true);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -83,6 +109,7 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
         jLabel2 = new javax.swing.JLabel();
         uriTextField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
 
         jLabel1.setText("Shape Type:");
 
@@ -102,6 +129,8 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
 
         browseButton.setText("Browse...");
 
+        editButton.setText("Edit");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -110,15 +139,18 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(jLabel1)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(shapeTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 230, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(layout.createSequentialGroup()
+                                .add(jLabel2)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(uriTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(shapeTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 230, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(uriTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(browseButton)
+                        .add(browseButton))
+                    .add(editButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -133,7 +165,9 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
                     .add(jLabel2)
                     .add(uriTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(browseButton))
-                .addContainerGap(101, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(editButton)
+                .addContainerGap(65, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -163,8 +197,67 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
     }//GEN-LAST:event_shapeTypeActionPerformed
 
 
+    /**
+     * A simple text frame with a "Save" button
+     */
+    private class SimpleTextEditor extends JFrame {
+        private String uri = null;
+        private JTextArea textArea = null;
+
+        public SimpleTextEditor(final String uri) {
+            this.uri = uri;
+
+            // Set up the simple editor GUI components
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            getContentPane().setLayout(new BorderLayout());
+            textArea = new JTextArea();
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            getContentPane().add(scrollPane, BorderLayout.CENTER);
+            JButton saveButton = new JButton("Save");
+            getContentPane().add(saveButton, BorderLayout.SOUTH);
+
+            // Download the URI and text in the text area
+            try {
+                // Download the URI and text in the text area
+                URL url = AssetUtils.getAssetURL(uri);
+                textArea.setText(getURLAsString(url));
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(SampleCellProperties.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(SampleCellProperties.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            // Listen for the "Save" button
+            saveButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    ContentResource res = (ContentResource)ContentRepositoryUtils.findContentNode(null, uri);
+                    String text = textArea.getText();
+                    try {
+                        res.put(text.getBytes());
+                    } catch (ContentRepositoryException ex) {
+                        Logger.getLogger(SampleCellProperties.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            });
+
+            pack();
+            setSize(300, 300);
+        }
+
+        private String getURLAsString(URL url) throws IOException {
+            StringBuilder sb = new StringBuilder();
+            BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream()));
+            String line = null;
+            while ((line = r.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            return sb.toString();
+        }
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
+    private javax.swing.JButton editButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JComboBox shapeTypeComboBox;
