@@ -37,30 +37,31 @@ package org.jdesktop.wonderland.client.jme.login;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 
 /**
  *
  * @author jkaplan
  */
 public class WonderlandLoginDialog extends javax.swing.JDialog {
-    private LoginPanel login;
 
+    private LoginPanel login;
 
     /** Creates new form NoAuthLoginDialog */
     public WonderlandLoginDialog(Frame parent, boolean modal,
-                                 LoginPanel login) {
+            LoginPanel login) {
         super(parent, modal);
-        
-	/* DISABLE for cutoff popup fix
+
+        /* DISABLE for cutoff popup fix
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
         }
-	*/
+         */
 
         // remember the child panel
         this.login = login;
+
+        login.addValidityListener(new ValidityListener());
 
         // create our graphics
         initComponents();
@@ -313,11 +314,31 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         }
 }//GEN-LAST:event_loginButtonActionPerformed
 
+    public class ValidityListener {
+        public void setValidity(boolean isValid) {
+            loginButton.setEnabled(isValid);
+        }
+    }
+
     public interface LoginPanel {
+
         public JPanel getPanel();
 
+        public void setUsername(String username);
+
+        public void setFullname(String fullname);
+
+        public void setServer(String server);
+
+        public void addValidityListener(ValidityListener listener);
+
+        public void removeValidityListener(ValidityListener listener);
+
+        public void notifyValidityListeners();
+
         public String doLogin(); // return null on success or an error string
-                                 // on failure
+        // on failure
+
         public void cancel();
     }
 
@@ -342,5 +363,4 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
     private javax.swing.JLabel webServerLabel;
     private javax.swing.JLabel worldNameLabel;
     // End of variables declaration//GEN-END:variables
-
 }
