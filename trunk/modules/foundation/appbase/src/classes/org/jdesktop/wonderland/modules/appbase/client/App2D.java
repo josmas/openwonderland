@@ -63,15 +63,6 @@ public abstract class App2D {
     /** The primary window of this app. */
     private Window2D primaryWindow;
 
-    /** 
-     * This list contains the windows of the app which are visible. It also tracks the order in which 
-     * windows are made visible. The head of the list is the least recently made visible window and 
-     * the tail of the list is the most recently made visible window.
-     */
-    /* TODO: Not yet: Primary policy: least recently shown. 
-    private LinkedList<Window2D> windowVisibleOrder = new LinkedList<Window2D>();
-    */
-
     /** The list of all windows created by this app */
     protected LinkedList<Window2D> windows = new LinkedList<Window2D>();
 
@@ -95,6 +86,11 @@ public abstract class App2D {
     /** Returns the default View2DCell factory. */
     public static View2DCellFactory getView2DCellFactory () {
         return view2DCellFactory;
+    }
+
+    /** Returns whether the app is running in a SAS Provider. */
+    public static boolean isInSas () {
+        return getView2DCellFactory() == null;
     }
 
     /**
@@ -188,8 +184,10 @@ public abstract class App2D {
         windows.remove(window);
         stack.remove(window);
         viewSet.remove(window);
+        if (window == primaryWindow) {
+            setPrimaryWindow(null);
+        }
     }
-
     /**
      * Returns the number of windows in this view set.
      */
@@ -198,10 +196,26 @@ public abstract class App2D {
     }
 
     /**
-     * Specify the primary window.
+     * Specify the primary window. This also reparents existing secondaries to this new primary.
      */
-    public void setPrimaryWindow (Window2D window) {
-        primaryWindow = window;
+    public void setPrimaryWindow (Window2D primaryWindow) {
+        if (this.primaryWindow == primaryWindow) return;
+
+        /* Make current primary window secondary
+         TODO: not yet supported
+        if (this.primaryWindow != null) {
+            this.primaryWindow.setType(Window2D.Type.SECONDARY);
+        }
+        */
+
+        this.primaryWindow = primaryWindow;
+        logger.info("set primary window to " + primaryWindow);
+
+        for (Window2D window : windows) {
+            if (window.getType() == Window2D.Type.SECONDARY) {
+                window.setParent(primaryWindow);
+            }
+        }
     }
 
     /**
@@ -243,21 +257,6 @@ public abstract class App2D {
      */
     public void restackWindows(Window2D[] order) {
         stack.restack(order);
-    }
-
-    public void windowSetVisible (Window2D window, boolean visible) {
-        /* TODO: Not yet: Primary policy: least recently shown. 
-        TODO: if popup return;
-        windowVisibleOrder.remove(window);
-        if (visible) {
-            windowVisibleOrder.addLast(window);
-        }
-        */
-    }
-
-    private Window2D windowLeastRecentlyMadeVisible () {
-        // TODO: return windowVisibleOrder.getFirst();
-        return null;
     }
 
     /**

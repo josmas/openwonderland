@@ -72,7 +72,7 @@ public abstract class Window2D {
     private static final int CHANGED_ALL         = -1;
     private static final int CHANGED_TYPE        = 0x01;
     private static final int CHANGED_PARENT      = 0x02;
-    private static final int CHANGED_VISIBLE_APP = 0x04;
+    protected static final int CHANGED_VISIBLE_APP = 0x04;
     private static final int CHANGED_DECORATED   = 0x08;
     private static final int CHANGED_OFFSET      = 0x10;
     private static final int CHANGED_SIZE        = 0x20;
@@ -118,15 +118,15 @@ public abstract class Window2D {
      */
     private HashMap<View2DDisplayer, View2D> displayerToView = new HashMap<View2DDisplayer, View2D>();
     /** The type of the window. */
-    private Type type;
+    private Type type = Type.UNKNOWN;
     /** The parent of the window. (Ignored for primaries). */
     private Window2D parent;
     /** Whether the app wants the window to be visible. */
-    private boolean visibleApp;
+    protected boolean visibleApp;
     /** Whether the window is decorated with a frame. (Ignored for popups). */
     private boolean decorated;
     /** The set of changes to apply to views. */
-    private int changeMask;
+    protected int changeMask;
     /** A list of event listeners to attach to this window's views. */
     private LinkedList<EventListener> eventListeners = new LinkedList<EventListener>();
 
@@ -177,17 +177,6 @@ public abstract class Window2D {
         this.pixelScale = new Vector2f(pixelScale);
         this.name = name;
 
-        /* HACK: for now, let a window be primary if it has no parent. Otherwise secondary.
-        if (app.getNumWindows() <= 0) {
-            type = Type.PRIMARY;
-            app.setPrimaryWindow(this);
-        } else {
-            type = Type.SECONDARY;
-            /// TODO:            parent = app.getPrimaryWindow();
-        }
-        */
-        type = type.UNKNOWN;
-
         // Must occur before adding window to the app
         updateTexture();
 
@@ -200,12 +189,13 @@ public abstract class Window2D {
     /**
      * Create an instance of Window2D of the given type with a default name. 
      * @param app The application to which this window belongs.
-     * @param type The type of the window. If this is non-primary, the parent is set to the primary
+     * @param type The type of the window. If this is non-primary, the parent is set to the primary window.
      * window of the app (if there is one).
      * @param width The window width (in pixels).
      * @param height The window height (in pixels).
      * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
+     * Throws a RuntimeException if the rules of setType are not followed.
      */
     protected Window2D(App2D app, Type type, int width, int height, boolean decorated, Vector2f pixelScale) {
         this(app, type, width, height, decorated, pixelScale, null);
@@ -214,13 +204,14 @@ public abstract class Window2D {
     /**
      * Create an instance of Window2D of the given type with the given name. 
      * @param app The application to which this window belongs.
-     * @param type The type of the window. If this is non-primary, the parent is set to the primary
+     * @param type The type of the window. If this is non-primary, the parent is set to the primary window.
      * window of the app (if there is one).
      * @param width The window width (in pixels).
      * @param height The window height (in pixels).
      * @param decorated Whether the window is top-level (e.g. is decorated) with a frame.
      * @param pixelScale The size of the window pixels.
      * @param name The name of the window.
+     * Throws a RuntimeException if the rules of setType are not followed.
      */
     public Window2D(App2D app, Type type, int width, int height, boolean decorated, Vector2f pixelScale,
             String name) {
@@ -236,6 +227,7 @@ public abstract class Window2D {
      * @param height The window height (in pixels).
      * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
+     * Throws a RuntimeException if the rules of setType are not followed.
      */
     protected Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated,
             Vector2f pixelScale) {
@@ -253,6 +245,7 @@ public abstract class Window2D {
      * @param decorated Whether the window is top-level (e.g. is decorated) with a frame.
      * @param pixelScale The size of the window pixels.
      * @param name The name of the window.
+     * Throws a RuntimeException if the rules of setType are not followed.
      */
     public Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated,
             Vector2f pixelScale, String name) {
@@ -261,14 +254,16 @@ public abstract class Window2D {
         this.decorated = decorated;
         this.pixelScale = new Vector2f(pixelScale);
         this.name = name;
-        this.type = type;
 
-        // Cannot create a primary window if one already exists in the app.
-        if (type == Type.PRIMARY && app.getPrimaryWindow() != null) {
-            throw new RuntimeException("App already has a primary window.");
-        } else {
-            this.parent = parent;
+        try {
+            setType(type);
+        } catch (IllegalStateException ise) {
+            RuntimeException re = new RuntimeException("Cannot set type of window");
+            re.initCause(ise);
+            throw re;
         }
+
+        this.parent = parent;
 
         // Must occur before adding window to the app
         updateTexture();
@@ -283,6 +278,7 @@ public abstract class Window2D {
      * {@inheritDoc}
      */
     public synchronized void cleanup() {
+        setParent(null);
         texture = null;
         if (app != null) {
             app.removeWindow(this);
@@ -307,12 +303,62 @@ public abstract class Window2D {
         }
     }
 
-    /* TODO: 
-    promoteToPrimary throws IllegalStateException
-    throws exception if there is already a primary
-    changes secondary to primary.
-    all other secondary windows of the app are parented to the new primary
+    /**
+     * Change the type of the window. Only certain combinations are permitted.
+     * Here are the rules.
+     * <br><br>
+     * 1. You may not change a window to the type <code>UNKNOWN</code>.
+     * <br><br>
+     * 2. A window of type <code>UNKNOWN</code> or <code>SECONDARY</code> may be changed to any type
+     * (except, of course, <code>UNKNOWN</code>).
+     * <br><br>
+     * 3. You cannot change the type of a <code>PRIMARY</code> window. Once a window has been changed
+     * to primary you must destroy the window before you make another window primary. You cannot change
+     * a window to primary while the app already has another primary window.
+     * <br><br>
+     * 4. You cannot change the type of a <code>POPUP</code> window. Once a window has been changed
+     * to a popup it stays that way until the window is destroyed.
+     * <br><br>
+     * Special Note: when you make a window primary all existing secondary windows are parented to it.
+     *
+     * @param type The new type of the window.
+     * @throws IllegalStateException if the rules above are not followed.
      */
+    public synchronized void setType (Type type) throws IllegalStateException {
+        if (type == Type.UNKNOWN) {
+            throw new RuntimeException("Cannot set window type to unknown.");
+        }
+
+        if (this.type == type) return;
+
+        switch (this.type) {
+        case UNKNOWN:
+        case SECONDARY:
+            break;
+        case PRIMARY:
+            throw new IllegalStateException("Cannot change the type of a primary window.");
+        case POPUP:
+            throw new IllegalStateException("Cannot change the type of a popup window.");
+        }
+
+        if (type == Type.PRIMARY) {
+            // Is there already a primary window? 
+            if (app.getPrimaryWindow() != null) {
+                throw new IllegalStateException("This app already has a primary window.");
+            }
+        }
+
+        logger.info("Set type of window " + this + " to " + type);
+        this.type = type;
+        changeMask |= CHANGED_TYPE;
+        updateViews();
+
+        if (type == Type.PRIMARY) {
+            // Tell the app about the new primary. This also parent existing secondaries to this new primary.
+            app.setPrimaryWindow(this);
+        }
+    }
+
     /**
      * Returns the window type.
      */
@@ -321,35 +367,36 @@ public abstract class Window2D {
     }
 
     /** 
-     * Set the parent of the window. (This is ignored for primary windows).
+     * Set the parent of the window. (This is ignored for primary windows). 
      */
     public synchronized void setParent(Window2D parent) {
-        if (parent == this.parent) return;
-
-        /* HACK: for now, let a window be primary if it has no parent. Otherwise secondary.
-        if (type != Type.PRIMARY) {
-            this.parent = parent;
-            changeMask |= CHANGED_PARENT;
-            updateViews();
+        if (type == Type.PRIMARY || parent == this.parent) {
+            return;
         }
-        */
-        if (type == Type.UNKNOWN) {
-            if (parent == null) {
-                type = Type.PRIMARY;
-            } else {
-                type = Type.SECONDARY;
-            }
-        }
+        logger.info("Set parent of window " + this + " to " + parent);
         this.parent = parent;
-        changeMask |= CHANGED_PARENT | CHANGED_TYPE;
+        changeMask |= CHANGED_PARENT;
         updateViews();
     }
 
     /**
      * Returns the window parent.
      */
-    public synchronized Window2D getParent() {
+    public Window2D getParent() {
         return parent;
+    }
+
+    /**
+     * Set both the parent and the type of the window.
+     * @param type The new type of the window. Must obey the rules listed in the documentation 
+     * for method <code>setType</code>.
+     * @param type parent new parent of the window. null if there is no parent.
+     * @throws IllegalStateException if the rules are not followed.
+     */
+    public synchronized void setTypeParent (Type type, Window2D parent) throws IllegalStateException {
+        // TODO: for now, do two updates
+        setType(type);
+        setParent(parent);
     }
 
     /**
@@ -361,7 +408,9 @@ public abstract class Window2D {
     }
 
     /**
-     * TODO
+     * Sets the offset (in pixels) of this window relative to its parent. If the window has no parent
+     * the offset is ignored. The offset is the distance from the upper left corner of the parent to the
+     * upper left corner of this window. Any decoration is ignored in both cases.
      */
     public synchronized void setOffset(int x, int y) {
         if (offset.x == x && offset.y == y) {
@@ -375,14 +424,14 @@ public abstract class Window2D {
     /**
      * Returns the X offset of the window with respect to its parent.
      */
-    public synchronized int getOffsetX() {
+    public int getOffsetX() {
         return offset.x;
     }
 
     /**
      * Returns the Y offset of the window with respect to its parent.
      */
-    public synchronized int getOffsetY() {
+    public int getOffsetY() {
         return offset.y;
     }
 
@@ -407,14 +456,14 @@ public abstract class Window2D {
     /**
      * The width of the window (excluding the decoration).
      */
-    public synchronized int getWidth() {
+    public int getWidth() {
         return size.width;
     }
 
     /** 
      * The height of the window (excluding the decoration).
      */
-    public synchronized int getHeight() {
+    public int getHeight() {
         return size.height;
     }
 
@@ -465,21 +514,21 @@ public abstract class Window2D {
     /** 
      * Returns the initial pixel scale of the window's views when they are in cell mode.
      */
-    public synchronized Vector2f getPixelScale() {
+    public Vector2f getPixelScale() {
         return pixelScale.clone();
     }
 
     /**
      * The app calls this to change the visibility of the window.
-     *
      * @param visible Whether the app wants the window to be visible.
+     * Throws a RuntimeException if visible is true and the type is <code>UNKNOWN</code>.
      */
     public synchronized void setVisibleApp(boolean visible) {
         if (visibleApp == visible) {
             return;
         }
+
         visibleApp = visible;
-        app.windowSetVisible(this, visibleApp);
         changeMask |= CHANGED_VISIBLE_APP;
         updateViews();
     }
@@ -487,7 +536,7 @@ public abstract class Window2D {
     /** 
      * Does the app want the window to be visible?
      */
-    public synchronized boolean isVisibleApp() {
+    public boolean isVisibleApp() {
         return visibleApp;
     }
 
@@ -505,7 +554,7 @@ public abstract class Window2D {
     /**
      * Does the user want the window to be visible in the given displayer?
      */
-    public synchronized boolean isVisibleUser(View2DDisplayer displayer) {
+    public boolean isVisibleUser(View2DDisplayer displayer) {
         View2D view = getView(displayer);
         if (view != null) {
             return view.isVisibleUser();
@@ -529,7 +578,7 @@ public abstract class Window2D {
     /**
      * Returns whether the window is decorated.
      */
-    public synchronized boolean isDecorated() {
+    public boolean isDecorated() {
         return decorated;
     }
 
@@ -570,7 +619,7 @@ public abstract class Window2D {
     /**
      * Returns the window title.
      */
-    public synchronized String getTitle() {
+    public String getTitle() {
         return title;
     }
 
@@ -591,14 +640,14 @@ public abstract class Window2D {
     /**
      * Returns the window's Z order.
      */
-    synchronized int getZOrder() {
+    int getZOrder() {
         return zOrder;
     }
 
     /**
      * Return the texture containing the window contents.
      */
-    public synchronized Texture2D getTexture() {
+    public Texture2D getTexture() {
         return texture;
     }
 
@@ -1018,24 +1067,26 @@ public abstract class Window2D {
     /**
      * Update all views with the current state of the window.
      */
-    private void updateViews() {
+    protected void updateViews() {
+
         for (View2D view : views) {
             if ((changeMask & CHANGED_TYPE) != 0) {
-                View2D.Type viewType = View2D.Type.UNKNOWN;
+                View2D.Type viewType;
                 switch (type) {
-
-                    // TODO: HACK: for now, treat unknown as primary. Do we want to make this permanent?
                     case UNKNOWN:
-
+                        viewType = View2D.Type.UNKNOWN;
+                        break;
                     case PRIMARY:
                         viewType = View2D.Type.PRIMARY;
-                        break;
-                    case SECONDARY:
-                        viewType = View2D.Type.SECONDARY;
                         break;
                     case POPUP:
                         viewType = View2D.Type.POPUP;
                         break;
+                    case SECONDARY:
+                        viewType = View2D.Type.SECONDARY;
+                        break;
+                    default:
+                        throw new RuntimeException("Window " + this + " has an invalid type " + type);
                 }
                 view.setType(viewType, false);
             }

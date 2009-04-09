@@ -119,15 +119,13 @@ public abstract class AppConventionalCell extends App2DCell {
 
             // Master case
 
-            // TODO: later?: boolean bestView = state.isBestView();
-
             connectionInfo = startMaster(appName, state.getCommand(), false);
             if (connectionInfo == null) {
                 logger.warning("Cannot launch app " + appName);
                 // TODO: what else to do? Delete the cell? If so, how?
                 return;
             }
-            logger.severe/*info*/("AppConventional cellID " + getCellID() + " connectionInfo = " + connectionInfo);
+            logger.info("AppConventional cellID " + getCellID() + " connectionInfo = " + connectionInfo);
 
             // Notify server and clients of the new connection info.
             AppConventionalCellSetConnectionInfoMessage msg =
@@ -141,6 +139,13 @@ public abstract class AppConventionalCell extends App2DCell {
                 return;
             }
             */
+
+            // TODO: warning for a possible server bug?
+            if (connection == null) {
+                logger.severe("AppConventionalCellConnection isn't initialized!");
+                System.exit(1);
+            }
+
             connection.send(msg);
 
         } else {
@@ -154,6 +159,7 @@ public abstract class AppConventionalCell extends App2DCell {
             // receive a SetConnectionInfo message whic contains the connection info.
 
             connectionInfo = state.getConnectionInfo();
+            logger.severe("Initial connection info value for slave = " + connectionInfo);
             synchronized (this) {
                 while (connectionInfo == null) {
                     logger.fine("Slave is waiting for connection info.");

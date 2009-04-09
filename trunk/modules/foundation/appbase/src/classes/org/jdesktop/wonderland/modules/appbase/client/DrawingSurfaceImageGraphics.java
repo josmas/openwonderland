@@ -55,7 +55,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
  * @author paulby, deronj
  */
 @InternalAPI
-public class DrawingSurfaceImageGraphics implements DrawingSurface {
+public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
 
     private static final Logger logger = Logger.getLogger(DrawingSurfaceImageGraphics.class.getName());
 
@@ -81,24 +81,14 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
     private Entity updateEntity;
     /** The 2D window which is served by this drawing surface. */
     private Window2D window;
+    /** Whether this drawing surface is for an app running in the sas. */
+    private boolean isInSas;
 
     /**  
      * Create an instance of DrawingSurfaceImageGraphics.
-     * <br>
-     * Note: You must do a setSize before using a surface created in this way.
+     * Before it can be used you must call setWindow.
      */
-    public DrawingSurfaceImageGraphics() {
-    }
-
-    /** 
-     * Create an instance of DrawingSurfaceImageGraphics.
-     * @param width The width of the surface in pixels.
-     * @param height The height of the surface in pixels.
-     */
-    public DrawingSurfaceImageGraphics(int width, int height) {
-        this();
-        setSize(width, height);
-    }
+    public DrawingSurfaceImageGraphics() {}
 
     /**
      * Clean up resources held.
@@ -122,6 +112,8 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
      */
     public void setWindow(Window2D window) {
         this.window = window;
+        isInSas = window.getApp().isInSas();
+        setSize(window.getWidth(), window.getHeight());
     }
 
     /**
@@ -131,10 +123,13 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
      * @param height The new height of the surface in pixels.
      */
     public synchronized void setSize(int width, int height) {
-        imageGraphics = ImageGraphics.createInstance(width, height, 0);
         surfaceWidth = width;
         surfaceHeight = height;
-        imageGraphics.clipRect(0, 0, width, height);
+        
+        if (!isInSas) {
+            imageGraphics = ImageGraphics.createInstance(width, height, 0);
+            imageGraphics.clipRect(0, 0, width, height);
+        }
 
         updateUpdating();
     }
@@ -143,7 +138,7 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
      * Initialize the contents of the surface.
      */
     public synchronized void initializeSurface() {
-        initSurface(imageGraphics);
+        initSurface(getGraphics());
     }
 
     /**
@@ -175,9 +170,7 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
     /**
      * Returns a Graphics2D to draw on the surface.
      */
-    public synchronized Graphics2D getGraphics() {
-        return imageGraphics;
-    }
+    public abstract Graphics2D getGraphics();
 
     /**
      * Returns the width of the surface.
@@ -231,6 +224,10 @@ public class DrawingSurfaceImageGraphics implements DrawingSurface {
      * Check whether or not updating should be activated.
      */
     private synchronized void updateUpdating() {
+        
+        /** Don't enable texture updating if running in the SAS. */
+        if (isInSas) return;
+
         if (updateEnable && imageGraphics != null && texture != null) {
             if (updateProcessor == null) {
                 updateProcessor = createUpdateProcessor();

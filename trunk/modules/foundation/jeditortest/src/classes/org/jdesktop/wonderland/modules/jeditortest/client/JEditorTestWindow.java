@@ -56,7 +56,7 @@ public class JEditorTestWindow extends WindowSwing  {
 	
 	JPanel testPanel = new TestJEditorPane();
 
-	// Parent to Wonderland main window for proper focus handling
+	// Parent to Wonderland main window for proper focus handling 
        	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
 
 	setComponent(testPanel);

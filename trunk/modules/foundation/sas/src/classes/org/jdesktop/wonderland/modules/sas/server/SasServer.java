@@ -22,12 +22,15 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO;
+import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO.AppServerLauncher;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.AppContext;
 import java.util.HashMap;
 import java.util.LinkedList;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 
 /**
  * Provides the main server-side logic for SAS. This singleton contains the Registry,
@@ -37,9 +40,36 @@ import java.util.LinkedList;
  */
 
 @ExperimentalAPI
-public class SasServer implements ManagedObject, Serializable, AppConventionalCellMO.AppServerLauncher {
+public class SasServer implements ManagedObject, Serializable, AppServerLauncher {
 
     private static final Logger logger = Logger.getLogger(SasServer.class.getName());
+
+    static class LaunchRequest implements Serializable {
+        CellID cellID;
+        String executionCapability;
+        String appName;
+        String command;
+
+        LaunchRequest (CellID cellID, String executionCapability, String appName, String command) {
+            this.cellID = cellID;
+            this.executionCapability = executionCapability;
+            this.appName = appName;
+            this.command = command;
+        }
+
+        public String toString () {
+            return "cell = " + cellID + ", executionCapability = " + executionCapability +
+                "appName = " + appName + ", command = " + command;
+        }
+    }
+
+    /**
+     * A map of of the app launch requests in flight for various cells.
+     * "In flight" means that the request has been sent to a provider.
+     * Note: We manage things so that only one launch request can be in flight at a time 
+     * for a particular app cell.
+     */
+    private HashMap<CellID,LaunchRequest> launchesInFlight = new HashMap<CellID,LaunchRequest>();
 
     /** 
      * A map of the SAS providers which have connected, indexed by their execution capabilities
@@ -93,11 +123,17 @@ public class SasServer implements ManagedObject, Serializable, AppConventionalCe
     /**
      * {@inheritDoc}
      */
-    public String appLaunch (CellID cellID, String executionCapability, String appName, 
-                                   String command) {
+    public void appLaunch (AppConventionalCellMO cell, String executionCapability, String appName, 
+                           String command) {
         logger.severe("***** appLaunch, command = " + command);
 
-        // TODO: For now eventually make sure that only one app can be launched per cell.
+        CellID cellID = cell.getCellID();
+
+        // Construct the launch request
+        LaunchRequest launchReq = new LaunchRequest(cellID, executionCapability, appName, command);
+
+        // TODO: For now make sure that only one app can be launched per cell.
+        // ---> Is this already provided by the fact that only one setlive for this cell can be extant?
         // Later: allow multiple apps per cell.
 
         LinkedList<ProviderProxy> providers = execCapToProviderList.get(executionCapability);
@@ -105,42 +141,82 @@ public class SasServer implements ManagedObject, Serializable, AppConventionalCe
             // No provider. Launch must pend
             logger.warning("No SAS provider for " + executionCapability + " is available.");
             logger.warning("Launch attempt will pend.");
-            pendingLaunches.add(new PendingLaunches.LaunchRequest(cellID, executionCapability, appName,
-                                                                  command));
+            pendingLaunches.add(launchReq);
             AppContext.getDataManager().markForUpdate(this);
-            return null;
+            return;
         }
 
         // TODO: for now, just try only the first provider
         ProviderProxy provider = providers.getFirst();
-        String connectionInfo = provider.tryLaunch(cellID, executionCapability, appName, command);
-        if (connectionInfo == null) {
-            // Provider cannot launch. Launch must pend.
-            logger.warning("SAS provider launch failed for command = " + command);
-            logger.warning("Launch attempt will pend.");
-            pendingLaunches.add(new PendingLaunches.LaunchRequest(cellID, executionCapability, appName,
-                                                                  command));
-            AppContext.getDataManager().markForUpdate(this);
-            return null;
-        }
 
-        return connectionInfo;
+        // Now request the provider to launch the app
+        launchesInFlight.put(cellID, launchReq);
+        provider.tryLaunch(cellID, executionCapability, appName, command);
     }
         
+    /**
+     * Called by the provider proxy to report the result of a launch
+     */
+    public void appLaunchResult (AppServerLauncher.LaunchStatus status, CellID cellID, String connInfo) {
+        logger.severe("############### SasServer: Launch result received");
+        logger.severe("status = " + status);
+        logger.severe("cellID = " + cellID);
+        logger.severe("connInfo = " + connInfo);
+
+        // Get the request that we used to launch the app
+        LaunchRequest launchReq = launchesInFlight.get(cellID);
+        if (launchReq == null) {
+            logger.warning("Cannot app request launch for cell " + cellID);
+            return;
+        }
+        launchesInFlight.remove(cellID);
+        AppContext.getDataManager().markForUpdate(this);
+
+        CellMO cell = CellManagerMO.getCell(cellID);
+        if (cell == null) {
+            logger.warning("Cannot find cell to which to report app launch result, launch request = " + 
+                           launchReq);
+            return;
+        }
+        if (!(cell instanceof AppConventionalCellMO)) {
+            logger.warning("Cell reported in app launch result is not AppConventionalMO, launch request = " + 
+                           launchReq);
+            return;
+        }
+
+        if (status != AppServerLauncher.LaunchStatus.SUCCESS || connInfo == null) {
+            // The provider we tried cannot launch. Launch must pend.
+            logger.warning("SAS provider launch failed with status " + status + 
+                           " and connection info " + connInfo +
+                           " for launch request = " + launchReq);
+            logger.warning("Launch attempt will pend until a provider is found.");
+            pendingLaunches.add(launchReq);
+            // Note: server has already been marked for update above
+
+            // TODO: at some point we need to give up and call cell.appLaunchResult with a failure status
+            return;
+        }
+
+        ((AppConventionalCellMO)cell).appLaunchResult(status, connInfo);
+    }
+    
     /**
      * {@inheritDoc}
      */
     public void appStop (CellID cellID) {
         logger.severe("***** appLaunch, cellID = " + cellID);
+        // TODO: tell the provider to stop the app, if it is still connected
+        // TODO: make sure we remove all inflight requests and messages and pending messages as well
     }
 
     private void tryPendingLaunches (String executionCapability) {
-        LinkedList<PendingLaunches.LaunchRequest> reqs = pendingLaunches.getPendingLaunches(executionCapability);
+        LinkedList<LaunchRequest> reqs = pendingLaunches.getPendingLaunches(executionCapability);
         if (reqs == null) {
             return;
         }
-
-        for (PendingLaunches.LaunchRequest req : reqs) {
+        LinkedList<LaunchRequest> reqsForTraversal = (LinkedList<LaunchRequest>) reqs.clone();
+        
+        for (LaunchRequest req : reqsForTraversal) {
 
             // TODO: Some of this code is dup from above in tryLaunch; share it
 
@@ -150,18 +226,15 @@ public class SasServer implements ManagedObject, Serializable, AppConventionalCe
                 continue;
             }
             // TODO: weed out providers already tried
-
-            // TODO: for now, just try only the first provider
             ProviderProxy provider = providers.getFirst();
-            String connectionInfo = provider.tryLaunch(req.cellID, req.executionCapability, 
-                                                             req.appName, req.command);
-            if (connectionInfo != null) {
-                // TODO: add to noLongerPendingList
-                // TODO: need to set connection info in cell
-            }
-        }
 
-        // TODO: process noLongerPendingList. Remove these from pendingLaunches.
+            // Remove request from pending list while it is in flight */
+            reqs.remove(req);
+
+            // Now request the newly selected provider to launch the app
+            launchesInFlight.put(req.cellID, req);
+            provider.tryLaunch(req.cellID, req.executionCapability, req.appName, req.command);
+        }
     }
 }
 

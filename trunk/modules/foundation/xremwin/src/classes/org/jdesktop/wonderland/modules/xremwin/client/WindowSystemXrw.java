@@ -133,10 +133,10 @@ public class WindowSystemXrw
             // Linux
             cmdAndArgs[2] = topDir + "/bin/linux";
         }
-        AppXrw.logger.severe("cmdAndArgs for " + appInstanceName);
-        AppXrw.logger.severe("cmdAndArgs[0] = " + cmdAndArgs[0]);
-        AppXrw.logger.severe("cmdAndArgs[1] = " + cmdAndArgs[1]);
-        AppXrw.logger.severe("cmdAndArgs[2] = " + cmdAndArgs[2]);
+        AppXrw.logger.info("cmdAndArgs for " + appInstanceName);
+        AppXrw.logger.info("cmdAndArgs[0] = " + cmdAndArgs[0]);
+        AppXrw.logger.info("cmdAndArgs[1] = " + cmdAndArgs[1]);
+        AppXrw.logger.info("cmdAndArgs[2] = " + cmdAndArgs[2]);
 
         String processName = "Xremwin server for " + appInstanceName;
         xServerReporter = ProcessReporterFactory.getFactory().create(processName);
@@ -148,9 +148,9 @@ public class WindowSystemXrw
 
         xServerProcess = new MonitoredProcess(appInstanceName, cmdAndArgs, xServerReporter);
         if (!xServerProcess.start()) {
-            cleanup();
             xServerReporter.output("Cannot start Xremwin server");
             xServerReporter.exitValue(-1);
+            cleanup();
             throw new RuntimeException("Cannot start Xremwin server");
         }
     }

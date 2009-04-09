@@ -277,6 +277,8 @@ class SlaveForwarder {
                 System.arraycopy(message, 4, userNameBuf, 0, strLen);
                 String userName = new String(userNameBuf);
 
+                AppXrw.logger.warning("Received hello message from slave " + otherClientID +
+                               ", userName = " + userName);
                 serverProxy.addIncomingSlaveHelloMessage(otherClientID, userName);
                 return;
             }

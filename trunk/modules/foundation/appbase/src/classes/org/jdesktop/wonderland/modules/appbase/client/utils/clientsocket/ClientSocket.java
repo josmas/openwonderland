@@ -84,6 +84,8 @@ public class ClientSocket {
     protected StatisticsReporter statReporter;
     private long numBytesWritten;
 
+    private boolean closed = false;
+
     // Master Only: Don't write anything until this socket is enabled
     protected boolean enable = false;
 
@@ -197,6 +199,8 @@ public class ClientSocket {
     }
 
     public void close () {
+        if (closed) return;
+
         enable = false;
 
         if (!socket.isClosed()) {
@@ -218,6 +222,8 @@ public class ClientSocket {
         if (ENABLE_STATS) {
             statReporter.stop();
         }
+
+        closed = true;
     }
 
     protected byte[] readMessage() throws IOException, EOFException {

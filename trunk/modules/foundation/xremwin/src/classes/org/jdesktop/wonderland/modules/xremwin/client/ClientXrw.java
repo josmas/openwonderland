@@ -41,6 +41,7 @@ import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsRepo
 import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsSet;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 
 // TODO: 0.4 protocol: temporarily insert
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs;
@@ -137,7 +138,7 @@ public abstract class ClientXrw implements Runnable {
     /**
      * The control arbitrator used by this app.
      */
-    protected ControlArbXrw controlArb;
+    protected ControlArb controlArb;
     /**
      * The protocol interpreter thread (the main loop of the client)
      */
@@ -161,7 +162,7 @@ public abstract class ClientXrw implements Runnable {
      * @param reporter Report output and exit status to this.
      * @throws InstantiationException If it could not make contact with the server.
      */
-    public ClientXrw(AppXrw app, ControlArbXrw controlArb, ProcessReporter reporter)
+    public ClientXrw(AppXrw app, ControlArb controlArb, ProcessReporter reporter)
             throws InstantiationException {
         this.app = app;
         this.controlArb = controlArb;
@@ -249,7 +250,7 @@ public abstract class ClientXrw implements Runnable {
 
             // Read message type from the server.
             ServerMessageType msgType = serverProxy.getMessageType();
-            AppXrw.logger.severe("msgType " + (++messageCounter) + ": " + msgType);
+            AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType);
 
             /* TODO
             if (ENABLE_XREMWIN_STATS) {
@@ -262,7 +263,21 @@ public abstract class ClientXrw implements Runnable {
             // Get the full message
             MessageArgs msgArgs = readMessageArgs(msgType);
             if (msgArgs != null) {
-                AppXrw.logger.severe("msgArgs: " + msgArgs);
+                AppXrw.logger.info("msgArgs: " + msgArgs);
+
+                /* For debug: an example of how to ignore the firefox heartbeat which occurs on igoogle
+                if (msgType == ServerMessageType.DISPLAY_PIXELS) {
+                    if (displayPixelsMsgArgs.x == 1261 &&
+                        displayPixelsMsgArgs.y == 3 &&
+                        displayPixelsMsgArgs.w == 17 &&
+                        displayPixelsMsgArgs.h == 17) {
+                    } else {
+                        AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType + ", msgArgs: " + msgArgs);
+                    }
+                } else {
+                    AppXrw.logger.info("msgType " + (++messageCounter) + ": " + msgType + ", msgArgs: " + msgArgs);
+                }
+                */
             }
 
             // Process the message
@@ -403,7 +418,7 @@ public abstract class ClientXrw implements Runnable {
                     WindowXrw transientFor = lookupWindow(showWinMsgArgs.transientFor);
                     win.setVisibleApp(showWinMsgArgs.show, transientFor);
                      */
-                    win.setVisibleApp(showWinMsgArgs.show, null);
+                    win.setVisibleApp(showWinMsgArgs.show, showWinMsgArgs.isTransient);
                 }
                 break;
 
@@ -423,7 +438,7 @@ public abstract class ClientXrw implements Runnable {
                     if (win == null) {
                         AppXrw.logger.warning("PositionWindow: window doesn't exist: wid = " + positionWinMsgArgs.wid);
                     } else {
-                        win.setOffset(positionWinMsgArgs.x, positionWinMsgArgs.y);
+                        win.setScreenPosition(positionWinMsgArgs.x, positionWinMsgArgs.y);
                     }
                 }
                 break;
@@ -544,29 +559,32 @@ public abstract class ClientXrw implements Runnable {
      * @param msgArgs The arguments which have been read for the ControllerStatus message.
      */
     protected void processControllerStatus(ControllerStatusMsgArgs msgArgs) {
+        if (!(controlArb instanceof ControlArbXrw)) {
+            return;
+        }
 
         switch (msgArgs.status) {
 
             case REFUSED:
                 // We only care about our attempts that are refused
                 if (msgArgs.clientId == clientId) {
-                    controlArb.controlRefused();
+                    ((ControlArbXrw)controlArb).controlRefused();
                 }
                 break;
 
             case GAINED:
                 // We only care about our attempts that succeed
                 if (msgArgs.clientId == clientId) {
-                    controlArb.controlGained();
+                    ((ControlArbXrw)controlArb).controlGained();
                 }
                 break;
 
             case LOST:
                 if (msgArgs.clientId == clientId) {
-                    controlArb.controlLost();
+                    ((ControlArbXrw)controlArb).controlLost();
                 } else {
                     // Update control highlighting for other clients besides control loser
-                    controlArb.setController(null);
+                    ((ControlArbXrw)controlArb).setController(null);
                 }
                 break;
         }
@@ -657,7 +675,7 @@ public abstract class ClientXrw implements Runnable {
         }
 
         WindowXrw sibWin = lookupWindow(msg.sibid);
-        win.setOffset(msg.x, msg.y);
+        win.setScreenPosition(msg.x, msg.y);
         win.setSize(msg.wAndBorder, msg.hAndBorder);
         win.setSiblingAbove(sibWin);
     }

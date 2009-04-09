@@ -75,4 +75,10 @@ public class AppXrwSlave extends AppXrw {
         // create a protocol for it to ask the master.
         return 0;
     }
+
+
+    /** {@inheritDoc} */
+    public boolean isMaster () {
+        return false;
+    }
 }

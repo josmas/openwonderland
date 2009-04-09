@@ -164,7 +164,7 @@ public abstract class View2DEntity implements View2D {
     private Vector2f pixelScaleOrtho;
 
     /** The location of the view when view is in ortho mode. */
-    private Vector2f locationOrtho;
+    private Vector2f locationOrtho = new Vector2f(0, 0);
 
     /** The interactive GUI object for this view. */
     private Gui2DInterior gui;
@@ -321,12 +321,12 @@ public abstract class View2DEntity implements View2D {
     public abstract View2DDisplayer getDisplayer ();
 
     /** Return this view's entity. */
-    public synchronized Entity getEntity () {
+    public Entity getEntity () {
         return entity;
     }
 
     /** Return this view's root node. */
-    public synchronized Node getNode () {
+    public Node getNode () {
         return viewNode;
     }
 
@@ -335,15 +335,20 @@ public abstract class View2DEntity implements View2D {
         return name;
     }
 
-    /** {@inheritDoc} */
-    public synchronized Window2D getWindow () {
-        return getWindowUnsynchronized();
+    /** 
+     * {@inheritDoc}
+     */
+    public Window2D getWindow () {
+        return window;
     }
 
-    /** INTERNAL API */
-    @InternalAPI
-    public Window2D getWindowUnsynchronized () {
-        return window;
+    /** 
+     * INTERNAL API.
+     * <br>
+     * Returns the root scene graph node of this view.
+     */
+    public Node getViewNode () {
+        return viewNode;
     }
 
     /** {@inheritDoc} */
@@ -360,6 +365,8 @@ public abstract class View2DEntity implements View2D {
             // All new types are permitted
         } else if (this.type == Type.SECONDARY && type == Type.PRIMARY) {
             // A promotion of a secondary to a primary is permitted.
+        } else if (this.type == Type.SECONDARY && type == Type.POPUP) {
+            // A change of a secondary to a popup is permitted.
         } else {
             // No other type changes are permitted.
             logger.severe("Old view type = " + this.type);
@@ -377,7 +384,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized Type getType () {
+    public Type getType () {
         return type;
     }
 
@@ -427,7 +434,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized View2D getParent () {
+    public View2D getParent () {
         return parent;
     }
 
@@ -451,7 +458,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized boolean isVisibleApp () {
+    public boolean isVisibleApp () {
         return visibleApp;
     }
 
@@ -472,7 +479,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized boolean isVisibleUser () {
+    public boolean isVisibleUser () {
         return visibleUser;
     }
 
@@ -483,7 +490,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized boolean isActuallyVisible () {
+    public boolean isActuallyVisible () {
         logger.info("Check actually visible for view " + this);
         logger.info("visibleApp = " + visibleApp);
         logger.info("visibleUser = " + visibleUser);
@@ -519,7 +526,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized boolean isDecorated () {
+    public boolean isDecorated () {
         return decorated;
     }
 
@@ -539,7 +546,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized String getTitle () {
+    public String getTitle () {
         return title;
     }
 
@@ -565,7 +572,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized int getZOrder () {
+    public int getZOrder () {
         return zOrder;
     }
 
@@ -619,7 +626,7 @@ public abstract class View2DEntity implements View2D {
     }
     
     /** {@inheritDoc} */
-    public synchronized GeometryNode getGeometryNode () {
+    public GeometryNode getGeometryNode () {
         return geometryNode;
     }
 
@@ -645,18 +652,18 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized Dimension getSizeApp () {
+    public Dimension getSizeApp () {
         return (Dimension) sizeApp.clone();
     }
 
     /** {@inheritDoc} */
-    public synchronized float getDisplayerLocalWidth () {
+    public float getDisplayerLocalWidth () {
         // TODO: ignore size mode and user size for now - always track window size as specified by app
         return getPixelScaleCurrent().x * sizeApp.width;
     }
 
     /** {@inheritDoc} */
-    public synchronized float getDisplayerLocalHeight () {
+    public float getDisplayerLocalHeight () {
         // TODO: ignore size mode and user size for now - always track window size as specified by app
         return getPixelScaleCurrent().y * sizeApp.height;
     }
@@ -683,7 +690,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Return the pixel scale used when the view is displayed in cell mode. */
-    public synchronized Vector2f getPixelScale () {
+    public Vector2f getPixelScale () {
         if (pixelScaleCell == null) {
             return window.getPixelScale();
         } else {
@@ -713,7 +720,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Return the pixel scale used when the view is displayed in ortho mode. */
-    public synchronized Vector2f getPixelScaleOrtho () {
+    public Vector2f getPixelScaleOrtho () {
         if (pixelScaleOrtho == null) {
             return new Vector2f(1f, 1f);
         } else {
@@ -768,7 +775,7 @@ public abstract class View2DEntity implements View2D {
     /**
      * Returns the location used when this view is in ortho mode.
      */
-    public synchronized Vector2f getLocationOrtho () {
+    public Vector2f getLocationOrtho () {
         return locationOrtho.clone();
     }
 
@@ -788,7 +795,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized Point getOffset () {
+    public Point getOffset () {
         return (Point) offset.clone();
     }
 
@@ -809,7 +816,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Returns the user translation used when in cell mode. */
-    public synchronized Vector3f getTranslationUser () {
+    public Vector3f getTranslationUser () {
         return userTranslationCell.clone();
     }
 
@@ -830,7 +837,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** Returns the user translation used when in ortho mode. */
-    public synchronized Vector3f getTranslationUserOrtho () {
+    public Vector3f getTranslationUserOrtho () {
         return userTranslationOrtho.clone();
     }
 
@@ -898,7 +905,7 @@ public abstract class View2DEntity implements View2D {
     /**
      * Returns whether the view entity is in ortho mode.
      */
-    public synchronized boolean isOrtho () {
+    public boolean isOrtho () {
         return ortho;
     }
 
@@ -906,6 +913,9 @@ public abstract class View2DEntity implements View2D {
     protected void processChanges () {
         // Note: all of the scene graph changes are queued up and executed at the end
         boolean windowNeedsValidate = false;
+
+        logger.fine("processing changes for view " + this);
+        logger.fine("type " + type);
 
         // React to topology related changes
         if ((changeMask & (CHANGED_TOPOLOGY | CHANGED_ORTHO)) != 0) {
@@ -1001,7 +1011,8 @@ public abstract class View2DEntity implements View2D {
         }
 
         // React to frame changes (must do before handling size changes)
-        if ((changeMask & (CHANGED_FRAME | CHANGED_ORTHO)) != 0) { // TODO: CHANGED_PIXEL_SCALE
+        // TODO: CHANGED_PIXEL_SCALE
+        if ((changeMask & (CHANGED_FRAME | CHANGED_ORTHO | CHANGED_TYPE)) != 0) { 
             logger.fine("Update frame");
             int chgMask = changeMask & ~CATEGORY_CHANGE_MASK;
 
@@ -1019,9 +1030,10 @@ public abstract class View2DEntity implements View2D {
                 }
             }
             
-            if ((chgMask & CHANGED_TITLE) != 0) {
-                logger.fine("Update title");
-                frameUpdateTitle();
+            if ((chgMask & CHANGED_TYPE) != 0) {
+                if (decorated && !ortho) {
+                    reattachFrame();
+                }
             }
         }            
 
@@ -1087,6 +1099,7 @@ public abstract class View2DEntity implements View2D {
             CellTransform deltaTransform;
 
             switch (type) {
+            case UNKNOWN:
             case PRIMARY:
                 deltaTransform = calcUserDeltaTransform();
                 updatePrimaryTransform(deltaTransform);
@@ -1095,7 +1108,6 @@ public abstract class View2DEntity implements View2D {
                 deltaTransform = calcUserDeltaTransform();
                 sgChangeTransformUserPostMultiply(viewNode, deltaTransform); 
                 break;
-            case UNKNOWN:
             case POPUP:
                 // Always set to identity
                 sgChangeTransformUserSet(viewNode, new CellTransform(null, null, null));
@@ -1213,7 +1225,7 @@ public abstract class View2DEntity implements View2D {
         */
         /**/
         Vector3f translation = getTranslationUserCurrent();
-        if (type == Type.PRIMARY && ortho) {
+        if ((type == Type.PRIMARY || type == Type.UNKNOWN) && ortho) {
             translation.addLocal(new Vector3f(locationOrtho.x, locationOrtho.y, 0f));
         }
         CellTransform transDeltaTransform = new CellTransform(null, null, null);
@@ -1587,7 +1599,7 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized void deliverEvent(Window2D window, MouseEvent3D me3d) {
+    public void deliverEvent(Window2D window, MouseEvent3D me3d) {
         /*
         System.err.println("********** me3d = " + me3d);
         System.err.println("********** awt event = " + me3d.getAwtEvent());
@@ -1685,7 +1697,7 @@ public abstract class View2DEntity implements View2D {
         if (geometryNode == null) {
             setGeometryNode(null);
             if (geometryNode == null) {
-                logger.severe("***** Cannot allocate geometry node for view!!");
+                logger.severe("Cannot allocate geometry node for view!!");
                 return;
             }
         }
@@ -1759,6 +1771,14 @@ public abstract class View2DEntity implements View2D {
      * Detach this view's frame from the view.
      */
     protected void detachFrame () {
+    }
+
+    /**
+     * Detach frame from the view and reattach it. This takes into account any changes
+     * in the type of the view. This can be overridden by the subclass so a 
+     * subclass-specific frame can be reattached.
+     */
+    protected void reattachFrame () {
     }
 
     /**

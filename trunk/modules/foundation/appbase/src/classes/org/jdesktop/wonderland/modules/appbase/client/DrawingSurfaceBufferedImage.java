@@ -86,22 +86,12 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
         }
     }
 
-    /**  
+    /** 
      * Create an instance of DrawingSurfaceBufferedImage.
-     * <br>
-     * Note: You must do a setSize before using a surface created in this way.
+     * Before it can be used you must call setWindow.
      */
     public DrawingSurfaceBufferedImage() {
-    }
-
-    /** 
-     * Create an instance of DrawingSurface.
-     * @param width The width of the surface in pixels.
-     * @param height The height of the surface in pixels.
-     */
-    public DrawingSurfaceBufferedImage(int width, int height) {
-        this();
-        setSize(width, height);
+        super();
     }
 
     /**
@@ -162,14 +152,10 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
     /**
      * {@inheritDoc}
      */
+    // TODO: I think this can be deleted
     @Override
     public void initializeSurface() {
         initSurface(g);
-    /* TODO: I don't think this is necessary anymore
-    if (!imageGraphics.drawImage(bufImage, 0, 0, null)) {
-    logger.warning("imageGraphics.drawImage returned false! Skipping image rendering.");
-    }
-     */
     }
 
     /**

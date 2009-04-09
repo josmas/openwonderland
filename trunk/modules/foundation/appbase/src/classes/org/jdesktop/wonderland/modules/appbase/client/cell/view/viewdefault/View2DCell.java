@@ -148,10 +148,9 @@ public class View2DCell extends View2DEntity {
     }
 
     /** {@inheritDoc} */
-    public synchronized Quaternion getRotation () {
+    public Quaternion getRotation () {
         return userRotation.clone();
     }
-
         
     public synchronized void userRotateYStart (float dy) {
     }
@@ -177,14 +176,6 @@ public class View2DCell extends View2DEntity {
         switch (type) {
 
         case UNKNOWN:
-            // Can't attach until we know the type
-            logger.warning("Attempt to attach a view of unknown type to an app cell");
-            logger.warning("cell = " + cell);
-            logger.warning("view = " + this);
-
-            // This is the best we can do
-            return cellEntity;
-
         case PRIMARY:
             // Attach primaries directly to cell entity
             return cellEntity;
@@ -216,14 +207,17 @@ public class View2DCell extends View2DEntity {
     // Uses: userRotation, userTranslation
     protected CellTransform calcUserDeltaTransform () {
 
+        /* TODO: winconfig: secondary rotate: this is broken
         // Apply the rotation first
         CellTransform rotDeltaTransform = calcUserRotationDeltaTransform();
+        */
 
         // Next, apply the translation
         CellTransform transDeltaTransform = calcUserTranslationDeltaTransform();
-        rotDeltaTransform.mul(transDeltaTransform);
+        // TODO: winconfig: secondary rotate: rotDeltaTransform.mul(transDeltaTransform);
 
-        return rotDeltaTransform; 
+        // TODO: winconfig: secondary rotate: return rotDeltaTransform; 
+        return transDeltaTransform;
     }
 
     // Uses: userRotation
@@ -236,8 +230,10 @@ public class View2DCell extends View2DEntity {
 
     @Override
     protected void updatePrimaryTransform (CellTransform userDeltaTransform) {
+
+        // TODO: winconfig: primary rotate: HACK: until bug in userDeltaTransform w=0 is fixed
         Vector3f translation = getTranslationUserCurrent();
-        if (type == Type.PRIMARY && isOrtho()) {
+        if ((type == Type.PRIMARY || type == Type.UNKNOWN) && isOrtho()) {
             Vector2f locOrtho = getLocationOrtho();
             translation.addLocal(new Vector3f(locOrtho.x, locOrtho.y, 0f));
         }
@@ -279,9 +275,19 @@ public class View2DCell extends View2DEntity {
     /** {@inheritDoc} */
     @Override
     protected void detachFrame () {
-        logger.fine("Destroy frame");
-        frame.cleanup();
-        frame = null;
+        if (frame != null) {
+            logger.fine("Destroy frame");
+            frame.cleanup();
+            frame = null;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void reattachFrame () {
+        logger.fine("Reattach new frame");
+        detachFrame();
+        attachFrame();
     }
 
     /** {@inheritDoc} */

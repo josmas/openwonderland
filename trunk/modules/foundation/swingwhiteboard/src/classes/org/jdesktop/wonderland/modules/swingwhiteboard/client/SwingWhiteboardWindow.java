@@ -78,7 +78,10 @@ public class SwingWhiteboardWindow extends WindowSwing {
         setTitle("Swing Whiteboard Window");
 
         SwingWhiteboardPanel panel = new SwingWhiteboardPanel(this);
+
+	// Parent to Wonderland main window for proper focus handling 
         JmeClientMain.getFrame().getCanvas3DPanel().add(panel);
+
         setComponent(panel);
 
         cellID = cell.getCellID();

@@ -72,7 +72,7 @@
     
     <target name="run" depends="dist">
         <exec executable="java">
-	  <arg line="-cp ${provider-run.classpath} org.jdesktop.wonderland.modules.sasxremwin.provider.SasXrwProviderMain"/>
+	  <arg line="-Djava.library.path=${core.lib.os.native.dir} -cp ${provider-run.classpath} org.jdesktop.wonderland.modules.sasxremwin.provider.SasXrwProviderMain"/>
         </exec>
     </target>
 

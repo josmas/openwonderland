@@ -72,7 +72,7 @@ class Gui2DSide extends Gui2D {
             MouseEvent me = (MouseEvent) me3d.getAwtEvent();
 
             // We only recognize config on the border when user has control
-            if (view.getWindowUnsynchronized().getApp().getControlArb().hasControl()) {
+            if (view.getWindow().getApp().getControlArb().hasControl()) {
                 action = determineIfConfigAction(me, me3d);
                 if (action != null) {
                     performConfigAction(action, me, me3d);

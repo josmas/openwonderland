@@ -50,7 +50,7 @@ class WindowStack {
      *
      * @param window The window whose stack position is to be returned.
      */
-    public synchronized int getStackPosition(Window2D window) {
+    public int getStackPosition(Window2D window) {
         int index = stack.indexOf(window);
         if (index < 0) {
             return index;

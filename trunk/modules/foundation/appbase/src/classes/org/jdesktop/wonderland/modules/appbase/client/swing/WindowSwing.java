@@ -124,8 +124,7 @@ public class WindowSwing extends WindowGraphics2D {
      */
     public WindowSwing(App2D app, int width, int height, boolean decorated, Vector2f pixelScale, 
                        String name) {
-        super(app, width, height, decorated, pixelScale, name, 
-              new DrawingSurfaceBufferedImage(width, height)); 
+        super(app, width, height, decorated, pixelScale, name, new DrawingSurfaceBufferedImage()); 
         initializeViews();
     }
 
@@ -190,7 +189,7 @@ public class WindowSwing extends WindowGraphics2D {
     public WindowSwing(App2D app, Type type, Window2D parent, int width, int height, boolean decorated, 
                     Vector2f pixelScale, String name) {
         super(app, type, parent, width, height, decorated, pixelScale, name,
-              new DrawingSurfaceBufferedImage(width, height)); 
+              new DrawingSurfaceBufferedImage()); 
         initializeViews();
     }
 

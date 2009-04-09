@@ -56,11 +56,6 @@ public class WhiteboardDrawingSurface extends DrawingSurfaceBufferedImage {
     
     private Rectangle buttonArea = null;
     
-    public WhiteboardDrawingSurface (int width, int height) {
-	this();
-	setSize(width, height);
-    }
-
     public WhiteboardDrawingSurface() {
         super();
         int x = button_x_space;

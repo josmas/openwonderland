@@ -65,8 +65,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
      */
     public WindowConventional(App2D app, int width, int height, boolean topLevel, int borderWidth, 
                               Vector2f pixelScale) {
-        super(app, width, height, topLevel, pixelScale,
-              new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
+        super(app, width, height, topLevel, pixelScale, new DrawingSurfaceBufferedImage());
         this.borderWidth = borderWidth;
         appConventional = (AppConventional) app;
     }
@@ -84,8 +83,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
      */
     public WindowConventional(App2D app, int width, int height, boolean topLevel, int borderWidth, 
                               Vector2f pixelScale, String name) {
-        super(app, width, height, topLevel, pixelScale, name,
-              new DrawingSurfaceBufferedImage(width + 2 * borderWidth, height + 2 * borderWidth));
+        super(app, width, height, topLevel, pixelScale, name, new DrawingSurfaceBufferedImage());
         this.borderWidth = borderWidth;
         appConventional = (AppConventional) app;
     }
@@ -216,7 +214,7 @@ public abstract class WindowConventional extends WindowGraphics2D {
         gDst.executeAtomic(new Runnable() {
 
             public void run() {
-                gDst.copyArea(srcX, srcY, width, height, dstX, dstY);
+                gDst.copyArea(srcX, srcY, width, height, dstX-srcX, dstY-srcY);
                 gDst.addDirtyRectangle(dstX, dstY, width, height);
             }
         });
