@@ -971,15 +971,21 @@ public abstract class View2DEntity implements View2D {
             }
 
             // Now reattach geometry if view should be visible
+            // Note: MTGame can currently only setOrtho on a visible rc
             // Uses: visible, ortho
             if (isActuallyVisible()) {
                 if (ortho) {
+                    logger.fine("View is ortho");
                     logger.fine("Attach entity " + entity + " to world manager.");
                     ClientContextJME.getWorldManager().addEntity(entity);
                     attachState = AttachState.ATTACHED_TO_WORLD;
+                    entity.getComponent(RenderComponent.class).setOrtho(true);
                 } else {
+                    logger.fine("View is not ortho");
                     parentEntity = getParentEntity();
-                    if (parentEntity != null) {
+                    if (parentEntity == null) {
+                        logger.warning("getParentEntity() returns null; must be non-null");
+                    } else {
                         logger.fine("Attach entity " + entity + " to parent entity " + parentEntity);
                         parentEntity.addEntity(entity);
                         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
@@ -987,10 +993,9 @@ public abstract class View2DEntity implements View2D {
                             (RenderComponent) parentEntity.getComponent(RenderComponent.class);
                         sgChangeAttachPointSet(rc, rcParent.getSceneRoot());
                         attachState = AttachState.ATTACHED_TO_ENTITY;
+                        entity.getComponent(RenderComponent.class).setOrtho(false);
                     }
                 }
-                // MTGame: can currently only setOrtho on a visible rc
-                entity.getComponent(RenderComponent.class).setOrtho(ortho);
             }
 
             if ((chgMask & CHANGED_ORTHO) != 0) {
@@ -1152,25 +1157,11 @@ public abstract class View2DEntity implements View2D {
     }
 
     /**
-     * This usually should be overridden by the subclass.
+     * This returns the entity in the world to which this view should be attached as a child.
+     * It must return non-null.
      * Uses: type, parent.
      */
-    protected Entity getParentEntity () {
-        switch (type) {
-
-        case UNKNOWN:
-        case PRIMARY:
-            return null;
-        
-        default:
-            // Attach non-primaries to the entity of their parent
-            if (parent == null) {
-                return null;
-            } else {
-                return parent.getEntity();
-            }
-        }
-    }                
+    protected abstract Entity getParentEntity ();
 
     // Uses: type, parent, pixelscale, size, offset
     private CellTransform calcOffsetStackTransform () {
