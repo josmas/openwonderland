@@ -17,19 +17,24 @@
  */
 package org.jdesktop.wonderland.client.jme.login;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.LoginPanel;
+import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.ValidityListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
 
 /**
@@ -41,29 +46,70 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
     private static final Logger logger =
             Logger.getLogger(NoAuthLoginPanel.class.getName());
     private NoAuthLoginControl control;
+    private List<ValidityListener> listeners;
 
     /** Creates new form NoAuthLoginPanel */
     public NoAuthLoginPanel(String serverURL, NoAuthLoginControl control) {
         this.control = control;
 
         initComponents();
-
-	/* DISABLE for cutoff popup fix
+        /* DISABLE for cutoff popup fix
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
         }
-	*/
+         */
+        // populate with defaults
+        setUsername(System.getProperty("user.name"));
 
-        // load any saved credentials
+        // override with any saved credentials
         loadCredentials();
 
         // set the server location
-        naServerField.setText(serverURL);
+        setServer(serverURL);
+
+        // notify validity listeners of validity of initial state
+        notifyValidityListeners();
     }
 
     public JPanel getPanel() {
         return this;
+    }
+
+    public void setUsername(String username) {
+        naUsernameField.setText(username);
+    }
+
+    public void setFullname(String fullname) {
+        naFullNameField.setText(fullname);
+    }
+
+    public void setServer(String server) {
+        naServerField.setText(server);
+    }
+
+    public void addValidityListener(ValidityListener listener) {
+        if (listeners == null) {
+            listeners = Collections.synchronizedList(new LinkedList());
+        }
+        listeners.add(listener);
+    }
+
+    public void removeValidityListener(ValidityListener listener) {
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+    }
+
+    public void notifyValidityListeners() {
+        if (listeners != null) {
+            boolean isValid = naUsernameField.getDocument().getLength() > 0;
+
+            Iterator<ValidityListener> iter = listeners.iterator();
+            while (iter.hasNext()) {
+                iter.next().setValidity(isValid);
+            }
+        }
     }
 
     public String doLogin() {
@@ -115,9 +161,8 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
             Properties props = new Properties();
             props.load(inReader);
-
-            naUsernameField.setText(props.getProperty("username"));
-            naFullNameField.setText(props.getProperty("fullname"));
+            setUsername(props.getProperty("username"));
+            setFullname(props.getProperty("fullname"));
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error reading login data", ioe);
         }
@@ -155,6 +200,11 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
         naUsernameField.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         naUsernameField.setMinimumSize(new java.awt.Dimension(98, 22));
+        naUsernameField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                naUsernameFieldKeyReleased(evt);
+            }
+        });
 
         naFullNameField.setMinimumSize(new java.awt.Dimension(98, 22));
 
@@ -193,6 +243,11 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void naUsernameFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_naUsernameFieldKeyReleased
+        notifyValidityListeners();
+    }//GEN-LAST:event_naUsernameFieldKeyReleased
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField naFullNameField;
     private javax.swing.JLabel naFullNameLabel;
