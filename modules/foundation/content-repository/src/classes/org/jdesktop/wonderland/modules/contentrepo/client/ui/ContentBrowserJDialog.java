@@ -123,14 +123,17 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
                 dispose();
                 for (ContentBrowserListener l : listeners) {
                     // We need to get the URI of the selection. Start from
-                    // the currently selected item, if there is one
+                    // the currently selected item, if there is one, otherwise
+                    // use the selected directory we are in
                     ContentNode node = getListSelection();
-                    if (node != null) {
-                        l.okAction("wlcontent://" + node.getPath());
+                    String assetPath = (node != null) ? node.getPath() : directory.getPath();
+
+                    // The value returned from getPath() starts with a beginning
+                    // slash, so strip it if so
+                    if (assetPath.startsWith("/") == true) {
+                        assetPath = assetPath.substring(1);
                     }
-                    else {
-                        l.okAction("wlcontent://" + directory.getPath());
-                    }
+                    l.okAction("wlcontent://" + assetPath);
                 }
                 listeners.clear();
             }
