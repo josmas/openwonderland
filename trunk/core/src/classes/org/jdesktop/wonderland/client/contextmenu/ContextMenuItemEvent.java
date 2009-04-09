@@ -17,36 +17,37 @@
  */
 package org.jdesktop.wonderland.client.contextmenu;
 
-import java.util.List;
-import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.cell.Cell;
 
 /**
- * An event when an item on the context menu for Entities is selected.
+ * An event when an item on the context menu for Cell is selected.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class ContextMenuEvent {
+public class ContextMenuItemEvent {
 
     private String name = null;
-    private List<Entity> entityList = null;
+
+    private Cell cell = null;
 
     /** Constructor, takes the entity */
-    public ContextMenuEvent(String name, List<Entity> entityList) {
+    public ContextMenuItemEvent(String name, Cell cell) {
         this.name = name;
-        this.entityList = entityList;
+        this.cell = cell;
     }
 
     /**
-     * Returns the Entity list associated with the context menu.
-     * 
-     * @return A list of Entity objects
+     * Returns the Cell associated with the context menu.
+     *
+     * @return A Cell object
      */
-    public List<Entity> getEntityList() {
-        return entityList;
+    public Cell getCell() {
+        return cell;
     }
 
     /**
      * Returns the name of the context menu item selected.
+     *
      * @return The name of the context menu item selected
      */
     public String getName() {

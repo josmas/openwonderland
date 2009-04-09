@@ -139,8 +139,11 @@ public class LoginManager {
      * Add a primary server listener
      * @param listener the listener to add
      */
-    public static void addPrimaryServerListener(PrimaryServerListener listener) {
+    public synchronized static void addPrimaryServerListener(PrimaryServerListener listener) {
         listeners.add(listener);
+        if (LoginManager.primaryLoginManager != null) {
+            listener.primaryServer(LoginManager.primaryLoginManager);
+        }
     }
 
     /**

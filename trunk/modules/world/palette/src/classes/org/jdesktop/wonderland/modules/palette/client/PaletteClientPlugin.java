@@ -30,9 +30,12 @@ import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenu;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemListener;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuEntry;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -50,7 +53,8 @@ import org.jdesktop.wonderland.modules.palette.client.dnd.CellPaletteDataFlavorH
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-public class PaletteClientPlugin implements ClientPlugin {
+@ContextMenuEntry
+public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI {
 
     private static Logger logger = Logger.getLogger(PaletteClientPlugin.class.getName());
 
@@ -136,123 +140,96 @@ public class PaletteClientPlugin implements ClientPlugin {
         });
         paletteMenu.add(moduleItem);
         JmeClientMain.getFrame().addToToolMenu(paletteMenu);
-        
-        // Add the "Properties" item to the context menu. Display a CellEditFrame
-        // when selected.
-        ContextMenu contextMenu = ContextMenu.getContextMenu();
-        contextMenu.addContextMenuItem("Properties", new ContextMenuListener() {
-            public void entityContextPerformed(ContextMenuEvent event) {
-                // Fetch the Entity associated with the event. If there is none,
-                // then ignore the event quietly.
-                if (event.getEntityList() == null || event.getEntityList().size() == 0) {
-                    logger.warning("Unable to find Entity in context menu event, ignoring context event");
-                    return;
-                }
+    }
 
-                // Fetch the cell from the context event, using the entity
-                // given in the event
-                Entity entity = event.getEntityList().get(0);
-                if (entity == null) {
-                    logger.warning("Unable to find Entity for context event");
-                    return;
-                }
-                Cell cell = SceneManager.getCellForEntity(entity);
-                if (cell == null) {
-                    logger.warning("Unable to find Cell from Entity for context event");
-                    return;
-                }
+    public ContextMenuItem[] getContextMenuItems() {
+        return new ContextMenuItem[] {
+            new SimpleContextMenuItem("Properties...", null, new PropertiesListener()),
+            new SimpleContextMenuItem("Delete", null, new DeleteListener()),
+            new SimpleContextMenuItem("Duplicate", null, new DuplicateListener())
+        };
+    }
 
-                // Create a new cell edit frame passing in the Cell and make
-                // it visible
-                try {
-                    CellEditFrame frame = new CellEditFrame(cell);
-                    frame.setVisible(true);
-                } catch (IllegalStateException excp) {
-                    Logger.getLogger(PaletteClientPlugin.class.getName()).log(Level.WARNING, null, excp);
-                }
+    /**
+     * Listener class for the "Properties..." context menu item
+     */
+    private class PropertiesListener implements ContextMenuItemListener {
+
+        public MenuItemState getMenuItemState(ContextMenuItem item, Cell cell) {
+            return MenuItemState.ENABLED;
+        }
+
+        public void actionPerformed(ContextMenuItemEvent event) {
+
+            // Create a new cell edit frame passing in the Cell and make
+            // it visible
+            Cell cell = event.getCell();
+            try {
+                CellEditFrame frame = new CellEditFrame(cell);
+                frame.setVisible(true);
+            } catch (IllegalStateException excp) {
+                Logger.getLogger(PaletteClientPlugin.class.getName()).log(Level.WARNING, null, excp);
             }
-        });
+        }
+    }
 
-        // Add the "Delete" item to the context menu. When selected, display
-        // a confirmation dialog and then delete the Cell
-        contextMenu.addContextMenuItem("Delete", new ContextMenuListener() {
-            public void entityContextPerformed(ContextMenuEvent event) {
-                // Fetch the Entity associated with the event. If there is none,
-                // then ignore the event quietly.
-                if (event.getEntityList() == null || event.getEntityList().size() == 0) {
-                    logger.warning("Unable to find Entity in context menu event, ignoring context event");
-                    return;
-                }
+    /**
+     * Listener for the "Delete" context menu item
+     */
+    private class DeleteListener implements ContextMenuItemListener {
 
-               // Fetch the cell from the context event, using the entity
-                // given in the event
-                Entity entity = event.getEntityList().get(0);
-                if (entity == null) {
-                    logger.warning("Unable to find Entity for context event");
-                    return;
-                }
-                Cell cell = SceneManager.getCellForEntity(entity);
-                if (cell == null) {
-                    logger.warning("Unable to find Cell from Entity for context event");
-                    return;
-                }
+        public MenuItemState getMenuItemState(ContextMenuItem item, Cell cell) {
+            // The delete is enabled for all cells except the avatar cell
+            // XXX
+            return MenuItemState.ENABLED;
+        }
 
-                // Display a confirmation dialog to make sure we really want to
-                // delete the cell.
-                int result = JOptionPane.showConfirmDialog(
-                        JmeClientMain.getFrame().getFrame(),
-                        "Are you sure you wish to delete cell " + cell.getName(),
-                        "Confirm Delete",
-                        JOptionPane.YES_NO_OPTION);
-                if (result == JOptionPane.NO_OPTION) {
-                    return;
-                }
-
-                // If we want to delete, send a message to the server as such
-                WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-                CellEditChannelConnection connection = (CellEditChannelConnection) session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-                CellDeleteMessage msg = new CellDeleteMessage(cell.getCellID());
-                connection.send(msg);
-
-                // Really should receive an OK/Error response from the server!
+        public void actionPerformed(ContextMenuItemEvent event) {
+            // Display a confirmation dialog to make sure we really want to
+            // delete the cell.
+            Cell cell = event.getCell();
+            int result = JOptionPane.showConfirmDialog(
+                    JmeClientMain.getFrame().getFrame(),
+                    "Are you sure you wish to delete cell " + cell.getName(),
+                    "Confirm Delete",
+                    JOptionPane.YES_NO_OPTION);
+            if (result == JOptionPane.NO_OPTION) {
+                return;
             }
-        });
 
-                // Add the "Delete" item to the context menu. When selected, display
-        // a confirmation dialog and then delete the Cell
-        contextMenu.addContextMenuItem("Duplicate", new ContextMenuListener() {
-            public void entityContextPerformed(ContextMenuEvent event) {
-                // Fetch the Entity associated with the event. If there is none,
-                // then ignore the event quietly.
-                if (event.getEntityList() == null || event.getEntityList().size() == 0) {
-                    logger.warning("Unable to find Entity in context menu event, ignoring context event");
-                    return;
-                }
+            // If we want to delete, send a message to the server as such
+            WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+            CellEditChannelConnection connection = (CellEditChannelConnection)
+                    session.getConnection(CellEditConnectionType.CLIENT_TYPE);
+            CellDeleteMessage msg = new CellDeleteMessage(cell.getCellID());
+            connection.send(msg);
 
-               // Fetch the cell from the context event, using the entity
-                // given in the event
-                Entity entity = event.getEntityList().get(0);
-                if (entity == null) {
-                    logger.warning("Unable to find Entity for context event");
-                    return;
-                }
-                Cell cell = SceneManager.getCellForEntity(entity);
-                if (cell == null) {
-                    logger.warning("Unable to find Cell from Entity for context event");
-                    return;
-                }
+            // Really should receive an OK/Error response from the server!
+        }
+    }
 
-                // Create a new name for the cell, based upon the old name.
-                String cellName = cell.getName() + " Copy";
+    /**
+     * Listener for the "Duplicate" context menu item
+     */
+    private class DuplicateListener implements ContextMenuItemListener {
 
-                // If we want to delete, send a message to the server as such
-                WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-                CellEditChannelConnection connection = (CellEditChannelConnection) session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-                CellDuplicateMessage msg = new CellDuplicateMessage(cell.getCellID(), cellName);
-                connection.send(msg);
+        public MenuItemState getMenuItemState(ContextMenuItem item, Cell cell) {
+            return MenuItemState.ENABLED;
+        }
 
-                // Really should receive an OK/Error response from the server!
-            }
-        });
+        public void actionPerformed(ContextMenuItemEvent event) {
+            // Create a new name for the cell, based upon the old name.
+            Cell cell = event.getCell();
+            String cellName = cell.getName() + " Copy";
+
+            // If we want to delete, send a message to the server as such
+            WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+            CellEditChannelConnection connection = (CellEditChannelConnection)
+                    session.getConnection(CellEditConnectionType.CLIENT_TYPE);
+            CellDuplicateMessage msg = new CellDuplicateMessage(cell.getCellID(), cellName);
+            connection.send(msg);
+
+            // Really should receive an OK/Error response from the server!
+        }
     }
 }

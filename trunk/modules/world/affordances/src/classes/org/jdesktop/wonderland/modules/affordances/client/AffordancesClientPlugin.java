@@ -21,18 +21,15 @@ package org.jdesktop.wonderland.modules.affordances.client;
 import java.awt.GridLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.logging.Logger;
 import javax.swing.JFrame;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenu;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemListener;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuEntry;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.input.InputManager;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.scenemanager.SceneManager;
-import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemoveEvent;
 
 /**
@@ -40,16 +37,12 @@ import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemove
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Plugin
-public class AffordancesClientPlugin implements ClientPlugin {
-    /* The single instance of the Affordance HUD Panel */
-    private JFrame affordanceHUDFrame = null;
-    private AffordanceHUDPanel affordanceHUDPanel = null;
+@ContextMenuEntry
+public class AffordancesClientPlugin implements ContextMenuFactorySPI {
 
-    public void initialize(ServerSessionManager loginInfo) {
-        ContextMenu contextMenu = ContextMenu.getContextMenu();
-        contextMenu.addContextMenuItem("Edit", new EditContextListener());
-    }
+    /* The single instance of the Affordance HUD Panel */
+    private static JFrame affordanceHUDFrame = null;
+    private static AffordanceHUDPanel affordanceHUDPanel = null;
 
     /**
      * Creates the affordance HUD frame
@@ -62,6 +55,12 @@ public class AffordancesClientPlugin implements ClientPlugin {
         affordanceHUDFrame.addWindowListener(new FrameCloseListener());
         affordanceHUDFrame.setTitle("Edit Cell");
         affordanceHUDFrame.pack();
+    }
+
+    public ContextMenuItem[] getContextMenuItems() {
+        return new ContextMenuItem[] {
+            new SimpleContextMenuItem("Edit...", new EditContextListener())
+        };
     }
 
     /**
@@ -80,24 +79,13 @@ public class AffordancesClientPlugin implements ClientPlugin {
     /**
      * Handles when the "Edit" context menu item has been selected
      */
-    class EditContextListener implements ContextMenuListener {
+    class EditContextListener implements ContextMenuItemListener {
 
-        public void entityContextPerformed(ContextMenuEvent event) {
-            // Fetch the Entity associated with the event. If there is none,
-            // then ignore the event quietly.
-            if (event.getEntityList() == null || event.getEntityList().size() == 0) {
-                Logger logger = Logger.getLogger(AffordancesClientPlugin.class.getName());
-                logger.warning("Unable to find Entity in context menu event, ignoring context event");
-                return;
-            }
-            Entity entity = event.getEntityList().get(0);
-
-            // Fetch the cell associated with the entity. If null, then ignore
-            // quietly.
-            Cell cell = SceneManager.getCellForEntity(entity);
-            if (cell == null) {
-                return;
-            }
+        public MenuItemState getMenuItemState(ContextMenuItem menuItem, Cell cell) {
+            return MenuItemState.ENABLED;
+        }
+        
+        public void actionPerformed(ContextMenuItemEvent event) {
             
             // Display the affordance HUD Panel
             if (affordanceHUDFrame == null) {

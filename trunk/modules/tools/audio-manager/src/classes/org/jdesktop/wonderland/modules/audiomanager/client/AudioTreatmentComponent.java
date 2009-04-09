@@ -20,22 +20,15 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 /**
  * A component that provides audio audio treatments

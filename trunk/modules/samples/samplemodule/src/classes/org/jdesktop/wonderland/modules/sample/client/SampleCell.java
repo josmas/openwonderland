@@ -21,7 +21,11 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
 
@@ -35,6 +39,8 @@ public class SampleCell extends Cell {
     private String shapeType = null;
 
     private SampleRenderer cellRenderer = null;
+
+    @UsesCellComponent ContextMenuComponent menuComponent;
 
     public SampleCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -67,5 +73,17 @@ public class SampleCell extends Cell {
 
     public String getShapeType() {
         return shapeType;
+    }
+
+    @Override
+    public boolean setStatus(CellStatus status) {
+        boolean ret = super.setStatus(status);
+        if (status == CellStatus.ACTIVE) {
+            menuComponent.addMenuItem(new SimpleContextMenuItem("Sample", null, null));
+        }
+        else if (status == CellStatus.DISK) {
+            // XXX remove menu item, but really don't have to....
+        }
+        return ret;
     }
 }
