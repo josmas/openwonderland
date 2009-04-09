@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
 import org.jdesktop.mtgame.ProcessorArmingCollection;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.bounding.BoundingBox;
@@ -61,9 +62,13 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
@@ -73,7 +78,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     
     private File lastModelDir;
 //    private GeometryStatsDialog geometryStatsDialog = null;
-//    private UserMotionListener userMotionListener = null;
+    private TransformChangeListener userMotionListener = null;
     private ChangeListener translationChangeListener = null;
     private ChangeListener rotationChangeListener = null;
     private ChangeListener scaleChangeListener = null;
@@ -125,23 +130,27 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
         // TODO add Float editors to the spinners
                 
-//        userMotionListener = new UserMotionListener() {
-//            public void userMoved(Point3f position, Vector3f lookDirection, Vector3f userVelocity, Vector3f upVector) {
-//                Transform3D t3d = new Transform3D();
-//                Vector3f dir = new Vector3f(lookDirection);
-//                Vector3f pos = new Vector3f(position);
-//                dir.normalize();
-//                dir.scale(10f);
-//                pos.add(dir);        
-//                currentTranslation.set(pos);
-//                t3d.set(currentRotation, pos, 1f);
-//                modelTG.setTransform(t3d);
-//                ((SpinnerNumberModel)translationXTF.getModel()).setValue(new Float(pos.x));
-//                ((SpinnerNumberModel)translationYTF.getModel()).setValue(new Float(pos.y));
-//                ((SpinnerNumberModel)translationZTF.getModel()).setValue(new Float(pos.z));
-//            }
-//
-//        };
+        userMotionListener = new TransformChangeListener() {
+            private Vector3f look = new Vector3f();
+            private Vector3f pos = new Vector3f();
+            public void transformChanged(Cell cell, ChangeSource source) {
+                CellTransform t = cell.getWorldTransform();
+                t.getLookAt(pos, look);
+
+                System.err.println(pos+"  "+look);
+                
+                look.mult(3);
+                pos.addLocal(look);
+
+                currentTranslation.set(pos);
+                ((SpinnerNumberModel)translationXTF.getModel()).setValue(new Float(pos.x));
+                ((SpinnerNumberModel)translationYTF.getModel()).setValue(new Float(pos.y));
+                ((SpinnerNumberModel)translationZTF.getModel()).setValue(new Float(pos.z));
+                if (transformProcessor!=null)
+                    transformProcessor.setTransform(currentRotation, currentTranslation);
+            }
+
+        };
                 
         translationChangeListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -322,8 +331,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 modelNameTF.setText(filename);
 
                 if (avatarMoveCB.isSelected()) {
-        //            AvatarControlBehavior.getAvatarControlBehavior().addUserMoveListener(userMotionListener);
-                    System.err.println("AvatarControlBehavior listeners not implemented");
+                    ViewManager.getViewManager().getPrimaryViewCell().addTransformChangeListener(userMotionListener);
                 }
             }
         });
@@ -429,7 +437,6 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
         avatarMoveCB.setSelected(true);
         avatarMoveCB.setText("Move with Avatar");
-        avatarMoveCB.setEnabled(false);
         avatarMoveCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 avatarMoveCBActionPerformed(evt);
@@ -686,7 +693,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
         jLabel25.setText("Bounds Center :");
 
-        jLabel27.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        jLabel27.setFont(new java.awt.Font("Lucida Grande", 0, 10));
         jLabel27.setText("X");
 
         boundsCenterYTF.setColumns(12);
@@ -696,23 +703,23 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
         boundsCenterXTF.setColumns(12);
         boundsCenterXTF.setEditable(false);
-        boundsCenterXTF.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        boundsCenterXTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
         boundsCenterXTF.setText("jTextField1");
 
-        jLabel28.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        jLabel28.setFont(new java.awt.Font("Lucida Grande", 0, 10));
         jLabel28.setText("Y");
 
-        jLabel29.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        jLabel29.setFont(new java.awt.Font("Lucida Grande", 0, 10));
         jLabel29.setText("Z");
 
         boundsCenterZTF.setColumns(12);
         boundsCenterZTF.setEditable(false);
-        boundsCenterZTF.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        boundsCenterZTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
         boundsCenterZTF.setText("jTextField1");
 
         boundsSizeXTF.setColumns(12);
         boundsSizeXTF.setEditable(false);
-        boundsSizeXTF.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        boundsSizeXTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
         boundsSizeXTF.setText("jTextField1");
 
         jLabel26.setText("Bounds Size :");
@@ -730,12 +737,12 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
         boundsSizeYTF.setColumns(12);
         boundsSizeYTF.setEditable(false);
-        boundsSizeYTF.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        boundsSizeYTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
         boundsSizeYTF.setText("jTextField1");
 
         boundsSizeZTF.setColumns(12);
         boundsSizeZTF.setEditable(false);
-        boundsSizeZTF.setFont(new java.awt.Font("Lucida Grande", 0, 10)); // NOI18N
+        boundsSizeZTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
         boundsSizeZTF.setText("jTextField1");
 
         org.jdesktop.layout.GroupLayout advancedPanelLayout = new org.jdesktop.layout.GroupLayout(advancedPanel);
@@ -843,8 +850,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
     private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okBActionPerformed
         if (avatarMoveCB.isSelected()) {            
-//            AvatarControlBehavior.getAvatarControlBehavior().removeUserMoveListener(userMotionListener);
-            System.err.println("AvatarControlBehavior listeners not implemented");
+            ViewManager.getViewManager().getPrimaryViewCell().removeTransformChangeListener(userMotionListener);
         }
         setVisible(false);
         Vector3f translation=new Vector3f((Float)translationXTF.getValue(), 
@@ -863,10 +869,9 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     
     private void cancelBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBActionPerformed
         this.setVisible(false);
-            System.err.println("AvatarControlBehavior listeners not implemented");
-//        if (userMotionListener!=null) {
-//            AvatarControlBehavior.getAvatarControlBehavior().removeUserMoveListener(userMotionListener);
-//        }
+        if (userMotionListener!=null) {
+            ViewManager.getViewManager().getPrimaryViewCell().removeTransformChangeListener(userMotionListener);
+        }
         sessionFrame.loadCancelled(importedModel);
     }//GEN-LAST:event_cancelBActionPerformed
 
@@ -887,16 +892,15 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 }//GEN-LAST:event_geometryStatsBActionPerformed
 
     private void avatarMoveCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_avatarMoveCBActionPerformed
-            System.err.println("AvatarControlBehavior listeners not implemented");
-//        if (userMotionListener==null)
-//            return;
+        if (userMotionListener==null)
+            return;
         
         if (avatarMoveCB.isSelected()) {
             enableSpinners(false);
-//            AvatarControlBehavior.getAvatarControlBehavior().addUserMoveListener(userMotionListener);
+            ViewManager.getViewManager().getPrimaryViewCell().addTransformChangeListener(userMotionListener);
         } else {
             enableSpinners(true);
-//            AvatarControlBehavior.getAvatarControlBehavior().removeUserMoveListener(userMotionListener);
+            ViewManager.getViewManager().getPrimaryViewCell().removeTransformChangeListener(userMotionListener);
         }
 
     }//GEN-LAST:event_avatarMoveCBActionPerformed
