@@ -68,7 +68,7 @@ public class App2DCellRendererJME extends App2DCellRenderer {
         acrjRootNode.setRenderState(lightState);
 
         // For debug
-        ClientContext.getInputManager().addGlobalEventListener(new SceneGraphPrinter());
+        //ClientContext.getInputManager().addGlobalEventListener(new SceneGraphPrinter());
     }
 
     // For debug
@@ -93,7 +93,7 @@ public class App2DCellRendererJME extends App2DCellRenderer {
                         Entity e = wm.getEntity(i);
                         RenderComponent rc = (RenderComponent) e.getComponent(RenderComponent.class);
                         if (rc == null || !rc.getOrtho()) continue;
-                        System.err.println("Ortho entity = " + entity);
+                        System.err.println("Ortho node = " + rc.getSceneRoot());
                         GraphicsUtils.printNode(rc.getSceneRoot());
                     }
                 }

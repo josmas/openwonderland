@@ -71,7 +71,10 @@ public class SwingTestWindow
 	setTitle("Swing Test");
 
 	TestPanel testPanel = new TestPanel();
+
+	// Parent to Wonderland main window for proper focus handling 
        	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
+
         testPanel.setContainer(this);
 
 	setComponent(testPanel);

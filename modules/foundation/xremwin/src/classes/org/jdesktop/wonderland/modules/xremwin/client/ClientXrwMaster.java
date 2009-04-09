@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.MessageArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.ServerMessageType;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SlaveCloseWindowMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArgs;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 
 /**
  * The master version of the Xremwin protocol client. This is the only client to 
@@ -58,7 +59,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
      * @param reporter Report output and exit status to this.
      * @throws InstantiationException If it could not make contact with the server.
      */
-    public ClientXrwMaster(AppXrw app, ControlArbXrw controlArb, WonderlandSession session, String masterHost,
+    public ClientXrwMaster(AppXrw app, ControlArb controlArb, WonderlandSession session, String masterHost,
             ServerSocket serverSocket, WindowSystemXrw winSys, ProcessReporter reporter)
             throws InstantiationException {
         super(app, controlArb, reporter);
@@ -76,7 +77,9 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
         }
         serverConnected = true;
 
-        controlArb.setServerProxy(serverProxy);
+        if (controlArb instanceof ControlArbXrw) {
+            ((ControlArbXrw)controlArb).setServerProxy(serverProxy);
+        }
 
         // Start the protocol interpreter
         start();
@@ -191,7 +194,10 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
     protected void processControllerStatus(ControllerStatusMsgArgs msgArgs) {
         super.processControllerStatus(msgArgs);
         if (msgArgs.status == ControllerStatus.GAINED) {
-            controlArb.setController(((ServerProxyMaster) serverProxy).getControllingUser());
+            if (controlArb instanceof ControlArbXrw) {
+                ((ControlArbXrw)controlArb).setController(
+                    ((ServerProxyMaster) serverProxy).getControllingUser());
+            }
         }
     }
 

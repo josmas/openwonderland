@@ -65,13 +65,14 @@ public class WindowGraphics2D extends Window2D {
                             Vector2f pixelScale, String name, DrawingSurface surface) {
         super(app, width, height, decorated, pixelScale, name);
         this.surface = surface;
+        surface.setWindow(this);
         initialize();
     }
 
     /**
      * Create an instance of WindowGraphics2D of the given type with a default name. 
      * @param app The application to which this window belongs.
-     * @param type The type of the window. If this is non-primary, the parent is set to the primary
+     * @param type The type of the window. If this is non-primary, the parent is set to the primary window.
      * window of the app (if there is one).
      * @param width The window width (in pixels).
      * @param height The window height (in pixels).
@@ -86,7 +87,7 @@ public class WindowGraphics2D extends Window2D {
     /**
      * Create an instance of WindowGraphics2D of the given type with the given name. 
      * @param app The application to which this window belongs.
-     * @param type The type of the window. If this is non-primary, the parent is set to the primary
+     * @param type The type of the window. If this is non-primary, the parent is set to the primary window.
      * window of the app (if there is one).
      * @param width The window width (in pixels).
      * @param height The window height (in pixels).
@@ -130,13 +131,13 @@ public class WindowGraphics2D extends Window2D {
                             Vector2f pixelScale, String name, DrawingSurface surface) {
         super(app, type, parent, width, height, decorated, pixelScale, name);
         this.surface = surface;
+        surface.setWindow(this);
         initialize();
     }
 
     private void initialize () {
         // Arrange for the surface contents to be continuously copied into this window's texture.
         updateTexture();
-        surface.setWindow(this);
         surface.setTexture(texture);
         surface.setUpdateEnable(true);
     }

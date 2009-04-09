@@ -61,7 +61,7 @@ public class AppXrwMaster
     private AppXrwConnectionInfo connectionInfo;
 
     /**
-     * Create a new instance of AppXrwMaster.
+     * Create a new instance of AppXrwMaster in a user client.
      *
      * @param appName The name of the application.
      * @param command The operating system command to execute to start app program.
@@ -71,18 +71,35 @@ public class AppXrwMaster
      * @throws InstantiationException Could not launch app
      */
     public AppXrwMaster(String appName, String command, Vector2f pixelScale,
-            ProcessReporter reporter, WonderlandSession session)
+                        ProcessReporter reporter, WonderlandSession session)
+            throws InstantiationException {
+        this(appName, command, pixelScale, reporter, session, false);
+    }
+
+    /**
+     * Create a new instance of AppXrwMaster.
+     *
+     * @param appName The name of the application.
+     * @param command The operating system command to execute to start app program.
+     * @param pixelScale The size of the window pixels.
+     * @param processReporter Report output and exit status to this
+     * @param session This app's Wonderland session.
+     * @param sas Whether this app is being launched by a SAS provider
+     * @throws InstantiationException Could not launch app
+     */
+    public AppXrwMaster(String appName, String command, Vector2f pixelScale,
+                        ProcessReporter reporter, WonderlandSession session, boolean sas)
             throws InstantiationException {
 
-        super(appName, new ControlArbXrw(), pixelScale);
-        AppXrw.logger.severe("appName = " + appName);
+        super(appName, (sas ? new ControlArbNull() : new ControlArbXrw()), pixelScale);
+        AppXrw.logger.info("appName = " + appName);
         controlArb.setApp(this);
 
-        AppXrw.logger.severe("********** Created AppXrwMaster with command = " + command);
+        AppXrw.logger.info("Created AppXrwMaster with command = " + command);
 
         appInstance = allocAppInstance(appName);
         appInstanceName = appName + " " + appInstance;
-        AppXrw.logger.severe("appInstanceName = " + appInstanceName);
+        AppXrw.logger.info("appInstanceName = " + appInstanceName);
 
         // Note: we must be be careful to initialize components in the
         // following order
@@ -113,7 +130,7 @@ public class AppXrwMaster
         // Create the Xremwin protocol client.
         client = null;
         try {
-            client = new ClientXrwMaster(this, (ControlArbXrw) controlArb, session, masterHost, serverSocket,
+            client = new ClientXrwMaster(this, controlArb, session, masterHost, serverSocket,
                     winSys, reporter);
         } catch (InstantiationException ex) {
             ex.printStackTrace();
@@ -270,5 +287,17 @@ public class AppXrwMaster
     public void setWindowTitle(int wid, String windowTitle) {
         // Relay window title to master client
         ((ClientXrwMaster) client).setWindowTitle(wid, windowTitle);
+    }
+
+    /** {@inheritDoc} */
+    public boolean isMaster () {
+        return true;
+    }
+
+    /**
+     * Inform all slaves that the given popup has the specified parent.
+     */
+    public void setPopupParentForSlaves (WindowXrw popup, WindowXrw parent) {
+        ((ClientXrwMaster)client).setPopupParent(popup, parent);
     }
 }

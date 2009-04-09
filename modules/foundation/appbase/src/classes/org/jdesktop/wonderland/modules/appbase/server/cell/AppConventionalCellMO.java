@@ -81,8 +81,6 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     AppConventionalCellServerState serverState;
     /** The parameters given to the client. */
     AppConventionalCellClientState clientState;
-    /** The app conventional connection handler */
-    private static AppConventionalConnectionHandler connectionHandler;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
     protected String connectionInfo;
 
@@ -91,16 +89,18 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      */
     public interface AppServerLauncher {
 
+        public enum LaunchStatus { SUCCESS, FAIL };
+
         /**
-         * Launch a server shared application.
-         * @param cellID The ID of the cell launching the command.
+         * Launch a server shared application. Reports the result of the launch by calling 
+         * back to AppConventionalCellMO.appLaunchResult.
+         * @param cell The cell that is launching the app.
          * @param executionCapability The type of execution capability needed (xremwin, vnc, etc.)
          * @param appName The name of the app.
          * @param command The execution command.
-         * @return Subclass-specific data for making a peer-to-peer connection between master and slave.
          */
-        public String appLaunch (CellID cellID, String executionCapability, String appname, 
-                                 String command);
+        public void appLaunch (AppConventionalCellMO cell, String executionCapability, String appname,
+                               String command);
         
         /**
          * Stop a running server shared application.
@@ -113,6 +113,13 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      */
     public static void registerAppServerLauncher (AppServerLauncher appServerLauncher) {
         AppContext.getDataManager().setBinding(APP_SERVER_LAUNCHER_BINDING_NAME, appServerLauncher);
+    }
+
+    /**
+     * Returns the app server launcher.
+     */
+    public static AppServerLauncher getAppServerLauncher () {
+        return (AppServerLauncher) AppContext.getDataManager().getBinding(APP_SERVER_LAUNCHER_BINDING_NAME);
     }
 
     /** Create an instance of AppConventionalCellMO. */
@@ -228,9 +235,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         ** Server shared app case.
         */
 
-        AppServerLauncher appServerLauncher = 
-            (AppServerLauncher) AppContext.getDataManager().getBinding(APP_SERVER_LAUNCHER_BINDING_NAME);
-
+        AppServerLauncher appServerLauncher = getAppServerLauncher();
         if (appServerLauncher == null) {
             logger.warning("No SAS registered. Cannot launch app " + serverState.getAppName());
             return;
@@ -238,18 +243,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
         if (live) {
 
-            connectionInfo = appServerLauncher.appLaunch(cellID, "xremwin", serverState.getAppName(), 
-                                                         serverState.getCommand());
-            if (connectionInfo == null) {
-                logger.warning("Could not launch app " + serverState.getAppName());
-                return;
-            }
-
-            // Notify all client cells that connection info for a newly launched SAS master app 
-            // is now available.
-            AppConventionalCellSetConnectionInfoMessage msg = 
-                new AppConventionalCellSetConnectionInfoMessage(cellID, connectionInfo);
-            AppConventionalConnectionHandler.getSender().send(msg);
+            // TODO: need to generalize beyond xremwin
+            appServerLauncher.appLaunch(this, "xremwin", serverState.getAppName(), serverState.getCommand());
 
         } else {
             if (connectionInfo != null) {
@@ -257,6 +252,28 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
                 connectionInfo = null;
             }
         }
+    }
+
+    public void appLaunchResult (AppServerLauncher.LaunchStatus status, String connInfo) {
+
+        logger.severe("############### AppConventionalCellMO: Launch result received");
+        logger.severe("status = " + status);
+        logger.severe("connInfo = " + connInfo);
+
+        if (status == AppServerLauncher.LaunchStatus.FAIL) {
+            logger.warning("Could not launch app " + serverState.getAppName());
+            // TODO: probably want to destroy the cell
+            return;
+        }
+
+        setConnectionInfo(connInfo);
+
+        // Notify all client cells that connection info for a newly launched SAS master app 
+        // is now available.
+        AppConventionalCellSetConnectionInfoMessage msg = 
+            new AppConventionalCellSetConnectionInfoMessage(cellID, connInfo);
+        AppConventionalConnectionHandler.getSender().send(msg);
+        System.err.println("!!!!!!!!!!! Slaves notified of connection info " + connInfo);
     }
 
     void setConnectionInfo (String connInfo) {

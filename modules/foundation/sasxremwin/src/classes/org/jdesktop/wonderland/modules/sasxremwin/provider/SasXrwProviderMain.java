@@ -77,10 +77,13 @@ public class SasXrwProviderMain implements SasProviderConnectionListener {
         AppXrwMaster app = null;
         try {
             app = new AppXrwMaster(appName, command, pixelScale, 
-                                   ProcessReporterFactory.getFactory().create(appName), session);
+                                   ProcessReporterFactory.getFactory().create(appName), session, true);
         } catch (InstantiationException ex) {
             return null;
         }
+
+        // Now it is time to enable the master client loop
+        app.getClient().enable();
 
         return app.getConnectionInfo().toString();
     }

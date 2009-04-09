@@ -18,11 +18,15 @@
 package org.jdesktop.wonderland.modules.xremwin.client;
 
 import com.jme.math.Vector2f;
+import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.AppConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
  * An X11 app which receives its window contents from the Xremwin server.
@@ -31,14 +35,23 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
  * @author deronj
  */
 @InternalAPI
-public class AppXrw extends AppConventional {
+public abstract class AppXrw extends AppConventional {
 
     /** The logger for app.modules.xremwin */
-    static final Logger logger = Logger.getLogger("wl.app.modules.xremwin");
+    static final Logger logger = Logger.getLogger(AppXrw.class.getName());
     /** A mapping of wids to the corresponding windows */
     static final HashMap<Integer, WindowXrw> widToWindow = new HashMap<Integer, WindowXrw>();
     /** The Xremwin protocol interpreter -- Set it subclass constructor */
     protected ClientXrw client;
+
+    /** 
+     ** The order in which top-level windows have been made visible in this app, in the order 
+     ** least recently shown to most recently shown. (Note: this is opposite the order of 0.4).
+     */
+    private LinkedList<WindowXrw> windowVisibleOrder = new LinkedList<WindowXrw>();
+
+    // TODO: temporary: until winTransientFor: used to determine parents of popups
+    private WindowXrw currentPointerWindow;
 
     /**
      * Create a instance of AppXRW with a generated ID.
@@ -61,7 +74,8 @@ public class AppXrw extends AppConventional {
      * @param decorated Whether the window is decorated with a frame.
      * @param wid The X11 window ID.
      */
-    public WindowXrw createWindow(int x, int y, int width, int height, int borderWidth, boolean decorated, int wid) {
+    public WindowXrw createWindow(int x, int y, int width, int height, int borderWidth, boolean decorated,
+            int wid) {
         WindowXrw window = null;
         try {
             window = new WindowXrw(this, x, y, width, height, borderWidth, decorated, getPixelScale(), wid);
@@ -86,11 +100,14 @@ public class AppXrw extends AppConventional {
                 window.cleanup();
             }
         }
+        widToWindow.clear();
 
         if (client != null) {
             client.cleanup();
             client = null;
         }
+
+        windowVisibleOrder.clear();
     }
 
     /**
@@ -112,6 +129,90 @@ public class AppXrw extends AppConventional {
     int getTransientForWid(int wid) {
         // TODO: implement
         return 0;
+    }
+
+    /**
+     * Return whether this app is the master or a slave.
+     */
+    public abstract boolean isMaster();
+
+    /**
+     * Track when the visibility of a window changes so we can determine order in which 
+     * windows are made visible. This is because the oldest made visible window is chosen as
+     * the primary window. Popup windows and windows of unknown type are ignored by this method.
+     */
+    void trackWindowVisibility(WindowXrw window) {
+        if (!window.isDecorated()) {
+            return;
+        }
+
+        windowVisibleOrder.remove(window);
+
+        if (window.isVisibleApp()) {
+
+            // TODO: temporary: until winTransientFor: used to determine parents of popups
+            // Fix for bug 43: we've got to initialize the current pointer window with something 
+            // on the slave side
+            if (!isMaster() && getCurrentPointerWindow() == null) {
+                setCurrentPointerWindow(window);
+            }
+
+            // Remember that this window has been shown. Remove to the end of the list.
+            windowVisibleOrder.addLast(window);
+            logger.info("Most recently visible window = " + window);
+        }
+
+        selectPrimaryWindow();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void removeWindow(Window2D window) {
+        super.removeWindow(window);
+
+        // TODO: temporary: until winTransientFor: used to determine parents of popups
+        if (currentPointerWindow == window) {
+            currentPointerWindow = null;
+        }
+
+        selectPrimaryWindow();
+    }
+
+    // TODO: temporary: until winTransientFor: used to determine parents of popups
+    public void setCurrentPointerWindow(WindowXrw window) {
+        currentPointerWindow = window;
+        logger.info("Current pointer window = " + window);
+    }
+
+    // TODO: temporary: until winTransientFor: used to determine parents of popups
+    public WindowXrw getCurrentPointerWindow() {
+        return currentPointerWindow;
+    }
+
+    private void selectPrimaryWindow() {
+        WindowXrw primaryWindow = (WindowXrw) getPrimaryWindow();
+        logger.info("selectPrimaryWindow: current primary = " + primaryWindow);
+        if (primaryWindow == null || !primaryWindow.isVisibleApp()) {
+            // Select the oldest made visible top-level window as the new primary window
+            WindowXrw oldestVisibleWindow = null;
+            try {
+                oldestVisibleWindow = windowVisibleOrder.getFirst();
+            } catch (NoSuchElementException ex) {
+            }
+            logger.info("oldestVisibleWindow = " + oldestVisibleWindow);
+            if (oldestVisibleWindow != null) {
+                try {
+                    oldestVisibleWindow.setType(Window2D.Type.PRIMARY);               
+                    logger.info("Made oldest visible window primary");
+                    logger.info("New primary window = " + oldestVisibleWindow);
+                } catch (IllegalStateException ise) {
+                    RuntimeException re = new RuntimeException("Making window " + oldestVisibleWindow.getWid() + 
+                                                               " primary caused exception");
+                    re.initCause(ise);
+                    throw re;
+                }
+            }
+        }
     }
 }
 

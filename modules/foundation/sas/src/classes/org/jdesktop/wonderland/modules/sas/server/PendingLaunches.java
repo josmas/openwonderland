@@ -30,27 +30,13 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 class PendingLaunches implements Serializable {
 
-    static class LaunchRequest implements Serializable {
-        CellID cellID;
-        String executionCapability;
-        String appName;
-        String command;
+    private HashMap<String,LinkedList<SasServer.LaunchRequest>> execCapToLaunchReqList =
+        new HashMap<String,LinkedList<SasServer.LaunchRequest>>();
 
-        LaunchRequest (CellID cellID, String executionCapability, String appName, String command) {
-            this.cellID = cellID;
-            this.executionCapability = executionCapability;
-            this.appName = appName;
-            this.command = command;
-        }
-    }
-
-    private HashMap<String,LinkedList<LaunchRequest>> execCapToLaunchReqList =
-        new HashMap<String,LinkedList<LaunchRequest>>();
-
-    void add (LaunchRequest req) {
-        LinkedList<LaunchRequest> reqs = execCapToLaunchReqList.get(req.executionCapability);
+    void add (SasServer.LaunchRequest req) {
+        LinkedList<SasServer.LaunchRequest> reqs = execCapToLaunchReqList.get(req.executionCapability);
         if (reqs == null) {
-            reqs = new LinkedList<LaunchRequest>();
+            reqs = new LinkedList<SasServer.LaunchRequest>();
             execCapToLaunchReqList.put(req.executionCapability, reqs);
         }
         reqs.add(req);
@@ -59,7 +45,7 @@ class PendingLaunches implements Serializable {
     /**
      * Return the list of pending launches for this execution capability.
      */
-    LinkedList<LaunchRequest> getPendingLaunches (String executionCapability) {
+    LinkedList<SasServer.LaunchRequest> getPendingLaunches (String executionCapability) {
         return execCapToLaunchReqList.get(executionCapability);
     }
 }

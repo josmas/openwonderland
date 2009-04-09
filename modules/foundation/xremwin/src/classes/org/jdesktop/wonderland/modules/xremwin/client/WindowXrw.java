@@ -18,9 +18,12 @@
 package org.jdesktop.wonderland.modules.xremwin.client;
 
 import com.jme.math.Vector2f;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
 import java.math.BigInteger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.WindowConventional;
 
 /**
@@ -40,6 +43,8 @@ public class WindowXrw extends WindowConventional {
     private WindowXrw winTransientFor;
     /** A temporary buffer used by syncSlavePixels. */
     private byte[] tmpPixelBytes;
+    /** The screen position of this window */
+    private Point scrPos = new Point(0, 0);
 
     /**
      * Create a new WindowXrw instance and its "World" view.
@@ -54,21 +59,22 @@ public class WindowXrw extends WindowConventional {
      * @throws Instantiation if the window cannot be created.
      */
     WindowXrw(App2D app, int x, int y, int width, int height, int borderWidth,
-              boolean decorated, Vector2f pixelScale, int wid) 
-        throws InstantiationException {
+            boolean decorated, Vector2f pixelScale, int wid)
+            throws InstantiationException {
 
         super(app, width, height, decorated, borderWidth, pixelScale,
-              "WindowXrw " + wid + " for app " + app.getName());
+                "WindowXrw " + wid + " for app " + app.getName());
 
         this.wid = wid;
 
         // Determine whether this window is transient for another
+        // TODO: not yet implemented
         int transientForWid = ((AppXrw) app).getTransientForWid(wid);
         if (transientForWid != 0) {
             winTransientFor = AppXrw.widToWindow.get(transientForWid);
         }
 
-        setOffset(x, y);
+        setScreenPosition(x, y);
     }
 
     /**
@@ -85,6 +91,58 @@ public class WindowXrw extends WindowConventional {
      */
     public int getWid() {
         return wid;
+    }
+
+    /**
+     * Specify the absolute screen position of this window.
+     */
+    public void setScreenPosition (int x, int y) {
+        scrPos = new Point(x, y);
+        updateOffset();
+    }
+
+    /**
+     * Returns the X screen position of this window.
+     */
+    public int getScreenPositionX () {
+        return scrPos.x;
+    }
+
+    /**
+     * Returns the Y screen position of this window.
+     */
+    public int getScreenPositionY () {
+        return scrPos.y;
+    }
+
+    /** {@inheritDoc} */
+    public void setType (Type type) throws IllegalStateException {
+        super.setType(type);
+        updateOffset();
+    }
+
+    /** {@inheritDoc} */
+    public void setParent(Window2D parent) {
+        super.setParent(parent);
+        updateOffset();
+    }
+
+    /** 
+     * Convert the screen position of this window into a parent-relative offset.
+     */
+    private void updateOffset() {
+        
+        // Make sure that this window is fully initialized before updating the offset
+        if (scrPos == null) return;
+
+        WindowXrw parent = (WindowXrw) getParent();
+        if (getType() == Type.PRIMARY || parent == null) {
+            setOffset(0, 0);
+        } else {
+            if (parent.scrPos != null) {
+                setOffset(scrPos.x - parent.scrPos.x, scrPos.y - parent.scrPos.y);
+            }
+        }
     }
 
     /**
@@ -116,9 +174,73 @@ public class WindowXrw extends WindowConventional {
      * @param winTransientFor If non-null, the window whose visibility is being changed
      * is a transient window for winTransientFor.
      */
+    /* TODO: notyet
     public void setVisibleApp(boolean visible, WindowXrw winTransientFor) {
-        this.winTransientFor = winTransientFor;
-        super.setVisibleApp(visible);
+    this.winTransientFor = winTransientFor;
+    super.setVisibleApp(visible);
+    }
+     */
+    public void setVisibleApp(boolean visible, boolean isPopup) {
+        if (isVisibleApp() == visible) {
+            return;
+        }
+
+        if (isPopup || !isDecorated()) {
+            setType(Type.POPUP);
+
+            // We assign the popup parent when the popup is first made visible
+            // TODO: This is a kludge. Eventually replace with winTransientFor
+            if (getParent() == null) {
+                setParent(determineParentForPopup());
+            }
+        } else {
+            // If type hasn't been determined at this point, make window a secondary
+            if (visible && getType() == Type.UNKNOWN) {
+                setType(Type.SECONDARY);
+            }
+        }
+
+        visibleApp = visible;
+
+        ((AppXrw)app).trackWindowVisibility(this);
+
+        // If this is still a secondary assign a parent if necessary
+        if (getType() == Type.SECONDARY && getParent() == null) {
+            setParent(app.getPrimaryWindow());
+        }
+
+        changeMask |= CHANGED_VISIBLE_APP;
+        updateViews();
+    }
+
+    // TODO: This is a kludge. Eventually replace with winTransientFor
+    private WindowXrw determineParentForPopup() {
+        WindowXrw parent = null;
+        AppXrw appx = (AppXrw) app;
+
+        if (appx.isMaster()) {
+            WindowXrw currentPointerWin = appx.getCurrentPointerWindow();
+            if (currentPointerWin != this) {
+                parent = currentPointerWin;
+            }
+            if (parent == null) {
+                parent = (WindowXrw) app.getPrimaryWindow();
+            }
+            ((AppXrwMaster) appx).setPopupParentForSlaves(this, parent);
+        } else {
+            // On the slave the current pointer window may be
+            // completely different than the master. Therefore
+            // we cannot rely on it. Instead, just stick the popup
+            // somewhere reasonable for now. First try to attach
+            // it to the primary window and then just leave the parent
+            // null (this will attach it directly to the cell). It doesn't
+            // matter exactly where we put it for now because an
+            // SetPopupParent request will be forthcoming from the
+            // master, which will put the popup in the correct place.
+            parent = (WindowXrw) app.getPrimaryWindow();
+        }
+
+        return parent;
     }
 
     /** 
@@ -126,13 +248,6 @@ public class WindowXrw extends WindowConventional {
      */
     public WindowXrw getTransientFor() {
         return winTransientFor;
-    }
-
-    /** 
-     * Used only by App Base Master on a popup window: Specify the parent of this popup.
-     */
-    public void setPopupParent(WindowXrw parent) {
-        // TODO
     }
 
     /**
@@ -148,8 +263,8 @@ public class WindowXrw extends WindowConventional {
      * Returns the name of the controlling user.
      */
     public String getControllingUser() {
-       // TODO: return ((ControlArbXrw) app.getControlArb()).getController();
-       return null;
+        // TODO: return ((ControlArbXrw) app.getControlArb()).getController();
+        return null;
     }
 
     /**
@@ -171,5 +286,23 @@ public class WindowXrw extends WindowConventional {
 
         ClientXrw client = ((AppXrw) app).getClient();
         ((ClientXrwMaster) client).writeSyncSlavePixels(slaveID, tmpPixelBytes);
+    }
+
+    /** {@inheritDoc} */
+    public void deliverEvent(MouseEvent event) {
+
+        // TODO: temporary: until winTransientFor: used to determine parents of popups
+        // Always record this regardless of the specific mouse event type
+        if (!isDecorated()) {
+            ((AppXrw) app).setCurrentPointerWindow(this);
+        }
+
+        super.deliverEvent(event);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString () {
+        return getName();
     }
 }

@@ -53,9 +53,9 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     }
 
     /** The height of the header */
-    public static final float HEADER_HEIGHT = /* 0.2f */ /*6.3f*/ 1.25f;
+    public static final float HEADER_HEIGHT = /* 0.2f */ /*6.3f*/ 1.25f/3f;
     /** The thickness (in the plane of the frame) of the other parts of the border */
-    public static final float SIDE_THICKNESS = /*0.07f*/ /* 3.0f */ 0.75f;
+    public static final float SIDE_THICKNESS = /*0.07f*/ /* 3.0f */ 0.75f/3f;
     /** The width of the resize corner - currently the same as a header height */
     public static final float RESIZE_CORNER_WIDTH = HEADER_HEIGHT;
     /** The height of the resize corner - currently the same as a header height */
@@ -122,7 +122,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
             controlArb.addListener(this);
         }
 
-        attachToViewEntity(view.getEntity());
+        attachToViewEntity(view);
     }
 
     /**
@@ -167,21 +167,23 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
         }
     }
 
-    private void attachToViewEntity (Entity viewEntity) {
+    private void attachToViewEntity (View2DCell view) {
+        if (view == null) return;
+        Entity viewEntity = view.getEntity();
         if (viewEntity == null) return;
+
         viewEntity.addEntity(frameEntity);
 
-        RenderComponent rcView = (RenderComponent) viewEntity.getComponent(RenderComponent.class);
         RenderComponent rcFrame = (RenderComponent) frameEntity.getComponent(RenderComponent.class);
 
-        /* TODO: obsolete?
-           if (rcEntity != null) {
-           ClientContextJME.getWorldManager().addEntity(rcFrame.getEntity());
-           }
-        */
-
-        if (rcView != null && rcView.getSceneRoot() != null && rcFrame != null) {
-            rcFrame.setAttachPoint(rcView.getSceneRoot());
+        if (rcFrame != null) {
+            // We need to attach secondary view frames to the GEOMETRY NODE of its views
+            // so that they move with the offset of the view
+            if (view.getType() == View2D.Type.SECONDARY) {
+                rcFrame.setAttachPoint(view.getGeometryNode());
+            } else {
+                rcFrame.setAttachPoint(view.getViewNode());
+            }
         }
     }
 

@@ -64,9 +64,8 @@ public class WhiteboardWindow extends WindowGraphics2D {
                             Vector2f pixelScale, final WhiteboardComponent commComponent)
             throws InstantiationException {
 
-        super(app, width, height, topLevel, pixelScale, 
-              "Main window for Whiteboard",
-              new WhiteboardDrawingSurface(width, height));
+        super(app, width, height, topLevel, pixelScale, "Main window for Whiteboard",
+              new WhiteboardDrawingSurface());
         this.cell = cell;
 
         // For debug

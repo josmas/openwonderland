@@ -580,7 +580,6 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
         keyEventBuf[n++] = (byte) Proto.ClientMessageType.EVENT_KEY.ordinal();
         keyEventBuf[n++] = (byte) ((event.getID() == KeyEvent.KEY_PRESSED) ? 1 : 0);
         boolean pressed = ((event.getID() == KeyEvent.KEY_PRESSED) ? true : false);
-        System.err.println("pressed = " + pressed);
         keyEventBuf[n++] = (byte) 0;
         keyEventBuf[n++] = (byte) 0;
         keyEventBuf[n++] = (byte) ((keySym >> 24) & 0xff);

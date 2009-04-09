@@ -66,8 +66,8 @@ public class SwingExampleWindow extends WindowSwing {
 	setTitle("Swing Example");
 
 	TestPanel examplePanel = new TestPanel();
-	// Note: this seems to only be required for the swing set, but do it here for safety
-	// TODO: example without
+
+	// Parent to Wonderland main window for proper focus handling 
        	JmeClientMain.getFrame().getCanvas3DPanel().add(examplePanel);
 
 	setComponent(examplePanel);

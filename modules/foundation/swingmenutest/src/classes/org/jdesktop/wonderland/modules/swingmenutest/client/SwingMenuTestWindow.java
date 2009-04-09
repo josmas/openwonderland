@@ -55,9 +55,10 @@ public class SwingMenuTestWindow extends WindowSwing  {
 	setTitle("Swing Menu Test");
 	
 	MenuPanel menuPanel = new MenuPanel();
-	// Note: this seems to only be required for the swing set, but do it here for safety
-	// TODO: test without
+
+	// Parent to Wonderland main window for proper focus handling 
        	JmeClientMain.getFrame().getCanvas3DPanel().add(menuPanel);
+
 	setComponent(menuPanel);
     }
 }

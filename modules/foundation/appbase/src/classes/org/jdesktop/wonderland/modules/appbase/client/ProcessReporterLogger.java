@@ -50,7 +50,7 @@ public class ProcessReporterLogger extends ProcessReporter {
      * {@inheritDoc}
      */
     public void exitValue(int value) {
-        logger.info("Process " + processName + "exitted.");
+        logger.info("Process " + processName + " exitted.");
         logger.info("exitValue = " + value);
     }
 }

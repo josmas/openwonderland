@@ -119,14 +119,14 @@ public class FrameRect extends FrameComponent {
     /**
      * Returns the width of this component. 
      */
-    public synchronized float getWidth() {
+    public float getWidth() {
         return width;
     }
 
     /**
      * Returns the height of this component. 
      */
-    public synchronized float getHeight() {
+    public float getHeight() {
         return height;
     }
 
@@ -177,7 +177,7 @@ public class FrameRect extends FrameComponent {
     /**
      * {@inheritDoc}
      */
-    public synchronized ColorRGBA getColor() {
+    public ColorRGBA getColor() {
         MaterialState ms = null;
         if (quad != null) {
             ms = (MaterialState) quad.getRenderState(RenderState.RS_MATERIAL);

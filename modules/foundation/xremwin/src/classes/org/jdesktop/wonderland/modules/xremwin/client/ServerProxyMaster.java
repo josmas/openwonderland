@@ -201,7 +201,6 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
             // Process these first. (Note: this is a poll, not a wait)
             // TODO: it probably is a good idea to put a limit on the number
             // of slave hellos we service here
-            //System.err.println("Service slave hellos");
             SlaveHelloMessage msg = null;
             synchronized (slaveHellos) {
                 while (slaveHellos.size() > 0) {

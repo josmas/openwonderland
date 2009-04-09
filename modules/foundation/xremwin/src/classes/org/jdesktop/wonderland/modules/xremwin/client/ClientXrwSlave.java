@@ -117,7 +117,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
                 win = lookupWindow(setPopupParentMsgArgs.wid);
                 WindowXrw parentWin = lookupWindow(setPopupParentMsgArgs.parentWid);
                 if (win != null && parentWin != null) {
-                    win.setPopupParent(parentWin);
+                    win.setParent(parentWin);
                 } else {
                     if (win == null) {
                         AppXrw.logger.warning("SetPopupParent: window doesn't exist: wid = " +
@@ -131,7 +131,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
                 break;
 
             case CONTROLLING_USER_NAME:
-                controlArb.setController(userNameMsgArgs.userName);
+                ((ControlArbXrw)controlArb).setController(userNameMsgArgs.userName);
                 break;
 
             default:
@@ -165,7 +165,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
     public void disconnected() {
         // We no longer control the remote app group
         if (controlArb.hasControl()) {
-            controlArb.controlLost();
+            ((ControlArbXrw)controlArb).controlLost();
         }
     }
 }

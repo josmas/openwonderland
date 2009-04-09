@@ -27,6 +27,8 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderConnectionType;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchMessage;
+import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchStatusMessage;
+import org.jdesktop.wonderland.common.messages.MessageID;
 
 /**
  * The SAS provider client.
@@ -83,17 +85,14 @@ public class SasProviderConnection extends BaseConnection {
 
         if (listener == null) {
             logger.warning("No provider listener is registered.");
-            respondFail();
+            sendResponse(msg.getMessageID(), null);
         }
 
         System.err.println("################### Attempting to launch X app");
         String connInfo = listener.launch(msg.getAppName(), msg.getCommand(), 
-                                                new Vector2f(0.01f, 0.01f)/*TODO: msg.getPixelScale()*/);
-        if (connInfo != null) {
-            respondSuccess(connInfo);
-        } else {
-            respondFail();
-        }
+                                          new Vector2f(0.01f, 0.01f)/*TODO: msg.getPixelScale()*/);
+        System.err.println("connInfo = " + connInfo);
+        sendResponse(msg.getMessageID(), connInfo);
     }
     
     /**
@@ -105,18 +104,30 @@ public class SasProviderConnection extends BaseConnection {
     }
     
     /**
-     * Respond with a success message which contains the given connection info.
+     * Respond to a launch request message.
      */
-    private void respondSuccess (String connInfo) {
-        // TODO
-        System.err.println("****** Respond success.");
-    }
+    private void sendResponse (MessageID launchMessageID, String connInfo) {
+        
+        SasProviderLaunchStatusMessage.LaunchStatus status;
+        if (connInfo == null) {
+            status = SasProviderLaunchStatusMessage.LaunchStatus.FAIL;
+        } else {
+            status = SasProviderLaunchStatusMessage.LaunchStatus.SUCCESS;
+        }
 
-    /**
-     * Respond with a failure message.
-     */
-    private void respondFail () {
-        // TODO
-        System.err.println("****** Respond fail.");
+        logger.severe("########### Respond with status message = " + status);
+        logger.severe("status = " + status);
+        logger.severe("launchMessageID = " + launchMessageID);
+        logger.severe("connInfo = " + connInfo);
+
+        try {
+            SasProviderLaunchStatusMessage msg = 
+                new SasProviderLaunchStatusMessage(status, launchMessageID, connInfo);
+            send(msg);
+            logger.severe("########### sent success message");
+        } catch (Exception ex) {
+            logger.warning("Message send error while responding to launch message, msgID = " + 
+                           launchMessageID);
+        }
     }
 }

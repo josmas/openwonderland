@@ -48,7 +48,7 @@ abstract public class ControlArbSingle extends ControlArb {
      * {@inheritDoc}
      */
     @Override
-    public synchronized String[] getControllers() {
+    public String[] getControllers() {
         String[] ary = new String[1];
         ary[0] = controller;
         return ary;
@@ -58,7 +58,7 @@ abstract public class ControlArbSingle extends ControlArb {
      * Returns the user that is currently in control.
      * (null if there currently isn't a controller).
      */
-    public synchronized String getController() {
+    public String getController() {
         return controller;
     }
 

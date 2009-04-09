@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.sas.common;
 
 import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
