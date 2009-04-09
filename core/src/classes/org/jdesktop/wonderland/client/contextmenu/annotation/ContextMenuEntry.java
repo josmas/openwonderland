@@ -11,18 +11,21 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.client.contextmenu;
+package org.jdesktop.wonderland.client.contextmenu.annotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
- * A listener for selections on the context menu.
- * 
+ * Annotation that indicates this class has entries to add to the context menu.
+ * The class must also implement the ContextMenuSPI interface.
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public interface ContextMenuListener {
-
-    public void entityContextPerformed(ContextMenuEvent event);
+@Target(ElementType.TYPE)
+public @interface ContextMenuEntry {
 }
