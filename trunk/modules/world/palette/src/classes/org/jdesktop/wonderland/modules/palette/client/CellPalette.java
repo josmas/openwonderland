@@ -22,6 +22,7 @@ import java.awt.Toolkit;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragSource;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -194,10 +195,10 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         CellRegistry registry = CellRegistry.getCellRegistry();
         Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
         List<String> listNames = new LinkedList();
-        Iterator<CellFactorySPI> it = cellFactories.iterator();
-        int i = 0;
-        while (it.hasNext() == true) {
-            CellFactorySPI cellFactory = it.next();
+        
+        // Loop through each cell factory we find. Insert the cell names into
+        // a list. Ignore any factories without a cell name.
+        for (CellFactorySPI cellFactory : cellFactories) {
             try {
                 String name = cellFactory.getDisplayName();
                 if (name != null) {
@@ -211,6 +212,10 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                         cellFactory, excp);
             }
         }
+
+        // Set the names of the list, first sorting the list in alphabetical
+        // order
+        Collections.sort(listNames);
         cellList.setListData(listNames.toArray(new String[] {}));
         cellList.setDragEnabled(true);        
     }
