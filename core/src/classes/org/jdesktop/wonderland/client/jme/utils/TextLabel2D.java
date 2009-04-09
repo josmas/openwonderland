@@ -42,7 +42,13 @@ public class TextLabel2D {
     private Font font;
 
     public TextLabel2D(String text) {
+        this(text, new Color(1f,1f,1f), new Color(0f,0f,0f));
+    }
+    
+    public TextLabel2D(String text, Color foreground, Color background) {
         this.text = text;
+        this.foreground = foreground;
+        this.background = background;
         updateKernel();
         setFont(Font.decode("Sans PLAIN 40"));
     }
