@@ -111,7 +111,21 @@ public class CellTransform implements Serializable {
         
         return ret;
     }
-    
+
+    /**
+     * Return the position and current look direction
+     * @param position
+     * @param look
+     */
+    public void getLookAt(Vector3f position, Vector3f look) {
+        position.set(0,0,0);
+        position.addLocal(translation);
+
+        look.set(0,0,1);
+        rotation.multLocal(look);
+        look.normalizeLocal();
+    }
+
     /**
      * Multiply this transform by t1. This transform will be update
      * and the result returned
