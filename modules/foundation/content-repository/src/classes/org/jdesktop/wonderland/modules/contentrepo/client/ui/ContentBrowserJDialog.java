@@ -40,7 +40,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
@@ -59,22 +61,16 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
     private static final Logger logger =
             Logger.getLogger(ContentBrowserJDialog.class.getName());
 
-    private ContentRepository repo;
-    private ContentCollection directory;
+    private ServerSessionManager session = null;
+    private ContentRepository repo = null;
+    private ContentCollection directory = null;
 
     /** Creates new form BrowserFrame */
-    public ContentBrowserJDialog(ContentRepository repo) {
-        this.repo = repo;
+    public ContentBrowserJDialog(ServerSessionManager session) {
+        this.session = session;
         initComponents();
 
         fileList.setCellRenderer(new ContentRenderer());
-        categoryList.setSelectedValue("Users", true);
-
-        try {
-            setCollection(repo.getUserRoot());
-        } catch (ContentRepositoryException cce) {
-            logger.log(Level.WARNING, "Error getting user root", cce);
-        }
 
         // Listen for when a new directory/file is selected in the list of
         // files in a content repository. Update the state of the buttons
@@ -138,10 +134,31 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
                 listeners.clear();
             }
         });
+    }
 
-        // Update the state of the GUI to represent the initially selected
-        // directory
-        changeListSelection();
+    /**
+     * @inheritDoc()
+     */
+    @Override
+    public void setVisible(boolean visible) {
+        // Set the dialog visible, but also set the current directory to the
+        // user root
+        super.setVisible(visible);
+        if (visible == true) {
+            // Set the user root when the content browser is made visible.
+            ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
+            repo = registry.getRepository(session);
+            try {
+                setCollection(repo.getUserRoot());
+            } catch (ContentRepositoryException cce) {
+                logger.log(Level.WARNING, "Error getting user root", cce);
+            }
+
+            // Update the state of the GUI to represent the initially selected
+            // directory
+            categoryList.setSelectedValue("Users", true);
+            changeListSelection();
+        }
     }
 
     /**

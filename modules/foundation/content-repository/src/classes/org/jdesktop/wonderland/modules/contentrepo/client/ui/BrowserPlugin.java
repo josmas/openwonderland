@@ -55,14 +55,12 @@ public class BrowserPlugin implements ClientPlugin {
     private WeakReference<ContentBrowserJDialog> browserDialogRef = null;
 
     public void initialize(final ServerSessionManager loginInfo) {
-        // Fetch the system content repository based upon the server we are
-        // currently connected to.
-        ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
-        final ContentRepository repo = registry.getRepository(loginInfo);
 
         Action launchAction = new AbstractAction("Content Browser...") {
             public synchronized void actionPerformed(ActionEvent e) {
                 if (frame == null) {
+                    ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
+                    ContentRepository repo = registry.getRepository(loginInfo);
                     frame = new BrowserFrame(repo);
                 }
 
@@ -83,7 +81,7 @@ public class BrowserPlugin implements ClientPlugin {
             public void actionPerformed(ActionEvent e) {
                 ContentBrowserJDialog contentBrowserFrame;
                 if (browserDialogRef == null || browserDialogRef.get() == null) {
-                    contentBrowserFrame = new ContentBrowserJDialog(repo);
+                    contentBrowserFrame = new ContentBrowserJDialog(loginInfo);
                     contentBrowserFrame.setModal(false);
                     contentBrowserFrame.setActionName(BrowserAction.OK_ACTION, "Create");
                     contentBrowserFrame.setActionName(BrowserAction.CANCEL_ACTION, "Cancel");
@@ -140,7 +138,7 @@ public class BrowserPlugin implements ClientPlugin {
 
         // Register the content browser frame with the registry of such panels
         ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
-        manager.setDefaultContentBrowser(new ContentBrowserJDialog(repo));
+        manager.setDefaultContentBrowser(new ContentBrowserJDialog(loginInfo));
     }
 
 }
