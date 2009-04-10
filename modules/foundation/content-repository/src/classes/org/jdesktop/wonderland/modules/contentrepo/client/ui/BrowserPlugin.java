@@ -78,7 +78,7 @@ public class BrowserPlugin implements ClientPlugin {
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        JMenuItem browserItem = new JMenuItem("Conent Browser (NEW)...");
+        JMenuItem browserItem = new JMenuItem("Content Browser (NEW)...");
         browserItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ContentBrowserJDialog contentBrowserFrame;
