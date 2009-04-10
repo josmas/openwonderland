@@ -205,6 +205,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         // the toggle button state.
         CellComponent component = cell.getComponent(TranslateAffordanceCellComponent.class);
         translateToggleButton.setSelected(component != null);
+        translateToggleButton.repaint();
 
         // In theory each affordance component can hold a different size value.
         // In practice this can never happen since the GUI enforces all of the
@@ -222,11 +223,13 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         // toggle button state.
         component = cell.getComponent(RotateAffordanceCellComponent.class);
         rotateToggleButton.setSelected(component != null);
+        rotateToggleButton.repaint();
 
         // See if there is a resize component on the Cell. If so, then set the
         // toggle button state.
         component = cell.getComponent(ResizeAffordanceCellComponent.class);
         resizeToggleButton.setSelected(component != null);
+        resizeToggleButton.repaint();
     }
 
     private void translateToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_translateToggleButtonActionPerformed
