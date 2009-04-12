@@ -95,6 +95,9 @@ public class DarkstarRunner extends BaseRunner {
         }
     }
 
+    /** the property to check for a public hostname */
+    private static final String PUBLIC_ADDRESS_PROP = "darkstar.host.public";
+
     /** the logger */
     private static final Logger logger =
             Logger.getLogger(DarkstarRunner.class.getName());
@@ -114,6 +117,9 @@ public class DarkstarRunner extends BaseRunner {
 
     /** the current wfs name.  Only valid when starting up */
     private String currentWFSName;
+
+    /** the public hostname, or null to use the default hostname */
+    private String publicAddress;
 
     /**
      * The current list of modules, implemented as a thread-local variable
@@ -193,6 +199,8 @@ public class DarkstarRunner extends BaseRunner {
 
     @Override
     public synchronized void start(Properties props) throws RunnerException {
+        publicAddress = props.getProperty(PUBLIC_ADDRESS_PROP);
+
         try {
             super.start(props);
         } finally {
@@ -398,7 +406,15 @@ public class DarkstarRunner extends BaseRunner {
      * @return the external hostname of the Darkstar server
      */
     public String getHostname() {
-        return System.getProperty(Constants.WEBSERVER_HOST_PROP);
+        // first, see if the Darkstar server has a public hostname we should
+        // be giving out instead of the internal one
+        String hostname = publicAddress;
+        if (hostname == null) {
+            // fall back to the internal address, which is guaranteed to be set
+            hostname = System.getProperty(Constants.WEBSERVER_HOST_PROP);
+        }
+
+        return hostname;
     }
 
     /**
