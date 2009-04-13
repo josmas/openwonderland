@@ -155,7 +155,7 @@ public class UserManager implements ManagedObject, Serializable {
     }
     
     /**
-     * Log user out of s÷pecified session
+     * Log user out of specified session
      * @param session
      */
     public void logout(WonderlandClientID clientID) {
