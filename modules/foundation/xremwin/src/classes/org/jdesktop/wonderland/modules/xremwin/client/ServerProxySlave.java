@@ -220,21 +220,20 @@ class ServerProxySlave implements ServerProxy {
         System.err.println("Waiting to get numWins");
         int numWins = bufQueue.nextInt();
         System.err.println("numWins = " + numWins);
-        WindowXrw[] winStackOrder = new WindowXrw[numWins];
         for (int i = 0; i < numWins; i++) {
-            syncWindowStateNext(winStackOrder);
+            syncWindowStateNext();
         }
 
-        client.restackWindows(winStackOrder);
+        client.restackFromZOrders();
     }
 
-    private void syncWindowStateNext(WindowXrw[] winStackOrder) {
+    private void syncWindowStateNext() {
         System.err.println("Enter syncWindowStateNext");
 
         CreateWindowMsgArgs crtMsgArgs = new CreateWindowMsgArgs();
         WindowXrw win;
         int controllingUserLen;
-        int stackPos;
+        int zOrder;
         float rotY;
         Vector3f userDispl = new Vector3f();
 
@@ -245,7 +244,7 @@ class ServerProxySlave implements ServerProxy {
         crtMsgArgs.hAndBorder = bufQueue.nextInt();
         crtMsgArgs.borderWidth = bufQueue.nextInt();
         controllingUserLen = bufQueue.nextInt();
-        stackPos = bufQueue.nextInt();
+        zOrder= bufQueue.nextInt();
         rotY = bufQueue.nextFloat();
         System.err.println("rotY = " + rotY);
         userDispl.x = bufQueue.nextFloat();
@@ -262,7 +261,7 @@ class ServerProxySlave implements ServerProxy {
         crtMsgArgs.decorated = (bufQueue.nextByte() == 1) ? true : false;
         System.err.println("client = " + client);
         System.err.println("crtMsgArgs = " + crtMsgArgs);
-        System.err.println("stackPos = " + stackPos);
+        System.err.println("zOrder= " + zOrder);
 
         // Make sure window is ready to receive data on creation
         win = client.createWindow(crtMsgArgs);
@@ -270,6 +269,8 @@ class ServerProxySlave implements ServerProxy {
             AppXrw.logger.warning("Cannot create slave window for " + crtMsgArgs.wid);
             return;
         }
+
+        win.setZOrder(zOrder);
 
         /* TODO: window config 
         win.setRotateY(rotY);
@@ -303,10 +304,6 @@ class ServerProxySlave implements ServerProxy {
         win.setVisibleApp(show, winTransientFor);
          */
         win.setVisibleApp(show);
-
-        if (stackPos >= 0) {
-            winStackOrder[stackPos] = win;
-        }
     }
 
     private static void encode(byte[] buf, int startIdx, short value) {

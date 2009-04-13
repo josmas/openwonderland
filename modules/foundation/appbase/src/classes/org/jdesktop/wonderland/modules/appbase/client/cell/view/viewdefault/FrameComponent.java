@@ -123,7 +123,9 @@ public abstract class FrameComponent {
         View2DCell.entityMakePickable(entity);
 
         // Attach gui event listeners for this component
-        gui.attachEventListeners(entity);
+        if (gui != null) {
+            gui.attachEventListeners(entity);
+        }
 
         attachToParentEntity();
     }

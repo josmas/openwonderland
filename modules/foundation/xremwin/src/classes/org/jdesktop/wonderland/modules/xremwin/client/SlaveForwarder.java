@@ -193,7 +193,7 @@ class SlaveForwarder {
             System.err.println("decorated = " + win.isDecorated());
             System.err.println("showing = " + win.isVisibleApp());
             System.err.println("controlling user = " + controllingUser);
-            System.err.println("stackPos = " + win.getStackPosition());
+            System.err.println("zOrder = " + win.getZOrder());
 
             /*TODO:
             System.err.println("rotY = " + win.getRotateY());
@@ -208,7 +208,7 @@ class SlaveForwarder {
             encode(syncBuf, 16, win.getHeight());
             encode(syncBuf, 20, win.getBorderWidth());
             encode(syncBuf, 24, controllingUserLen);
-            encode(syncBuf, 28, win.getStackPosition());
+            encode(syncBuf, 28, win.getZOrder());
             /* TODO:
              encode(syncBuf, 32, win.getRotateY());
             encode(syncBuf, 36, userDispl.x);

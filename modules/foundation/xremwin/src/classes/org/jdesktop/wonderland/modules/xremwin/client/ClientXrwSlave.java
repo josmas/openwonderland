@@ -149,12 +149,14 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
         this.clientId = clientId;
     }
 
-    public void closeWindow(WindowXrw window) {
+    /** {@inheritDoc} */
+    public void windowCloseUser(WindowXrw win) {
         if (controlArb.hasControl()) {
             try {
-                ((ServerProxySlave) serverProxy).slaveCloseWindow(clientId, window.getWid());
+                // Notify the master that the window has been closed by the user
+                ((ServerProxySlave) serverProxy).slaveCloseWindow(clientId, win.getWid());
             } catch (IOException ex) {
-                AppXrw.logger.warning("Controlling slave cannot close X window " + window.getWid());
+                AppXrw.logger.warning("Controlling slave cannot close X window " + win.getWid());
             }
         }
     }

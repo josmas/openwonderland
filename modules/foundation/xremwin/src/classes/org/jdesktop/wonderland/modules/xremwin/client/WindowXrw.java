@@ -74,7 +74,7 @@ public class WindowXrw extends WindowConventional {
             winTransientFor = AppXrw.widToWindow.get(transientForWid);
         }
 
-        setScreenPosition(x, y);
+        setScreenPositionLocal(x, y);
     }
 
     /**
@@ -94,9 +94,9 @@ public class WindowXrw extends WindowConventional {
     }
 
     /**
-     * Specify the absolute screen position of this window.
+     * Specify the absolute screen position of this window for this client only.
      */
-    public void setScreenPosition (int x, int y) {
+    public void setScreenPositionLocal (int x, int y) {
         scrPos = new Point(x, y);
         updateOffset();
     }
@@ -145,23 +145,33 @@ public class WindowXrw extends WindowConventional {
         }
     }
 
+    /** {@inheritDoc} */
+    /* TODO: winconfig: x11: notyet
+    public synchronized void setSize(int width, int height) {
+        setSizeLocal(width, height);
+
+        // Notify the Xremwin server and other clients
+        ((AppXrw) app).getClient().windowSetSize(this, width, height);
+    }
+    */
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public void userClose() {
-        super.userClose();
+    public void closeUser() {
+        super.closeUser();
 
         // Notify the Xremwin server and other clients
-        ((AppXrw) app).getClient().closeWindow(this);
+        ((AppXrw) app).getClient().windowCloseUser(this);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void userToFront() {
-        super.toFront();
+    public void restackToTop () {
+        super.restackToTop();
 
         // Notify the Xremwin server and other clients
         ((AppXrw) app).getClient().windowToFront(this);

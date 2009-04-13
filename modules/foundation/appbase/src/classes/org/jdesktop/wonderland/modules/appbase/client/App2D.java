@@ -53,7 +53,8 @@ public abstract class App2D {
     private static View2DCellFactory view2DCellFactory;
 
     /** The window stack for this app */
-    protected WindowStack stack = new WindowStack();
+    private WindowStack stack = new WindowStack();
+
     /** The world size of pixels */
     protected Vector2f pixelScale;
 
@@ -152,9 +153,12 @@ public abstract class App2D {
         viewSet.remove(displayer);
     }
 
+    public WindowStack getWindowStack () {
+        return stack;
+    }
+
     /**
      * Add a window to this app. It is added on top of the app's window stack.
-     *
      * @param window The window to add.
      */
     public synchronized void addWindow(Window2D window) {
@@ -163,27 +167,25 @@ public abstract class App2D {
         stack.add(window);
     }
 
-    /**
-     * Add the given window to the stack so that it is above the given sibling.
-     *
-     * @param window The window to add.
-     * @param sibling The window that is immediately above the added window.
-     */
-    public void addWindowSiblingAbove(Window2D window, Window2D sibling) {
-        windows.add(window);
-        viewSet.add(window);
-        stack.addSiblingAbove(window, sibling);
+     /**
+      * Add a window to this app. It is added to the app's window stack.
+      * But the stack is not revalidated. You must later call windowRestackFromZOrders
+      * @param window The window to add.
+      */
+     public synchronized void addWindowNoStackValidate(Window2D window) {
+         windows.add(window);
+         viewSet.add(window);
+         stack.addNoValidate(window);
     }
-
+ 
     /**
      * Remove the given window from the window stack.
-     *
      * @param window The window to remove.
      */
     public void removeWindow(Window2D window) {
-        windows.remove(window);
         stack.remove(window);
         viewSet.remove(window);
+        windows.remove(window);
         if (window == primaryWindow) {
             setPrimaryWindow(null);
         }
@@ -226,37 +228,11 @@ public abstract class App2D {
     }
 
     /**
-     * Move the given window to the front of the window stack.
-     *
-     * @param window The window to move.
+     * Recalculate the stack order based on the Z orders of the windows in the stack.
+     * Used during slave synchronization of conventional apps.
      */
-    public void windowToFront(Window2D window) {
-        stack.toFront(window);
-    }
-
-    /** 
-     * Return the top window of the window stack.
-     */
-    public Window2D windowGetTop() {
-        return stack.getTop();
-    }
-
-    /** 
-     * Return the bottom window of the window stack.
-     */
-    public Window2D windowGetBottom() {
-        return stack.getBottom();
-    }
-
-    /**
-     * Rearrange the window stack so that the windows are in the given order.
-     *
-     * @param order An array which indicates the order in which the windows
-     * are to appear in the stack. The window at order[index] should have
-     * stack position N-index, where N is the number of windows in the stack.
-     */
-    public void restackWindows(Window2D[] order) {
-        stack.restack(order);
+    public void restackFromZOrders () {
+        stack.restackFromZOrders();
     }
 
     /**
