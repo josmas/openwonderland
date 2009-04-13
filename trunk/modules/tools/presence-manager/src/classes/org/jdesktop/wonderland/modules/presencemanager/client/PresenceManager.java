@@ -84,12 +84,12 @@ public interface PresenceManager {
      * @param CellID the CellID of the requestor
      * @param BoundingVolume The BoundingBox or BoundingSphere specifying the range.
      */
-    public WonderlandIdentity[] getUsersInRange(CellID cellID, BoundingVolume bounds);
+    public PresenceInfo[] getUsersInRange(CellID cellID, BoundingVolume bounds);
  
     /**
      * Get the WonderlandIdentity list of all users.
      */
-    public WonderlandIdentity[] getAllUsers();
+    public PresenceInfo[] getAllUsers();
 
     /**
      * Get PresenceInfo for a given username.  If there is more than one user
@@ -98,6 +98,35 @@ public interface PresenceManager {
      * @return PresenceInfo[] presence information for user.  Should be only one entry.
      */
     public PresenceInfo[] getUserPresenceInfo(String username);
+
+    /**
+     * Get PresenceInfo for a given username alias.  If there is more 
+     * than one user with the username alias, all of them are returned;
+     * @param String user name alias
+     * @return PresenceInfo[] presence information for user.  
+     */
+    public PresenceInfo[] getAliasPresenceInfo(String usernameAlias);
+
+    /**
+     * Change username in PresenceInfo.
+     * @param PresenceInfo
+     * @param String user name
+     */
+    public void changeUsername(PresenceInfo info, String username);
+
+    /** 
+     * Set speaking flag
+     * @param PresenceInfo
+     * @param boolean
+     */
+    public void setSpeaking(PresenceInfo info, boolean isSpeaking);
+
+    /** 
+     * Set mute flag
+     * @param PresenceInfo
+     * @param boolean
+     */
+    public void setMute(PresenceInfo info, boolean isMuted);
 
     /**
      * Listener for changes

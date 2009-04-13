@@ -61,6 +61,7 @@ public class OrbCell extends Cell {
 
     private String username;
     private String callID;
+    private String playerWithVpCallID;
 
     public OrbCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -106,6 +107,7 @@ public class OrbCell extends Cell {
 
 	username = orbCellClientState.getUsername();
 	callID = orbCellClientState.getCallID();
+	playerWithVpCallID = orbCellClientState.getPlayerWithVpCallID();
     }
 
     @Override
@@ -127,6 +129,10 @@ public class OrbCell extends Cell {
 
     public String getCallID() {
 	return callID;
+    }
+
+    public String getPlayerWithVpCallID() {
+	return playerWithVpCallID;
     }
 
     public void removeMouseListener() {

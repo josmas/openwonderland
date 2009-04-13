@@ -26,7 +26,10 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+
+//import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 
 import com.jme.bounding.BoundingSphere;
 
@@ -40,6 +43,14 @@ import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.modules.orb.common.OrbCellClientState;
 import org.jdesktop.wonderland.modules.orb.common.OrbCellServerState;
 
+//import org.jdesktop.wonderland.modules.audiomanager.server.AudioParticipantComponentMO;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A server cell that provides Orb functionality
  * @author jprovino
@@ -52,19 +63,35 @@ public class OrbCellMO extends CellMO {
     private String username;
     private String callID;
     private boolean simulateCalls;
+    private String playerWithVpCallID;
+
+//    @UsesCellComponentMO(AudioParticipantComponentMO.class)
+//    private ManagedReference<AudioParticipantComponentMO> compRef;
 
     public OrbCellMO() {
         addComponent(new MovableComponentMO(this));
+
+	try {
+	    Class audioParticipantClass = 
+		Class.forName("org.jdesktop.wonderland.modules.audiomanager.server.AudioParticipantComponentMO");
+
+	    Constructor[] cArray = audioParticipantClass.getConstructors();
+
+	    addComponent((CellComponentMO) cArray[0].newInstance(this));
+	} catch (Exception e) {
+            logger.warning("Unable to find AudioParticipantComponentMO!");
+        }
     }
 
-    public OrbCellMO(Vector3f center, float size, String username, String callID, 
-	    boolean simulateCalls) {
+    public OrbCellMO(Vector3f center, float size, String username, 
+	    String callID, boolean simulateCalls, String playerWithVpCallID) {
 
 	super(new BoundingSphere(size, center), new CellTransform(null, center));
 
 	this.username = username;
         this.callID = callID;
         this.simulateCalls = simulateCalls;
+	this.playerWithVpCallID = playerWithVpCallID;
 
         addComponent(new MovableComponentMO(this));
     }
@@ -103,7 +130,8 @@ public class OrbCellMO extends CellMO {
             ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-            cellClientState = new OrbCellClientState(username, callID);
+            cellClientState = 
+		new OrbCellClientState(username, callID, playerWithVpCallID);
         }
         return super.getClientState(cellClientState, clientID, capabilities);
     }
@@ -125,17 +153,21 @@ public class OrbCellMO extends CellMO {
     public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new OrbCellServerState(username, callID);
+            cellServerState = new OrbCellServerState(username, callID, playerWithVpCallID);
         }
         return super.getServerState(cellServerState);
     }
 
     public String getUsername() {
-	return username;
+    	return username;
     }
    
     public String getCallID() {
 	return callID;
+    }
+
+    public String getPlayerWithVpCallID() {
+	return playerWithVpCallID;
     }
 
     public void endCall() {

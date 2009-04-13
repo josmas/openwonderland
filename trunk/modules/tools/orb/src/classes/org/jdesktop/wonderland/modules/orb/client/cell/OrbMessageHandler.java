@@ -24,12 +24,19 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import java.util.logging.Logger;
 
+import org.jdesktop.wonderland.client.ClientContext;
+
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.common.messages.Message;
@@ -37,14 +44,14 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbStartCallMessage;
 
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
 
 import org.jdesktop.wonderland.client.comms.CellClientSession;
-import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
@@ -56,11 +63,23 @@ import java.util.Iterator;
 
 import javax.swing.SwingUtilities;
 
+import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
+
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
+
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
+
+import com.jme.math.Vector3f;
+
+import java.awt.Color;
+
 /**
  *
  * @author jprovino
  */
-public class OrbMessageHandler {
+public class OrbMessageHandler implements TransformChangeListener {
 
     private static final Logger logger =
             Logger.getLogger(OrbMessageHandler.class.getName());
@@ -69,23 +88,46 @@ public class OrbMessageHandler {
         
     private OrbCell orbCell;
 
+    private Cell avatarCell;
+
     private WonderlandSession session;
 
     private OrbDialog orbDialog;
 
     private String username;
 
-    private String callID;
-
     private NameTag nameTag;
+
+    private PresenceManager pm;
+
+    private PresenceInfo presenceInfo;
+
+    private FollowMe followMe;
+
+    private static HashMap<Cell, ArrayList<OrbCell>> attachedOrbMap = new HashMap();
+
+    private static ArrayList<OrbCell> detachedOrbList = new ArrayList();
 
     public OrbMessageHandler(OrbCell orbCell, WonderlandSession session) {
 	this.orbCell = orbCell;
 	this.session = session;
 
+	synchronized (detachedOrbList) {
+	    detachedOrbList.add(orbCell);
+	}
+
+	//avatarCell = ((CellClientSession)session).getLocalAvatar().getViewCell();
+	    
+	CellTransform transform = orbCell.getLocalTransform();
+	Vector3f translation = orbCell.getLocalTransform().getTranslation(null);
+	
+	followMe = new FollowMe(
+	    orbCell.getComponent(MovableComponent.class), translation);
+
         channelComp = orbCell.getComponent(ChannelComponent.class);
 
-        logger.finer("OrbCellID " + orbCell.getCellID() + ", Channel comp is " + channelComp);
+        logger.finer("OrbCellID " + orbCell.getCellID() + ", Channel comp is " 
+	    + channelComp);
 
         ChannelComponent.ComponentMessageReceiver msgReceiver =
             new ChannelComponent.ComponentMessageReceiver() {
@@ -94,57 +136,240 @@ public class OrbMessageHandler {
                 }
             };
 
-        channelComp.addMessageReceiver(OrbStartCallMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(OrbAttachMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(OrbChangeNameMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbEndCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbMuteCallMessage.class, msgReceiver);
-        channelComp.addMessageReceiver(OrbSpeakingMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbSetVolumeMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(OrbSpeakingMessage.class, msgReceiver);
 
-	nameTag = new NameTag(orbCell, orbCell.getUsername(), (float) .17);
+        pm = PresenceManagerFactory.getPresenceManager(session);
+
+	username = orbCell.getUsername();
+
+	WonderlandIdentity userID = 
+	    new WonderlandIdentity(username, username, null);
+
+        presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, null);
+
+	pm.addSession(presenceInfo);
+
+	nameTag = new NameTag(orbCell, username, (float) .17);
+
+	if (orbCell.getPlayerWithVpCallID().length() > 0) {
+	    PresenceInfo info = pm.getPresenceInfo(orbCell.getPlayerWithVpCallID());
+
+	    if (info == null) {
+		System.out.println("Can't find presence info for CallID " 
+		    + orbCell.getPlayerWithVpCallID());
+		return;
+	    }
+
+	    logger.fine("Attach orb " + orbCell.getCellID() 
+		+ " player with " + orbCell.getPlayerWithVpCallID() + " to " + info);
+
+            channelComp.send(new OrbAttachMessage(orbCell.getCellID(), info.cellID, true));
+	}
     }
 
     public void done() {
-	channelComp.removeMessageReceiver(OrbStartCallMessage.class);
+	synchronized (detachedOrbList) {
+	    int i = detachedOrbList.indexOf(orbCell);
+
+	    if (i >= 0) {
+	        detachedOrbList.remove(orbCell);
+		reorderDetachedOrbs(i + 1);
+	    } else {
+		if (avatarCell != null) {
+		    ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(avatarCell);
+
+		    if (attachedOrbList != null) {
+			i = attachedOrbList.indexOf(orbCell);
+			reorderAttachedOrbs(i + 1);
+		    }
+		}
+	    }
+	}
+
+        channelComp.removeMessageReceiver(OrbAttachMessage.class);
+	channelComp.removeMessageReceiver(OrbChangeNameMessage.class);
 	channelComp.removeMessageReceiver(OrbEndCallMessage.class);
-	channelComp.removeMessageReceiver(OrbMuteCallMessage.class);
-        channelComp.removeMessageReceiver(OrbSpeakingMessage.class);
+        channelComp.removeMessageReceiver(OrbMuteCallMessage.class);
 	channelComp.removeMessageReceiver(OrbSetVolumeMessage.class);
+        channelComp.removeMessageReceiver(OrbSpeakingMessage.class);
 
 	nameTag.done();
+
+	pm.removeSession(presenceInfo);
     }
 
     public void processMessage(final Message message) {
 	logger.finest("process message " + message);
-
-	if (message instanceof OrbStartCallMessage) {
-	    username = ((OrbStartCallMessage) message).getUsername();
-	    callID = ((OrbStartCallMessage) message).getCallID();
-	    return;
-	}
 
 	if (message instanceof OrbSpeakingMessage) {
 	    OrbSpeakingMessage msg = (OrbSpeakingMessage) message;
 
 	    logger.info("Orb speaking " + msg.isSpeaking());
 
-	    nameTag.setSpeaking(msg.isSpeaking());
+	    pm.setSpeaking(presenceInfo, msg.isSpeaking());
+
+	    if (msg.isSpeaking()) {
+	        nameTag.setNameTag(EventType.STARTED_SPEAKING, 
+		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	    } else {
+	        nameTag.setNameTag(EventType.STOPPED_SPEAKING, 
+		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	    }
+
 	    return;
 	}
 
 	if (message instanceof OrbMuteCallMessage) {
 	    OrbMuteCallMessage msg = (OrbMuteCallMessage) message;
 
-            nameTag.setMute(msg.isMuted());
+	    pm.setMute(presenceInfo, msg.isMuted());
+
+	    if (msg.isMuted()) {
+                nameTag.setNameTag(EventType.MUTE, 
+		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	    } else {
+                nameTag.setNameTag(EventType.UNMUTE, 
+		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	    }
+
+	    return;
+	}
+
+	if (message instanceof OrbChangeNameMessage) {
+	    username = ((OrbChangeNameMessage) message).getName();
+	    pm.changeUsername(presenceInfo, username);
+	    nameTag.setNameTag(EventType.CHANGE_NAME, 
+		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	    return;
+	}
+
+	if (message instanceof OrbAttachMessage) {
+	    OrbAttachMessage msg = (OrbAttachMessage) message;
+
+	    avatarCell = ClientContext.getCellCache(session).getCell(msg.getAvatarCellID());
+
+	    if (avatarCell == null) {
+		System.out.println("Can't find avatarCell for " + msg.getAvatarCellID());
+		return;
+	    }
+
+	    if (msg.isAttached()) {
+		synchronized (detachedOrbList) {
+		    detachedOrbList.remove(orbCell);
+		}
+
+		ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(avatarCell);
+
+		if (attachedOrbList == null) {
+		    attachedOrbList = new ArrayList();
+
+		    attachedOrbMap.put(avatarCell, attachedOrbList);
+		} 
+
+		synchronized (attachedOrbList) {
+		    attachedOrbList.remove(orbCell);
+		    attachedOrbList.add(orbCell);
+		}
+		
+		avatarCell.addTransformChangeListener(this);
+		transformChanged(avatarCell, true);
+	    } else {
+		avatarCell.removeTransformChangeListener(this);
+		transformChanged(avatarCell, false);
+	    }
 	    return;
 	}
     }
     
-    public void orbSelected() {
+    public void transformChanged(Cell cell, ChangeSource source) {
+	transformChanged(cell, true);
+    }
 
+    private void transformChanged(Cell cell, boolean raise) {
+	//System.out.println("Cell " + cell.getName() + " moved to " 
+	//    + cell.getLocalTransform());
+
+	CellTransform transform = cell.getLocalTransform();
+	Vector3f translation = transform.getTranslation(null);
+	
+	if (raise) {
+	    // Position ourself based on other orbs
+	    translation.setY(getOrbHeight());  // Raise orb.
+	    followMe.setTargetPosition(translation);
+	} else {
+	    translation.setZ(translation.getZ() + (float) .2);
+	    translation.setY((float) .5);  // lower orb.
+	    followMe.setTargetPosition(translation,
+		transform.getRotation(null));
+	}
+    }
+
+    private float getOrbHeight() {
+	int i = detachedOrbList.indexOf(orbCell);
+
+	if (i >= 0) {
+	    return (float) (.1 + (.3 * i)); 
+	}
+
+	i = 0;
+
+	if (avatarCell != null) {
+	    ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(avatarCell);
+
+	    if (attachedOrbList != null) {
+	         i = attachedOrbList.indexOf(orbCell);
+
+	        if (i < 0) {
+	            i = 0;
+	        }
+	    } 
+	}
+
+	return (float) (2.2 + (.3 * i)); 
+    }
+
+    private void reorderDetachedOrbs(int i) {
+	synchronized (detachedOrbList) {
+	    for ( ; i < detachedOrbList.size(); i++) {
+		transformChanged(detachedOrbList.get(i), true);
+	    }
+	}
+    }
+
+    private void reorderAttachedOrbs(int i) {
+	if (avatarCell == null) {
+	    return;
+	}
+	
+	ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(avatarCell);
+
+	if (attachedOrbList == null) {
+	    return;
+	}
+
+	synchronized (attachedOrbList) {
+	    for ( ; i < attachedOrbList.size(); i++) {
+		transformChanged(attachedOrbList.get(i), true);
+	    }
+	}
+    }
+
+    public void orbSelected() {
+	if (orbCell.getPlayerWithVpCallID().length() > 0) {
+	    logger.info("OrbDialog isn't allowed for Virtual Orbs");
+	    return;
+	}
+	
 	if (orbDialog == null) {
 	    LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
 	    
-	    orbDialog = new OrbDialog(orbCell, channelComp, avatar.getViewCell().getCellID());
+	    orbDialog = new OrbDialog(orbCell, channelComp, 
+		avatar.getViewCell().getCellID());
 	} 
 
 	orbDialog.setVisible(true);

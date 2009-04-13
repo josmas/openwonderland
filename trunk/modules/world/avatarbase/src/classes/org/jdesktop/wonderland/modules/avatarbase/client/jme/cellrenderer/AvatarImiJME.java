@@ -159,8 +159,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
             private Class[] consumeClasses = new Class[]{
                 AvatarRendererChangeRequestEvent.class,
-                AvatarMuteEvent.class,
-                AvatarSpeakingEvent.class
+                AvatarNameEvent.class
             };
 
             @Override
@@ -174,17 +173,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
                     return;
                 }
 
-                if (event instanceof AvatarMuteEvent) {
-                    AvatarMuteEvent e = (AvatarMuteEvent) event;
+                if (event instanceof AvatarNameEvent) {
+                    AvatarNameEvent e = (AvatarNameEvent) event;
 
                     if (e.getUsername().equals(username)) {
-                        nameTag.setMute(e.isMuted());
-                    }
-                } else if (event instanceof AvatarSpeakingEvent) {
-                    AvatarSpeakingEvent e = (AvatarSpeakingEvent) event;
-
-                    if (e.getUsername().equals(username)) {
-                        nameTag.setSpeaking(e.isSpeaking());
+                        nameTag.setNameTag(e.getEventType(), username, 
+			    e.getUsernameAlias(), e.getForegroundColor(), e.getFont());
                     }
                 }
             }

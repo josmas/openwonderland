@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 
 import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
@@ -74,6 +75,7 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
         case DISK:
 	    if (msgReceiver != null) {
 		channelComp.removeMessageReceiver(AudioParticipantSpeakingMessage.class);
+		channelComp.removeMessageReceiver(AudioParticipantMuteCallMessage.class);
 		msgReceiver = null;
 	    }
             break;
@@ -82,14 +84,21 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
 	    if (msgReceiver == null) {
                 msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
                     public void messageReceived(CellMessage message) {
-                        AudioParticipantSpeakingMessage msg = (AudioParticipantSpeakingMessage) message;
-			logger.info(msg.getCellID()
-			    + (msg.isSpeaking() ? " Started speaking" : " Stopped speaking"));
+			if (message instanceof AudioParticipantSpeakingMessage) {
+                            AudioParticipantSpeakingMessage msg = (AudioParticipantSpeakingMessage) message;
+			    logger.info(msg.getCellID()
+			        + (msg.isSpeaking() ? " Started speaking" : " Stopped speaking"));
+			} else if (message instanceof AudioParticipantMuteCallMessage) {
+                            AudioParticipantMuteCallMessage msg = (AudioParticipantMuteCallMessage) message;
+			    logger.info(msg.getCellID()
+			        + (msg.isMuted() ? " Muted " : " Unmuted"));
+			}
                     }
                 };
 
                 channelComp = cell.getComponent(ChannelComponent.class);
                 channelComp.addMessageReceiver(AudioParticipantSpeakingMessage.class, msgReceiver);
+                channelComp.addMessageReceiver(AudioParticipantMuteCallMessage.class, msgReceiver);
 
 		if (cell instanceof OrbCell == false) {
                 contextMenu.addMenuItem(new SimpleContextMenuItem("Volume",

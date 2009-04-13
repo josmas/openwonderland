@@ -30,6 +30,10 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.DataManager;
+import com.sun.sgs.app.ManagedReference;
+
 /**
  *
  * @author jprovino
@@ -39,11 +43,12 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceComponentMO.class.getName());
 
-    private float fullVolumeRadius = 0;
+    private String name = "COS";
+
+    private float fullVolumeRadius = (float) 1.6;
 
     /**
-     * Create a ConeOfSilenceComponent for the given cell. The cell must already
-     * have a ChannelComponent otherwise this method will throw an IllegalStateException
+     * Create a ConeOfSilenceComponent for the given cell. 
      * @param cell
      */
     public ConeOfSilenceComponentMO(CellMO cellMO) {
@@ -66,7 +71,11 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         // Fetch the component-specific state and set member variables
         ConeOfSilenceComponentServerState cs = (ConeOfSilenceComponentServerState) serverState;
 
+	name = cs.getName();
+
         fullVolumeRadius = cs.getFullVolumeRadius();
+
+	addProximityListener(isLive());
     }
 
     /**
@@ -79,6 +88,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
             serverState = new ConeOfSilenceComponentServerState();
         }
         ((ConeOfSilenceComponentServerState)serverState).setFullVolumeRadius(fullVolumeRadius);
+        ((ConeOfSilenceComponentServerState)serverState).setName(name);
 
         return super.getServerState(serverState);
     }
@@ -111,6 +121,12 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
     public void setLive(boolean live) {
         super.setLive(live);
 
+	addProximityListener(live);
+    }
+
+    private ConeOfSilenceProximityListener listener;
+
+    private void addProximityListener(boolean live) {
         // Fetch the proximity component, we will need this below. If it does
         // not exist (it should), then log an error
         ProximityComponentMO component = cellRef.get().getComponent(ProximityComponentMO.class);
@@ -120,6 +136,11 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
             return;
         }
 
+	if (listener != null) {
+	    component.removeProximityListener(listener);
+	    listener = null;
+	}
+
         // If we are making this component live, then add a listener to the
         // proximity component.
         if (live == true) {
@@ -127,10 +148,11 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
             bounds[0] = new BoundingSphere(fullVolumeRadius, new Vector3f());
             ConeOfSilenceProximityListener proximityListener = 
 		new ConeOfSilenceProximityListener(cellRef.get().getName());
+
+	    //listenerRef = AppContext.getDataManager().createReference(proximityListener);
+
             component.addProximityListener(proximityListener, bounds);
         }
-        else {
-            // Really should remove the proximity listener here! XXX
-        }
     }
+
 }

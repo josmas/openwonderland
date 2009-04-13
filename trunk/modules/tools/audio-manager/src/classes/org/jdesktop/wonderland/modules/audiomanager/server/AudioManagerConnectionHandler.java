@@ -377,6 +377,14 @@ public class AudioManagerConnectionHandler
 	    player.setPrivateMixes(true);
 	    break;
 
+	case CallStatus.MUTED:
+	    sender.send(new MuteCallMessage(callId, true));
+	    break;
+
+	case CallStatus.UNMUTED:
+	    sender.send(new MuteCallMessage(callId, false));
+	    break;
+
         case CallStatus.STARTEDSPEAKING:
 	    sender.send(new SpeakingMessage(callId, true));
             break;

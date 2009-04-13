@@ -63,9 +63,9 @@ import com.sun.sgs.app.ManagedObject;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbStartCallMessage;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -88,8 +88,8 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 
     private ManagedReference<OrbStatusListener> orbStatusListenerRef;
 
-    public OrbMessageHandler(OrbCellMO orbCellMO, String username, String callID, 
-	    boolean simulateCalls) {
+    public OrbMessageHandler(OrbCellMO orbCellMO, String username, 
+	    String callID, boolean simulateCalls) {
 
 	super(orbCellMO);
 
@@ -112,9 +112,9 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
         ChannelComponentMO channelComponentMO = getChannelComponent();
 
         channelComponentMO.addMessageReceiver(OrbAttachMessage.class, this);
-        channelComponentMO.addMessageReceiver(OrbStartCallMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbEndCallMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbMuteCallMessage.class, this);
+        channelComponentMO.addMessageReceiver(OrbChangeNameMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbSetVolumeMessage.class, this);
 	channelComponentMO.removeMessageReceiver(OrbSpeakingMessage.class);
     }
@@ -123,9 +123,9 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	ChannelComponentMO channelComponentMO = getChannelComponent();
 
 	channelComponentMO.removeMessageReceiver(OrbAttachMessage.class);
-	channelComponentMO.removeMessageReceiver(OrbStartCallMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbEndCallMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbMuteCallMessage.class);
+	channelComponentMO.removeMessageReceiver(OrbChangeNameMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbSetVolumeMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbSpeakingMessage.class);
 
@@ -154,11 +154,6 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	    player = vm.getPlayer(callID);
 	}
 
-	if (message instanceof OrbStartCallMessage) {
-	    sender.send(clientID, new OrbStartCallMessage(cellID, username, callID));
-	    return;
-	}
-
 	if (message instanceof OrbEndCallMessage) {
 	    if (call != null) {
 	        try {
@@ -170,6 +165,7 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
  	    } else {
 		orbStatusListenerRef.get().endCall(callID);
 	    }
+
 	    return;
 	}
 
@@ -184,8 +180,13 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	        }
 	    }
 
-	    sender.send(clientID, message);
+	    sender.send(message);
 	    return;
+	}
+
+	if (message instanceof OrbChangeNameMessage) {
+	    username = ((OrbChangeNameMessage) message).getName();
+	    sender.send(message);
 	}
 
 	if (message instanceof OrbSetVolumeMessage) {
@@ -220,7 +221,6 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	    spatializer.setAttenuator(volume);
 
 	    softphonePlayer.setPrivateSpatializer(player, spatializer);
-
 	    return;
  	}
 	
@@ -237,8 +237,10 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	    
 	    boolean isAttached = msg.isAttached();
 
-	    System.out.println("Orb attached to " + msg.getAvatarCellID()
-		+ " is " + msg.isAttached());
+	    logger.fine("Orb attached to " + msg.getAvatarCellID()
+	    	+ " is " + msg.isAttached());
+
+	    sender.send(clientID, message);
 	    return;
 	}
 

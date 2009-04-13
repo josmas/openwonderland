@@ -36,18 +36,26 @@ public class PresenceInfo implements Serializable {
     public WonderlandIdentity userID;
     public String callID;
 
-    public PresenceInfo(CellID cellID, BigInteger clientID, WonderlandIdentity userID, 
-	    String callID) {
+    public boolean isSpeaking;
+    public boolean isMuted;
+
+    public String usernameAlias;
+
+    public PresenceInfo(CellID cellID, BigInteger clientID, 
+	    WonderlandIdentity userID, String callID) {
 
         this.cellID = cellID;
 	this.clientID = clientID;
         this.userID = userID;
 	this.callID = callID;
+
+	usernameAlias = userID.getUsername();
     }
 
     public String toString() {
         return "cellID=" + cellID + ", userID=" + userID.toString()
-            + ", clientID=" + clientID + " callID " + callID;
+            + ", clientID=" + clientID + ", callID=" + callID 
+	    + ", alias=" + usernameAlias;
     }
 
 }

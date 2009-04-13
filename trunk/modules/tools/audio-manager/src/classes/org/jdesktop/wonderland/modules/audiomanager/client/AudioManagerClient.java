@@ -83,13 +83,17 @@ import java.util.ArrayList;
 
 import java.util.logging.Logger;
 
-import java.awt.event.KeyEvent;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
-import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarMuteEvent;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarSpeakingEvent;
+import java.awt.Color;
+
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
 
 /**
  *
@@ -105,11 +109,11 @@ public class AudioManagerClient extends BaseConnection implements
 
     private boolean connected = true;
 
+    private PresenceManager pm;
+
     private PresenceInfo presenceInfo;
 
     private Cell cell;
-
-    private PresenceManager pm;
 
     /** 
      * Create a new AudioManagerClient
@@ -201,7 +205,7 @@ public class AudioManagerClient extends BaseConnection implements
 	     * the PresenceManager will send a message to the server about
 	     * a new session being created.
 	     */
-	    System.out.println("AudioManagerClient viewConfigured:  "
+	    logger.warning("AudioManagerClient viewConfigured:  "
 		+ "No Presence info for " + cellID + " THIS SHOULDN'T HAPPEN!");
 
 	    String callID = CallID.getCallID(cellID);
@@ -411,35 +415,57 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof SpeakingMessage) {
 	    SpeakingMessage msg = (SpeakingMessage) message;
 
-	    if (userListJFrame != null) {
-		userListJFrame.setSpeaking(msg.getCallID(), msg.isSpeaking());
-	    }
-
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
 	    if (info == null) {
-		System.out.println("No presence info for " + msg.getCallID());
+		logger.warning("No presence info for " + msg.getCallID());
 		return;
 	    }
 
-	    InputManager.inputManager().postEvent(
-	        new AvatarSpeakingEvent(info.userID.getUsername(), msg.isSpeaking()));
+	    pm.setSpeaking(info, msg.isSpeaking());
+
+	    if (userListJFrame != null) {
+		userListJFrame.setUserList();
+	    }
+
+	    AvatarNameEvent avatarNameEvent;
+
+	    if (msg.isSpeaking()) {
+		avatarNameEvent = new AvatarNameEvent(EventType.STARTED_SPEAKING,
+		    info.userID.getUsername(), info.usernameAlias);
+	    } else {
+		avatarNameEvent = new AvatarNameEvent(EventType.STOPPED_SPEAKING,
+		    info.userID.getUsername(), info.usernameAlias);
+	    }
+
+	    InputManager.inputManager().postEvent(avatarNameEvent);
 	} else if (message instanceof MuteCallMessage) {
 	    MuteCallMessage msg = (MuteCallMessage) message;
 
-	    if (userListJFrame != null) {
-	        userListJFrame.muteCall(msg.getCallID(), msg.isMuted());
-	    }
-
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
 	    if (info == null) {
-		System.out.println("No presence info for " + msg.getCallID());
+		logger.warning("No presence info for " + msg.getCallID());
 		return;
 	    }
 
-	    InputManager.inputManager().postEvent(
-	        new AvatarMuteEvent(info.userID.getUsername(), msg.isMuted()));
+	    pm.setMute(info, msg.isMuted());
+
+	    if (userListJFrame != null) {
+	        userListJFrame.setUserList();
+	    }
+
+	    AvatarNameEvent avatarNameEvent;
+
+	    if (msg.isMuted()) {
+		avatarNameEvent = new AvatarNameEvent(EventType.MUTE,
+		    info.userID.getUsername(), info.usernameAlias);
+	    } else {
+		avatarNameEvent = new AvatarNameEvent(EventType.UNMUTE,
+		    info.userID.getUsername(), info.usernameAlias);
+	    }
+
+	    InputManager.inputManager().postEvent(avatarNameEvent);
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}
