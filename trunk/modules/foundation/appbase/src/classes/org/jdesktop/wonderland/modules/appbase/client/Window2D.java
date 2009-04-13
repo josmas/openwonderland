@@ -764,23 +764,24 @@ public abstract class Window2D {
      * top of the stack.
      * @param sibling After this call, the sibling window will be below this window in the stack.
      */
+    /* TODO: winconfig: stack
     public synchronized void restackAbove (Window2D sibling) {
         restackAboveLocal(sibling);
 
-        /* TODO: winconfig: swing: stack
-        if (app.isSwsShared(Sws.Op.WINDOW_RESTACK)) {
-            SwsClient swsClient = getApp().getSwsClient();
-            swsClient.restackAbove(swsWindowID, sibling.swsWindowID);
-        }
-        */
+        //TODO: winconfig: swing: stack
+        //if (app.isSwsShared(Sws.Op.WINDOW_RESTACK)) {
+        //    SwsClient swsClient = getApp().getSwsClient();
+        //    swsClient.restackAbove(swsWindowID, sibling.swsWindowID);
+        //}
     }
+    */
 
     /**
      * Moves this window so that it is above the given sibling window in the app's window stack
      * in the local client only. If sibling is null, this window is moved to the top of the stack.
      * @param sibling After this call, the sibling window will be below this window in the stack.
      */
-    public synchronized void restackAboveLocal (Window2D sibling) {
+    public synchronized void restackAbove/*TODO:winconfig:restack:Local*/ (Window2D sibling) {
         app.getWindowStack().restackAbove(this, sibling);
     }
 
