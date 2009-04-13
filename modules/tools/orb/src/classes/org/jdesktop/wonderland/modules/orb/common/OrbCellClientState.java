@@ -41,14 +41,18 @@ public class OrbCellClientState extends CellClientState {
 
     private String username;
     private String callID;
+    private String playerWithVpCallID;
 
     /** Default constructor */
     public OrbCellClientState() {
     }
     
-    public OrbCellClientState(String username, String callID) {
+    public OrbCellClientState(String username, String callID, 
+	    String  playerWithVpCallID) {
+
 	this.username = username;
 	this.callID = callID;
+	this.playerWithVpCallID = playerWithVpCallID;
     }
 
     public String getUsername() {
@@ -57,6 +61,10 @@ public class OrbCellClientState extends CellClientState {
 
     public String getCallID() {
 	return callID;
+    }
+
+    public String getPlayerWithVpCallID() {
+	return playerWithVpCallID;
     }
 
 }

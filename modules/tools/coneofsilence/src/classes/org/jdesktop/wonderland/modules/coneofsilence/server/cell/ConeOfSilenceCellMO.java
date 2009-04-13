@@ -19,12 +19,24 @@ package org.jdesktop.wonderland.modules.coneofsilence.server.cell;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState;
 import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.modules.audiomanager.server.ConeOfSilenceComponentMO;
+
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
+
+import com.sun.sgs.app.ManagedReference;
+
+import com.jme.bounding.BoundingSphere;
+
+import com.jme.math.Vector3f;
+
+import java.util.logging.Logger;
 
 /**
  * A server cell that provides conference coneofsilence functionality
@@ -32,8 +44,20 @@ import org.jdesktop.wonderland.modules.audiomanager.server.ConeOfSilenceComponen
  */
 public class ConeOfSilenceCellMO extends CellMO {
 
+    private static final Logger logger =
+	Logger.getLogger(ConeOfSilenceCellMO.class.getName());
+
+    private String name;
+    private float fullVolumeRadius;
+
+    @UsesCellComponentMO(ConeOfSilenceComponentMO.class)
+    private ManagedReference<ConeOfSilenceComponentMO> compRef;
+
     public ConeOfSilenceCellMO() {
-        addComponent(new ConeOfSilenceComponentMO(this));
+    }
+
+    public ConeOfSilenceCellMO(Vector3f center, float size) {
+	super(new BoundingSphere(size, center), new CellTransform(null, center));
     }
 
     /**
@@ -58,7 +82,7 @@ public class ConeOfSilenceCellMO extends CellMO {
     @Override
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
-            cellClientState = new ConeOfSilenceCellClientState();
+            cellClientState = new ConeOfSilenceCellClientState(name, fullVolumeRadius);
         }
         return super.getClientState(cellClientState, clientID, capabilities);
     }
@@ -69,6 +93,11 @@ public class ConeOfSilenceCellMO extends CellMO {
     @Override
     public void setServerState(CellServerState cellServerState) {
         super.setServerState(cellServerState);
+
+	ConeOfSilenceCellServerState coneOfSilenceCellServerState = (ConeOfSilenceCellServerState) cellServerState;
+
+	name = coneOfSilenceCellServerState.getName();
+	fullVolumeRadius = coneOfSilenceCellServerState.getFullVolumeRadius();
     }
 
     /**
@@ -78,8 +107,9 @@ public class ConeOfSilenceCellMO extends CellMO {
     public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new ConeOfSilenceCellServerState();
+            cellServerState = new ConeOfSilenceCellServerState(name, fullVolumeRadius);
         }
         return super.getServerState(cellServerState);
     }
+
 }

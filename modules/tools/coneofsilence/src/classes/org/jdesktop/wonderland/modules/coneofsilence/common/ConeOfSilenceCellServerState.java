@@ -17,7 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.coneofsilence.common;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
@@ -31,11 +33,46 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class ConeOfSilenceCellServerState extends CellServerState {
 
+    @XmlElement(name="name")
+    private String name;
+
+    @XmlElement(name="fullVolumeRadius")
+    private float fullVolumeRadius;
+
     public ConeOfSilenceCellServerState() {
         super();
+    }
+
+    public ConeOfSilenceCellServerState(String name, float fullVolumeRadius) {
+	super();
+
+	this.name = name;
+	this.fullVolumeRadius = fullVolumeRadius;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @XmlTransient
+    public String getName() {
+        return name;
+    }
+
+    public void setFullVolumeRadius(float fullVolumeRadius) {
+        this.fullVolumeRadius = fullVolumeRadius;
+    }
+
+    @XmlTransient
+    public float getFullVolumeRadius() {
+        return fullVolumeRadius;
     }
 
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.coneofsilence.server.cell.ConeOfSilenceCellMO";
     }
+
+
+
+
 }

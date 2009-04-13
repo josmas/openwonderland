@@ -23,8 +23,15 @@ import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 public interface PresenceManagerListener {
 
-    public void userAdded(PresenceInfo presenceInfo);
+    public enum ChangeType {
+	USER_ADDED,
+	USER_REMOVED,
+	SPEAKING_CHANGED,
+	MUTE_CHANGED
+    }
 
-    public void userRemoved(PresenceInfo presenceInfo);
+    public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type);
+
+    public void aliasChanged(String previousAlias, PresenceInfo presenceInfo);
 
 }

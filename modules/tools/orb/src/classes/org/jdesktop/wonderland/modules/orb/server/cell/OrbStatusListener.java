@@ -85,6 +85,14 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	    handleDtmfKey(status);
 	    break;
 	
+        case CallStatus.MUTED:
+            sender.send(new OrbMuteCallMessage(cellID, true));
+            break;
+
+        case CallStatus.UNMUTED:
+            sender.send(new OrbMuteCallMessage(cellID, false));
+            break;
+
         case CallStatus.STARTEDSPEAKING:            
 	    if (isMuted && muteMessageSpoken == false) {
 		muteMessageSpoken = true;

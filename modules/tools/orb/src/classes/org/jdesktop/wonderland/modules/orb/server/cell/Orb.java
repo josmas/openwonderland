@@ -56,7 +56,7 @@ public class Orb implements ManagedObject, Serializable {
     private CellID cellID;
 
     public Orb(String username, String externalCallID, Vector3f center, 
-	    double size, boolean simulateCalls) {
+	    double size, boolean simulateCalls, String playerWithVpCallID) {
 
 	this.username = username;
 
@@ -66,7 +66,8 @@ public class Orb implements ManagedObject, Serializable {
 	    "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
 
         OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
-	    center, (float) size, username, externalCallID, simulateCalls);
+	    center, (float) size, username, externalCallID, simulateCalls,
+	    playerWithVpCallID);
 
 	if (orbCellMO == null) {
 	    logger.warning("Unable to spawn orb");

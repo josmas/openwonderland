@@ -346,9 +346,9 @@ public class PhoneMessageHandler {
 	channelComp.send(msg);
     }
     
-        public void processEvent() {
-                // react to mouse enter/exit events
-        }
+    public void processEvent() {
+        // react to mouse enter/exit events
+    }
 
 }
     

@@ -49,7 +49,7 @@ public class PresenceManagerClient extends BaseConnection implements
     private WonderlandSession session;
     private CellID cellID;
     private boolean connected = true;
-    private PresenceManager presenceManager;
+    private PresenceManagerImpl presenceManager;
     private PresenceInfo presenceInfo;
 
     /** 
@@ -63,7 +63,7 @@ public class PresenceManagerClient extends BaseConnection implements
 
         this.session = session;
 
-        presenceManager = PresenceManagerFactory.getPresenceManager(session);
+        presenceManager = (PresenceManagerImpl) PresenceManagerFactory.getPresenceManager(session);
 
         logger.fine("Starting PresenceManagerClient");
 
@@ -129,4 +129,5 @@ public class PresenceManagerClient extends BaseConnection implements
     public ConnectionType getConnectionType() {
         return PresenceManagerConnectionType.CONNECTION_TYPE;
     }
+
 }

@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.audiomanager.server;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
+import com.sun.mpk20.voicelib.app.AudioGroupListener;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
@@ -32,13 +33,15 @@ import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 import com.jme.bounding.BoundingVolume;
-import com.sun.sgs.app.ManagedObject;
+
+import java.io.Serializable;
 
 /**
  * A server cell that provides conference coneofsilence functionality
  * @author jprovino
  */
-public class ConeOfSilenceProximityListener implements ProximityListenerSrv, ManagedObject {
+public class ConeOfSilenceProximityListener implements ProximityListenerSrv, 
+	AudioGroupListener, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceProximityListener.class.getName());
@@ -53,7 +56,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
             CellID viewCellID, BoundingVolume proximityVolume,
             int proximityIndex) {
 
-	logger.fine("viewEnterExit:  " + entered + " cellID " + cellID
+	logger.info("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
 	if (entered) {
@@ -93,6 +96,8 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
         if (audioGroup == null) {
             AudioGroupSetup ags = new AudioGroupSetup();
 
+	    ags.audioGroupListener = this;
+
             ags.spatializer = new FullVolumeSpatializer();
 
             ags.spatializer.setAttenuator(
@@ -103,7 +108,9 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
 
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
                 AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+    }
 
+    public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
         player.attenuateOtherGroups(audioGroup, 0, 0);
     }
 
@@ -131,13 +138,12 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv, Man
         }
 
         audioGroup.removePlayer(player);
+    }
 
+    public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
         if (audioGroup.getNumberOfPlayers() == 0) {
-            vm.removeAudioGroup(audioGroup);
+            AppContext.getManager(VoiceManager.class).removeAudioGroup(audioGroup);
         }
-
-        player.attenuateOtherGroups(audioGroup, AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
-                AudioGroup.DEFAULT_LISTEN_ATTENUATION);
     }
 
 }

@@ -10,6 +10,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeM
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
@@ -28,12 +29,19 @@ import java.util.HashMap;
 
 import java.awt.Point;
 
+import java.util.logging.Logger;
+
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
+
 /**
  *
  * @author  jp
  */
 public class UserListJFrame extends javax.swing.JFrame implements PresenceManagerListener,
         VolumeChangeListener {
+
+    private static final Logger logger =
+            Logger.getLogger(UserListJFrame.class.getName());
 
     private ChannelComponent channelComp;
 
@@ -56,11 +64,11 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 	PresenceInfo info = pm.getPresenceInfo(cell.getCellID());
 
 	if (info == null) {
-	    System.out.println("No Presence info for cell " + cell.getCellID());
+	    logger.warning("No Presence info for cell " + cell.getCellID());
 	    return;
 	}
 
-	username = info.userID.getUsername();
+	username = info.usernameAlias;
     }
 
     /** This method is called from within the constructor to
@@ -109,7 +117,7 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
         Object[] selectedValues = userList.getSelectedValues();
         
         for (int i = 0; i < selectedValues.length; i++) {
-	    String username = (String) selectedValues[i];
+	    String username = NameTag.getUsername((String) selectedValues[i]);
 
 	    VolumeControlJFrame volumeControl = userMap.get(username);
 
@@ -133,10 +141,10 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
     }//GEN-LAST:event_userListValueChanged
 
     public void volumeChanged(String userName, double volume) {
-	PresenceInfo[] info = pm.getUserPresenceInfo(userName);
+	PresenceInfo[] info = pm.getAliasPresenceInfo(userName);
 
 	if (info == null) {
-	    System.out.println("volumeChanged unable to get presence info for " + userName);
+	    logger.warning("volumeChanged unable to get presence info for " + userName);
 	    return;
 	}
 
@@ -152,12 +160,20 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
     private String[] userData;
 
     public void setUserList() {
-	WonderlandIdentity[] userIDArray = pm.getAllUsers();
+	PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
-	String[] userData = new String[userIDArray.length];
+	String[] userData = new String[presenceInfoList.length];
 
-	for (int i = 0; i < userIDArray.length; i++) {
-	    userData[i] = userIDArray[i].getUsername();
+	for (int i = 0; i < presenceInfoList.length; i++) {
+	    PresenceInfo info = presenceInfoList[i];
+	
+	    if (info.callID == null) {
+		// It's a virtual player, skip it.
+		continue;
+	    }
+
+	    userData[i] = NameTag.getDisplayName(info.usernameAlias, info.isSpeaking,
+		info.isMuted);
 	}
 
 	setUserList(userData);
@@ -169,70 +185,15 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
 	userList.setListData(userData);
     }
 
-    public void setSpeaking(String callID, boolean isSpeaking) {
-	//System.out.println("Got message for " + presenceInfo
-	//    + (isSpeaking ? " Started Speaking" : " Stopped Speaking"));
-
-	PresenceInfo info = pm.getPresenceInfo(callID);
-
-	if (info == null) {
-	    System.out.println("SetSpeaking unable to get username for callID " + callID);
-	    return;
-	}
-
-	String username = info.userID.getUsername();
-
-        WonderlandIdentity[] userIDArray = pm.getAllUsers();
-
-        String[] userData = new String[userIDArray.length];
-
-        for (int i = 0; i < userIDArray.length; i++) {
-	    String user = userIDArray[i].getUsername();
-
-	    if (username.equals(user) && isSpeaking) {
-		user += "...";
-	    } 
-
-            userData[i] = user;
-        }
-
-	setUserList(userData);
-    }
-
-    public void muteCall(String callID, boolean isMuted) {
-	//System.out.println(presenceInfo + (isMuted ? "Muted" : "Unmuted"));
-
-	PresenceInfo info = pm.getPresenceInfo(callID);
-
-	if (info == null) {
-	    System.out.println("SetSpeaking unable to get username for callID " + callID);
-	    return;
-	}
-
-	String username = info.userID.getUsername();
-
-        WonderlandIdentity[] userIDArray = pm.getAllUsers();
-
-        String[] userData = new String[userIDArray.length];
-
-        for (int i = 0; i < userIDArray.length; i++) {
-	    String user = userIDArray[i].getUsername();
-
-	    if (username.equals(user) && isMuted) {
-		user = "[" + user + "]";
-	    } 
-
-            userData[i] = user;
-        }
-
-	setUserList(userData);
-    }
-
-    public void userAdded(PresenceInfo presenceInfo) {
+    public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
 	setUserList();
     }
 
-    public void userRemoved(PresenceInfo presenceInfo) {
+    public void aliasChanged(String previousAlias, PresenceInfo info) {
+	VolumeControlJFrame volumeControl = userMap.remove(previousAlias);
+
+	userMap.put(info.usernameAlias, volumeControl);
+
 	setUserList();
     }
 

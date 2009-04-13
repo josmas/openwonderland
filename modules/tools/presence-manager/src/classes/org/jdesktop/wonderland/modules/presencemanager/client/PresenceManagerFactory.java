@@ -26,6 +26,7 @@ public class PresenceManagerFactory {
     private static HashMap<WonderlandSession, PresenceManager> managers = new HashMap();
 
     public static PresenceManager getPresenceManager(WonderlandSession session) {
+
 	PresenceManager manager = managers.get(session);
 
 	if (manager == null) {

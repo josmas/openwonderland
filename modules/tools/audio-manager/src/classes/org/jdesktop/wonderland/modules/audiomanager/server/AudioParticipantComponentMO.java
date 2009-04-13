@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -146,7 +147,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
             Player softphonePlayer = vm.getPlayer(softphoneCallID);
 
             if (softphonePlayer == null) {
-                System.out.println("Can't find softphone player, callID " + softphoneCallID);
+                logger.warning("Can't find softphone player, callID " + softphoneCallID);
                 return;
             }
 
@@ -207,6 +208,14 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	}
 
 	switch (status.getCode()) {
+        case CallStatus.MUTED:
+            sender.send(new AudioParticipantMuteCallMessage(cellRef.get().getCellID(), true));
+            break;
+
+        case CallStatus.UNMUTED:
+            sender.send(new AudioParticipantMuteCallMessage(cellRef.get().getCellID(), false));
+            break;
+
         case CallStatus.STARTEDSPEAKING:
 	    sender.send(new AudioParticipantSpeakingMessage(cellRef.get().getCellID(), true));
             break;
@@ -221,6 +230,9 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
         public void transformChanged(ManagedReference<CellMO> cellRef, 
 	        final CellTransform localTransform, final CellTransform localToWorldTransform) {
+
+	    logger.finest("TRANSFORM CHANGED:  " + cellRef.get().getCellID() + " local "
+		+ localTransform);
 
 	    logger.fine("localTransform " + localTransform + " world " 
 	        + localToWorldTransform);
@@ -254,13 +266,13 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    //}
 
 	    if (player == null) {
-	        logger.fine("can't find player for " + callID);
+	        logger.info("can't find player for " + callID);
 		return;
 	    }
 
 	    player.moved(location.getX(), location.getY(), location.getZ(), angle);
 
-	    logger.fine(player + " x " + location.getX()
+	    logger.finest("PLAYER MOVED " + player + " x " + location.getX()
 	    	+ " y " + location.getY() + " z " + location.getZ()
 	    	+ " angle " + angle);
         }

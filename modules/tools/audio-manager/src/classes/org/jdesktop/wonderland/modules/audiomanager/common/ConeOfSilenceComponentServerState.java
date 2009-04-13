@@ -34,9 +34,9 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 public class ConeOfSilenceComponentServerState extends CellComponentServerState {
 
     @XmlElement(name = "name")
-    private String name;
+    private String name = "ConeOfSilence";
     @XmlElement(name = "fullVolumeRadius")
-    private float fullVolumeRadius = 1.0f;
+    private float fullVolumeRadius = 1.5f;
 
     /** Default constructor */
     public ConeOfSilenceComponentServerState() {

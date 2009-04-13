@@ -375,7 +375,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
             WonderlandClientID clientID = cm.getWonderlandClientID(chatters[i].clientID);
 
 	    if (clientID == null) {
-		System.out.println("Can't find WonderlandClientID for " + chatters[i]);
+		logger.warning("Can't find WonderlandClientID for " + chatters[i]);
 		continue;
 	    }
 
@@ -463,12 +463,13 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     }
 
     public void virtualPlayerAdded(AudioGroup audioGroup, VirtualPlayer vp) {
-	logger.info("Create Orb for " + vp);
+	//System.out.println("Create Orb for " + vp);
 
 	Vector3f center = new Vector3f((float) vp.player.getX(), (float) 2.3, 
 	    (float) vp.player.getZ());
 
-	Orb orb = new Orb(vp.getUsername(), vp.player.getCall().getId(), center, .1, false);
+	Orb orb = new Orb("V-" + vp.getUsername(), vp.player.getCall().getId(), center, .1, false, 
+	    vp.playerWithVirtualPlayer.getId());
 	   
 	orb.addComponent(new AudioParticipantComponentMO(orb.getOrbCellMO()));
 

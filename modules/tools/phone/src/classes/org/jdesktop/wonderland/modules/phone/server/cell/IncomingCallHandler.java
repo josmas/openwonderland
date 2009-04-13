@@ -735,13 +735,11 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 
 		String username = call.getSetup().cp.getName();
 
-		logger.info("USERNAME:  " + username);
-
 		if (username == null) {
 		    username = call.getId();
 		}
 
-		new Orb(username, call.getId(), center, .1, false);
+		new Orb(username, call.getId(), center, .1, false, "");
 
 		state = ESTABLISHED;
             } catch (IOException e) {

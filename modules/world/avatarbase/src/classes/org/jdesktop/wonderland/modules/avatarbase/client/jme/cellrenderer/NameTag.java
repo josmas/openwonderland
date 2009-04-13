@@ -39,19 +39,49 @@ import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 
-
+import java.awt.Color;
+import java.awt.Font;
 
 /**
  * @author jprovino
  */
 public class NameTag implements TransformChangeListener {
 
+    public static final Color SPEAKING_COLOR = Color.RED;
+    public static final Color NOT_SPEAKING_COLOR = new Color(1f, 1f, 1f);
+    public static final Color CONE_OF_SILENCE_COLOR = Color.BLACK;
+
+    public static final Font REAL_NAME_FONT = Font.decode("Sans PLAIN 40");
+    public static final Font ALIAS_NAME_FONT = Font.decode("Sans ITALIC 40");
+
+    private Color foregroundColor = NOT_SPEAKING_COLOR;;
+
+    private Color backgroundColor = new Color(0f, 0f, 0f);
+
+    private Font font = REAL_NAME_FONT;
+
+    public static final String LEFT_MUTE = "[";
+    public static final String RIGHT_MUTE = "]";
+    public static final String SPEAKING = "...";
+
+    public enum EventType {
+        STARTED_SPEAKING,
+        STOPPED_SPEAKING,
+        MUTE,
+        UNMUTE,
+        CHANGE_NAME,
+	ENTERED_CONE_OF_SILENCE,
+	EXITED_CONE_OF_SILENCE
+    }
+
     private final Cell cell;
-    private final String name;
     private final float height;
+    private String name;
     private Node nameTagRoot;
     private Entity labelEntity;
     private Spatial q;
+
+    private String usernameAlias;
 
     /**
      * @deprecated
@@ -94,11 +124,6 @@ public class NameTag implements TransformChangeListener {
     }
 
     public void transformChanged(Cell cell, ChangeSource source) {
-        if (cell.getCellID().equals(this.cell.getCellID()) == false) {
-            System.out.println("SHOULDN'T HAPPEN!");
-            return;
-        }
-
         Vector3f translation = new Vector3f();
         cell.getLocalTransform().getTranslation(translation);
         setLocalTranslation(translation);
@@ -115,43 +140,128 @@ public class NameTag implements TransformChangeListener {
         }
     }
 
-    public void setSpeaking(boolean isSpeaking) {
-        String name = this.name;
-
-        if (isSpeaking) {
-            name += "...";
-        }
-
-        setNameTag(name);
-    }
-
-    public void setMute(boolean isMuted) {
-        String name = this.name;
-
-        if (isMuted) {
-            name = "[" + name + "]";
-        }
-
-        setNameTag(name);
-    }
+    private boolean done;
 
     public void done() {
-        removeNameTag();
+	if (done) {
+	    return;
+	}
 
-        cell.removeTransformChangeListener(this);
-    }
+	done = true;
 
-    private void removeNameTag() {
-        if (nameTagRoot == null) {
-            return;
-        }
+	/*
+	 * Done automatically when cell is removed.
+	 */
+        //cell.removeTransformChangeListener(this);
 
         WorldManager worldManager = ClientContextJME.getWorldManager();
         worldManager.removeEntity(labelEntity);
         labelEntity.removeComponent(RenderComponent.class);
         nameTagRoot.detachChild(q);
         worldManager.addToUpdateList(nameTagRoot);
-        return;
+    }
+
+    public static String getDisplayName(String name, boolean isSpeaking, boolean isMuted) {
+        if (isMuted) {
+            return LEFT_MUTE + name + RIGHT_MUTE;
+        }
+
+        if (isSpeaking) {
+            return name + SPEAKING;
+        }
+
+        return name;
+    }
+
+    public static String getUsername(String name) {
+	String s = name.replaceAll("\\" + LEFT_MUTE, "");
+
+	s = s.replaceAll("\\" + RIGHT_MUTE, "");
+
+	return s.replaceAll("\\" + SPEAKING, "");
+    }
+
+    public void setForegroundColor(Color foregroundColor) {
+	this.foregroundColor = foregroundColor;
+    }
+
+    public Color getForegroundColor() {
+	return foregroundColor;
+    }
+
+    public void setBackgroundColor(Color backgroundColor) {
+	this.backgroundColor = backgroundColor;
+    }
+
+    public Color getBackgroundColor() {
+	return backgroundColor;
+    }
+
+    public void setFont(Font font) {
+	this.font = font;
+    }
+
+    private boolean enteredConeOfSilence;
+
+    public void setNameTag(EventType eventType, String username, String usernameAlias) {
+	setNameTag(eventType, username, usernameAlias, null, null);
+    }
+
+    public void setNameTag(EventType eventType, String username, String usernameAlias, 
+	    Color foregroundColor, Font font) {
+
+	this.usernameAlias = usernameAlias;
+
+	if (eventType == EventType.ENTERED_CONE_OF_SILENCE) {
+	    enteredConeOfSilence = true;
+	} else if (eventType == EventType.EXITED_CONE_OF_SILENCE) {
+	    enteredConeOfSilence = false;
+	}
+	    
+	String displayName = usernameAlias;
+
+	switch (eventType) {
+	case STARTED_SPEAKING:
+ 	    displayName = getDisplayName(usernameAlias, true, false);
+	    setForegroundColor(SPEAKING_COLOR);
+	    break;
+	
+	case STOPPED_SPEAKING:
+ 	    displayName = getDisplayName(usernameAlias, false, false);
+	    setForegroundColor(NOT_SPEAKING_COLOR);
+	    break;
+
+	case MUTE:
+ 	    displayName = getDisplayName(usernameAlias, false, true);
+	    setForegroundColor(NOT_SPEAKING_COLOR);
+	    break;
+	
+	case UNMUTE:
+ 	    displayName = getDisplayName(usernameAlias, false, false);
+	    setForegroundColor(NOT_SPEAKING_COLOR);
+	    break;
+
+	case CHANGE_NAME:
+	    break;
+	}
+
+	if (enteredConeOfSilence) {
+	    setForegroundColor(CONE_OF_SILENCE_COLOR);
+	}
+
+	if (name.equals(usernameAlias) == false) {
+	    setFont(ALIAS_NAME_FONT);
+	}
+
+	if (foregroundColor != null) {
+	    setForegroundColor(foregroundColor);
+	}
+
+	if (font != null) {
+	    setFont(font);
+	}
+
+	setNameTag(displayName);
     }
 
     public void setNameTag(String name) {
@@ -159,7 +269,12 @@ public class NameTag implements TransformChangeListener {
             nameTagRoot.detachChild(q);
         }
 
-        TextLabel2D label = new TextLabel2D(name);
+        TextLabel2D label = new TextLabel2D(name, foregroundColor, backgroundColor);
+
+	if (font != null) {
+	    label.setFont(font);
+	}
+
         q = label.getBillboard(0.3f);
         q.setLocalTranslation(0, height, 0);
 
@@ -174,4 +289,5 @@ public class NameTag implements TransformChangeListener {
         nameTagRoot.setLocalTranslation(pos);
         ClientContextJME.getWorldManager().addToUpdateList(nameTagRoot);
     }
+
 }
