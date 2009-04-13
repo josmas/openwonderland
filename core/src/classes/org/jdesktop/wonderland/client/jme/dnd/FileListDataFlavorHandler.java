@@ -38,9 +38,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
-public class FileListImportDataFlavorHandler implements DataFlavorHandlerSPI {
+public class FileListDataFlavorHandler implements DataFlavorHandlerSPI {
 
-    private static Logger logger = Logger.getLogger(FileListImportDataFlavorHandler.class.getName());
+    private static Logger logger = Logger.getLogger(FileListDataFlavorHandler.class.getName());
 
     /**
      * @inheritDoc()
@@ -72,14 +72,21 @@ public class FileListImportDataFlavorHandler implements DataFlavorHandlerSPI {
         } catch (UnsupportedFlavorException excp) {
             logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
         }
+        FileListDataFlavorHandler.launchCellFromFileList(fileList);
+    }
 
-        // Check to see that we have at least one file. If not signal an
-        // error and return
+    /**
+     * Launches a cell based upon a list of files. This method uploads the first
+     * file found to the content repository and launches a Cell with it.
+     *
+     * @param fileList
+     */
+    public static void launchCellFromFileList(List<File> fileList) {
         if (fileList.size() < 1) {
             logger.warning("No file is given during drag-and-drop");
             return;
         }
-
+        
         // Just take the first file and find out its extension. If there is
         // none, then signal an error and return since we do not know who
         // handles this file type.
