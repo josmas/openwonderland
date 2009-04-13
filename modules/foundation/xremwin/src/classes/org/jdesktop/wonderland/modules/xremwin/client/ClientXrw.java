@@ -446,7 +446,7 @@ public abstract class ClientXrw implements Runnable {
                     if (win == null) {
                         AppXrw.logger.warning("PositionWindow: window doesn't exist: wid = " + positionWinMsgArgs.wid);
                     } else {
-                        win.setScreenPositionLocal(positionWinMsgArgs.x, positionWinMsgArgs.y);
+                        win.setScreenPosition/*TODO:Local*/(positionWinMsgArgs.x, positionWinMsgArgs.y);
                     }
                 }
                 break;
@@ -463,7 +463,7 @@ public abstract class ClientXrw implements Runnable {
                             AppXrw.logger.warning("RestackWindow: sibling window doesn't exist: sibid = " +
                                     restackWinMsgArgs.sibid);
                         } else {
-                            win.restackAboveLocal(sibwin);
+                            win.restackAbove/*TODO:winconfig:Local*/(sibwin);
                         }
                     }
                 }
@@ -709,7 +709,7 @@ public abstract class ClientXrw implements Runnable {
         WindowXrw sibWin = lookupWindow(msg.sibid);
         win.setScreenPosition(msg.x, msg.y);
         win.setSize(msg.wAndBorder, msg.hAndBorder);
-        win.setSiblingAbove(sibWin);
+        win.restackAbove(sibWin);
     }
 
     /**

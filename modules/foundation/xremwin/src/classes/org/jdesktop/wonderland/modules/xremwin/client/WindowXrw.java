@@ -74,7 +74,7 @@ public class WindowXrw extends WindowConventional {
             winTransientFor = AppXrw.widToWindow.get(transientForWid);
         }
 
-        setScreenPositionLocal(x, y);
+        setScreenPosition/*TODO:winconfig:resize:Local*/(x, y);
     }
 
     /**
@@ -96,7 +96,7 @@ public class WindowXrw extends WindowConventional {
     /**
      * Specify the absolute screen position of this window for this client only.
      */
-    public void setScreenPositionLocal (int x, int y) {
+    public void setScreenPosition/*TODO:winconfig:resize:Local*/ (int x, int y) {
         scrPos = new Point(x, y);
         updateOffset();
     }
