@@ -175,11 +175,28 @@ public interface View2D {
     /** Returns the current height of the view in the local coordinate system of the displayer. */
     public float getDisplayerLocalHeight ();
 
-    /** A restack operation which comes from the app. */
-    // TODO: notyet: public void restackApp(RestackOp op, View2D view);
+    /** 
+     * A window close which comes from the user. Close the window of this view.
+     */
+    public void windowCloseUser ();
 
-    /** A restack operation which comes from the user. */
-    // TODO: notyet: public void restackUser(RestackOp op, View2D view);
+    /** Moves the window of this view to the top of its app's window stack. */
+    public void windowRestackToTop ();
+
+    /** Moves the window of this view to the bottom of its app's window stack. */
+    public void windowRestackToBottom ();
+
+    /**  
+     * Moves this window so that it is above the window of the given sibling view in the app's window stack.
+     * If sibling is null, the window is moved to the top of the stack.
+     */
+    public void windowRestackAbove (View2D sibling);
+
+    /**  
+     * Moves this window so that it is below the window of the given sibling view in the app's window stack.
+     * If sibling is null, the window is moved to the bottom of the stack.
+     */
+    public void windowRestackBelow (View2D sibling);
 
     /** 
      * Specify the size of the displayed pixels of this view.
@@ -247,12 +264,6 @@ public interface View2D {
      * ray starting from the current eye position intersects the geometry.
      */
     public Point calcIntersectionPixelOfEyeRay(int x, int y);
-
-    /* TODO: no longer needed?
-    >>>> I think I can remove this now. But I'm leaving it in a bit longer to be sure.
-    // TODO: temporary until ImageGraphics can be fixed to allocated texture id when necessary
-    public void forceTextureIdAssignment();
-    */
 
     /**
      * Add an event listener to this view.

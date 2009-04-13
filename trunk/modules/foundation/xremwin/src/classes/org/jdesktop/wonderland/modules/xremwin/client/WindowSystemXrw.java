@@ -245,8 +245,11 @@ public class WindowSystemXrw
 
     /**
      * Tell the window system that this window has been closed.
+     * If the window is primary it may make the app quit.
      */
     public void deleteWindow(int wid) {
-        wm.deleteWindow(wid);
+        if (wm != null) {
+            wm.deleteWindow(wid);
+        }
     }
 }

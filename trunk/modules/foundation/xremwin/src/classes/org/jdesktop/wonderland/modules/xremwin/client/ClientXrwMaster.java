@@ -147,11 +147,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
                 break;
 
             case SLAVE_CLOSE_WINDOW:
-
-                // If this was performed interactively by this client, ignore it */
-                if (slaveCloseWindowMsgArgs.clientId != clientId) {
-                    slaveCloseWindow(slaveCloseWindowMsgArgs.wid);
-                }
+                windowCloseSlave(slaveCloseWindowMsgArgs.wid);
                 break;
 
             case SET_WINDOW_TITLE:
@@ -213,27 +209,27 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
         ((ServerProxyMaster) serverProxy).setPopupParent(wid, parentWid);
     }
 
+    /** {@inheritDoc} */
+    public void windowCloseUser(WindowXrw win) {
+        AppXrw.logger.finer("User closed window " + win.getWid());
+        windowClose(win.getWid());
+    }
+
     /**
-     * A slave has closed a window.
+     * A slave user has closed a window.
      *
      * @param wid The wid of the window the slave has closed.
      */
-    public void slaveCloseWindow(int wid) {
-        // A slave can only close a window when it has control
-        if (controlArb.hasControl()) {
-            AppXrw.logger.finer("CLOSE_WINDOW");
-            WindowXrw win = lookupWindow(wid);
-            if (win != null) {
-                closeWindow(win);
-            }
-        }
+    private void windowCloseSlave(int wid) {
+        AppXrw.logger.finer("Slave closed window " + wid);
+        windowClose(wid);
     }
 
     /**
      * Close the given window.
      */
-    public void closeWindow(WindowXrw win) {
-        winSys.deleteWindow(win.getWid());
+    private void windowClose (int wid) {
+        winSys.deleteWindow(wid);
     }
 
     // Called by window system exit listener 

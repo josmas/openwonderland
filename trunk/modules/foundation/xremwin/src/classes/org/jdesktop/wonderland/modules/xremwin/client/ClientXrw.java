@@ -60,6 +60,14 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.ShowCursorMsgArgs;
 @ExperimentalAPI
 public abstract class ClientXrw implements Runnable {
 
+    // TODO: Bugs in parsing the incoming stream from the server
+    // end up trying to create huge windows and blowing the java heap
+    // Prevent this. Eventually need to do cleaner.
+    // It would be cleaner to base these numbers on the max tex width/height of the 
+    // graphics card of the user display.
+    private static final int WINDOW_MAX_WIDTH  = 4000;
+    private static final int WINDOW_MAX_HEIGHT = 4000;
+
     // The connection to the XRemwin server or master.
     protected ServerProxy serverProxy;
 
@@ -438,7 +446,7 @@ public abstract class ClientXrw implements Runnable {
                     if (win == null) {
                         AppXrw.logger.warning("PositionWindow: window doesn't exist: wid = " + positionWinMsgArgs.wid);
                     } else {
-                        win.setScreenPosition(positionWinMsgArgs.x, positionWinMsgArgs.y);
+                        win.setScreenPositionLocal(positionWinMsgArgs.x, positionWinMsgArgs.y);
                     }
                 }
                 break;
@@ -455,7 +463,7 @@ public abstract class ClientXrw implements Runnable {
                             AppXrw.logger.warning("RestackWindow: sibling window doesn't exist: sibid = " +
                                     restackWinMsgArgs.sibid);
                         } else {
-                            win.setSiblingAbove(sibwin);
+                            win.restackAboveLocal(sibwin);
                         }
                     }
                 }
@@ -658,6 +666,30 @@ public abstract class ClientXrw implements Runnable {
      * @param msg The message arguments which have been read for the ConfigureWindow message.
      */
     private void configureWindow(WindowXrw win, ConfigureWindowMsgArgs msg) {
+
+        /* TODO: winconfig: x11: notyet
+        // Ignore messages from ourself
+        if (msg.clientId == clientId) {
+            return;
+        }
+
+        int wAndBorder = msg.wAndBorder;
+        int hAndBorder = msg.hAndBorder;
+
+        if (wAndBorder > WINDOW_MAX_WIDTH) {
+            wAndBorder = WINDOW_MAX_WIDTH;
+            AppXrw.logger.warning("createWindow: width " + wAndBorder + " was truncated to maximum width");
+        }
+        if (hAndBorder > WINDOW_MAX_HEIGHT) {
+            hAndBorder = WINDOW_MAX_HEIGHT;
+            AppXrw.logger.warning("createWindow: height " + hAndBorder + " was truncated to maximum height");
+        }
+
+        WindowXrw sibWin = lookupWindow(msg.sibid);
+        win.setScreenPositionLocal(msg.x, msg.y);
+        win.setSizeLocal(wAndBorder, hAndBorder);
+        win.restackAboveLocal(sibWin);
+        */
 
         // Is this a configure from ourselves or some other client?
         if (msg.clientId == clientId) {
@@ -939,11 +971,11 @@ public abstract class ClientXrw implements Runnable {
     }
 
     /**
-     * Close the given window.
+     * Called when the user closes the given window.
      *
      * @param win The window to close.
      */
-    public abstract void closeWindow(WindowXrw win);
+    public abstract void windowCloseUser(WindowXrw win);
 
     /*
      ** For Debug: Print pixel run lengths
@@ -996,14 +1028,11 @@ public abstract class ClientXrw implements Runnable {
     }
 
     /**
-     * Rearrange the window stack so that the windows are in the given order.
-     *
-     * @param order An array which indicates the order in which the windows
-     * are to appear in the stack. The window at order[index] should have
-     * stack position N-index, where N is the number of windows in the stack.
+     * Recalculate the stack order based on the Z orders of the windows in the stack.
+     * Used during slave synchronization of conventional apps.
      */
-    public void restackWindows(WindowXrw[] order) {
-        app.restackWindows(order);
+    public void restackFromZOrders () {
+        app.restackFromZOrders();
     }
 
     private class Statistics extends StatisticsSet {

@@ -495,19 +495,7 @@ public abstract class View2DEntity implements View2D {
         logger.info("visibleApp = " + visibleApp);
         logger.info("visibleUser = " + visibleUser);
         if (!visibleApp || !visibleUser) return false;
-        /* TODO: do we really want to check parent visibility? It doesn't work out for gt
-           and isn't necessary if we always parent child entities to parent entities.
-        if (parent == null) {
-            logger.info("No parent. isActuallyVisible = true");
-        */
-            return true;
-            /*
-        } else {
-            logger.info("parent = " + parent.getName());
-            logger.info("parent.isActuallyVisible() = " + parent.isActuallyVisible());
-            return parent.isActuallyVisible();
-        }
-            */
+        return true;
     }
 
     /** {@inheritDoc} */
@@ -666,6 +654,41 @@ public abstract class View2DEntity implements View2D {
     public float getDisplayerLocalHeight () {
         // TODO: ignore size mode and user size for now - always track window size as specified by app
         return getPixelScaleCurrent().y * sizeApp.height;
+    }
+
+    /** 
+     * A window close which comes from the user. Close the window of this view.
+     */
+    public void windowCloseUser () {
+        window.closeUser();
+    }
+
+    /** {@inheritDoc} */
+    public void windowRestackToTop () {
+        window.restackToTop();
+    }
+
+    /** {@inheritDoc} */
+    public void windowRestackToBottom () {
+        window.restackToBottom();
+    }
+
+    /** {@inheritDoc} */
+    public void windowRestackAbove (View2D sibling) {
+        if (sibling == null) {
+            window.restackToTop();
+        } else {
+            window.restackAbove(sibling.getWindow());
+        }
+    }
+
+    /** {@inheritDoc} */
+    public void windowRestackBelow (View2D sibling) {
+        if (sibling == null) {
+            window.restackToBottom();
+        } else {
+            window.restackBelow(sibling.getWindow());
+        }
     }
 
     /** 

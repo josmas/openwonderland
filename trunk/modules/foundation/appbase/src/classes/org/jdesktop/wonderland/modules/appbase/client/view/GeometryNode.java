@@ -284,42 +284,48 @@ public abstract class GeometryNode extends Node {
 
     /**
      * Calculates the point in world coordinates where the given ray
-     * intersects the "world plane" of this geometry. All inputs are
-     * in world coordinates. Returns null if the ray doesn't intersect the plane.
-     *
+     * intersects the "world plane" of this geometry. Returns null if the ray doesn't intersect the plane.
+     * <br><br>
+     * All inputs are in world coordinates.     
+     * <br><br>
      * @param ray The ray.
      * @param planePoint A point on the plane.
      * @param planeNormal The plane normal vector.
      */
-    /**/
     protected Vector3f calcPlanarIntersection(Ray ray, Vector3f planePoint, Vector3f planeNormal) {
 
-        // Uses the following formula:
+        // Ray Equation is X = P + t * V
+        // Plane Equation is (X - P0) dot N = 0
         //
-        // t = (planeNormal dot (planePointWorld – rayStart)) / (planeNormal dot rayVectorWorld)
+        // where
+        //     X is a point on the ray 
+        //     P = Starting point for ray (ray.getOrigin())
+        //     t = distance along ray to intersection point
+        //     V = Direction vector of Ray (ray.getDirection())
+        //     P0 = known point on plane (planePoint)
+        //     N  = Normal for plane (planeNormal)
         //
-        // Then use the parameter t in the line equation P = P0 + t * rayDirection to calculate
-        // the intersection point P.
+        // Combine equations to calculate t:
         //
-        // Source: http://www.thepolygoners.com/tutorials/lineplane/lineplane.html
+        // t = [ (P0 - P) dot N ] / (V dot N)
+        //
+        // Then substitute t into the Ray Equation to get the intersection point.
+        //
+        // Source: Various: Lars Bishop book, Geometry Toolbox, Doug T.
 
-        // First calculate planeNormal dot rayDirection
+        Vector3f pointDiffVec = new Vector3f(planePoint);
+        pointDiffVec.subtract(ray.getOrigin());
+        float numerator = planeNormal.dot(pointDiffVec);
         float denominator = planeNormal.dot(ray.getDirection());
         if (denominator == 0f) {
             // No intersection
             return null;
         }
-
-        // Now calculate the numerator
-        Vector3f vecTmp = planePoint.subtract(ray.getOrigin(), new Vector3f());
-        float numerator = planeNormal.dot(vecTmp);
-
-        // Now calculate t
         float t = numerator / denominator;
 
-        // Now plug t into the ray equation P = P0 + t * rayDirection
-        Vector3f p = ray.getDirection().mult(t).add(ray.getOrigin());
-        return p;
+        // Now plug t into the Ray Equation is X = P + t * V
+        Vector3f x = ray.getDirection().mult(t).add(ray.getOrigin());
+        return x;
     }
     /**/
 

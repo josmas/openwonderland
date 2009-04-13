@@ -99,6 +99,7 @@ class Gui2DSide extends Gui2D {
     @Override
     protected void attachKeyListener(Entity entity) {
         // For debug
+        System.err.println("*********** Attached side key listener");
         keyListener = new SideKeyListener();
         keyListener.addToEntity(entity);
     }
@@ -115,7 +116,7 @@ class Gui2DSide extends Gui2D {
     }
 
     /**
-     * For Debug: The key listener listener for this GUI.
+     * For Debug: The key listener for this GUI.
      */
     protected class SideKeyListener extends EventClassListener {
 
@@ -136,10 +137,11 @@ class Gui2DSide extends Gui2D {
             KeyEvent3D ke3d = (KeyEvent3D) event;
             KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
 
+            // TODO: temporary gui: ^C over frame closes the window.
             if (ke3d.isPressed() &&
-                    ke.getKeyCode() == KeyEvent.VK_W &&
-                    (ke.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) != 0) {
-                // TODO: notyet window.getApp().printWindowInfosAll();
+                ke.getKeyCode() == KeyEvent.VK_C &&
+                (ke.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) != 0) {
+                Gui2DSide.this.view.windowCloseUser();
                 return;
             }
         }
@@ -175,7 +177,7 @@ class Gui2DSide extends Gui2D {
     @Override
     protected void performConfigAction(Action action, MouseEvent me, MouseEvent3D me3d) {
         if (action.type == ActionType.TO_FRONT) {
-            view.getWindow().toFront();
+            Gui2DSide.this.view.getWindow().restackToTop();
             return;
         }
 
