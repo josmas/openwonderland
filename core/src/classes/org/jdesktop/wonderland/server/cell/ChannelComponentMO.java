@@ -320,6 +320,14 @@ public class ChannelComponentMO extends CellComponentMO {
     {
         private ManagedReference<ComponentMessageReceiver> receiverRef;
 
+        // a transient copy of the receiver. If the receiver is removed in
+        // the call to messageReceived (for example when removing a cell from
+        // the world), the subsequent call to recordMessage will fail since
+        // the ManagedReference is no longer valid.  This transient object
+        // is therefore used to store the value of the receiver within a
+        // single transaction
+        private transient ComponentMessageReceiver receiver;
+
         public ManagedComponentMessageReceiver(ComponentMessageReceiver receiver) {
             receiverRef = AppContext.getDataManager().createReference(receiver);
         }
@@ -329,14 +337,22 @@ public class ChannelComponentMO extends CellComponentMO {
                                     WonderlandClientID clientID,
                                     CellMessage message)
         {
-            receiverRef.get().messageReceived(sender, clientID, message);
+            if (receiver == null) {
+                receiver = receiverRef.get();
+            }
+
+            receiver.messageReceived(sender, clientID, message);
         }
 
         public void recordMessage(WonderlandClientSender sender,
                                   WonderlandClientID clientID,
                                   CellMessage message)
         {
-            receiverRef.get().recordMessage(sender, clientID, message);
+            if (receiver == null) {
+                receiver = receiverRef.get();
+            }
+
+            receiver.recordMessage(sender, clientID, message);
         }
 
         @Override
