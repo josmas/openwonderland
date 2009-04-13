@@ -56,8 +56,9 @@ public class DragAndDropManager {
         // Create the hash map to hold all of the data flavor handlers and add
         // in the default one to handle drag-and-drop of files from the desktop
         dataFlavorHandlerMap = new HashMap();
-        registerDataFlavorHandler(new FileListImportDataFlavorHandler());
+        registerDataFlavorHandler(new FileListDataFlavorHandler());
         registerDataFlavorHandler(new URLDataFlavorHandler());
+        registerDataFlavorHandler(new URIListDataFlavorHandler());
     }
 
     /**

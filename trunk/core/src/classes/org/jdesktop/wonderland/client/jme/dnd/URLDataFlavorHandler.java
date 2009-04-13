@@ -101,9 +101,16 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
         } catch (UnsupportedFlavorException excp) {
             logger.log(Level.WARNING, "Unable to complete drag and drop", excp);
         }
-        System.out.println("URL " + url.toString());
-        System.out.println("URL " + url.toExternalForm());
+        URLDataFlavorHandler.launchCellFromURL(url);
+    }
 
+    /**
+     * Launches a cell based upon a given URL. This method assumes the URL
+     * refers to some generally-available web content that all clients can fetch
+     *
+     * @param url The URL to launch a Cell with
+     */
+    public static void launchCellFromURL(URL url) {
         // Fetch the file extension of the URL to figure out which Cell to
         // create
         String extension = DragAndDropManager.getFileExtension(url.getFile());
