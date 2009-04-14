@@ -42,6 +42,8 @@ import org.jdesktop.wonderland.client.jme.SceneWorker;
 import java.awt.Color;
 import java.awt.Font;
 
+import java.util.HashMap;
+
 /**
  * @author jprovino
  */
@@ -83,6 +85,8 @@ public class NameTag implements TransformChangeListener {
 
     private String usernameAlias;
 
+    private static HashMap<Cell, NameTag> cellNameTags = new HashMap();
+
     /**
      * @deprecated
      */
@@ -94,6 +98,8 @@ public class NameTag implements TransformChangeListener {
         this.cell = cell;
         this.name = name;
         this.height = height;
+
+	cellNameTags.put(cell, this);
 
         cell.addTransformChangeListener(this);
 
@@ -123,6 +129,10 @@ public class NameTag implements TransformChangeListener {
             worldManager.addEntity(labelEntity);
     }
 
+    public static NameTag findNameTag(Cell cell) {
+	return cellNameTags.get(cell);
+    }
+
     public void transformChanged(Cell cell, ChangeSource source) {
         Vector3f translation = new Vector3f();
         cell.getLocalTransform().getTranslation(translation);
@@ -148,6 +158,8 @@ public class NameTag implements TransformChangeListener {
 	}
 
 	done = true;
+
+	cellNameTags.remove(cell);
 
 	/*
 	 * Done automatically when cell is removed.
@@ -201,7 +213,7 @@ public class NameTag implements TransformChangeListener {
 	this.font = font;
     }
 
-    private boolean enteredConeOfSilence;
+    private boolean inConeOfSilence;
 
     public void setNameTag(EventType eventType, String username, String usernameAlias) {
 	setNameTag(eventType, username, usernameAlias, null, null);
@@ -213,9 +225,10 @@ public class NameTag implements TransformChangeListener {
 	this.usernameAlias = usernameAlias;
 
 	if (eventType == EventType.ENTERED_CONE_OF_SILENCE) {
-	    enteredConeOfSilence = true;
+	    inConeOfSilence = true;
 	} else if (eventType == EventType.EXITED_CONE_OF_SILENCE) {
-	    enteredConeOfSilence = false;
+	    inConeOfSilence = false;
+	    setForegroundColor(NOT_SPEAKING_COLOR);
 	}
 	    
 	String displayName = usernameAlias;
@@ -245,7 +258,7 @@ public class NameTag implements TransformChangeListener {
 	    break;
 	}
 
-	if (enteredConeOfSilence) {
+	if (inConeOfSilence) {
 	    setForegroundColor(CONE_OF_SILENCE_COLOR);
 	}
 
