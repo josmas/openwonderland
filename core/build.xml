@@ -84,8 +84,6 @@
             <classpath>
                 <pathelement path="${core-client.classpath}"/>
             </classpath>
-            
-            <env key="${env.path.name}" path="${env.path.defvalue}"/>
         </java>
     </target>
     
