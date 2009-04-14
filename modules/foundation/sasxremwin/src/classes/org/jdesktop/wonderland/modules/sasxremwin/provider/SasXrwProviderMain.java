@@ -58,6 +58,7 @@ public class SasXrwProviderMain implements SasProviderConnectionListener {
             SasProvider provider = new SasProvider(userName, fullName, password, serverUrl, this);
         } catch (Exception ex) {
             System.err.println("Exception " + ex);
+            ex.printStackTrace();
             System.err.println("Cannot connect to server " + serverUrl);
             System.exit(1);
         }        

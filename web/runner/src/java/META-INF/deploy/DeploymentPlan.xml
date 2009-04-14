@@ -13,4 +13,8 @@
         <runnerClass>org.jdesktop.wonderland.modules.voicebridge.server.VoicebridgeRunner</runnerClass>
         <runnerName>Voice Bridge</runnerName>
     </entry>
+    <entry>
+        <runnerClass>org.jdesktop.wonderland.modules.sasxremwin.weblib.SasProviderRunner</runnerClass>
+        <runnerName>Shared Application Server</runnerName>
+    </entry>
 </DeploymentPlan>
