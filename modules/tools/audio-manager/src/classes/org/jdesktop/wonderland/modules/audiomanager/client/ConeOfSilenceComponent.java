@@ -74,7 +74,7 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
                 msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
                     public void messageReceived(CellMessage message) {
                     }
-                }
+                };
 	    }
 
             channelComp = cell.getComponent(ChannelComponent.class);
