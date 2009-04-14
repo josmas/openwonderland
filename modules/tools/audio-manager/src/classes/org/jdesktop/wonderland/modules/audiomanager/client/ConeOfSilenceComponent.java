@@ -70,15 +70,15 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
             break;
 
 	case BOUNDS:
-	    if (msgReceiver==null) {
+	    if (msgReceiver == null) {
                 msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
                     public void messageReceived(CellMessage message) {
                     }
                 };
-	    }
 
-            channelComp = cell.getComponent(ChannelComponent.class);
-            channelComp.addMessageReceiver(CellServerComponentMessage.class, msgReceiver);
+                channelComp = cell.getComponent(ChannelComponent.class);
+		channelComp.addMessageReceiver(CellServerComponentMessage.class, msgReceiver);
+	    }
             break;
         }
     }
