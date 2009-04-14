@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -65,15 +66,22 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
         this.handler = cBH;
         this.opts = opts;
 
-        // create the session resolver based on the specified class
-        String smClass = (String) opts.get(SESSION_RESOLVER_OPT);
-        sessionManager = createSessionManager(smClass);
-        sessionManager.initialize(opts);
+        try {
+            // create the session resolver based on the specified class
+            String smClass = (String) opts.get(SESSION_RESOLVER_OPT);
+            sessionManager = createSessionManager(smClass);
+            sessionManager.initialize(opts);
 
-        // create the group resolver based on the specified class
-        String grClass = (String) opts.get(GROUP_RESOLVER_OPT);
-        groupManager = createGroupManager(grClass);
-        groupManager.initialize(opts);
+            // create the group resolver based on the specified class
+            String grClass = (String) opts.get(GROUP_RESOLVER_OPT);
+            groupManager = createGroupManager(grClass);
+            groupManager.initialize(opts);
+        } catch (IllegalStateException ise) {
+            // make sure to log any errors
+            logger.log(Level.WARNING, "Error instantiating helper", ise);
+            throw ise;
+        }
+
 
         // get the login page to redirect to
         loginPage = (String) opts.get(LOGIN_PAGE_OPT);
@@ -101,10 +109,13 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
         HttpServletRequest req = (HttpServletRequest) msgInfo.getRequestMessage();
         HttpServletResponse res = (HttpServletResponse) msgInfo.getResponseMessage();
 
-        logger.warning("Processing request for " + req.getRequestURI() +
-                       " client: " + client + " server: " + server +
-                       " security required: " + requestPolicy.isMandatory() +
-                       " secure: " + req.isSecure());
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Processing request for " + req.getRequestURI() +
+                        " client: " + client + " server: " + server +
+                        " security required: " + requestPolicy.isMandatory() +
+                        " secure: " + req.isSecure());
+        }
+
         try {
             // process authentication cookie, if any
             String userId = processAuthCookie(req.getCookies());
@@ -177,8 +188,7 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
                     String value = URLDecoder.decode(cookie.getValue(), "UTF-8");
                     String userId = sessionManager.getUserId(value);
 
-                    logger.warning("User id for token " + value + " is " +
-                                   userId);
+                    logger.fine("User id for token " + value + " is " + userId);
 
                     if (userId != null) {
                         return userId;

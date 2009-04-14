@@ -48,9 +48,12 @@ import org.jdesktop.wonderland.common.cell.messages.CellClientComponentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerStateResponseMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellServerStateMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerStateRequestMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellClientStateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentResponseMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerStateSetMessage;
+import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
+import org.jdesktop.wonderland.common.cell.security.ComponentAction;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -78,7 +81,7 @@ import org.jdesktop.wonderland.server.state.PositionServerStateHelper;
  * @author paulby
  */
 @ExperimentalAPI
-@Actions({ViewAction.class, ModifyAction.class})
+@Actions({ViewAction.class, ModifyAction.class, ComponentAction.class, ChildrenAction.class})
 public abstract class CellMO implements ManagedObject, Serializable {
 
     private ManagedReference<CellMO> parentRef=null;
@@ -434,8 +437,11 @@ public abstract class CellMO implements ManagedObject, Serializable {
             if (channel != null) {
                 channel.addMessageReceiver(CellServerComponentMessage.class,
                         new ComponentMessageReceiver(this));
-                channel.addMessageReceiver(CellServerStateMessage.class,
+                channel.addMessageReceiver(CellServerStateRequestMessage.class,
                         new ComponentStateMessageReceiver(this));
+                channel.addMessageReceiver(CellServerStateSetMessage.class,
+                        new ComponentStateMessageReceiver(this));
+
             }
 
             Collection<ManagedReference<CellComponentMO>> compList = components.values();
@@ -451,7 +457,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
             ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
             if (channel != null) {
                 channel.removeMessageReceiver(CellServerComponentMessage.class);
-                channel.removeMessageReceiver(CellServerStateMessage.class);
+                channel.removeMessageReceiver(CellServerStateRequestMessage.class);
+                channel.removeMessageReceiver(CellServerStateSetMessage.class);
             }
         }
 
@@ -1049,69 +1056,60 @@ public abstract class CellMO implements ManagedObject, Serializable {
         }
 
         @Override
-        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            CellServerStateMessage cssm = (CellServerStateMessage)message;
-            switch (cssm.getStateAction()) {
-                case GET:
-                    handleGetStateMessage(sender, clientID, message);
-                    break;
-                    
-                case SET:
-                    handleSetStateMessage(sender, clientID, message);
-                    break;
+        public void messageReceived(WonderlandClientSender sender,
+                                    WonderlandClientID clientID,
+                                    CellMessage message)
+        {
+            if (message instanceof CellServerStateRequestMessage) {
+                handleGetStateMessage(sender, clientID, (CellServerStateRequestMessage) message);
+            }
+
+            if (message instanceof CellServerStateSetMessage) {
+                handleSetStateMessage(sender, clientID, (CellServerStateSetMessage) message);
             }
         }
 
         /**
          * Handles when a GET state message is received.
          */
-        private void handleGetStateMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+        private void handleGetStateMessage(WonderlandClientSender sender,
+                                           WonderlandClientID clientID,
+                                           CellServerStateRequestMessage message)
+        {
             // If we want to query the cell setup for the given cell ID, first
             // fetch the cell and ask it for its cell setup class. We also
             // want to catch any exception to make sure we send back a
             // response
-            try {
-                CellMO cellMO = getCell();
-                CellServerState cellSetup = cellMO.getServerState(null);
+            CellMO cellMO = getCell();
+            CellServerState cellSetup = cellMO.getServerState(null);
 
-                // Formulate a response message, fill in the cell setup, and return
-                // to the client.
-                MessageID messageID = message.getMessageID();
-                CellServerStateResponseMessage response = new CellServerStateResponseMessage(messageID, cellSetup);
-                sender.send(clientID, response);
-            }
-            catch (java.lang.Exception excp) {
-                // Log a warning and send back a null response
-                logger.log(Level.WARNING, "Unable to fetch cell server state",
-                        excp);
-                MessageID messageID = message.getMessageID();
-                CellServerStateResponseMessage response = new CellServerStateResponseMessage(messageID, null);
-                sender.send(clientID, response);
-            }
+            // Formulate a response message, fill in the cell setup, and return
+            // to the client.
+            MessageID messageID = message.getMessageID();
+            CellServerStateResponseMessage response = new CellServerStateResponseMessage(messageID, cellSetup);
+            sender.send(clientID, response);
         }
 
         /**
          * Handles when a SET state message is received.
          */
-        private void handleSetStateMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-
+        private void handleSetStateMessage(WonderlandClientSender sender,
+                                           WonderlandClientID clientID,
+                                           CellServerStateSetMessage message)
+        {
             // Fetch the cell, and set its server state. Catch all exceptions
             // and report.
-            CellServerStateMessage msg = (CellServerStateMessage)message;
-            try {
-                CellServerState state = msg.getCellServerState();
-                CellMO cellMO = getCell();
-                cellMO.setServerState(state);
+            CellServerState state = message.getCellServerState();
+            CellMO cellMO = getCell();
+            cellMO.setServerState(state);
 
-                // Fetch a new client-state and set it. Send a message on the
-                // cell channel with the new state.
-                CellClientState clientState = cellMO.getClientState(null, clientID, null);
-                cellMO.sendCellMessage(clientID, new CellClientStateMessage(cellMO.getCellID(), clientState));
-            }
-            catch (java.lang.Exception excp) {
-                logger.log(Level.WARNING, "Unable to set cell server state " +
-                        msg.getCellID(), excp);
-            }
+            // Notify the sender that things went OK
+            sender.send(clientID, new OKMessage(message.getMessageID()));
+
+            // Fetch a new client-state and set it. Send a message on the
+            // cell channel with the new state.
+            CellClientState clientState = cellMO.getClientState(null, clientID, null);
+            cellMO.sendCellMessage(clientID, new CellClientStateMessage(cellMO.getCellID(), clientState));
         }
     }
 

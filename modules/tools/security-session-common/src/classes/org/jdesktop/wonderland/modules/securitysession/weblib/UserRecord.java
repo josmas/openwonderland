@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.securitysession.noauth.weblib;
+package org.jdesktop.wonderland.modules.securitysession.weblib;
 
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttributes;

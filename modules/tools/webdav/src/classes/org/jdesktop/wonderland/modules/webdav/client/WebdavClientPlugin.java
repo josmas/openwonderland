@@ -23,14 +23,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.login.AuthenticationException;
 import org.jdesktop.wonderland.modules.webdav.common.WebdavContentCollection;
 import org.apache.commons.httpclient.HttpURL;
 import org.apache.webdav.lib.WebdavResource;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.common.login.AuthenticationManager;
+import org.jdesktop.wonderland.common.login.AuthenticationService;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.webdav.common.FileContentCollection;
+import org.jdesktop.wonderland.modules.webdav.common.AuthenticatedWebdavResource;
+
 
 /**
  * Register the WebdavContentRepository as the content repository for this
@@ -43,10 +48,20 @@ public class WebdavClientPlugin implements ClientPlugin {
 
     public void initialize(ServerSessionManager loginInfo) {
         String baseURL = loginInfo.getServerURL() + "/webdav/content";
+        
+        // get the authentication service for this session
+        AuthenticationService as = 
+                AuthenticationManager.get(loginInfo.getCredentialManager().getAuthenticationURL());
 
         // register the webdav repository for this session
         try {
-            WebdavResource wdr = new WebdavResource(new HttpURL(baseURL), true);
+            String authCookieName = as.getCookieName();
+            String authCookieValue = as.getAuthenticationToken();
+
+            AuthenticatedWebdavResource wdr =
+                    new AuthenticatedWebdavResource(new HttpURL(baseURL),
+                                                    authCookieName,
+                                                    authCookieValue);
             WebdavContentCollection root =
                     new WebdavContentCollection(wdr, null)
             {
@@ -60,6 +75,8 @@ public class WebdavClientPlugin implements ClientPlugin {
                     new WebdavContentRepository(root, loginInfo.getUsername());
 
             ContentRepositoryRegistry.getInstance().registerRepository(loginInfo, repo);
+        } catch (AuthenticationException ae) {
+            logger.log(Level.WARNING, "Unable to get auth cookie name", ae);
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Unable to start content repository", ioe);
         }

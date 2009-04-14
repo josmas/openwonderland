@@ -19,7 +19,9 @@ package org.jdesktop.wonderland.common.cell.messages;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.security.annotation.Actions;
 
 /**
  * Message sent to add a cell hierarchy.
@@ -27,6 +29,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
+@Actions(ChildrenAction.class)
 public class CellCreateMessage extends CellEditMessage {
     /** The ID of the cell of the parent */
     private CellID parentCellID;

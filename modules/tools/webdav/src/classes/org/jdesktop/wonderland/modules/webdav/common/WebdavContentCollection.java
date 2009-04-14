@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.httpclient.HttpURL;
 import org.apache.commons.httpclient.URIException;
-import org.apache.webdav.lib.WebdavResource;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
@@ -35,15 +34,17 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
 public class WebdavContentCollection extends WebdavContentNode
         implements ContentCollection
 {
-    public WebdavContentCollection(WebdavResource resource, WebdavContentCollection parent) {
+    public WebdavContentCollection(AuthenticatedWebdavResource resource,
+                                   WebdavContentCollection parent)
+    {
         super (resource, parent);
     }
 
     public List<ContentNode> getChildren() throws ContentRepositoryException {
         List<ContentNode> out = new ArrayList<ContentNode>();
         try {
-            WebdavResource[] children = getResource().listWebdavResources();
-            for (WebdavResource child : children) {
+            AuthenticatedWebdavResource[] children = getResource().listWebdavResources();
+            for (AuthenticatedWebdavResource child : children) {
                 out.add(getContentNode(child));
             }
 
@@ -56,7 +57,10 @@ public class WebdavContentCollection extends WebdavContentNode
     public WebdavContentNode getChild(String path) throws ContentRepositoryException {
         try {
             HttpURL url = getChildURL(getResource().getHttpURL(), path);
-            WebdavResource resource = new WebdavResource(url);
+            AuthenticatedWebdavResource resource =
+                    new AuthenticatedWebdavResource(url,
+                                       getResource().getAuthCookieName(),
+                                       getResource().getAuthCookieValue());
             if (resource.getExistence()) {
                 return getContentNode(resource);
             }
@@ -72,7 +76,10 @@ public class WebdavContentCollection extends WebdavContentNode
     {
         try {
             HttpURL newURL = getChildURL(getResource().getHttpURL(), name);
-            WebdavResource newResource = new WebdavResource(newURL);
+            AuthenticatedWebdavResource newResource =
+                    new AuthenticatedWebdavResource(newURL,
+                                              getResource().getAuthCookieName(),
+                                              getResource().getAuthCookieValue());
             if (newResource.exists()) {
                 throw new ContentRepositoryException("Path " + newURL +
                                                      " already exists.");
@@ -96,7 +103,10 @@ public class WebdavContentCollection extends WebdavContentNode
     {
         try {
             HttpURL removeURL = getChildURL(getResource().getHttpURL(), name);
-            WebdavResource removeResource = new WebdavResource(removeURL);
+            AuthenticatedWebdavResource removeResource =
+                    new AuthenticatedWebdavResource(removeURL,
+                                              getResource().getAuthCookieName(),
+                                              getResource().getAuthCookieValue());
             if (removeResource.exists()) {
                 removeResource.deleteMethod();
             }
@@ -107,7 +117,7 @@ public class WebdavContentCollection extends WebdavContentNode
         }
     }
 
-    protected WebdavContentNode getContentNode(WebdavResource resource) {
+    protected WebdavContentNode getContentNode(AuthenticatedWebdavResource resource) {
         if (resource.isCollection()) {
             return new WebdavContentCollection(resource, this);
         } else {

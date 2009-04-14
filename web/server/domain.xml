@@ -68,7 +68,7 @@
 
                 <message-security-config auth-layer="HttpServlet">
                     <provider-config provider-type="server" provider-id="WonderSAM" class-name="org.jdesktop.wonderland.modules.security.weblib.serverauthmodule.WonderSAM">
-                        <property name="session.resolver.class" value="org.jdesktop.wonderland.modules.securitysession.noauth.weblib.InternalSessionResolverImpl"/>
+                        <property name="session.resolver.class" value="org.jdesktop.wonderland.modules.securitysession.weblib.SessionResolverImpl"/>
                         <property name="group.resolver.class" value="org.jdesktop.wonderland.modules.securitygroups.weblib.DBGroupResolverImpl"/>
                      </provider-config>
                 </message-security-config>

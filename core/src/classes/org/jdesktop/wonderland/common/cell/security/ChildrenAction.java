@@ -15,22 +15,19 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.securitysession.noauth.web.identity;
+package org.jdesktop.wonderland.common.cell.security;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Response;
-import org.jdesktop.wonderland.modules.security.weblib.serverauthmodule.SessionResolver;
+import org.jdesktop.wonderland.common.security.Action;
 
 /**
- *
- * @author jkaplan
+ * A sub-action of modify for adding or removing cell children
+ * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-@Path("getCookieNameForToken")
-public class CookieNameResource {
-    @GET
-    public Response get() {
-        String cookieName = "string=" + SessionResolver.COOKIE_NAME;
-        return Response.ok(cookieName).build();
+public class ChildrenAction extends Action {
+    private static final String NAME = "ChangeCellChildren";
+
+    public ChildrenAction() {
+        super (NAME, ModifyAction.class, "Add/Remove Cell Children",
+               "Permission to add or remove cell children from this cell.");
     }
 }

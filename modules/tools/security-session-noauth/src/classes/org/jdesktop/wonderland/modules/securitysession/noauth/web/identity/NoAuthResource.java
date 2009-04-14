@@ -22,16 +22,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.directory.BasicAttribute;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import org.jdesktop.wonderland.modules.securitysession.noauth.weblib.SessionManager;
-import org.jdesktop.wonderland.modules.securitysession.noauth.weblib.SessionManagerFactory;
-import org.jdesktop.wonderland.modules.securitysession.noauth.weblib.UserRecord;
+import org.jdesktop.wonderland.modules.securitysession.weblib.SessionLoginException;
+import org.jdesktop.wonderland.modules.securitysession.weblib.SessionManager;
+import org.jdesktop.wonderland.modules.securitysession.weblib.SessionManagerFactory;
+import org.jdesktop.wonderland.modules.securitysession.weblib.UserRecord;
 
 /**
  *
@@ -75,13 +75,19 @@ public class NoAuthResource {
 
 
         // get or create the record
-        UserRecord rec = sm.get(username, true);
-
-        // update attributes
-        rec.getAttributes().put(new BasicAttribute("uid", username));
-        rec.getAttributes().put(new BasicAttribute("cn", fullname));
-        rec.getAttributes().put(new BasicAttribute("mail", email));
-
+        UserRecord rec = sm.get(username);
+        if (rec == null) {
+            // no record exists for this user -- login in
+            try {
+                rec = sm.login(username, fullname, email);
+            } catch (SessionLoginException sle) {
+                logger.log(Level.WARNING, "Login error", sle);
+                throw new WebApplicationException(sle,
+                                         Response.Status.INTERNAL_SERVER_ERROR);
+            }
+        }
+        
+        // return the token
         String res = "string=" + rec.getToken();
         return Response.ok(res).build();
     }

@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.webdav.common;
 
-import org.apache.webdav.lib.WebdavResource;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 
 /**
@@ -25,10 +24,12 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
  * @author jkaplan
  */
 public class WebdavContentNode implements ContentNode {
-    private WebdavResource resource;
+    private AuthenticatedWebdavResource resource;
     private WebdavContentCollection parent;
 
-    WebdavContentNode(WebdavResource resource, WebdavContentCollection parent) {
+    WebdavContentNode(AuthenticatedWebdavResource resource,
+                      WebdavContentCollection parent)
+    {
         this.resource = resource;
         this.parent = parent;
     }
@@ -53,7 +54,7 @@ public class WebdavContentNode implements ContentNode {
         return parent;
     }
 
-    protected WebdavResource getResource() {
+    protected AuthenticatedWebdavResource getResource() {
         return resource;
     }
 }

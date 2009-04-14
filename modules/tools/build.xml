@@ -8,7 +8,9 @@
         <file name="security/build.xml"/>
         <file name="darkstar/build.xml"/>
         <file name="security-group/build.xml"/>
+        <file name="security-session-common/build.xml"/>
         <file name="security-session-noauth/build.xml"/>
+        <!-- file name="security-session-auth/build.xml"/ -->
         <file name="presence-manager/build.xml"/>
         <file name="orb/build.xml"/>
         <file name="voicebridge/build.xml"/>

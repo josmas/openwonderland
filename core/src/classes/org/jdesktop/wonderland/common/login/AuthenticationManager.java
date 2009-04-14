@@ -79,10 +79,11 @@ public class AuthenticationManager {
         AuthenticationServiceImpl out = getImpl(info.getAuthURL());
         if (out == null) {
             out = new AuthenticationServiceImpl(info.getAuthURL(), username);
+            services.put(info.getAuthURL(), out);
         }
 
         // see if out has a valid token
-        if (out.getAuthenticationToken() != null && !out.isTokenValid()) {
+        if (out.getAuthenticationToken() != null && out.isTokenValid()) {
             return out;
         }
 
