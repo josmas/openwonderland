@@ -47,6 +47,16 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
     
     public ConeOfSilenceComponent(Cell cell) {
         super(cell);
+
+	ProximityComponent comp = new ProximityComponent(cell);
+
+	BoundingVolume[] boundingVolume = new BoundingVolume[1];
+
+	boundingVolume[0] = cell.getLocalBounds();
+
+	comp.addProximityListener(this, boundingVolume);
+
+	cell.addComponent(comp);
     }
     
     @Override
@@ -64,21 +74,12 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
                 msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
                     public void messageReceived(CellMessage message) {
                     }
-            };
+                }
+	    }
+
             channelComp = cell.getComponent(ChannelComponent.class);
             channelComp.addMessageReceiver(CellServerComponentMessage.class, msgReceiver);
-
-            ProximityComponent comp = new ProximityComponent(cell);
-
-            BoundingVolume[] boundingVolume = new BoundingVolume[1];
-
-            boundingVolume[0] = cell.getLocalBounds();
-
-            comp.addProximityListener(this, boundingVolume);
-
-            cell.addComponent(comp);
-        }
-        break;
+            break;
         }
     }
 
