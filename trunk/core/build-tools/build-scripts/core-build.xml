@@ -169,7 +169,7 @@
     </target>
     
     <!-- package core -->
-    <target name="-core-package" depends="-core-jar, -core-package-server"/>
+    <target name="-core-package" depends="-core-jar, -core-package-server, -core-package-client"/>
 
     <!-- deploy task.  This will only work after web and modules have been
          built!

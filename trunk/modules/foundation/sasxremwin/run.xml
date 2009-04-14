@@ -1,0 +1,31 @@
+<project basedir="." default="run" name="sasxremwin.run">
+    <!-- set the build-scripts directory to the current directory -->
+    <dirname property="current.dir" file="${ant.file.sas.xremwin.run}"/>
+
+    <!-- override to fix library locations in core -->
+    <property name="core.lib.dir" location="${current.dir}/core/lib"/>
+    <property name="core.build.lib.dir" location="${current.dir}/core/lib"/>
+
+    <!-- import common setup -->
+    <import file="${current.dir}/build-tools/build-scripts/run-setup.xml"/>
+
+    <!-- import core setup -->
+    <import file="${current.dir}/core/build-tools/build-scripts/core-setup.xml"/>
+   
+    <target name="run">
+        <java classname="org.jdesktop.wonderland.modules.sasxremwin.provider.SasXrwProviderMain">
+            <classpath>
+                <path location="${current.dir}/lib/sasxremwin-provider.jar"/>
+                <path location="${current.dir}/lib/appbase-client.jar"/>
+                <path location="${current.dir}/lib/xremwin-client.jar"/>
+                <path location="${current.dir}/lib/escher-0.2.2.lg.jar"/>
+                <path location="${current.dir}/lib/sas-provider.jar"/>
+
+                <!-- core stuff we need -->
+                <pathelement path="${core-client.classpath}"/>
+            </classpath>
+            
+            <arg value="-Djava.library.path=${current.dir}/lib/native"/>
+        </java>
+    </target>
+</project>
