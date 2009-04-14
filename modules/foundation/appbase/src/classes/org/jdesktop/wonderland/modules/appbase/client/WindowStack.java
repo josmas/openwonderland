@@ -272,7 +272,8 @@ class WindowStack {
         // Traverse the stacked windows from top to bottom
         int zOrderNext = 0;
         for (Window2D window : stackedWindows) {
-            window.setZOrder(zOrderNext);
+            // TODO: TEMP WORKAROUND: fix invalid texcoord updates gt: click left on File
+            //window.setZOrder(zOrderNext);
             zOrderNext++;
         }
 
