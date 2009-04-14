@@ -75,6 +75,10 @@
             <zipfileset file="${current.dir}/../xremwin/build/client/xremwin-client.jar" prefix="lib"/>
             <zipfileset file="${current.dir}/../xremwin/lib/escher-0.2.2.lg.jar" prefix="lib"/>
             <zipfileset file="${current.dir}/../sas/build/provider/sas-provider.jar" prefix="lib"/>
+
+            <!-- add the core native escher libraries -->
+            <zipfileset file="${top.dir}/core/ext/linux/native/libEscher.so" prefix="lib/linux/native"/>
+            <zipfileset file="${top.dir}/core/ext/solaris/native/libEscher.so" prefix="lib/solaris/native"/>
         </zip>
     </target>
 
