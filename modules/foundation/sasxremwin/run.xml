@@ -13,7 +13,8 @@
     <import file="${current.dir}/core/build-tools/build-scripts/core-setup.xml"/>
    
     <target name="run">
-        <java classname="org.jdesktop.wonderland.modules.sasxremwin.provider.SasXrwProviderMain">
+        <java classname="org.jdesktop.wonderland.modules.sasxremwin.provider.SasXrwProviderMain"
+              fork="true">
             <classpath>
                 <path location="${current.dir}/lib/sasxremwin-provider.jar"/>
                 <path location="${current.dir}/lib/appbase-client.jar"/>
@@ -24,8 +25,8 @@
                 <!-- core stuff we need -->
                 <pathelement path="${core-client.classpath}"/>
             </classpath>
-            
-            <arg value="-Djava.library.path=${current.dir}/lib/native"/>
+
+            <sysproperty key="java.library.path" value="${current.dir}/lib/${ostype}/native"/>
         </java>
     </target>
 </project>
