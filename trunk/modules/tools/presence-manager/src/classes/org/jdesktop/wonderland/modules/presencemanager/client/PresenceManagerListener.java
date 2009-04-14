@@ -27,7 +27,8 @@ public interface PresenceManagerListener {
 	USER_ADDED,
 	USER_REMOVED,
 	SPEAKING_CHANGED,
-	MUTE_CHANGED
+	MUTE_CHANGED,
+	ENTER_EXIT_CONE_OF_SILENCE
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type);

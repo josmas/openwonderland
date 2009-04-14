@@ -398,6 +398,15 @@ public class PresenceManagerImpl implements PresenceManager {
 	notifyListeners(info, ChangeType.MUTE_CHANGED);
     }
 
+    /**
+     * Set enteredConeOfSilence flag
+     * @param PresenceInfo
+     * @param boolean
+     */
+    public void setEnteredConeOfSilence(PresenceInfo info, boolean enteredConeOfSilence) {
+	info.enteredConeOfSilence = enteredConeOfSilence;
+	notifyListeners(info, ChangeType.ENTER_EXIT_CONE_OF_SILENCE);
+    }
 
     /**
      * Listener for changes

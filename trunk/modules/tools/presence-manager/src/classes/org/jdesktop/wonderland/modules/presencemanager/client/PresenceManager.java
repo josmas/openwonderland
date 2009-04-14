@@ -128,6 +128,13 @@ public interface PresenceManager {
      */
     public void setMute(PresenceInfo info, boolean isMuted);
 
+    /** 
+     * Set enteredConeOfSilence flag
+     * @param PresenceInfo
+     * @param boolean
+     */
+    public void setEnteredConeOfSilence(PresenceInfo info, boolean enteredConeOfSilence);
+
     /**
      * Listener for changes
      * @param PresenceManagerListener the listener to be notified of a change

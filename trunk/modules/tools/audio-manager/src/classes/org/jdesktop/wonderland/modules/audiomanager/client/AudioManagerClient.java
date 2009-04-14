@@ -49,6 +49,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterExitMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
@@ -463,6 +464,22 @@ public class AudioManagerClient extends BaseConnection implements
 	    } else {
 		avatarNameEvent = new AvatarNameEvent(EventType.UNMUTE,
 		    info.userID.getUsername(), info.usernameAlias);
+	    }
+
+	    InputManager.inputManager().postEvent(avatarNameEvent);
+	} else if (message instanceof ConeOfSilenceEnterExitMessage) {
+	    ConeOfSilenceEnterExitMessage msg = (ConeOfSilenceEnterExitMessage) message;
+
+	    pm.setEnteredConeOfSilence(presenceInfo, msg.entered()); 	
+
+	    AvatarNameEvent avatarNameEvent;
+
+	    if (msg.entered()) {
+		avatarNameEvent = new AvatarNameEvent(EventType.ENTERED_CONE_OF_SILENCE,
+		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	    } else {
+		avatarNameEvent = new AvatarNameEvent(EventType.EXITED_CONE_OF_SILENCE,
+		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
 	    }
 
 	    InputManager.inputManager().postEvent(avatarNameEvent);
