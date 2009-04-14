@@ -99,7 +99,7 @@ class Gui2DSide extends Gui2D {
     @Override
     protected void attachKeyListener(Entity entity) {
         // For debug
-        System.err.println("*********** Attached side key listener");
+        // System.err.println("*********** Attached side key listener");
         keyListener = new SideKeyListener();
         keyListener.addToEntity(entity);
     }
