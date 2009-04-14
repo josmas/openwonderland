@@ -116,7 +116,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
-	sender.send(new ConeOfSilenceEnterExitMessage(cellID, true));
+	sender.send(new ConeOfSilenceEnterExitMessage(callId, true));
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
@@ -151,7 +151,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
-	sender.send(new ConeOfSilenceEnterExitMessage(cellID, false));
+	sender.send(new ConeOfSilenceEnterExitMessage(callId, false));
     }
 
     public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {

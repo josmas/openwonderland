@@ -53,7 +53,7 @@ public class ConeOfSilenceCellFactory implements CellFactorySPI {
          */
         //cellServerState.setRotation(new Rotation(axis, (float) Math.PI / 4));
 
-        Logger.getLogger(ConeOfSilenceCellFactory.class.getName()).warning("COS!!!!");
+        Logger.getLogger(ConeOfSilenceCellFactory.class.getName()).fine("COS!!!!");
         return (T) cellServerState;
     }
 
