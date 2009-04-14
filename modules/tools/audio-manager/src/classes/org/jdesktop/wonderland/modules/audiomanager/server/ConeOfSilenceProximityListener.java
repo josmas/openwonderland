@@ -1,10 +1,4 @@
-/**
- * Project Wonderland
- *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
- *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+/** * Project Wonderland * * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved * * Redistributions in source code form must reproduce the above * copyright and this condition.
  *
  * The contents of this file are subject to the GNU General Public
  * License, Version 2 (the "License"); you may not use this file
@@ -19,6 +13,8 @@ package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterExitMessage;
+
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupListener;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
@@ -30,9 +26,15 @@ import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CallID;
+import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.jme.bounding.BoundingVolume;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
 import java.io.Serializable;
 
@@ -46,10 +48,12 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceProximityListener.class.getName());
 
+    CellID cellID;
     String name;
 
-    public ConeOfSilenceProximityListener(String name) {
-        this.name = name;
+    public ConeOfSilenceProximityListener(CellMO cellMO) {
+	cellID = cellMO.getCellID();
+        name = cellMO.getName();
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,
@@ -107,7 +111,12 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         }
 
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
-                AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+       	    AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+
+	WonderlandClientSender sender =
+            WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
+
+	sender.send(new ConeOfSilenceEnterExitMessage(cellID, true));
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
@@ -138,6 +147,11 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         }
 
         audioGroup.removePlayer(player);
+
+	WonderlandClientSender sender =
+            WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
+
+	sender.send(new ConeOfSilenceEnterExitMessage(cellID, false));
     }
 
     public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {

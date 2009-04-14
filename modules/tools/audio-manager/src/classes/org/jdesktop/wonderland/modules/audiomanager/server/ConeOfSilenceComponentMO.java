@@ -19,15 +19,25 @@ package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
-import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState;
+
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState;
+
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
+
 import com.jme.math.Vector3f;
 
 import com.sun.sgs.app.AppContext;
@@ -110,8 +120,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
      */
     @Override
     protected String getClientClass() {
-        // There is no client-side component class, so return null.
-        return null;
+        return "org.jdesktop.wonderland.modules.audiomanager.client.ConeOfSilenceComponent";
     }
 
     /**
@@ -124,8 +133,6 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 	addProximityListener(live);
     }
 
-    private ConeOfSilenceProximityListener listener;
-
     private void addProximityListener(boolean live) {
         // Fetch the proximity component, we will need this below. If it does
         // not exist (it should), then log an error
@@ -136,18 +143,13 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
             return;
         }
 
-	if (listener != null) {
-	    component.removeProximityListener(listener);
-	    listener = null;
-	}
-
-        // If we are making this component live, then add a listener to the
-        // proximity component.
+        // If we are making this component live, then add a listener to the proximity component.
         if (live == true) {
             BoundingVolume[] bounds = new BoundingVolume[1];
             bounds[0] = new BoundingSphere(fullVolumeRadius, new Vector3f());
+
             ConeOfSilenceProximityListener proximityListener = 
-		new ConeOfSilenceProximityListener(cellRef.get().getName());
+		new ConeOfSilenceProximityListener(cellRef.get());
 
 	    //listenerRef = AppContext.getDataManager().createReference(proximityListener);
 
