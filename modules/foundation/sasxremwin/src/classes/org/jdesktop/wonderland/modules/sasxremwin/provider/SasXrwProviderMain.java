@@ -45,6 +45,8 @@ public class SasXrwProviderMain implements SasProviderConnectionListener {
 
     private SasXrwProviderMain () {
 
+        checkPlatform();
+
         System.err.println("****** Enter SasXrwProviderMain");
 
         // TODO: parse args
@@ -62,6 +64,19 @@ public class SasXrwProviderMain implements SasProviderConnectionListener {
             System.err.println("Cannot connect to server " + serverUrl);
             System.exit(1);
         }        
+    }
+
+    /**
+     * SAS can only run on a Unix platform. Exit if this is not the case.
+     */
+    private void checkPlatform() {
+        String osName = System.getProperty("os.name");
+        if (!"Linux".equals(osName) &&
+            !"SunOS".equals(osName)) {
+            System.err.println("SasXrwProviderMain cannot run on platform " + osName);
+            System.err.println("Program terminated.");
+            System.exit(1);
+        }
     }
 
     /**
