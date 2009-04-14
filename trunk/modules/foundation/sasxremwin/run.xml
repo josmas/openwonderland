@@ -13,6 +13,9 @@
     <import file="${current.dir}/core/build-tools/build-scripts/core-setup.xml"/>
    
     <target name="run">
+        <exec command="chmod +x bin/runxremwin"/>
+        <exec command="chmod +x bin/linux/Xvfb"/>
+        <exec command="chmod +x bin/solaris/Xvfb"/>
         <java classname="org.jdesktop.wonderland.modules.sasxremwin.provider.SasXrwProviderMain"
               fork="true">
             <classpath>

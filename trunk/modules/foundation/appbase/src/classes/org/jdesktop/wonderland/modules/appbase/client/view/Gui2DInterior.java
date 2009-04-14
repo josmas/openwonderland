@@ -162,6 +162,14 @@ public class Gui2DInterior extends Gui2D {
             // First send it to the app's view for conversion to a 2D event.
             try {
 
+                /*
+                System.err.println("view = " + view);
+                System.err.println("view.getWindow() = " + view.getWindow());
+                System.err.println("view.getWindow().getApp() = " + view.getWindow().getApp());
+                System.err.println("view.getWindow().getApp().getControlArb() = " + 
+                                   view.getWindow().getApp().getControlArb());
+                */
+
                 if (view.getWindow().getApp().getControlArb().hasControl()) {
                     view.deliverEvent((Window2D) view.getWindow(), me3d);
                     return;
