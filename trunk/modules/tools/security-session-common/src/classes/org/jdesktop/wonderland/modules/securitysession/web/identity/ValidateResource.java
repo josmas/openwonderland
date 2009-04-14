@@ -15,40 +15,39 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.securitysession.noauth.web.identity;
+package org.jdesktop.wonderland.modules.securitysession.web.identity;
 
 import com.sun.jersey.api.Responses;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import org.jdesktop.wonderland.modules.securitysession.noauth.weblib.SessionManager;
-import org.jdesktop.wonderland.modules.securitysession.noauth.weblib.SessionManagerFactory;
+import org.jdesktop.wonderland.modules.securitysession.weblib.SessionManager;
+import org.jdesktop.wonderland.modules.securitysession.weblib.SessionManagerFactory;
 
 /**
  *
  * @author jkaplan
  */
-@Path("logout")
-public class LogoutResource {
+@Path("isTokenValid")
+public class ValidateResource {
     private SessionManager sm = SessionManagerFactory.getSessionManager();
 
     @GET
-    public Response get(@QueryParam("subjectid") String subjectId) {
-        return post(subjectId);
+    public Response get(@QueryParam("tokenid") String tokenId) {
+        return post(tokenId);
     }
 
     @POST
-    @Consumes("application/x-www-form-urlencoded")
-    public Response post(@FormParam("subjectid") String subjectId) {
-        if (subjectId == null) {
+    public Response post(@FormParam("tokenid") String tokenId) {
+        if (tokenId == null) {
             return Responses.notAcceptable().build();
         }
 
-        sm.remove(subjectId);
-        return Response.ok().build();
+        boolean res = (sm.getByToken(tokenId) != null);
+        String out = "boolean=" + String.valueOf(res);
+        return Response.ok(out).build();
     }
 }

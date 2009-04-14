@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.securitysession.noauth.web.identity;
+package org.jdesktop.wonderland.modules.securitysession.web.identity;
 
 import com.sun.jersey.api.NotFoundException;
 import java.util.List;
@@ -32,9 +32,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import org.jdesktop.wonderland.modules.securitysession.noauth.weblib.SessionManager;
-import org.jdesktop.wonderland.modules.securitysession.noauth.weblib.SessionManagerFactory;
-import org.jdesktop.wonderland.modules.securitysession.noauth.weblib.UserRecord;
+import org.jdesktop.wonderland.modules.securitysession.weblib.SessionManager;
+import org.jdesktop.wonderland.modules.securitysession.weblib.SessionManagerFactory;
+import org.jdesktop.wonderland.modules.securitysession.weblib.UserRecord;
 
 /**
  *

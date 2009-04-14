@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.common.cell.messages;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
+import org.jdesktop.wonderland.common.security.annotation.Actions;
 
 /**
  * Message sent to duplicate a cell hierarchy.
@@ -26,6 +28,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
+@Actions(ChildrenAction.class)
 public class CellDuplicateMessage extends CellEditMessage {
     /** The ID of the cell to duplicate */
     private CellID cellID;

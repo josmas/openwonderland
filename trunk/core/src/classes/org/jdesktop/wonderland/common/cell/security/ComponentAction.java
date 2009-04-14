@@ -15,30 +15,19 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.securitysession.noauth.weblib;
+package org.jdesktop.wonderland.common.cell.security;
 
-import java.util.Map;
-import org.jdesktop.wonderland.modules.security.weblib.serverauthmodule.SessionResolver;
+import org.jdesktop.wonderland.common.security.Action;
 
 /**
- *
- * @author jkaplan
+ * A sub-action of modify for adding and removing cell components
+ * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-public class InternalSessionResolverImpl implements SessionResolver {
+public class ComponentAction extends Action {
+    private static final String NAME = "ChangeCellComponent";
 
-    public void initialize(Map opts) {
-        // nothing to do
-    }
-
-    public String getUserId(String token) {
-        String out = null;
-        
-        SessionManager sm = SessionManagerFactory.getSessionManager();
-        UserRecord record = sm.getByToken(token);
-        if (record != null) {
-            out = record.getUserId();
-        }
-
-        return out;
+    public ComponentAction() {
+        super (NAME, ModifyAction.class, "Change Components",
+               "Permission to add or remove components from this cell.");
     }
 }

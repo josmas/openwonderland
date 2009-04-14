@@ -22,44 +22,67 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.naming.directory.BasicAttribute;
 import org.apache.catalina.util.Base64;
+import org.jdesktop.wonderland.modules.securitysession.weblib.SessionLoginException;
+import org.jdesktop.wonderland.modules.securitysession.weblib.SessionManager;
+import org.jdesktop.wonderland.modules.securitysession.weblib.UserRecord;
 
 /**
  *
  * @author jkaplan
  */
-public class InternalSessionManagerImpl implements SessionManager {
-    private final Map<String, UserRecord> byUserId = 
+public class AuthSessionManagerImpl implements SessionManager {
+    private final Map<String, UserRecord> byUserId =
             new LinkedHashMap<String, UserRecord>();
     private final Map<String, UserRecord> byToken =
             new LinkedHashMap<String, UserRecord>();
-    
-    public UserRecord get(String userId) {
-        return get(userId, false);
-    }
 
-    public synchronized UserRecord get(String userId, boolean create) {
-        // get the existing value for this user
-        UserRecord out = byUserId.get(userId);
-        
-        // if create is true and the record was not found, create a new
-        // record
-        if (create && out == null) {
-            out = new UserRecord(userId, newToken(userId));
 
-            // add to both maps
-            byUserId.put(userId, out);
-            byToken.put(out.getToken(), out);
+    public synchronized UserRecord login(String userId, Object... credentials)
+            throws SessionLoginException
+    {
+        if (byUserId.containsKey(userId)) {
+            throw new SessionLoginException("Duplicate login not allowed");
         }
 
-        return out;
+        // decode the credentials
+        String fullname = null;
+        String email = null;
+
+        if (credentials.length > 0) {
+            fullname = (String) credentials[0];
+        }
+
+        if (credentials.length > 1) {
+            email = (String) credentials[1];
+        }
+
+        // create the userrecord
+        UserRecord rec = new UserRecord(userId, newToken(userId));
+
+        // set values in the record
+        rec.getAttributes().put(new BasicAttribute("uid", userId));
+        rec.getAttributes().put(new BasicAttribute("cn", fullname));
+        rec.getAttributes().put(new BasicAttribute("mail", email));
+
+        // add to our internal maps
+        byUserId.put(userId, rec);
+        byToken.put(rec.getToken(), rec);
+
+        return rec;
+    }
+
+    public synchronized UserRecord get(String userId) {
+        // get the existing value for this user
+        return byUserId.get(userId);
     }
 
     public synchronized UserRecord getByToken(String token) {
         return byToken.get(token);
     }
 
-    public synchronized UserRecord remove(String token) {
+    public synchronized UserRecord logout(String token) {
         UserRecord rec = byToken.remove(token);
         if (rec != null) {
             byUserId.remove(rec.getUserId());

@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.securitysession.noauth.weblib;
+package org.jdesktop.wonderland.modules.securitysession.weblib;
 
 /**
  *
@@ -37,7 +37,8 @@ public class SessionManagerFactory {
         private static SessionManager createInstance() {
             String className = System.getProperty(SESSION_MANAGER_PROP);
             if (className == null) {
-                return new InternalSessionManagerImpl();
+                throw new IllegalStateException("Property " + 
+                        SESSION_MANAGER_PROP + " not set.");
             }
 
             try {

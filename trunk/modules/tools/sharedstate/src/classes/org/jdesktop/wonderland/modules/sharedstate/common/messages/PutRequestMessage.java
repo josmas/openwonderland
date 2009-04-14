@@ -18,12 +18,15 @@
 package org.jdesktop.wonderland.modules.sharedstate.common.messages;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.security.ModifyAction;
+import org.jdesktop.wonderland.common.security.annotation.Actions;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
 
 /**
  * Request to set a value
  * @author jkaplan
  */
+@Actions(ModifyAction.class)
 public class PutRequestMessage extends CellMessage {
     private String mapName;
     private String propName;

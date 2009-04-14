@@ -19,6 +19,9 @@ package org.jdesktop.wonderland.common.cell.messages;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
+import org.jdesktop.wonderland.common.cell.security.ModifyAction;
+import org.jdesktop.wonderland.common.security.annotation.Actions;
 
 /**
  * Message sent to delete a cell hierarchy.
@@ -26,6 +29,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
+@Actions({ModifyAction.class, ChildrenAction.class})
 public class CellDeleteMessage extends CellEditMessage {
     /** The ID of the cell to delete */
     private CellID cellID;

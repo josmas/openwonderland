@@ -18,12 +18,16 @@
 package org.jdesktop.wonderland.server.cell;
 
 import com.jme.math.Vector3f;
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.kernel.ComponentRegistry;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -32,22 +36,25 @@ import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDuplicateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage.EditType;
+import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
+import org.jdesktop.wonderland.server.comms.SecureClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.server.security.Resource;
 
 /**
  * Handles CellEditMessages sent by the Wonderland client
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-class CellEditConnectionHandler implements ClientConnectionHandler, Serializable {
+class CellEditConnectionHandler implements SecureClientConnectionHandler, Serializable {
 
     public ConnectionType getConnectionType() {
         return CellEditConnectionType.CLIENT_TYPE;
@@ -57,14 +64,71 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
         // ignore
     }
 
+    public Resource checkConnect(WonderlandClientID clientID, Properties properties) {
+        return null;
+    }
+
     public void clientConnected(WonderlandClientSender sender,
             WonderlandClientID clientID, Properties properties) {
+        // ignore
+    }
+
+    public void connectionRejected(WonderlandClientID clientID) {
         // ignore
     }
 
     public void clientDisconnected(WonderlandClientSender sender,
             WonderlandClientID clientID) {
         // ignore
+    }
+
+    public Resource checkMessage(WonderlandClientID clientID, Message message) {
+        CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
+        Resource out = null;
+
+        // for each cell being modified, check that the caller has
+        // permissions to modify the children of the parent cell
+        CellEditMessage editMessage = (CellEditMessage) message;
+        switch (editMessage.getEditType()) {
+            case CREATE_CELL:
+                CellCreateMessage ccm = (CellCreateMessage) editMessage;
+                if (ccm.getParentCellID() != null) {
+                    out = crm.getCellResource(ccm.getParentCellID());
+                }
+                break;
+            case DELETE_CELL:
+                // delete requires permission from both the cell being
+                // deleted and the parent cell
+                CellDeleteMessage cdm = (CellDeleteMessage) editMessage;
+                CellMO deleteMO = CellManagerMO.getCell(cdm.getCellID());
+                if (deleteMO == null) {
+                    break;
+                }
+                Resource child = crm.getCellResource(cdm.getCellID());
+                Resource parent = null;
+
+                // get the cell's parent, if any
+                CellMO parentMO = deleteMO.getParent();
+                if (parentMO != null) {
+                    parent = crm.getCellResource(parentMO.getCellID());
+                }
+
+                // now create a delete resource with child & parent
+                if (child != null || parent != null) {
+                    out = new DeleteCellResource(cdm.getCellID().toString(),
+                                                 child, parent);
+                }
+                break;
+            case DUPLICATE_CELL:
+                CellDuplicateMessage cnm = (CellDuplicateMessage) editMessage;
+                CellMO dupMO = CellManagerMO.getCell(cnm.getCellID());
+                if (dupMO != null && dupMO.getParent() != null) {
+                    out = crm.getCellResource(dupMO.getParent().getCellID());
+                }
+                break;
+        }
+
+        return out;
     }
 
     public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, Message message) {
@@ -185,7 +249,17 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             }
         }
     }
-    
+
+    public boolean messageRejected(WonderlandClientSender sender,
+                                   WonderlandClientID clientID, Message message,
+                                   Set<Action> requested, Set<Action> granted)
+    {
+        Logger logger = Logger.getLogger(CellEditConnectionHandler.class.getName());
+        logger.warning("Message " + message + " rejected from " + clientID);
+
+        return true;
+    }
+
     /**
      * Returns the base URL of the web server.
      */
@@ -212,5 +286,59 @@ class CellEditConnectionHandler implements ClientConnectionHandler, Serializable
             return host;
         }
         return host + ":" + port;
+    }
+
+    /**
+     * Deleting requires permission to modify the cell being deleted as well
+     * as permission to modify the children of the parent cell, if any.  This
+     * resource provides that mapping.  All request are mapped to the child
+     * except requests for the ModifyChildren which are mapped to the parent.
+     */
+    private static class DeleteCellResource implements Resource {
+        private String cellID;
+        private Resource child;
+        private Resource parent;
+
+        public DeleteCellResource(String cellID, Resource child,
+                                  Resource parent)
+        {
+            this.cellID = cellID;
+            this.child = child;
+            this.parent = parent;
+        }
+
+        public String getId() {
+            return "DeleteCell_" + cellID;
+        }
+
+        public Result request(WonderlandIdentity identity, Action action) {
+            if (action instanceof ChildrenAction && parent != null) {
+                // route to parent (if any)
+                return parent.request(identity, action);
+            } else if (!(action instanceof ChildrenAction) && child != null) {
+                // route to child (if any)
+                return child.request(identity, action);
+            }
+
+            // if we got here, there is no-one to route to -- just grant the
+            // request
+            return Result.GRANT;
+        }
+
+        public boolean request(WonderlandIdentity identity, Action action,
+                               ComponentRegistry registry)
+        {
+            if (action instanceof ChildrenAction && parent != null) {
+                // route to parent (if any)
+                return parent.request(identity, action, registry);
+            } else if (!(action instanceof ChildrenAction) && child != null) {
+                // route to child (if any)
+                return child.request(identity, action, registry);
+            }
+
+            // if we got here, there is no-one to route to -- just grant the
+            // request
+            return true;
+        }
     }
 }

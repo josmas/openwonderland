@@ -18,7 +18,9 @@
 package org.jdesktop.wonderland.common.cell.messages;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.security.ComponentAction;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.security.annotation.Actions;
 
 /**
  * A message class to either add or remove a component to/from the cell, given
@@ -32,6 +34,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@Actions(ComponentAction.class)
 public class CellServerComponentMessage extends CellMessage {
 
     /* The message type: ADD or REMOVE */

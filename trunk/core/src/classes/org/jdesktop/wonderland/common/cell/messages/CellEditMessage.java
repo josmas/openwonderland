@@ -21,12 +21,14 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- * Message sent to edit the cell hierarchy.
+ * Message sent to edit the cell hierarchy.  This message cannot be
+ * used directly, but is the superclass of a number of other specific
+ * messages.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
-public class CellEditMessage extends Message {
+public abstract class CellEditMessage extends Message {
 
     /** The message type */
     private EditType editType;
@@ -41,7 +43,7 @@ public class CellEditMessage extends Message {
      * 
      * @param parentID the id of the parent cell
      */
-    public CellEditMessage(EditType editType) {
+    protected CellEditMessage(EditType editType) {
         this.editType = editType;
     }
 

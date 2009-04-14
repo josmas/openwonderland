@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -39,8 +40,9 @@ import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentResponseMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellServerStateMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerStateRequestMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerStateResponseMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerStateSetMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
@@ -423,7 +425,17 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         
         // Tell the server-side cell to update itself. Send the message over
         // the cell channel, so fetch the channel component first.
-        cell.sendCellMessage(CellServerStateMessage.newSetMessage(cell.getCellID(), cellServerState));
+        ResponseMessage response = cell.sendCellMessageAndWait(new CellServerStateSetMessage(cell.getCellID(), cellServerState));
+        if (response instanceof ErrorMessage) {
+            ErrorMessage em = (ErrorMessage) response;
+            logger.log(Level.WARNING, "Error setting cell server state: " +
+                       em.getErrorMessage(), em.getErrorCause());
+            
+            JOptionPane.showMessageDialog(this, "Error updating cell: " +
+                                          em.getErrorMessage(), 
+                                          "Error updating cell",
+                                          JOptionPane.ERROR_MESSAGE);
+        }
 
         // XXX Probably should get a success/failed here!
 
@@ -444,7 +456,7 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
     private CellServerState fetchCellServerState() {
         // Fetch the setup object from the Cell object. We send a message on
         // the cell channel, so we must fetch that first.
-        ResponseMessage response = cell.sendCellMessageAndWait(CellServerStateMessage.newGetMessage(cell.getCellID()));
+        ResponseMessage response = cell.sendCellMessageAndWait(new CellServerStateRequestMessage(cell.getCellID()));
         if (response == null) {
             return null;
         }

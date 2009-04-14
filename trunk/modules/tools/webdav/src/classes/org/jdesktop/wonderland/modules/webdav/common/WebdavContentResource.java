@@ -18,11 +18,11 @@
 package org.jdesktop.wonderland.modules.webdav.common;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
-import org.apache.webdav.lib.WebdavResource;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 
@@ -33,7 +33,9 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 public class WebdavContentResource extends WebdavContentNode 
         implements ContentResource
 {
-    WebdavContentResource(WebdavResource resource, WebdavContentCollection parent) {
+    WebdavContentResource(AuthenticatedWebdavResource resource,
+                          WebdavContentCollection parent)
+    {
         super (resource, parent);
     }
 
@@ -74,7 +76,9 @@ public class WebdavContentResource extends WebdavContentNode
     }
 
     public void put(File file) throws ContentRepositoryException, IOException {
-        getResource().putMethod(file);
+        // don't use putMethod(file), since that doesn't properly generate
+        // request headers
+        getResource().putMethod(new FileInputStream(file));
     }
 
     public void put(InputStream is) throws ContentRepositoryException, IOException {

@@ -43,6 +43,10 @@ public class SecuritySetupContextListener implements ServletContextListener {
         System.out.println("Setting auth URL: " + serverUrl);
 
         ServerInfo.getServerDetails().setAuthInfo(authInfo);
+
+        // set the session manager to our internal session manager
+        System.setProperty("session.manager.class",
+            "org.jdesktop.wonderland.modules.securitysession.noauth.weblib.NoAuthSessionManagerImpl");
     }
 
     public void contextDestroyed(ServletContextEvent evt) {

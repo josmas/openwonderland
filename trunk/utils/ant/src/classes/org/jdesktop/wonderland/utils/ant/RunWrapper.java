@@ -85,6 +85,8 @@ public class RunWrapper {
             cmd.add(arg);
         }
 
+        System.out.println("RunWrapper: executing command " + cmd);
+
         // execute
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
