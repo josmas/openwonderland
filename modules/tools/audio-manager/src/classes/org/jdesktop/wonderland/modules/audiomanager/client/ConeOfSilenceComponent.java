@@ -30,6 +30,8 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import com.jme.bounding.BoundingVolume;
 
+import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
+
 /**
  * A component that provides a cone of silence
  * 
@@ -41,7 +43,6 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
     private static Logger logger = Logger.getLogger(ConeOfSilenceComponent.class.getName());
 
     private ChannelComponent channelComp;
-    
     private ChannelComponent.ComponentMessageReceiver msgReceiver;
     
     public ConeOfSilenceComponent(Cell cell) {
@@ -53,18 +54,19 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
         switch(status) {
 	case DISK:
 	    if (msgReceiver != null) {
+                channelComp.removeMessageReceiver(CellServerComponentMessage.class);
                 msgReceiver = null;
             }
             break;
 
 	case BOUNDS:
 	    if (msgReceiver==null) {
-            msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-                public void messageReceived(CellMessage message) {
-                }
+                msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+                    public void messageReceived(CellMessage message) {
+                    }
             };
             channelComp = cell.getComponent(ChannelComponent.class);
-            //channelComp.addMessageReceiver(ConeOfSilenceEnterCellMessage.class, msgReceiver);
+            channelComp.addMessageReceiver(CellServerComponentMessage.class, msgReceiver);
 
             ProximityComponent comp = new ProximityComponent(cell);
 

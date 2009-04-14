@@ -23,23 +23,26 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  *
  * @author jprovino
  */
-public class ConeOfSilenceEnterExitMessage extends CellMessage {
+public class ConeOfSilenceEnterExitMessage extends Message {
     
-    private CellID cellID;
+    private String callID;
     private boolean entered;
 
-    public ConeOfSilenceEnterExitMessage(CellID cellID, boolean entered) {
-	super(cellID);
-	
+    public ConeOfSilenceEnterExitMessage(String callID, boolean entered) {
+	this.callID = callID;
 	this.entered = entered;
     }
     
+    public String getCallID() {
+	return callID;
+    }
+
     public boolean entered() {
 	return entered;
     }

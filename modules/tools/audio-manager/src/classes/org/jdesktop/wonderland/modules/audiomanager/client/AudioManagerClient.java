@@ -472,14 +472,21 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    pm.setEnteredConeOfSilence(presenceInfo, msg.entered()); 	
 
+	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
+
+	    if (info == null) {
+		logger.warning("No presence info for " + msg.getCallID());
+		return;
+	    }
+
 	    AvatarNameEvent avatarNameEvent;
 
 	    if (msg.entered()) {
 		avatarNameEvent = new AvatarNameEvent(EventType.ENTERED_CONE_OF_SILENCE,
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+		    info.userID.getUsername(), info.usernameAlias);
 	    } else {
 		avatarNameEvent = new AvatarNameEvent(EventType.EXITED_CONE_OF_SILENCE,
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+		    info.userID.getUsername(), info.usernameAlias);
 	    }
 
 	    InputManager.inputManager().postEvent(avatarNameEvent);
