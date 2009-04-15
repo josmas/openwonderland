@@ -403,8 +403,8 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param PresenceInfo
      * @param boolean
      */
-    public void setEnteredConeOfSilence(PresenceInfo info, boolean enteredConeOfSilence) {
-	info.enteredConeOfSilence = enteredConeOfSilence;
+    public void setEnteredConeOfSilence(PresenceInfo info, boolean inConeOfSilence) {
+	info.inConeOfSilence = inConeOfSilence;
 	notifyListeners(info, ChangeType.ENTER_EXIT_CONE_OF_SILENCE);
     }
 
