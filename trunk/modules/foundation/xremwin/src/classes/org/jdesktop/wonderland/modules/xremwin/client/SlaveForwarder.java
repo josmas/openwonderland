@@ -264,7 +264,6 @@ class SlaveForwarder {
     private class MyListener implements ClientSocketListener {
 
         public void receivedMessage(BigInteger otherClientID, byte[] message) {
-            System.err.println("Received slave message, message = " + message);
 
             // See this is the hello message from the slave
             if (message[0] == (byte) Proto.ClientMessageType.HELLO.ordinal()) {
