@@ -25,6 +25,7 @@
         <file name="webdav/build.xml"/>
         <file name="snapshot-manager/build.xml"/>
         <file name="asset-meter/build.xml"/>
+        <file name="text-chat/build.xml"/>
     </filelist>
     
     <target name="dist">

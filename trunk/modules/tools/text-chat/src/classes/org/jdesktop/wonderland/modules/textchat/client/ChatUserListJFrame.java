@@ -144,6 +144,20 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
                 // user chat. If so, then it de-activates it.
                 chatManager.deactivateChat(pInfo.userID.getUsername());
             }
+
+            public void presenceInfoChanged(PresenceInfo pInfo, ChangeType type) {
+                // Dispatch toe userAdded() or userRemoved()
+                if (type == ChangeType.USER_ADDED) {
+                    userAdded(pInfo);
+                }
+                else if (type == ChangeType.USER_REMOVED) {
+                    userRemoved(pInfo);
+                }
+            }
+
+            public void aliasChanged(String arg0, PresenceInfo arg1) {
+                // do nothing
+            }
         });
     }
 
@@ -151,7 +165,8 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
      * Initializes the user list to all users except the local one.
      */
     private void initUserList() {
-        for (WonderlandIdentity id : presenceManager.getAllUsers()) {
+        for (PresenceInfo info : presenceManager.getAllUsers()) {
+            WonderlandIdentity id = info.userID;
             if (id.equals(localUserIdentity) == false) {
                 String displayName = getDisplayName(id);
                 userMap.put(displayName, id);
