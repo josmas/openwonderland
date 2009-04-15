@@ -66,7 +66,7 @@ public class AppCellMOXrw extends AppConventionalCellMO {
     @Override
     public CellServerState getServerState(CellServerState state) {
         if (state == null) {
-            return null;
+            state = new AppCellXrwServerState();
         }
         return super.getServerState(state);
     }

@@ -18,7 +18,7 @@
   </security>
   
   <resources>
-    <j2se version="1.5+" initial-heap-size="128m" max-heap-size="512m" java-vm-args=""/>
+    <j2se version="1.6+" initial-heap-size="128m" max-heap-size="512m" java-vm-args=""/>
     
     <!-- jar files auto-populated by build script -->
     %LOCAL_JAR_FILES%
