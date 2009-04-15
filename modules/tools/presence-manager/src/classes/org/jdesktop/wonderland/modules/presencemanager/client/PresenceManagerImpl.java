@@ -124,33 +124,33 @@ public class PresenceManagerImpl implements PresenceManager {
     private boolean alreadyInMaps(PresenceInfo presenceInfo) {
 	PresenceInfo info = cellIDMap.get(presenceInfo.cellID);
 
-	if (info == null || info.equals(presenceInfo) == false) {
-	    return false;
+	if (info != null && info.equals(presenceInfo)) {
+	    return true;
 	}
 
 	if (presenceInfo.clientID != null) {
 	    info = sessionIDMap.get(presenceInfo.clientID);
 
-	    if (info == null || info.equals(presenceInfo) == false) {
-	        return false;
+	    if (info != null && info.equals(presenceInfo)) {
+	        return true;
 	    }
 	}
 
 	info = userIDMap.get(presenceInfo.userID);
 
-	if (info == null || info.equals(presenceInfo) == false) {
-	    return false;
+	if (info != null && info.equals(presenceInfo)) {
+	    return true;
 	}
 
 	if (presenceInfo.callID != null) {
 	    info = callIDMap.get(presenceInfo.callID);
 
-	    if (info == null || info.equals(presenceInfo) == false) {
-	        return false;
+	    if (info != null && info.equals(presenceInfo)) {
+	        return true;
 	    }
 	}
 
-	return true;
+	return false;
     }
 
     private void notifyListeners(PresenceInfo presenceInfo, ChangeType type) {

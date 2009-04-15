@@ -72,7 +72,4 @@ public class ConeOfSilenceCellServerState extends CellServerState {
         return "org.jdesktop.wonderland.modules.coneofsilence.server.cell.ConeOfSilenceCellMO";
     }
 
-
-
-
 }

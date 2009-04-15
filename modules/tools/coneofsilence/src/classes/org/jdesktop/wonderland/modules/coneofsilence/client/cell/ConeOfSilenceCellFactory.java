@@ -47,12 +47,6 @@ public class ConeOfSilenceCellFactory implements CellFactorySPI {
 	cellServerState.setName("COS");
 	cellServerState.setFullVolumeRadius((float) 1.5);
 
-        Vector3f axis = new Vector3f((float) 1, (float) 0, (float) 0);
-        /*
-         * Try rotating 45 degrees to see what that does.
-         */
-        //cellServerState.setRotation(new Rotation(axis, (float) Math.PI / 4));
-
         Logger.getLogger(ConeOfSilenceCellFactory.class.getName()).fine("COS!!!!");
         return (T) cellServerState;
     }
