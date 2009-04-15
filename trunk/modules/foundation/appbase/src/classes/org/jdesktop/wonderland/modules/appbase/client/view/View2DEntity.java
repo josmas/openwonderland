@@ -918,6 +918,7 @@ public abstract class View2DEntity implements View2D {
      */
     public synchronized void setOrtho (boolean ortho, boolean update) {
         if (this.ortho == ortho) return;
+        logger.info("change ortho = " + ortho);
         this.ortho = ortho;
         changeMask |= CHANGED_ORTHO;
         if (update) {
@@ -1084,6 +1085,12 @@ public abstract class View2DEntity implements View2D {
             float width = getDisplayerLocalWidth();
             float height = getDisplayerLocalHeight();
             sgChangeGeometrySizeSet(geometryNode, width, height);
+
+            /**
+             * Subtle: Changing the size of the quad will stomp the texture coordinates.
+             * We must force them to be restored.
+             */
+            changeMask |= CHANGED_TEX_COORDS;
         }
 
         // React to texture coordinate changes
