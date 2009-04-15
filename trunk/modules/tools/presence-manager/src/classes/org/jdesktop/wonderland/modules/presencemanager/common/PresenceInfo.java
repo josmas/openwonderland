@@ -38,7 +38,7 @@ public class PresenceInfo implements Serializable {
 
     public boolean isSpeaking;
     public boolean isMuted;
-    public boolean enteredConeOfSilence;
+    public boolean inConeOfSilence;
 
     public String usernameAlias;
 
