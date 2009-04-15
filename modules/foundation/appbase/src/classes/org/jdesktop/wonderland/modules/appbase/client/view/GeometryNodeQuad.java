@@ -78,7 +78,16 @@ class GeometryNodeQuad extends GeometryNode {
         }
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * {@inheritDoc} 
+     * <br><br>
+     * Note: this method resets the texture attributes of the quad to display the entire
+     * contents of the texture image on the quad. It undoes any previous calls to 
+     * <code>setTextureCoords</code> for this quad. If you have previously called 
+     * <code>setTextureCoords</code> to display a subset of the image, you should 
+     * call <code>setTextureCoords</code> again to set the appropriate texture coordinates
+     * for the new size specified via this <code>setSize</code> call.
+     */
     public void setSize (float width, float height) {
         quad.initialize(width, height);
     }
