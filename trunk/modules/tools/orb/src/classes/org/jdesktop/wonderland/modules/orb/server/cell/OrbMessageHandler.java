@@ -65,7 +65,6 @@ import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -106,9 +105,6 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 
         orbStatusListenerRef =  AppContext.getDataManager().createReference(orbStatusListener);
 
-	WonderlandClientSender sender =  
-	    WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
-
         ChannelComponentMO channelComponentMO = getChannelComponent();
 
         channelComponentMO.addMessageReceiver(OrbAttachMessage.class, this);
@@ -116,7 +112,6 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
         channelComponentMO.addMessageReceiver(OrbMuteCallMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbChangeNameMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbSetVolumeMessage.class, this);
-	channelComponentMO.removeMessageReceiver(OrbSpeakingMessage.class);
     }
 
     public void done() {
@@ -127,7 +122,6 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	channelComponentMO.removeMessageReceiver(OrbMuteCallMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbChangeNameMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbSetVolumeMessage.class);
-	channelComponentMO.removeMessageReceiver(OrbSpeakingMessage.class);
 
 	orbStatusListenerRef.get().endCall(callID);
     }
@@ -224,20 +218,12 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	    return;
  	}
 	
-	if (message instanceof OrbSpeakingMessage) {
-	    boolean isSpeaking = ((OrbSpeakingMessage) message).isSpeaking();
-
-	    logger.info("Call " + callID 
-		+ (isSpeaking ? "Started Speaking" : "Stopped Speaking"));
-	    return;
-	}
-
 	if (message instanceof OrbAttachMessage) {
 	    OrbAttachMessage msg = (OrbAttachMessage) message;
 	    
 	    boolean isAttached = msg.isAttached();
 
-	    logger.fine("Orb attached to " + msg.getAvatarCellID()
+	    logger.fine("Orb attached to " + msg.getHostCellID()
 	    	+ " is " + msg.isAttached());
 
 	    sender.send(clientID, message);

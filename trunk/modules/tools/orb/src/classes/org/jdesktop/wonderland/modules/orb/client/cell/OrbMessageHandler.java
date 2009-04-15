@@ -251,10 +251,10 @@ public class OrbMessageHandler implements TransformChangeListener {
 	if (message instanceof OrbAttachMessage) {
 	    OrbAttachMessage msg = (OrbAttachMessage) message;
 
-	    avatarCell = ClientContext.getCellCache(session).getCell(msg.getAvatarCellID());
+	    avatarCell = ClientContext.getCellCache(session).getCell(msg.getHostCellID());
 
 	    if (avatarCell == null) {
-		System.out.println("Can't find avatarCell for " + msg.getAvatarCellID());
+		System.out.println("Can't find host cell for " + msg.getHostCellID());
 		return;
 	    }
 

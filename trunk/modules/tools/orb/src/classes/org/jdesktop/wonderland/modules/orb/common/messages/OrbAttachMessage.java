@@ -27,18 +27,18 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 public class OrbAttachMessage extends CellMessage {   
     
-    private CellID avatarCellID;
+    private CellID hostCellID;
     private boolean isAttached;
 
-    public OrbAttachMessage(CellID cellID, CellID avatarCellID, boolean isAttached) {
+    public OrbAttachMessage(CellID cellID, CellID hostCellID, boolean isAttached) {
 	super(cellID);
 
-	this.avatarCellID = avatarCellID;
+	this.hostCellID = hostCellID;
 	this.isAttached = isAttached;
     }
     
-    public CellID getAvatarCellID() {
-	return avatarCellID;
+    public CellID getHostCellID() {
+	return hostCellID;
     }
 
     public boolean isAttached() {

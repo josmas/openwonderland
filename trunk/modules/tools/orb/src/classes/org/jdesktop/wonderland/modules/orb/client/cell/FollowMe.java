@@ -22,6 +22,7 @@ public class FollowMe extends Thread {
     private static final float DAMPING = 9.0f;
     private static final float SPRING = 5.0f;
     private static final float EPSILON = 0.01f;
+    private static final float LONG_DISTANCE = 10f;
         
     private Vector3f currentPosition;
     private Vector3f targetPosition;
@@ -62,15 +63,30 @@ public class FollowMe extends Thread {
 	this.targetPosition = targetPosition;
 	this.rotation = rotation;
 
-        //wakeupOn(new WakeupOnElapsedFrames(60));
         oldTime = System.currentTimeMillis();
+
+	logger.finer("Set targetPosition " + targetPosition
+	    + " rotation " + rotation);
+
+        Vector3f positionError  = new Vector3f(targetPosition);
+            positionError.subtractLocal(currentPosition);
+	
+	float length = positionError.length();
+
+	logger.fine("current " + currentPosition + "target " 
+	    + targetPosition + " error " + length);
+
+	if (length >= LONG_DISTANCE) {
+	    // Get to LONG_DISTANCE away, then animate from there
+
+	    positionError.multLocal((length - LONG_DISTANCE) / length);
+	    move(positionError);
+	    logger.fine("JUMP TO: " + currentPosition);
+	}
 
 	synchronized (this) {
 	    notifyAll();
 	}
-
-	logger.finer("Set targetPosition " + targetPosition
-	    + " rotation " + rotation);
     }
     
     private boolean done;
@@ -102,9 +118,8 @@ public class FollowMe extends Thread {
 	    	continue;
             }
         
-            Vector3f targetPos = (Vector3f)targetPosition.clone();
             //Difference between where we are and where we want to be.
-            Vector3f positionError  = new Vector3f(targetPos);
+            Vector3f positionError = new Vector3f(targetPosition);
             positionError.subtractLocal(currentPosition);
     
             if (positionError.length() < EPSILON) {
@@ -151,19 +166,18 @@ public class FollowMe extends Thread {
             jump.multLocal(1.0f/deltaTime);
             oldVelocity = jump;
     
-            //Combine the new distance travelled with the old position.
-            currentPosition.addLocal(jump);
-
-	    logger.finest("Current position:  " + currentPosition);
-
-	    move(currentPosition);
+	    move(jump);
 	    sleep(40);
 	}
     }
 
     private void move(Vector3f position) {
+	currentPosition.addLocal(position);
+
+        logger.finest("Current position:  " + currentPosition);
+
         movableComp.localMoveRequest(
-            new CellTransform(rotation, position, null));
+            new CellTransform(rotation, currentPosition, null));
     }
     
     public void targetSwap(Vector3f oldVector, Vector3f newVector) {
