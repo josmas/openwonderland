@@ -52,6 +52,8 @@ public class PhoneCellMO extends CellMO {
     private PhoneInfo phoneInfo;
     private ManagedReference<PhoneMessageHandler> phoneMessageHandlerRef;
 
+    private ManagedReference<IncomingCallHandler> incomingCallHandlerRef;
+
     public PhoneCellMO() {
     }
 
@@ -68,15 +70,21 @@ public class PhoneCellMO extends CellMO {
                 PhoneMessageHandler phoneMessageHandler = phoneMessageHandlerRef.get();
                 phoneMessageHandler.done();
                 AppContext.getDataManager().removeObject(phoneMessageHandler);
+                AppContext.getDataManager().removeObject(incomingCallHandlerRef.get());
                 phoneMessageHandlerRef = null;
             }
             return;
         }
 
-        IncomingCallHandler.getInstance().addPhone(getCellID(), phoneInfo);
+	IncomingCallHandler incomingCallHandler = IncomingCallHandler.getInstance();
+
+	incomingCallHandler.addPhone(getCellID(), phoneInfo);
+
+	incomingCallHandlerRef = AppContext.getDataManager().createReference(
+	    incomingCallHandler);
 
         phoneMessageHandlerRef = AppContext.getDataManager().createReference(
-                new PhoneMessageHandler(this));
+            new PhoneMessageHandler(this));
     }
 
     @Override
@@ -132,4 +140,5 @@ public class PhoneCellMO extends CellMO {
     public void setPhoneInfo(PhoneInfo phoneInfo) {
         this.phoneInfo = phoneInfo;
     }
+
 }

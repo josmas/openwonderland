@@ -196,29 +196,6 @@ public class AudioManagerClient extends BaseConnection implements
 
 	presenceInfo = pm.getPresenceInfo(cellID);
 
-	if (presenceInfo == null) {
-	    /*
-	     * This happened when our viewConfigured() is called
-	     * before viewConfigured() in the PresenceManager.
-	     * 
-	     * We create the PresenceInfo here and tell the PresenceManager
-	     * about it.  When viewConfigured() is called in the PresenceManager,
-	     * the PresenceManager will send a message to the server about
-	     * a new session being created.
-	     */
-	    logger.warning("AudioManagerClient viewConfigured:  "
-		+ "No Presence info for " + cellID + " THIS SHOULDN'T HAPPEN!");
-
-	    String callID = CallID.getCallID(cellID);
-
-            SoftphoneControlImpl.getInstance().setCallID(callID);
-
-            presenceInfo = new PresenceInfo(cellID, session.getID(),
-                session.getUserID(), callID);
-
-	    pm.addSession(presenceInfo);
-	}
-
 	connectSoftphone();
     }
 
