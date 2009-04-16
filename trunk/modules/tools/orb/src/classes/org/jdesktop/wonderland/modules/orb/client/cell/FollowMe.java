@@ -35,8 +35,13 @@ public class FollowMe extends Thread {
 
     private  MovableComponent movableComp;
 
-    public FollowMe(MovableComponent movableComp, Vector3f initialPosition) {
+    private FollowMeListener listener;
+
+    public FollowMe(MovableComponent movableComp, Vector3f initialPosition,
+	    FollowMeListener listener) {
+
 	this.movableComp = movableComp;
+	this.listener = listener;
 
         currentPosition = new Vector3f(initialPosition);
         targetPosition = new Vector3f(initialPosition);
@@ -178,6 +183,10 @@ public class FollowMe extends Thread {
 
         movableComp.localMoveRequest(
             new CellTransform(rotation, currentPosition, null));
+
+	if (listener != null) {
+	    listener.positionChanged(currentPosition);
+	}
     }
     
     public void targetSwap(Vector3f oldVector, Vector3f newVector) {
