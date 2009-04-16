@@ -43,18 +43,11 @@ public class ModuleList {
         @XmlElementRef()
     })
     private ModuleInfo[] moduleInfos = new ModuleInfo[] {};
-    
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(ModuleInfo.class, ModuleList.class);
-            ModuleList.unmarshaller = jc.createUnmarshaller();
-            ModuleList.marshaller = jc.createMarshaller();
-            ModuleList.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(ModuleInfo.class, ModuleList.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -97,7 +90,8 @@ public class ModuleList {
      * @throw JAXBException Upon error reading the XML stream
      */
     public static ModuleList decode(Reader r) throws JAXBException {
-        ModuleList children = (ModuleList)ModuleList.unmarshaller.unmarshal(r);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        ModuleList children = (ModuleList)unmarshaller.unmarshal(r);
         return children;
     }
     
@@ -108,6 +102,8 @@ public class ModuleList {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        ModuleList.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 }

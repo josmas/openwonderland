@@ -51,17 +51,10 @@ public class Checksum {
     @XmlElement(name="resource-path")
     private String pathName = null;
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(Checksum.class);
-            Checksum.unmarshaller = jc.createUnmarshaller();
-            Checksum.marshaller = jc.createMarshaller();
-            Checksum.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(Checksum.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -160,7 +153,8 @@ public class Checksum {
      * @throw JAXBException Upon error reading the XML file
      */
     public static Checksum decode(Reader r) throws JAXBException {
-        return (Checksum)Checksum.unmarshaller.unmarshal(r);        
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (Checksum)unmarshaller.unmarshal(r);
     }
     
     /**
@@ -170,7 +164,9 @@ public class Checksum {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        Checksum.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
     
     /**

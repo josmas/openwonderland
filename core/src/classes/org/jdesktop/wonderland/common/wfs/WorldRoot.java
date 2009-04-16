@@ -19,8 +19,6 @@ package org.jdesktop.wonderland.common.wfs;
 
 import java.io.Reader;
 import java.io.Writer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -46,20 +44,12 @@ public class WorldRoot {
     @XmlElement(name="root-path")
     private String rootPath = null;
 
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(WorldRoot.class);
-            WorldRoot.unmarshaller = jc.createUnmarshaller();
-            WorldRoot.marshaller = jc.createMarshaller();
-            WorldRoot.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(WorldRoot.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            Logger.getLogger(WorldRoot.class.getName()).log(Level.WARNING,
-                    "[WFS] Unable to create JAXBContext", excp);
+            System.out.println(excp.toString());
         }
     }
     
@@ -82,7 +72,8 @@ public class WorldRoot {
      * @throw JAXBException Upon error reading the XML stream
      */
     public static WorldRoot decode(Reader r) throws JAXBException {
-        return (WorldRoot)WorldRoot.unmarshaller.unmarshal(r);        
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (WorldRoot)unmarshaller.unmarshal(r);        
     }
     
     /**
@@ -92,7 +83,9 @@ public class WorldRoot {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        WorldRoot.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
     
     @Override

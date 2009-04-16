@@ -47,18 +47,11 @@ public class CellList {
 
     /* The relative path of the parent of the children */
     @XmlTransient private String relativePath = null;
-    
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(CellList.class);
-            CellList.unmarshaller = jc.createUnmarshaller();
-            CellList.marshaller = jc.createMarshaller();
-            CellList.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(CellList.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -125,7 +118,8 @@ public class CellList {
      * @throw JAXBException Upon error reading the XML stream
      */
     public static CellList decode(String relativePath, InputStream is) throws JAXBException {
-        CellList children = (CellList)CellList.unmarshaller.unmarshal(is);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        CellList children = (CellList)unmarshaller.unmarshal(is);
         children.relativePath = relativePath;
         return children;
     }
@@ -137,6 +131,8 @@ public class CellList {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        CellList.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 }

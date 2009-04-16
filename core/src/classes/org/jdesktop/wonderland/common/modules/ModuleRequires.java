@@ -52,18 +52,11 @@ public class ModuleRequires {
         @XmlElement(name="requires")
     })
     private ModuleInfo[] requires = new ModuleInfo[] {};
-    
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(ModuleRequires.class);
-            ModuleRequires.unmarshaller = jc.createUnmarshaller();
-            ModuleRequires.marshaller = jc.createMarshaller();
-            ModuleRequires.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(ModuleRequires.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -119,7 +112,8 @@ public class ModuleRequires {
      * @throw JAXBException Upon error reading the XML file
      */
     public static ModuleRequires decode(InputStream is) throws JAXBException {
-        return (ModuleRequires)ModuleRequires.unmarshaller.unmarshal(is);        
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (ModuleRequires)unmarshaller.unmarshal(is);        
     }
 
     /**
@@ -131,7 +125,8 @@ public class ModuleRequires {
      * @throw JAXBException Upon error reading the XML file
      */
     public static ModuleRequires decode(Reader r) throws JAXBException {
-        return (ModuleRequires)ModuleRequires.unmarshaller.unmarshal(r);        
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (ModuleRequires)unmarshaller.unmarshal(r);        
     }
     
     /**
@@ -141,6 +136,8 @@ public class ModuleRequires {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(OutputStream os) throws JAXBException {
-        ModuleRequires.marshaller.marshal(this, os);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, os);
     }
 }
