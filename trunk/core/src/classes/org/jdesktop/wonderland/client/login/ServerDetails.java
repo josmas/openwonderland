@@ -40,19 +40,12 @@ public class ServerDetails implements Cloneable {
     private AuthenticationInfo authInfo;
     private DarkstarServer[] darkstarServers;
 
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-
-    /* Create the XML marshaller and unmarshaller once for all ModuleRepositorys */
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(ServerDetails.class);
-            ServerDetails.unmarshaller = jc.createUnmarshaller();
-            ServerDetails.marshaller = jc.createMarshaller();
-            ServerDetails.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(ServerDetails.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            throw new RuntimeException(excp);
+            System.out.println(excp.toString());
         }
     }
 
@@ -137,7 +130,8 @@ public class ServerDetails implements Cloneable {
      * @throw JAXBException Upon error reading the XML file
      */
     public static ServerDetails decode(Reader r) throws JAXBException {
-        return (ServerDetails) ServerDetails.unmarshaller.unmarshal(r);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (ServerDetails)unmarshaller.unmarshal(r);
     }
 
     /**
@@ -147,7 +141,9 @@ public class ServerDetails implements Cloneable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        ServerDetails.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 
     /**
@@ -157,7 +153,9 @@ public class ServerDetails implements Cloneable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(OutputStream os) throws JAXBException {
-        ServerDetails.marshaller.marshal(this, os);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, os);
     }
 
     /**

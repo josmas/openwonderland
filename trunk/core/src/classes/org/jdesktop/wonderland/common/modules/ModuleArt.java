@@ -43,17 +43,10 @@ public class ModuleArt implements Serializable {
     @XmlElement(name="path", required=true)
     private String path = null;
 
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(ModuleArt.class);
-            ModuleArt.unmarshaller = jc.createUnmarshaller();
-            ModuleArt.marshaller = jc.createMarshaller();
-            ModuleArt.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(ModuleArt.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -80,7 +73,8 @@ public class ModuleArt implements Serializable {
      * @throw JAXBException Upon error reading the XML file
      */
     public static ModuleArt decode(Reader r) throws JAXBException {
-        return (ModuleArt)ModuleArt.unmarshaller.unmarshal(r);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (ModuleArt)unmarshaller.unmarshal(r);
     }
     
     /**
@@ -90,6 +84,8 @@ public class ModuleArt implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        ModuleArt.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 }

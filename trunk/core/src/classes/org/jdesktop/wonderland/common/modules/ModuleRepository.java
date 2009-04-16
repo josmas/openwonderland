@@ -71,20 +71,13 @@ public class ModuleRepository implements Serializable {
     })
     private Repository[] mirrors = null;
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
     /* An ordered linked list of Repository classes for each of the entries */
     private LinkedList<Repository> repositoryList = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleRepositorys */
+
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(ModuleRepository.class);
-            ModuleRepository.unmarshaller = jc.createUnmarshaller();
-            ModuleRepository.marshaller = jc.createMarshaller();
-            ModuleRepository.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(ModuleRepository.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -214,7 +207,8 @@ public class ModuleRepository implements Serializable {
      * @throw JAXBException Upon error reading the XML file
      */
     public static ModuleRepository decode(Reader r) throws JAXBException {
-        ModuleRepository list = (ModuleRepository)ModuleRepository.unmarshaller.unmarshal(r);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        ModuleRepository list = (ModuleRepository)unmarshaller.unmarshal(r);
         list.updateRepositoryList();
         return list;
     }
@@ -226,7 +220,9 @@ public class ModuleRepository implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        ModuleRepository.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 
     /**
@@ -236,7 +232,9 @@ public class ModuleRepository implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(OutputStream os) throws JAXBException {
-        ModuleRepository.marshaller.marshal(this, os);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, os);
     }
     
     /**

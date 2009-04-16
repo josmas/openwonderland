@@ -19,8 +19,6 @@ package org.jdesktop.wonderland.common.wfs;
 
 import java.io.Reader;
 import java.io.Writer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -43,20 +41,12 @@ public class CellDescriptor {
     @XmlElement(name="cell-name") private String cellName = null;
     @XmlElement(name="xml-setup-info") private String setupInfo = null;
 
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(CellDescriptor.class);
-            CellDescriptor.unmarshaller = jc.createUnmarshaller();
-            CellDescriptor.marshaller = jc.createMarshaller();
-            CellDescriptor.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(CellDescriptor.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            Logger.getLogger(CellDescriptor.class.getName()).log(Level.WARNING,
-                    "[WFS] Unable to create JAXBContext", excp);
+            System.out.println(excp.toString());
         }
     }
     
@@ -100,7 +90,8 @@ public class CellDescriptor {
      * @throw JAXBException Upon error reading the XML stream
      */
     public static CellDescriptor decode(Reader r) throws JAXBException {
-        return (CellDescriptor)CellDescriptor.unmarshaller.unmarshal(r);        
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (CellDescriptor)unmarshaller.unmarshal(r);        
     }
     
     /**
@@ -110,6 +101,8 @@ public class CellDescriptor {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        CellDescriptor.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 }

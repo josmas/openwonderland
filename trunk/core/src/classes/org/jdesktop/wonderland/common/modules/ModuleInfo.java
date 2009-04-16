@@ -77,17 +77,10 @@ public class ModuleInfo implements Serializable {
     @XmlTransient
     private Map<String, String> attributeMap = new HashMap();
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(ModuleInfo.class);
-            ModuleInfo.unmarshaller = jc.createUnmarshaller();
-            ModuleInfo.marshaller = jc.createMarshaller();
-            ModuleInfo.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(ModuleInfo.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -242,7 +235,8 @@ public class ModuleInfo implements Serializable {
      */
     public static ModuleInfo decode(Reader r) throws JAXBException {
         /* Read in from stream */
-        ModuleInfo info = (ModuleInfo)ModuleInfo.unmarshaller.unmarshal(r);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        ModuleInfo info = (ModuleInfo)unmarshaller.unmarshal(r);
         
         /* Convert array into hash map */
         info.attributeMap.clear();
@@ -269,7 +263,9 @@ public class ModuleInfo implements Serializable {
         this.attributes = list.toArray(new Attribute[] {});
             
         /* Write out to the stream */
-        ModuleInfo.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 
     /**
@@ -289,7 +285,9 @@ public class ModuleInfo implements Serializable {
         this.attributes = list.toArray(new Attribute[] {});
         
         /* Write out to the stream */
-        ModuleInfo.marshaller.marshal(this, os);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, os);
     }
     
     /**

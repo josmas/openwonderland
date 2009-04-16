@@ -43,18 +43,11 @@ public class ModuleArtList {
         @XmlElementRef()
     })
     private ModuleArt[] moduleArt = new ModuleArt[] {};
-    
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(ModuleArt.class, ModuleArtList.class);
-            ModuleArtList.unmarshaller = jc.createUnmarshaller();
-            ModuleArtList.marshaller = jc.createMarshaller();
-            ModuleArtList.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(ModuleArt.class, ModuleArtList.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -97,7 +90,8 @@ public class ModuleArtList {
      * @throw JAXBException Upon error reading the XML stream
      */
     public static ModuleArtList decode(Reader r) throws JAXBException {
-        ModuleArtList children = (ModuleArtList)ModuleArtList.unmarshaller.unmarshal(r);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        ModuleArtList children = (ModuleArtList)unmarshaller.unmarshal(r);
         return children;
     }
     
@@ -108,6 +102,8 @@ public class ModuleArtList {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        ModuleArtList.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 }

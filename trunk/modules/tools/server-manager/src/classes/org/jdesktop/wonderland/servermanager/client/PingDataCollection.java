@@ -36,20 +36,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class PingDataCollection {
     private PingData[] data = null;
     private int dataSize;
-    
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all 
-       PingDataCollections 
-     */
+
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(PingDataCollection.class);
-            PingDataCollection.unmarshaller = jc.createUnmarshaller();
-            PingDataCollection.marshaller = jc.createMarshaller();
-            PingDataCollection.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(PingDataCollection.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -94,7 +85,8 @@ public class PingDataCollection {
      * @throw JAXBException Upon error reading the XML stream
      */
     public static PingDataCollection decode(InputStream is) throws JAXBException {
-        return (PingDataCollection) PingDataCollection.unmarshaller.unmarshal(is);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (PingDataCollection)unmarshaller.unmarshal(is);
     }
     
     /**
@@ -104,6 +96,8 @@ public class PingDataCollection {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        PingDataCollection.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 }

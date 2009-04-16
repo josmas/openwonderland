@@ -63,17 +63,10 @@ public class ChecksumList {
     @XmlTransient
     public Map<String, Checksum> internalChecksums = new HashMap<String, Checksum>();
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(ChecksumList.class);
-            ChecksumList.unmarshaller = jc.createUnmarshaller();
-            ChecksumList.marshaller = jc.createMarshaller();
-            ChecksumList.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(ChecksumList.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -148,7 +141,8 @@ public class ChecksumList {
      * @throw JAXBException Upon error reading the XML file
      */
     public static ChecksumList decode(Reader r) throws JAXBException {
-        ChecksumList rc = (ChecksumList)ChecksumList.unmarshaller.unmarshal(r);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        ChecksumList rc = (ChecksumList)unmarshaller.unmarshal(r);
         
         // Populate the internal map of checksums from the linked list.
         for (Checksum checksum : rc.checksumList) {
@@ -164,6 +158,8 @@ public class ChecksumList {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        ChecksumList.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 }

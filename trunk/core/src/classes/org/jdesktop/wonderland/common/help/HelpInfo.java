@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
-import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -136,18 +135,11 @@ public class HelpInfo {
         }
     }
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+    private static JAXBContext jaxbContext = null;
     static {
         try {
             Collection<Class> clazz = getJAXBClasses();
-            JAXBContext jc = JAXBContext.newInstance(clazz.toArray(new Class[] {}));
-            HelpInfo.unmarshaller = jc.createUnmarshaller();
-            HelpInfo.marshaller = jc.createMarshaller();
-            HelpInfo.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(clazz.toArray(new Class[] {}));
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -187,7 +179,8 @@ public class HelpInfo {
      * @throw JAXBException Upon error reading the XML file
      */
     public static HelpInfo decode(Reader r) throws JAXBException {
-        return (HelpInfo)HelpInfo.unmarshaller.unmarshal(r);        
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (HelpInfo)unmarshaller.unmarshal(r);        
     }
     
     /**
@@ -197,7 +190,9 @@ public class HelpInfo {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        HelpInfo.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
     
     public static void main(String[] args) throws JAXBException, IOException {

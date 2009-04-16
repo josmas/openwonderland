@@ -42,17 +42,10 @@ public class WorldRootList {
     })
     private String[] roots = new String[0];
 
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(WorldRootList.class);
-            WorldRootList.unmarshaller = jc.createUnmarshaller();
-            WorldRootList.marshaller = jc.createMarshaller();
-            WorldRootList.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(WorldRootList.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -85,7 +78,8 @@ public class WorldRootList {
      * @throw JAXBException Upon error reading the XML stream
      */
     public static WorldRootList decode(InputStream is) throws JAXBException {
-        return (WorldRootList)WorldRootList.unmarshaller.unmarshal(is);        
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (WorldRootList)unmarshaller.unmarshal(is);        
     }
     
     /**
@@ -95,6 +89,8 @@ public class WorldRootList {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        WorldRootList.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 }
