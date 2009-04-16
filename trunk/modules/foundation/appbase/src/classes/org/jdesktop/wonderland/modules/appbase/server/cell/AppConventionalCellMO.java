@@ -182,7 +182,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
             clientState = new AppConventionalCellClientState();
         }
         populateClientState(clientState);
-        return clientState;
+        return super.getClientState(clientState, clientID, capabilities);
     }
 
     /**
