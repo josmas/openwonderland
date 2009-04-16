@@ -40,10 +40,10 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 public class CellRegistry {
 
     /* A set of all cell factories */
-    private Set<CellFactorySPI> cellFactorySet;
+    private Set<CellFactorySPI> cellFactorySet = null;
     
     /* A map of cell factories and the extensions the support */
-    private Map<String, Set<CellFactorySPI>> cellFactoryExtensionMap;
+    private Map<String, Set<CellFactorySPI>> cellFactoryExtensionMap = null;
 
     /* Initialize from the list of service providers in module JARs */
     static {

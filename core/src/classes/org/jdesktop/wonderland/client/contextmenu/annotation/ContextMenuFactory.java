@@ -27,5 +27,5 @@ import java.lang.annotation.Target;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Target(ElementType.TYPE)
-public @interface ContextMenuEntry {
+public @interface ContextMenuFactory {
 }

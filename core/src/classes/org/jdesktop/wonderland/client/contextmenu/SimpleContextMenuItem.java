@@ -27,11 +27,45 @@ import java.awt.Image;
  */
 public class SimpleContextMenuItem extends ContextMenuItem {
 
-    public SimpleContextMenuItem(String label, Image image, ContextMenuItemListener l) {
-        super(label, image, l);
+    private Image image = null;
+    private ContextMenuActionListener listener = null;
+
+    public SimpleContextMenuItem(String label, Image image,
+            ContextMenuActionListener listener) {
+
+        super(label);
+        this.image = image;
+        this.listener = listener;
     }
 
-    public SimpleContextMenuItem(String label, ContextMenuItemListener l) {
-        super(label, null, l);
+    public SimpleContextMenuItem(String label, ContextMenuActionListener listener) {
+        this(label, null, listener);
+    }
+
+    /**
+     * Returns the image of the simple menu item.
+     *
+     * @return An Image
+     */
+    public Image getImage() {
+        return image;
+    }
+
+    /**
+     * Sets the image of the simple menu item.
+     *
+     * @param image The new Image
+     */
+    public void setImage(Image image) {
+        this.image = image;
+    }
+
+    /**
+     * Returns the listener for the menu item action.
+     *
+     * @return The menu item action listener
+     */
+    public ContextMenuActionListener getActionListener() {
+        return listener;
     }
 }

@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
@@ -31,7 +30,7 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 
 
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -102,11 +101,7 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
 
 		if (cell instanceof OrbCell == false) {
                 contextMenu.addMenuItem(new SimpleContextMenuItem("Volume",
-                        new ContextMenuItemListener() {
-                            public MenuItemState getMenuItemState(ContextMenuItem menuItem, Cell cell) {
-                                return MenuItemState.ENABLED;
-                            }
-
+                        new ContextMenuActionListener() {
                             public void actionPerformed(ContextMenuItemEvent event) {
                                 adjustVolume(event);
                             }
@@ -122,7 +117,7 @@ public class AudioParticipantComponent extends CellComponent implements VolumeCh
     private VolumeControlJFrame volumeControlJFrame;
 
     private void adjustVolume(ContextMenuItemEvent event) {
-	if (event.getName().equals(menuItem[0]) == false) {
+	if (event.getContextMenuItem().getLabel().equals(menuItem[0]) == false) {
 	    return;
 	}
 

@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.client.contextmenu;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuEntry;
+import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.PrimaryServerListener;
@@ -59,7 +59,7 @@ public class ContextMenuManager {
                     // add them to the factory List
                     ScannedClassLoader cl = server.getClassloader();
                     Iterator<ContextMenuFactorySPI> it = cl.getAll(
-                            ContextMenuEntry.class, ContextMenuFactorySPI.class);
+                            ContextMenuFactory.class, ContextMenuFactorySPI.class);
                     while (it.hasNext() == true) {
                         factoryList.add(it.next());
                     }

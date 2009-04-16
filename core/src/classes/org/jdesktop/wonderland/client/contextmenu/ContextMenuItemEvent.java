@@ -26,13 +26,12 @@ import org.jdesktop.wonderland.client.cell.Cell;
  */
 public class ContextMenuItemEvent {
 
-    private String name = null;
-
+    private ContextMenuItem item = null;
     private Cell cell = null;
 
     /** Constructor, takes the entity */
-    public ContextMenuItemEvent(String name, Cell cell) {
-        this.name = name;
+    public ContextMenuItemEvent(ContextMenuItem item, Cell cell) {
+        this.item = item;
         this.cell = cell;
     }
 
@@ -46,11 +45,11 @@ public class ContextMenuItemEvent {
     }
 
     /**
-     * Returns the name of the context menu item selected.
+     * Returns the context menu item selected.
      *
-     * @return The name of the context menu item selected
+     * @return The ContextMenuItem
      */
-    public String getName() {
-        return name;
+    public ContextMenuItem getContextMenuItem() {
+        return item;
     }
 }

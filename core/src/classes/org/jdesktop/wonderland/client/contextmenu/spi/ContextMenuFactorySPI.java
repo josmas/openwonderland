@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.contextmenu.spi;
 
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 
 /**
@@ -29,7 +30,8 @@ public interface ContextMenuFactorySPI {
     /**
      * Returns an array of context menu items to add to the context menu.
      *
-     * @param An array of ContextMenuItem objects
+     * @param cell The Cell for which the context menu is for
+     * @return An array of ContextMenuItem objects
      */
-    public ContextMenuItem[] getContextMenuItems();
+    public ContextMenuItem[] getContextMenuItems(Cell cell);
 }
