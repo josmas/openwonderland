@@ -147,18 +147,19 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
         final SimpleContextMenuItem deleteItem = 
                 new SimpleContextMenuItem("Delete", null, new DeleteListener());
         
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException ex) {
-                }
-                deleteItem.setLabel("Delete for Cell " + cell.getName());
-                deleteItem.setEnabled(false);
-                deleteItem.fireMenuItemRepaintListeners();
-            }
-        }.start();
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                try {
+//                    Thread.sleep(10000);
+//                } catch (InterruptedException ex) {
+//                }
+//                deleteItem.setLabel("Delete for Cell " + cell.getName());
+//                deleteItem.setEnabled(false);
+//                deleteItem.fireMenuItemRepaintListeners();
+//            }
+//        }.start();
+
         return new ContextMenuItem[] {
             new SimpleContextMenuItem("Properties...", null, new PropertiesListener()),
             deleteItem,
