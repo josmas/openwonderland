@@ -137,8 +137,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         // to the avatar
         nameTagMover = new CharacterMotionListener() {
             public void transformUpdate(Vector3f translation, PMatrix rotation) {
-                 nameTag.setLocalTranslation(translation);
-                };
+                if (nameTag != null) {
+                    nameTag.setLocalTranslation(translation);
+                }
+            };
 
         };
 
@@ -169,16 +171,19 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
             @Override
             public void commitEvent(Event event) {
-                if (nameTag == null) {
-                    return;
-                }
-
                 if (event instanceof AvatarNameEvent) {
+                    if (nameTag == null) {
+                        System.out.println("[AvatarImiJME] warning: setting " +
+                                "avatar name when name tag is null");
+                        return;
+                    }
+
                     AvatarNameEvent e = (AvatarNameEvent) event;
 
                     if (e.getUsername().equals(username)) {
                         nameTag.setNameTag(e.getEventType(), username, 
-			    e.getUsernameAlias(), e.getForegroundColor(), e.getFont());
+                                           e.getUsernameAlias(),
+                                           e.getForegroundColor(), e.getFont());
                     }
                 }
             }
@@ -223,6 +228,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         // Remove the entity, it will be added when the cell status changes
         ClientContextJME.getWorldManager().removeEntity(avatarCharacter);
 
+        System.out.println("[AvatarImiJME] setting name tag");
         nameTag = new NameTag(cell, username, 2, avatarCharacter);
         return avatarCharacter;
     }
@@ -297,7 +303,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
             SceneWorker.addWorker(new WorkCommit() {
 
                 public void commit() {
-                    nameTag.setLocalTranslation(currentPosition);
+                    if (nameTag != null) {
+                        nameTag.setLocalTranslation(currentPosition);
+                    }
                 }
             });
         }
