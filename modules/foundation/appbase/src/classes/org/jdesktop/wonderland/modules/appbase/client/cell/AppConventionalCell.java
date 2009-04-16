@@ -46,6 +46,8 @@ public abstract class AppConventionalCell extends App2DCell {
     private static AppConventionalConnection connection;
     /** The current primary session. */
     private static WonderlandSession currentPrimarySession;
+    /** Indicates that this cell is a slave and has connectedToTheApp. */
+    private boolean slaveStarted;
 
     /** 
      * Perform user client startup initialization for conventional apps.
@@ -119,6 +121,13 @@ public abstract class AppConventionalCell extends App2DCell {
 
             // Master case
 
+            // TODO: Detect a bug in the lifecycle session listener
+            if (connection == null) {
+                logger.severe("AppConventionalCellConnection isn't initialized!");
+                logger.severe("Command cannot be launched: " + state.getCommand());
+                return;
+            }
+            
             connectionInfo = startMaster(appName, state.getCommand(), false);
             if (connectionInfo == null) {
                 logger.warning("Cannot launch app " + appName);
@@ -130,22 +139,11 @@ public abstract class AppConventionalCell extends App2DCell {
             // Notify server and clients of the new connection info.
             AppConventionalCellSetConnectionInfoMessage msg =
                 new AppConventionalCellSetConnectionInfoMessage(getCellID(), connectionInfo);
-            /* TODO: until we can figure out why we aren't receiving the OK message
-            Message response = connection.sendAndWait(msg);
-            System.err.println("response = " + response);
-            if (!(response instanceof OKMessage)) {
-                logger.warning("Cannot notify others of connection info for app + " + appName);
-                // TODO: what else to do? Delete the cell? If so, how?
-                return;
-            }
-            */
 
-            // TODO: warning for a possible server bug?
-            if (connection == null) {
-                logger.severe("AppConventionalCellConnection isn't initialized!");
-                System.exit(1);
-            }
-
+            // Send the message to the server for broadcast to all slaves (and also this master
+            // so we must self-ignore (see setConnectionInfo). Note that we cannot send this
+            // message synchronously and wait for a response because we are already in a
+            // darkstar message handler.
             connection.send(msg);
 
         } else {
@@ -160,16 +158,10 @@ public abstract class AppConventionalCell extends App2DCell {
 
             connectionInfo = state.getConnectionInfo();
             logger.severe("Initial connection info value for slave = " + connectionInfo);
-            synchronized (this) {
-                while (connectionInfo == null) {
-                    logger.fine("Slave is waiting for connection info.");
-                    try { wait(); } catch (InterruptedException ex) {}
-                }
-                logger.fine("Slave received connection info. Proceeding to connect client.");
+            if (connectionInfo != null) {
+                logger.severe("Starting slave from setClientState");
+                startTheSlave(connectionInfo);
             }
-
-            // App User or World Launch: Slave case
-            startSlave(connectionInfo);
         }
     }
 
@@ -177,18 +169,32 @@ public abstract class AppConventionalCell extends App2DCell {
      * This is called when the server sends the connection info.
      */
     synchronized void setConnectionInfo (String connInfo) {
-        
+
         // If we already know the connection info then we can skip this.
         // Note: this will happen if we are the master, or if this cell was created after
         // the server learned of the connection info.
-
         if (connectionInfo != null) {
             return;
         }
 
+        // Slave: If this message arrives after we are already connected, just ignore it.
+        if (slaveStarted) return;
+
         if (connInfo != null) {
             connectionInfo = connInfo;
-            notifyAll();
+            logger.severe("Starting slave from setConnectionInfo");
+            startTheSlave(connectionInfo);
+        }
+    }
+
+    private void startTheSlave (String connectionInfo) {
+        slaveStarted = true;
+        startSlave(connectionInfo);
+        if (app == null) {
+            logger.warning("Could not connect to slave at " + connectionInfo);
+            slaveStarted = false;
+        } else {
+            logger.info("Connected slave to app at " + connectionInfo);
         }
     }
 
