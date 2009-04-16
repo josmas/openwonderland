@@ -197,6 +197,10 @@ private void attachButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 }//GEN-LAST:event_attachButtonActionPerformed
 
+public void orbDetached() {
+    attachButton.setText("Attach");
+}
+
 private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     setVisible(false);
     orbCell.removeMouseListener();

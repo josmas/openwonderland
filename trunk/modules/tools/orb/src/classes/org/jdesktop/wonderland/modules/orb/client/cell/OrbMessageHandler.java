@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFac
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.client.ClientContext;
@@ -91,6 +92,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
     private Cell avatarCell;
 
+    private Cell hostCell;
+
     private WonderlandSession session;
 
     private OrbDialog orbDialog;
@@ -117,7 +120,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    detachedOrbList.add(orbCell);
 	}
 
-	//avatarCell = ((CellClientSession)session).getLocalAvatar().getViewCell();
+	avatarCell = ((CellClientSession)session).getLocalAvatar().getViewCell();
 	    
 	CellTransform transform = orbCell.getLocalTransform();
 	Vector3f translation = orbCell.getLocalTransform().getTranslation(null);
@@ -170,6 +173,11 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 		+ " player with " + orbCell.getPlayerWithVpCallID() + " to " + info);
 
             channelComp.send(new OrbAttachMessage(orbCell.getCellID(), info.cellID, true));
+	} else {
+	    /*
+	     * Ask the server to tell us if the orb is attached.
+	     */
+            channelComp.send(new OrbAttachMessage(orbCell.getCellID(), null, true));
 	}
     }
 
@@ -181,8 +189,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	        detachedOrbList.remove(orbCell);
 		reorderDetachedOrbs(i + 1);
 	    } else {
-		if (avatarCell != null) {
-		    ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(avatarCell);
+		if (hostCell != null) {
+		    ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
 
 		    if (attachedOrbList != null) {
 			i = attachedOrbList.indexOf(orbCell);
@@ -252,24 +260,43 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	if (message instanceof OrbAttachMessage) {
 	    OrbAttachMessage msg = (OrbAttachMessage) message;
 
-	    avatarCell = ClientContext.getCellCache(session).getCell(msg.getHostCellID());
+	    Cell newHostCell = ClientContext.getCellCache(session).getCell(msg.getHostCellID());
 
-	    if (avatarCell == null) {
+	    if (newHostCell == null) {
 		System.out.println("Can't find host cell for " + msg.getHostCellID());
 		return;
 	    }
 
+	    if (logger.isLoggable(Level.FINE)) {
+	        String s = "None";
+
+	        if (hostCell != null) {
+	     	    s = hostCell.getCellID().toString();
+	        }
+
+	        logger.fine("Attach " + msg.isAttached() + " avatarCellID " 
+		    + avatarCell.getCellID() + " new host " + newHostCell.getCellID()
+		    + " current host " + s);
+	    }
+
 	    if (msg.isAttached()) {
+		if (avatarCell.getCellID().equals(newHostCell.getCellID()) == false) {
+		    /*
+		     * Someone else has attached the Orb.
+		     */
+		    detachOrb(false);
+		}
+
 		synchronized (detachedOrbList) {
 		    detachedOrbList.remove(orbCell);
 		}
 
-		ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(avatarCell);
+		ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(newHostCell);
 
 		if (attachedOrbList == null) {
 		    attachedOrbList = new ArrayList();
 
-		    attachedOrbMap.put(avatarCell, attachedOrbList);
+		    attachedOrbMap.put(newHostCell, attachedOrbList);
 		} 
 
 		synchronized (attachedOrbList) {
@@ -277,28 +304,55 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 		    attachedOrbList.add(orbCell);
 		}
 		
-		avatarCell.addTransformChangeListener(this);
-		transformChanged(avatarCell, true);
+		hostCell = newHostCell;
+		newHostCell.addTransformChangeListener(this);
+		transformChanged(newHostCell, true);
 	    } else {
-		avatarCell.removeTransformChangeListener(this);
-		transformChanged(avatarCell, false);
+		detachOrb(true);
 	    }
 	    return;
 	}
     }
-    
+
+    private void detachOrb(boolean setTransform) {
+	if (hostCell == null) {
+	    return;
+	}
+
+        hostCell.removeTransformChangeListener(this);
+
+	if (setTransform) {
+	    transformChanged(hostCell, false);
+	}
+
+	ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
+
+	synchronized (attachedOrbList) {
+	    attachedOrbList.remove(orbCell);
+	}
+
+	synchronized (detachedOrbList) {
+	    detachedOrbList.add(orbCell);
+	}
+
+	if (orbDialog != null) {
+            orbDialog.orbDetached();
+	}
+	hostCell = null;
+    }
+
     public void transformChanged(Cell cell, ChangeSource source) {
 	transformChanged(cell, true);
     }
 
-    private void transformChanged(Cell cell, boolean raise) {
-	//System.out.println("Cell " + cell.getName() + " moved to " 
-	//    + cell.getLocalTransform());
+    private void transformChanged(Cell cell, boolean isAttached) {
+	logger.finest("Cell " + cell.getName() + " moved to " 
+	    + cell.getLocalTransform());
 
 	CellTransform transform = cell.getLocalTransform();
 	Vector3f translation = transform.getTranslation(null);
 	
-	if (raise) {
+	if (isAttached) {
 	    // Position ourself based on other orbs
 	    translation.setY(getOrbHeight());  // Raise orb.
 	    followMe.setTargetPosition(translation);
@@ -314,6 +368,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	channelComp.send(new OrbChangePositionMessage(orbCell.getCellID(), position));
     }
 
+    public void targetReached(Vector3f position) {
+    }
+
     private float getOrbHeight() {
 	int i = detachedOrbList.indexOf(orbCell);
 
@@ -323,8 +380,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	i = 0;
 
-	if (avatarCell != null) {
-	    ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(avatarCell);
+	if (hostCell != null) {
+	    ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
 
 	    if (attachedOrbList != null) {
 	         i = attachedOrbList.indexOf(orbCell);
@@ -347,11 +404,11 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     }
 
     private void reorderAttachedOrbs(int i) {
-	if (avatarCell == null) {
+	if (hostCell == null) {
 	    return;
 	}
 	
-	ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(avatarCell);
+	ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
 
 	if (attachedOrbList == null) {
 	    return;

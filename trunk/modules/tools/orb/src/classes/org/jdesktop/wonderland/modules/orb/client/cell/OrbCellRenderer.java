@@ -263,6 +263,7 @@ public class OrbCellRenderer extends BasicRenderer {
 		try {
 		    MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
 		    if (buttonEvent.isPressed()) {
+			System.out.println("Orb Selected");
 		        ((OrbCell) cell).orbSelected();
 		    }
 		    return;

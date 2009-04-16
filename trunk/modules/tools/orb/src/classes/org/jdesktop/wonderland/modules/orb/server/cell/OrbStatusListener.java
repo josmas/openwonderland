@@ -25,6 +25,7 @@ import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import com.sun.voip.client.connector.CallStatus;
@@ -36,6 +37,7 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
@@ -53,12 +55,24 @@ public class OrbStatusListener implements ManagedCallStatusListener,
     private static final Logger logger =
         Logger.getLogger(OrbStatusListener.class.getName());
 
-    private CellID cellID;
+    private CellID orbCellID;
+    private CellID hostCellID;
 
     public OrbStatusListener(OrbCellMO orbCellMO, String callID) {
-	cellID = orbCellMO.getCellID();
+	orbCellID = orbCellMO.getCellID();
 
 	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, callID);
+    }
+
+    public void addCallStatusListener(CellID hostCellID) {
+	this.hostCellID = hostCellID;
+	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, 
+	    CallID.getCallID(hostCellID));
+    }
+
+    public void removeCallStatusListener(CellID hostCellID) {
+	AppContext.getManager(VoiceManager.class).removeCallStatusListener(this, 
+	    CallID.getCallID(hostCellID));
     }
 
     private boolean muteMessageSpoken;
@@ -86,11 +100,11 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	    break;
 	
         case CallStatus.MUTED:
-            sender.send(new OrbMuteCallMessage(cellID, true));
+            sender.send(new OrbMuteCallMessage(orbCellID, true));
             break;
 
         case CallStatus.UNMUTED:
-            sender.send(new OrbMuteCallMessage(cellID, false));
+            sender.send(new OrbMuteCallMessage(orbCellID, false));
             break;
 
         case CallStatus.STARTEDSPEAKING:            
@@ -110,11 +124,11 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 		}
 	    }
 
-            sender.send(new OrbSpeakingMessage(cellID, true));
+            sender.send(new OrbSpeakingMessage(orbCellID, true));
             break;
             
         case CallStatus.STOPPEDSPEAKING:
-            sender.send(new OrbSpeakingMessage(cellID, false));
+            sender.send(new OrbSpeakingMessage(orbCellID, false));
             break;
             
 	case CallStatus.TREATMENTDONE:
@@ -131,7 +145,11 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	    break;
 
         case CallStatus.ENDED: 
-	    endCall(callID);
+	    if (callID.equals(CallID.getCallID(orbCellID))) {
+	        endCall(callID);
+	    } else {
+                sender.send(new OrbAttachMessage(orbCellID, hostCellID, false));
+	    }
 	    break;
 	}
     }
@@ -146,7 +164,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	AppContext.getManager(VoiceManager.class).removeCallStatusListener(this, callID);
 
 	CellManagerMO.getCellManager().removeCellFromWorld(
-	    CellManagerMO.getCellManager().getCell(cellID));
+	    CellManagerMO.getCellManager().getCell(orbCellID));
     }
  	
     private boolean starPressed;
@@ -266,7 +284,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 
 	    isMuted = true;
 
-	    OrbMuteCallMessage orbMuteCallMessage = new OrbMuteCallMessage(cellID, true);
+	    OrbMuteCallMessage orbMuteCallMessage = new OrbMuteCallMessage(orbCellID, true);
 
             // send to everybody cellChannel.send(cellChannel.getSessions(), orbMessage.getBytes());            
 	    try {
@@ -294,7 +312,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 		logger.warning("unable to play unmuted treatment to " + call
 		    + ":  " + e.getMessage());
 	    }
-	    OrbMuteCallMessage orbUnmuteCallMessage = new OrbMuteCallMessage(cellID, false);
+	    OrbMuteCallMessage orbUnmuteCallMessage = new OrbMuteCallMessage(orbCellID, false);
 
             // send to everybody cellChannel.send(cellChannel.getSessions(), orbMessage.getBytes());            
 	    return;

@@ -24,4 +24,6 @@ public interface FollowMeListener {
 
     public void positionChanged(Vector3f position);
 
+    public void targetReached(Vector3f position);
+
 }
