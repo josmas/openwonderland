@@ -10,6 +10,7 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class FollowMe extends Thread {
@@ -37,6 +38,8 @@ public class FollowMe extends Thread {
 
     private FollowMeListener listener;
 
+    private boolean animate = true;
+
     public FollowMe(MovableComponent movableComp, Vector3f initialPosition,
 	    FollowMeListener listener) {
 
@@ -52,6 +55,10 @@ public class FollowMe extends Thread {
 	start();
     }
     
+    public void setAnimate(boolean animate) {
+	this.animate = animate;
+    }
+
     public void jumpToTargetPosition(Vector3f newTarget) {
         //Add a little hop
         oldVelocity.addLocal(new Vector3f(0.0f, 3.0f, 0.0f));
@@ -84,9 +91,15 @@ public class FollowMe extends Thread {
 	if (length >= LONG_DISTANCE) {
 	    // Get to LONG_DISTANCE away, then animate from there
 
-	    positionError.multLocal((length - LONG_DISTANCE) / length);
-	    move(positionError);
+	    Vector3f moveTo = new Vector3f(positionError);
+
+            moveTo.multLocal((length - LONG_DISTANCE) / length);
+	    move(moveTo);
 	    logger.fine("JUMP TO: " + currentPosition);
+	} else {
+	    if (animate == false) {
+	        move(positionError);
+	    }
 	}
 
 	synchronized (this) {
@@ -129,6 +142,10 @@ public class FollowMe extends Thread {
     
             if (positionError.length() < EPSILON) {
 		logger.fine("Orb reached target position.");
+
+		if (listener != null) {
+		    listener.targetReached(currentPosition);
+		}
 
 		synchronized (this) {
 		    try {
@@ -176,10 +193,19 @@ public class FollowMe extends Thread {
 	}
     }
 
+    long time;
+
     private void move(Vector3f position) {
 	currentPosition.addLocal(position);
 
-        logger.finest("Current position:  " + currentPosition);
+	if (logger.isLoggable(Level.FINEST)) {
+	    long now = System.currentTimeMillis();
+
+	    logger.finest("current " + currentPosition + " time delta " 
+	        + (now - time));
+
+	    time = now;
+	}
 
         movableComp.localMoveRequest(
             new CellTransform(rotation, currentPosition, null));

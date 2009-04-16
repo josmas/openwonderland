@@ -31,6 +31,7 @@ public class OrbAttachMessage extends CellMessage {
     private boolean isAttached;
 
     public OrbAttachMessage(CellID cellID, CellID hostCellID, boolean isAttached) {
+
 	super(cellID);
 
 	this.hostCellID = hostCellID;

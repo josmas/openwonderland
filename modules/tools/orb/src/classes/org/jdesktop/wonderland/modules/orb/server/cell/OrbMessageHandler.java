@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
 
+import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import java.io.IOException;
@@ -79,6 +80,8 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
         Logger.getLogger(OrbCellMO.class.getName());
      
     private CellID cellID;
+
+    private CellID hostCellID;
 
     private String username;
 
@@ -241,10 +244,31 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	    
 	    boolean isAttached = msg.isAttached();
 
+	    if (isAttached && msg.getHostCellID() == null) {
+		/*
+		 * The client is asking to tell it if there
+		 * is a host for this orb.
+		 */
+		if (hostCellID == null) {
+		    return;
+		}
+
+	   	sender.send(clientID, new OrbAttachMessage(msg.getCellID(), hostCellID, true));
+		return;
+	    }
+
 	    logger.fine("Orb attached to " + msg.getHostCellID()
 	    	+ " is " + msg.isAttached());
 
-	    sender.send(clientID, message);
+	    if (msg.isAttached()) {
+		orbStatusListenerRef.get().addCallStatusListener(msg.getHostCellID());		
+		hostCellID = msg.getHostCellID();
+	    } else {
+		orbStatusListenerRef.get().removeCallStatusListener(msg.getHostCellID());		
+		hostCellID = null;
+	    }
+
+	    sender.send(message);
 	    return;
 	}
 
