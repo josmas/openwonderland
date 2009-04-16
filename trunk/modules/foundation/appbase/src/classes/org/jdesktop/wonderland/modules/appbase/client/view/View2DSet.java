@@ -41,7 +41,7 @@ public class View2DSet {
      */
     public synchronized void cleanup () {
         for (View2DDisplayer displayer : displayers) {
-            remove(displayer);
+            displayer.destroyAllViews();
         }
         displayers.clear();
 
