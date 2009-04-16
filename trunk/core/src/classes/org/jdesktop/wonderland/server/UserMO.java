@@ -24,8 +24,10 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -123,6 +125,21 @@ public class UserMO implements ManagedObject, Serializable {
         }
         
         return avatarRef.get();
+    }
+
+    /**
+     * Return all avatars for this User
+     * @return all the user's avatars
+     */
+    public Collection<ManagedReference<AvatarCellMO>> getAllAvatars() {
+        Collection<ManagedReference<AvatarCellMO>> out =
+                new LinkedHashSet<ManagedReference<AvatarCellMO>>();
+
+        for (Map<String, ManagedReference<AvatarCellMO>> sas : avatars.values()) {
+            out.addAll(sas.values());
+        }
+        
+        return out;
     }
     
     /**

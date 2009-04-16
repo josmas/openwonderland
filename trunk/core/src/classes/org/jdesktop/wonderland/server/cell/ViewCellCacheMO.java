@@ -17,13 +17,12 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.sun.sgs.kernel.ComponentRegistry;
 import java.util.Properties;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
-import com.jme.bounding.BoundingSphere;
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.DataManager;
@@ -34,28 +33,33 @@ import com.sun.sgs.app.PeriodicTaskHandle;
 import com.sun.sgs.app.Task;
 import com.sun.sgs.app.TaskManager;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
-import org.jdesktop.wonderland.common.cell.AvatarBoundsHelper;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
+import org.jdesktop.wonderland.common.cell.security.ViewAction;
 import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.server.CellAccessControl;
-import org.jdesktop.wonderland.server.TimeManager;
 import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.server.security.ActionMap;
+import org.jdesktop.wonderland.server.security.Resource;
+import org.jdesktop.wonderland.server.security.ResourceMap;
+import org.jdesktop.wonderland.server.security.SecurityManager;
+import org.jdesktop.wonderland.server.security.SecureTask;
 import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
 
 /**
@@ -75,7 +79,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private final static Logger logger = Logger.getLogger(ViewCellCacheMO.class.getName());
     
     private ManagedReference<ViewCellMO> viewRef;
-    private ManagedReference<UserSecurityContextMO> securityContextRef;
+    private Set<CellID> loaded = new HashSet<CellID>();
     
     private WonderlandClientSender sender;
     private WonderlandClientID clientID;
@@ -128,26 +132,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         }
 
         UniverseManagerFactory.getUniverseManager().viewLogin(view);
-
-        UserSecurityContextMO securityContextMO = view.getUser().getUserSecurityContext();
-        if (securityContextMO!=null)
-            securityContextRef = AppContext.getDataManager().createReference(securityContextMO);
-        else
-            securityContextRef = null;
-
         
         logger.info("AvatarCellCacheMO.login() CELL CACHE LOGIN FOR USER "
                     + clientID.getSession().getName() + " AS " + identity.getUsername());
-                
-        // Setup the Root Cell on the client
-        CellHierarchyMessage msg;
-//        CellMO rootCell = CellManagerMO.getCell(CellManagerMO.getRootCellID());
-//        msg = newCreateCellMessage(rootCell, capabilities);
-//        sender.send(session, msg);
-        
+                        
         // set up the revalidate scheduler
         scheduler = new ImmediateRevalidateScheduler(sender, clientID);
-
     }
     
     /**
@@ -161,46 +151,195 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     }
      
 
-    public void generateLoadMessagesService(Collection<CellDescription> cellInfoList) {
-        ManagedReference<ViewCellCacheMO> viewCellCacheRef = AppContext.getDataManager().createReference(this);
-        scheduler.startRevalidate();
-        for(CellDescription cellDescription : cellInfoList) {
-            // find the cell in our current list of cells
-            // check this client's access to the cell
-            if (securityContextRef!=null && !CellAccessControl.canView(securityContextRef.get(), cellDescription)) {
-                // the user doesn't have access to this cell -- just skip
-                // it and go on
-                continue;
+    public void generateLoadMessagesService(Collection<CellDescription> cells) {
+        // check if this user has permission to view the cells in this
+        // collection, and then generate load messages for any that we
+        // do have permission for
+        CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
+        SecurityManager security = AppContext.getManager(SecurityManager.class);
+        ResourceMap rm = new ResourceMap();
+
+        // cells we have permission for (since they don't have a resource)
+        Map<CellID, CellDescription> granted = new HashMap<CellID, CellDescription>();
+
+        // cells we need to check for permission
+        Map<CellID, CellDescription> check = new HashMap<CellID, CellDescription>();
+
+        // get the resource for each cell and add it to the appropriate map
+        for (CellDescription cell : cells) {
+            Resource resource = crm.getCellResource(cell.getCellID());
+            if (resource == null) {
+                // don't need to check this cell
+                granted.put(cell.getCellID(), cell);
+            } else {
+                Resource r = new CellIDResource(cell.getCellID(), resource);
+                rm.put(r.getId(), new ActionMap(r, new ViewAction()));
+
+                // do check this cell
+                check.put(cell.getCellID(), cell);
+            }
+        }
+
+        // see if we need to check any of the cells
+        if (check.size() > 0) {
+            // we do need to do this securely -- start a task
+            SecureTask checkLoad = new LoadCellsTask(check, granted, this);
+            security.doSecure(rm, checkLoad);
+        } else {
+            // just send the messages directly
+            sendLoadMessages(cells);
+        }
+    }
+
+    private static final class LoadCellsTask implements SecureTask, Serializable {
+        private Map<CellID, CellDescription> check;
+        private Map<CellID, CellDescription> granted;
+        private ManagedReference<ViewCellCacheMO> viewCellCacheRef;
+
+        public LoadCellsTask(Map<CellID, CellDescription> check,
+                             Map<CellID, CellDescription> granted,
+                             ViewCellCacheMO viewCellCache)
+        {
+            this.check = check;
+            this.granted = granted;
+
+            viewCellCacheRef = AppContext.getDataManager().createReference(viewCellCache);
+        }
+
+        public void run(ResourceMap grants) {
+            // go through and move any cells that have been ok'd into the
+            // granted list
+            for (ActionMap am : grants.values()) {
+                // the resource is OK'dif the view action is granted
+                if (am.size() == 1) {
+                    CellID id = ((CellIDResource) am.getResource()).getCellID();
+                    CellDescription desc = check.get(id);
+                    granted.put(id, desc);
+                }
             }
 
-                if (logger.isLoggable(Level.FINER))
-                    logger.finer("Entering cell " + cellDescription.getCellID() +
-                                 " cellcache for user "+identity.getUsername());
+            // now send a load message with all the granted cells
+            ViewCellCacheMO cache = viewCellCacheRef.getForUpdate();
+            cache.sendLoadMessages(granted.values());
+        }
+    }
 
-                CellLoadOp op = new CellLoadOp(cellDescription,
-                                             clientID,
-                                             viewCellCacheRef,
-                                             capabilities);
+    /**
+     * Update our cache because the given cells may have changed
+     * @param cells the cells to revalidate
+     */
+    public void revalidateCellsService(Collection<CellDescription> cells) {
+        // check if this user has permission to view the cells in this
+        // collection, and then generate load messages for any that we
+        // do have permission for
+        CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
+        SecurityManager security = AppContext.getManager(SecurityManager.class);
+        ResourceMap rm = new ResourceMap();
+
+        // cells we need to check for permission
+        Map<CellID, CellDescription> check = new HashMap<CellID, CellDescription>();
+
+        // get the resource for each cell and add it to the appropriate map
+        for (CellDescription cell : cells) {
+            Resource resource = crm.getCellResource(cell.getCellID());
+            if (resource != null) {
+                Resource r = new CellIDResource(cell.getCellID(), resource);
+                rm.put(r.getId(), new ActionMap(r, new ViewAction()));
+
+                // do check this cell
+                check.put(cell.getCellID(), cell);
+            }
+        }
+
+        // see if we need to check any of the cells
+        if (check.size() > 0) {
+            // we do need to do this securely -- start a task
+            SecureTask checkCells = new RevalidateCellsTask(check, this);
+            security.doSecure(rm, checkCells);
+        }
+    }
+
+    private static final class RevalidateCellsTask implements SecureTask, Serializable {
+        private Map<CellID, CellDescription> check;
+        private ManagedReference<ViewCellCacheMO> viewCellCacheRef;
+
+        public RevalidateCellsTask(Map<CellID, CellDescription> check,
+                                  ViewCellCacheMO viewCellCache)
+        {
+            this.check = check;
+            viewCellCacheRef = AppContext.getDataManager().createReference(viewCellCache);
+        }
+
+        public void run(ResourceMap grants) {
+            List<CellDescription> load = new LinkedList<CellDescription>();
+            List<CellDescription> unload = new LinkedList<CellDescription>();
+            ViewCellCacheMO cache = viewCellCacheRef.get();
+
+            // go through and look at each cell to see if its granted or denied
+            for (ActionMap am : grants.values()) {
+                CellID id = ((CellIDResource) am.getResource()).getCellID();
+                CellDescription desc = check.get(id);
+
+                // the resource is OK'd if the view action is granted
+                if (am.size() == 1 && !cache.isLoaded(id)) {
+                    load.add(desc);
+                } else if (am.size() == 0 && cache.isLoaded(id)) {
+                    unload.add(desc);
+                }
+            }
+
+            // now send any messages
+            cache.sendLoadMessages(load);
+            cache.generateUnloadMessagesService(unload);
+        }
+    }
+
+    private void sendLoadMessages(Collection<CellDescription> cells) {
+        ManagedReference<ViewCellCacheMO> viewCellCacheRef =
+                AppContext.getDataManager().createReference(this);
+
+        scheduler.startRevalidate();
+        for(CellDescription cellDescription : cells) {
+            // if we haven't already loaded the cell, send a message
+            if (loaded.add(cellDescription.getCellID())) {
+               
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.finer("Entering cell " + cellDescription.getCellID() +
+                                 " cellcache for user " + identity.getUsername());
+                }
+
+                CellLoadOp op = new CellLoadOp(cellDescription, clientID,
+                                               viewCellCacheRef, capabilities);
                 scheduler.schedule(op);
+            }
         }
         scheduler.endRevalidate();
     }
-    
+
+    private boolean isLoaded(CellID cellID) {
+        return loaded.contains(cellID);
+    }
+
     public void generateUnloadMessagesService(Collection<CellDescription> removeCells) {
-        ManagedReference<ViewCellCacheMO> viewCellCacheRef = AppContext.getDataManager().createReference(this);
+        ManagedReference<ViewCellCacheMO> viewCellCacheRef =
+                AppContext.getDataManager().createReference(this);
+
+
         scheduler.startRevalidate();
         // oldCells contains the set of cells to be removed from client memory
         for(CellDescription ref : removeCells) {
-            if (logger.isLoggable(Level.FINER))
-                logger.fine("Leaving cell " + ref.getCellID() +
-                             " cellcache for user "+identity.getUsername());
+            if (loaded.remove(ref.getCellID())) {
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.fine("Leaving cell " + ref.getCellID() +
+                                " cellcache for user "+identity.getUsername());
+                }
 
-            // schedule the add operation
-            CellUnloadOp op = new CellUnloadOp(ref,
-                                               clientID,
-                                               viewCellCacheRef,
-                                               capabilities);
-            scheduler.schedule(op);
+                // schedule the add operation
+                CellUnloadOp op = new CellUnloadOp(ref, clientID,
+                                                   viewCellCacheRef,
+                                                   capabilities);
+                scheduler.schedule(op);
+            }
         }
         scheduler.endRevalidate();
     }
@@ -548,7 +687,34 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             }
         }
     }
-    
+
+    private static class CellIDResource implements Resource, Serializable {
+        private CellID cellID;
+        private Resource wrapped;
+
+        public CellIDResource(CellID cellID, Resource wrapped) {
+            this.cellID = cellID;
+            this.wrapped = wrapped;
+        }
+
+        public CellID getCellID() {
+            return cellID;
+        }
+
+        public String getId() {
+            return wrapped.getId();
+        }
+
+        public Result request(WonderlandIdentity identity, Action action) {
+            return wrapped.request(identity, action);
+        }
+
+        public boolean request(WonderlandIdentity identity, Action action,
+                               ComponentRegistry registry)
+        {
+            return wrapped.request(identity, action, registry);
+        }
+    }
 
     /**
      * Return a new Create cell message

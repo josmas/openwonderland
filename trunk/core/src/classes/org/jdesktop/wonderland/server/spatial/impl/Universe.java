@@ -55,6 +55,8 @@ public interface Universe {
      */
     public SpatialCell createSpatialCell(CellID id, BigInteger dsID, Class cellClass);
 
+    public void revalidateCell(CellID id);
+
     public void removeCell(CellID id);
 
     public SpatialCell getSpatialCell(CellID cellID);
@@ -64,6 +66,8 @@ public interface Universe {
     public void removeViewUpdateListener(CellID cellID, ViewUpdateListener viewUpdateListener);
 
     public void viewLogin(CellID viewCellId, BigInteger cellCacheId, Identity identity);
+
+    public void viewRevalidate(CellID viewCellId);
 
     public void viewLogout(CellID viewCellId);
 

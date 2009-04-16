@@ -45,6 +45,8 @@ public interface UniverseManager {
 
     public void createCell(CellMO cellMO);
 
+    public void revalidateCell(CellMO cellMO);
+
     public void removeCell(CellMO cellMO);
 
     public void removeChild(CellMO parent, CellMO child);
@@ -62,6 +64,8 @@ public interface UniverseManager {
     public BoundingVolume getWorldBounds(CellMO cell, BoundingVolume result);
 
     public void viewLogin(ViewCellMO viewCell);
+
+    public void viewRevalidate(ViewCellMO viewCell);
 
     public void viewLogout(ViewCellMO viewCell);
 

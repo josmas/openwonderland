@@ -91,6 +91,12 @@ public interface SpatialCell {
     public void setAttribute(Object attr);
 
     /**
+     * Revalidate this cell, causing each cache to decide whether or not
+     * to reload the cell.
+     */
+    public void revalidate();
+
+    /**
      * Destroy this cell, removing it from all the view caches
      */
     public void destroy();
