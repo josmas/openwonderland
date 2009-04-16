@@ -447,10 +447,6 @@ public abstract class View2DEntity implements View2D {
     public synchronized void setVisibleApp (boolean visible, boolean update) {
         logger.info("change visibleApp = " + visible);
         visibleApp = visible;
-
-        // TODO: HACK
-        visibleUser = visible;
-
         changeMask |= CHANGED_VISIBLE;
         if (update) {
             update();
