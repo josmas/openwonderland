@@ -113,6 +113,11 @@ public class UniverseImpl implements Universe {
         return ret;
     }
 
+    public void revalidateCell(CellID id) {
+        SpatialCell cell = getSpatialCell(id);
+        cell.revalidate();
+    }
+
     public void removeCell(CellID id) {
         // TODO remove from caches
         logger.fine("removeCell "+id);
@@ -142,6 +147,21 @@ public class UniverseImpl implements Universe {
         ViewCache viewCache = new ViewCache(viewCell, spaceManager, identity, cellCacheId);
         viewCell.setViewCache(viewCache);
         viewCache.login();
+    }
+
+    public void viewRevalidate(CellID viewCellID) {
+        ViewCellImpl viewCell;
+        synchronized(cells) {
+            viewCell = (ViewCellImpl) cells.get(viewCellID);
+        }
+
+        // it's possible the viewcell won't be in our list of cells.  For
+        // example when there is a warm restart, this node will see all the
+        // clients log out, even though it never saw them log in.  This is
+        // fine, just ignore the request.
+        if (viewCell != null && viewCell.getViewCache() != null) {
+            viewCell.getViewCache().revalidate();
+        }
     }
 
     public void viewLogout(CellID viewCellID) {

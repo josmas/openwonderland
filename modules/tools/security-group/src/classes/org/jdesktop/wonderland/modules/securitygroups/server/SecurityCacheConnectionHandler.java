@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.securitygroups.server;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 import java.util.Properties;
 import java.util.Set;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -28,10 +30,14 @@ import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.modules.security.server.service.GroupMemberResource;
 import org.jdesktop.wonderland.modules.securitygroups.common.InvalidateGroupMessage;
 import org.jdesktop.wonderland.modules.securitygroups.common.SecurityCacheConnectionType;
+import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.UserManager;
+import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.comms.SecureClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.security.Resource;
+import org.jdesktop.wonderland.server.spatial.UniverseManager;
 
 /**
  * Listener for testing secure connections.  Only the administrator may
@@ -92,6 +98,16 @@ public class SecurityCacheConnectionHandler
             resolver.invalidate(username);
         }
 
+        // invalidate the cell cache for each user in the message
+        UniverseManager um = AppContext.getManager(UniverseManager.class);
+        for (String username : igm.getUsernames()) {
+            UserMO user = UserManager.getUserMO(username);
+            if (user != null) {
+                for (ManagedReference<AvatarCellMO> avatars : user.getAllAvatars()) {
+                    um.viewRevalidate(avatars.get());
+                }
+            }
+        }
         // send an OK back to the sender
         sender.send(clientID, new OKMessage(message.getMessageID()));
     }

@@ -23,12 +23,15 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.DataService;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ThreadManager;
@@ -169,12 +172,33 @@ class ViewCache {
         }
     }
 
+    /**
+     * Notification that a cell's properties have changed, and that clients
+     * may want to reevaluate it
+     * @param cell
+     */
+    void cellRevalidated(SpatialCellImpl cell) {
+        synchronized(pendingCacheUpdates) {
+            pendingCacheUpdates.add(new CacheUpdate(cell));
+        }
+    }
+
     void cellDestroyed(SpatialCell cell) {
 
         // TODO remove ViewUpdateListeners for destroyed cell
         
 
         Logger.getAnonymousLogger().warning("ViewCache.cellDestroyed not implemented");
+    }
+
+    /**
+     * Revalidate the entire cache, because the user who owns the cache
+     * has changed.
+     */
+    void revalidate() {
+        synchronized(pendingCacheUpdates) {
+            pendingCacheUpdates.add(new CacheUpdate(spaces));
+        }
     }
 
     /**
@@ -326,6 +350,7 @@ class ViewCache {
         private SpatialCellImpl cell;
         private CellTransform worldTransform;
         private Space space;
+        private Set<Space> spaces;
 
         private static final int VIEW_MOVED = 0;
         private static final int CELL_MOVED = 1;
@@ -333,6 +358,8 @@ class ViewCache {
         private static final int ENTER_SPACE = 3;
         private static final int ROOT_ADDED = 4;
         private static final int ROOT_REMOVED = 5;
+        private static final int CELL_REVALIDATED = 6;
+        private static final int CACHE_REVALIDATED = 7;
 
         private int jobType;
 
@@ -374,8 +401,26 @@ class ViewCache {
             this.cell = rootCell;
         }
 
+        /**
+         * Cell revalidated
+         */
+        public CacheUpdate(SpatialCellImpl cell) {
+            jobType = CELL_REVALIDATED;
+            this.cell = cell;
+        }
+
+        /**
+         * Cache revalidated
+         */
+        public CacheUpdate(Set<Space> spaces) {
+            jobType = CACHE_REVALIDATED;
+            this.spaces = spaces;
+        }
+
         public void run() {
             Collection<SpatialCellImpl> spaceRoots;
+            List<CellDescription> cells = new ArrayList<CellDescription>();
+            ViewCacheUpdateType type = null;
 
             switch(jobType) {
                 case VIEW_MOVED:
@@ -385,75 +430,67 @@ class ViewCache {
                     // Check for cache enter/exit
                     break;
                 case EXIT_SPACE:
-                    ArrayList<CellDescription> oldCells = new ArrayList();
+                    type = ViewCacheUpdateType.UNLOAD;
                     spaceRoots = space.getRootCells();
 
                     synchronized(rootCells) {
                         for(SpatialCellImpl root : spaceRoots) {
-                            removeRootCellImpl(root, oldCells);
+                            removeRootCellImpl(root, cells);
                         }
                     }
-
-                    if (oldCells.size()>0)
-                        UniverseImpl.getUniverse().scheduleTransaction(
-                                new ViewCacheUpdateTask(oldCells, false), identity);
                     break;
                 case ENTER_SPACE:
-                    ArrayList<CellDescription> newCells = new ArrayList();
+                    type = ViewCacheUpdateType.LOAD;
                     spaceRoots = space.getRootCells();
 
 //                    System.err.println("EnteringSpace "+space.getName()+"  roots "+spaceRoots.size());
 
                     synchronized(rootCells) {
                         for(SpatialCellImpl root : spaceRoots) {
-                            addRootCellImpl(root, newCells);
+                            addRootCellImpl(root, cells);
                         }
                     }
-
-                    if (newCells.size()>0)
-                        UniverseImpl.getUniverse().scheduleTransaction(
-                                new ViewCacheUpdateTask(newCells, true), identity);
                     break;
                 case ROOT_ADDED:
-                    addRootCell(cell);
+                    type = ViewCacheUpdateType.LOAD;
+                    synchronized(rootCells) {
+                        addRootCellImpl(cell, cells);
+                    }
                     break;
                 case ROOT_REMOVED:
-                    removeRootCell(cell);
+                    type = ViewCacheUpdateType.UNLOAD;
+                    synchronized(rootCells) {
+                        removeRootCellImpl(cell, cells);
+                    }
+                    break;
+                case CELL_REVALIDATED:
+                    type = ViewCacheUpdateType.REVALIDATE;
+                    cells.add(new CellDesc(cell.getCellID()));
+                    break;
+                case CACHE_REVALIDATED:
+                    type = ViewCacheUpdateType.REVALIDATE;
+
+                    // find *all* the cells in this cache.  Yikes!
+                    synchronized(rootCells) {
+                        for (Space s : spaces) {
+                            for (SpatialCellImpl root : s.getRootCells()) {
+                                root.acquireRootReadLock();
+                                try {
+                                    cells.add(new CellDesc(root.getCellID()));
+                                    processChildCells(cells, root, CellStatus.ACTIVE);
+                                } finally {
+                                    root.releaseRootReadLock();
+                                }
+                            }
+                        }
+                    }
                     break;
             }
-        }
 
-        /**
-         * Called to add a root cell when the cell is added to a space with which
-         * this cache is already registered
-         * @param rootCell
-         */
-        private void addRootCell(SpatialCellImpl rootCell) {
-            ArrayList<CellDescription> newCells = new ArrayList();
-            synchronized(rootCells) {
-                addRootCellImpl(rootCell, newCells);
-            }
-
-//            System.out.println("RootCell Added "+rootCell.getCellID()+"  "+newCells.size());
-            if (newCells.size()>0)
+            if (cells.size() > 0 && type != null) {
                 UniverseImpl.getUniverse().scheduleTransaction(
-                            new ViewCacheUpdateTask(newCells, true), identity);
-        }
-
-        /**
-         * Called to add a root cell when the cell is added to a space with which
-         * this cache is already registered
-         * @param rootCell
-         */
-        private void removeRootCell(SpatialCellImpl rootCell) {
-            ArrayList<CellDescription> newCells = new ArrayList();
-            synchronized(rootCells) {
-                removeRootCellImpl(rootCell, newCells);
+                        new ViewCacheUpdateTask(cells, type), identity);
             }
-
-            if (newCells.size()>0)
-                UniverseImpl.getUniverse().scheduleTransaction(
-                            new ViewCacheUpdateTask(newCells, false), identity);
         }
 
         /**
@@ -461,7 +498,7 @@ class ViewCache {
          * @param root the root of the graph
          * @param newCells the cummalative set of new cells that have been added
          */
-        private void addRootCellImpl(SpatialCellImpl root, ArrayList<CellDescription> newCells) {
+        private void addRootCellImpl(SpatialCellImpl root, List<CellDescription> newCells) {
             Integer refCount = rootCells.get(root);
             if (refCount==null) {
                 root.acquireRootReadLock();
@@ -485,7 +522,7 @@ class ViewCache {
          * @param root
          * @param oldCells the cummalative set of cells that are being removed
          */
-        private void removeRootCellImpl(SpatialCellImpl root, ArrayList<CellDescription> oldCells) {
+        private void removeRootCellImpl(SpatialCellImpl root, List<CellDescription> oldCells) {
             Integer refCount = rootCells.get(root);
 
             if (refCount==null)
@@ -509,7 +546,7 @@ class ViewCache {
 
         }
 
-        private void processChildCells(ArrayList<CellDescription> cells, SpatialCellImpl parent, CellStatus status) {
+        private void processChildCells(List<CellDescription> cells, SpatialCellImpl parent, CellStatus status) {
             if (parent.getChildren()==null)
                 return;
             
@@ -521,14 +558,17 @@ class ViewCache {
 
     }
 
+    private enum ViewCacheUpdateType { LOAD, REVALIDATE, UNLOAD };
     class ViewCacheUpdateTask implements KernelRunnable {
 
         private Collection<CellDescription> cells;
-        private boolean loadCells;
+        private ViewCacheUpdateType type;
 
-        public ViewCacheUpdateTask(Collection<CellDescription> newCells, boolean loadCells) {
+        public ViewCacheUpdateTask(Collection<CellDescription> newCells,
+                                   ViewCacheUpdateType type)
+        {
             cells = newCells;
-            this.loadCells = loadCells;
+            this.type = type;
         }
 
         public String getBaseTaskType() {
@@ -537,11 +577,17 @@ class ViewCache {
 
         public void run() throws Exception {
             ViewCellCacheMO cacheMO = (ViewCellCacheMO) dataService.createReferenceForId(cellCacheId).get();
-            if (loadCells)
-                cacheMO.generateLoadMessagesService(cells);
-            else
-                cacheMO.generateUnloadMessagesService(cells);
-            
+            switch (type) {
+                case LOAD:
+                    cacheMO.generateLoadMessagesService(cells);
+                    break;
+                case REVALIDATE:
+                    cacheMO.revalidateCellsService(cells);
+                    break;
+                case UNLOAD:
+                    cacheMO.generateUnloadMessagesService(cells);
+            }
+
 //            StringBuffer buf = new StringBuffer();
 //            for(CellDescription c : cells)
 //                buf.append(c.getCellID()+", ");
@@ -551,7 +597,7 @@ class ViewCache {
 
     }
 
-    class CellDesc implements CellDescription {
+    static class CellDesc implements CellDescription, Serializable {
 
         private CellID cellID;
 

@@ -45,6 +45,10 @@ public class UniverseServiceManagerImpl implements UniverseManager {
         service.createCell(cellMO);
     }
 
+    public void revalidateCell(CellMO cellMO) {
+        service.revalidateCell(cellMO);
+    }
+
     public void removeCell(CellMO cellMO) {
         service.removeCell(cellMO);
     }
@@ -75,6 +79,10 @@ public class UniverseServiceManagerImpl implements UniverseManager {
 
     public void viewLogin(ViewCellMO viewCell) {
         service.viewLogin(viewCell);
+    }
+
+    public void viewRevalidate(ViewCellMO viewCell) {
+        service.viewRevalidate(viewCell);
     }
 
     public void viewLogout(ViewCellMO viewCell) {

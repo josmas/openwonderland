@@ -257,6 +257,14 @@ public class UniverseService extends AbstractService implements UniverseManager 
 
     }
 
+    public void revalidateCell(CellMO cellMO) {
+        scheduleChange(new Change(cellMO.getCellID(), null, null) {
+            public void run() {
+                universe.revalidateCell(cellID);
+            }
+        });
+    }
+
     public void removeCell(CellMO cell) {
         scheduleChange(new Change(cell.getCellID(), null, null) {
 
@@ -319,7 +327,14 @@ public class UniverseService extends AbstractService implements UniverseManager 
                 universe.viewLogin(cellID, cellCacheId, identity);
             }
         });
+    }
 
+    public void viewRevalidate(ViewCellMO viewCell) {
+        scheduleChange(new Change(viewCell.getCellID(), null, null) {
+            public void run() {
+                universe.viewRevalidate(cellID);
+            }
+        });
     }
 
     public void viewLogout(ViewCellMO viewCell) {
@@ -328,7 +343,6 @@ public class UniverseService extends AbstractService implements UniverseManager 
                 universe.viewLogout(cellID);
             }
         });
-
     }
 
     public CellTransform getWorldTransform(CellMO cell, CellTransform result) {

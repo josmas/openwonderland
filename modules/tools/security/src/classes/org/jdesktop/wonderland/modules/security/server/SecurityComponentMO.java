@@ -62,6 +62,7 @@ import org.jdesktop.wonderland.server.security.Resource;
 import org.jdesktop.wonderland.server.security.ResourceMap;
 import org.jdesktop.wonderland.server.security.SecureTask;
 import org.jdesktop.wonderland.server.security.SecurityManager;
+import org.jdesktop.wonderland.server.spatial.UniverseManager;
 
 /**
  * A component that stores security settings for a cell
@@ -251,6 +252,10 @@ public class SecurityComponentMO extends CellComponentMO
         CellResourceManagerInternal crmi =
                 AppContext.getManager(CellResourceManagerInternal.class);
         crmi.updateCellResource(cellID, owners, permissions);
+
+        // update the cell cache as well
+        UniverseManager um = AppContext.getManager(UniverseManager.class);
+        um.revalidateCell(cellRef.get());
 
         // send a message to clients notifying them of the change
         if (channelRef != null) {

@@ -523,6 +523,21 @@ public class SpatialCellImpl implements SpatialCell {
         }
     }
 
+    /**
+     * Notify the view caches that this cell needs to be revalidated
+     */
+    public void revalidate() {
+        // Called from updateWorldBounds so we have a write lock on the graph
+        SpatialCellImpl root = (SpatialCellImpl) getRoot();
+        if (root==null)
+            return;
+
+        Iterable<ViewCache> caches = root.viewCache.keySet();
+        for(ViewCache cache : caches) {
+            cache.cellRevalidated(this);
+        }
+    }
+
     public void destroy() {
         acquireRootWriteLock();
 
