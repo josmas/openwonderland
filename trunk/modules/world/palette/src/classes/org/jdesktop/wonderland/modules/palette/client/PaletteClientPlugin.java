@@ -25,22 +25,20 @@ import java.util.logging.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemListener;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
-import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuEntry;
+import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.scenemanager.SceneManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
@@ -53,7 +51,7 @@ import org.jdesktop.wonderland.modules.palette.client.dnd.CellPaletteDataFlavorH
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-@ContextMenuEntry
+@ContextMenuFactory
 public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI {
 
     private static Logger logger = Logger.getLogger(PaletteClientPlugin.class.getName());
@@ -142,10 +140,28 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
         JmeClientMain.getFrame().addToToolMenu(paletteMenu);
     }
 
-    public ContextMenuItem[] getContextMenuItems() {
+    /**
+     * @inheritDoc()
+     */
+    public ContextMenuItem[] getContextMenuItems(final Cell cell) {
+        final SimpleContextMenuItem deleteItem = 
+                new SimpleContextMenuItem("Delete", null, new DeleteListener());
+        
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException ex) {
+                }
+                deleteItem.setLabel("Delete for Cell " + cell.getName());
+                deleteItem.setEnabled(false);
+                deleteItem.fireMenuItemRepaintListeners();
+            }
+        }.start();
         return new ContextMenuItem[] {
             new SimpleContextMenuItem("Properties...", null, new PropertiesListener()),
-            new SimpleContextMenuItem("Delete", null, new DeleteListener()),
+            deleteItem,
             new SimpleContextMenuItem("Duplicate", null, new DuplicateListener())
         };
     }
@@ -153,14 +169,9 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
     /**
      * Listener class for the "Properties..." context menu item
      */
-    private class PropertiesListener implements ContextMenuItemListener {
-
-        public MenuItemState getMenuItemState(ContextMenuItem item, Cell cell) {
-            return MenuItemState.ENABLED;
-        }
+    private class PropertiesListener implements ContextMenuActionListener {
 
         public void actionPerformed(ContextMenuItemEvent event) {
-
             // Create a new cell edit frame passing in the Cell and make
             // it visible
             Cell cell = event.getCell();
@@ -176,13 +187,7 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
     /**
      * Listener for the "Delete" context menu item
      */
-    private class DeleteListener implements ContextMenuItemListener {
-
-        public MenuItemState getMenuItemState(ContextMenuItem item, Cell cell) {
-            // The delete is enabled for all cells except the avatar cell
-            // XXX
-            return MenuItemState.ENABLED;
-        }
+    private class DeleteListener implements ContextMenuActionListener {
 
         public void actionPerformed(ContextMenuItemEvent event) {
             // Display a confirmation dialog to make sure we really want to
@@ -211,11 +216,7 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
     /**
      * Listener for the "Duplicate" context menu item
      */
-    private class DuplicateListener implements ContextMenuItemListener {
-
-        public MenuItemState getMenuItemState(ContextMenuItem item, Cell cell) {
-            return MenuItemState.ENABLED;
-        }
+    private class DuplicateListener implements ContextMenuActionListener {
 
         public void actionPerformed(ContextMenuItemEvent event) {
             // Create a new name for the cell, based upon the old name.

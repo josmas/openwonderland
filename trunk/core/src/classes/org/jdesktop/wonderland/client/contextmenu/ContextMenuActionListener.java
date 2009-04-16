@@ -17,36 +17,12 @@
  */
 package org.jdesktop.wonderland.client.contextmenu;
 
-import org.jdesktop.wonderland.client.cell.Cell;
-
 /**
  * A listener for selections on the context menu.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public interface ContextMenuItemListener {
-
-    /**
-     * Enumeration of menu item states
-     */
-    public enum MenuItemState {
-        ENABLED, DISABLED, INACTIVE
-    };
-
-    /**
-     * Returns the "state" of the context menu item, called when the context
-     * menu is about to be displayed. This method determines whether the menu
-     * item is:
-     * <p>
-     * ENABLED: The menu item is present and enabled on the context menu
-     * DISABLED: The mneu item is present but disabled on the context menu
-     * INACTIVE: The menu item is not present on the context menu
-     *
-     * @param menuItem The menu item in question
-     * @param cell The cell associated with the current context menu
-     * @return The desired state of the menu item
-     */
-    public MenuItemState getMenuItemState(ContextMenuItem menuItem, Cell cell);
+public interface ContextMenuActionListener {
 
     /**
      * A context menu item has been selected.

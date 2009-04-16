@@ -25,9 +25,9 @@ import javax.swing.JFrame;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
-import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuEntry;
+import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemoveEvent;
@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemove
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@ContextMenuEntry
+@ContextMenuFactory
 public class AffordancesClientPlugin implements ContextMenuFactorySPI {
 
     /* The single instance of the Affordance HUD Panel */
@@ -57,7 +57,10 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
         affordanceHUDFrame.pack();
     }
 
-    public ContextMenuItem[] getContextMenuItems() {
+    /**
+     * @inheritDoc()
+     */
+    public ContextMenuItem[] getContextMenuItems(Cell cell) {
         return new ContextMenuItem[] {
             new SimpleContextMenuItem("Edit...", new EditContextListener())
         };
@@ -79,11 +82,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     /**
      * Handles when the "Edit" context menu item has been selected
      */
-    class EditContextListener implements ContextMenuItemListener {
-
-        public MenuItemState getMenuItemState(ContextMenuItem menuItem, Cell cell) {
-            return MenuItemState.ENABLED;
-        }
+    class EditContextListener implements ContextMenuActionListener {
         
         public void actionPerformed(ContextMenuItemEvent event) {
             
