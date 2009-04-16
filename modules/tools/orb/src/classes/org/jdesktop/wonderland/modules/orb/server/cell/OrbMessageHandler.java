@@ -64,6 +64,7 @@ import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangePositionMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -111,6 +112,7 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
         channelComponentMO.addMessageReceiver(OrbEndCallMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbMuteCallMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbChangeNameMessage.class, this);
+        channelComponentMO.addMessageReceiver(OrbChangePositionMessage.class, this);
         channelComponentMO.addMessageReceiver(OrbSetVolumeMessage.class, this);
     }
 
@@ -121,6 +123,7 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	channelComponentMO.removeMessageReceiver(OrbEndCallMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbMuteCallMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbChangeNameMessage.class);
+	channelComponentMO.removeMessageReceiver(OrbChangePositionMessage.class);
 	channelComponentMO.removeMessageReceiver(OrbSetVolumeMessage.class);
 
 	orbStatusListenerRef.get().endCall(callID);
@@ -181,6 +184,21 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	if (message instanceof OrbChangeNameMessage) {
 	    username = ((OrbChangeNameMessage) message).getName();
 	    sender.send(message);
+	    return;
+	}
+
+	if (message instanceof OrbChangePositionMessage) {
+	    OrbChangePositionMessage msg = (OrbChangePositionMessage) message;
+
+	    if (player == null) {
+		return;
+	    }
+
+	    Vector3f position = msg.getPosition();
+
+	    player.moved(position.getX(), position.getY(), position.getZ(),
+		player.getOrientation());
+	    return;
 	}
 
 	if (message instanceof OrbSetVolumeMessage) {

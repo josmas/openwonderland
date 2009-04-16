@@ -45,6 +45,7 @@ import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangePositionMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 
@@ -79,7 +80,7 @@ import java.awt.Color;
  *
  * @author jprovino
  */
-public class OrbMessageHandler implements TransformChangeListener {
+public class OrbMessageHandler implements TransformChangeListener, FollowMeListener {
 
     private static final Logger logger =
             Logger.getLogger(OrbMessageHandler.class.getName());
@@ -122,7 +123,7 @@ public class OrbMessageHandler implements TransformChangeListener {
 	Vector3f translation = orbCell.getLocalTransform().getTranslation(null);
 	
 	followMe = new FollowMe(
-	    orbCell.getComponent(MovableComponent.class), translation);
+	    orbCell.getComponent(MovableComponent.class), translation, this);
 
         channelComp = orbCell.getComponent(ChannelComponent.class);
 
@@ -307,6 +308,10 @@ public class OrbMessageHandler implements TransformChangeListener {
 	    followMe.setTargetPosition(translation,
 		transform.getRotation(null));
 	}
+    }
+
+    public void positionChanged(Vector3f position) {
+	channelComp.send(new OrbChangePositionMessage(orbCell.getCellID(), position));
     }
 
     private float getOrbHeight() {
