@@ -13,7 +13,7 @@
     <property name="security.common.dir" location="${current.dir}/../security-session-common"/>
 
     <pathconvert property="module-web.classpath">
-        <path location="${current.dir}/../security/build/lib/weblib/wonderland-security-weblib.jar"/>
+        <path location="${current.dir}/../../foundation/security/build/lib/weblib/wonderland-security-weblib.jar"/>
         <path location="${current.dir}/../security-group/build/lib/weblib/wonderland-security-groups-weblib.jar"/>
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
         <path location="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
