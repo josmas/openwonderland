@@ -81,7 +81,6 @@ public class SampleRenderer extends BasicRenderer {
 
         /* Create the scene graph object and set its wireframe state */
         node = new Node();
-        node.setLocalTranslation(0.0f, 2.0f, 0.0f);
         node.attachChild(mesh);
         node.setModelBound(new BoundingSphere());
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
