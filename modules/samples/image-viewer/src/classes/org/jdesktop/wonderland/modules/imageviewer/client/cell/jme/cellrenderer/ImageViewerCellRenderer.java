@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.imageviewer.client.cell.jme.cellrenderer;
 
-import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
 import com.jme.image.Image;
 import com.jme.image.Texture;
 import com.jme.math.Vector3f;
@@ -81,8 +81,7 @@ public class ImageViewerCellRenderer extends BasicRenderer {
         Box box = new Box("Box", new Vector3f(0, 0, 0), width, height, 0.1f);
         node.attachChild(box);
         node.setLocalScale(new Vector3f(0.01f, 0.01f, 1.0f));
-        node.setLocalTranslation(0.0f, height * 0.01f, 0.0f);
-        box.setModelBound(new BoundingBox());
+        box.setModelBound(new BoundingSphere());
         box.updateModelBound();
 
         // Set the texture on the node
