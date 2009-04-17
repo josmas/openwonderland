@@ -54,6 +54,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBrid
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayerInRangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
@@ -206,6 +207,11 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void showSoftphone(boolean isVisible) {
         SoftphoneControlImpl.getInstance().setVisible(isVisible);
+    }
+
+    public void setAudioQuality(AudioQuality audioQuality) {
+        SoftphoneControlImpl.getInstance().setAudioQuality(audioQuality);
+	reconnectSoftphone();
     }
 
     public void testAudio() {
@@ -467,6 +473,11 @@ public class AudioManagerClient extends BaseConnection implements
 	    }
 
 	    InputManager.inputManager().postEvent(avatarNameEvent);
+	} else if (message instanceof PlayerInRangeMessage) {
+	    PlayerInRangeMessage msg = (PlayerInRangeMessage) message;
+
+            System.out.println("Player in range " + msg.isInRange() + " " 
+		+ msg.getPlayerID() + " player in range " + msg.getPlayerInRangeID());
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}

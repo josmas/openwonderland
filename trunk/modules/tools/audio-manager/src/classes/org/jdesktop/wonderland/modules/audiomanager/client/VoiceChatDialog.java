@@ -118,7 +118,7 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
     private void setUserList() {
 	PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
-        String[] userData = new String[presenceInfoList.length];
+        ArrayList<String> userData = new ArrayList();
 
         for (int i = 0; i < presenceInfoList.length; i++) {
 	    PresenceInfo info = presenceInfoList[i];
@@ -128,11 +128,18 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
 		continue;
 	    }
 
-            userData[i] = NameTag.getDisplayName(info.usernameAlias, info.isSpeaking, 
-		info.isMuted);
+	    PresenceInfo ourInfo = pm.getPresenceInfo(cellID);
+
+	    if (info.callID.equals(ourInfo.callID)) {
+		// It's us, skip it.
+		continue;
+	    }
+
+            userData.add(NameTag.getDisplayName(info.usernameAlias, 
+		info.isSpeaking, info.isMuted));
         }
 
-        userList.setListData(userData);
+        userList.setListData(userData.toArray(new String[0]));
     }
 
     public void setChatters(PresenceInfo[] chatters) {

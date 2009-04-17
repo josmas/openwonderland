@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.client.softphone.AudioQuality;
+
 /**
  * Listener for Audio Menu items
  * 
@@ -27,6 +29,8 @@ public interface AudioMenuListener {
     public void mute(boolean isMuted);
 
     public void showSoftphone(boolean isVisible);
+
+    public void setAudioQuality(AudioQuality quality);
 
     public void testAudio();
 
