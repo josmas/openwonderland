@@ -183,21 +183,18 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
     public void done() {
 	synchronized (detachedOrbList) {
-	    int i = detachedOrbList.indexOf(orbCell);
+	    detachedOrbList.remove(orbCell);
+	    reorderDetachedOrbs();
 
-	    if (i >= 0) {
-	        detachedOrbList.remove(orbCell);
-		reorderDetachedOrbs(i + 1);
-	    } else {
-		if (hostCell != null) {
-		    ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
+	    if (hostCell != null) {
+		ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
 
-		    if (attachedOrbList != null) {
-			i = attachedOrbList.indexOf(orbCell);
-			reorderAttachedOrbs(i + 1);
-		    }
+		if (attachedOrbList != null) {
+		    attachedOrbList.remove(orbCell);
 		}
 	    }
+
+	    reorderAttachedOrbs();
 	}
 
         channelComp.removeMessageReceiver(OrbAttachMessage.class);
@@ -250,10 +247,12 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	}
 
 	if (message instanceof OrbChangeNameMessage) {
-	    username = ((OrbChangeNameMessage) message).getName();
+	    OrbChangeNameMessage msg = (OrbChangeNameMessage) message;
+
+	    username = msg.getName();
 	    pm.changeUsername(presenceInfo, username);
 	    nameTag.setNameTag(EventType.CHANGE_NAME, 
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+		presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
 	    return;
 	}
 
@@ -280,7 +279,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    }
 
 	    if (msg.isAttached()) {
-		if (avatarCell.getCellID().equals(newHostCell.getCellID()) == false) {
+		if (hostCell != null) {
 		    /*
 		     * Someone else has attached the Orb.
 		     */
@@ -395,15 +394,15 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	return (float) (2.2 + (.3 * i)); 
     }
 
-    private void reorderDetachedOrbs(int i) {
+    private void reorderDetachedOrbs() {
 	synchronized (detachedOrbList) {
-	    for ( ; i < detachedOrbList.size(); i++) {
+	    for (int i = 0 ; i < detachedOrbList.size(); i++) {
 		transformChanged(detachedOrbList.get(i), true);
 	    }
 	}
     }
 
-    private void reorderAttachedOrbs(int i) {
+    private void reorderAttachedOrbs() {
 	if (hostCell == null) {
 	    return;
 	}
@@ -415,7 +414,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	}
 
 	synchronized (attachedOrbList) {
-	    for ( ; i < attachedOrbList.size(); i++) {
+	    for (int i = 0; i < attachedOrbList.size(); i++) {
 		transformChanged(attachedOrbList.get(i), true);
 	    }
 	}

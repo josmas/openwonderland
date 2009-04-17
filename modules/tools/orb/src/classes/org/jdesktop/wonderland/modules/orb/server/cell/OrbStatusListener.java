@@ -64,10 +64,8 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, callID);
     }
 
-    public void addCallStatusListener(CellID hostCellID) {
+    public void setHostCellID(CellID hostCellID) {
 	this.hostCellID = hostCellID;
-	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, 
-	    CallID.getCallID(hostCellID));
     }
 
     public void removeCallStatusListener(CellID hostCellID) {

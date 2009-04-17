@@ -261,8 +261,8 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	    	+ " is " + msg.isAttached());
 
 	    if (msg.isAttached()) {
-		orbStatusListenerRef.get().addCallStatusListener(msg.getHostCellID());		
 		hostCellID = msg.getHostCellID();
+		orbStatusListenerRef.get().setHostCellID(hostCellID);
 	    } else {
 		orbStatusListenerRef.get().removeCallStatusListener(msg.getHostCellID());		
 		hostCellID = null;
