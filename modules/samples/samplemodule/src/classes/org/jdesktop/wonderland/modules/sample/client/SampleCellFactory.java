@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.sample.client;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
@@ -41,6 +43,12 @@ public class SampleCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         SampleCellServerState state = new SampleCellServerState();
         state.setShapeType("BOX");
+
+        // HACK!
+        Map<String, String> metadata = new HashMap();
+        metadata.put("sizing-hint", "2.0");
+        state.setMetaData(metadata);
+
         return (T)state;
     }
 

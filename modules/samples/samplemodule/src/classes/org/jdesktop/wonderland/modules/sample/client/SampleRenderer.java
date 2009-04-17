@@ -47,7 +47,7 @@ public class SampleRenderer extends BasicRenderer {
 
         node.detachAllChildren();
         node.attachChild(this.getShapeMesh(name, shapeType));
-        updateModelBound(shapeType);
+        node.setModelBound(new BoundingSphere());
 
         ClientContextJME.getWorldManager().addToUpdateList(node);
     }
@@ -81,8 +81,9 @@ public class SampleRenderer extends BasicRenderer {
 
         /* Create the scene graph object and set its wireframe state */
         node = new Node();
+        node.setLocalTranslation(0.0f, 2.0f, 0.0f);
         node.attachChild(mesh);
-        updateModelBound(shapeType);
+        node.setModelBound(new BoundingSphere());
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
         return node;

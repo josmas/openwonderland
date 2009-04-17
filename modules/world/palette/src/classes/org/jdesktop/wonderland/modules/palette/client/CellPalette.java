@@ -51,7 +51,7 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
     private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
 
     /* The scalar distance from the camera to place new cells */
-    public static final float NEW_CELL_DISTANCE = 5.0f;
+    public static final float NEW_CELL_DISTANCE = 2.5f;
 
     /* The "No Preview Available" image */
     private Image noPreviewAvailableImage = null;

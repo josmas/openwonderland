@@ -81,6 +81,7 @@ public class ImageViewerCellRenderer extends BasicRenderer {
         Box box = new Box("Box", new Vector3f(0, 0, 0), width, height, 0.1f);
         node.attachChild(box);
         node.setLocalScale(new Vector3f(0.01f, 0.01f, 1.0f));
+        node.setLocalTranslation(0.0f, height * 0.01f, 0.0f);
         box.setModelBound(new BoundingBox());
         box.updateModelBound();
 
