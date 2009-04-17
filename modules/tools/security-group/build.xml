@@ -10,16 +10,16 @@
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
     <pathconvert property="module-weblib.classpath">
-        <path location="${current.dir}/../security/build/lib/weblib/wonderland-security-weblib.jar"/>
+        <path location="${current.dir}/../../foundation/security/build/lib/weblib/wonderland-security-weblib.jar"/>
     </pathconvert>
 
     <pathconvert property="module-server.classpath">
-        <path location="${current.dir}/../security/build/lib/server/security-server.jar"/>
+        <path location="${current.dir}/../../foundation/security/build/lib/server/security-server.jar"/>
     </pathconvert>
 
     <pathconvert property="module-web.classpath">
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
-        <path location="${current.dir}/../security/build/lib/weblib/wonderland-security-weblib.jar"/>
+        <path location="${current.dir}/../../foundation/security/build/lib/weblib/wonderland-security-weblib.jar"/>
         <path location="${current.dir}/../darkstar/build/weblib/darkstar-runner.jar"/>
         <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
         <path location="${core.dir}/build/lib/wonderland-client.jar"/>

@@ -5,7 +5,6 @@
     
     <!-- all projects -->
     <filelist dir="${current.dir}" id="all.projects">
-        <file name="security/build.xml"/>
         <file name="darkstar/build.xml"/>
         <file name="security-group/build.xml"/>
         <file name="security-session-common/build.xml"/>

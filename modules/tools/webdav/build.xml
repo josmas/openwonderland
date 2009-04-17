@@ -31,7 +31,7 @@
     <pathconvert property="module-web.classpath">
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
         <path location="${current.dir}/../../foundation/content-repository/build/lib/contentrepo-spi.jar"/>
-        <path location="${current.dir}/../security/build/lib/weblib/wonderland-security-weblib.jar"/>
+        <path location="${current.dir}/../../foundation/security/build/lib/weblib/wonderland-security-weblib.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common, 

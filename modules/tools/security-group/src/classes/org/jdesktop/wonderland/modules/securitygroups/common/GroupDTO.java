@@ -37,17 +37,12 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @XmlRootElement
 public class GroupDTO {
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller;
-    private static Unmarshaller unmarshaller;
+    private static JAXBContext jaxbContext;
 
     /* Create the XML marshaller and unmarshaller once for all ModuleRepositorys */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(GroupDTO.class, MemberDTO.class);
-            GroupDTO.unmarshaller = jc.createUnmarshaller();
-            GroupDTO.marshaller = jc.createMarshaller();
-            GroupDTO.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(GroupDTO.class, MemberDTO.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -120,6 +115,7 @@ public class GroupDTO {
      * @throw JAXBException Upon error reading the XML file
      */
     public static GroupDTO decode(Reader r) throws JAXBException {
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         return (GroupDTO) unmarshaller.unmarshal(r);
     }
 
@@ -130,6 +126,8 @@ public class GroupDTO {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
         marshaller.marshal(this, w);
     }
 
