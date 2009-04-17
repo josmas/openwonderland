@@ -19,7 +19,9 @@ package org.jdesktop.wonderland.client.cell.utils;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.util.Map;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -52,8 +54,20 @@ public class CellUtils {
         // Fetch the current transform from the view manager. Find the current
         // position of the camera and its look direction.
         ViewManager manager = ViewManager.getViewManager();
-        Vector3f cameraPosition = manager.getCameraPosition(null);
+        ViewCell viewCell = manager.getPrimaryViewCell();
+//        Vector3f cameraPosition = manager.getCameraPosition(null);
+        Vector3f cameraPosition = viewCell.getWorldTransform().getTranslation(null);
         Vector3f cameraLookDirection = manager.getCameraLookDirection(null);
+
+        // HACK ALERT: If we find a "sizing-hint" field in the Cell server state
+        // meta data, then we use that to place the Cell 1 unit away from the
+        // camera.
+        Map<String, String> metadata = state.getMetaData();
+        String sizingHint = metadata.get("sizing-hint");
+        if (sizingHint != null) {
+            float sizing = Float.parseFloat(sizingHint);
+            distance = 1.0f + sizing;
+        }
 
         // Compute the new vector away from the camera position to be a certain
         // number of scalar units away
@@ -61,6 +75,14 @@ public class CellUtils {
         float factor = (distance * distance) / lengthSquared;
         Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
 
+        System.out.println("CAMERA POSITION " + cameraPosition);
+        System.out.println("CAMERA LOOK AT " + cameraLookDirection);
+        System.out.println("LENGTH SQ " + lengthSquared);
+        System.out.println("DISTANCE SQ " + (distance * distance));
+        System.out.println("SIZING HINT " + sizingHint);
+        System.out.println("FACTOR " + factor);
+        System.out.println("ORIGIN " + origin);
+        
         // Create a position component that will set the initial origin
         PositionComponentServerState position = new PositionComponentServerState();
         position.setOrigin(new Origin(origin));

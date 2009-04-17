@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.imageviewer.client.cell;
 
 import java.awt.Image;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
@@ -39,6 +41,11 @@ public class ImageViewerCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
        ImageViewerCellServerState state = new ImageViewerCellServerState();
 
+       // HACK!
+       Map<String, String> metadata = new HashMap();
+       metadata.put("sizing-hint", "0.1");
+       state.setMetaData(metadata);
+       
        // Look for the content-uri field and set if so
        if (props != null) {
            String uri = props.getProperty("content-uri");
