@@ -476,7 +476,7 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof PlayerInRangeMessage) {
 	    PlayerInRangeMessage msg = (PlayerInRangeMessage) message;
 
-            System.out.println("Player in range " + msg.isInRange() + " " 
+            logger.fine("Player in range " + msg.isInRange() + " " 
 		+ msg.getPlayerID() + " player in range " + msg.getPlayerInRangeID());
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
