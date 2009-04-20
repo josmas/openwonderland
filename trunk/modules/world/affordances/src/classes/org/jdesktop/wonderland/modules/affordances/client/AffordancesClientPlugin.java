@@ -30,7 +30,9 @@ import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.common.cell.security.MoveAction;
 import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemoveEvent;
+import org.jdesktop.wonderland.modules.security.client.SecurityComponent;
 
 /**
  * Client-size plugin for the cell manipulator affordances.
@@ -61,9 +63,44 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
      * @inheritDoc()
      */
     public ContextMenuItem[] getContextMenuItems(Cell cell) {
+        final SimpleContextMenuItem editItem =
+                new SimpleContextMenuItem("Edit...", new EditContextListener());
+        
+        // if there is security on this cell, do some calculation to
+        // figure out if the user has access to this cell
+        final SecurityComponent sc = cell.getComponent(SecurityComponent.class);
+        if (sc != null) {
+            // see if the permissions are available immediately
+            if (sc.hasPermissions()) {
+                editItem.setEnabled(canMove(sc));
+            } else {
+                // if not, we need to start a thread to load them
+                editItem.setLabel("Edit (checking) ...");
+                editItem.setEnabled(false);
+                new Thread(new Runnable() {
+                    public void run() {
+                        editItem.setLabel("Edit...");
+                        editItem.setEnabled(canMove(sc));
+                        editItem.fireMenuItemRepaintListeners();
+                    }
+                }, "Security check wait thread").start();
+            }
+        }
+        
+        // return the edit item
         return new ContextMenuItem[] {
-            new SimpleContextMenuItem("Edit...", new EditContextListener())
+            editItem
         };
+    }
+
+    private boolean canMove(SecurityComponent sc) {
+        try {
+            MoveAction ma = new MoveAction();
+            return sc.getPermissions().contains(ma);
+        } catch (InterruptedException ie) {
+            // shouldn't happen, since we check above
+            return true;
+        }
     }
 
     /**
