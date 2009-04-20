@@ -43,7 +43,10 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDuplicateMessage;
+import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
+import org.jdesktop.wonderland.common.cell.security.ModifyAction;
 import org.jdesktop.wonderland.modules.palette.client.dnd.CellPaletteDataFlavorHandler;
+import org.jdesktop.wonderland.modules.security.client.SecurityComponent;
 
 /**
  * Client-size plugin for the cell palette.
@@ -146,25 +149,78 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
     public ContextMenuItem[] getContextMenuItems(final Cell cell) {
         final SimpleContextMenuItem deleteItem = 
                 new SimpleContextMenuItem("Delete", null, new DeleteListener());
-        
-//        new Thread() {
-//            @Override
-//            public void run() {
-//                try {
-//                    Thread.sleep(10000);
-//                } catch (InterruptedException ex) {
-//                }
-//                deleteItem.setLabel("Delete for Cell " + cell.getName());
-//                deleteItem.setEnabled(false);
-//                deleteItem.fireMenuItemRepaintListeners();
-//            }
-//        }.start();
+
+        final SimpleContextMenuItem duplicateItem =
+                new SimpleContextMenuItem("Duplicate", null, new DuplicateListener());
+
+        // find the security component for both this cell and it's parent,
+        // if any
+        final SecurityComponent sc = cell.getComponent(SecurityComponent.class);
+        final SecurityComponent psc;
+        if (cell.getParent() != null) {
+            psc = cell.getParent().getComponent(SecurityComponent.class);
+        } else {
+            psc = null;
+        }
+
+        // see if we can check security locally, or if we have to make a
+        // remote request
+        if ((sc == null || sc.hasPermissions()) &&
+            (psc == null || psc.hasPermissions()))
+        {
+            duplicateItem.setEnabled(canDuplicate(psc));
+            deleteItem.setEnabled(canDelete(sc, psc));
+        } else {
+            new Thread(new Runnable() {
+                public void run() {
+                    duplicateItem.setEnabled(canDuplicate(psc));
+                    deleteItem.setEnabled(canDelete(sc, psc));
+                }
+            }, "Cell palette security check").start();
+        }
 
         return new ContextMenuItem[] {
             new SimpleContextMenuItem("Properties...", null, new PropertiesListener()),
             deleteItem,
-            new SimpleContextMenuItem("Duplicate", null, new DuplicateListener())
+            duplicateItem,
         };
+    }
+
+    private boolean canDuplicate(SecurityComponent psc) {
+        if (psc == null) {
+            return true;
+        }
+
+        try {
+            ChildrenAction ca = new ChildrenAction();
+            return psc.getPermissions().contains(ca);
+        } catch (InterruptedException ie) {
+            // shouldn't happen, since we check above
+            return true;
+        }
+    }
+
+    private boolean canDelete(SecurityComponent sc, SecurityComponent psc) {
+        boolean out = true;
+        if (sc == null && psc == null) {
+            return out;
+        }
+
+        try {
+            ModifyAction ma = new ModifyAction();
+            ChildrenAction ca = new ChildrenAction();
+
+            if (sc != null) {
+                out = sc.getPermissions().contains(ma);
+            }
+            if (out && psc != null) {
+                out = psc.getPermissions().contains(ca);
+            }
+        } catch (InterruptedException ie) {
+            // shouldn't happen, since we check above
+        }
+
+        return out;
     }
 
     /**
