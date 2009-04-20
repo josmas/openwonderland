@@ -64,22 +64,13 @@ public abstract class AppConventionalCell extends App2DCell {
         /**
          * {@inheritDoc}
          */
-        public void sessionCreated(WonderlandSession session) {}
+        public void sessionCreated(WonderlandSession session) {
 
-        /**
-         * {@inheritDoc}
-         */
-        public void primarySession(WonderlandSession session) {
-            if (session == currentPrimarySession) return;
-
-            // Disconnect any existing app conventional connection from the previous primary session
-            if (currentPrimarySession != null && connection != null) {
-                connection.disconnect();
-                connection = null;
+            // TODO: HACK: For now, assume a non-federated environment
+            if (connection != null) {
+                logger.warning("Trying to create AppConventionalConnection when it already exists.");
+                return;
             }
-
-            // Make new primary session current
-            currentPrimarySession = session;
 
             // Create a new connection
             connection = new AppConventionalConnection(session);
@@ -93,6 +84,11 @@ public abstract class AppConventionalCell extends App2DCell {
                 throw re;
             }
         }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void primarySession(WonderlandSession session) {}
     }
     
     /** 
@@ -121,13 +117,6 @@ public abstract class AppConventionalCell extends App2DCell {
 
             // Master case
 
-            // TODO: Detect a bug in the lifecycle session listener
-            if (connection == null) {
-                logger.severe("AppConventionalCellConnection isn't initialized!");
-                logger.severe("Command cannot be launched: " + state.getCommand());
-                return;
-            }
-            
             connectionInfo = startMaster(appName, state.getCommand(), false);
             if (connectionInfo == null) {
                 logger.warning("Cannot launch app " + appName);
