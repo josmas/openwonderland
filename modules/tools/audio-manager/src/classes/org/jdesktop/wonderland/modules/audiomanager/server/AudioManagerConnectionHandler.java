@@ -357,17 +357,16 @@ public class AudioManagerConnectionHandler
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+	Call call = vm.getCall(callId);
+
+	Player player = null;
+
+	if (call != null) {
+	    player = call.getPlayer();
+	}
+
 	switch (code) {
 	case CallStatus.ESTABLISHED:
-	    Call call = vm.getCall(callId);
-
-	    if (call == null) {
-		logger.warning("Couldn't find call for " + callId);
-		return;
-	    }
-
-	    Player player = call.getPlayer();
-
 	    if (player == null) {
 		logger.warning("Couldn't find player for " + call);
 		return;
@@ -394,6 +393,16 @@ public class AudioManagerConnectionHandler
             break;
 
 	case CallStatus.ENDED:
+	    if (player == null) {
+		logger.warning("Couldn't find player for " + call);
+		return;
+	    }
+
+	    ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+
+	    for (AudioGroup audioGroup : audioGroups) {
+		audioGroup.removePlayer(player);
+	    }
             break;
 	  
 	case CallStatus.BRIDGE_OFFLINE:
