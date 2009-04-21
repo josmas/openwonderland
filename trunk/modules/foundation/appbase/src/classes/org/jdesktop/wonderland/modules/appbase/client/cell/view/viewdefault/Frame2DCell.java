@@ -61,7 +61,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /** The height of the resize corner - currently the same as a header height */
     public static final float RESIZE_CORNER_HEIGHT = HEADER_HEIGHT;
     /** The frame's header (top side) */
-    private FrameHeader header;
+    private FrameHeaderSwing header;
     /** The frame's left side */
     private FrameSide leftSide;
     /** The frame's right side */
@@ -102,8 +102,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
                 ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(frameNode);
         frameEntity.addComponent(RenderComponent.class, rc);
 
-        header = new FrameHeader(view, closeListeners);
-        header.setParentEntity(frameEntity);
+        header = new FrameHeaderSwing(view, closeListeners);
 
         leftSide = new FrameSide(view, FrameSide.Side.LEFT, new Gui2DSide(view));
         leftSide.setParentEntity(frameEntity);

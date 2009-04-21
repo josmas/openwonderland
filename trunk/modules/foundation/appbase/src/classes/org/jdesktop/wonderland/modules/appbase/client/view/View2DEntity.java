@@ -351,6 +351,20 @@ public abstract class View2DEntity implements View2D {
         return viewNode;
     }
 
+    /** 
+     * INTERNAL API
+     * <br>
+     * Disables the GUI2D of this view. Used only by FrameHeaderSwing.
+     */
+    @InternalAPI
+    public void disableGUI () {
+        if (gui != null) {
+            gui.detachEventListeners(entity);
+            gui.cleanup();
+            gui = null;
+        }
+    }
+
     /** {@inheritDoc} */
     public synchronized void setType (Type type) {
         setType(type, true);
@@ -1756,7 +1770,9 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void removeEventListener(EventListener listener) {
-        listener.removeFromEntity(entity);
+        if (listener != null) {
+            listener.removeFromEntity(entity);
+        }
     }
 
     /** {@inheritDoc} */
