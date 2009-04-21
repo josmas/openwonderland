@@ -158,16 +158,18 @@ public abstract class FrameComponent {
 
         // Attach the subclass spatials to the localToCell node
         final Spatial[] spatials = getSpatials();
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                if (localToCellNode != null) {
-                    for (Spatial spatial : spatials) {
-                        localToCellNode.attachChild(spatial);
+        if (spatials != null) {
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+                public void update(Object arg0) {
+                    if (localToCellNode != null) {
+                        for (Spatial spatial : spatials) {
+                            localToCellNode.attachChild(spatial);
+                        }
+                        ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                     }
-                    ClientContextJME.getWorldManager().addToUpdateList(localToCellNode);
                 }
-            }
-        }, null, true); // Topology change. Must wait for it to complete.
+            }, null, true); // Topology change. Must wait for it to complete.
+        }
     }
 
     /**

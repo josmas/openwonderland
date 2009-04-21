@@ -20,12 +20,20 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 import com.jme.math.Vector2f;
 import com.jme.renderer.ColorRGBA;
 import java.util.LinkedList;
+import java.awt.Component;
+import java.awt.Color;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
+import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 
 /**
  * The frame header (top side) for Frame2DCellSwing. Uses a WindowSwing.
@@ -34,18 +42,20 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
  */
 @ExperimentalAPI
 public class FrameHeaderSwing
-        extends FrameComponent
-        implements HeaderPanel.Container {
-
-    /** The height of the header */
-    private static final float HEADER_HEIGHT = 1.25f;
-
-    // TODO: has: title, controller, close button
-    // TODO: has zones: move planar, move z, rotate
+    extends FrameComponent
+    implements HeaderPanel.Container, MouseListener
+{
+    // TODO: New UI: add zones: move planar, move z, rotate
     private WindowSwing headerWindow;
 
-    /** The background color of the header window. */
-    private ColorRGBA bkgdColor;
+    /** The AWT background color of the header window. */
+    private Color bkgdColor;
+
+    /** The panel displayed in the frame. */
+    private HeaderPanel headerPanel;
+
+    /** The app of the window of the view which this frame decorates. */
+    private App2D app;
 
     /**
      * Create a new instance of FrameHeaderSwing.
@@ -57,18 +67,31 @@ public class FrameHeaderSwing
         super("FrameHeaderSwing for " + view, view, null);
 
         Window2D viewWindow = view.getWindow();
-        App2D app = viewWindow.getApp();
+        app = viewWindow.getApp();
         headerWindow = new WindowSwing(app, Window2D.Type.POPUP, viewWindow, 1, 1, false,
                 view.getPixelScale(), "Header Window for " + view.getName());
         headerWindow.setCoplanar(true);
 
-        HeaderPanel panel = new HeaderPanel();
-        JmeClientMain.getFrame().getCanvas3DPanel().add(panel);
-        panel.setContainer(this);
-        headerWindow.setComponent(panel);
+        headerPanel = new HeaderPanel();
+        JmeClientMain.getFrame().getCanvas3DPanel().add(headerPanel);
+        headerPanel.setContainer(this);
+        headerWindow.setComponent(headerPanel);
 
         // TODO: window close: maintain list of close listeners
         // Call them on close button press.
+
+        headerPanel.addMouseListener(this);
+
+        // Unless we do this the interior of the frame will deliver events 
+        // to the control arb of the application and they will look like they
+        // are coming from the interior of the main window's view. We don't want this.
+        View2DDisplayer displayer = view.getDisplayer();
+        View2D frameView = headerWindow.getView(displayer);
+        ((View2DEntity)frameView).disableGUI();
+
+        // TODO: HACK:
+        headerWindow.setVisibleApp(true);
+        headerWindow.setVisibleUser(displayer, true);
     }
 
     /**
@@ -82,6 +105,8 @@ public class FrameHeaderSwing
             headerWindow.cleanup();
             headerWindow = null;
         }
+
+        headerPanel.removeMouseListener(this);
     }
 
     /**
@@ -97,18 +122,24 @@ public class FrameHeaderSwing
     protected void updateLayout() {
         Vector2f pixelScale = view.getPixelScale();
 
+        // Calculate preferred height
+        headerWindow.setSize(null);
+        headerWindow.validate();
+        Component embeddedComp = headerWindow.getComponent();
+        int preferredHeight = embeddedComp.getHeight();
+        
         // Calculate size. This is essentially the same as for FrameSide TOP, but converted to pixels.
         float innerWidth = view.getDisplayerLocalWidth();
         float innerHeight = view.getDisplayerLocalHeight();
         float sideThickness = Frame2DCell.SIDE_THICKNESS;
         int width = (int) ((innerWidth + 2f * sideThickness) / pixelScale.x);
-        int height = (int) (HEADER_HEIGHT / pixelScale.y);
+        int height = preferredHeight;
 
         // Calculate the pixel offset of the upper-left of the header relative to the 
         // upper-left of the view. Note that we need to calculate x so that the header
         // left side aligns with the left side of the frame.
         int x = (int) (-sideThickness / pixelScale.x);
-        int y = (int) (-height / pixelScale.y);
+        int y = -height;
 
         headerWindow.setOffset(x, y);
         headerWindow.setSize(width, height);
@@ -129,15 +160,41 @@ public class FrameHeaderSwing
      * {@inheritDoc}
      */
     public void setColor(ColorRGBA color) {
-        bkgdColor = color.clone();
-        // TODO: convert to AWT color and set as bkgd color of panel
+        bkgdColor = new Color(color.r, color.g, color.b, color.a);
+        if (headerPanel != null) {
+            headerPanel.setBackground(bkgdColor);
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public ColorRGBA getColor() {
-        return bkgdColor.clone();
+        return new ColorRGBA(bkgdColor.getRed()/255.0f, 
+                             bkgdColor.getGreen()/255.0f, 
+                             bkgdColor.getBlue()/255.0f, 
+                             bkgdColor.getAlpha()/255.0f);
+    }
+
+
+    public void	mouseClicked(MouseEvent e) {
+        if  (Gui2D.isChangeControlEvent(e)) {
+            ControlArb appControlArb = app.getControlArb();
+            if (appControlArb.hasControl()) {
+                appControlArb.releaseControl();
+            } else {
+                appControlArb.takeControl();
+            }
+        } 
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+    public void	mouseExited(MouseEvent e) {
+    }
+    public void	mousePressed(MouseEvent e) {
+    }
+    public void mouseReleased(MouseEvent e) {
     }
 }
 

@@ -254,6 +254,7 @@ class WindowSwingEmbeddedToolkit
 
                 public void run() {
                     DrawingSurface drawingSurface = window.getSurface();
+                    if (drawingSurface == null) return;
                     final DrawingSurfaceBufferedImage.DirtyTrackingGraphics gDst =
                             (DrawingSurfaceBufferedImage.DirtyTrackingGraphics) drawingSurface.getGraphics();
                     gDst.setClip(x, y, width, height);
