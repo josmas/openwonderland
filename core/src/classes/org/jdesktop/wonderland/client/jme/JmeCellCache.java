@@ -17,22 +17,13 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
-import com.jme.bounding.BoundingVolume;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.RenderComponent;
+import java.util.LinkedList;
+import java.util.List;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
-import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
-import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
 *
@@ -42,58 +33,10 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  * Concrete implementation of CellCache for the JME Client
  */
 public class JmeCellCache extends CellCacheBasicImpl {
-
-    // a list of top-level cells we have added
-    private final Set<Entity> rootEntities;
-
     public JmeCellCache(CellClientSession session, ClassLoader loader) {
         super(session, loader,
               session.getCellCacheConnection(),
               session.getCellChannelConnection());
-
-        rootEntities = Collections.synchronizedSet(new HashSet<Entity>());
-    }
-
-    @Override
-    public Cell loadCell(CellID cellID,
-            String className,
-            BoundingVolume localBounds,
-            CellID parentCellID,
-            CellTransform cellTransform,
-            CellClientState setup,
-            String cellName) {
-        Cell ret = super.loadCell(cellID,
-                           className,
-                           localBounds,
-                           parentCellID,
-                           cellTransform,
-                           setup,
-                           cellName);
-//        logger.warning("Loaded Cell "+ret.getClass().getName());
-
-
-        // Renderers are now responsible for adding themselves to the scene
-        // when their setStatus call is called
-
-        return ret;
-    }
-
-    @Override
-    public void unloadCell(CellID cellID) {
-        Cell cell = getCell(cellID);
-        // TODO we should call setStatus(DISK)
-//        cell.setStatus(CellStatus.DISK);
-        CellRenderer rend = cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-        if (cell!=null && rend!=null) {
-            if (rend instanceof CellRendererJME) {
-                Entity e = ((CellRendererJME) rend).getEntity();
-                ClientContextJME.getWorldManager().removeEntity(e);
-                rootEntities.remove(e);
-            } else {
-                logger.warning("Unexpected renderer class "+rend.getClass().getName());
-            }
-        }
-        super.unloadCell(cellID);
     }
 
     /**
@@ -110,25 +53,31 @@ public class JmeCellCache extends CellCacheBasicImpl {
     }
 
     /**
-     * Get all root entities in this cache
-     * @return the set of root entities in this cache
+     * Called when the session is disconnected.  Unload all cells that
+     * have been loaded.
      */
-    public Set<Entity> getRootEntities() {
-        return rootEntities;
-    }
+    public void unloadAll() {
+        // create a list of cells, sorted with children before their
+        // parents
+        List<CellID> toRemove = new LinkedList<CellID>();
 
-
-    /**
-     * Remove all top-level entities in this cache from the scene graph
-     */
-    public void detachRootEntities() {
-        synchronized (rootEntities) {
-            for (Entity e : rootEntities) {
-                ClientContextJME.getWorldManager().removeEntity(e);
-            }
+        // do a depth first search of all cells starting from the roots
+        for (Cell root : getRootCells()) {
+            findChildren(root, toRemove);
+            toRemove.add(root.getCellID());
         }
 
-        rootEntities.clear();
+        // now remove all cells, starting with children
+        for (CellID id : toRemove) {
+            unloadCell(id);
+        }
+    }
+
+    private void findChildren(Cell parent, List<CellID> cellList) {
+        for (Cell child : parent.getChildren()) {
+            findChildren(child, cellList);
+            cellList.add(child.getCellID());
+        }
     }
 
     /**

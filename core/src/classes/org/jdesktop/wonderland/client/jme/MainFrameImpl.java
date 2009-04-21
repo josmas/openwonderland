@@ -98,31 +98,29 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
         serverField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                checkButtons();
+                updateGoButton();
             }
 
             public void removeUpdate(DocumentEvent e) {
-                checkButtons();
+                updateGoButton();
             }
 
             public void changedUpdate(DocumentEvent e) {
-                checkButtons();
-            }
-
-            public void checkButtons() {
-                String cur = serverField.getText();
-                if (cur != null && cur.length() > 0 &&
-                        !cur.equals(serverURL))
-                {
-                    goButton.setEnabled(true);
-                } else {
-                    goButton.setEnabled(false);
-                }
+                updateGoButton();
             }
         });
 
 
         pack();
+    }
+
+    public void updateGoButton() {
+        String cur = serverField.getText();
+        if (cur != null && cur.length() > 0 && !cur.equals(serverURL)) {
+            goButton.setEnabled(true);
+        } else {
+            goButton.setEnabled(false);
+        }
     }
 
     /**
@@ -344,15 +342,22 @@ private void serverFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 }//GEN-LAST:event_serverFieldActionPerformed
 
 private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButtonActionPerformed
+    System.out.println("[MainFrameImp] GO! " + serverField.getText());
+
     if (serverListener != null) {
         serverListener.serverURLChanged(serverField.getText());
     }
 }//GEN-LAST:event_goButtonActionPerformed
 
 private void logoutMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutMIActionPerformed
+    System.out.println("[MainFrameImpl] Logout");
+
     if (serverListener != null) {
         serverListener.logout();
     }
+
+    serverURL = null;
+    updateGoButton();
 }//GEN-LAST:event_logoutMIActionPerformed
 
 private void cameraChangedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cameraChangedActionPerformed

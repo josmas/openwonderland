@@ -32,6 +32,8 @@ import com.jme.scene.state.ZBufferState;
 import com.jme.util.TextureManager;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
@@ -51,10 +53,16 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
  *
  * @author paulby
  */
-public class DefaultEnvironment implements Environment {
+public class DefaultEnvironment implements Environment, ViewManagerListener, TransformChangeListener {
+    private static final Logger logger =
+            Logger.getLogger(DefaultEnvironment.class.getName());
 
     private Skybox skybox = null;
+    private Entity skyboxEntity = null;
+    private Set<LightNode> globalLights = new HashSet<LightNode>();
+    private Vector3f translation = new Vector3f();
 
+    private ViewCell curViewCell = null;
     private ServerSessionManager loginManager;
 
     public DefaultEnvironment(ServerSessionManager loginManager) {
@@ -64,7 +72,7 @@ public class DefaultEnvironment implements Environment {
     /**
      * @{@inheritDoc}
      */
-    public void setGlobalLights() {             
+    public void addGlobalLights() {
         LightNode globalLight1 = new LightNode();
         PointLight light = new PointLight();
         light.setDiffuse(new ColorRGBA(0.95f, 0.95f, 0.95f, 1.0f));
@@ -81,35 +89,74 @@ public class DefaultEnvironment implements Environment {
         light.setEnabled(true);
         globalLight2.setLight(light);
         globalLight2.setLocalTranslation(0.0f, -500.0f, -500.0f);
+
+        globalLights.add(globalLight1);
+        globalLights.add(globalLight2);
+
         ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight1);
         ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight2);
     }
 
     /**
-     * @{@inheritDoc}
+     * @{inheritDoc}
      */
-    public void setSkybox() {
-
-        if (skybox==null) {
-            Entity skyboxEnt = createSkyboxEntity();
-            ClientContextJME.getWorldManager().addEntity(skyboxEnt);
+    public void removeGlobalLights() {
+        for (LightNode node : globalLights) {
+            ClientContextJME.getWorldManager().getRenderManager().removeLight(node);
         }
 
-        ViewManager.getViewManager().addViewManagerListener(new ViewManagerListener() {
+        globalLights.clear();
+    }
 
-            public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
-            //Keep the skybox centered on the view
-            newViewCell.addTransformChangeListener(new TransformChangeListener() {
-                private Vector3f translation = new Vector3f();
+    /**
+     * @{@inheritDoc}
+     */
+    public void addSkybox() {
+        logger.fine("[DefaultEnvironment] add skybox to " + this);
 
-                public void transformChanged(Cell cell, ChangeSource source) {
-                    skybox.setLocalTranslation(cell.getWorldTransform().getTranslation(translation));
-                }
+        if (skyboxEntity == null) {
+            skyboxEntity = createSkyboxEntity();
+            ClientContextJME.getWorldManager().addEntity(skyboxEntity);
+        }
 
-            });
-            }
-        });
+        ViewManager.getViewManager().addViewManagerListener(this);
+    }
 
+    public void removeSkybox() {
+        logger.fine("[DefaultEnvironment] remove skybox from " + this +
+                    " curViewCell: " + curViewCell);
+
+        ClientContextJME.getWorldManager().removeEntity(skyboxEntity);
+        ViewManager.getViewManager().removeViewManagerListener(this);
+
+        if (curViewCell != null) {
+            curViewCell.removeTransformChangeListener(this);
+            curViewCell = null;
+        }
+
+        skyboxEntity = null;
+        skybox = null;
+    }
+
+    public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
+        logger.fine("[DefaultEnvironment] primary view changed for " + this +
+                    ".  Old: " + oldViewCell + " new: " + newViewCell);
+
+        if (curViewCell != null) {
+            curViewCell.removeTransformChangeListener(this);
+        }
+
+        //Keep the skybox centered on the view
+        curViewCell = newViewCell;
+        curViewCell.addTransformChangeListener(this);
+    }
+
+    public void transformChanged(Cell cell, ChangeSource source) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("[DefaultEnvironment] transform changed for " + this);
+        }
+
+        skybox.setLocalTranslation(cell.getWorldTransform().getTranslation(translation));
     }
 
     private Entity createSkyboxEntity() {

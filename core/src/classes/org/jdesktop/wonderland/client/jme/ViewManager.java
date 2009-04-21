@@ -76,7 +76,9 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 @ExperimentalAPI
 public class ViewManager {
-    
+    private static final Logger logger =
+            Logger.getLogger(ViewManager.class.getName());
+
     private static ViewManager viewManager=null;
 
     private CameraNode cameraNode;
@@ -161,18 +163,12 @@ public class ViewManager {
         // Wait for the renderer to become ready
         rb.setBufferUpdater(new BufferUpdater() {
             public void init(RenderBuffer arg0) {
-                System.err.println("RENDERER IS READY !");
+                logger.info("RENDERER IS READY !");
             }
         });
 
         createCameraEntity(ClientContextJME.getWorldManager());
         listener = new CellListener();
-
-        if (useAvatars) {
-            // Create and register the avatar controls
-            avatarControls = new AvatarControls();
-            ClientContextJME.getWorldManager().addUserData(JSceneEventProcessor.class, avatarControls);
-        }
     }
 
     Canvas getCanvas() {
@@ -234,10 +230,12 @@ public class ViewManager {
      * @param cell
      */
     public void attach(Cell cell) {
+        logger.fine("[ViewManager] attach " + cell + " current " + attachCell +
+                    " controls " + avatarControls);
+
+        // if there is already a view attached, detach it
         if (attachCell!=null) {
-            Logger.getAnonymousLogger().warning("VIEW ALREADY ATTACHED TO CELL (BUT CONTINUE ANYWAY)");
-            return;
-//            throw new RuntimeException("View already attached to cell");
+            detach();
         }
         
         if (avatarControls==null) {
@@ -245,11 +243,21 @@ public class ViewManager {
             // only drive true avatars, if the Camera is being attached to
             // another type of cell then another control system will be
             // required.
-
+            
             // Create the input listener and process to control the avatar
-            WorldManager wm = ClientContextJME.getWorldManager();
-            avatarControls = new SimpleAvatarControls(cell, wm);
-            avatarControls.setRunInRenderer(true);
+            if (useAvatars) {
+                avatarControls = new AvatarControls();
+            } else {
+                WorldManager wm = ClientContextJME.getWorldManager();
+                avatarControls = new SimpleAvatarControls(cell, wm);
+                avatarControls.setRunInRenderer(true);
+            }
+            
+            // enable the controls
+            avatarControls.setEnabled(true);
+
+            // register the avatar controls with the world manager
+            ClientContextJME.getWorldManager().addUserData(JSceneEventProcessor.class, avatarControls);
         }
 
         Entity entity = ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
@@ -281,6 +289,9 @@ public class ViewManager {
      * Detach the 3D view from the cell it's currently attached to.
      */
     public void detach() {
+        logger.fine("[ViewManager] detach current " + attachCell +
+                    " controls " + avatarControls);
+
         if (attachCell==null) {
             Logger.getAnonymousLogger().warning("VIEW NOT ATTACHED TO A CELL (BUT CONTINUE ANYWAY)");
             return;
@@ -305,6 +316,8 @@ public class ViewManager {
         }
 
         entity.removeComponent(AvatarControls.class);
+        avatarControls.setEnabled(false);
+        avatarControls = null;
         attachCell.removeTransformChangeListener(listener);
         attachCell = null;
     }
@@ -356,7 +369,7 @@ public class ViewManager {
      * @param listener
      */
     public void removeViewManagerListener(ViewManagerListener listener) {
-        viewListeners.add(listener);
+        viewListeners.remove(listener);
     }
 
     private void notifyViewManagerListeners(ViewCell oldViewCell, ViewCell newViewCell) {

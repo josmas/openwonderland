@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.client.jme;
 
 import java.util.HashMap;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
@@ -29,6 +28,7 @@ public class EnvironmentManager {
     
     private static EnvironmentManager environmentManager=null;
     private HashMap<ServerSessionManager,HashMap<String, Environment>> environments = new HashMap();
+    private Environment curEnvironment = null;
 
     private EnvironmentManager() {
         
@@ -60,7 +60,25 @@ public class EnvironmentManager {
      * @param name
      */
     public void removeEnvironment(ServerSessionManager loginMgr, String name) {
-        Logger.getAnonymousLogger().warning("TODO - implement EnvironmentManager.removeEnvironment");
+        HashMap<String, Environment> env = environments.get(loginMgr);
+        if (env != null) {
+            Environment e = env.remove(name);
+            if (e == null) {
+                return;
+            }
+            
+            // if this is the current environment, remove everything
+            if (e.equals(curEnvironment)) {
+                e.removeGlobalLights();
+                e.removeSkybox();
+                curEnvironment = null;
+            }
+            
+            // if the map for this manager is now empty, remove it too
+            if (env.isEmpty()) {
+                environments.remove(loginMgr);
+            }
+        }
     }
 
     /**
@@ -72,9 +90,23 @@ public class EnvironmentManager {
         if (env==null)
             throw new RuntimeException("No such Environment for session");
         Environment e = env.get(name);
-        if (e==null)
-            throw new RuntimeException("No such Environment for session");
-        e.setGlobalLights();
-        e.setSkybox();
+        if (e != null && e.equals(curEnvironment)) {
+            // no change
+            return;
+        }
+
+        // remove the old environment
+        if (curEnvironment != null) {
+            curEnvironment.removeGlobalLights();
+            curEnvironment.removeSkybox();
+        }
+
+        // set up the new one
+        if (e != null) {
+            e.addGlobalLights();
+            e.addSkybox();
+        }
+
+        curEnvironment = e;
     }
 }

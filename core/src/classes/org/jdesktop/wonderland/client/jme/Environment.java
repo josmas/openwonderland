@@ -26,10 +26,20 @@ public interface Environment {
     /**
      * Set the global lights for the entire world
      */
-    public void setGlobalLights();
+    public void addGlobalLights();
+
+    /**
+     * Remove the global lights
+     */
+    public void removeGlobalLights();
 
     /**
      * Set the current skybox
      */
-    public void setSkybox();
+    public void addSkybox();
+
+    /**
+     * Remove the skybox
+     */
+    public void removeSkybox();
 }
