@@ -201,8 +201,10 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void connectSoftphone() {
- 	logger.fine("Sending message to server to get voice bridge...");
-	session.send(this, new GetVoiceBridgeMessage());
+        logger.fine("Sending message to server to get voice bridge...");
+        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+            session.send(this, new GetVoiceBridgeMessage());
+        }
     }
 
     public void showSoftphone(boolean isVisible) {

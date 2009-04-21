@@ -204,7 +204,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      */
     public void unloadCell(CellID cellId) {
         Cell cell = cells.remove(cellId);
-        setCellStatus(cell, CellStatus.DISK);
+        if (cell != null) {
+            setCellStatus(cell, CellStatus.DISK);
+        }
     }
 
     /**
@@ -214,7 +216,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         // TODO - remove local resources from client asset cache as long
         // as they are not shared
         Cell cell = cells.remove(cellId);
-        setCellStatus(cell, CellStatus.DISK);
+        if (cell != null) {
+            setCellStatus(cell, CellStatus.DISK);
+        }
     }
 
     /**

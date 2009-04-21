@@ -850,7 +850,9 @@ public class Cell {
      * @param listener to be removed
      */
     public void removeTransformChangeListener(TransformChangeListener listener) {
-        transformChangeListeners.remove(listener);
+        if (transformChangeListeners != null) {
+            transformChangeListeners.remove(listener);
+        }
     }
 
     private void notifyTransformChangeListeners(TransformChangeListener.ChangeSource source) {
@@ -881,7 +883,9 @@ public class Cell {
      * @param listener to be removed
      */
     public void removeComponentChangeListener(ComponentChangeListener listener) {
-        componentChangeListeners.remove(listener);
+        if (componentChangeListeners != null) {
+            componentChangeListeners.remove(listener);
+        }
     }
 
     private void notifyComponentChangeListeners(ComponentChangeListener.ChangeType source, CellComponent component) {

@@ -54,14 +54,16 @@ public class ContextMenuManager {
                 synchronized (factoryList) {
                     // Remove any previously existing items in the list
                     factoryList.clear();
-                    
-                    // Look for classes annotated with @ContextMenuEntry, and
-                    // add them to the factory List
-                    ScannedClassLoader cl = server.getClassloader();
-                    Iterator<ContextMenuFactorySPI> it = cl.getAll(
-                            ContextMenuFactory.class, ContextMenuFactorySPI.class);
-                    while (it.hasNext() == true) {
-                        factoryList.add(it.next());
+
+                    if (server != null) {
+                        // Look for classes annotated with @ContextMenuEntry, and
+                        // add them to the factory List
+                        ScannedClassLoader cl = server.getClassloader();
+                        Iterator<ContextMenuFactorySPI> it = cl.getAll(
+                                ContextMenuFactory.class, ContextMenuFactorySPI.class);
+                        while (it.hasNext() == true) {
+                            factoryList.add(it.next());
+                        }
                     }
                 }
             }

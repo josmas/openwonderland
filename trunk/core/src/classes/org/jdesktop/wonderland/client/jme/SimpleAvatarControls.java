@@ -136,7 +136,12 @@ public class SimpleAvatarControls extends ProcessorComponent {
     private AWTInputComponent listener;
     
     private final LinkedList<Event> events = new LinkedList();
-    
+
+    /**
+     * The global event listener
+     */
+    private final AvatarEventListener globalListener = new AvatarEventListener();
+
     /**
      * The default constructor
      */
@@ -165,14 +170,27 @@ public class SimpleAvatarControls extends ProcessorComponent {
         collection = new ProcessorArmingCollection(this);
         collection.addCondition(new NewFrameCondition(this));
 
-        ClientContext.getInputManager().addGlobalEventListener(new AvatarEventListener());
+        System.out.println("[SimpleAvatarControls] creating " + this);
     }
     
     @Override
     public void initialize() {
         setArmingCondition(collection);
     }
-    
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+
+        System.out.println("[SimpleAvatarControls] set enabled " + enabled + " " + this);
+
+        if (enabled) {
+            ClientContext.getInputManager().addGlobalEventListener(globalListener);
+        } else {
+            ClientContext.getInputManager().removeGlobalEventListener(globalListener);
+        }
+    }
+
     @Override
     public void compute(ProcessorArmingCollection collection) {
         synchronized(events) {

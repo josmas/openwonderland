@@ -220,6 +220,8 @@ public class JmeClientMain {
     }
 
     protected void loadServer(String serverURL) throws IOException {
+        System.out.println("[JmeClientMain] loadServer " + serverURL);
+
         logout();
 
         // get the login manager for the given server
@@ -269,11 +271,16 @@ public class JmeClientMain {
     }
 
     protected void logout() {
+        System.out.println("[JMEClientMain] log out");
+
         // disconnect from the current session
         if (curSession != null) {
-            curSession.getCellCache().detachRootEntities();
+            curSession.getCellCache().unloadAll();
             curSession.logout();
             curSession = null;
+
+            // notify listeners that there is no longer a primary server
+            LoginManager.setPrimary(null);
         }
     }
 

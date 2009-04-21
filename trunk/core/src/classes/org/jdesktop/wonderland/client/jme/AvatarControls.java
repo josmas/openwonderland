@@ -26,9 +26,9 @@ import imi.utils.input.DefaultScheme;
 import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 import javolution.util.FastList;
 import org.jdesktop.mtgame.NewFrameCondition;
-import org.jdesktop.mtgame.PostEventCondition;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
@@ -42,6 +42,8 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
  * @author paulby
  */
 public class AvatarControls extends ProcessorComponent implements JSceneEventProcessor {
+    private static final Logger logger =
+            Logger.getLogger(AvatarControls.class.getName());
 
     private JScene      m_jscene = null;
     private InputScheme m_scheme = new DefaultScheme();
@@ -50,10 +52,10 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
 
     private HashSet<Integer> pressedKeys = new HashSet();
     private long postId = ClientContextJME.getWorldManager().allocateEvent();
-    
+
+    private final AvatarEventListener eventListener = new AvatarEventListener();
+
     public AvatarControls() {
-        AvatarEventListener listener = new AvatarEventListener();
-        ClientContext.getInputManager().addGlobalEventListener(listener);
     }
 
     @Override
@@ -84,6 +86,23 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
 //            System.err.println("Sending events "+m_scheme+" "+eventAwt.size());
             m_scheme.processEvents(eventAwt.toArray());
             events.clear();
+        }
+    }
+
+    @Override
+    public void setEnabled(boolean enable) {
+        super.setEnabled(enable);
+
+        logger.fine("[AvatarControls] " + this + " enabled: " + enable);
+
+        if (enable) {
+            ClientContext.getInputManager().addGlobalEventListener(eventListener);
+            ClientContextJME.getWorldManager().addUserData(JSceneEventProcessor.class, this);
+        } else {
+            ClientContext.getInputManager().removeGlobalEventListener(eventListener);
+
+            // todo -- remove user data
+            ClientContextJME.getWorldManager();
         }
     }
 
@@ -132,7 +151,7 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
 
     @Override
     public void initialize() {
-        System.err.println("******** AvatarControls init");
+        logger.fine("******** AvatarControls init");
 //        setArmingCondition(new PostEventCondition(this, new long[]{postId}));
         setArmingCondition(new NewFrameCondition(this));
 
@@ -143,6 +162,8 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
 
     public void clearSchemes()
     {
+        logger.fine("[AvatarControls] clear schemes on " + this);
+
         m_scheme = m_schemeList.get(0);
         m_schemeList.clear();
         m_schemeList.add(m_scheme);
@@ -150,6 +171,9 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
     
     public InputScheme setDefault(InputScheme defaultScheme) 
     {
+        logger.fine("[AvatarControls] set scheme " + defaultScheme +
+                    " on " + this.hashCode());
+        
         m_scheme = defaultScheme;
         m_schemeList.clear();
         m_schemeList.add(m_scheme);
@@ -158,6 +182,8 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
     
     public void addScheme(InputScheme scheme)
     {
+        logger.fine("[AvatarControls] add scheme " + scheme + " to " + this);
+
         m_schemeList.add(scheme);
     }
 
@@ -168,6 +194,8 @@ public class AvatarControls extends ProcessorComponent implements JSceneEventPro
 
     public void setJScene(JScene jscene) 
     {
+        logger.fine("[AvatarControls] set scene to " + jscene + " on " + this);
+
         m_jscene = jscene;
         m_scheme.setJScene(jscene);
     }

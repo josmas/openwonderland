@@ -272,6 +272,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
             ViewManager.getViewManager().attach(cell);
         }
 
+        // reset the control scheme before selecting the new avatar
+        controlScheme = null;
+
         selectForInput(selectedForInput);
 //        System.err.println("Change Avatar to " + entity);
         LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());

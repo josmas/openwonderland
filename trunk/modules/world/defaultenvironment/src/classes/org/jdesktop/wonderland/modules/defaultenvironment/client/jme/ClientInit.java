@@ -19,17 +19,43 @@ package org.jdesktop.wonderland.modules.defaultenvironment.client.jme;
 
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  *
  * @author paulby
  */
-public class ClientInit implements ClientPlugin {
+public class ClientInit implements ClientPlugin, PrimaryServerListener {
+    private ServerSessionManager sessionManager;
 
-    public void initialize(ServerSessionManager loginManager) {
-        ClientContextJME.getEnvironmentManager().addEnvironment(loginManager, "Default", new DefaultEnvironment(loginManager));
-        ClientContextJME.getEnvironmentManager().setCurrentEnvironment(loginManager, "Default");
+    public void initialize(ServerSessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+
+        LoginManager.addPrimaryServerListener(this);
+        if (LoginManager.getPrimary() != null &&
+                LoginManager.getPrimary().equals(sessionManager))
+        {
+            enable();
+        }
     }
 
+    public void enable() {
+        ClientContextJME.getEnvironmentManager().addEnvironment(sessionManager, "Default",
+                                                                new DefaultEnvironment(sessionManager));
+        ClientContextJME.getEnvironmentManager().setCurrentEnvironment(sessionManager, "Default");
+    }
+
+    public void disable() {
+        ClientContextJME.getEnvironmentManager().removeEnvironment(sessionManager, "Default");
+    }
+
+    public void primaryServer(ServerSessionManager server) {
+        if (sessionManager.equals(server)) {
+            enable();
+        } else {
+            disable();
+        }
+    }
 }
