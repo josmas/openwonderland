@@ -51,7 +51,8 @@ import java.awt.Point;
  *
  * @author  jp
  */
-public class InCallDialog extends javax.swing.JFrame implements PresenceManagerListener {
+public class InCallDialog extends javax.swing.JFrame implements PresenceManagerListener,
+	KeypadListener {
 
     private static final Logger logger =
         Logger.getLogger(InCallDialog.class.getName());
@@ -150,6 +151,10 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
         keyPadButton = new javax.swing.JButton();
         addUserButton = new javax.swing.JButton();
         holdButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        secretRadioButton = new javax.swing.JRadioButton();
+        privateRadioButton = new javax.swing.JRadioButton();
+        publicRadioButton = new javax.swing.JRadioButton();
         endCallButton = new javax.swing.JButton();
 
         jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 15));
@@ -183,6 +188,29 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
             }
         });
 
+        jLabel2.setText("Privacy:");
+
+        secretRadioButton.setText("Secret");
+        secretRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                secretRadioButtonActionPerformed(evt);
+            }
+        });
+
+        privateRadioButton.setText("Private");
+        privateRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                privateRadioButtonActionPerformed(evt);
+            }
+        });
+
+        publicRadioButton.setText("Public");
+        publicRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                publicRadioButtonActionPerformed(evt);
+            }
+        });
+
         endCallButton.setText("End Call");
         endCallButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -190,44 +218,65 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(47, 47, 47)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(holdButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(keyPadButton, javax.swing.GroupLayout.DEFAULT_SIZE, 94, Short.MAX_VALUE))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(endCallButton, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
-                            .addComponent(addUserButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE))))
-                .addGap(46, 46, 46))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(116, Short.MAX_VALUE)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(112, 112, 112))
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(128, Short.MAX_VALUE)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(157, 157, 157))
+            .add(layout.createSequentialGroup()
+                .add(46, 46, 46)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jLabel2)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(secretRadioButton))
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, holdButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, keyPadButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)))
+                        .add(6, 6, 6)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(layout.createSequentialGroup()
+                                .add(privateRadioButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(publicRadioButton))
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                .add(org.jdesktop.layout.GroupLayout.TRAILING, addUserButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(org.jdesktop.layout.GroupLayout.TRAILING, endCallButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)))))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addGap(26, 26, 26)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(keyPadButton)
-                    .addComponent(addUserButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(holdButton)
-                    .addComponent(endCallButton))
-                .addContainerGap(24, Short.MAX_VALUE))
+                .add(jLabel1)
+                .add(26, 26, 26)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 144, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(secretRadioButton)
+                    .add(privateRadioButton)
+                    .add(publicRadioButton))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(18, 18, 18)
+                        .add(keyPadButton))
+                    .add(layout.createSequentialGroup()
+                        .add(18, 18, 18)
+                        .add(addUserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 25, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(holdButton)
+                    .add(endCallButton))
+                .addContainerGap())
         );
 
         pack();
@@ -238,6 +287,7 @@ private KeypadDialog keypad;
 private void keyPadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyPadButtonActionPerformed
     if (keypad == null) {
 	keypad = new KeypadDialog(this);
+	keypad.setListener(this);
 	if (addUserDialog == null) {
             keypad.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
 	} else {
@@ -289,6 +339,21 @@ private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     setVisible(false);
 }//GEN-LAST:event_endCallButtonActionPerformed
 
+private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
+    chatType = chatType.SECRET;
+    session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], chatType));
+}//GEN-LAST:event_secretRadioButtonActionPerformed
+
+private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privateRadioButtonActionPerformed
+    chatType = chatType.PRIVATE;
+    session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], chatType));
+}//GEN-LAST:event_privateRadioButtonActionPerformed
+
+private void publicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_publicRadioButtonActionPerformed
+    chatType = chatType.PUBLIC;
+    session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], chatType));
+}//GEN-LAST:event_publicRadioButtonActionPerformed
+
     /**
     * @param args the command line arguments
     */
@@ -306,8 +371,12 @@ private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     private javax.swing.JButton endCallButton;
     private javax.swing.JButton holdButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton keyPadButton;
+    private javax.swing.JRadioButton privateRadioButton;
+    private javax.swing.JRadioButton publicRadioButton;
+    private javax.swing.JRadioButton secretRadioButton;
     // End of variables declaration//GEN-END:variables
 
 }
