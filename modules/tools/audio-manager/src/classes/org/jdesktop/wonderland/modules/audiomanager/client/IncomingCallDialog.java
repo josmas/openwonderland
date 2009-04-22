@@ -248,8 +248,7 @@ private void answerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     logger.info("Sent join message");
 
     InCallDialog inCallDialog = new InCallDialog(client, session, cellID, group);
-
-    inCallDialog.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
+    inCallDialog.setLocation(new Point((int) getLocation().getX(), (int) getLocation().getY()));
 
     setVisible(false);
 }//GEN-LAST:event_answerButtonActionPerformed
