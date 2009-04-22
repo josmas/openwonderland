@@ -247,7 +247,7 @@ private void answerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
  
     logger.info("Sent join message");
 
-    InCallDialog inCallDialog = new InCallDialog(client, session, cellID, group);
+    InCallDialog inCallDialog = new InCallDialog(client, session, cellID, group, chatType);
     inCallDialog.setLocation(new Point((int) getLocation().getX(), (int) getLocation().getY()));
 
     setVisible(false);
