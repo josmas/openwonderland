@@ -14,6 +14,9 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 import imi.character.CharacterAttributes;
 import imi.character.avatar.FemaleAvatarAttributes;
 import imi.character.avatar.MaleAvatarAttributes;
+import imi.gui.JPanel_BasicOptions;
+import imi.gui.SceneEssentials;
+import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.io.IOException;
@@ -51,6 +54,15 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     public AvatarConfigFrame(AvatarImiJME avatarRenderer) {
         this.avatarRenderer = avatarRenderer;
         initComponents();
+        SceneEssentials scene = new SceneEssentials();
+        scene.setAvatar(avatarRenderer.getAvatarCharacter());
+        scene.setWM(ClientContextJME.getWorldManager());
+        
+//        JPanel_BasicOptions basicOptions = new JPanel_BasicOptions(this);
+//        basicOptions.setSceneData(scene);
+//        basicOptions.avatarCheck();
+//        basicOptions.setBaseURL(avatarRenderer.getAvatarCharacter().getAttributes().getBaseURL());
+//        scrollPane.getViewport().add(basicOptions);
 
         WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
         avatarManager = AvatarConfigManager.getAvatarConigManager();
@@ -85,97 +97,32 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         genderGrou = new javax.swing.ButtonGroup();
-        jPanel1 = new javax.swing.JPanel();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
+        chooseAvatarPanel = new javax.swing.JPanel();
+        avatarListScrollPane = new javax.swing.JScrollPane();
+        avatarList = new javax.swing.JList();
+        deleteB = new javax.swing.JButton();
+        viewB = new javax.swing.JButton();
+        createAvatarPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         maleRB = new javax.swing.JRadioButton();
         femaleRB = new javax.swing.JRadioButton();
         addB = new javax.swing.JButton();
         avatarNameTF = new javax.swing.JTextField();
         randomizeB = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
-        avatarListScrollPane = new javax.swing.JScrollPane();
-        avatarList = new javax.swing.JList();
-        deleteB = new javax.swing.JButton();
-        viewB = new javax.swing.JButton();
+        refineAvatarPanel = new javax.swing.JPanel();
+        southPanel = new javax.swing.JPanel();
+        saveB = new javax.swing.JButton();
+        scrollPane = new javax.swing.JScrollPane();
+        notReadWarning = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         defaultAvatarTF = new javax.swing.JTextField();
 
         setTitle("Avatar Configuration");
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Create New Avatar"));
-
-        jLabel1.setText("Avatar Name");
-
-        genderGrou.add(maleRB);
-        maleRB.setSelected(true);
-        maleRB.setText("Male");
-
-        genderGrou.add(femaleRB);
-        femaleRB.setText("Female");
-
-        addB.setText("Add to My Avatars");
-        addB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addBActionPerformed(evt);
-            }
-        });
-
-        avatarNameTF.setText("my_avatar");
-
-        randomizeB.setText("Randomize");
-        randomizeB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                randomizeBActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 292, Short.MAX_VALUE)
-            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(jPanel1Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(jPanel1Layout.createSequentialGroup()
-                            .add(11, 11, 11)
-                            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(jPanel1Layout.createSequentialGroup()
-                                    .add(jLabel1)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(avatarNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE))
-                                .add(jPanel1Layout.createSequentialGroup()
-                                    .add(maleRB)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(femaleRB))))
-                        .add(jPanel1Layout.createSequentialGroup()
-                            .add(randomizeB)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(addB)))
-                    .add(8, 8, 8)))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 102, Short.MAX_VALUE)
-            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(jPanel1Layout.createSequentialGroup()
-                    .add(4, 4, 4)
-                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(jLabel1)
-                        .add(avatarNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(maleRB)
-                        .add(femaleRB))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(randomizeB)
-                        .add(addB))
-                    .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-        );
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("My Avatars"));
+        chooseAvatarPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("My Avatars"));
 
         avatarList.setModel(new DefaultListModel());
         avatarList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -204,64 +151,195 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             }
         });
 
-        jLabel2.setText("Current Avatar :");
-
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout chooseAvatarPanelLayout = new org.jdesktop.layout.GroupLayout(chooseAvatarPanel);
+        chooseAvatarPanel.setLayout(chooseAvatarPanelLayout);
+        chooseAvatarPanelLayout.setHorizontalGroup(
+            chooseAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(chooseAvatarPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 159, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(viewB)
-                            .add(deleteB)))
-                    .add(jPanel2Layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(defaultAvatarTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 141, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(142, Short.MAX_VALUE))
+                .add(avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 159, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(chooseAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(viewB)
+                    .add(deleteB))
+                .addContainerGap(326, Short.MAX_VALUE))
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
+        chooseAvatarPanelLayout.setVerticalGroup(
+            chooseAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(chooseAvatarPanelLayout.createSequentialGroup()
+                .add(chooseAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, chooseAvatarPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(viewB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(deleteB))
                     .add(avatarListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(defaultAvatarTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(45, Short.MAX_VALUE))
+                .addContainerGap(180, Short.MAX_VALUE))
         );
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        jTabbedPane1.addTab("Choose Avatar", chooseAvatarPanel);
+
+        createAvatarPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Create New Avatar"));
+
+        jLabel1.setText("Avatar Name");
+
+        genderGrou.add(maleRB);
+        maleRB.setSelected(true);
+        maleRB.setText("Male");
+
+        genderGrou.add(femaleRB);
+        femaleRB.setText("Female");
+
+        addB.setText("Add to My Avatars");
+        addB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addBActionPerformed(evt);
+            }
+        });
+
+        avatarNameTF.setText("my_avatar");
+
+        randomizeB.setText("Randomize");
+        randomizeB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                randomizeBActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout createAvatarPanelLayout = new org.jdesktop.layout.GroupLayout(createAvatarPanel);
+        createAvatarPanel.setLayout(createAvatarPanelLayout);
+        createAvatarPanelLayout.setHorizontalGroup(
+            createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 581, Short.MAX_VALUE)
+            .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(createAvatarPanelLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(createAvatarPanelLayout.createSequentialGroup()
+                            .add(11, 11, 11)
+                            .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(createAvatarPanelLayout.createSequentialGroup()
+                                    .add(jLabel1)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(avatarNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE))
+                                .add(createAvatarPanelLayout.createSequentialGroup()
+                                    .add(maleRB)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(femaleRB))))
+                        .add(createAvatarPanelLayout.createSequentialGroup()
+                            .add(randomizeB)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(addB)))
+                    .add(8, 8, 8)))
+        );
+        createAvatarPanelLayout.setVerticalGroup(
+            createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 312, Short.MAX_VALUE)
+            .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(createAvatarPanelLayout.createSequentialGroup()
+                    .add(4, 4, 4)
+                    .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(jLabel1)
+                        .add(avatarNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(maleRB)
+                        .add(femaleRB))
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(randomizeB)
+                        .add(addB))
+                    .addContainerGap(216, Short.MAX_VALUE)))
+        );
+
+        jTabbedPane1.addTab("Create Avatar", createAvatarPanel);
+
+        refineAvatarPanel.setEnabled(false);
+        refineAvatarPanel.setLayout(new java.awt.BorderLayout());
+
+        southPanel.setPreferredSize(new java.awt.Dimension(449, 40));
+
+        saveB.setText("Save");
+        saveB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveBActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout southPanelLayout = new org.jdesktop.layout.GroupLayout(southPanel);
+        southPanel.setLayout(southPanelLayout);
+        southPanelLayout.setHorizontalGroup(
+            southPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(southPanelLayout.createSequentialGroup()
+                .add(154, 154, 154)
+                .add(saveB)
+                .addContainerGap(364, Short.MAX_VALUE))
+        );
+        southPanelLayout.setVerticalGroup(
+            southPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, southPanelLayout.createSequentialGroup()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(saveB)
                 .addContainerGap())
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+
+        refineAvatarPanel.add(southPanel, java.awt.BorderLayout.SOUTH);
+
+        jLabel3.setText("This will be enabled in Dev #6");
+
+        org.jdesktop.layout.GroupLayout notReadWarningLayout = new org.jdesktop.layout.GroupLayout(notReadWarning);
+        notReadWarning.setLayout(notReadWarningLayout);
+        notReadWarningLayout.setHorizontalGroup(
+            notReadWarningLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(notReadWarningLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(15, Short.MAX_VALUE))
+                .add(jLabel3)
+                .addContainerGap(394, Short.MAX_VALUE))
         );
+        notReadWarningLayout.setVerticalGroup(
+            notReadWarningLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(notReadWarningLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(jLabel3)
+                .addContainerGap(362, Short.MAX_VALUE))
+        );
+
+        scrollPane.setViewportView(notReadWarning);
+
+        refineAvatarPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
+
+        jTabbedPane1.addTab("Refine Avatar", null, refineAvatarPanel, "Not ready for public testing");
+
+        getContentPane().add(jTabbedPane1, java.awt.BorderLayout.CENTER);
+
+        jLabel2.setText("Current Avatar :");
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 614, Short.MAX_VALUE)
+            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(jPanel1Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .add(jLabel2)
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(defaultAvatarTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 141, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(362, Short.MAX_VALUE)))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 100, Short.MAX_VALUE)
+            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(jPanel1Layout.createSequentialGroup()
+                    .add(36, 36, 36)
+                    .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(jLabel2)
+                        .add(defaultAvatarTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(36, Short.MAX_VALUE)))
+        );
+
+        getContentPane().add(jPanel1, java.awt.BorderLayout.NORTH);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -416,22 +494,40 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         applyToServer(selected);
 }//GEN-LAST:event_viewBActionPerformed
 
+    private void saveBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveBActionPerformed
+        try {
+            avatarManager.saveAvatar(defaultAvatarTF.getText(), avatarRenderer.getAvatarCharacter());
+        } catch (ContentRepositoryException ex) {
+            Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+}//GEN-LAST:event_saveBActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addB;
     private javax.swing.JList avatarList;
     private javax.swing.JScrollPane avatarListScrollPane;
     private javax.swing.JTextField avatarNameTF;
+    private javax.swing.JPanel chooseAvatarPanel;
+    private javax.swing.JPanel createAvatarPanel;
     private javax.swing.JTextField defaultAvatarTF;
     private javax.swing.JButton deleteB;
     private javax.swing.JRadioButton femaleRB;
     private javax.swing.ButtonGroup genderGrou;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JRadioButton maleRB;
+    private javax.swing.JPanel notReadWarning;
     private javax.swing.JButton randomizeB;
+    private javax.swing.JPanel refineAvatarPanel;
+    private javax.swing.JButton saveB;
+    private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JPanel southPanel;
     private javax.swing.JButton viewB;
     // End of variables declaration//GEN-END:variables
 
