@@ -238,13 +238,19 @@ private KeypadDialog keypad;
 private void keyPadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyPadButtonActionPerformed
     if (keypad == null) {
 	keypad = new KeypadDialog(this);
+	if (addUserDialog == null) {
+            keypad.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
+	} else {
+            keypad.setLocation(new Point((int) addUserDialog.getLocation().getX() + addUserDialog.getWidth(), 
+		(int) addUserDialog.getLocation().getY()));
+	}
     }
 
-    keypad.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
     keypad.setVisible(true);
 }//GEN-LAST:event_keyPadButtonActionPerformed
 
 public void keypadPressed(char key) {
+    System.out.println("Got key " + key);
 }
 
 private AddUserDialog addUserDialog;
@@ -253,7 +259,12 @@ private void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     if (addUserDialog == null) {
 	addUserDialog = new AddUserDialog(client, session, cellID, group, members);
 
-	addUserDialog.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
+	if (keypad == null) {
+	    addUserDialog.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
+	} else {
+	    addUserDialog.setLocation(new Point((int) keypad.getLocation().getX() + keypad.getWidth(), 
+		(int) keypad.getLocation().getY()));
+	}
     }
 
     addUserDialog.setVisible(true);
