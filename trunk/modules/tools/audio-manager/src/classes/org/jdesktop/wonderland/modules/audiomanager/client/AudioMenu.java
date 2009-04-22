@@ -17,7 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import javax.swing.JMenuItem;
+import javax.swing.*;
+
+import java.awt.event.ActionEvent;
+
+import org.jdesktop.wonderland.client.softphone.AudioQuality;
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+
+import java.io.IOException;
 
 /**
  *
@@ -32,11 +39,12 @@ public class AudioMenu extends javax.swing.JPanel {
     AudioMenu(AudioMenuListener audioMenuListener) {
         initComponents();
         this.audioMenuListener = audioMenuListener;
+        populateAudioQualityMenu();
     }
 
-    public static JMenuItem getAudioMenu(AudioMenuListener listener) {
+    public static JMenuItem getAudioMenu(AudioMenuListener audioMenuListener) {
         if (audioM==null) {
-            audioM = new AudioMenu(listener);
+            audioM = new AudioMenu(audioMenuListener);
 	}
 
         return audioM.audioMenu;
@@ -60,8 +68,9 @@ public class AudioMenu extends javax.swing.JPanel {
         softphoneMenuItem = new javax.swing.JCheckBoxMenuItem();
         testAudioMenuItem = new javax.swing.JMenuItem();
         reconnectSoftphoneMenuItem = new javax.swing.JMenuItem();
-        transferCallMenuItem = new javax.swing.JMenuItem();
+        audioQualityMenu = new javax.swing.JMenu();
         logAudioProblemMenuItem = new javax.swing.JMenuItem();
+        transferCallMenuItem = new javax.swing.JMenuItem();
         voiceChatMenuItem = new javax.swing.JMenuItem();
 
         audioMenu.setText("Audio");
@@ -103,13 +112,13 @@ public class AudioMenu extends javax.swing.JPanel {
         });
         audioMenu.add(reconnectSoftphoneMenuItem);
 
-        transferCallMenuItem.setText("Transfer Call");
-        transferCallMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        audioQualityMenu.setText("Audio Quality");
+        audioQualityMenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                transferCallMenuItemActionPerformed(evt);
+                audioQualityMenuActionPerformed(evt);
             }
         });
-        audioMenu.add(transferCallMenuItem);
+        audioMenu.add(audioQualityMenu);
 
         logAudioProblemMenuItem.setText("Log Audio Problem");
         logAudioProblemMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -118,6 +127,14 @@ public class AudioMenu extends javax.swing.JPanel {
             }
         });
         audioMenu.add(logAudioProblemMenuItem);
+
+        transferCallMenuItem.setText("Transfer Call");
+        transferCallMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                transferCallMenuItemActionPerformed(evt);
+            }
+        });
+        audioMenu.add(transferCallMenuItem);
 
         voiceChatMenuItem.setText("Voice Chat");
         voiceChatMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -185,9 +202,40 @@ private void muteCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
 }//GEN-LAST:event_muteCheckBoxActionPerformed
 
+private void audioQualityMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_audioQualityMenuActionPerformed
+}//GEN-LAST:event_audioQualityMenuActionPerformed
+
+    private void populateAudioQualityMenu() {
+        ButtonGroup audioQualityButtons = new ButtonGroup();
+
+        for (AudioQuality quality : AudioQuality.values()) {
+            final AudioQuality fq = quality;
+            JRadioButtonMenuItem mitem = new JRadioButtonMenuItem(new AbstractAction(quality.toString()) {
+                public void actionPerformed(ActionEvent arg0) {
+                    setAudioQuality(fq);
+                }
+            });
+
+            audioQualityMenu.add(mitem);
+            audioQualityButtons.add(mitem);
+
+	    SoftphoneControlImpl softphoneControlImpl = SoftphoneControlImpl.getInstance();
+
+            if (quality.equals(softphoneControlImpl.getAudioQuality())) {
+                mitem.setSelected(true);
+            }
+        }
+        
+        audioQualityMenu.setEnabled(true);
+    }
+
+    private void setAudioQuality(AudioQuality quality) {
+        audioMenuListener.setAudioQuality(quality);
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu audioMenu;
+    private javax.swing.JMenu audioQualityMenu;
     private javax.swing.JMenuItem logAudioProblemMenuItem;
     private javax.swing.JCheckBoxMenuItem muteCheckBox;
     private javax.swing.JMenuItem reconnectSoftphoneMenuItem;

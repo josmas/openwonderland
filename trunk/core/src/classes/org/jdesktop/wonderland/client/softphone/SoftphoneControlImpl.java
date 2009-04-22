@@ -85,7 +85,7 @@ public class SoftphoneControlImpl {
      * Start up the softphone
      */
     public String startSoftphone(String username, String registrar,
-	    int registrarTimeout, String localHost, AudioQuality quality) throws IOException {
+	    int registrarTimeout, String localHost) throws IOException {
     
 	this.username = username.replaceAll("\\p{Punct}", "_");
 
@@ -439,7 +439,15 @@ public class SoftphoneControlImpl {
 	return isMuted;
     }
 
+    private AudioQuality quality = AudioQuality.VPN;
+
+    public AudioQuality getAudioQuality() {
+	return quality;
+    }
+
     public void setAudioQuality(AudioQuality quality) {
+	this.quality = quality;
+
         sendCommandToSoftphone("sampleRate=" + quality.sampleRate());
         sendCommandToSoftphone("channels=" + quality.channels());
         sendCommandToSoftphone("transmitSampleRate=" + quality.transmitSampleRate());
@@ -797,7 +805,7 @@ public class SoftphoneControlImpl {
 
 	try {
 	    String address = softphoneControlImpl.startSoftphone(
-	        System.getProperty("user.name"), "swbridge.east.sun.com:5060", 0, null, null);
+	        System.getProperty("user.name"), "swbridge.east.sun.com:5060", 0, null);
 
 	    logger.warning("Softphone address is " + address);
 

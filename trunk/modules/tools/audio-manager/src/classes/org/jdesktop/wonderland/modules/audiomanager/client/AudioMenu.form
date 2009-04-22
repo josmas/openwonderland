@@ -46,20 +46,28 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reconnectSoftphoneMenuItemActionPerformed"/>
           </Events>
         </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="transferCallMenuItem">
+        <Menu class="javax.swing.JMenu" name="audioQualityMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Transfer Call"/>
+            <Property name="text" type="java.lang.String" value="Audio Quality"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="transferCallMenuItemActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="audioQualityMenuActionPerformed"/>
           </Events>
-        </MenuItem>
+        </Menu>
         <MenuItem class="javax.swing.JMenuItem" name="logAudioProblemMenuItem">
           <Properties>
             <Property name="text" type="java.lang.String" value="Log Audio Problem"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logAudioProblemMenuItemActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="transferCallMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Transfer Call"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="transferCallMenuItemActionPerformed"/>
           </Events>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="voiceChatMenuItem">

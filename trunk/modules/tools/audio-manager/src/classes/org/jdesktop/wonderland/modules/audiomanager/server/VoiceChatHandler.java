@@ -175,6 +175,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	        if (audioGroup.getNumberOfPlayers() == 0) {
 		    endVoiceChat(vm, audioGroup);  // cleanup
 	        }
+	        sender.send(msg);
 		return;
 	    }
 	    
@@ -184,6 +185,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		endVoiceChat(vm, audioGroup);
 	    } 
 
+	    sender.send(msg);
 	    vm.dump("all");
 	    return;
 	}
@@ -208,6 +210,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    VoiceChatJoinAcceptedMessage msg = (VoiceChatJoinAcceptedMessage) message;
 
 	    addPlayerToAudioGroup(vm, audioGroup, msg.getCallee(), msg.getChatType());
+	    sender.send(msg);
 	    return;
 	}
 
@@ -238,7 +241,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    return;
 	}
 
-	logger.fine("Request to join AudioGroup " + group + " caller " + caller);
+	System.out.println("Request to join AudioGroup " + group + " caller " + caller);
 
 	for (int i = 0; i < calleeList.length; i++) {
 	    PresenceInfo info = calleeList[i];
@@ -283,17 +286,8 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		}
 	    }
 
-	    logger.info("Asking " + info + " to join audio group " 
+	    System.out.println("Asking " + info + " to join audio group " 
 		+ group + " chatType " + msg.getChatType());
-
-	    /*
-	     * put callee first in the list
-	     */
-	    //PresenceInfo pi = calleeList[0];
-
-	    //calleeList[0] = info;
-
-	    //calleeList[i] = info;
 
 	    requestPlayerJoinAudioGroup(sender, id, group, caller,
 		calleeList, msg.getChatType());
@@ -326,8 +320,6 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	        return true;
 	    }
-
-	    //removePlayerFromAudioGroup(audioGroup, player);
 	}
 
 	audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true, getChatType(chatType)));
@@ -349,7 +341,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-	//System.out.println("Player added " + player + " group " + audioGroup);
+	System.out.println("Player added " + player + " group " + audioGroup);
 
 	WonderlandClientSender sender = 
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);

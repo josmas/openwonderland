@@ -113,6 +113,10 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 
     private HashMap<String, VolumeControlJFrame> userMap = new HashMap();
 
+public Object[] getSelectedValues() {
+    return userList.getSelectedValues();
+}
+
 private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
         Object[] selectedValues = userList.getSelectedValues();
         
@@ -140,11 +144,11 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
 	userList.clearSelection();
     }//GEN-LAST:event_userListValueChanged
 
-    public void volumeChanged(String userName, double volume) {
-	PresenceInfo[] info = pm.getAliasPresenceInfo(userName);
+    public void volumeChanged(String username, double volume) {
+	PresenceInfo[] info = pm.getAliasPresenceInfo(username);
 
 	if (info == null) {
-	    logger.warning("volumeChanged unable to get presence info for " + userName);
+	    logger.warning("volumeChanged unable to get presence info for " + username);
 	    return;
 	}
 
@@ -192,7 +196,9 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
     public void aliasChanged(String previousAlias, PresenceInfo info) {
 	VolumeControlJFrame volumeControl = userMap.remove(previousAlias);
 
-	userMap.put(info.usernameAlias, volumeControl);
+	if (volumeControl != null) {
+	    userMap.put(info.usernameAlias, volumeControl);
+	}
 
 	setUserList();
     }
