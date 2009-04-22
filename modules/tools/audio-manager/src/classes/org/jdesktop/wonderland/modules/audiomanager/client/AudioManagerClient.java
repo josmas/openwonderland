@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.client.cell.Cell;
-
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 
@@ -60,6 +58,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCall
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoResponseMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellManager;
@@ -82,6 +82,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import java.util.logging.Logger;
 
@@ -116,6 +117,8 @@ public class AudioManagerClient extends BaseConnection implements
     private PresenceInfo presenceInfo;
 
     private Cell cell;
+
+    private HashMap<String, InCallDialog> inCallDialogs = new HashMap();
 
     /** 
      * Create a new AudioManagerClient
@@ -253,12 +256,12 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void voiceChat() {
-	if (cell == null) {
+	if (presenceInfo == null) {
 	    return;
 	}
 
 	try {
-	    new VoiceChatDialog(this, cell.getCellID(), session, presenceInfo);
+	    new PlaceCallDialog(this, session, cell.getCellID(), presenceInfo);
 	} catch (IOException e) {
 	    logger.warning("Unable to get voice chat dialog:  " + e.getMessage());
 	}
@@ -348,8 +351,7 @@ public class AudioManagerClient extends BaseConnection implements
 	    if (localAddress != null) {
 	        try {
 	            String sipURL = sc.startSoftphone(
-		        presenceInfo.userID.getUsername(), registrarAddress, 10, localAddress, 
-			AudioQuality.VPN);
+		        presenceInfo.userID.getUsername(), registrarAddress, 10, localAddress);
 
 		    logger.fine("Starting softphone:  " + presenceInfo);
 
@@ -367,22 +369,7 @@ public class AudioManagerClient extends BaseConnection implements
 		connectSoftphone();
 	    }
 	} else if (message instanceof VoiceChatJoinRequestMessage) {
-	   VoiceChatJoinRequestMessage msg = (VoiceChatJoinRequestMessage) message;
-
-	   VoiceChatDialog voiceChatDialog =
-                VoiceChatDialog.getVoiceChatDialog(msg.getGroup());
-
-            if (voiceChatDialog == null) {
-		try {
-                    voiceChatDialog = new VoiceChatDialog(this, cell.getCellID(), session, msg.getCaller());
-		} catch (IOException e) {
-	    	    logger.warning("Unable to get voice chat dialog:  " + e.getMessage());
-		    return;
-		}
-            }
-
-            voiceChatDialog.requestToJoin(msg.getGroup(), msg.getCaller(), 
-		msg.getCalleeList(), msg.getChatType());
+	    new IncomingCallDialog(this, session, cell.getCellID(), (VoiceChatJoinRequestMessage) message);
 	} else if (message instanceof VoiceChatBusyMessage) {
 	    VoiceChatBusyMessage msg = (VoiceChatBusyMessage) message;
 
@@ -390,14 +377,42 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof VoiceChatInfoResponseMessage) {
 	    VoiceChatInfoResponseMessage msg = (VoiceChatInfoResponseMessage) message;
 
-            VoiceChatDialog voiceChatDialog =
-                VoiceChatDialog.getVoiceChatDialog(msg.getGroup());
+	    InCallDialog inCallDialog = inCallDialogs.get(msg.getGroup());
 
-            if (voiceChatDialog == null) {
-                logger.warning("No voiceChatDialog for " + msg.getGroup());
-            } else {
-                voiceChatDialog.setChatters(msg.getChatters());
-            }
+	    System.out.println("GOT INFO RESP");
+
+	    if (inCallDialog == null) {
+		System.out.println("No InCallDialog for group " + msg.getGroup());
+		return;
+	    }
+
+	    inCallDialog.setMembers(msg.getChatters());
+	} else if (message instanceof VoiceChatJoinAcceptedMessage) {
+	    VoiceChatJoinAcceptedMessage msg = (VoiceChatJoinAcceptedMessage) message;
+
+	    InCallDialog inCallDialog = inCallDialogs.get(msg.getGroup());
+
+	    System.out.println("GOT JOIN ACCEPTED MESSAGE FOR " + msg.getCallee());
+
+	    if (inCallDialog == null) {
+		System.out.println("No InCallDialog for group " + msg.getGroup());
+		return;
+	    }
+
+	    inCallDialog.addMember(msg.getCallee());
+	} else if (message instanceof VoiceChatLeaveMessage) {
+	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
+
+	    InCallDialog inCallDialog = inCallDialogs.get(msg.getGroup());
+
+	    System.out.println("GOT LEAVE MESSAGE FOR " + msg.getCallee());
+
+	    if (inCallDialog == null) {
+		System.out.println("No InCallDialog for group " + msg.getGroup());
+		return;
+	    }
+
+	    inCallDialog.removeMember(msg.getCallee());
 	} else if (message instanceof SpeakingMessage) {
 	    SpeakingMessage msg = (SpeakingMessage) message;
 
@@ -483,6 +498,14 @@ public class AudioManagerClient extends BaseConnection implements
 	} else {
             throw new UnsupportedOperationException("Not supported yet.");
 	}
+    }
+
+    public void addInCallDialog(String group, InCallDialog inCallDialog) {
+	inCallDialogs.put(group, inCallDialog);
+    }
+
+    public void removeInCallDialog(String group) {
+	inCallDialogs.remove(group);
     }
 
     public ConnectionType getConnectionType() {

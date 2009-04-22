@@ -29,8 +29,7 @@ public interface SoftphoneControl {
      * Start the softphone and wait for it to determine its address.
      */
     public String startSoftphone(String userName, String registrarAddress,
-	    int registrarTimeout, String localHost, AudioQuality quality)
-	    throws IOException;
+	    int registrarTimeout, String localHost) throws IOException;
     
     public void stopSoftphone();
 
@@ -54,6 +53,8 @@ public interface SoftphoneControl {
 
     public boolean isMuted();
     
+    public void getAudioQuality();
+
     public void setAudioQuality(AudioQuality quality) throws IOException;
 
     public void sendCommandToSoftphone(String cmd) throws IOException;
