@@ -379,10 +379,10 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    InCallDialog inCallDialog = inCallDialogs.get(msg.getGroup());
 
-	    System.out.println("GOT INFO RESP");
+	    logger.fine("GOT INFO RESP");
 
 	    if (inCallDialog == null) {
-		System.out.println("No InCallDialog for group " + msg.getGroup());
+		logger.fine("No InCallDialog for group " + msg.getGroup());
 		return;
 	    }
 
@@ -392,10 +392,10 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    InCallDialog inCallDialog = inCallDialogs.get(msg.getGroup());
 
-	    System.out.println("GOT JOIN ACCEPTED MESSAGE FOR " + msg.getCallee());
+	    logger.fine("GOT JOIN ACCEPTED MESSAGE FOR " + msg.getCallee());
 
 	    if (inCallDialog == null) {
-		System.out.println("No InCallDialog for group " + msg.getGroup());
+		logger.fine("No InCallDialog for group " + msg.getGroup());
 		return;
 	    }
 
@@ -405,10 +405,10 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    InCallDialog inCallDialog = inCallDialogs.get(msg.getGroup());
 
-	    System.out.println("GOT LEAVE MESSAGE FOR " + msg.getCallee());
+	    logger.fine("GOT LEAVE MESSAGE FOR " + msg.getCallee());
 
 	    if (inCallDialog == null) {
-		System.out.println("No InCallDialog for group " + msg.getGroup());
+		logger.fine("No InCallDialog for group " + msg.getGroup());
 		return;
 	    }
 
