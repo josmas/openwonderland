@@ -287,7 +287,7 @@ private void placeCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 	chattersInfo = getPresenceInfo(chatters);
     }
 
-    InCallDialog inCallDialog = new InCallDialog(client, session, cellID, chatGroup);
+    InCallDialog inCallDialog = new InCallDialog(client, session, cellID, chatGroup, chatType);
 
     inCallDialog.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
 

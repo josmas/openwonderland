@@ -47,7 +47,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="phoneTransferRadioButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="phoneNumberTextField" pref="173" max="32767" attributes="1"/>
+                                      <Component id="phoneNumberTextField" pref="182" max="32767" attributes="1"/>
                                   </Group>
                               </Group>
                           </Group>

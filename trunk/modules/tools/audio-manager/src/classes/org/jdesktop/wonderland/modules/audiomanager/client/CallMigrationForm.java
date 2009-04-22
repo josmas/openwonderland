@@ -87,7 +87,7 @@ public class CallMigrationForm extends javax.swing.JFrame {
             }
         });
 
-        closeButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        closeButton.setFont(new java.awt.Font("Dialog", 0, 13));
         closeButton.setText("Close");
         closeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -95,7 +95,7 @@ public class CallMigrationForm extends javax.swing.JFrame {
             }
         });
 
-        dialButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        dialButton.setFont(new java.awt.Font("Dialog", 0, 13));
         dialButton.setText("Transfer");
         dialButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -103,11 +103,11 @@ public class CallMigrationForm extends javax.swing.JFrame {
             }
         });
 
-        callStatusLabel.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        callStatusLabel.setFont(new java.awt.Font("Dialog", 0, 13));
         callStatusLabel.setText("call status");
 
         radioButtonGroup1.add(phoneTransferRadioButton);
-        phoneTransferRadioButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        phoneTransferRadioButton.setFont(new java.awt.Font("Dialog", 0, 13));
         phoneTransferRadioButton.setSelected(true);
         phoneTransferRadioButton.setText("Phone number:");
         phoneTransferRadioButton.addActionListener(new java.awt.event.ActionListener() {
@@ -117,7 +117,7 @@ public class CallMigrationForm extends javax.swing.JFrame {
         });
 
         radioButtonGroup1.add(connectSoftphoneRadioButton);
-        connectSoftphoneRadioButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        connectSoftphoneRadioButton.setFont(new java.awt.Font("Dialog", 0, 13));
         connectSoftphoneRadioButton.setText("Softphone");
         connectSoftphoneRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -125,7 +125,7 @@ public class CallMigrationForm extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Dialog", 0, 13));
         jLabel1.setText("Transfer call to:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -151,7 +151,7 @@ public class CallMigrationForm extends javax.swing.JFrame {
                                     .add(layout.createSequentialGroup()
                                         .add(phoneTransferRadioButton)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(phoneNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))))
+                                        .add(phoneNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE))))
                             .add(jLabel1))
                         .addContainerGap())
                     .add(layout.createSequentialGroup()

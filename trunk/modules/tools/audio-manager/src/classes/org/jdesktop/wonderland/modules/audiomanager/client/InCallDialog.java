@@ -57,8 +57,6 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
     private static final Logger logger =
         Logger.getLogger(InCallDialog.class.getName());
 
-    private ChatType chatType = ChatType.PRIVATE;
-
     private AudioManagerClient client;
     private WonderlandSession session;
     private CellID cellID;
@@ -75,7 +73,7 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
     }
 
     public InCallDialog(AudioManagerClient client, WonderlandSession session, 
-	    CellID cellID, String group) {
+	    CellID cellID, String group, ChatType chatType) {
 
         this.client = client;
         this.session = session;
@@ -83,6 +81,14 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
 	this.group = group;
 	
 	initComponents();
+
+	if (chatType == ChatType.SECRET) {
+	    secretRadioButton.setSelected(true);
+	} else if (chatType == ChatType.PRIVATE) {
+	    privateRadioButton.setSelected(true);
+	} else if (chatType == ChatType.PUBLIC) {
+	    publicRadioButton.setSelected(true);
+	}
 
         pm = PresenceManagerFactory.getPresenceManager(session);
 
@@ -157,7 +163,13 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
         publicRadioButton = new javax.swing.JRadioButton();
         endCallButton = new javax.swing.JButton();
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 15));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
+
+        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 15)); // NOI18N
         jLabel1.setText("In Call");
 
         buddyList.setModel(new javax.swing.AbstractListModel() {
@@ -325,6 +337,10 @@ private void holdButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_holdButtonActionPerformed
 
 private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_endCallButtonActionPerformed
+    endCall();
+}//GEN-LAST:event_endCallButtonActionPerformed
+
+private void endCall() {
     client.removeInCallDialog(group);
     session.send(client, new VoiceChatLeaveMessage(group, presenceInfo));
 
@@ -337,22 +353,23 @@ private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     }
 
     setVisible(false);
-}//GEN-LAST:event_endCallButtonActionPerformed
+}
 
 private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
-    chatType = chatType.SECRET;
-    session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], chatType));
+    session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], ChatType.SECRET));
 }//GEN-LAST:event_secretRadioButtonActionPerformed
 
 private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privateRadioButtonActionPerformed
-    chatType = chatType.PRIVATE;
-    session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], chatType));
+    session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], ChatType.PRIVATE));
 }//GEN-LAST:event_privateRadioButtonActionPerformed
 
 private void publicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_publicRadioButtonActionPerformed
-    chatType = chatType.PUBLIC;
-    session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], chatType));
+    session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], ChatType.PUBLIC));
 }//GEN-LAST:event_publicRadioButtonActionPerformed
+
+private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+    endCall();
+}//GEN-LAST:event_formWindowClosing
 
     /**
     * @param args the command line arguments
