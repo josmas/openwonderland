@@ -241,7 +241,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    return;
 	}
 
-	System.out.println("Request to join AudioGroup " + group + " caller " + caller);
+	logger.info("Request to join AudioGroup " + group + " caller " + caller);
 
 	for (int i = 0; i < calleeList.length; i++) {
 	    PresenceInfo info = calleeList[i];
@@ -286,7 +286,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		}
 	    }
 
-	    System.out.println("Asking " + info + " to join audio group " 
+	    logger.info("Asking " + info + " to join audio group " 
 		+ group + " chatType " + msg.getChatType());
 
 	    requestPlayerJoinAudioGroup(sender, id, group, caller,
@@ -341,7 +341,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-	System.out.println("Player added " + player + " group " + audioGroup);
+	logger.fine("Player added " + player + " group " + audioGroup);
 
 	WonderlandClientSender sender = 
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
@@ -359,7 +359,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     }
 
     public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-	//System.out.println("Player removed " + player + " group " + audioGroup);
+	logger.fine("Player removed " + player + " group " + audioGroup);
 
 	WonderlandClientSender sender = 
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
