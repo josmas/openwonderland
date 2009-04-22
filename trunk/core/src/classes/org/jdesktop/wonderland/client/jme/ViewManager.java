@@ -21,6 +21,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Spatial;
 import java.awt.event.ComponentEvent;
+import java.util.logging.Level;
 import org.jdesktop.mtgame.Entity;
 import com.jme.scene.CameraNode;
 import com.jme.scene.GeometricUpdateListener;
@@ -45,6 +46,7 @@ import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.event.ComponentListener;
 import java.util.HashSet;
+import java.util.concurrent.Semaphore;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.BufferUpdater;
 import org.jdesktop.mtgame.RenderBuffer;
@@ -160,12 +162,21 @@ public class ViewManager {
             }
         });
 
+        final Semaphore waitForReady = new Semaphore(0);
+
         // Wait for the renderer to become ready
         rb.setBufferUpdater(new BufferUpdater() {
             public void init(RenderBuffer arg0) {
                 logger.info("RENDERER IS READY !");
+                waitForReady.release();
             }
         });
+        
+        try {
+            waitForReady.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ViewManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         createCameraEntity(ClientContextJME.getWorldManager());
         listener = new CellListener();
