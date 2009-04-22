@@ -44,6 +44,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBus
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatEndMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoResponseMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatHoldMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
@@ -210,6 +211,41 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    VoiceChatJoinAcceptedMessage msg = (VoiceChatJoinAcceptedMessage) message;
 
 	    addPlayerToAudioGroup(vm, audioGroup, msg.getCallee(), msg.getChatType());
+	    sender.send(msg);
+	    return;
+	}
+
+	if (message instanceof VoiceChatHoldMessage == true) {
+	    VoiceChatHoldMessage msg = (VoiceChatHoldMessage) message;
+
+	    if (audioGroup == null) {
+		logger.warning("Audio group " + group + " no longer exists");
+		return;
+	    }
+	
+	    Player player = vm.getPlayer(msg.getCallee().callID);
+
+	    if (player == null) {
+		logger.warning("No player for " + msg.getCallee().callID);
+		return;
+	    }
+
+	    AudioGroupPlayerInfo playerInfo = audioGroup.getPlayerInfo(player);
+
+	    if (playerInfo == null) {
+		logger.warning("No player info for " + player);
+		return;
+	    }
+	
+	    if (msg.isOnHold()) {
+		playerInfo.isSpeaking = false;
+		audioGroup.setSpeakingAttenuation(player, 0);
+		audioGroup.setListenAttenuation(player, 0);
+	    } else {
+		audioGroup.setSpeakingAttenuation(player, AudioGroup.DEFAULT_SPEAKING_ATTENUATION);
+		audioGroup.setListenAttenuation(player, AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+	    }
+
 	    sender.send(msg);
 	    return;
 	}

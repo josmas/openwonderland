@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.audiomanager.client.*;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
@@ -40,7 +41,8 @@ import java.util.logging.Logger;
  *
  * @author  jp
  */
-public class AddUserDialog extends javax.swing.JFrame implements PresenceManagerListener {
+public class AddUserDialog extends javax.swing.JFrame implements PresenceManagerListener,
+	MemberChangeListener {
 
     private static final Logger logger =
             Logger.getLogger(AddUserDialog.class.getName());
@@ -53,7 +55,8 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
     private PresenceInfo presenceInfo;
 
     private String group;
-    private ArrayList<String> members;
+
+    private InCallDialog inCallDialog;
 
     /** Creates new form AddUserDialog */
     public AddUserDialog() {
@@ -61,14 +64,16 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
     }
 
     public AddUserDialog(AudioManagerClient client, WonderlandSession session, 
-	    CellID cellID, String group, ArrayList<String> members) {
+	    CellID cellID, String group, InCallDialog inCallDialog) {
 
         this.client = client;
 	this.session = session;
 	this.group = group;
-	this.members = members;
+	this.inCallDialog = inCallDialog;
 
         initComponents();
+
+	inCallDialog.addMemberChangeListener(this);
 
 	pm = PresenceManagerFactory.getPresenceManager(session);
 
@@ -85,12 +90,12 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
 	setVisible(true);
     }
 
-    private String[] userData;
+    private void setUserList() {
+	ArrayList<PresenceInfo> members = inCallDialog.getMembers();
 
-    public void setUserList() {
 	PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
-	String[] userData = new String[presenceInfoList.length];
+	ArrayList<String> userData = new ArrayList();
 
 	for (int i = 0; i < presenceInfoList.length; i++) {
 	    PresenceInfo info = presenceInfoList[i];
@@ -100,25 +105,15 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
 		continue;
 	    }
 
-	    userData[i] = NameTag.getDisplayName(info.usernameAlias, info.isSpeaking,
-		info.isMuted);
-	}
-
-	setUserList(userData);
-    }
-
-    public void setUserList(String[] userData) {
-  	ArrayList<String> users = new ArrayList();
-
-	for (int i = 0; i < userData.length; i++) {
-	    if (members.contains(userData[i]) == false) {
-	        users.add(userData[i]);
+	    if (members.contains(info)) {
+		continue;
 	    }
+
+	    userData.add(NameTag.getDisplayName(info.usernameAlias, info.isSpeaking,
+		info.isMuted));
 	}
 
-	this.userData = users.toArray(new String[0]);
-
-	userList.setListData(this.userData);
+	userList.setListData(userData.toArray(new String[0]));
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
@@ -126,6 +121,14 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
     }
 
     public void aliasChanged(String previousAlias, PresenceInfo info) {
+	setUserList();
+    }
+
+    public void memberAdded(PresenceInfo info) {
+	setUserList();
+    }
+
+    public void memberRemoved(PresenceInfo info) {
 	setUserList();
     }
 
@@ -144,9 +147,7 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        jLabel1.setText("Add User");
+        jLabel1.setText("Ask User to Join");
 
         userList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -174,30 +175,31 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(34, 34, 34)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 68, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(34, 34, 34)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(layout.createSequentialGroup()
+                        .add(77, 77, 77)
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 113, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(38, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(99, Short.MAX_VALUE)
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(72, 72, 72))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(22, 22, 22)
+                .add(21, 21, 21)
                 .add(jLabel1)
-                .add(30, 30, 30)
+                .add(31, 31, 31)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(okButton)
-                    .add(cancelButton))
+                    .add(cancelButton)
+                    .add(okButton))
                 .addContainerGap())
         );
 

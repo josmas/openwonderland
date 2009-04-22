@@ -53,6 +53,10 @@ public class PresenceInfo implements Serializable {
 	usernameAlias = userID.getUsername();
     }
 
+    public boolean equals(Object info) {
+	return cellID.equals(((PresenceInfo) info).cellID);
+    }
+
     public String toString() {
         return "cellID=" + cellID + ", userID=" + userID.toString()
             + ", clientID=" + clientID + ", callID=" + callID 

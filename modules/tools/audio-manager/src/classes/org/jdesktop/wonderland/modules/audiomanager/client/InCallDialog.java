@@ -17,6 +17,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatHoldMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
@@ -51,8 +52,8 @@ import java.awt.Point;
  *
  * @author  jp
  */
-public class InCallDialog extends javax.swing.JFrame implements PresenceManagerListener,
-	KeypadListener {
+public class InCallDialog extends javax.swing.JFrame implements KeypadListener, 
+	PresenceManagerListener {
 
     private static final Logger logger =
         Logger.getLogger(InCallDialog.class.getName());
@@ -62,8 +63,6 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
     private CellID cellID;
 
     private String group;
-
-    private PresenceManager pm;
 
     private PresenceInfo presenceInfo;
 
@@ -90,13 +89,13 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
 	    publicRadioButton.setSelected(true);
 	}
 
-        pm = PresenceManagerFactory.getPresenceManager(session);
+        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
 
         pm.addPresenceManagerListener(this);
 
 	presenceInfo = pm.getPresenceInfo(cellID);
 
-	buddyList.setListData(new String[0]);
+	memberList.setListData(new String[0]);
 
 	client.addInCallDialog(group, this);
 	session.send(client, new VoiceChatInfoRequestMessage(group));
@@ -104,42 +103,93 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
 	setVisible(true);
     }
 
-    public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
+    private ArrayList<MemberChangeListener> listeners = new ArrayList();
+
+    public void addMemberChangeListener(MemberChangeListener listener) {
+	synchronized (listeners) {
+	   listeners.add(listener);
+	}
     }
 
-    public void aliasChanged(String previousAlias, PresenceInfo presenceInfo) {
+    public void removeMemberChangeListener(MemberChangeListener listener) {
+	synchronized (listeners) {
+	   listeners.remove(listener);
+	}
     }
 
-    private ArrayList<String> members = new ArrayList();
+    private ArrayList<PresenceInfo> members = new ArrayList();
 
-    public void setMembers(PresenceInfo[] chatters) {
-	members = new ArrayList();
+    public ArrayList<PresenceInfo> getMembers() {
+	return members;
+    }
 
+    public void setMembers(PresenceInfo[] memberList) {
 	synchronized (members) {
-	    for (int i = 0; i < chatters.length; i++) {
-	        members.add(chatters[i].usernameAlias);
+	    members.clear();
+	
+	    for (int i = 0; i < memberList.length; i++) {
+		members.add(memberList[i]);
+	    }
+	}
+
+	setMemberList();
+    }
+
+    private void setMemberList() {
+	ArrayList<String> memberList = new ArrayList();
+
+	synchronized (this) {
+	    for (PresenceInfo member : members) {
+	        memberList.add(NameTag.getDisplayName(
+		    member.usernameAlias, member.isSpeaking, member.isMuted));
 	    }
 
-	    buddyList.setListData(members.toArray(new String[0]));
+	    this.memberList.setListData(memberList.toArray(new String[0]));
 	}
     }
 
     public void addMember(PresenceInfo member) {
 	synchronized (members) {
-	    if (members.contains(member.usernameAlias)) {
+	    if (members.contains(member)) {
 	        return;
 	    }
 
-	    members.add(member.usernameAlias);
-	    buddyList.setListData(members.toArray(new String[0]));
+	    members.add(member);
+	    setMemberList();
+
+	    for (MemberChangeListener listener : listeners) {
+		listener.memberAdded(member);
+	    }
 	}
     }
     
     public void removeMember(PresenceInfo member) {
 	synchronized (members) {
 	    members.remove(member.usernameAlias);
-	    buddyList.setListData(members.toArray(new String[0]));
+
+	    setMemberList();
+
+	    for (MemberChangeListener listener : listeners) {
+		listener.memberRemoved(member);
+	    }
 	}
+    }
+
+    public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
+	setPresenceInfo(info);
+        setMemberList();
+    }
+
+    public void aliasChanged(String previousAlias, PresenceInfo info) {
+	setPresenceInfo(info);
+        setMemberList();
+    }
+
+    private void setPresenceInfo(PresenceInfo info) {
+	if (members.contains(info)) {
+	    members.remove(info);
+	    members.add(info);
+	} 
     }
 
     /** This method is called from within the constructor to
@@ -153,7 +203,7 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        buddyList = new javax.swing.JList();
+        memberList = new javax.swing.JList();
         keyPadButton = new javax.swing.JButton();
         addUserButton = new javax.swing.JButton();
         holdButton = new javax.swing.JButton();
@@ -169,15 +219,15 @@ public class InCallDialog extends javax.swing.JFrame implements PresenceManagerL
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 15)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 15));
         jLabel1.setText("In Call");
 
-        buddyList.setModel(new javax.swing.AbstractListModel() {
+        memberList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane1.setViewportView(buddyList);
+        jScrollPane1.setViewportView(memberList);
 
         keyPadButton.setText("KeyPad");
         keyPadButton.addActionListener(new java.awt.event.ActionListener() {
@@ -319,7 +369,7 @@ private AddUserDialog addUserDialog;
 
 private void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUserButtonActionPerformed
     if (addUserDialog == null) {
-	addUserDialog = new AddUserDialog(client, session, cellID, group, members);
+	addUserDialog = new AddUserDialog(client, session, cellID, group, this);
 
 	if (keypad == null) {
 	    addUserDialog.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
@@ -332,9 +382,23 @@ private void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     addUserDialog.setVisible(true);
 }//GEN-LAST:event_addUserButtonActionPerformed
 
+private HoldDialog holdDialog;
+
 private void holdButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_holdButtonActionPerformed
-// TODO add your handling code here:
+    if (holdDialog == null) {
+	holdDialog = new HoldDialog(client, session, group, this);
+	Point location = new Point((int) getLocation().getX(), 
+	    (int) (getLocation().getY() + getHeight() - holdDialog.getHeight()));
+	holdDialog.setLocation(location);
+    }
+    holdDialog.setVisible(true);
+    setVisible(false);
+    setHold(true);
 }//GEN-LAST:event_holdButtonActionPerformed
+
+public void setHold(boolean onHold) {
+    session.send(client, new VoiceChatHoldMessage(group, presenceInfo, onHold));
+}
 
 private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_endCallButtonActionPerformed
     endCall();
@@ -384,13 +448,13 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addUserButton;
-    private javax.swing.JList buddyList;
     private javax.swing.JButton endCallButton;
     private javax.swing.JButton holdButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton keyPadButton;
+    private javax.swing.JList memberList;
     private javax.swing.JRadioButton privateRadioButton;
     private javax.swing.JRadioButton publicRadioButton;
     private javax.swing.JRadioButton secretRadioButton;

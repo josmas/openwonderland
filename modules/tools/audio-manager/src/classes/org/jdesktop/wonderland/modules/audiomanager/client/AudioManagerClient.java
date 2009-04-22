@@ -55,9 +55,10 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMes
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayerInRangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoResponseMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatHoldMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
 
@@ -400,6 +401,8 @@ public class AudioManagerClient extends BaseConnection implements
 	    }
 
 	    inCallDialog.addMember(msg.getCallee());
+	} else if (message instanceof VoiceChatHoldMessage) {
+	    VoiceChatHoldMessage msg = (VoiceChatHoldMessage) message;
 	} else if (message instanceof VoiceChatLeaveMessage) {
 	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
 

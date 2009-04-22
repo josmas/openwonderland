@@ -102,6 +102,8 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
     private void setBuddyList() {
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
+        PresenceInfo ourInfo = pm.getPresenceInfo(cellID);
+
         ArrayList<String> userData = new ArrayList();
 
         for (int i = 0; i < presenceInfoList.length; i++) {
@@ -111,8 +113,6 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
                 // It's a virtual player, skip it.
                 continue;
             }
-
-            PresenceInfo ourInfo = pm.getPresenceInfo(cellID);
 
             if (info.callID.equals(ourInfo.callID)) {
                 // It's us, skip it.

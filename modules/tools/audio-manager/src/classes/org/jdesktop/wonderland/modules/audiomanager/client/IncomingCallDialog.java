@@ -54,7 +54,7 @@ import java.awt.Point;
  *
  * @author  jp
  */
-public class IncomingCallDialog extends javax.swing.JFrame implements PresenceManagerListener {
+public class IncomingCallDialog extends javax.swing.JFrame {
 
     private static final Logger logger =
         Logger.getLogger(IncomingCallDialog.class.getName());
@@ -68,9 +68,8 @@ public class IncomingCallDialog extends javax.swing.JFrame implements PresenceMa
 
     private String group;
 
-    private PresenceManager pm;
-
     private PresenceInfo caller;
+    private PresenceInfo callee;
 
     /** Creates new form IncomingCallDialog */
     public IncomingCallDialog() {
@@ -92,17 +91,11 @@ public class IncomingCallDialog extends javax.swing.JFrame implements PresenceMa
 
 	callerText.setText(caller.usernameAlias);
 
-        pm = PresenceManagerFactory.getPresenceManager(session);
+        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
 
-        pm.addPresenceManagerListener(this);
+	callee = pm.getPresenceInfo(cellID);
 
         setVisible(true);
-    }
-
-    public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
-    }
-
-    public void aliasChanged(String previousAlias, PresenceInfo presenceInfo) {
     }
 
     /** This method is called from within the constructor to
@@ -233,16 +226,6 @@ public class IncomingCallDialog extends javax.swing.JFrame implements PresenceMa
     }// </editor-fold>//GEN-END:initComponents
 
 private void answerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_answerButtonActionPerformed
-    
-    PresenceInfo callee = pm.getPresenceInfo(cellID);
-
-    System.out.println("Answer button pressed for " + callee);
-
-    if (callee == null) {
-        logger.warning("Can't find presence info for " + cellID);
-        return;
-    }
-
     session.send(client, new VoiceChatJoinAcceptedMessage(group, callee, chatType));
  
     logger.info("Sent join message");
@@ -254,8 +237,6 @@ private void answerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_answerButtonActionPerformed
 
 private void busyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_busyButtonActionPerformed
-    PresenceInfo callee = pm.getPresenceInfo(cellID);
- 
     session.send(client, new VoiceChatBusyMessage(group, caller, callee, chatType));
 }//GEN-LAST:event_busyButtonActionPerformed
 
