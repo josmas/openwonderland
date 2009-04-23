@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
@@ -33,13 +35,13 @@ import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
  * A WonderlandHUD is a 2D region of the Wonderland client window on which HUDComponents
  * can be displayed.
  * 
- * A client may have multiple HUDs. For example, a Status WonderlandHUD which displays
- * status information about the user's session, and an Audio WonderlandHUD for audio
+ * A client may have multiple HUDs. For example, a Status HUD which displays
+ * status information about the user's session, and an Audio HUD for audio
  * controls.
  * 
- * A WonderlandHUD contains HUDComponents which are visual objects such as a 2D control
+ * A HUD contains HUDComponents which are visual objects such as a 2D control
  * panel or a representation of a 3D object. HUDComponents are laid out within
- * a WonderlandHUD by a HUDLayoutManager.
+ * a HUD by a HUDLayoutManager.
  *
  *
  * @author nsimpson
@@ -78,10 +80,26 @@ public class WonderlandHUD implements HUD {
     /**
      * {@inheritDoc}
      */
+    public HUDComponent createComponent(JComponent component) {
+        return new HUDComponent2D(component);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HUDComponent createComponent(JComponent component, Cell cell) {
+        return new HUDComponent2D(component, cell);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void addComponent(HUDComponent component) {
         components.add(component);
+
         if (componentManager != null) {
             componentManager.addComponent(component);
+            component.setVisible(true);
         }
     }
 

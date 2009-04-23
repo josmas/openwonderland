@@ -21,7 +21,6 @@
  *
  * Created on Feb 25, 2009, 2:22:20 PM
  */
-
 package org.jdesktop.wonderland.modules.hud.client;
 
 /**
@@ -145,8 +144,6 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
     private void grabButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grabButtonActionPerformed
         // TODO add your handling code here:
 }//GEN-LAST:event_grabButtonActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
     private javax.swing.JPanel contentPanel;
@@ -155,5 +152,4 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
     private javax.swing.JPanel grabPanel;
     private javax.swing.JButton minimizeButton;
     // End of variables declaration//GEN-END:variables
-
 }
