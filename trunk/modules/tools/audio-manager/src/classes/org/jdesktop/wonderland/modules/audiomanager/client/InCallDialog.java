@@ -30,8 +30,8 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerLis
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
@@ -140,7 +140,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 
 	synchronized (this) {
 	    for (PresenceInfo member : members) {
-	        memberList.add(NameTagNode.getDisplayName(
+	        memberList.add(NameTag.getDisplayName(
 		    member.usernameAlias, member.isSpeaking, member.isMuted));
 	    }
 
