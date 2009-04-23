@@ -30,8 +30,8 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerLis
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
@@ -140,7 +140,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 
 	synchronized (this) {
 	    for (PresenceInfo member : members) {
-	        memberList.add(NameTag.getDisplayName(
+	        memberList.add(NameTagNode.getDisplayName(
 		    member.usernameAlias, member.isSpeaking, member.isMuted));
 	    }
 
@@ -201,6 +201,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         memberList = new javax.swing.JList();
@@ -252,6 +253,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 
         jLabel2.setText("Privacy:");
 
+        buttonGroup1.add(secretRadioButton);
         secretRadioButton.setText("Secret");
         secretRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -259,6 +261,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
             }
         });
 
+        buttonGroup1.add(privateRadioButton);
         privateRadioButton.setText("Private");
         privateRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -266,6 +269,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
             }
         });
 
+        buttonGroup1.add(publicRadioButton);
         publicRadioButton.setText("Public");
         publicRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -448,6 +452,7 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addUserButton;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton endCallButton;
     private javax.swing.JButton holdButton;
     private javax.swing.JLabel jLabel1;
