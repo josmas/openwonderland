@@ -19,10 +19,10 @@ package org.jdesktop.wonderland.modules.hud.client;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
- * HUDComponentState maintains the display state of all the HUDComponents
- * in a HUD.
+ * Maintains the display state of a HUD component
  *
  * @author nsimpson
  */
@@ -31,7 +31,9 @@ public class HUDComponentState {
     private static final Logger logger = Logger.getLogger(HUDComponentState.class.getName());
     private HUDComponent component;
     private HUDComponentVisualState state;
-    private boolean showing;
+    private Window2D window;
+    private HUDView2D view;
+    private HUDView3D worldView;
     private boolean decorated;
     private int zorder;
 
@@ -41,13 +43,12 @@ public class HUDComponentState {
     };
 
     public HUDComponentState(HUDComponent component) {
-        this(component, true, true, HUDComponentVisualState.NORMAL, 0);
+        this(component, false, HUDComponentVisualState.NORMAL, 0);
     }
 
-    public HUDComponentState(HUDComponent component, boolean showing,
+    public HUDComponentState(HUDComponent component,
             boolean decorated, HUDComponentVisualState state, int zorder) {
         this.component = component;
-        this.showing = showing;
         this.decorated = decorated;
         this.state = state;
         this.zorder = zorder;
@@ -70,19 +71,67 @@ public class HUDComponentState {
     }
 
     /**
-     * Sets whether the HUDComponent is visible
-     * @param showing true to show the HUDComponent, false to hide
+     * Sets the window of the HUDComponent
+     * @param window the HUDComponent's window
      */
-    public void setShowing(boolean showing) {
-        this.showing = showing;
+    public void setWindow(Window2D window) {
+        this.window = window;
+    }
+
+    /**
+     * Gets the HUDComponent's window
+     * @return the HUDComponent's window
+     */
+    public Window2D getWindow() {
+        return window;
+    }
+
+    /**
+     * Sets the view of the HUDComponent
+     * @param view the HUDComponent's view
+     */
+    public void setView(HUDView2D view) {
+        this.view = view;
+    }
+
+    /**
+     * Gets the HUDComponent's view
+     * @return the HUDComponent's view
+     */
+    public HUDView2D getView() {
+        return view;
+    }
+
+    /**
+     * Sets the world view of the HUDComponent
+     * @param view the HUDComponent's view
+     */
+    public void setWorldView(HUDView3D view) {
+        this.worldView = view;
+    }
+
+    /**
+     * Gets the HUDComponent's world view
+     * @return the HUDComponent's world view
+     */
+    public HUDView3D getWorldView() {
+        return worldView;
     }
 
     /**
      * Gets whether the HUDComponent is visible
      * @return true if the HUDComponent is visible, false if it's hidden
      */
-    public boolean isShowing() {
-        return showing;
+    public boolean isVisible() {
+        return ((view != null) && (view.isActuallyVisible()));
+    }
+
+    /**
+     * Gets whether the HUDComponent is visible in world
+     * @return true if the HUDComponent is visible in world, false if it's hidden
+     */
+    public boolean isWorldVisible() {
+        return ((worldView != null) && (worldView.isActuallyVisible()));
     }
 
     /**

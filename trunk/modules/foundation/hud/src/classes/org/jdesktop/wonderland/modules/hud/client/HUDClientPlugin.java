@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.hud.client;
 
 import java.awt.Canvas;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -39,14 +38,14 @@ public class HUDClientPlugin implements ClientPlugin {
     private static final Logger logger = Logger.getLogger(HUDClientPlugin.class.getName());
 
     public void initialize(ServerSessionManager loginManager) {
-        logger.log(Level.FINE, "initializing HUD client plugin");
+        logger.fine("initializing HUD client plugin");
 
         // Create the default HUD factory
         HUDFactory factory = WonderlandHUDFactory.getHUDFactory();
 
         // create the main Wonderland HUD
         Canvas canvas = JmeClientMain.getFrame().getCanvas();
-        logger.log(Level.FINE, "creating Wonderland HUD: " + canvas.getWidth() + "x" + canvas.getHeight() +
+        logger.fine("creating Wonderland HUD: " + canvas.getWidth() + "x" + canvas.getHeight() +
                 " at " + canvas.getX() + ", " + canvas.getY());
         HUD wonderlandHUD = factory.createHUD(canvas.getX(), canvas.getY(), canvas.getWidth(), canvas.getHeight());
         wonderlandHUD.setName("main");

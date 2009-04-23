@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.client.hud.HUDManager;
  */
 public class WonderlandHUDManager implements HUDManager {
 
-    private static final Logger logger = Logger.getLogger(WonderlandHUDFactory.class.getName());
+    private static final Logger logger = Logger.getLogger(WonderlandHUDManager.class.getName());
     protected String name;
     protected HUDLayoutManager layout;
     protected boolean visible;

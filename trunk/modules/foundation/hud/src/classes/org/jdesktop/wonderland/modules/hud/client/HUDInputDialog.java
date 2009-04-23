@@ -17,34 +17,42 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
-import java.awt.Component;
+import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.hud.HUDDialog;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 
 /**
  * A simple dialog for requesting a text value from the user.
  *
  * @author nsimpson
  */
-public class HUDInputDialog extends HUDComponent2D {
+public class HUDInputDialog extends HUDComponent2D implements HUDDialog {
 
     private static final Logger logger = Logger.getLogger(HUDInputDialog.class.getName());
     private HUDInputDialogImpl dialogImpl;
 
-    public HUDInputDialog(View2DEntity view) {
-        super(view);
+    public HUDInputDialog() {
+        super();
         initializeDialog();
     }
 
-    public HUDInputDialog(View2DEntity view, String label) {
-        this(view);
+    public HUDInputDialog(Cell cell) {
+        this();
+        setCell(cell);
+    }
+
+    public HUDInputDialog(String label) {
+        this();
         dialogImpl.setLabelText(label);
     }
 
-    public HUDInputDialog(View2DEntity view, String label, String value) {
-        this(view, label);
+    public HUDInputDialog(String label, String value, Cell cell) {
+        this(label);
+        setCell(cell);
         dialogImpl.setValueText(value);
     }
 
@@ -54,59 +62,52 @@ public class HUDInputDialog extends HUDComponent2D {
     private void initializeDialog() {
         if (dialogImpl == null) {
             dialogImpl = new HUDInputDialogImpl(null, false);
-            JmeClientMain.getFrame().getCanvas3DPanel().add(dialogImpl.getContentPane());
+            component = (JComponent) dialogImpl.getContentPane();
+            Dimension size = dialogImpl.getPreferredSize();
+            setBounds(0, 0, size.width, size.height);
+            JmeClientMain.getFrame().getCanvas3DPanel().add(component);
         }
     }
 
     /**
-     * Sets the string to be displayed on the text field label
-     * @param text the string to display
+     * {@inheritDoc}
      */
     public void setLabelText(String text) {
         dialogImpl.setLabelText(text);
     }
 
     /**
-     * Gets the string displayed on the text field label
-     * @return the text field label
+     * {@inheritDoc}
      */
     public String getLabelText() {
         return dialogImpl.getLabelText();
     }
 
     /**
-     * Sets the string displayed in the text field
-     * @param text the string to display
+     * {@inheritDoc}
      */
     public void setValueText(String text) {
         dialogImpl.setValueText(text);
     }
 
     /**
-     * Gets the string entered by the user in the text field
-     * @return the text field string
+     * {@inheritDoc}
      */
     public String getValueText() {
         return dialogImpl.getValueText();
     }
 
     /**
-     * Adds a bound property listener to the dialog
-     * @param listener a listener for dialog events
+     * {@inheritDoc}
      */
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         dialogImpl.addPropertyChangeListener(listener);
     }
 
     /**
-     * Removes a bound property listener from the dialog
-     * @param listener the listener to remove
+     * {@inheritDoc}
      */
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         dialogImpl.removePropertyChangeListener(listener);
-    }
-
-    public Component getComponent() {
-        return dialogImpl.getContentPane();
     }
 }
