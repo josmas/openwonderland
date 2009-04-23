@@ -156,13 +156,28 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
 
         buttonGroup1.add(secretRadioButton);
         secretRadioButton.setText("Secret");
+        secretRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                secretRadioButtonActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(privateRadioButton);
         privateRadioButton.setSelected(true);
         privateRadioButton.setText("Private");
+        privateRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                privateRadioButtonActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(publicRadioButton);
         publicRadioButton.setText("Public");
+        publicRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                publicRadioButtonActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Phone Number:");
 
@@ -295,6 +310,18 @@ private void placeCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     logger.info("Sent join message, about to enable leave button");
 }//GEN-LAST:event_placeCallButtonActionPerformed
+
+private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
+    chatType = ChatType.SECRET;
+}//GEN-LAST:event_secretRadioButtonActionPerformed
+
+private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privateRadioButtonActionPerformed
+    chatType = ChatType.PRIVATE;
+}//GEN-LAST:event_privateRadioButtonActionPerformed
+
+private void publicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_publicRadioButtonActionPerformed
+    chatType = ChatType.PUBLIC;
+}//GEN-LAST:event_publicRadioButtonActionPerformed
 
 private PresenceInfo[] getPresenceInfo(String users) {
     String[] tokens = users.split(" ");
