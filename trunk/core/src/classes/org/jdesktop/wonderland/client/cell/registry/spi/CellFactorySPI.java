@@ -57,7 +57,8 @@ public interface CellFactorySPI {
      * Returns a default cell server state class for this cell type, given a
      * (possibly null) set of properties. The properties carries a collection
      * of key-value pairs used to initialize the state of the cell. The key
-     * values are defined by a standard mapping.
+     * values are defined by a standard mapping. If this method returns null,
+     * a new Cell is not created.
      *
      * @param props A set of initial properties
      * @return A cell server state class with default values

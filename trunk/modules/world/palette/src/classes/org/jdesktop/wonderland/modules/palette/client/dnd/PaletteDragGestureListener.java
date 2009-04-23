@@ -24,7 +24,6 @@ import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
 import java.awt.dnd.DragSource;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
  * Listener for the drag-start gesture for the cell palette preview image
@@ -41,13 +40,10 @@ public class PaletteDragGestureListener implements DragGestureListener {
     }
 
     public void dragGestureRecognized(DragGestureEvent dge) {
-        // From the Cell Palette fetch the cell factory and image that
-        // corresponds to the currently selected item
-        CellServerState state = cellFactory.getDefaultCellServerState(null);
 
-        // Initialize the transferable with the default cell server state from
-        // the factory
-        Transferable t = new CellServerStateTransferable(state);
+        // Initialize the transferable with the default cell server state
+        // factory
+        Transferable t = new CellServerStateTransferable(cellFactory);
 
         // Begin with the drag setting up the origin so that it aligns with
         // the image.

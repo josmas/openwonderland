@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.client.cell.utils;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -39,10 +40,13 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Ro
  */
 public class CellUtils {
 
+    private static Logger logger = Logger.getLogger(CellUtils.class.getName());
+
     /**
      * Creates a cell in the world given the CellServerState of the cell and
      * the linear distance away from the avatar to initially place the cell.
-     * Throws CellCreationException upon failure.
+     * Throws CellCreationException upon failure. If the given CellServerState
+     * is null, this method simply does not create a Cell.
      *
      * @param state The cell server state for the new cell
      * @param distance The linear distance away from the avatar
@@ -50,6 +54,13 @@ public class CellUtils {
      */
     public static void createCell(CellServerState state, float distance)
            throws CellCreationException {
+
+        // Check to see if the Cell server state is null, and fail quietly if
+        // so
+        if (state == null) {
+            logger.fine("Creating cell with null server state. Returning.");
+            return;
+        }
 
         // Fetch the current transform from the view manager. Find the current
         // position of the camera and its look direction.
