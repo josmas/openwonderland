@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.client.hud;
 import java.util.Date;
 
 /**
- * A HUDComponentEvent describes an event that applied to a HUDComponent.
+ * Describes an event that applies to a HUDComponent.
  *
  * @author nsimpson
  */
@@ -30,13 +30,17 @@ public class HUDComponentEvent {
     private ComponentEventType eventType;
     private Date eventTime;
 
-    // The types of HUDComponent events
+    // the types of HUDComponent events
     public enum ComponentEventType {
 
         CREATED,
         APPEARED,
+        APPEARED_WORLD,
         DISAPPEARED,
+        DISAPPEARED_WORLD,
+        CHANGED_MODE,
         MOVED,
+        MOVED_WORLD,
         RESIZED,
         MINIMIZED,
         MAXIMIZED,
@@ -107,5 +111,11 @@ public class HUDComponentEvent {
      */
     public Date getEventTime() {
         return eventTime;
+    }
+
+    @Override
+    public String toString() {
+        return "component: " + component + ", event type: " + eventType +
+                ", event time: " + eventTime;
     }
 }

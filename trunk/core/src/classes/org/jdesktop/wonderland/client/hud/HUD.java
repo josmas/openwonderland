@@ -20,17 +20,19 @@ package org.jdesktop.wonderland.client.hud;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Iterator;
+import javax.swing.JComponent;
+import org.jdesktop.wonderland.client.cell.Cell;
 
 /**
- * A HUD is a 2D region of the Wonderland client window on which HUDComponents
+ * A HUD is a 2D region of the Wonderland client window on which HUD components
  * can be displayed.
  * 
  * A client may have multiple HUDs. For example, a Status HUD which displays
  * status information about the user's session, and an Audio HUD for audio
  * controls.
  * 
- * A HUD contains HUDComponents which are visual objects such as a 2D control
- * panel or a representation of a 3D object. HUDComponents are laid out within
+ * A HUD contains HUD xomponents which are visual objects such as a 2D control
+ * panel or a representation of a 3D object. HUD components are laid out within
  * a HUD by a HUDLayoutManager.
  *
  *
@@ -39,7 +41,20 @@ import java.util.Iterator;
 public interface HUD {
 
     /**
-     * Adds a HUD Component to the HUD
+     * Creates a new HUD component
+     * @param component a Swing component to display in this HUD component
+     */
+    public HUDComponent createComponent(JComponent component);
+
+    /**
+     * Creates a new HUD component with a Cell association
+     * @param component a Swing component to display in this HUD component
+     * @param cell the cell associated with this HUD component
+     */
+    public HUDComponent createComponent(JComponent component, Cell cell);
+
+    /**
+     * Adds a HUD component to the HUD
      * @param component the component to add
      */
     public void addComponent(HUDComponent component);
@@ -52,13 +67,13 @@ public interface HUD {
 
     /**
      * Gets an iterator that will iterate over the HUD's components
-     * @return an iterator for HUD Components
+     * @return an iterator for HUD components
      */
     public Iterator<HUDComponent> getComponents();
 
     /**
-     * Gets whether this HUD has one or more HUD Components
-     * @return true if the HUD has HUD Components, false otherwise
+     * Gets whether this HUD has one or more HUD components
+     * @return true if the HUD has HUD components, false otherwise
      */
     public boolean hasComponents();
 
