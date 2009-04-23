@@ -43,4 +43,84 @@ public interface HUDComponentManager {
      * @return an iterator for managed HUDComponents
      */
     public Iterator<HUDComponent> getComponents();
+
+    /**
+     * Sets the layout manager responsible for positioning HUDComponents
+     * in a HUD
+     * @param layout a HUD layout manager
+     */
+    public void setLayoutManager(HUDLayoutManager layout);
+
+    /**
+     * Gets the current layout manager
+     * @return the current layout manager
+     */
+    public HUDLayoutManager getLayoutManager();
+
+    /**
+     * Force the layout manager to re-layout all the HUDComponents on the HUD
+     */
+    public void relayout();
+
+    /**
+     * Force the layout manager to re-layout the specified HUDComponent
+     * @param component the component to re-layout
+     */
+    public void relayout(HUDComponent component);
+
+    /**
+     * Change the visibility of a HUDComponent
+     * @param component the component to change
+     * @param visible true to make the component visible, false to make invisible
+     */
+    public void setVisible(HUDComponent component, boolean visible);
+
+    /**
+     * Gets whether a HUDComponent is visible
+     * @return the visibility of the component
+     */
+    public boolean isVisible(HUDComponent component);
+
+    /**
+     * Minimize a HUDComponent
+     * @param component the component to minimize
+     */
+    public void minimizeComponent(HUDComponent component);
+
+    /**
+     * Maximize a HUDComponent
+     * @param component the component to maximize
+     */
+    public void maximizeComponent(HUDComponent component);
+
+    /**
+     * Raise a HUDComponent one level in the stacking order
+     * @param component the component to raise
+     */
+    public void raiseComponent(HUDComponent component);
+
+    /**
+     * Lower a HUDComponent one level in the stacking order
+     * @param component the component to lower
+     */
+    public void lowerComponent(HUDComponent component);
+
+    /**
+     * Get's the stacking order of the specified HUDComponent
+     * @return the stacking order of the component
+     */
+    public int getComponentZOrder(HUDComponent component);
+
+    /**
+     * Change the decoration state of a HUDComponent
+     * @param component the component to change
+     * @param decorate true to decorate the component, false to remove decorations
+     */
+    public void decorateComponent(HUDComponent component, boolean decorate);
+
+    /**
+     * Gets whether the specified HUDComponent is decorated
+     * @return true if the component is decorated, false if not
+     */
+    public boolean isComponentDecorated(HUDComponent component);
 }

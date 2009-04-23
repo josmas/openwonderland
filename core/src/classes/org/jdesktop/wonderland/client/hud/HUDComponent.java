@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.hud;
 
+import com.jme.math.Vector3f;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -33,6 +34,11 @@ import java.util.List;
  * @author nsimpson
  */
 public interface HUDComponent {
+
+    public enum DisplayMode {
+
+        WORLD, HUD
+    };
 
     /**
      * Sets the position and size of the component
@@ -69,6 +75,18 @@ public interface HUDComponent {
      * @return a Point representing the origin of the component
      */
     public Point getLocation();
+
+    /**
+     * Sets the in-world location of the component
+     * @param location the 3D location of the component in-world
+     */
+    public void setWorldLocation(Vector3f location);
+
+    /**
+     * Gets the in-world location of the component
+     * @return the 3D location of the component in-world
+     */
+    public Vector3f getWorldLocation();
 
     /**
      * Sets the x-coordinate of the component's origin
@@ -145,10 +163,23 @@ public interface HUDComponent {
     public void setVisible(boolean visible);
 
     /**
-     * Gets whether the component should be visible or not
+     * Gets whether the component is visible on the HUD
      * @return true if the component should be visible, false otherwise
      */
     public boolean isVisible();
+
+    /**
+     * Sets whether the component is visible in world
+     * @param visible if true, shows the component in world at the specified
+     * 3D location, otherwise hides the component
+     */
+    public void setWorldVisible(boolean visible);
+
+    /**
+     * Gets whether the component is visible in world
+     * @return true if the component is visible in world, false otherwise
+     */
+    public boolean isWorldVisible();
 
     /**
      * Sets whether the component is responsive to mouse and keyboard events

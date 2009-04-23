@@ -17,10 +17,48 @@
  */
 package org.jdesktop.wonderland.client.hud;
 
+import java.beans.PropertyChangeListener;
+
 /**
  * A generic type of dialog to display on the HUD
  * 
  * @author nsimpson
  */
 public interface HUDDialog {
+
+    /**
+     * Sets the string to be displayed on the text field label
+     * @param text the string to display
+     */
+    public void setLabelText(String text);
+
+    /**
+     * Gets the string displayed on the text field label
+     * @return the text field label
+     */
+    public String getLabelText();
+
+    /**
+     * Sets the string displayed in the text field
+     * @param text the string to display
+     */
+    public void setValueText(String text);
+
+    /**
+     * Gets the string entered by the user in the text field
+     * @return the text field string
+     */
+    public String getValueText();
+
+    /**
+     * Adds a bound property listener to the dialog
+     * @param listener a listener for dialog events
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener);
+
+    /**
+     * Removes a bound property listener from the dialog
+     * @param listener the listener to remove
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener);
 }
