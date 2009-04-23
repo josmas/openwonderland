@@ -21,6 +21,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
@@ -31,14 +32,16 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  */
 public class CellServerStateTransferable implements Transferable {
 
+    private CellFactorySPI cellFactory = null;
+    private boolean cellServerStateSet = false;
     private CellServerState cellServerState = null;
     private static DataFlavor dataFlavor = new DataFlavor(CellServerState.class, "CellServerState");
 
     /**
-     * Constructor, takes the CellServer State to transfer
+     * Constructor, takes the Cell Factory as an argument
      */
-    public CellServerStateTransferable(CellServerState cellServerState) {
-        this.cellServerState = cellServerState;
+    public CellServerStateTransferable(CellFactorySPI cellFactory) {
+        this.cellFactory = cellFactory;
     }
 
     public DataFlavor[] getTransferDataFlavors() {
@@ -53,6 +56,16 @@ public class CellServerStateTransferable implements Transferable {
         if (flavor.equals(dataFlavor) == false) {
             throw new UnsupportedFlavorException(flavor);
         }
-        return cellServerState;
+
+        // Make sure we only call getDefaultCellServerState() once even if
+        // the drag and drop mechanism calls it twice.
+        synchronized (cellFactory) {
+            if (cellServerStateSet == false) {
+                cellServerState = cellFactory.getDefaultCellServerState(null);
+                cellServerStateSet = true;
+                return cellServerState;
+            }
+            return cellServerState;
+        }
     }
 }
