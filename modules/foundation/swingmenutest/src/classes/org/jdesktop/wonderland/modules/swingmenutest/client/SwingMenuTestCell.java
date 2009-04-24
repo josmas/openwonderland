@@ -87,8 +87,7 @@ public class SwingMenuTestCell extends App2DCell {
                 try {
                     window = new SwingMenuTestWindow(smtApp, clientState.getPreferredWidth(), 
                                                      clientState.getPreferredHeight(), 
-                                                     /*TODO: until debugged: true*/false, 
-                                                     clientState.getPixelScale());
+                                                     true, clientState.getPixelScale());
                 } catch (InstantiationException ex) {
                     throw new RuntimeException(ex);
                 }

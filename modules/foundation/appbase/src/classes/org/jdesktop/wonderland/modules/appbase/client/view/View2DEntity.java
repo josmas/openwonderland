@@ -149,7 +149,7 @@ public abstract class View2DEntity implements View2D {
     private boolean decorated;
 
     /** The frame title. */
-    protected String title;
+    private String title;
 
     /** The Z (stacking) order of the view */
     protected int zOrder;
@@ -535,7 +535,8 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setTitle (String title, boolean update) {
-        logger.info("change title = " + title);
+        //System.err.println("$$$$$$$$$$$$ view = " + this);
+        //System.err.println("$$$$$$$$$$$$ change title = " + title);
         this.title = title;
         changeMask |= CHANGED_TITLE;
         if (update) {

@@ -28,18 +28,24 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author deronj
  */
 @ExperimentalAPI
-abstract public class ControlArbSingle extends ControlArb {
+abstract public class ControlArbSingle extends ControlArbAppFocus {
 
     /** The user name of the one and only controller */
     protected String controller;
 
+    /** {@inheritDoc} */
+    public void cleanup () {
+        controller = null;
+    }
+
     /**
-     * Specifies the current controlling user.
+     * Specifies the current controlling user. Typically called by a subclass.
      */
-    protected synchronized void setController(String controller) {
+    public synchronized void setController(String controller) {
         String oldController = this.controller;
         this.controller = controller;
-        if (!controller.equals(oldController)) {
+        if ((controller == null && oldController != null) || 
+            !controller.equals(oldController)) {
             updateControl();
         }
     }
@@ -60,23 +66,5 @@ abstract public class ControlArbSingle extends ControlArb {
      */
     public String getController() {
         return controller;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void deliverEvent(Window2D window, KeyEvent event) {
-        if (hasControl()) {
-            window.deliverEvent(event);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void deliverEvent(Window2D window, MouseEvent event) {
-        if (hasControl()) {
-            window.deliverEvent(event);
-        }
     }
 }

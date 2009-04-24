@@ -113,7 +113,7 @@ public class Gui2DInterior extends Gui2D {
         @Override
         public boolean consumesEvent(Event event) {
             if (!super.consumesEvent(event)) {
-                // Not meant for us
+                // Not a mouse event.
                 return false;
             }
             logger.fine("Event is meant for this listener, event = " + event);

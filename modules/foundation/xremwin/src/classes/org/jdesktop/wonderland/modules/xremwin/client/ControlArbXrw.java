@@ -22,7 +22,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
  * @author deronj
  */
 @ExperimentalAPI
-public class ControlArbXrw extends ControlArbAppFocus {
+public class ControlArbXrw extends ControlArbSingle {
 
     /** The default take control politeness mode */
     private static boolean TAKE_CONTROL_IMPOLITE = true;
@@ -61,17 +61,10 @@ public class ControlArbXrw extends ControlArbAppFocus {
     public synchronized void cleanup() {
         super.cleanup();
 
-        if (hasControl()) {
-            releaseControl();
-        }
-
         eventsEnabled = false;
         takeControlPending = false;
-
-        if (serverProxy != null) {
-            serverProxy.cleanup();
-            serverProxy = null;
-        }
+        takeControlPendingImpolite = false;
+        serverProxy = null;
     }
 
     /**
@@ -85,23 +78,12 @@ public class ControlArbXrw extends ControlArbAppFocus {
     /**
      * {@inheritDoc}
      */
-    /* TODO
-    @Override
-    public String getController() {
-        return controller;
-    }
-    */
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public synchronized void takeControl() {
         if (!hasControl()) {
             super.takeControl();
+            take(TAKE_CONTROL_IMPOLITE);
         }
-
-        take(TAKE_CONTROL_IMPOLITE);
     }
 
     /**
@@ -109,11 +91,10 @@ public class ControlArbXrw extends ControlArbAppFocus {
      */
     @Override
     public synchronized void releaseControl() {
-        if (!hasControl()) {
-            return;
+        if (hasControl()) {
+            release();
+            super.releaseControl();
         }
-        release();
-        super.releaseControl();
     }
 
     /**
@@ -235,17 +216,8 @@ public class ControlArbXrw extends ControlArbAppFocus {
      * internal error in app.base.
      */
     private static void controlError(String errTypeStr, String currentController) {
-        // TODO: is there a better way to report this?
         AppXrw.logger.warning("TakeControl: control was " + errTypeStr + " when we didn't ask for it.");
         AppXrw.logger.warning("TakeControl: current controller = " + currentController);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected synchronized void setController(String controller) {
-        // TODO: super.setController(controller);
     }
 
     /**

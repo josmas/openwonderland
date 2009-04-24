@@ -67,7 +67,7 @@ public abstract class App2D {
     /** The list of all windows created by this app */
     protected LinkedList<Window2D> windows = new LinkedList<Window2D>();
 
-    /** The control arbiter for this app. null means that all users can control the app at the same time */
+    /** The control arbiter for this app. */
     protected ControlArb controlArb;
 
     /** The focus entity of the app. */
@@ -97,7 +97,7 @@ public abstract class App2D {
     /**
      * Create a new instance of App2D with a default name..
      *
-     * @param controlArb The control arbiter to use. null means that all users can control at the same time.
+     * @param controlArb The control arbiter to use. Must be non-null.
      * @param pixelScale The size of the window pixels in world coordinates.
      */
     public App2D(ControlArb controlArb, Vector2f pixelScale) {
@@ -108,11 +108,14 @@ public abstract class App2D {
      * Create a new instance of App2D with the given name.
      *
      * @param name The name of the app.
-     * @param controlArb The control arbiter to use. null means that all users can control at the same time.
+     * @param controlArb The control arbiter to use. Must be non-null.
      * @param pixelScale The size of the window pixels in world coordinates.
      */
     public App2D(String name, ControlArb controlArb, Vector2f pixelScale) {
         this.name = name;
+        if (controlArb == null) {
+            throw new RuntimeException("controlArb argument must be non-null.");
+        }
         this.controlArb = controlArb;
         this.pixelScale = pixelScale;
         focusEntity = new Entity("App focus entity for app " + getName());

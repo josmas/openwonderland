@@ -152,7 +152,7 @@ public class FrameHeaderSwing
      */
     public void setTitle(String title) {
         if (title != null) {
-            //TODO
+            headerPanel.setTitle(title);
         }
     }
 

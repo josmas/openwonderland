@@ -32,11 +32,15 @@ public class AppGraphics2D extends App2D {
     /**
      * Create a new instance of AppGraphics2D with a default name.
      *
-     * @param controlArb The control arbiter to use. null means that all users can control at the same time.
+     * @param controlArb The control arbiter to use. Must be non-null.
+     * Currently, this must be of class ControlArbMulti or a subclass.
      * @param pixelScale The size of the window pixels in world coordinates.
      */
     public AppGraphics2D(ControlArb controlArb, Vector2f pixelScale) {
         super(controlArb, pixelScale);
+        if (!(controlArb instanceof ControlArbMulti)) {
+            throw new RuntimeException("controlArb of class ControlArbMulti or a subclass.");
+        }
     }
 
     /**

@@ -122,5 +122,15 @@ public class HeaderPanel extends javax.swing.JPanel {
         }
 
     }
+
+    public void setTitle (String title) {
+        //System.err.println("########## HeaderPanel = " + this);
+        //System.err.println("########## HeaderPanel, title = " + title);
+        if (jLabel1 != null) {
+            //System.err.println("########## HeaderPanel, actually setting title = " + title);
+            // TODO: notyet
+            //jLabel1.setText(title);
+        }
+    }
 }
         

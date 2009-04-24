@@ -30,19 +30,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author deronj
  */
 @ExperimentalAPI
-public class ControlArbMulti extends ControlArb {
+public class ControlArbMulti extends ControlArbAppFocus {
 
-    /**
-     * {@inheritDoc}
-     */
-    public void deliverEvent(Window2D window, KeyEvent event) {
-        window.deliverEvent(event);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void deliverEvent(Window2D window, MouseEvent event) {
-        window.deliverEvent(event);
-    }
+    // TODO: someday: override getControllers et al to share # of controllers between
+    // clients, e.g. using a shared map.
 }
