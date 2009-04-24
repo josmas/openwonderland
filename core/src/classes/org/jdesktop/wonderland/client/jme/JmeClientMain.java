@@ -207,7 +207,7 @@ public class JmeClientMain {
                 }
             }
         });
-        frame.addToEditMenu(physicsMI);
+        frame.addToEditMenu(physicsMI, 3);
 
         // connect to the default server
         try {
@@ -220,7 +220,7 @@ public class JmeClientMain {
     }
 
     protected void loadServer(String serverURL) throws IOException {
-        System.out.println("[JmeClientMain] loadServer " + serverURL);
+        logger.info("load server " + serverURL);
 
         logout();
 
@@ -271,7 +271,7 @@ public class JmeClientMain {
     }
 
     protected void logout() {
-        System.out.println("[JMEClientMain] log out");
+        logger.info("log out");
 
         // disconnect from the current session
         if (curSession != null) {

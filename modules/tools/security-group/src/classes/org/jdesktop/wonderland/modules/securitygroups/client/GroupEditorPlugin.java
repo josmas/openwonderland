@@ -62,7 +62,7 @@ public class GroupEditorPlugin implements ClientPlugin, PrimaryServerListener {
         }
 
         if (menuItem == null) {
-            menuItem = new JMenuItem(new AbstractAction("Group Editor...") {
+            menuItem = new JMenuItem(new AbstractAction("Groups...") {
                 public void actionPerformed(ActionEvent e) {
                     if (gmf == null) {
                         gmf = new GroupManagerFrame(myServer.getServerURL(),
@@ -74,7 +74,7 @@ public class GroupEditorPlugin implements ClientPlugin, PrimaryServerListener {
             });
         }
 
-        mf.addToToolMenu(menuItem);
+        mf.addToEditMenu(menuItem, 2);
     }
 
     protected void removeGroupMenuItem() {

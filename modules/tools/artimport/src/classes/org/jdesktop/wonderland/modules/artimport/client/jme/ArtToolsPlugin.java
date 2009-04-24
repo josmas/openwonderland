@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 public class ArtToolsPlugin extends javax.swing.JPanel implements ClientPlugin {
 
     private ImportSessionFrame importSessionFrame = null;
-    private CellViewerFrame cellViewerFrame = null;
+    private CellViewerFrame cellViewerFrame = null; 
 
     /** Creates new form ArtToolsPlugin1 */
     public ArtToolsPlugin() {
@@ -39,9 +39,9 @@ public class ArtToolsPlugin extends javax.swing.JPanel implements ClientPlugin {
     }
 
     public void initialize(ServerSessionManager lm) {
-        JmeClientMain.getFrame().addToToolMenu(mainCellViewerMI);
-        JmeClientMain.getFrame().addToToolMenu(mainModelmportersMI);
-        JmeClientMain.getFrame().addToToolMenu(createSrcModuleMI);
+        JmeClientMain.getFrame().addToToolsMenu(cellViewerMI, 7);
+        JmeClientMain.getFrame().addToFileMenu(importModelMI, 0);
+        JmeClientMain.getFrame().addToFileMenu(createModuleMI, 1);
     }
 
     /** This method is called from within the constructor to
@@ -53,29 +53,29 @@ public class ArtToolsPlugin extends javax.swing.JPanel implements ClientPlugin {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        mainCellViewerMI = new javax.swing.JMenuItem();
-        mainModelmportersMI = new javax.swing.JMenuItem();
-        createSrcModuleMI = new javax.swing.JMenuItem();
+        cellViewerMI = new javax.swing.JMenuItem();
+        importModelMI = new javax.swing.JMenuItem();
+        createModuleMI = new javax.swing.JMenuItem();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle"); // NOI18N
-        mainCellViewerMI.setText(bundle.getString("Cell_Viewer...")); // NOI18N
-        mainCellViewerMI.addActionListener(new java.awt.event.ActionListener() {
+        cellViewerMI.setText(bundle.getString("Cell_Viewer...")); // NOI18N
+        cellViewerMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mainCellViewerMIActionPerformed(evt);
+                cellViewerMIActionPerformed(evt);
             }
         });
 
-        mainModelmportersMI.setText(bundle.getString("Import_Model...")); // NOI18N
-        mainModelmportersMI.addActionListener(new java.awt.event.ActionListener() {
+        importModelMI.setText(bundle.getString("Import_Model...")); // NOI18N
+        importModelMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mainModelmportersMIActionPerformed(evt);
+                importModelMIActionPerformed(evt);
             }
         });
 
-        createSrcModuleMI.setText(bundle.getString("Create_Module")); // NOI18N
-        createSrcModuleMI.addActionListener(new java.awt.event.ActionListener() {
+        createModuleMI.setText(bundle.getString("Create_Module")); // NOI18N
+        createModuleMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createSrcModuleMIActionPerformed(evt);
+                createModuleMIActionPerformed(evt);
             }
         });
 
@@ -91,32 +91,32 @@ public class ArtToolsPlugin extends javax.swing.JPanel implements ClientPlugin {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void mainCellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainCellViewerMIActionPerformed
+    private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cellViewerMIActionPerformed
         if (cellViewerFrame==null) {
             cellViewerFrame = new CellViewerFrame();
         }
         cellViewerFrame.setVisible(true);
-    }//GEN-LAST:event_mainCellViewerMIActionPerformed
+}//GEN-LAST:event_cellViewerMIActionPerformed
 
-    private void mainModelmportersMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainModelmportersMIActionPerformed
+    private void importModelMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importModelMIActionPerformed
         if (importSessionFrame==null) {
                 importSessionFrame = new ImportSessionFrame();
         }
         importSessionFrame.setVisible(true);
-    }//GEN-LAST:event_mainModelmportersMIActionPerformed
+}//GEN-LAST:event_importModelMIActionPerformed
 
-    private void createSrcModuleMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createSrcModuleMIActionPerformed
+    private void createModuleMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createModuleMIActionPerformed
 
         ModuleManagerUI mm = new ModuleManagerUI();
         mm.setVisible(true);
 
-    }//GEN-LAST:event_createSrcModuleMIActionPerformed
+}//GEN-LAST:event_createModuleMIActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem createSrcModuleMI;
-    private javax.swing.JMenuItem mainCellViewerMI;
-    private javax.swing.JMenuItem mainModelmportersMI;
+    private javax.swing.JMenuItem cellViewerMI;
+    private javax.swing.JMenuItem createModuleMI;
+    private javax.swing.JMenuItem importModelMI;
     // End of variables declaration//GEN-END:variables
 
 

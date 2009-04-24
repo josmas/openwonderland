@@ -24,6 +24,7 @@ import java.awt.event.WindowEvent;
 import java.lang.ref.WeakReference;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -49,7 +50,7 @@ public class AssetMeterClientPlugin implements ClientPlugin {
         // Add the Asset Meter as a checkbox menu item to the Tools menu as a
         // Checkbox menu item. If it is selected, then show it or hide it. Keep
         // the frame in a weak reference.
-        final JCheckBoxMenuItem item = new JCheckBoxMenuItem("Asset Meter", true);
+        final JMenuItem item = new JCheckBoxMenuItem("Asset Meter", true);
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFrame assetMeterJFrame = assetMeterJFrameRef.get();
@@ -68,7 +69,7 @@ public class AssetMeterClientPlugin implements ClientPlugin {
 
         // Add the item to the tools menu and make the Asset Meter visible
         // by default initially.
-        JmeClientMain.getFrame().addToToolMenu(item);
+        JmeClientMain.getFrame().addToWindowMenu(item, 1);
         assetMeterJFrame.setVisible(true);
     }
 }

@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.client.jme;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.JMenu;
@@ -33,7 +35,9 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.common.LogControl;
 import java.util.logging.Logger;
+import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 
@@ -45,8 +49,14 @@ import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 public class MainFrameImpl extends JFrame implements MainFrame {
 
     private static final Logger logger = Logger.getLogger(MainFrameImpl.class.getName());
-
     private static final ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle", Locale.getDefault());
+    private JMenuItem logoutMI;
+    private JMenuItem exitMI;
+    private ButtonGroup cameraButtonGroup = new ButtonGroup();
+    private JRadioButtonMenuItem firstPersonRB;
+    private JRadioButtonMenuItem thirdPersonRB;
+    private JRadioButtonMenuItem frontPersonRB;
+
 
     static {
         new LogControl(MainFrameImpl.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
@@ -61,14 +71,14 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
         // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
         // For now, force the cross-platform (metal) LAF to be used
-	// Also workaround bug 10.
+        // Also workaround bug 10.
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-	    if ("Mac OS X".equals(System.getProperty("os.name"))) {
-		//to workaround popup clipping on the mac we force top-level popups
-		//note: this is implemented in scenario's EmbeddedPopupFactory
-		javax.swing.UIManager.put("PopupFactory.forceHeavyWeight", Boolean.TRUE);
-	    }
+            if ("Mac OS X".equals(System.getProperty("os.name"))) {
+                //to workaround popup clipping on the mac we force top-level popups
+                //note: this is implemented in scenario's EmbeddedPopupFactory
+                javax.swing.UIManager.put("PopupFactory.forceHeavyWeight", Boolean.TRUE);
+            }
         } catch (Exception ex) {
             logger.warning("Loading of " + UIManager.getCrossPlatformLookAndFeelClassName() + " look-and-feel failed, exception = " + ex);
         }
@@ -77,15 +87,12 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
 
         initComponents();
-        
-        // Add the help menu to the main menu bar
-        HelpSystem helpSystem = new HelpSystem();
-        JMenu helpMenu = helpSystem.getHelpJMenu();
-        mainMenuBar.add(helpMenu);
-        
+        initMenus();
+
         wm.getRenderManager().setFrameRateListener(new FrameRateListener() {
+
             public void currentFramerate(float framerate) {
-                fpsLabel.setText("FPS: "+framerate);
+                fpsLabel.setText("FPS: " + framerate);
             }
         }, 100);
 
@@ -97,6 +104,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         DragAndDropManager.getDragAndDropManager().setDropTarget(centerPanel);
 
         serverField.getDocument().addDocumentListener(new DocumentListener() {
+
             public void insertUpdate(DocumentEvent e) {
                 updateGoButton();
             }
@@ -110,8 +118,92 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             }
         });
 
-
         pack();
+    }
+
+    private void initMenus() {
+        // File menu
+        // Log out
+        logoutMI = new JMenuItem(bundle.getString("Log out"));
+        logoutMI.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                logoutMIActionPerformed(evt);
+            }
+        });
+        addToFileMenu(logoutMI, 2);
+
+        // Exit
+        exitMI = new JMenuItem(bundle.getString("Exit"));
+        exitMI.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent evt) {
+                exitMIActionPerformed(evt);
+            }
+        });
+        addToFileMenu(exitMI, 3);
+
+        // View menu
+        firstPersonRB = new JRadioButtonMenuItem(bundle.getString("First Person Camera"));
+        firstPersonRB.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cameraChangedActionPerformed(evt);
+            }
+        });
+        addToViewMenu(firstPersonRB, 0);
+        cameraButtonGroup.add(firstPersonRB);
+
+        thirdPersonRB = new JRadioButtonMenuItem(bundle.getString("Third Person Camera"));
+        thirdPersonRB.setSelected(true);
+        thirdPersonRB.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cameraChangedActionPerformed(evt);
+            }
+        });
+        addToViewMenu(thirdPersonRB, 1);
+        cameraButtonGroup.add(thirdPersonRB);
+
+        frontPersonRB = new JRadioButtonMenuItem(bundle.getString("Front Camera"));
+        frontPersonRB.setToolTipText("A camera looking at the front of the avatar (for testing only)");
+        frontPersonRB.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cameraChangedActionPerformed(evt);
+            }
+        });
+        addToViewMenu(frontPersonRB, 2);
+        cameraButtonGroup.add(frontPersonRB);
+
+        // Help menu
+        HelpSystem helpSystem = new HelpSystem();
+        JMenu helpMenu = helpSystem.getHelpJMenu();
+        mainMenuBar.add(helpMenu);
+    }
+
+    private void logoutMIActionPerformed(ActionEvent evt) {
+        if (serverListener != null) {
+            serverListener.logout();
+        }
+
+        serverURL = null;
+        updateGoButton();
+    }
+
+    private void exitMIActionPerformed(ActionEvent evt) {
+        System.exit(0);
+    }
+
+    private void cameraChangedActionPerformed(java.awt.event.ActionEvent evt) {
+        if (evt.getSource() == firstPersonRB) {
+            ClientContextJME.getViewManager().setCameraProcessor(new FirstPersonCameraProcessor());
+        } else if (evt.getSource() == thirdPersonRB) {
+            ClientContextJME.getViewManager().setCameraProcessor(new ThirdPersonCameraProcessor());
+        } else if (evt.getSource() == frontPersonRB) {
+            ClientContextJME.getViewManager().setCameraProcessor(new FrontHackPersonCameraProcessor());
+        }
+
     }
 
     public void updateGoButton() {
@@ -134,37 +226,122 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /**
      * Returns the canvas of the frame.
      */
-    public Canvas getCanvas () {
+    public Canvas getCanvas() {
         return ViewManager.getViewManager().getCanvas();
     }
 
     /**
      * Returns the panel of the frame in which the 3D canvas resides.
      */
-    public JPanel getCanvas3DPanel () {
+    public JPanel getCanvas3DPanel() {
         return centerPanel;
     }
 
     /**
-     * Add the specified menu item to the tool menu.
-     * 
-     * TODO - design a better way to manage the menus and toolsbars
-     * 
-     * @param menuItem
+     * {@inheritDoc}
      */
-    public void addToToolMenu(JMenuItem menuItem) {
-        toolsMenu.add(menuItem);
+    public void addToMenu(JMenu menu, JMenuItem menuItem, int index) {
+        logger.fine(menu.getText() + " menu: inserting [" + menuItem.getText() + "] at index: " + index);
+        if (index == -1) {
+            index = menu.getItemCount();
+        }
+        // a menu item can't be added to a menu at a given index unless that
+        // index already exists. Since we can't control the order in which
+        // modules add menu items, we add placeholder menu items as blocks to
+        // support menu items with higher indices.
+        for (int i = menu.getItemCount();i <= index;i++) {
+            menu.add(new JMenuItem());
+        }
+
+        // if two items have the same index, the last added will win.
+        // we should really diplay a warning if there's a conflict to make
+        // it easier for people to maintain non-conflicting menu indices
+        menu.remove(index);
+        menu.insert(menuItem, index);
     }
 
     /**
-     * Add the specified menu item to the edit menu.
-     *
-     * TODO - design a better way to manage the menus and toolsbars
-     *
-     * @param menuItem
+     * {@inheritDoc}
+     */
+    public void addToFileMenu(JMenuItem menuItem) {
+        addToMenu(fileMenu, menuItem, -1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToFileMenu(JMenuItem menuItem, int index) {
+        addToMenu(fileMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public void addToEditMenu(JMenuItem menuItem) {
-        editMenu.add(menuItem);
+        addToMenu(editMenu, menuItem, -1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToEditMenu(JMenuItem menuItem, int index) {
+        addToMenu(editMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToViewMenu(JMenuItem menuItem) {
+        addToMenu(viewMenu, menuItem, -1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToViewMenu(JMenuItem menuItem, int index) {
+        addToMenu(viewMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToToolsMenu(JMenuItem menuItem) {
+        addToMenu(toolsMenu, menuItem, -1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToToolsMenu(JMenuItem menuItem, int index) {
+        addToMenu(toolsMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToPlacemarksMenu(JMenuItem menuItem) {
+        addToMenu(placemarksMenu, menuItem, -1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToPlacemarksMenu(JMenuItem menuItem, int index) {
+        addToMenu(placemarksMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToWindowMenu(JMenuItem menuItem) {
+        addToMenu(windowMenu, menuItem, -1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToWindowMenu(JMenuItem menuItem, int index) {
+        addToMenu(windowMenu, menuItem, index);
     }
 
     /**
@@ -179,11 +356,10 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     public void addServerURLListener(ServerURLListener listener) {
         serverListener = listener;
     }
-    
+
     public void setMessageLabel(String msg) {
         messageLabel.setText(msg);
     }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -195,7 +371,6 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        cameraButtonGroup = new javax.swing.ButtonGroup();
         serverPanel = new javax.swing.JPanel();
         serverLabel = new javax.swing.JLabel();
         serverField = new javax.swing.JTextField();
@@ -208,15 +383,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         fpsLabel = new javax.swing.JLabel();
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
-        logoutMI = new javax.swing.JMenuItem();
-        jSeparator1 = new javax.swing.JSeparator();
-        exitMI = new javax.swing.JMenuItem();
-        viewMenu = new javax.swing.JMenu();
-        firstPersonRB = new javax.swing.JRadioButtonMenuItem();
-        thirdPersonRB = new javax.swing.JRadioButtonMenuItem();
-        frontPersonRB = new javax.swing.JRadioButtonMenuItem();
         editMenu = new javax.swing.JMenu();
+        viewMenu = new javax.swing.JMenu();
+        placemarksMenu = new javax.swing.JMenu();
         toolsMenu = new javax.swing.JMenu();
+        windowMenu = new javax.swing.JMenu();
 
         jLabel1.setText("jLabel1");
 
@@ -268,137 +439,62 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
         fileMenu.setText(bundle.getString("File")); // NOI18N
-
-        logoutMI.setText(bundle.getString("Log_out")); // NOI18N
-        logoutMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                logoutMIActionPerformed(evt);
-            }
-        });
-        fileMenu.add(logoutMI);
-        fileMenu.add(jSeparator1);
-
-        exitMI.setText(bundle.getString("Exit")); // NOI18N
-        exitMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exitMIActionPerformed(evt);
-            }
-        });
-        fileMenu.add(exitMI);
-
         mainMenuBar.add(fileMenu);
-
-        viewMenu.setText(bundle.getString("View")); // NOI18N
-
-        cameraButtonGroup.add(firstPersonRB);
-        firstPersonRB.setText(bundle.getString("First_Person_Camera")); // NOI18N
-        firstPersonRB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cameraChangedActionPerformed(evt);
-            }
-        });
-        viewMenu.add(firstPersonRB);
-
-        cameraButtonGroup.add(thirdPersonRB);
-        thirdPersonRB.setSelected(true);
-        thirdPersonRB.setText(bundle.getString("Third_Person_Camera")); // NOI18N
-        thirdPersonRB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cameraChangedActionPerformed(evt);
-            }
-        });
-        viewMenu.add(thirdPersonRB);
-
-        cameraButtonGroup.add(frontPersonRB);
-        frontPersonRB.setText("Front Camera");
-        frontPersonRB.setToolTipText("A Camera looking at the front of the avatar (for testing only)");
-        frontPersonRB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cameraChangedActionPerformed(evt);
-            }
-        });
-        viewMenu.add(frontPersonRB);
-
-        mainMenuBar.add(viewMenu);
 
         editMenu.setText(bundle.getString("Edit")); // NOI18N
         mainMenuBar.add(editMenu);
 
+        viewMenu.setText(bundle.getString("View")); // NOI18N
+        mainMenuBar.add(viewMenu);
+
+        placemarksMenu.setText("Placemarks");
+        mainMenuBar.add(placemarksMenu);
+
         toolsMenu.setText(bundle.getString("Tools")); // NOI18N
         mainMenuBar.add(toolsMenu);
+
+        windowMenu.setText("Window");
+        mainMenuBar.add(windowMenu);
 
         setJMenuBar(mainMenuBar);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-private void exitMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitMIActionPerformed
-// TODO add your handling code here:
-    System.exit(0);
-}//GEN-LAST:event_exitMIActionPerformed
-
 private void serverFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverFieldActionPerformed
     // TODO add your handling code here:
 }//GEN-LAST:event_serverFieldActionPerformed
 
 private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButtonActionPerformed
-    System.out.println("[MainFrameImp] GO! " + serverField.getText());
+    logger.info("[MainFrameImp] GO! " + serverField.getText());
 
     if (serverListener != null) {
         serverListener.serverURLChanged(serverField.getText());
     }
 }//GEN-LAST:event_goButtonActionPerformed
 
-private void logoutMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutMIActionPerformed
-    System.out.println("[MainFrameImpl] Logout");
-
-    if (serverListener != null) {
-        serverListener.logout();
-    }
-
-    serverURL = null;
-    updateGoButton();
-}//GEN-LAST:event_logoutMIActionPerformed
-
-private void cameraChangedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cameraChangedActionPerformed
-    if (evt.getSource()==firstPersonRB) {
-        ClientContextJME.getViewManager().setCameraProcessor(new FirstPersonCameraProcessor());
-    } else if (evt.getSource()==thirdPersonRB) {
-        ClientContextJME.getViewManager().setCameraProcessor(new ThirdPersonCameraProcessor());
-    } else if (evt.getSource()==frontPersonRB) {
-        ClientContextJME.getViewManager().setCameraProcessor(new FrontHackPersonCameraProcessor());
-    }
-
-}//GEN-LAST:event_cameraChangedActionPerformed
-
 private void messageLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_messageLabelActionPerformed
     // TODO add your handling code here:
 }//GEN-LAST:event_messageLabelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup cameraButtonGroup;
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu editMenu;
-    private javax.swing.JMenuItem exitMI;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JRadioButtonMenuItem firstPersonRB;
     private javax.swing.JLabel fpsLabel;
-    private javax.swing.JRadioButtonMenuItem frontPersonRB;
     private javax.swing.JButton goButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JMenuItem logoutMI;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JTextField messageLabel;
+    private javax.swing.JMenu placemarksMenu;
     private javax.swing.JTextField serverField;
     private javax.swing.JLabel serverLabel;
     private javax.swing.JPanel serverPanel;
-    private javax.swing.JRadioButtonMenuItem thirdPersonRB;
     private javax.swing.JMenu toolsMenu;
     private javax.swing.JMenu viewMenu;
+    private javax.swing.JMenu windowMenu;
     // End of variables declaration//GEN-END:variables
-
 }

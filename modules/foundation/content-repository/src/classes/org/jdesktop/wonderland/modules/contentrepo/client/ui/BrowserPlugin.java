@@ -56,7 +56,7 @@ public class BrowserPlugin implements ClientPlugin {
 
     public void initialize(final ServerSessionManager loginInfo) {
 
-        Action launchAction = new AbstractAction("Content Browser...") {
+        Action launchAction = new AbstractAction("Content Browser") {
             public synchronized void actionPerformed(ActionEvent e) {
                 if (frame == null) {
                     ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
@@ -71,12 +71,11 @@ public class BrowserPlugin implements ClientPlugin {
                 });
             }
         };
-
-        JmeClientMain.getFrame().addToToolMenu(new JMenuItem(launchAction));
+        JmeClientMain.getFrame().addToToolsMenu(new JMenuItem(launchAction), 5);
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        JMenuItem browserItem = new JMenuItem("Content Browser (NEW)...");
+        JMenuItem browserItem = new JMenuItem("Content Browser (New)");
         browserItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ContentBrowserJDialog contentBrowserFrame;
@@ -134,7 +133,7 @@ public class BrowserPlugin implements ClientPlugin {
                 }
             }
         });
-        JmeClientMain.getFrame().addToToolMenu(browserItem);
+        JmeClientMain.getFrame().addToToolsMenu(browserItem, 6);
 
         // Register the content browser frame with the registry of such panels
         ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();

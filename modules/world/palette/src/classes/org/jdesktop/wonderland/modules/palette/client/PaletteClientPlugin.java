@@ -71,7 +71,6 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
     public void initialize(ServerSessionManager loginInfo) {
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        JMenu paletteMenu = new JMenu("Palettes");
         JMenuItem item = new JMenuItem("Cell Palette");
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -89,11 +88,11 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
                 }
             }
         });
-        paletteMenu.add(item);
+        JmeClientMain.getFrame().addToToolsMenu(item, 2);
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        JMenuItem item2 = new JMenuItem("Cell Palette (HUD)");
+        JMenuItem item2 = new JMenuItem("Cell Palette HUD");
         item2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 HUDCellPalette hudCellPaletteFrame;
@@ -110,15 +109,13 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
                 }
             }
         });
-        paletteMenu.add(item2);
-        JmeClientMain.getFrame().addToToolMenu(paletteMenu);
+        JmeClientMain.getFrame().addToToolsMenu(item2, 3);
 
         // Register the handler for CellServerState flavors with the system-wide
         // drag and drop manager. When the preview icon is dragged from the Cell
         // Palette this handler creates an instance of the cell in the world.
         DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
         dndManager.registerDataFlavorHandler(new CellPaletteDataFlavorHandler());
-
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
@@ -139,8 +136,7 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
                 }
             }
         });
-        paletteMenu.add(moduleItem);
-        JmeClientMain.getFrame().addToToolMenu(paletteMenu);
+        JmeClientMain.getFrame().addToToolsMenu(moduleItem, 4);
     }
 
     /**

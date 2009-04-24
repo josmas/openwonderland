@@ -122,6 +122,8 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
         removeButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
 
+        setTitle("Edit Groups");
+
         groupTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
