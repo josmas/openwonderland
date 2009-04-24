@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import com.jme.scene.Node;
+import java.awt.event.MouseEvent;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
@@ -87,6 +88,12 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /** List of listeners to notify when the frame is closed. */
     protected LinkedList<CloseListener> closeListeners = new LinkedList();
 
+    /** 
+     ** The window menu associated with this frame. 
+     ** TODO: eventually put in HUD
+     */
+    private WindowMenuSwing windowMenu;
+
     /**
      * Create a new instance of FrameWorldDefault.
      *
@@ -115,6 +122,8 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
 
         resizeCorner = new FrameResizeCorner(view, rightSide, bottomSide);
         resizeCorner.setParentEntity(frameEntity);
+
+        windowMenu = new WindowMenuSwing(this);
 
         controlArb = view.getWindow().getApp().getControlArb();
         if (controlArb != null) {
@@ -281,6 +290,27 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
      */
     public synchronized Iterator<CloseListener> getCloseListeners() {
         return closeListeners.iterator();
+    }
+
+    /**
+     * Show the Window Menu at the given event position.
+     */
+    public void windowMenuShowAt (MouseEvent event) {
+        windowMenu.showAt(event);
+    }
+
+    /**
+     * Hide the Window Menu.
+     */
+    public void windowMenuHide () {
+        windowMenu.hide();
+    }
+
+    /**
+     * Enable/disable the named Window Menu item. Does nothing if the item doesn't exist in the menu.
+     */
+    public void windowMenuItemSetEnabled (String name, boolean isEnabled) {
+        windowMenu.itemSetEnabled(name, isEnabled);
     }
 
     @Override
