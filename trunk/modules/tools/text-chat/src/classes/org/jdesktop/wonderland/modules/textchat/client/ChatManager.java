@@ -26,9 +26,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
@@ -46,8 +46,8 @@ public class ChatManager implements TextChatListener {
     private static Logger logger = Logger.getLogger(ChatManager.class.getName());
     private WeakReference<ChatUserListJFrame> userListFrameRef = null;
     private Map<String, WeakReference<TextChatJFrame>> textChatFrameRefMap = null;
-    private JCheckBoxMenuItem textChatMenuItem = null;
-    private JCheckBoxMenuItem userListMenuItem = null;
+    private JMenuItem textChatMenuItem = null;
+    private JMenuItem userListMenuItem = null;
     private TextChatConnection textChatConnection = null;
     private String localUserName = null;
 
@@ -56,7 +56,7 @@ public class ChatManager implements TextChatListener {
         textChatFrameRefMap = new HashMap();
 
         // Create a new Chat menu underneath the "Tools" menu
-        JMenu menu = new JMenu("Text Chat");
+        JMenu menu = new JMenu("Chat");
 
         // First create the text chat frame and keep a weak reference to it so
         // that it gets garbage collected
@@ -66,7 +66,7 @@ public class ChatManager implements TextChatListener {
 
         // Add the global text chat frame to the menu item. Listen for when it
         // is selected or de-selected and show/hide the frame as appropriate.
-        textChatMenuItem = new JCheckBoxMenuItem("Text Chat (Everyone)");
+        textChatMenuItem = new JMenuItem("Text Chat All");
         textChatMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFrame textChatJFrame = frameRef.get();
@@ -87,7 +87,7 @@ public class ChatManager implements TextChatListener {
 
         // Add the user list frame to the menu item. Listen for when it is
         // selected or de-selected and show/hide the frame as appropriate.
-        userListMenuItem = new JCheckBoxMenuItem("Text Chat User List", false);
+        userListMenuItem = new JMenuItem("Private Text Chat");
         userListMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFrame userListJFrame = userListFrameRef.get();
@@ -99,7 +99,7 @@ public class ChatManager implements TextChatListener {
 
         // Add the item to the tools menu and make the Asset Meter visible
         // by default initially.
-        JmeClientMain.getFrame().addToToolMenu(menu);
+        JmeClientMain.getFrame().addToWindowMenu(menu, 2);
 
         // Wait for a primary session to become active. When it does, then
         // we enable the menu items and set the primary sessions on their

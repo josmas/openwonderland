@@ -31,6 +31,7 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -40,8 +41,6 @@ import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
@@ -67,28 +66,25 @@ import org.jdesktop.wonderland.testharness.common.Client3DRequest;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
 import org.jdesktop.wonderland.testharness.slave.ProcessingException;
 import org.jdesktop.wonderland.testharness.slave.RequestProcessor;
+import sun.misc.RequestProcessor;
 
 /**
  * A test client that simulates a 3D client
  */
 public class Client3DSim
-        implements RequestProcessor, SessionStatusListener
-{
+        implements RequestProcessor, SessionStatusListener {
+
     /** a logger */
-    private static final Logger logger = 
+    private static final Logger logger =
             Logger.getLogger(Client3DSim.class.getName());
-    private static final Logger messageTimerLogger = 
+    private static final Logger messageTimerLogger =
             Logger.getLogger(MessageTimer.class.getName());
-    
     /** the name of this client */
     private String username;
-
     /** the session we are attached to */
     private CellClientSession session;
-
     /** the mover thread */
     private UserSimulator userSim;
-    
     private MessageTimer messageTimer = new MessageTimer();
 
     public Client3DSim() {
@@ -99,13 +95,12 @@ public class Client3DSim
     }
 
     public void initialize(String username, Properties props)
-        throws ProcessingException
-    {
+            throws ProcessingException {
         this.username = username;
 
         // set the user directory to one specific to this client
         File userDir = new File(ClientContext.getUserDirectory("test"),
-                                username);
+                username);
         ClientContext.setUserDirectory(userDir);
         ClientContext.setRendererType(RendererType.NONE);
 
@@ -130,22 +125,23 @@ public class Client3DSim
         try {
             ServerSessionManager mgr = LoginManager.getInstance(serverURL);
             session = mgr.createSession(new SessionCreator<CellClientSession>() {
+
                 public CellClientSession createSession(WonderlandServerInfo serverInfo,
-                                                       ClassLoader loader)
-                {
+                        ClassLoader loader) {
                     CellClientSession ccs = new CellClientSession(serverInfo, loader) {
+
                         @Override
                         protected CellCache createCellCache() {
                             CellCacheBasicImpl impl = new CellCacheBasicImpl(this,
                                     getClassLoader(), getCellCacheConnection(),
-                                    getCellChannelConnection())
-                            {
+                                    getCellChannelConnection()) {
+
                                 @Override
                                 protected CellRenderer createCellRenderer(Cell cell) {
                                     return null;
                                 }
                             };
-                            
+
                             getCellCacheConnection().addListener(impl);
                             return impl;
                         }
@@ -154,6 +150,7 @@ public class Client3DSim
 
                     final LocalAvatar avatar = ccs.getLocalAvatar();
                     avatar.addViewCellConfiguredListener(new ViewCellConfiguredListener() {
+
                         public void viewConfigured(LocalAvatar localAvatar) {
 //                            MovableComponent mc =
 //                                    avatar.getViewCell().getComponent(MovableComponent.class);
@@ -183,55 +180,53 @@ public class Client3DSim
 
     public void processRequest(TestRequest request) {
         if (request instanceof Client3DRequest) {
-            processClient3DRequest((Client3DRequest)request);
+            processClient3DRequest((Client3DRequest) request);
         } else {
-            Logger.getAnonymousLogger().severe("Unsupported request "+request.getClass().getName());
+            Logger.getAnonymousLogger().severe("Unsupported request " + request.getClass().getName());
         }
     }
-    
+
     private void processClient3DRequest(Client3DRequest request) {
-        switch(request.getAction()) {
-            case WALK :
-                userSim.walkLoop(request.getDesiredLocations(), new Vector3f(1f,0f,0f), request.getSpeed(), request.getLoopCount());
+        switch (request.getAction()) {
+            case WALK:
+                userSim.walkLoop(request.getDesiredLocations(), new Vector3f(1f, 0f, 0f), request.getSpeed(), request.getLoopCount());
                 break;
-            default :
-                Logger.getAnonymousLogger().severe("Unsupported Client3DRequest "+request.getAction());
+            default:
+                Logger.getAnonymousLogger().severe("Unsupported Client3DRequest " + request.getAction());
         }
     }
-    
+
     public String getUsername() {
         return username;
     }
-    
-    public void sessionStatusChanged(WonderlandSession session, 
-                                     Status status)
-    {
+
+    public void sessionStatusChanged(WonderlandSession session,
+            Status status) {
         logger.info(getName() + " change session status: " + status);
-        if (status == Status.DISCONNECTED  && userSim != null) {
+        if (status == Status.DISCONNECTED && userSim != null) {
             userSim.quit();
         }
     }
-    
+
     public void waitForFinish() throws InterruptedException {
         if (userSim == null) {
             return;
         }
-        
+
         // wait for the thread to end
         userSim.join();
     }
-        
+
     /**
      * A very basic UserSimulator, this really needs a lot of attention.....
      */
     class UserSimulator extends Thread {
+
         private Vector3f currentLocation = new Vector3f();
         private Vector3f[] desiredLocations;
         private int locationIndex;
         private Vector3f step = null;
-        
         private float speed;
-        
         private Quaternion orientation = null;
         private LocalAvatar avatar;
         private boolean quit = false;
@@ -239,9 +234,8 @@ public class Client3DSim
         private long sleepTime = 500; // Time between steps (in ms)
         private int currentLoopCount = 0;
         private int desiredLoopCount;
-        
         private Semaphore semaphore;
-                
+
         public UserSimulator(LocalAvatar avatar) {
             super("UserSimulator");
             this.avatar = avatar;
@@ -251,47 +245,48 @@ public class Client3DSim
         public synchronized boolean isQuit() {
             return quit;
         }
-        
+
         public synchronized void quit() {
             this.quit = true;
         }
-        
+
         @Override
         public void run() {
             // Set initial position
-            avatar.localMoveRequest(currentLocation, orientation); 
-            
-            while(!quit) {
+            avatar.localMoveRequest(currentLocation, orientation);
+
+            while (!quit) {
                 try {
                     semaphore.acquire();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Client3DSim.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
-                while(!quit && walking) {
-                    if (currentLocation.subtract(desiredLocations[locationIndex]).lengthSquared()<0.1) {   // Need epsilonEquals
-                        if (locationIndex<desiredLocations.length-1) {
+
+                while (!quit && walking) {
+                    if (currentLocation.subtract(desiredLocations[locationIndex]).lengthSquared() < 0.1) {   // Need epsilonEquals
+                        if (locationIndex < desiredLocations.length - 1) {
                             locationIndex++;
 
                             step = desiredLocations[locationIndex].subtract(currentLocation);
-                            step.multLocal(speed/(1000f/sleepTime));
+                            step.multLocal(speed / (1000f / sleepTime));
 
-                        } else if (locationIndex==desiredLocations.length-1 && desiredLoopCount!=currentLoopCount) {
+                        } else if (locationIndex == desiredLocations.length - 1 && desiredLoopCount != currentLoopCount) {
                             currentLoopCount++;
                             locationIndex = 0;
 
                             step = desiredLocations[locationIndex].subtract(currentLocation);
-                            step.multLocal(speed/(1000f/sleepTime));
-                        } else  
+                            step.multLocal(speed / (1000f / sleepTime));
+                        } else {
                             walking = false;
+                        }
                     }
-                    
+
                     if (walking) {
                         currentLocation.addLocal(step);
-                        avatar.localMoveRequest(currentLocation, orientation);    
+                        avatar.localMoveRequest(currentLocation, orientation);
 //                        messageTimer.messageSent(new CellTransform(orientation, currentLocation));
                     }
-                    
+
                     try {
                         sleep(sleepTime);
                     } catch (InterruptedException ex) {
@@ -300,7 +295,7 @@ public class Client3DSim
                 }
             }
         }
-        
+
         /**
          * Walk  from the current location to the new location specified, and
          * orient to the give look direction
@@ -314,42 +309,38 @@ public class Client3DSim
             desiredLocations = locations;
             desiredLoopCount = loopCount;
             currentLoopCount = 0;
-            
+
             step = new Vector3f(desiredLocations[0]);
             step.subtractLocal(currentLocation);
-            step.multLocal(speed/(1000f/sleepTime));
-            
+            step.multLocal(speed / (1000f / sleepTime));
+
             walking = true;
             semaphore.release();
         }
-        
+
         /**
          * Send audio data to the server
          * 
          * TODO implement
          */
         public void talk() {
-            
         }
     }
-    
+
     /**
      * Measure the time between us sending a move request to the server and the server 
      * sending the message back to us.
      */
     class MessageTimer implements CellMoveListener {
-        
-        private long timeSum=0;
+
+        private long timeSum = 0;
         private long lastReport;
         private int count = 0;
         private long min = Long.MAX_VALUE;
         private long max = 0;
-        
-        
         private static final long REPORT_INTERVAL = 5000; // Report time in ms
-        
         private LinkedList<TimeRecord> messageTimes = new LinkedList();
-        
+
         public MessageTimer() {
             lastReport = System.nanoTime();
         }
@@ -360,38 +351,39 @@ public class Client3DSim
          * @param arg1
          */
         public void cellMoved(CellTransform transform, CellMoveSource moveSource) {
-            if (messageTimes.size()!=0 && messageTimes.getFirst().transform.equals(transform)) {
+            if (messageTimes.size() != 0 && messageTimes.getFirst().transform.equals(transform)) {
                 TimeRecord rec = messageTimes.removeFirst();
-            
-                long time = ((System.nanoTime())-rec.sendTime)/1000000;
+
+                long time = ((System.nanoTime()) - rec.sendTime) / 1000000;
 
                 min = Math.min(min, time);
                 max = Math.max(max, time);
                 timeSum += time;
                 count++;
 
-                if (System.nanoTime()-lastReport > REPORT_INTERVAL*1000000) {
-                    long avg = timeSum/count;
-                    messageTimerLogger.info("Roundtrip time avg "+avg + "ms "+username+" min "+min+" max "+max);
-                    timeSum=0;
+                if (System.nanoTime() - lastReport > REPORT_INTERVAL * 1000000) {
+                    long avg = timeSum / count;
+                    messageTimerLogger.info("Roundtrip time avg " + avg + "ms " + username + " min " + min + " max " + max);
+                    timeSum = 0;
                     lastReport = System.nanoTime();
                     count = 0;
                     min = Long.MAX_VALUE;
                     max = 0;
                 }
             } else {
-                logger.warning("No Time record for "+transform.getTranslation(null)+" queue size "+messageTimes.size());
+                logger.warning("No Time record for " + transform.getTranslation(null) + " queue size " + messageTimes.size());
 //                if (messageTimes.size()!=0)
 //                    logger.warning("HEAD "+messageTimes.getFirst().transform.getTranslation(null));
             }
         }
-        
+
         public void messageSent(CellTransform transform) {
             messageTimes.add(new TimeRecord(transform, System.nanoTime()));
         }
     }
 
     class TimeRecord {
+
         private CellTransform transform;
         private long sendTime;
 
@@ -402,6 +394,7 @@ public class Client3DSim
     }
 
     class ClientSimLoginUI implements LoginUI {
+
         private String username;
         private Properties props;
 
@@ -434,23 +427,24 @@ public class Client3DSim
     }
 
     class FakeMainFrame implements MainFrame {
+
         private JFrame frame;
         private JPanel canvasPanel;
         private Canvas canvas;
 
         public FakeMainFrame() {
-            try { 
+            try {
                 frame = new JFrame();
             } catch (HeadlessException he) {
                 // ignore
-                logger.log(Level.INFO, "Running in headless mode"); 
+                logger.log(Level.INFO, "Running in headless mode");
             }
             canvasPanel = new JPanel(new BorderLayout());
             canvas = new Canvas();
 
             canvasPanel.add(canvas, BorderLayout.CENTER);
-            
-            if (frame != null) { 
+
+            if (frame != null) {
                 frame.setContentPane(canvasPanel);
             }
         }
@@ -467,11 +461,112 @@ public class Client3DSim
             return canvasPanel;
         }
 
-        public void addToToolMenu(JMenuItem menuItem) {
+        public void setMessageLabel(String msg) {
+            //ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToMenu(JMenu menu, JMenuItem menuItem, int index) {
             // ignore
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        public void addToFileMenu(JMenuItem menuItem) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToFileMenu(JMenuItem menuItem, int index) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
         public void addToEditMenu(JMenuItem menuItem) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToEditMenu(JMenuItem menuItem, int index) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToViewMenu(JMenuItem menuItem) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToViewMenu(JMenuItem menuItem, int index) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToToolsMenu(JMenuItem menuItem) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToToolsMenu(JMenuItem menuItem, int index) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToPlacemarksMenu(JMenuItem menuItem) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToPlacemarksMenu(JMenuItem menuItem, int index) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToWindowMenu(JMenuItem menuItem) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToWindowMenu(JMenuItem menuItem, int index) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToHelpMenu(JMenuItem menuItem) {
+            // ignore
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void addToHelpMenu(JMenuItem menuItem, int index) {
             // ignore
         }
 
@@ -485,6 +580,7 @@ public class Client3DSim
     }
 
     class BlacklistPluginFilter implements PluginFilter {
+
         private final String[] JAR_BLACKLIST = {
             "ant",
             "ant-launcher",
@@ -494,9 +590,7 @@ public class Client3DSim
             "defaultenvironment-client",
             "kmzloader-client"
         };
-
-        private final String[] CLASS_BLACKLIST = {
-        };
+        private final String[] CLASS_BLACKLIST = {};
 
         public boolean shouldDownload(ServerSessionManager sessionManager, URL jarURL) {
             String urlPath = jarURL.getPath();
@@ -515,8 +609,7 @@ public class Client3DSim
         }
 
         public boolean shouldInitialize(ServerSessionManager sessionManager,
-                                        ClientPlugin plugin)
-        {
+                ClientPlugin plugin) {
             for (String check : CLASS_BLACKLIST) {
                 if (plugin.getClass().getName().equals(check)) {
                     return false;

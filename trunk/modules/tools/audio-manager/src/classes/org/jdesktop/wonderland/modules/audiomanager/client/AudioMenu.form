@@ -14,20 +14,20 @@
         <Property name="useNullLayout" type="boolean" value="true"/>
       </Layout>
       <SubComponents>
-        <MenuItem class="javax.swing.JCheckBoxMenuItem" name="muteCheckBox">
+        <Menu class="javax.swing.JMenu" name="audioQualityMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Mute"/>
+            <Property name="text" type="java.lang.String" value="Audio Quality"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="muteCheckBoxActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="audioQualityMenuActionPerformed"/>
           </Events>
-        </MenuItem>
-        <MenuItem class="javax.swing.JCheckBoxMenuItem" name="softphoneMenuItem">
+        </Menu>
+        <MenuItem class="javax.swing.JMenuItem" name="transferCallMenuItem">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Softphone"/>
+            <Property name="text" type="java.lang.String" value="Transfer Call..."/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="softphoneMenuItemActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="transferCallMenuItemActionPerformed"/>
           </Events>
         </MenuItem>
         <MenuItem class="javax.swing.JMenuItem" name="testAudioMenuItem">
@@ -46,36 +46,12 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reconnectSoftphoneMenuItemActionPerformed"/>
           </Events>
         </MenuItem>
-        <Menu class="javax.swing.JMenu" name="audioQualityMenu">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Audio Quality"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="audioQualityMenuActionPerformed"/>
-          </Events>
-        </Menu>
         <MenuItem class="javax.swing.JMenuItem" name="logAudioProblemMenuItem">
           <Properties>
             <Property name="text" type="java.lang.String" value="Log Audio Problem"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logAudioProblemMenuItemActionPerformed"/>
-          </Events>
-        </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="transferCallMenuItem">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Transfer Call"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="transferCallMenuItemActionPerformed"/>
-          </Events>
-        </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="voiceChatMenuItem">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Voice Chat"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="voiceChatMenuItemActionPerformed"/>
           </Events>
         </MenuItem>
       </SubComponents>

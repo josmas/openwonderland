@@ -17,13 +17,16 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import com.jme.math.Vector3f;
+import imi.character.CharacterSteeringHelm;
+import imi.character.statemachine.GameContext;
+import imi.character.steering.GoTo;
 import imi.loaders.repository.Repository;
 import imi.utils.instruments.DefaultInstrumentation;
 import imi.utils.instruments.Instrumentation;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
-import java.net.URL;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -32,7 +35,6 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCacheConnection;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
@@ -43,7 +45,6 @@ import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
-import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 
 /**
  *
@@ -57,15 +58,16 @@ public class AvatarPlugin implements ClientPlugin {
     public void initialize(ServerSessionManager loginManager) {
         // Set the base URL
         String serverHostAndPort = loginManager.getServerNameAndPort();
-        String baseURL = "wla://avatarbaseart@"+serverHostAndPort+"/";
+        String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
 
         WorldManager worldManager = ClientContextJME.getWorldManager();
         worldManager.addUserData(Repository.class, new Repository(worldManager, baseURL, ClientContext.getUserDirectory("AvatarCache")));
-        
+
         ClientContextJME.getAvatarRenderManager().registerRenderer(AvatarImiJME.class);
 
         // Workaround to guarntee that the webdav module has been initialized
         loginManager.addLifecycleListener(new SessionLifecycleListener() {
+
             public void sessionCreated(WonderlandSession session) {
             }
 
@@ -77,32 +79,33 @@ public class AvatarPlugin implements ClientPlugin {
 
 
         ClientContextJME.getViewManager().addViewManagerListener(new ViewManagerListener() {
+
             public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
-                if (oldViewCell!=null) {
+                if (oldViewCell != null) {
                     Logger.getAnonymousLogger().severe("TODO Handle primary View Change");
                     return;
                 }
 
                 CellRenderer rend = newViewCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-                if (!(rend instanceof AvatarImiJME))
+                if (!(rend instanceof AvatarImiJME)) {
                     return;
+                }
 
-                final AvatarImiJME avatar = (AvatarImiJME)rend;
+                final AvatarImiJME avatar = (AvatarImiJME) rend;
 
-                if (testPanelRef==null || testPanelRef.get()==null) {
+                if (testPanelRef == null || testPanelRef.get() == null) {
                     // Do nothing
                 } else {
                     testPanelRef.get().setAvatarCharactar(avatar.getAvatarCharacter());
                 }
-                
 
-                JMenuItem avatarControlFrameMI = new JMenuItem("Avatar Controls");
-                avatarControlFrameMI.addActionListener(new ActionListener() {
+                JMenuItem avatarControlsMI = new JMenuItem("Avatar Controls");
+                avatarControlsMI.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
-                        if (testPanelRef==null || testPanelRef.get()==null) {
+                        if (testPanelRef == null || testPanelRef.get() == null) {
                             AvatarTestPanel test = new AvatarTestPanel();
-                            JFrame f = new JFrame("Test Controls");
+                            JFrame f = new JFrame("Avatar Controls");
                             f.getContentPane().add(test);
                             f.pack();
                             f.setVisible(true);
@@ -114,36 +117,44 @@ public class AvatarPlugin implements ClientPlugin {
                         }
                     }
                 });
+                JmeClientMain.getFrame().addToWindowMenu(avatarControlsMI, 0);
 
-                JmeClientMain.getFrame().addToEditMenu(avatarControlFrameMI);
-
-
-                JMenuItem avatarConfigFrameMI = new JMenuItem("Avatar Config");
-                avatarConfigFrameMI.addActionListener(new ActionListener() {
+                JMenuItem avatarMI = new JMenuItem("Avatar...");
+                avatarMI.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
                         ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
                         if (cell instanceof AvatarCell) {
-                            AvatarImiJME rend = (AvatarImiJME) ((AvatarCell)cell).getCellRenderer(ClientContext.getRendererType());
+                            AvatarImiJME rend = (AvatarImiJME) ((AvatarCell) cell).getCellRenderer(ClientContext.getRendererType());
                             AvatarConfigFrame f = new AvatarConfigFrame(rend);
+                            f.setTitle("Avatar");
                             f.setVisible(true);
                         }
                     }
                 });
+                JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
 
-                // Disable config menu item until it's ready
-                JmeClientMain.getFrame().addToEditMenu(avatarConfigFrameMI);
-
-                JMenuItem instrumentFrameMI = new JMenuItem("Avatar Instruments");
-                instrumentFrameMI.addActionListener(new ActionListener() {
+                JMenuItem avatarSettingsMI = new JMenuItem("Avatar Settings...");
+                avatarSettingsMI.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
                         AvatarInstrumentation in = new AvatarInstrumentation(instrumentation);
                         in.setVisible(true);
                     }
                 });
+                JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
 
-                JmeClientMain.getFrame().addToEditMenu(instrumentFrameMI);
+                JMenuItem startingLocationMI = new JMenuItem("Starting Location");
+                startingLocationMI.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        GameContext context = avatar.getAvatarCharacter().getContext();
+                        CharacterSteeringHelm helm = avatar.getAvatarCharacter().getContext().getSteering();
+                        helm.addTaskToTop(new GoTo(new Vector3f(0, 0, 0), context));
+                        helm.setEnable(true);
+                    }
+                });
+                JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
 
                 AvatarConfigManager.getAvatarConigManager().setViewCell(newViewCell);
             }
@@ -151,5 +162,4 @@ public class AvatarPlugin implements ClientPlugin {
 
         instrumentation = new DefaultInstrumentation(ClientContextJME.getWorldManager());
     }
-
 }

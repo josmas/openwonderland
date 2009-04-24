@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.jme;
 
 import java.awt.Canvas;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
@@ -27,39 +28,126 @@ import javax.swing.JPanel;
  * @author jkaplan
  */
 public interface MainFrame {
+
     /**
      * Get the underlying Swing frame object
      * @return the Swing frame
      */
     public JFrame getFrame();
 
-     /**
+    /**
      * Returns the canvas of the frame.
      */
-    public Canvas getCanvas ();
+    public Canvas getCanvas();
 
     /**
      * Returns the panel of the frame in which the 3D canvas resides.
      */
-    public JPanel getCanvas3DPanel ();
+    public JPanel getCanvas3DPanel();
 
     /**
-     * Add the specified menu item to the tool menu.
+     * Add a menu item to a menu at the specified index, where -1 adds the
+     * menu item to the end of the menu
      *
-     * TODO - design a better way to manage the menus and toolsbars
+     * @param menu the menu to add the item to
+     * @param menuItem the item to add
+     * @param index the position in the menu
+     */
+    public void addToMenu(JMenu menu, JMenuItem menuItem, int index);
+
+    /**
+     * Add the specified menu item to the end of the File menu
      *
      * @param menuItem
      */
-    public void addToToolMenu(JMenuItem menuItem);
+    public void addToFileMenu(JMenuItem menuItem);
 
     /**
-     * Add the specified menu item to the edit menu.
+     * Add a menu item to the File menu at the specified index, where -1 adds
+     * the menu item to the end of the menu
      *
-     * TODO - design a better way to manage the menus and toolsbars
+     * @param menuItem
+     * @param index the position in the menu
+     */
+    public void addToFileMenu(JMenuItem menuItem, int index);
+
+    /**
+     * Add the specified menu item to the end of the Edit menu
      *
      * @param menuItem
      */
     public void addToEditMenu(JMenuItem menuItem);
+
+    /**
+     * Add a menu item to the Edit menu at the specified index, where -1 adds
+     * the menu item to the end of the menu
+     *
+     * @param menuItem
+     * @param index the position in the menu
+     */
+    public void addToEditMenu(JMenuItem menuItem, int index);
+
+    /**
+     * Add the specified menu item to the end of the View menu
+     *
+     * @param menuItem
+     */
+    public void addToViewMenu(JMenuItem menuItem);
+
+    /**
+     * Add a menu item to the View menu at the specified index, where -1 adds
+     * the menu item to the end of the menu
+     *
+     * @param menuItem
+     */
+    public void addToViewMenu(JMenuItem menuItem, int index);
+
+    /**
+     * Add the specified menu item to the end of the Tools menu
+     *
+     * @param menuItem
+     */
+    public void addToToolsMenu(JMenuItem menuItem);
+
+    /**
+     * Add a menu item to the Tools menu at the specified index, where -1 adds
+     * the menu item to the end of the menu
+     *
+     * @param menuItem
+     */
+    public void addToToolsMenu(JMenuItem menuItem, int index);
+
+    /**
+     * Add the specified menu item to the end of the Placemarks menu
+     *
+     * @param menuItem
+     */
+    public void addToPlacemarksMenu(JMenuItem menuItem);
+
+    /**
+     * Add a menu item to the Placemarks menu at the specified index, where -1
+     * adds the menu item to the end of the menu
+     *
+     * @param menuItem
+     * @param index the position in the menu
+     */
+    public void addToPlacemarksMenu(JMenuItem menuItem, int index);
+
+    /**
+     * Add the specified menu item to the end of the Window menu
+     *
+     * @param menuItem
+     */
+    public void addToWindowMenu(JMenuItem menuItem);
+
+    /**
+     * Add a menu item to the Window menu at the specified index, where -1 adds
+     * the menu item to the end of the menu
+     *
+     * @param menuItem
+     * @param index the position in the menu
+     */
+    public void addToWindowMenu(JMenuItem menuItem, int index);
 
     /**
      * Set the server URL in the location field
@@ -80,6 +168,7 @@ public interface MainFrame {
      * A listener that will be notified when the server URL changes
      */
     public interface ServerURLListener {
+
         /**
          * A request to change the server URL to the given URL
          * @param serverURL the new server URL to connect to
