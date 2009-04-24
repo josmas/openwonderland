@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.swingtest.client;
 
 import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -39,7 +39,7 @@ public class SwingTestApp extends AppGraphics2D {
      * @param pixelScale The horizontal and vertical pixel sizes (in world meters per pixel).
      */
     public SwingTestApp(String name, Vector2f pixelScale) {
-        super(name, new ControlArbAppFocus(), pixelScale);
+        super(name, new ControlArbMulti(), pixelScale);
         controlArb.setApp(this);
     }
 }

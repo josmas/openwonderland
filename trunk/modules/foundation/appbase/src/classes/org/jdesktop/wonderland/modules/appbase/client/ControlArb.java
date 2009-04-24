@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * A user input control arbiter. Implementations of this interface
- * decide how application control is to be delegated between users.
+ * decide how application control is to be delegated among users.
  * All ControlArbs support the notion of one or more users controlling
  * an app and the rest of the users not controlling the app. When
  * a user has control of an app user input events are sent from
@@ -77,9 +77,13 @@ public abstract class ControlArb {
      * Clean up resources held.
      */
     public synchronized void cleanup() {
+        if (hasControl()) {
+            releaseControl();
+        }
         controlArbs.remove(this);
         listeners.clear();
         app = null;
+        appControl = false;
     }
 
     /**
@@ -96,6 +100,13 @@ public abstract class ControlArb {
      */
     public App2D getApp() {
         return app;
+    }
+
+    /**
+     * Is the user of this client currently an controller of the ControlArb's app?
+     */
+    public boolean hasControl() {
+        return appControl;
     }
 
     /**
@@ -173,21 +184,22 @@ public abstract class ControlArb {
      * @param window The window to which to send the event.
      * @param event The event to send.
      */
-    public abstract void deliverEvent(Window2D window, KeyEvent event);
+    public void deliverEvent(Window2D window, KeyEvent event) {
+        if (hasControl()) {
+            window.deliverEvent(event);
+        }
+    }
 
     /**
-     * Send a non-wheel mouse event to an app window, if the user has control.
+     * Send a mouse event to an app window, if the user has control.
      *
      * @param window The window to which to send the event.
      * @param event The event to send.
      */
-    public abstract void deliverEvent(Window2D window, MouseEvent event);
-
-    /**
-     * Does this control arb currently have app control?
-     */
-    public boolean hasControl() {
-        return appControl;
+    public void deliverEvent(Window2D window, MouseEvent event) {
+        if (hasControl()) {
+            window.deliverEvent(event);
+        }
     }
 
     /**

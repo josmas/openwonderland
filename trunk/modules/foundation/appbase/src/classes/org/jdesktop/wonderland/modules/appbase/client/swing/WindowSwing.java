@@ -69,24 +69,6 @@ public class WindowSwing extends WindowGraphics2D {
     private WindowSwingEmbeddedPeer embeddedPeer;
     /** The size of the window */
     private Dimension size;
-    /** Is input enabled on this window? */
-    private boolean inputEnabled = true;
-    /** A listener which allows the inputEnabled attribute to control whether this window receives events. */
-    private MyEventListener eventListener;
-
-    /** The event listener for this window. */
-    private class MyEventListener extends EventListenerBaseImpl {
-
-        @Override
-        public boolean consumesEvent(Event event) {
-            return inputEnabled;
-        }
-
-        @Override
-        public boolean propagatesToParent(Event event) {
-            return false;
-        }
-    }
 
     /** An entity component which provides a back pointer from the entity of a WindowSwing to the WindowSwing. */
     static class WindowSwingViewReference extends EntityComponent {
@@ -415,20 +397,6 @@ public class WindowSwing extends WindowGraphics2D {
 
     protected void paint(Graphics2D g) {}
 
-    /** 
-     * Set the input enable for this window. By default, input for a WindowSwing is enabled.
-     */
-    public void setInputEnabled(boolean enabled) {
-        inputEnabled = enabled;
-    }
-
-    /** 
-     * Return the input enabled for this window.
-     */
-    public boolean getInputEnabled() {
-        return inputEnabled;
-    }
-
     /** {@inheritDoc} */
     @Override
     public void addView(View2D view) {
@@ -447,15 +415,11 @@ public class WindowSwing extends WindowGraphics2D {
     private void viewInit (View2D view) {
         view.addEntityComponent(InputManager.WindowSwingViewMarker.class, new WindowSwingViewMarker());
         view.addEntityComponent(WindowSwingViewReference.class, new WindowSwingViewReference(view));
-        eventListener = new MyEventListener();
-        view.addEventListener(eventListener);
     }
 
     /** Attach the things we use from the given given view. */
     private void viewCleanup (View2D view) {
         view.removeEntityComponent(InputManager.WindowSwingViewMarker.class);
         view.removeEntityComponent(WindowSwingViewReference.class);
-        view.removeEventListener(eventListener);
-        eventListener = null;
     }
 }

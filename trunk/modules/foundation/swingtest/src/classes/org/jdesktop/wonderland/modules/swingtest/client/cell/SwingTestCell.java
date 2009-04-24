@@ -85,8 +85,7 @@ public class SwingTestCell extends App2DCell {
                 // This app has only one window, so it is always top-level
                 try {
                     window = new SwingTestWindow(this, stApp, clientState.getPreferredWidth(), 
-                                                 clientState.getPreferredHeight(), 
-                                                 /*TODO: until debugged: true*/ false, pixelScale);
+                                                 clientState.getPreferredHeight(), true, pixelScale);
                 } catch (InstantiationException ex) {
                     throw new RuntimeException(ex);
                 }

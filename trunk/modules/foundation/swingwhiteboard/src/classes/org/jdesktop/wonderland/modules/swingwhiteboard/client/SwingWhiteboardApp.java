@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.swingwhiteboard.client;
 
 import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -44,7 +44,7 @@ public class SwingWhiteboardApp extends AppGraphics2D  {
      * @param commComponent The communications component for communicating with the server.
      */
     public SwingWhiteboardApp (String name, Vector2f pixelScale, SwingWhiteboardComponent commComponent) {
-	super(name, new ControlArbAppFocus(), pixelScale);
+	super(name, new ControlArbMulti(), pixelScale);
 	controlArb.setApp(this);
     }
 

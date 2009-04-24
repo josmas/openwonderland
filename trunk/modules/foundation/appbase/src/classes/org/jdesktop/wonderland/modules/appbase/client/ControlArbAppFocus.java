@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * A control arb which maintains app focus. When an control is taken for an app,
+ * A control arb which maintains app input focus. When an control is taken for an app,
  * its focus entity is focussed for key and mouse events. When control is released
  * for an app, its focus entity is defocussed for key and mouse events. Finally, whenever
  * one or more app is controlled the global focus entity is defocussed. 
@@ -31,13 +31,13 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author deronj
  */
 @ExperimentalAPI
-public class ControlArbAppFocus extends ControlArbSingle {
+public abstract class ControlArbAppFocus extends ControlArb {
 
     /** The input manager. */
     private InputManager inputManager;
 
     /** The number of apps which have control. */
-    private int numControlledApps;
+    private static int numControlledApps;
 
     /**
      * Create an instance of ControlArbAppFocus.
@@ -55,10 +55,12 @@ public class ControlArbAppFocus extends ControlArbSingle {
         super.takeControl();
         if (!hasControl()) return;
 
+        // Assign focus to the app
         inputManager.addKeyMouseFocus(new Entity[] { app.getFocusEntity() });
 
         numControlledApps++;
-        if (numControlledApps > 0) {
+        if (numControlledApps == 1) {
+            // At least one app has keyboard/mouse control. Disable global (world) listeners.
             inputManager.removeKeyMouseFocus(inputManager.getGlobalFocusEntity());            
         }
     }
@@ -72,10 +74,12 @@ public class ControlArbAppFocus extends ControlArbSingle {
         super.releaseControl();
         if (hasControl()) return;
 
+        // Remove focus from the app
         inputManager.removeKeyMouseFocus(new Entity[] { app.getFocusEntity() });
 
         numControlledApps--;
         if (numControlledApps <= 0) {
+            // No more apps have control. Reenable global (world) listeners.
             inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());            
         }
     }

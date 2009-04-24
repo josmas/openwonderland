@@ -681,6 +681,8 @@ public abstract class Window2D {
      * @param title The string to display as the window title.
      */
     public synchronized void setTitle(String title) {
+        //System.err.println("@@@@@@@@@@@@ window = " + this);
+        //System.err.println("@@@@@@@@@@@@ title = " + title);
         if (title == null && this.title == null) {
             return;
         }
@@ -856,6 +858,7 @@ public abstract class Window2D {
 
     /**
      * Return the texture containing the window contents.
+     * Note: mostly used only for share-aware apps.
      */
     public Texture2D getTexture() {
         return texture;
@@ -888,6 +891,7 @@ public abstract class Window2D {
 
     /**
      * Deliver the given mouse event to this window.
+     * Note: mostly used only for share-aware apps.
      *
      * @param event The mouse event.
      */
