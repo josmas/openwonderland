@@ -15,6 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
+
 package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
 
 import com.jme.bounding.BoundingSphere;
@@ -28,14 +29,6 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-
-import com.jme.scene.state.RenderState;
-import com.jme.scene.shape.Cylinder;
-import com.jme.renderer.ColorRGBA;
-import org.jdesktop.mtgame.RenderManager;
-import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.BlendState;
-import com.jme.scene.state.CullState;
 
 /**
  * @author jkaplan
@@ -57,15 +50,9 @@ public class ConeOfSilenceCellRenderer extends BasicRenderer {
         Node node = new Node();
         node.attachChild(cone);
 
-	float height = 2.3f;
-
-	Node cylinder = createCylinderNode("Cylinder", radius, height);
-	cylinder.setLocalTranslation(new Vector3f(0.0f, -height, 0.0f));
-	node.attachChild(cylinder);
-
         // Raise the cone off of the floor, and rotate it about the +x axis 90
         // degrees so it faces the proper way
-        Vector3f translation = new Vector3f(0.0f, height, 0.0f);
+        Vector3f translation = new Vector3f(0.0f, 2.3f, 0.0f);
         Vector3f axis = new Vector3f(1.0f, 0.0f, 0.0f);
         float angle = (float)Math.toRadians(90);
         Quaternion rotation = new Quaternion().fromAngleAxis(angle, axis);
@@ -80,45 +67,6 @@ public class ConeOfSilenceCellRenderer extends BasicRenderer {
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
         return node;
-    }
-
-    private Node createCylinderNode(String name, float radius, float height) {
-        // Create the new node and Cylinder primitive
-        Node cylinderNode = new Node();
-        Cylinder cylinder = new Cylinder(name, 30, 30, radius, height);
-        cylinderNode.attachChild(cylinder);
-
-        // Set the color to black and the transparency
-        cylinder.setSolidColor(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
-        //cylinderNode.setRenderState(zbuf);
-        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        MaterialState matState = (MaterialState) rm.createRendererState(RenderState.RS_MATERIAL);
-        cylinderNode.setRenderState(matState);
-        matState.setDiffuse(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
-        matState.setAmbient(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
-//        matState.setSpecular(new ColorRGBA(1.0f, 1.0f, 1.0f, 0.5f));
-        matState.setShininess(128.0f);
-        matState.setEmissive(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
-        matState.setEnabled(true);
-
-        BlendState alphaState = (BlendState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_BLEND);
-        alphaState.setBlendEnabled(true);
-        alphaState.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
-        alphaState.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
-        alphaState.setTestEnabled(true);
-        alphaState.setTestFunction(BlendState.TestFunction.GreaterThan);
-        alphaState.setEnabled(true);
-        cylinder.setRenderState(alphaState);
-
-        // Remove the back faces of the object so transparency works properly
-        CullState cullState = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_CULL);
-        cullState.setCullFace(CullState.Face.Back);
-        cylinderNode.setRenderState(cullState);
-
-        // Set the bound so this node can be pickable
-        //cylinder.setModelBound(new BoundingSphere());
-        //cylinder.updateModelBound();
-        return cylinderNode;
     }
 
 }
