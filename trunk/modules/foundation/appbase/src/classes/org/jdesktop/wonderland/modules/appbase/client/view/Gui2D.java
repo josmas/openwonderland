@@ -132,6 +132,13 @@ public class Gui2D {
     }
 
     /**
+     * Returns this GUI's view.
+     */
+    public View2DEntity getView () {
+        return view;
+    }
+
+    /**
      * Attach this GUI controller's event listeners to the given entity.
      */
     public void attachEventListeners(Entity entity) {

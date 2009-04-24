@@ -315,6 +315,13 @@ public class View2DCell extends View2DEntity {
             }
         }
     }
+
+    /** 
+     * Returns the frame of this view.
+     */
+    protected Frame2DCell getFrame () {
+        return frame;
+    }
 }
 
 
