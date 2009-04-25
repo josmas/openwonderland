@@ -75,11 +75,13 @@ class Gui2DSide extends Gui2D {
             MouseEvent3D me3d = (MouseEvent3D) event;
             MouseEvent me = (MouseEvent) me3d.getAwtEvent();
 
+            /* TODO: notyet
             // Window menu event?
             if (me.getID() == MouseEvent.MOUSE_CLICKED &&
                 me.getButton() == MouseEvent.BUTTON3) {
                 ((View2DCell)getView()).getFrame().windowMenuShowAt(me);
             }
+            */
 
             // We only recognize config on the border when user has control
             if (view.getWindow().getApp().getControlArb().hasControl()) {

@@ -58,6 +58,8 @@ public class RunXAppDialog extends javax.swing.JDialog {
         commandLabel.setText("Command");
 
         rememberCheckBox.setText("Remember this entry");
+        // TODO: for now
+        rememberCheckBox.setEnabled(false);
         
         availableAllCheckBox.setText("Available to all users");
         availableAllCheckBox.setEnabled(false);
