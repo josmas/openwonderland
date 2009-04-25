@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.hud.client;
 import java.awt.Rectangle;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.client.hud.HUDFactory;
+import org.jdesktop.wonderland.client.hud.HUDFactorySPI;
 
 /**
  * The HUDFactory creates new WonderlandHUD object instances. A visual Wonderland
@@ -29,24 +29,9 @@ import org.jdesktop.wonderland.client.hud.HUDFactory;
  *
  * @author nsimpson
  */
-public class WonderlandHUDFactory implements HUDFactory {
+public class WonderlandHUDFactory implements HUDFactorySPI {
 
     private static final Logger logger = Logger.getLogger(WonderlandHUDFactory.class.getName());
-    private static HUDFactory factory;
-
-    public WonderlandHUDFactory() {
-    }
-
-    /**
-     * Returns the singleton HUDFactory
-     * @return the HUDFactory singleton
-     */
-    public static HUDFactory getHUDFactory() {
-        if (factory == null) {
-            factory = new WonderlandHUDFactory();
-        }
-        return factory;
-    }
 
     /**
      * {@inheritDoc}
