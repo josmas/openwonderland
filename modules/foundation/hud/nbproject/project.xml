@@ -49,6 +49,8 @@
             <export>
                 <type>jar</type>
                 <location>dist/hud.jar</location>
+                <script>nbproject/nbjdk.xml</script>
+                <build-target>dist</build-target>
             </export>
             <view>
                 <items>
