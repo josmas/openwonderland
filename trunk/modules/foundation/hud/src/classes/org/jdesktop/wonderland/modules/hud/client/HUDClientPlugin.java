@@ -41,13 +41,13 @@ public class HUDClientPlugin implements ClientPlugin {
         logger.fine("initializing HUD client plugin");
 
         // Create the default HUD factory
-        HUDFactory factory = WonderlandHUDFactory.getHUDFactory();
+        HUDFactory.setHUDFactorySPI(new WonderlandHUDFactory());
 
         // create the main Wonderland HUD
         Canvas canvas = JmeClientMain.getFrame().getCanvas();
         logger.fine("creating Wonderland HUD: " + canvas.getWidth() + "x" + canvas.getHeight() +
                 " at " + canvas.getX() + ", " + canvas.getY());
-        HUD wonderlandHUD = factory.createHUD(canvas.getX(), canvas.getY(), canvas.getWidth(), canvas.getHeight());
+        HUD wonderlandHUD = HUDFactory.createHUD(canvas.getX(), canvas.getY(), canvas.getWidth(), canvas.getHeight());
         wonderlandHUD.setName("main");
 
         // define how components are laid in the Wonderland main HUD

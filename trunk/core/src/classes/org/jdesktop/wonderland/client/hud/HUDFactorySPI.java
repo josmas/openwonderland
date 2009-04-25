@@ -20,40 +20,21 @@ package org.jdesktop.wonderland.client.hud;
 import java.awt.Rectangle;
 
 /**
- *
- * @author nsimpson
- */
-/**
- * A HUD factory which creates new HUD object instances.
- *
+ * A service provider interface for factories which create new HUD object
+ * instances.
+ * 
  * A visual Wonderland client will typically have one HUDFactory which is
  * the source of all HUD instances.
  *
  * @author nsimpson
  */
-public class HUDFactory {
-
-    private static HUDFactorySPI spi;
-
-    /**
-     * Binds a specific HUD factory service provider to this factory
-     * @param spi an instance of a HUD factory service provider
-     */
-    public static void setHUDFactorySPI(final HUDFactorySPI spii) {
-        spi = spii;
-    }
+public interface HUDFactorySPI {
 
     /**
      * Creates a new HUD instance
      * @return a new HUD instance with default location and size
      */
-    public static HUD createHUD() {
-        if (spi != null) {
-            return spi.createHUD();
-        } else {
-            return null;
-        }
-    }
+    public HUD createHUD();
 
     /**
      * Creates a new HUD instance
@@ -63,24 +44,12 @@ public class HUDFactory {
      * @param height the height of the HUD
      * @return a new HUS instance with default location and size
      */
-    public static HUD createHUD(int x, int y, int width, int height) {
-        if (spi != null) {
-            return spi.createHUD(x, y, width, height);
-        } else {
-            return null;
-        }
-    }
+    public HUD createHUD(int x, int y, int width, int height);
 
     /**
      * Creates a new HUD instance
      * @param bounds the location and size of the HUD
      * @return a new HUD instance with the specified location and size
      */
-    public static HUD createHUD(Rectangle bounds) {
-        if (spi != null) {
-            return spi.createHUD(bounds);
-        } else {
-            return null;
-        }
-    }
+    public HUD createHUD(Rectangle bounds);
 }
