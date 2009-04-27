@@ -45,6 +45,7 @@ public class HUDApp2D extends App2D {
     public HUDApp2D(ControlArb controlArb, Vector2f pixelScale) {
         super(controlArb, pixelScale);
         controlArb.setApp(this);
+        controlArb.takeControl();
     }
 
     /**
@@ -57,6 +58,7 @@ public class HUDApp2D extends App2D {
     public HUDApp2D(String name, ControlArb controlArb, Vector2f pixelScale) {
         super(name, controlArb, pixelScale);
         controlArb.setApp(this);
+        controlArb.takeControl();
     }
 
     /**
