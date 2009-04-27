@@ -45,23 +45,17 @@ public class AppClientPlugin extends BaseClientPlugin {
     /** All client plugins must have a no-arg constructor. */
     public AppClientPlugin () {}
 
-   /**
-    * Called when our session becomes the primary session.
-    */
+    /** {@inheritDoc} */
     @Override
-    protected void activate() {
+    public void initialize(ServerSessionManager sessionManager) {
+        super.initialize(sessionManager);
         initAppBaseUserClient();
     }
 
-    /**
-     * Called when our session is no longer the primary session.
-     */
+    /** {@inheritDoc} */
     @Override
-    protected void deactivate() {
-        // TODO: undo any changes made in initAppBaseUserClient.  Note
-        // that it is possible that another client has already registered
-        // its own resources before this method is called, so check before
-        // we make any changes that the current value is the one we put it
+    public void cleanup() {
+        // Right now there is nothing to do
     }
 
     /**
