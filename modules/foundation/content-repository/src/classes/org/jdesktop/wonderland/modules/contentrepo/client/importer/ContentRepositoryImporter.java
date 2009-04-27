@@ -159,7 +159,6 @@ public class ContentRepositoryImporter extends AbstractContentImporter
 
         // If we have reached here, then we have successfully uploaded the bits
         // so we return a valid URI to the content.
-        return "wlcontent://users@" + loginInfo.getServerNameAndPort() +
-                "/" + loginInfo.getUsername() + "/" + fileName;
+        return "wlcontent://users/" + loginInfo.getUsername() + "/" + fileName;
     }
 }
