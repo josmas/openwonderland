@@ -58,16 +58,20 @@ public class PresenceManagerClient extends BaseConnection implements
      * the CONNECTED state
      * @throws org.jdesktop.wonderland.client.comms.ConnectionFailureException
      */
-    public PresenceManagerClient(WonderlandSession session)
-            throws ConnectionFailureException {
-
-        this.session = session;
-
-        presenceManager = (PresenceManagerImpl) PresenceManagerFactory.getPresenceManager(session);
-
+    public PresenceManagerClient() {
         logger.fine("Starting PresenceManagerClient");
+    }
 
-        session.connect(this);
+    public synchronized void execute(final Runnable r) {
+    }
+
+    @Override
+    public void connect(WonderlandSession session)
+            throws ConnectionFailureException
+    {
+        super.connect(session);
+        this.session = session;
+        this.presenceManager = (PresenceManagerImpl) PresenceManagerFactory.getPresenceManager(session);
 
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
         avatar.addViewCellConfiguredListener(this);
@@ -75,9 +79,6 @@ public class PresenceManagerClient extends BaseConnection implements
             // if the view is already configured, fake an event
             viewConfigured(avatar);
         }
-    }
-
-    public synchronized void execute(final Runnable r) {
     }
 
     @Override
@@ -100,6 +101,8 @@ public class PresenceManagerClient extends BaseConnection implements
 
 	presenceManager.addSession(presenceInfo);
         session.send(this, new SessionCreatedMessage(presenceInfo));
+
+        System.out.println("[PresenceManagerClient] view configured fpr " + cellID + " in " + presenceManager);
     }
 
     @Override

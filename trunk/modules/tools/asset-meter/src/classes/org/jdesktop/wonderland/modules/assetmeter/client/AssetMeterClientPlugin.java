@@ -21,39 +21,39 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.lang.ref.WeakReference;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
-import javax.swing.JMenuItem;
-import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
 /**
- * Client-side plugin to register the asset meter on the Tools menu.
+ * Client-side plugin to activate the asset meter on the Tools menu.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-public class AssetMeterClientPlugin implements ClientPlugin {
+public class AssetMeterClientPlugin extends BaseClientPlugin {
 
-    private WeakReference<AssetMeterJFrame> assetMeterJFrameRef = null;
+    private JFrame assetMeterJFrame;
+    private final JCheckBoxMenuItem item;
 
-    public void initialize(ServerSessionManager loginInfo) {
+    public AssetMeterClientPlugin() {
+        item = new JCheckBoxMenuItem("Asset Meter", true);
+    }
+
+    @Override
+    protected void activate() {
         // First create the asset meter frame and keep a weak reference to it
         // so that it gets garbage collected
-        JFrame assetMeterJFrame = new AssetMeterJFrame();
+        assetMeterJFrame = new AssetMeterJFrame();
         assetMeterJFrame.setSize(350, 200);
-        assetMeterJFrameRef = new WeakReference(assetMeterJFrame);
 
         // Add the Asset Meter as a checkbox menu item to the Tools menu as a
         // Checkbox menu item. If it is selected, then show it or hide it. Keep
         // the frame in a weak reference.
-        final JMenuItem item = new JCheckBoxMenuItem("Asset Meter", true);
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JFrame assetMeterJFrame = assetMeterJFrameRef.get();
                 assetMeterJFrame.setVisible(item.isSelected());
             }
         });
@@ -71,5 +71,13 @@ public class AssetMeterClientPlugin implements ClientPlugin {
         // by default initially.
         JmeClientMain.getFrame().addToWindowMenu(item, 1);
         assetMeterJFrame.setVisible(true);
+    }
+
+    @Override
+    protected void deactivate() {
+        // remove items
+        JmeClientMain.getFrame().removeFromWindowMenu(item);
+        assetMeterJFrame.setVisible(false);
+        assetMeterJFrame = null;
     }
 }

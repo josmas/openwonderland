@@ -85,6 +85,14 @@ public class LocalAvatar implements ClientView {
             configListeners.add(listener);
         }
     }
+
+    public void removeViewCellConfiguredListener(ViewCellConfiguredListener listener) {
+        synchronized (this) {
+            if (configListeners != null) {
+                configListeners.remove(listener);
+            }
+        }
+    }
     
     private void notifyViewCellConfiguredListeners() {
         if (configListeners==null)

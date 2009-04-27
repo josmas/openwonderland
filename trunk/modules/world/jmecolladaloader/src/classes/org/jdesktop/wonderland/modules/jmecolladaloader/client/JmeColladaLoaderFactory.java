@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
@@ -33,11 +34,41 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 public class JmeColladaLoaderFactory extends ModelLoaderFactory
     implements ClientPlugin
 {
+    /** A BaseClientPlugin that delegates activate and deactivate to
+     * the superclass
+     */
+    private BaseClientPlugin plugin;
 
     public void initialize(ServerSessionManager manager) {
         LoaderManager.getLoaderManager().registerLoader(this);
+        this.plugin = new BaseClientPlugin() {
+            @Override
+            protected void activate() {
+                JmeColladaLoaderFactory.this.register();
+            }
+
+            @Override
+            protected void deactivate() {
+                JmeColladaLoaderFactory.this.unregister();
+            }
+        };
+
+        plugin.initialize(manager);
     }
-    
+
+    public void cleanup() {
+        LoaderManager.getLoaderManager().unregisterLoader(this);
+        plugin.cleanup();
+    }
+
+    public void register() {
+        LoaderManager.getLoaderManager().activateLoader(this);
+    }
+
+    public void unregister() {
+        LoaderManager.getLoaderManager().deactivateLoader(this);
+    }
+
     public String getFileExtension() {
         return "dae";
     }
@@ -45,5 +76,4 @@ public class JmeColladaLoaderFactory extends ModelLoaderFactory
     public ModelLoader getLoader() {
         return (ModelLoader) new JmeColladaLoader();
     }
-
 }

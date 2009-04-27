@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
@@ -34,18 +34,36 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  * @author jprovino
  */
 @Plugin
-public class AudioManagerClientPlugin 
-        implements ClientPlugin, SessionLifecycleListener, SessionStatusListener
-{
+public class AudioManagerClientPlugin extends BaseClientPlugin
+        implements SessionLifecycleListener, SessionStatusListener {
+
     private static final Logger logger =
             Logger.getLogger(AudioManagerClientPlugin.class.getName());
-    
     private AudioManagerClient client;
-    
-    public void initialize(ServerSessionManager loginManager) {
-        logger.info("Audio manager initialized");
 
+    @Override
+    public void initialize(ServerSessionManager loginManager) {
+        logger.info("Audio manager initialize");
+
+        this.client = new AudioManagerClient();
         loginManager.addLifecycleListener(this);
+        super.initialize(loginManager);
+    }
+
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        getSessionManager().removeLifecycleListener(this);
+    }
+
+    @Override
+    protected void activate() {
+        client.addMenus();
+    }
+
+    @Override
+    protected void deactivate() {
+        client.removeMenus();
     }
 
     public void sessionCreated(WonderlandSession session) {
@@ -58,7 +76,7 @@ public class AudioManagerClientPlugin
         }
     }
 
-    public void sessionStatusChanged(WonderlandSession session, 
+    public void sessionStatusChanged(WonderlandSession session,
                                      WonderlandSession.Status status)
     {
         logger.fine("session status changed " + session + " status " + status);
@@ -68,19 +86,17 @@ public class AudioManagerClientPlugin
             disconnectClient();
         }
     }
-    
+
     /**
      * Connect the client.
      * @param session the WonderlandSession to connect to, guaranteed to
      * be in the CONNECTED state.
      */
     protected void connectClient(WonderlandSession session) {
-        if (client == null) {
-            try {
-                client = new AudioManagerClient(session);
-            } catch (ConnectionFailureException e) {
-                logger.log(Level.WARNING, "Connect client error", e);
-            }
+        try {
+            client.connect(session);
+        } catch (ConnectionFailureException e) {
+            logger.log(Level.WARNING, "Connect client error", e);
         }
     }
 
@@ -89,6 +105,5 @@ public class AudioManagerClientPlugin
      */
     protected void disconnectClient() {
         client.disconnect();
-        client = null;
     }
 }

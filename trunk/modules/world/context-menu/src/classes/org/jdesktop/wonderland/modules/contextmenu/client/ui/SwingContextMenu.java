@@ -73,6 +73,9 @@ public class SwingContextMenu implements MenuItemRepaintListener {
     private Color WL_LIGHT_GREEN = new Color(61, 207, 60);
     private Color WL_GREEN = new Color(45, 164, 48);
 
+    // the context selection listener we registered
+    private final ContextSelectionListener listener = new ContextSelectionListener();
+
     /** Constructor */
     public SwingContextMenu() {
         // Initialize the GUI.
@@ -86,9 +89,21 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         contextMenu.getContentPane().add(contextPanel);
         contextPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         contextPanel.setLayout(new BoxLayout(contextPanel, BoxLayout.Y_AXIS));
-        
-        // Register a global listener for context and selection events
-        SceneManager.getSceneManager().addSceneListener(new ContextSelectionListener());
+    }
+
+    /**
+     * Add ourself as a global event listener
+     */
+    public void register() {
+         // Register a global listener for context and selection events
+        SceneManager.getSceneManager().addSceneListener(listener);
+    }
+
+    /**
+     * Remove ourself from being a global event listener
+     */
+    public void unregister() {
+        SceneManager.getSceneManager().removeSceneListener(listener);
     }
 
     /**

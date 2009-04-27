@@ -42,18 +42,55 @@ public class LoaderManager {
     }
     
     /**
-     * Register the supplied loader with the system
-     * @param loader
+     * Register the supplied loader with the system.  Loaders must be
+     * separately activated to start working.
+     * @param loader the loader to register
      */
     public void registerLoader(ModelLoaderFactory loader) {
         loaders.add(loader);
-        
-        if (activeLoaders.containsKey(loader.getFileExtension())) {
-            loader.setEnabled(false);
-        } else {
-            activeLoaders.put(loader.getFileExtension(), loader);
+    }
+
+    /**
+     * Unregister a loader from the system.  If the loader is active, it
+     * will also be deactivated.
+     * @param loader the loader to unregister
+     */
+    public void unregisterLoader(ModelLoaderFactory loader) {
+        loaders.remove(loader);
+
+        // if the loader is enabled, remove it from the active set.
+        if (loader.isEnabled()) {
+            activeLoaders.remove(loader.getFileExtension());
         }
-        
+    }
+
+    /**
+     * Activate a particular loader, and deactivate any loader that was
+     * previously registered for the same file type
+     * @param loader the loader to activate
+     */
+    public void activateLoader(ModelLoaderFactory loader) {
+        // make sure the loader exists
+        if (!loaders.contains(loader)) {
+            throw new IllegalStateException("Activating non-existant loader " +
+                                            loader);
+        }
+
+        loader.setEnabled(true);
+        activeLoaders.put(loader.getFileExtension(), loader);
+    }
+
+    /**
+     * Deactivate a particular loader.
+     * @param loader the loader to deactivate
+     */
+    public void deactivateLoader(ModelLoaderFactory loader) {
+        loader.setEnabled(false);
+
+        ModelLoaderFactory current = activeLoaders.get(loader.getFileExtension());
+        if (current != null && current.equals(loader)) {
+            activeLoaders.remove(loader.getFileExtension());
+        }
     }
     
     public ModelLoader getLoader(File file) {

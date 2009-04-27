@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -28,10 +29,16 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
  *
  * @author paulby
  */
-public class ArtToolsPlugin extends javax.swing.JPanel implements ClientPlugin {
-
+public class ArtToolsPlugin extends javax.swing.JPanel 
+        implements ClientPlugin
+{
     private ImportSessionFrame importSessionFrame = null;
     private CellViewerFrame cellViewerFrame = null; 
+
+    /** a BaseClientPlugin that delegates the activate and deactivate methods
+     *  back to this class.
+     */
+    private BaseClientPlugin plugin;
 
     /** Creates new form ArtToolsPlugin1 */
     public ArtToolsPlugin() {
@@ -39,9 +46,37 @@ public class ArtToolsPlugin extends javax.swing.JPanel implements ClientPlugin {
     }
 
     public void initialize(ServerSessionManager lm) {
+        this.plugin = new BaseClientPlugin() {
+            @Override
+            protected void activate() {
+                ArtToolsPlugin.this.register();
+            }
+
+            @Override
+            protected void deactivate() {
+                ArtToolsPlugin.this.unregister();
+            }
+        };
+        
+        plugin.initialize(lm);
+    }
+
+    public void cleanup() {
+        plugin.cleanup();
+    }
+
+    public void register() {
+        // activate
         JmeClientMain.getFrame().addToToolsMenu(cellViewerMI, 7);
         JmeClientMain.getFrame().addToFileMenu(importModelMI, 0);
         JmeClientMain.getFrame().addToFileMenu(createModuleMI, 1);
+    }
+
+    public void unregister() {
+        // deactivate
+        JmeClientMain.getFrame().removeFromToolsMenu(cellViewerMI);
+        JmeClientMain.getFrame().removeFromFileMenu(importModelMI);
+        JmeClientMain.getFrame().removeFromFileMenu(createModuleMI);
     }
 
     /** This method is called from within the constructor to
@@ -118,6 +153,5 @@ public class ArtToolsPlugin extends javax.swing.JPanel implements ClientPlugin {
     private javax.swing.JMenuItem createModuleMI;
     private javax.swing.JMenuItem importModelMI;
     // End of variables declaration//GEN-END:variables
-
 
 }

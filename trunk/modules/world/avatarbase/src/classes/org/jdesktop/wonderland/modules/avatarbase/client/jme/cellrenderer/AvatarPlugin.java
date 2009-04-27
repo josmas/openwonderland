@@ -32,8 +32,8 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
@@ -50,116 +50,173 @@ import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
  *
  * @author paulby
  */
-public class AvatarPlugin implements ClientPlugin {
-
+public class AvatarPlugin extends BaseClientPlugin
+        implements ViewManagerListener
+{
+    private ServerSessionManager loginManager;
+    private String baseURL;
     private WeakReference<AvatarTestPanel> testPanelRef = null;
     private Instrumentation instrumentation;
 
-    public void initialize(ServerSessionManager loginManager) {
-        // Set the base URL
-        String serverHostAndPort = loginManager.getServerNameAndPort();
-        String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
+    private JMenuItem avatarControlsMI;
+    private JMenuItem avatarMI;
+    private JMenuItem avatarSettingsMI;
+    private JMenuItem startingLocationMI;
 
-        WorldManager worldManager = ClientContextJME.getWorldManager();
-        worldManager.addUserData(Repository.class, new Repository(worldManager, baseURL, ClientContext.getUserDirectory("AvatarCache")));
+    private AvatarImiJME curAvatar;
+    private boolean menusAdded = false;
+    private final SessionLifecycleListener lifecycleListener;
 
-        ClientContextJME.getAvatarRenderManager().registerRenderer(AvatarImiJME.class);
-
-        // Workaround to guarntee that the webdav module has been initialized
-        loginManager.addLifecycleListener(new SessionLifecycleListener() {
+    public AvatarPlugin() {
+        this.lifecycleListener = new SessionLifecycleListener() {
 
             public void sessionCreated(WonderlandSession session) {
             }
 
             public void primarySession(WonderlandSession session) {
                 // We need a primary session, so wait for it
-                AvatarConfigManager.getAvatarConigManager().addServer(session.getSessionManager());
+                AvatarConfigManager.getAvatarConfigManager().addServer(AvatarPlugin.this.loginManager);
+            }
+        };
+    }
+
+    @Override
+    public void initialize(ServerSessionManager loginManager) {
+        this.loginManager = loginManager;
+
+        // Set the base URL
+        String serverHostAndPort = loginManager.getServerNameAndPort();
+        this.baseURL = "wla://avatarbaseart@"+serverHostAndPort+"/";
+
+        // XXX TODO: this shouldn't be done here -- it should be done in
+        // activate or should be registered per session not globally 
+        // XXX
+        WorldManager worldManager = ClientContextJME.getWorldManager();
+        worldManager.addUserData(Repository.class, new Repository(worldManager, baseURL, ClientContext.getUserDirectory("AvatarCache")));
+
+        // Workaround to guarntee that the webdav module has been initialized
+        loginManager.addLifecycleListener(lifecycleListener);
+
+        avatarControlsMI = new JMenuItem("Avatar Controls");
+        avatarControlsMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (testPanelRef == null || testPanelRef.get() == null) {
+                    AvatarTestPanel test = new AvatarTestPanel();
+                    JFrame f = new JFrame("Test Controls");
+                    f.getContentPane().add(test);
+                    f.pack();
+                    f.setVisible(true);
+                    f.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+                    test.setAvatarCharactar(curAvatar.getAvatarCharacter());
+                    testPanelRef = new WeakReference(test);
+                } else {
+                    SwingUtilities.getRoot(testPanelRef.get().getParent()).setVisible(true);
+                }
             }
         });
 
-
-        ClientContextJME.getViewManager().addViewManagerListener(new ViewManagerListener() {
-
-            public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
-                if (oldViewCell != null) {
-                    Logger.getAnonymousLogger().severe("TODO Handle primary View Change");
-                    return;
+        avatarMI = new JMenuItem("Avatar...");
+        avatarMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
+                if (cell instanceof AvatarCell) {
+                    AvatarImiJME rend = (AvatarImiJME) ((AvatarCell) cell).getCellRenderer(ClientContext.getRendererType());
+                    AvatarConfigFrame f = new AvatarConfigFrame(rend);
+                    f.setVisible(true);
                 }
+            }
+        });
 
-                CellRenderer rend = newViewCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-                if (!(rend instanceof AvatarImiJME)) {
-                    return;
-                }
+        avatarSettingsMI = new JMenuItem("Avatar Setings...");
+        avatarSettingsMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                AvatarInstrumentation in = new AvatarInstrumentation(instrumentation);
+                in.setVisible(true);
+            }
+        });
 
-                final AvatarImiJME avatar = (AvatarImiJME) rend;
-
-                if (testPanelRef == null || testPanelRef.get() == null) {
-                    // Do nothing
-                } else {
-                    testPanelRef.get().setAvatarCharactar(avatar.getAvatarCharacter());
-                }
-
-                JMenuItem avatarControlsMI = new JMenuItem("Avatar Controls");
-                avatarControlsMI.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        if (testPanelRef == null || testPanelRef.get() == null) {
-                            AvatarTestPanel test = new AvatarTestPanel();
-                            JFrame f = new JFrame("Avatar Controls");
-                            f.getContentPane().add(test);
-                            f.pack();
-                            f.setVisible(true);
-                            f.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-                            test.setAvatarCharactar(avatar.getAvatarCharacter());
-                            testPanelRef = new WeakReference(test);
-                        } else {
-                            SwingUtilities.getRoot(testPanelRef.get().getParent()).setVisible(true);
-                        }
-                    }
-                });
-                JmeClientMain.getFrame().addToWindowMenu(avatarControlsMI, 0);
-
-                JMenuItem avatarMI = new JMenuItem("Avatar...");
-                avatarMI.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
-                        if (cell instanceof AvatarCell) {
-                            AvatarImiJME rend = (AvatarImiJME) ((AvatarCell) cell).getCellRenderer(ClientContext.getRendererType());
-                            AvatarConfigFrame f = new AvatarConfigFrame(rend);
-                            f.setTitle("Avatar");
-                            f.setVisible(true);
-                        }
-                    }
-                });
-                JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
-
-                JMenuItem avatarSettingsMI = new JMenuItem("Avatar Settings...");
-                avatarSettingsMI.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        AvatarInstrumentation in = new AvatarInstrumentation(instrumentation);
-                        in.setVisible(true);
-                    }
-                });
-                JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
-
-                JMenuItem startingLocationMI = new JMenuItem("Starting Location");
-                startingLocationMI.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        GameContext context = avatar.getAvatarCharacter().getContext();
-                        CharacterSteeringHelm helm = avatar.getAvatarCharacter().getContext().getSteering();
-                        helm.addTaskToTop(new GoTo(new Vector3f(0, 0, 0), context));
-                        helm.setEnable(true);
-                    }
-                });
-                JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
-
-                AvatarConfigManager.getAvatarConigManager().setViewCell(newViewCell);
+        startingLocationMI = new JMenuItem("Starting Location");
+        startingLocationMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                GameContext context = curAvatar.getAvatarCharacter().getContext();
+                CharacterSteeringHelm helm = curAvatar.getAvatarCharacter().getContext().getSteering();
+                helm.addTaskToTop(new GoTo(new Vector3f(0, 0, 0), context));
+                helm.setEnable(true);
             }
         });
 
         instrumentation = new DefaultInstrumentation(ClientContextJME.getWorldManager());
+
+        // register the renderer for this session
+        ClientContextJME.getAvatarRenderManager().registerRenderer(loginManager, AvatarImiJME.class);
+
+        super.initialize(loginManager);
+    }
+
+    @Override
+    public void cleanup() {
+        // XXX should be done in deactivate XXX
+        WorldManager worldManager = ClientContextJME.getWorldManager();
+        worldManager.removeUserData(Repository.class);
+
+        ClientContextJME.getAvatarRenderManager().unregisterRenderer(loginManager);
+        AvatarConfigManager.getAvatarConfigManager().removeServer(loginManager);
+        loginManager.removeLifecycleListener(lifecycleListener);
+        super.cleanup();
+    }
+
+    @Override
+    protected void activate() {        
+        // add view listener -- menus will be added once the primary
+        // view cell has changed
+        ClientContextJME.getViewManager().addViewManagerListener(this);
+        if (ClientContextJME.getViewManager().getPrimaryViewCell() != null) {
+            // fake a view cell changed event
+            primaryViewCellChanged(null, ClientContextJME.getViewManager().getPrimaryViewCell());
+        }
+    }
+    
+    @Override
+    protected void deactivate() {
+        // remove menus
+        if (menusAdded) {
+            JmeClientMain.getFrame().removeFromWindowMenu(avatarControlsMI);
+            JmeClientMain.getFrame().removeFromEditMenu(avatarMI);
+            JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
+            JmeClientMain.getFrame().removeFromPlacemarksMenu(startingLocationMI);
+
+            menusAdded = false;
+        }
+        
+        // remove view listener
+        ClientContextJME.getViewManager().removeViewManagerListener(this);
+    }
+
+    public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
+        CellRenderer rend = newViewCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        if (!(rend instanceof AvatarImiJME)) {
+            return;
+        }
+
+        // set the current avatar
+        curAvatar = (AvatarImiJME) rend;
+        if (testPanelRef == null || testPanelRef.get() == null) {
+            // Do nothing
+        } else {
+            testPanelRef.get().setAvatarCharactar(curAvatar.getAvatarCharacter());
+        }
+
+        // notify the avatar config manager that the view cell has changed
+        AvatarConfigManager.getAvatarConfigManager().setViewCell(newViewCell);
+
+        // add menus
+        if (!menusAdded) {
+            JmeClientMain.getFrame().addToWindowMenu(avatarControlsMI, 0);
+            JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
+            JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
+            JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
+
+            menusAdded = true;
+        }
     }
 }

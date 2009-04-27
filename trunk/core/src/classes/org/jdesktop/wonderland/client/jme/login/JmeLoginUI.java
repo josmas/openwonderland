@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.jme.login;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
@@ -40,6 +42,8 @@ import org.jdesktop.wonderland.client.login.SessionCreator;
  */
 public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
     private MainFrame parent;
+    private Vector3f initialPosition;
+    private Quaternion initialLook;
 
     public JmeLoginUI(MainFrame parent) {
         this.parent = parent;
@@ -79,10 +83,17 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public void setInitialPosition(Vector3f position, Quaternion look) {
+        this.initialPosition = position;
+        this.initialLook = look;
+    }
+
     public JmeClientSession createSession(ServerSessionManager manager,
                                           WonderlandServerInfo server,
                                           ClassLoader loader)
     {
-        return new JmeClientSession(manager, server, loader);
+        JmeClientSession session = new JmeClientSession(manager, server, loader);
+        session.setInitialPosition(initialPosition, initialLook);
+        return session;
     }
 }

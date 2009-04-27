@@ -73,11 +73,12 @@ public class ContentRepositoryRegistry {
 
     /**
      * Register a local repository.  Throws an illegal argument exception
-     * if there is already a local repository registered.
+     * if there is already a local repository registered.  Registering a null
+     * repository will remove the currently set repository.
      * @param collection the local repository, or null to unregister.
      */
     public void registerLocalRepository(ContentCollection collection) {
-        if (localRepo != null) {
+        if (collection != null && localRepo != null) {
             throw new IllegalStateException("Local repository already registered");
         }
 

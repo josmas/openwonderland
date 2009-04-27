@@ -17,9 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.textchat.client;
 
-import java.lang.ref.WeakReference;
-import org.jdesktop.wonderland.client.ClientPlugin;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
 /**
@@ -30,16 +28,24 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-public class TextChatClientPlugin implements ClientPlugin {
+public class TextChatClientPlugin extends BaseClientPlugin {
 
-    private WeakReference<ChatManager> chatManagerRef = null;
+    private ChatManager chatManager = null;
 
     /**
      * @inheritDoc()
      */
-    public void initialize(ServerSessionManager loginInfo) {
+    @Override
+    public void activate() {
         // Delegate to the manager class that handles all chat
-        ChatManager chatManager = new ChatManager(loginInfo);
-        chatManagerRef = new WeakReference(chatManager);
+        chatManager = new ChatManager(getSessionManager());
+    }
+
+    @Override
+    protected void deactivate() {
+        // TODO: clean up the chat manager when our server is no longer the
+        // primary
+        chatManager.unregister();
+        chatManager = null;
     }
 }

@@ -20,8 +20,7 @@ package org.jdesktop.wonderland.modules.presencemanager.client;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.client.ClientPlugin;
-
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -34,18 +33,27 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  * @author jprovino
  */
 @Plugin
-public class PresenceManagerClientPlugin 
-        implements ClientPlugin, SessionLifecycleListener, SessionStatusListener
+public class PresenceManagerClientPlugin extends BaseClientPlugin
+        implements SessionLifecycleListener, SessionStatusListener
 {
     private static final Logger logger =
             Logger.getLogger(PresenceManagerClientPlugin.class.getName());
     
     private PresenceManagerClient client;
     
+    @Override
     public void initialize(ServerSessionManager loginManager) {
         logger.info("Presence manager initialized");
 
+        this.client = new PresenceManagerClient();
         loginManager.addLifecycleListener(this);
+        super.initialize(loginManager);
+    }
+
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        getSessionManager().removeLifecycleListener(this);
     }
 
     public void sessionCreated(WonderlandSession session) {
@@ -77,12 +85,10 @@ public class PresenceManagerClientPlugin
      * be in the CONNECTED state.
      */
     protected void connectClient(WonderlandSession session) {
-        if (client == null) {
-            try {
-                client = new PresenceManagerClient(session);
-            } catch (ConnectionFailureException e) {
-                logger.log(Level.WARNING, "Connect client error", e);
-            }
+        try {
+            client.connect(session);
+        } catch (ConnectionFailureException e) {
+            logger.log(Level.WARNING, "Connect client error", e);
         }
     }
 
@@ -91,6 +97,5 @@ public class PresenceManagerClientPlugin
      */
     protected void disconnectClient() {
         client.disconnect();
-        client = null;
     }
 }

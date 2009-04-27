@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
 import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
@@ -36,12 +37,10 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
  * with the Java service loader mechanism. This class lists all of these
  * component properties.
  * 
- * XXX This does not work with federation -- need to listen for login events!
- * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @InternalAPI
-public class CellComponentPropertiesManager {
+public class CellComponentPropertiesManager implements PrimaryServerListener {
 
     /* A set of all cell property objects */
     private Set<CellComponentPropertiesSPI> componentPropertiesSet;
@@ -49,25 +48,16 @@ public class CellComponentPropertiesManager {
     /* A map of component server-state class and their cell properties objects */
     private Map<Class, CellComponentPropertiesSPI> componentPropertiesClassMap;
 
-    /* Initialize from the list of service providers in module JARs */
-    static {
-        /* Attempt to load the class names using the service providers */
-        // This needs to work with federation XXX
-        ServerSessionManager manager = LoginManager.getPrimary();
-        ScannedClassLoader cl = manager.getClassloader();
-
-        Iterator<CellComponentPropertiesSPI> it = cl.getAll(
-                CellComponentProperties.class, CellComponentPropertiesSPI.class);
-        while (it.hasNext() == true) {
-            CellComponentPropertiesSPI spi = it.next();
-            CellComponentPropertiesManager.getCellComponentPropertiesManager().registerCellComponentFactory(spi);
-        }
-    }
+    /* A set of cell property objects associated with the current session */
+    private final Set<CellComponentPropertiesSPI> sessionProperties =
+            new HashSet<CellComponentPropertiesSPI>();
 
     /** Default constructor */
     public CellComponentPropertiesManager() {
         componentPropertiesClassMap = new HashMap();
         componentPropertiesSet = new HashSet();
+    
+        LoginManager.addPrimaryServerListener(this);
     }
     
     /**
@@ -93,7 +83,7 @@ public class CellComponentPropertiesManager {
      * 
      * @param properties The CellComponentPropertiesSPI class to register
      */
-    public synchronized void registerCellComponentFactory(CellComponentPropertiesSPI properties) {
+    public synchronized void registerCellComponentProperties(CellComponentPropertiesSPI properties) {
         // First check to see if the server-side component state class already
         // exists and print a warning message if so (but we'll
         // still add it later)
@@ -108,6 +98,24 @@ public class CellComponentPropertiesManager {
         // the client-side cell class name to the object
         componentPropertiesSet.add(properties);
         componentPropertiesClassMap.put(clazz, properties);
+    }
+
+    /**
+     * Unregisters a CellComponentPropertiesSPI class.
+     *
+     * @param properties The CellComponentPropertiesSPI class to unregister
+     */
+    public synchronized void unregisterCellComponentProperties(CellComponentPropertiesSPI properties) {
+        Class clazz = properties.getServerCellComponentClass();
+
+        // remove the SPI object.  Check to make sure the class maps to the same
+        // properties object before removing the mapping
+        componentPropertiesSet.remove(properties);
+
+        CellComponentPropertiesSPI cur = componentPropertiesClassMap.get(clazz);
+        if (cur == properties) {
+            componentPropertiesClassMap.remove(clazz);
+        }
     }
     
     /**
@@ -131,4 +139,45 @@ public class CellComponentPropertiesManager {
     public CellComponentPropertiesSPI getCellComponentPropertiesByClass(Class clazz) {
         return componentPropertiesClassMap.get(clazz);
     }
+
+    /**
+     * Notification that the primary server has changed
+     * @param server the current primary server
+     */
+    public void primaryServer(ServerSessionManager server) {
+        // get rid of the current properties
+        unregisterProperties();
+
+        // add back the properties from the current server
+        if (server != null) {
+            registerProperties(server);
+        }
+    }
+
+    /**
+     * Register all Properties associated with the given session manager.
+     * @param sessionManager the manager to register
+     */
+    protected synchronized void registerProperties(ServerSessionManager manager) {
+        /* Attempt to load the class names using the service providers */
+        ScannedClassLoader cl = manager.getClassloader();
+
+        Iterator<CellComponentPropertiesSPI> it = cl.getAll(
+                CellComponentProperties.class, CellComponentPropertiesSPI.class);
+        while (it.hasNext() == true) {
+            CellComponentPropertiesSPI spi = it.next();
+            registerCellComponentProperties(spi);
+            sessionProperties.add(spi);
+        }
+    }
+
+    /**
+     * Unregister all Properties associated with the current session
+     */
+     protected synchronized void unregisterProperties() {
+         for (CellComponentPropertiesSPI spi : sessionProperties) {
+            unregisterCellComponentProperties(spi);
+         }
+         sessionProperties.clear();
+     }
 }

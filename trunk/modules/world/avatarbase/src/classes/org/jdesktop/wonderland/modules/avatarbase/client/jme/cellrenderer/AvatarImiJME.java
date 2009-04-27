@@ -332,7 +332,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
         URL avatarConfigURL = cell.getComponent(AvatarConfigComponent.class).getAvatarConfigURL();
 
-        logger.fine("AVATAR CONFIG URL "+avatarConfigURL);
+        System.out.println("[AvatarImiJme] AVATAR CONFIG URL "+avatarConfigURL);
 
         LoadingInfo.startedLoading(cell.getCellID(), username);
         try {
@@ -372,7 +372,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
 //        wm.removeEntity(avatarCharacter);
         } catch(Exception e) {
-            Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, "Error loading avatar "+avatarConfigURL.toExternalForm(), e);
+            Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, "Error loading avatar "+avatarConfigURL, e);
         } finally {
             LoadingInfo.finishedLoading(cell.getCellID(), username);
         }

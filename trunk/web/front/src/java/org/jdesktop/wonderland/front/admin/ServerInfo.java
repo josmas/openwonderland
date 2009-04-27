@@ -27,20 +27,20 @@ import org.jdesktop.wonderland.utils.Constants;
  * @author jkaplan
  */
 public class ServerInfo {
-    private static ServerDetails serverDetails;
-
     static {
-       serverDetails = new ServerDetails();
-       serverDetails.setServerURL(getServerURL());
+       ServerDetailsHolder.INSTANCE.setServerURL(getServerURL());
 
        // default to no authentication
        AuthenticationInfo authInfo =
                new AuthenticationInfo(AuthenticationInfo.Type.NONE, null);
-       serverDetails.setAuthInfo(authInfo);
+       ServerDetailsHolder.INSTANCE.setAuthInfo(authInfo);
+
+       // set the starting timestamp
+       ServerDetailsHolder.INSTANCE.setTimeStamp(System.currentTimeMillis());
 
        // Darkstar servers will be filled in later as they are
        // created
-       serverDetails.setDarkstarServers(new DarkstarServer[0]);
+       ServerDetailsHolder.INSTANCE.setDarkstarServers(new DarkstarServer[0]);
     }
 
     /**
@@ -58,6 +58,10 @@ public class ServerInfo {
      * @return the serverDetails object
      */
     public static ServerDetails getServerDetails() {
-        return serverDetails;
+        return ServerDetailsHolder.INSTANCE;
+    }
+
+    private static final class ServerDetailsHolder {
+        private static final ServerDetails INSTANCE = new ServerDetails();
     }
 }

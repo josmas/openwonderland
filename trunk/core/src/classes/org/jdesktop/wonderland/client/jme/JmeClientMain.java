@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Interpolators;
 import com.sun.scenario.animation.TimingTarget;
@@ -37,6 +39,7 @@ import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
@@ -87,6 +90,9 @@ public class JmeClientMain {
     private JmeLoginUI login;
     private JmeClientSession curSession;
 
+    // keep tack of whether we are currently logging out
+    private boolean loggingOut = false;
+
     public JmeClientMain(String[] args) {
         // process command line arguments
         processArgs(args);
@@ -94,6 +100,9 @@ public class JmeClientMain {
         // load properties in a properties file
         URL propsURL = getPropsURL();
         loadProperties(propsURL);
+
+        // set up the context
+        ClientContextJME.setClientMain(this);
 
         String windowSize = System.getProperty(WINDOW_SIZE_PROP, WINDOW_SIZE_DEFAULT);
         try {
@@ -219,8 +228,48 @@ public class JmeClientMain {
         
     }
 
+    /**
+     * Move the client to the given location
+     * @param serverURL the url of the server to go to, or null to stay
+     * on the current server
+     * @param location the location to go to, or null to go to the default
+     * location on the given server
+     * @param look the direction to look in, or null to look in the default
+     * direction
+     * @throws IOException if there is an error going to the new location
+     */
+    public void gotoLocation(String serverURL, Vector3f translation,
+                             Quaternion look)
+        throws IOException
+    {
+        if (serverURL == null) {
+            // get the server from the current session
+            if (curSession == null) {
+                throw new IllegalStateException("No server");
+            }
+
+            serverURL = curSession.getSessionManager().getServerURL();
+        }
+
+        // see if we need to change servers
+        if (curSession != null &&
+            serverURL.equals(curSession.getSessionManager().getServerURL()))
+        {
+            curSession.getLocalAvatar().localMoveRequest(translation, look);
+        } else {
+            loadServer(serverURL, translation, look);
+        }
+    }
+
     protected void loadServer(String serverURL) throws IOException {
-        logger.info("load server " + serverURL);
+        loadServer(serverURL, null, null);
+    }
+    
+    protected void loadServer(String serverURL, Vector3f translation,
+                              Quaternion look)
+        throws IOException
+    {
+        logger.info("[JmeClientMain] loadServer " + serverURL);
 
         logout();
 
@@ -236,6 +285,10 @@ public class JmeClientMain {
                 ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
         ClientContextJME.addCollisionSystem(lm, "Default", collisionSystem);
 //        ClientContextJME.addPhysicsSystem(lm, "Default", physicsSystem);
+
+        // set the initial position, which will bne sent with the initial
+        // connection properties of the cell cache connection
+        login.setInitialPosition(translation, look);
 
         // create a new session
         try {
@@ -259,6 +312,38 @@ public class JmeClientMain {
                 if (status==Status.DISCONNECTED) {
                     ClientContextJME.removeAllPhysicsSystems(session.getSessionManager());
                     ClientContextJME.removeAllCollisionSystems(session.getSessionManager());
+
+                    // update the UI for logout
+                    boolean inLogout;
+                    synchronized (JmeClientMain.this) {
+                        inLogout = loggingOut;
+                    }
+
+                    if (!inLogout) {
+                        // if we didn't initiate the logout through the
+                        // logout() method, then this is an unexpected
+                        // logout.  Clean up by calling the logout() method,
+                        // then attempt to reconnect
+                        // reconnect dialog
+                        final ServerSessionManager mgr = curSession.getSessionManager();
+
+                        logger.warning("[JmeClientMain] unexpected logout!");
+
+                        logout();
+
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                ReconnectFrame rf = new ReconnectFrame(JmeClientMain.this, mgr);
+                                rf.pack();
+                                rf.setVisible(true);
+                            }
+                        });
+
+                    } else {
+                        synchronized (JmeClientMain.this) {
+                            loggingOut = false;
+                        }
+                    }
                 }
             }
         });
@@ -267,15 +352,21 @@ public class JmeClientMain {
         LoginManager.setPrimary(lm);
         lm.setPrimarySession(curSession);
         frame.setServerURL(serverURL);
-
     }
 
     protected void logout() {
-        logger.info("log out");
+        logger.warning("[JMEClientMain] log out");
 
         // disconnect from the current session
         if (curSession != null) {
+            if (curSession.getStatus() == Status.CONNECTED) {
+                synchronized (this) {
+                    loggingOut = true;
+                }
+            }
+
             curSession.getCellCache().unloadAll();
+
             curSession.logout();
             curSession = null;
 

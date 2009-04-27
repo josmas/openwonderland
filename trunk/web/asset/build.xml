@@ -14,7 +14,9 @@
     <target name="-set-extra-classpath">
         <pathconvert property="web-extra.classpath">
             <path path="${current.dir}/../modules/dist/wonderland-modules-core.jar"/>
+            <path path="${core.dir}/build/lib/wonderland-client.jar"/>
             <path path="${core.dir}/build/lib/wonderland-common.jar"/>
+            <path path="${current.dir}/../front/dist/wonderland-webadmin-core.jar"/>
         </pathconvert>
     </target>
 

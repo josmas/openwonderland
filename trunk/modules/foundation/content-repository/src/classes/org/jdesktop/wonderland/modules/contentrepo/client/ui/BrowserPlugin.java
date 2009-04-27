@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.contentrepo.client.ui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -29,7 +28,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
@@ -49,13 +48,18 @@ import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegis
  * @author jkaplan
  */
 @Plugin
-public class BrowserPlugin implements ClientPlugin {
+public class BrowserPlugin extends BaseClientPlugin {
     private static Logger logger = Logger.getLogger(BrowserPlugin.class.getName());
+
     private BrowserFrame frame;
     private WeakReference<ContentBrowserJDialog> browserDialogRef = null;
 
-    public void initialize(final ServerSessionManager loginInfo) {
+    private JMenuItem oldBrowserItem;
+    private JMenuItem newBrowserItem;
+    private ContentBrowserJDialog defaultBrowser;
 
+    @Override
+    public void initialize(final ServerSessionManager loginInfo) {
         Action launchAction = new AbstractAction("Content Browser") {
             public synchronized void actionPerformed(ActionEvent e) {
                 if (frame == null) {
@@ -71,12 +75,13 @@ public class BrowserPlugin implements ClientPlugin {
                 });
             }
         };
-        JmeClientMain.getFrame().addToToolsMenu(new JMenuItem(launchAction), 5);
+        oldBrowserItem = new JMenuItem(launchAction);
+
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        JMenuItem browserItem = new JMenuItem("Content Browser (New)");
-        browserItem.addActionListener(new ActionListener() {
+        newBrowserItem = new JMenuItem("Content Browser (NEW)...");
+        newBrowserItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ContentBrowserJDialog contentBrowserFrame;
                 if (browserDialogRef == null || browserDialogRef.get() == null) {
@@ -133,11 +138,33 @@ public class BrowserPlugin implements ClientPlugin {
                 }
             }
         });
-        JmeClientMain.getFrame().addToToolsMenu(browserItem, 6);
 
-        // Register the content browser frame with the registry of such panels
-        ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
-        manager.setDefaultContentBrowser(new ContentBrowserJDialog(loginInfo));
+        super.initialize(loginInfo);
     }
 
+    @Override
+    protected void activate() {
+        // Register the content browser frame with the registry of such panels
+        ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
+        defaultBrowser = new ContentBrowserJDialog(getSessionManager());
+        manager.setDefaultContentBrowser(defaultBrowser);
+
+        // add menu items
+        JmeClientMain.getFrame().addToToolsMenu(oldBrowserItem, 5);
+        JmeClientMain.getFrame().addToToolsMenu(newBrowserItem, 6);
+    } 
+    
+    @Override
+    protected void deactivate() {
+        // Reset the default content browser back to null
+        ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
+        if (defaultBrowser == manager.getDefaultContentBrowser()) {
+            manager.setDefaultContentBrowser(null);
+            defaultBrowser = null;
+        }
+
+        // remove menu items
+        JmeClientMain.getFrame().removeFromToolsMenu(oldBrowserItem);
+        JmeClientMain.getFrame().removeFromToolsMenu(newBrowserItem);
+    }
 }

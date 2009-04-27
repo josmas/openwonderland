@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.kmzloader.client.jme.importer;
 
-import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.content.ContentImportManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
@@ -28,10 +28,25 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-public class KmzContentImporterPlugin implements ClientPlugin {
+public class KmzContentImporterPlugin extends BaseClientPlugin {
+    private KmzContentImporter importer;
 
+    @Override
     public void initialize(ServerSessionManager loginInfo) {
+        this.importer = new KmzContentImporter(loginInfo);
+
+        super.initialize(loginInfo);
+    }
+
+    @Override
+    public void activate() {
         ContentImportManager cim = ContentImportManager.getContentImportManager();
-        cim.registerContentImporter(new KmzContentImporter(loginInfo));
+        cim.registerContentImporter(importer);
+    } 
+    
+    @Override
+    public void deactivate() {
+        ContentImportManager cim = ContentImportManager.getContentImportManager();
+        cim.unregisterContentImporter(importer);
     }
 }

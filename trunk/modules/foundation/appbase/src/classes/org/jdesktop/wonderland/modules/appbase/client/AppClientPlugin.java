@@ -23,6 +23,9 @@ import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 
 /**
@@ -31,7 +34,7 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactor
  */
 @ExperimentalAPI
 @Plugin
-public class AppClientPlugin implements ClientPlugin {
+public class AppClientPlugin extends BaseClientPlugin {
 
     private static final Logger logger = Logger.getLogger(AppClientPlugin.class.getName());
 
@@ -42,14 +45,23 @@ public class AppClientPlugin implements ClientPlugin {
     /** All client plugins must have a no-arg constructor. */
     public AppClientPlugin () {}
 
-    /**
-     * This is executed at the start up of all user clients. 
-     * <br><br>
-     * Note: it is *NOT* executed by the SAS provider client because this client is set up to 
-     * ignore all client plugins.
-     */
-    public void initialize(ServerSessionManager loginInfo) {
+   /**
+    * Called when our session becomes the primary session.
+    */
+    @Override
+    protected void activate() {
         initAppBaseUserClient();
+    }
+
+    /**
+     * Called when our session is no longer the primary session.
+     */
+    @Override
+    protected void deactivate() {
+        // TODO: undo any changes made in initAppBaseUserClient.  Note
+        // that it is possible that another client has already registered
+        // its own resources before this method is called, so check before
+        // we make any changes that the current value is the one we put it
     }
 
     /**

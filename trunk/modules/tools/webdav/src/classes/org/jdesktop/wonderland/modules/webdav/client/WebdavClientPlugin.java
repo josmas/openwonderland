@@ -26,9 +26,8 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.login.AuthenticationException;
 import org.jdesktop.wonderland.modules.webdav.common.WebdavContentCollection;
 import org.apache.commons.httpclient.HttpURL;
-import org.apache.webdav.lib.WebdavResource;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.login.AuthenticationManager;
 import org.jdesktop.wonderland.common.login.AuthenticationService;
@@ -42,10 +41,14 @@ import org.jdesktop.wonderland.modules.webdav.common.AuthenticatedWebdavResource
  * session
  * @author jkaplan
  */
-public class WebdavClientPlugin implements ClientPlugin {
+public class WebdavClientPlugin extends BaseClientPlugin {
     private static final Logger logger =
             Logger.getLogger(WebdavClientPlugin.class.getName());
 
+    /** the local repository */
+    private FileContentCollection localRepo;
+
+    @Override
     public void initialize(ServerSessionManager loginInfo) {
         String baseURL = loginInfo.getServerURL() + "/webdav/content";
         
@@ -53,7 +56,7 @@ public class WebdavClientPlugin implements ClientPlugin {
         AuthenticationService as = 
                 AuthenticationManager.get(loginInfo.getCredentialManager().getAuthenticationURL());
 
-        // register the webdav repository for this session
+        // activate the webdav repository for this session
         try {
             String authCookieName = as.getCookieName();
             String authCookieValue = as.getAuthenticationToken();
@@ -81,10 +84,15 @@ public class WebdavClientPlugin implements ClientPlugin {
             logger.log(Level.WARNING, "Unable to start content repository", ioe);
         }
 
-        // register the local repository
+        // activate the local repository -- it's OK to do this in intialize
+        // since everything to do with the content repository is in the
+        // ContentRepo module, and therefore in the same classloader as
+        // this plugin. Since all the code is isolated to this classloader,
+        // even static changes like registering the local repository will
+        // ony be in effect for this server.
         String dirName = "localRepo-" + loginInfo.getUsername();
         final File userDir = ClientContext.getUserDirectory(dirName);
-        FileContentCollection localRepo = new FileContentCollection(userDir, null) {
+        localRepo = new FileContentCollection(userDir, null) {
             @Override
             protected URL getBaseURL() {
                 try {
@@ -103,5 +111,17 @@ public class WebdavClientPlugin implements ClientPlugin {
 
         };
         ContentRepositoryRegistry.getInstance().registerLocalRepository(localRepo);
+        super.initialize(loginInfo);
+    }
+
+    @Override
+    public void cleanup() {
+        ContentRepositoryRegistry.getInstance().unregisterRepository(getSessionManager());
+        ContentRepositoryRegistry reg = ContentRepositoryRegistry.getInstance();
+        if (reg.getLocalRepository() == localRepo) {
+            reg.registerLocalRepository(null);
+        }
+
+        super.cleanup();
     }
 }

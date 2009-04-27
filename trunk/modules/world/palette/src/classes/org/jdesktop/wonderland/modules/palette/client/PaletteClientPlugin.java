@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
@@ -37,7 +38,9 @@ import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
+import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
@@ -55,8 +58,9 @@ import org.jdesktop.wonderland.modules.security.client.SecurityComponent;
  */
 @Plugin
 @ContextMenuFactory
-public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI {
-
+public class PaletteClientPlugin extends BaseClientPlugin
+        implements ContextMenuFactorySPI
+{
     private static Logger logger = Logger.getLogger(PaletteClientPlugin.class.getName());
 
     /* The single instance of the cell palette dialog */
@@ -68,11 +72,22 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
     /* The single instance of the module palette dialog */
     private WeakReference<ModulePalette> modulePaletteFrameRef = null;
 
+    /* The menu item to add to the menu */
+    private JMenuItem paletteMI;
+    private JMenuItem paletteHUDMI;
+    private JMenuItem moduleMI;
+
+    /* The dnd flavor handler we activate */
+    private final DataFlavorHandlerSPI dndHandler =
+            new CellPaletteDataFlavorHandler();
+
+    @Override
     public void initialize(ServerSessionManager loginInfo) {
-        // Add the Palette menu and the Cell submenu and dialog that lets users
-        // create new cells.
-        JMenuItem item = new JMenuItem("Cell Palette");
-        item.addActionListener(new ActionListener() {
+        // Create the Palette menu and the Cell submenu and dialog that lets
+        // users create new cells.  The menu will be added when our server
+        // becomes primary.
+        paletteMI = new JMenuItem("Cell Palette");
+        paletteMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 CellPalette cellPaletteFrame;
                 if (cellPaletteFrameRef == null || cellPaletteFrameRef.get() == null) {
@@ -88,12 +103,11 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
                 }
             }
         });
-        JmeClientMain.getFrame().addToToolsMenu(item, 2);
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        JMenuItem item2 = new JMenuItem("Cell Palette HUD");
-        item2.addActionListener(new ActionListener() {
+        paletteHUDMI = new JMenuItem("Cell Palette HUD");
+        paletteHUDMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 HUDCellPalette hudCellPaletteFrame;
                 if (hudCellPaletteFrameRef == null || hudCellPaletteFrameRef.get() == null) {
@@ -109,18 +123,11 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
                 }
             }
         });
-        JmeClientMain.getFrame().addToToolsMenu(item2, 3);
-
-        // Register the handler for CellServerState flavors with the system-wide
-        // drag and drop manager. When the preview icon is dragged from the Cell
-        // Palette this handler creates an instance of the cell in the world.
-        DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
-        dndManager.registerDataFlavorHandler(new CellPaletteDataFlavorHandler());
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        JMenuItem moduleItem = new JMenuItem("Module Art Palette");
-        moduleItem.addActionListener(new ActionListener() {
+        moduleMI = new JMenuItem("Module Art Palette");
+        moduleMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ModulePalette modulePaletteFrame;
                 if (modulePaletteFrameRef == null || modulePaletteFrameRef.get() == null) {
@@ -136,7 +143,36 @@ public class PaletteClientPlugin implements ClientPlugin, ContextMenuFactorySPI 
                 }
             }
         });
-        JmeClientMain.getFrame().addToToolsMenu(moduleItem, 4);
+
+        super.initialize(loginInfo);
+    }
+
+    /**
+     * Notification that our server is now the the primary server
+     */
+    @Override
+    protected void activate() {
+        // activate
+        JmeClientMain.getFrame().addToToolsMenu(paletteMI, 2);
+        JmeClientMain.getFrame().addToToolsMenu(paletteHUDMI, 3);
+        JmeClientMain.getFrame().addToToolsMenu(moduleMI, 4);
+
+        // Register the handler for CellServerState flavors with the system-wide
+        // drag and drop manager. When the preview icon is dragged from the Cell
+        // Palette this handler creates an instance of the cell in the world.
+        DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
+        dndManager.registerDataFlavorHandler(dndHandler);
+    }
+
+    @Override
+    protected void deactivate() {
+        // deactivate
+        JmeClientMain.getFrame().removeFromToolsMenu(paletteMI);
+        JmeClientMain.getFrame().removeFromToolsMenu(paletteHUDMI);
+        JmeClientMain.getFrame().removeFromToolsMenu(moduleMI);
+
+        DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
+        dndManager.unregisterDataFlavorHandler(dndHandler);
     }
 
     /**
