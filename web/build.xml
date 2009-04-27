@@ -4,11 +4,11 @@
        <ant dir="utils"    target="jar"  inheritall="false"/>
        <ant dir="modules"  target="dist" inheritall="false"/>
        <ant dir="wfs"      target="dist" inheritall="false"/>
+       <ant dir="webstart" target="dist" inheritall="false"/>
+       <ant dir="front"    target="dist" inheritall="false"/>
        <ant dir="asset"    target="dist" inheritall="false"/>
        <ant dir="checksums" target="dist" inheritall="false"/>
        <ant dir="runner"   target="dist" inheritall="false"/>
-       <ant dir="webstart" target="dist" inheritall="false"/>
-       <ant dir="front"    target="dist" inheritall="false"/>
        <ant dir="help"     target="dist" inheritall="false"/>
        <ant dir="server"   target="jar"  inheritall="false"/>
     </target>

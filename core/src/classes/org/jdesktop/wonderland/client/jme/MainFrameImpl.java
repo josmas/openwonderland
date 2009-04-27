@@ -21,7 +21,9 @@ import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -57,6 +59,8 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private JRadioButtonMenuItem thirdPersonRB;
     private JRadioButtonMenuItem frontPersonRB;
 
+    private final Map<JMenuItem, Integer> menuWeights =
+                                              new HashMap<JMenuItem, Integer>();
 
     static {
         new LogControl(MainFrameImpl.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
@@ -240,24 +244,50 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /**
      * {@inheritDoc}
      */
-    public void addToMenu(JMenu menu, JMenuItem menuItem, int index) {
-        logger.fine(menu.getText() + " menu: inserting [" + menuItem.getText() + "] at index: " + index);
-        if (index == -1) {
-            index = menu.getItemCount();
-        }
-        // a menu item can't be added to a menu at a given index unless that
-        // index already exists. Since we can't control the order in which
-        // modules add menu items, we add placeholder menu items as blocks to
-        // support menu items with higher indices.
-        for (int i = menu.getItemCount();i <= index;i++) {
-            menu.add(new JMenuItem());
+    public void addToMenu(JMenu menu, JMenuItem menuItem, int weight) {
+        if (weight < 0) {
+            weight = Integer.MAX_VALUE;
         }
 
-        // if two items have the same index, the last added will win.
-        // we should really diplay a warning if there's a conflict to make
-        // it easier for people to maintain non-conflicting menu indices
-        menu.remove(index);
+        logger.fine(menu.getText() + " menu: inserting [" + menuItem.getText() + 
+                    "] with weight: " + weight);
+
+        // find the index of the first menu item with a higher weight or
+        // the same weight and later in the alphabet
+        int index = 0;
+        for (index = 0; index < menu.getItemCount(); index++) {
+            JMenuItem curItem = menu.getItem(index);
+            int curWeight = menuWeights.get(curItem);
+            if (curWeight > weight) {
+                break;
+            } else if (curWeight == weight) {
+                if (curItem.getName() == null) {
+                    break;
+                }
+
+                if (menuItem.getName() != null &&
+                    menuItem.getName().compareTo(curItem.getName()) > 0)
+                {
+                    break;
+                }
+            }
+        }
+
+        // add the item at the right place
         menu.insert(menuItem, index);
+
+        // remember the menu's weight
+        menuWeights.put(menuItem, weight);
+    }
+
+    /**
+     * Remove the given menu item from a menu
+     * @param menu the menu to remove from
+     * @param item the item to remove
+     */
+    public void removeFromMenu(JMenu menu, JMenuItem item) {
+        menu.remove(item);
+        menuWeights.remove(item);
     }
 
     /**
@@ -277,6 +307,13 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /**
      * {@inheritDoc}
      */
+    public void removeFromFileMenu(JMenuItem menuItem) {
+        removeFromMenu(fileMenu, menuItem);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void addToEditMenu(JMenuItem menuItem) {
         addToMenu(editMenu, menuItem, -1);
     }
@@ -286,6 +323,13 @@ public class MainFrameImpl extends JFrame implements MainFrame {
      */
     public void addToEditMenu(JMenuItem menuItem, int index) {
         addToMenu(editMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeFromEditMenu(JMenuItem menuItem) {
+        removeFromMenu(editMenu, menuItem);
     }
 
     /**
@@ -305,6 +349,13 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /**
      * {@inheritDoc}
      */
+    public void removeFromViewMenu(JMenuItem menuItem) {
+        removeFromMenu(viewMenu, menuItem);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void addToToolsMenu(JMenuItem menuItem) {
         addToMenu(toolsMenu, menuItem, -1);
     }
@@ -314,6 +365,13 @@ public class MainFrameImpl extends JFrame implements MainFrame {
      */
     public void addToToolsMenu(JMenuItem menuItem, int index) {
         addToMenu(toolsMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeFromToolsMenu(JMenuItem menuItem) {
+        removeFromMenu(toolsMenu, menuItem);
     }
 
     /**
@@ -333,6 +391,13 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /**
      * {@inheritDoc}
      */
+    public void removeFromPlacemarksMenu(JMenuItem menuItem) {
+        removeFromMenu(placemarksMenu, menuItem);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void addToWindowMenu(JMenuItem menuItem) {
         addToMenu(windowMenu, menuItem, -1);
     }
@@ -342,6 +407,13 @@ public class MainFrameImpl extends JFrame implements MainFrame {
      */
     public void addToWindowMenu(JMenuItem menuItem, int index) {
         addToMenu(windowMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeFromWindowMenu(JMenuItem menuItem) {
+        removeFromMenu(windowMenu, menuItem);
     }
 
     /**
@@ -497,4 +569,5 @@ private void messageLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JMenu viewMenu;
     private javax.swing.JMenu windowMenu;
     // End of variables declaration//GEN-END:variables
+
 }

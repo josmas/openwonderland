@@ -55,7 +55,6 @@ public class AudioMenu extends javax.swing.JPanel {
                 }
             }
         });
-        JmeClientMain.getFrame().addToWindowMenu(softphoneMenuItem, 4);
 
         muteCheckBox = new JCheckBoxMenuItem("Mute");
         muteCheckBox.setAccelerator(KeyStroke.getKeyStroke('['));
@@ -67,7 +66,6 @@ public class AudioMenu extends javax.swing.JPanel {
                 }
             }
         });
-        JmeClientMain.getFrame().addToToolsMenu(muteCheckBox, 0);
 
         voiceChatMenuItem = new JMenuItem("Private Voice Chat");
         voiceChatMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -78,15 +76,38 @@ public class AudioMenu extends javax.swing.JPanel {
                 }
             }
         });
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        audioMenu.setEnabled(enabled);
+        softphoneMenuItem.setEnabled(enabled);
+        muteCheckBox.setEnabled(enabled);
+        voiceChatMenuItem.setEnabled(enabled);
+    }
+
+    public void addMenus() {
+        JmeClientMain.getFrame().addToWindowMenu(softphoneMenuItem, 4);
+        JmeClientMain.getFrame().addToToolsMenu(muteCheckBox, 0);
         JmeClientMain.getFrame().addToWindowMenu(voiceChatMenuItem, 3);
     }
 
-    public static JMenuItem getAudioMenu(AudioMenuListener audioMenuListener) {
+    public void removeMenus() {
+        JmeClientMain.getFrame().removeFromWindowMenu(softphoneMenuItem);
+        JmeClientMain.getFrame().removeFromToolsMenu(muteCheckBox);
+        JmeClientMain.getFrame().removeFromWindowMenu(voiceChatMenuItem);
+    }
+
+    public static AudioMenu getAudioMenu(AudioMenuListener audioMenuListener) {
         if (audioM == null) {
             audioM = new AudioMenu(audioMenuListener);
         }
 
-        return audioM.audioMenu;
+        return audioM;
+    }
+
+    public static JMenuItem getAudioMenuItem(AudioMenuListener audioMenuListener) {
+        return getAudioMenu(audioMenuListener).audioMenu;
     }
 
     public static void updateSoftphoneCheckBoxMenuItem(boolean selected) {

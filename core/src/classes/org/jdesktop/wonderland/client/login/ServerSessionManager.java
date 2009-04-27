@@ -64,7 +64,6 @@ public class ServerSessionManager {
     private static final String DETAILS_URL =
             "wonderland-web-front/resources/ServerDetails";
 
-
     /** the default object to use when creating sessions */
     private static SessionCreator<?> defaultSessionCreator =
             new DefaultSessionCreator();
@@ -86,8 +85,11 @@ public class ServerSessionManager {
     private final Object primarySessionLock = new Object();
 
     /** session lifecycle listeners */
-    private Set<SessionLifecycleListener> lifecycleListeners =
+    private final Set<SessionLifecycleListener> lifecycleListeners =
             new CopyOnWriteArraySet<SessionLifecycleListener>();
+
+    /** the list of plugins we have initialized, to make sure we clean up */
+    private final Set<ClientPlugin> plugins = new HashSet<ClientPlugin>();
 
     /**
      * Constructor is private, use getInstance() instead.
@@ -96,21 +98,9 @@ public class ServerSessionManager {
      */
     ServerSessionManager(String serverURL) throws IOException {
         // load the server details
-        try {
-            URL detailsURL = new URL(new URL(serverURL), DETAILS_URL);
+        this.details = loadDetails(serverURL);
 
-            URLConnection detailsURLConn = detailsURL.openConnection();
-            detailsURLConn.setRequestProperty("Accept", "application/xml");
-
-            this.details = ServerDetails.decode(new InputStreamReader(detailsURLConn.getInputStream()));
-        } catch (JAXBException jbe) {
-            IOException ioe = new IOException("Error reading server details " +
-                                              "from: " + serverURL);
-            ioe.initCause(jbe);
-            throw ioe;
-        }
-
-        // set the server URL to the canonical URL sent by the server
+        // reset the server URL to the canonical URL sent by the server
         this.serverURL = details.getServerURL();
     }
 
@@ -147,7 +137,23 @@ public class ServerSessionManager {
      * @return the details for this server
      */
     public ServerDetails getDetails() {
-        return details;
+        // if there are session connected, just return the details that
+        // they connected with
+        synchronized (this) {
+            if (sessions.size() > 0) {
+                return details;
+            }
+        }
+
+        // otherwise, try to load the latest details from the server
+        try {
+            return loadDetails(getServerURL());
+        } catch (IOException ex) {
+            logger.log(Level.WARNING, "Error loading details", ex);
+
+            // return an empty details object
+            return new ServerDetails();
+        }
     }
 
     /**
@@ -157,12 +163,46 @@ public class ServerSessionManager {
      * @return true if this session manager is connected to the server, or
      * false if not
      */
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
         if (loginControl == null) {
             return false;
         }
 
         return loginControl.isAuthenticated();
+    }
+
+    /**
+     * Disconnect this session.  All sessions will be disconnected, and
+     * all plugins will be cleaned up.
+     */
+    public synchronized void disconnect() {
+        logger.log(Level.WARNING, "[ServerSessionManager] Disconnect from " +
+                   getServerURL());
+
+        // if we are already disconnected, just return
+        if (loginControl == null) {
+            return;
+        }
+
+        // if we are the primary session, send a notification that there
+        // is no longer a primary session
+        if (this.equals(LoginManager.getPrimary())) {
+            LoginManager.setPrimary(null);
+        }
+
+        // disconnect all sessions
+        for (WonderlandSession session : getAllSessions()) {
+            session.logout();
+        }
+
+        // clean up all plugins
+        for (ClientPlugin plugin : plugins) {
+            plugin.cleanup();
+        }
+
+        // all done, clean things up
+        plugins.clear();
+        loginControl = null;
     }
 
     /**
@@ -216,6 +256,10 @@ public class ServerSessionManager {
             createSession(SessionCreator<T> creator)
         throws LoginFailureException
     {
+        // check the server details to see if the timestamp has changed
+        checkTimeStamp(getDetails());
+
+        // determine what type of authentication to use
         AuthenticationInfo authInfo = getDetails().getAuthInfo();
 
         // create the login control if necessary
@@ -246,8 +290,10 @@ public class ServerSessionManager {
             public void sessionStatusChanged(WonderlandSession session,
                                              Status status)
             {
-                if (status.equals(Status.DISCONNECTED)) {
-                    sessions.remove(session);
+                synchronized (ServerSessionManager.this) {
+                    if (status.equals(Status.DISCONNECTED)) {
+                        sessions.remove(session);
+                    }
                 }
             }
 
@@ -300,14 +346,39 @@ public class ServerSessionManager {
     }
 
     /**
-     * Set the primary session
+     * Set the primary session.  The primary session must be in the connected
+     * state.  It will be removed automatically if it disconnects.
      * @param primary the primary session
      */
-    public void setPrimarySession(WonderlandSession primarySession) {
+    public void setPrimarySession(final WonderlandSession primarySession) {
+        if (primarySession != null && primarySession.getStatus() != Status.CONNECTED) {
+            throw new IllegalStateException("Primary session must be connected");
+        }
+
         synchronized (primarySessionLock) {
             this.primarySession = primarySession;
         }
 
+        // add a listener that will remove the primary session if the session
+        // disconnects
+        if (primarySession != null) {
+            primarySession.addSessionStatusListener(new SessionStatusListener() {
+                public void sessionStatusChanged(WonderlandSession session,
+                                                 Status status)
+                {
+                    if (status == Status.DISCONNECTED) {
+                        synchronized (primarySessionLock) {
+                            if (getPrimarySession() == primarySession) {
+                                System.out.println("[ServerSessionManager] set primary session to null");
+                                setPrimarySession(null);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // notify listeners
         firePrimarySession(primarySession);
     }
 
@@ -340,6 +411,55 @@ public class ServerSessionManager {
         }
 
         return loginControl.getClassLoader();
+    }
+
+    /**
+     * Load the server details for the server
+     * @param serverURL the URL of the server to load details for
+     * @throws IOException if there is an error loading or decoding the details
+     */
+    protected ServerDetails loadDetails(String serverURL) throws IOException {
+        try {
+            URL detailsURL = new URL(new URL(serverURL), DETAILS_URL);
+
+            URLConnection detailsURLConn = detailsURL.openConnection();
+            detailsURLConn.setRequestProperty("Accept", "application/xml");
+
+            return ServerDetails.decode(new InputStreamReader(detailsURLConn.getInputStream()));
+        } catch (JAXBException jbe) {
+            IOException ioe = new IOException("Error reading server details " +
+                                              "from: " + serverURL);
+            ioe.initCause(jbe);
+            throw ioe;
+        }
+    }
+
+    /**
+     * Check the server timestamp, and disconnect if it is newer than the
+     * timestamp we have.
+     * @throws LoginFailureException if there is an error checking the
+     * timestamp
+     */
+    protected void checkTimeStamp(ServerDetails details)
+            throws LoginFailureException
+    {
+        logger.fine("[ServerSessionManager] checkTimeStamp old: " +
+                    getDetails().getTimeStamp() + " new: " +
+                    details.getTimeStamp());
+
+        if (details.getTimeStamp() > getDetails().getTimeStamp()) {
+            // the details are newer -- force a disconnect so we reconnect
+            // completely on the next login attempt
+            if (isConnected()) {
+                disconnect();
+            }
+        }
+
+        synchronized (this) {
+            // update the details, since things like the Darkstar server
+            // ordering may have changed
+            this.details = details;
+        }
     }
 
     /**
@@ -458,6 +578,7 @@ public class ServerSessionManager {
             if (LoginManager.getPluginFilter().shouldInitialize(this, plugin)) {
                 try {
                     plugin.initialize(this);
+                    plugins.add(plugin);
                 } catch(Exception e) {
                     logger.log(Level.WARNING, "Error initializing plugin " +
                                plugin.getClass().getName(), e);

@@ -114,6 +114,26 @@ public class DragAndDropManager {
     }
 
     /**
+     * Unregisters a DataFlavorHandlerSPI.
+     *
+     * @param handler The data flavor handler
+     */
+    public void unregisterDataFlavorHandler(DataFlavorHandlerSPI handler) {
+        // For each of the data flavors that are supported by the handler,
+        // remove then from the map. If the data flavor has been overwritten,
+        // make sure not to remove it
+        DataFlavor flavors[] = handler.getDataFlavors();
+        if (flavors != null) {
+            for (DataFlavor flavor : flavors) {
+                DataFlavorHandlerSPI cur = dataFlavorHandlerMap.get(flavor);
+                if (handler == cur) {
+                    dataFlavorHandlerMap.remove(flavor);
+                }
+            }
+        }
+    }
+
+    /**
      * Returns a set of supported data flavors.
      *
      * @return A Set of DataFlavor objects

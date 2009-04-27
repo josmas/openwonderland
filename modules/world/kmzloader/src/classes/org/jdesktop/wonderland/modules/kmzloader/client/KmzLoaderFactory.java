@@ -17,10 +17,13 @@
  */
 package org.jdesktop.wonderland.modules.kmzloader.client;
 
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
@@ -30,11 +33,39 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 public class KmzLoaderFactory extends ModelLoaderFactory
     implements ClientPlugin
 {
+    /** A BaseClientPlugin that delegate activate and deactivate to the parent */
+    private BaseClientPlugin plugin;
 
     public void initialize(ServerSessionManager loginManager) {
         LoaderManager.getLoaderManager().registerLoader(this);
+        this.plugin = new BaseClientPlugin() {
+            @Override
+            protected void activate() {
+                KmzLoaderFactory.this.register();
+            }
+
+            @Override
+            protected void deactivate() {
+                KmzLoaderFactory.this.unregister();
+            }
+        };
+        
+        plugin.initialize(loginManager);
     }
-    
+
+    public void cleanup() {
+        LoaderManager.getLoaderManager().unregisterLoader(this);
+        plugin.cleanup();
+    }
+
+    protected void register() {
+        LoaderManager.getLoaderManager().activateLoader(this);
+    }
+
+    protected void unregister() {
+        LoaderManager.getLoaderManager().deactivateLoader(this);
+    }
+
     public String getFileExtension() {
         return "kmz";
     }
@@ -42,5 +73,4 @@ public class KmzLoaderFactory extends ModelLoaderFactory
     public ModelLoader getLoader() {
         return (ModelLoader) new KmzLoader();
     }
-
 }

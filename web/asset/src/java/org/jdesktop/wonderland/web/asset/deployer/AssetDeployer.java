@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
 import org.jdesktop.wonderland.modules.spi.ModuleDeployerSPI;
+import org.jdesktop.wonderland.front.admin.ServerInfo;
 
 /**
  * Manages the deployment of "assets", where assets include jar files, artwork,
@@ -124,6 +125,12 @@ public class AssetDeployer implements ModuleDeployerSPI {
         DeployedAsset asset = new DeployedAsset(module.getName(), type);
         assetMap.put(asset, part.getFile());
 
+        // if client or common code changes, update the server info
+        // object in the server, forcing clients to reload
+        if (part.getName().equals("client") || part.getName().equals("common")) {
+            ServerInfo.getServerDetails().setTimeStamp(System.currentTimeMillis());
+        }
+
         logger.info("Deploying asset for module " + module.getName() +
                 " for part " + type);
     }
@@ -134,6 +141,12 @@ public class AssetDeployer implements ModuleDeployerSPI {
     public void undeploy(String type, Module module, ModulePart part) {
         DeployedAsset asset = new DeployedAsset(module.getName(), type);
         assetMap.remove(asset);
+
+        // if client or common code changes, update the server info
+        // object in the server, forcing clients to reload
+        if (part.getName().equals("client") || part.getName().equals("common")) {
+            ServerInfo.getServerDetails().setTimeStamp(System.currentTimeMillis());
+        }
     }
     
     /**

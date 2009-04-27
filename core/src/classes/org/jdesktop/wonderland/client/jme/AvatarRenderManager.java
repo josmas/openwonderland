@@ -18,13 +18,13 @@
 package org.jdesktop.wonderland.client.jme;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  * Provides a mechansim for Avatar renderer modules to register themselves
@@ -33,24 +33,32 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
  * @author paulby
  */
 public class AvatarRenderManager {
-
-    private static AvatarRenderManager avatarRenderMgr = new AvatarRenderManager();
-    private HashMap<String, Class<? extends CellRenderer>> rendererClasses = new HashMap();
-
-    private AvatarRenderManager() {
-
-    }
+    private final Map<ServerSessionManager, Class<? extends CellRenderer>> renderers =
+            new HashMap<ServerSessionManager, Class<? extends CellRenderer>>();
 
     /**
      * Get the avatar render manager
      * @return
      */
     public static AvatarRenderManager getAvatarRenderManager() {
-        return avatarRenderMgr;
+        return SingletonHolder.INSTANCE;
     }
 
-    public void registerRenderer(Class<? extends CellRenderer> rendererClass) {
-        rendererClasses.put(rendererClass.getName(), rendererClass);
+    /**
+     * Singleton, use getAvatarRenderManager() instead
+     */
+    private AvatarRenderManager() {
+    }
+
+
+    public void registerRenderer(ServerSessionManager session, 
+                                 Class<? extends CellRenderer> rendererClass)
+    {
+        renderers.put(session, rendererClass);
+    }
+
+    public void unregisterRenderer(ServerSessionManager session) {
+        renderers.remove(session);
     }
 
     /**
@@ -59,16 +67,15 @@ public class AvatarRenderManager {
      * @param rendererClass
      * @return
      */
-    public CellRenderer createRenderer(String rendererClass, Cell cell) throws RendererUnavailable {
-       try {
+    public CellRenderer createRenderer(ServerSessionManager session, Cell cell) throws RendererUnavailable {
+       Class<? extends CellRenderer> clazz = renderers.get(session);
 
-            Class<? extends CellRenderer> clazz = rendererClasses.get(rendererClass);
+        try {
             Constructor con = clazz.getConstructor(Cell.class);
             return (CellRenderer) con.newInstance(cell);
         } catch (Exception e) {
             Logger.getAnonymousLogger().log(Level.INFO, "Failed to created Renderer because ", e);
-            e.printStackTrace();
-            throw new RendererUnavailable(rendererClass);
+            throw new RendererUnavailable(clazz.getName());
         }
     }
 
@@ -76,5 +83,10 @@ public class AvatarRenderManager {
         public RendererUnavailable(String msg) {
             super(msg);
         }
+    }
+
+    private static final class SingletonHolder {
+        private static final AvatarRenderManager INSTANCE =
+                new AvatarRenderManager();
     }
 }

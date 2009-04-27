@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
+import java.util.Properties;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -28,7 +31,8 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
  */
 public class JmeClientSession extends CellClientSession {
     private JmeCellCache jmeCellCache;
-    
+    private static final String INITIAL_POSITION_PREFIX = "view.initial.";
+
     public JmeClientSession(ServerSessionManager manager,
                             WonderlandServerInfo serverInfo,
                             ClassLoader loader)
@@ -39,6 +43,30 @@ public class JmeClientSession extends CellClientSession {
     @Override
     public JmeCellCache getCellCache() {
         return jmeCellCache;
+    }
+
+    public void setInitialPosition(Vector3f initialPosition, Quaternion initialLook) {
+        Properties props = getCellCacheProperties();
+        
+        // write the positions into cell properties
+        if (initialPosition != null) {
+            props.setProperty(INITIAL_POSITION_PREFIX + "x", 
+                              String.valueOf(initialPosition.getX()));
+            props.setProperty(INITIAL_POSITION_PREFIX + "y", 
+                              String.valueOf(initialPosition.getY()));
+            props.setProperty(INITIAL_POSITION_PREFIX + "z", 
+                              String.valueOf(initialPosition.getZ()));
+        }
+        
+        if (initialLook != null) {
+            float[] angles = initialLook.toAngles(new float[3]);
+            props.setProperty(INITIAL_POSITION_PREFIX + "rotx", 
+                              String.valueOf(angles[0]));
+            props.setProperty(INITIAL_POSITION_PREFIX + "roty", 
+                              String.valueOf(angles[1]));
+            props.setProperty(INITIAL_POSITION_PREFIX + "rotz", 
+                              String.valueOf(angles[2]));
+        }
     }
 
     // createCellCache is called in the constructor fo CellClientSession

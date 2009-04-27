@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.comms;
 
+import java.util.Properties;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -39,7 +40,12 @@ public class CellClientSession extends WonderlandSessionImpl {
     private CellChannelConnection cellChannelConnection;
     private CellEditChannelConnection cellEditChannelConnection;
     private CellCache cellCache;
-    
+
+    /** properties for each connection */
+    private final Properties cellCacheProps = new Properties();
+    private final Properties cellChannelProps = new Properties();
+    private final Properties cellEditProps = new Properties();
+
     public CellClientSession(ServerSessionManager manager, 
                              WonderlandServerInfo serverInfo)
     {
@@ -85,7 +91,15 @@ public class CellClientSession extends WonderlandSessionImpl {
     public CellCacheConnection getCellCacheConnection() {
         return cellCacheConnection;
     }
-    
+
+    /**
+     * Get the properties associated with the cell cache connection.
+     * @return the properties for the cell cache connection
+     */
+    public Properties getCellCacheProperties() {
+        return cellCacheProps;
+    }
+
     /**
      * Get the cell channel connection
      * @return the cell channel connection
@@ -95,13 +109,29 @@ public class CellClientSession extends WonderlandSessionImpl {
     }
 
     /**
+     * Get the properties associated with the cell channel connection.
+     * @return the properties for the cell channel connection
+     */
+    public Properties getCellChannelProperties() {
+        return cellChannelProps;
+    }
+
+    /**
      * Get the cell edit channel connection
      * @return the cell edit channel connection
      */
     public CellEditChannelConnection getCellEditChannelConnection() {
         return cellEditChannelConnection;
     }
-    
+
+    /**
+     * Get the properties associated with the cell edit connection.
+     * @return the properties for the cell edit connection
+     */
+    public Properties getCellEditProperties() {
+        return cellEditProps;
+    }
+
     /**
      * Override the login message to connect clients after the login
      * succeeds.  If a client fails to connect, the login will be aborted and
@@ -123,15 +153,15 @@ public class CellClientSession extends WonderlandSessionImpl {
             // cell messages.  We need to do this before attaching the
             // cell cache connection, since the cell cache connection
             // will create a view and immediately start joining us to cells
-            cellChannelConnection.connect(this);
+            cellChannelConnection.connect(this, cellChannelProps);
 
             // Now connect to the cellCache. The view will be determined via the
             // localAvatar object.
-            cellCacheConnection.connect(this);
+            cellCacheConnection.connect(this, cellCacheProps);
             
             // Finally, connect to the edit channel for cells. This will let
             // cells be added, removed, etc.
-            cellEditChannelConnection.connect(this);
+            cellEditChannelConnection.connect(this, cellEditProps);
         } catch (ConnectionFailureException afe) {
             // a client failed to connect -- logout
             logout();

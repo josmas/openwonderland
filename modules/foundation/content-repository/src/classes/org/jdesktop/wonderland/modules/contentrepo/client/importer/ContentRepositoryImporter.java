@@ -21,9 +21,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.content.ContentImportManager;
 import org.jdesktop.wonderland.client.jme.content.AbstractContentImporter;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
@@ -42,20 +45,64 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-public class ContentRepositoryImporter extends AbstractContentImporter implements ClientPlugin {
-
+public class ContentRepositoryImporter extends AbstractContentImporter 
+        implements ClientPlugin
+{
     private static Logger logger = Logger.getLogger(ContentRepositoryImporter.class.getName());
 
     /* The current session to the server, needed to fetch the content repo */
     private ServerSessionManager loginInfo = null;
+
+    /** An internal BaseClientPlugin that handles activate and deactivate by
+     *  delegating to the superclass methods
+     */
+    private BaseClientPlugin plugin;
 
     /**
      * @inheritDoc()
      */
     public void initialize(ServerSessionManager loginInfo) {
         this.loginInfo = loginInfo;
+        this.plugin = new BaseClientPlugin() {
+            @Override
+            protected void activate() {
+                ContentRepositoryImporter.this.register();
+            }
+
+            @Override
+            protected void deactivate() {
+                ContentRepositoryImporter.this.unregister();
+            }
+
+        };
+
+        // initialize our plugin
+        plugin.initialize(loginInfo);
+    }
+
+    public void cleanup() {
+        // clean up the plugin
+        plugin.cleanup();
+    }
+
+    /**
+     * Called when our session manager becomes primary. Set the default
+     * importer to this one.
+     */
+    public void register() {
         ContentImportManager cim = ContentImportManager.getContentImportManager();
         cim.setDefaultContentImporter(this);
+    }
+
+    /**
+     * Called when our session manager is no longer primary.  Reset the
+     * default importer back to null
+     */
+    public void unregister() {
+        ContentImportManager cim = ContentImportManager.getContentImportManager();
+        if (cim.getDefaultContentImporter() == this) {
+            cim.setDefaultContentImporter(null);
+        }
     }
 
     /**

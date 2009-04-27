@@ -20,11 +20,13 @@ package org.jdesktop.wonderland.client.cell.registry;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
@@ -33,11 +35,9 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
  * registered with the system. This is used to display them in the palette and
  * also provides the necessary information to create them in-world.
  * 
- * XXX This does not work with federation -- need to listen for login events!
- * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class CellComponentRegistry {
+public class CellComponentRegistry implements PrimaryServerListener {
 
     /* A set of all cell factories */
     private Set<CellComponentFactorySPI> componentFactorySet;
@@ -48,27 +48,17 @@ public class CellComponentRegistry {
     /* A map of cell component server state classes to their factories */
     private Map<Class, CellComponentFactorySPI> stateFactoryMap;
 
-    /* Initialize from the list of service providers in module JARs */
-    static {
-        /* Attempt to load the class names using the service providers */
-        // This needs to work with federation XXX
-        ServerSessionManager manager = LoginManager.getPrimary();
-        
-        // now search annotations
-        ScannedClassLoader cl = manager.getClassloader();
-        Iterator<CellComponentFactorySPI> it = cl.getAll(
-                CellComponentFactory.class, CellComponentFactorySPI.class);
-        while (it.hasNext()) {
-            CellComponentFactorySPI factory = it.next();
-            CellComponentRegistry.getCellComponentRegistry().registerCellComponentFactory(factory);
-        }
-    }
+    /* The set of factories associated with the current session */
+    private final Set<CellComponentFactorySPI> sessionFactories =
+            new LinkedHashSet<CellComponentFactorySPI>();
 
     /** Default constructor */
     public CellComponentRegistry() {
         componentFactorySet = new HashSet();
         componentFactoryMap = new HashMap();
         stateFactoryMap = new HashMap();
+
+        LoginManager.addPrimaryServerListener(this);
     }
     
     /**
@@ -102,7 +92,27 @@ public class CellComponentRegistry {
         componentFactoryMap.put(factory.getClass(), factory);
         stateFactoryMap.put(factory.getDefaultCellComponentServerState().getClass(), factory);
     }
-    
+
+    /**
+     * Unregisters a CellFactory. Make sure we're not removing something that
+     * someone other than this factory wrote.
+     * @param factory The cell factory
+     */
+    public synchronized void unregisterCellComponentFactory(CellComponentFactorySPI factory) {
+        // Add to the set containing all cell factories and the map
+        componentFactorySet.remove(factory);
+
+        CellComponentFactorySPI cur = componentFactoryMap.get(factory.getClass());
+        if (cur == factory) {
+            componentFactoryMap.remove(factory.getClass());
+        }
+
+        cur = stateFactoryMap.get(factory.getDefaultCellComponentServerState().getClass());
+        if (cur == factory) {
+            stateFactoryMap.remove(factory.getDefaultCellComponentServerState().getClass());
+        }
+    }
+
     /**
      * Returns a set of all cell factories. If no factories are registered,
      * returns an empty set.
@@ -133,5 +143,48 @@ public class CellComponentRegistry {
      */
     public CellComponentFactorySPI getCellFactoryByStateClass(Class clazz) {
         return stateFactoryMap.get(clazz);
+    }
+
+   /**
+     * Notification that the primary server has changed.  Update our maps
+     * accordingly.
+     * @param server the new primary server (may be null)
+     */
+    public void primaryServer(ServerSessionManager server) {
+        // remove any existing entries
+        unregisterFactories();
+
+        // find new entries
+        if (server != null) {
+            registerFactories(server);
+        }
+    }
+
+    /**
+     * Register all factories associated with the given session
+     * manager.
+     */
+    protected synchronized void registerFactories(ServerSessionManager manager) {
+        // search annotations
+        // now search annotations
+        ScannedClassLoader cl = manager.getClassloader();
+        Iterator<CellComponentFactorySPI> it = cl.getAll(
+                CellComponentFactory.class, CellComponentFactorySPI.class);
+        while (it.hasNext()) {
+            CellComponentFactorySPI factory = it.next();
+            registerCellComponentFactory(factory);
+            sessionFactories.add(factory);
+        }
+    }
+
+    /**
+     * Unregister all factories associated with the current session
+     */
+    protected synchronized void unregisterFactories() {
+        for (CellComponentFactorySPI factory : sessionFactories) {
+            unregisterCellComponentFactory(factory);
+        }
+
+        sessionFactories.clear();
     }
 }

@@ -79,6 +79,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 
+import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
@@ -99,45 +100,28 @@ public class AudioManagerClient extends BaseConnection implements
     private Cell cell;
     private HashMap<String, InCallDialog> inCallDialogs = new HashMap();
 
+    private final MyEventListener muteListener = new MyEventListener();
+    private JMenuItem userListJMenuItem;
+
     /** 
      * Create a new AudioManagerClient
      * @param session the session to connect to, guaranteed to be in
      * the CONNECTED state
      * @throws org.jdesktop.wonderland.client.comms.ConnectionFailureException
      */
-    public AudioManagerClient(WonderlandSession session)
-            throws ConnectionFailureException {
+    public AudioManagerClient() {
+        AudioMenu.getAudioMenu(this).setEnabled(false);
 
-        this.session = session;
-
-        pm = PresenceManagerFactory.getPresenceManager(session);
-
-        session.connect(this);
-
-        LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
-        avatar.addViewCellConfiguredListener(this);
-        if (avatar.getViewCell() != null) {
-            // if the view is already configured, fake an event
-            viewConfigured(avatar);
-        }
-
-        JmeClientMain.getFrame().addToToolsMenu(AudioMenu.getAudioMenu(this), 1);
-
-        javax.swing.JMenuItem userListJMenuItem = new javax.swing.JMenuItem();
-        userListJMenuItem.setText("Users");
+        userListJMenuItem = new javax.swing.JMenuItem();
+        userListJMenuItem.setText("Show Users");
         userListJMenuItem.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showUsers(evt);
             }
         });
-
-        JmeClientMain.getFrame().addToWindowMenu(userListJMenuItem, 5);
-
-        SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
-
-        InputManager.inputManager().addGlobalEventListener(new MyEventListener());
-
+        userListJMenuItem.setEnabled(false);
+        
         logger.fine("Starting AudioManagerCLient");
     }
 
@@ -160,17 +144,57 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     @Override
-    public void disconnect() {
+    public void connect(WonderlandSession session)
+        throws ConnectionFailureException
+    {
+        super.connect(session);
+
+        this.session = session;
+        this.pm = PresenceManagerFactory.getPresenceManager(session);
+
+        LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
+        avatar.addViewCellConfiguredListener(this);
+        if (avatar.getViewCell() != null) {
+            // if the view is already configured, fake an event
+            viewConfigured(avatar);
+        }
+
+        SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
+        InputManager.inputManager().addGlobalEventListener(muteListener);
+
+        // enable the menus
+        AudioMenu.getAudioMenu(this).setEnabled(true);
+        userListJMenuItem.setEnabled(true);
+    }
+
+    @Override
+    public void disconnected() {
+        super.disconnected();
+
         // remove listeners
 
         // TODO: add methods to remove listeners!
 
-        // LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
-        // avatar.removeViewCellConfiguredListener(this);
+        LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
+        avatar.removeViewCellConfiguredListener(this);
+
         SoftphoneControlImpl.getInstance().removeSoftphoneListener(this);
         //JmeClientMain.getFrame().removeAudioMenuListener(this);
+        InputManager.inputManager().removeGlobalEventListener(muteListener);
+    }
 
-        super.disconnect();
+    public void addMenus() {
+        JmeClientMain.getFrame().addToToolsMenu(AudioMenu.getAudioMenuItem(this), 1);
+        JmeClientMain.getFrame().addToWindowMenu(userListJMenuItem, 5);
+
+        AudioMenu.getAudioMenu(this).addMenus();
+    }
+
+    public void removeMenus() {
+        JmeClientMain.getFrame().removeFromToolsMenu(AudioMenu.getAudioMenuItem(this));
+        JmeClientMain.getFrame().removeFromWindowMenu(userListJMenuItem);
+
+        AudioMenu.getAudioMenu(this).removeMenus();
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
@@ -180,11 +204,14 @@ public class AudioManagerClient extends BaseConnection implements
 
         presenceInfo = pm.getPresenceInfo(cellID);
 
-        connectSoftphone();
+    logger.fine("[AudioManagerClient] view configured for cell " +
+                cellID + " presence: " + presenceInfo + " from " + pm);
+
+	connectSoftphone();
     }
 
     public void connectSoftphone() {
-        logger.fine("Sending message to server to get voice bridge...");
+        logger.fine("[AudioManagerClient] Sending message to server to get voice bridge...");
         if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
             session.send(this, new GetVoiceBridgeMessage());
         }

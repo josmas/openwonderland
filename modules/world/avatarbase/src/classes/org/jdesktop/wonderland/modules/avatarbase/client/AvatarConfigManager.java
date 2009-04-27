@@ -169,7 +169,7 @@ public class AvatarConfigManager {
         return configSettings.getDefaultAvatarConfig();
     }
 
-    public static AvatarConfigManager getAvatarConigManager() {
+    public static AvatarConfigManager getAvatarConfigManager() {
         if (avatarConfigManager==null)
             avatarConfigManager = new AvatarConfigManager();
         return avatarConfigManager;
@@ -204,7 +204,7 @@ public class AvatarConfigManager {
                 }
                 // Load the users default avatar
                 AvatarConfigComponent configComponent = newViewCell.getComponent(AvatarConfigComponent.class);
-                URL selectedURL = AvatarConfigManager.getAvatarConigManager().getDefaultAvatarServerURL(newViewCell.getCellCache().getSession().getSessionManager());
+                URL selectedURL = AvatarConfigManager.getAvatarConfigManager().getDefaultAvatarServerURL(newViewCell.getCellCache().getSession().getSessionManager());
                 logger.info("APPLY "+selectedURL);
                 if (selectedURL!=null) {
                     configComponent.requestConfigChange(selectedURL);
@@ -284,6 +284,10 @@ public class AvatarConfigManager {
         }
 
 
+    }
+
+    public void removeServer(ServerSessionManager session) {
+        avatarConfigServers.remove(session);
     }
 
     public Iterable<String> getAvatars() {

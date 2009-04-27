@@ -44,6 +44,8 @@ public class ClientContextJME extends ClientContext {
 
     private static SceneWorker sceneWorker;
 
+    private static JmeClientMain clientMain;
+
     static {
         worldManager = new WorldManager("Wonderland");
         sceneWorker = new SceneWorker(worldManager);
@@ -163,5 +165,21 @@ public class ClientContextJME extends ClientContext {
         synchronized(collisionSystems) {
             collisionSystems.remove(session);
         }
+    }
+
+    /**
+     * Get the JME client main object
+     * @return the jme main client object
+     */
+    public static JmeClientMain getClientMain() {
+        return clientMain;
+    }
+
+    /**
+     * Set the JME client main object
+     * @param clientMain the main object
+     */
+    static void setClientMain(JmeClientMain clientMain) {
+        ClientContextJME.clientMain = clientMain;
     }
 }

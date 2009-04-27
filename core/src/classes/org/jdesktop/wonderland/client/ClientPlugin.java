@@ -47,4 +47,12 @@ public interface ClientPlugin {
      * plugin is connected to.
      */
     public void initialize(ServerSessionManager loginInfo);
+
+    /**
+     * Clean up any resources used by this plugin.  This is called when
+     * the client's login for the ServerSessionManager lapses due to logout,
+     * timeout, or other reasons.  Plugins should clean up any registrations
+     * such as SessionLifecycleListeners or PrimaryServerListeners.
+     */
+    public void cleanup();
 }

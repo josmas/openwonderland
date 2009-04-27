@@ -248,7 +248,9 @@ public class WonderlandSessionImpl implements WonderlandSession {
     }
     
     public void logout() {
-        getSimpleClient().logout(true);
+        if (getSimpleClient().isConnected()) {
+            getSimpleClient().logout(true);
+        }
     }
     
     public synchronized BigInteger getID() {
@@ -321,7 +323,7 @@ public class WonderlandSessionImpl implements WonderlandSession {
         try {
             getInternalClient().send(attachMessage, listener);
             listener.waitForResponse();
-            
+         
             // check for success -- if we didn't succeed for any reason,
             // throw an exception
             success = listener.isSuccess();

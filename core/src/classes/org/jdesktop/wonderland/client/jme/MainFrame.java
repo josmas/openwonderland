@@ -63,6 +63,7 @@ public interface MainFrame {
     public void addToFileMenu(JMenuItem menuItem);
 
     /**
+     * Add the specified menu item to the edit menu.
      * Add a menu item to the File menu at the specified index, where -1 adds
      * the menu item to the end of the menu
      *
@@ -70,6 +71,14 @@ public interface MainFrame {
      * @param index the position in the menu
      */
     public void addToFileMenu(JMenuItem menuItem, int index);
+
+    /**
+     * Remove the specified menu item from the file menu.
+     *
+     * @param menuItem
+     */
+    public void removeFromFileMenu(JMenuItem menuItem);
+
 
     /**
      * Add the specified menu item to the end of the Edit menu
@@ -88,6 +97,13 @@ public interface MainFrame {
     public void addToEditMenu(JMenuItem menuItem, int index);
 
     /**
+     * Remove the specified menu item from the edit menu.
+     *
+     * @param menuItem
+     */
+    public void removeFromEditMenu(JMenuItem menuItem);
+
+    /**
      * Add the specified menu item to the end of the View menu
      *
      * @param menuItem
@@ -103,6 +119,13 @@ public interface MainFrame {
     public void addToViewMenu(JMenuItem menuItem, int index);
 
     /**
+     * Remove the specified menu item from the view menu.
+     *
+     * @param menuItem
+     */
+    public void removeFromViewMenu(JMenuItem menuItem);
+
+    /**
      * Add the specified menu item to the end of the Tools menu
      *
      * @param menuItem
@@ -116,6 +139,13 @@ public interface MainFrame {
      * @param menuItem
      */
     public void addToToolsMenu(JMenuItem menuItem, int index);
+
+     /**
+     * Remove the specified menu item from the tools menu.
+     *
+     * @param menuItem
+     */
+    public void removeFromToolsMenu(JMenuItem menuItem);
 
     /**
      * Add the specified menu item to the end of the Placemarks menu
@@ -134,6 +164,13 @@ public interface MainFrame {
     public void addToPlacemarksMenu(JMenuItem menuItem, int index);
 
     /**
+     * Remove the specified menu item from the placemarks menu.
+     *
+     * @param menuItem
+     */
+    public void removeFromPlacemarksMenu(JMenuItem menuItem);
+
+    /**
      * Add the specified menu item to the end of the Window menu
      *
      * @param menuItem
@@ -148,6 +185,13 @@ public interface MainFrame {
      * @param index the position in the menu
      */
     public void addToWindowMenu(JMenuItem menuItem, int index);
+
+    /**
+     * Remove the specified menu item from the window menu.
+     *
+     * @param menuItem
+     */
+    public void removeFromWindowMenu(JMenuItem menuItem);
 
     /**
      * Set the server URL in the location field

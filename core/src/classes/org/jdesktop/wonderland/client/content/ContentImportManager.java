@@ -70,6 +70,16 @@ public class ContentImportManager {
     }
 
     /**
+     * Get the current default content importer.
+     *
+     * @return importer the current default content importer, or null if there
+     * is no default content importer.
+     */
+    public ContentImporterSPI getDefaultContentImporter() {
+        return defaultContentImporter;
+    }
+
+    /**
      * Registers a handler for content import. A content import handler handles
      * when an items is to be imported into the world with a specific file
      * extension. Only one import handler is permitted per file extension
@@ -84,6 +94,29 @@ public class ContentImportManager {
         if (extensions != null) {
             for (String extension : extensions) {
                 contentImportMap.put(extension, importer);
+            }
+        }
+    }
+
+    /**
+     * Unregisters a handler for content import.
+     * @param importer The content importer
+     */
+    public void unregisterContentImporter(ContentImporterSPI importer) {
+        // For each of the extensions that are supported by the handler, add
+        // then to the map. If the extension type is already registered, then
+        // overwrite.
+        String extensions[] = importer.getExtensions();
+        if (extensions != null) {
+            for (String extension : extensions) {
+                ContentImporterSPI curImporter = contentImportMap.get(extension);
+
+                // XXX the use of .equals() here is problematic -- it
+                // means we can easily overwrite valid values with null
+                // if unregister is called after register XXX
+                if (curImporter != null && curImporter.equals(importer)) {
+                    contentImportMap.remove(extension);
+                }
             }
         }
     }

@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.modules.palette.client.CellPalette;
  */
 public class CellPaletteDataFlavorHandler implements DataFlavorHandlerSPI {
 
-    private DataFlavor dataFlavor = new DataFlavor(CellServerState.class, "CellServerState");
+    private final DataFlavor dataFlavor = new DataFlavor(CellServerState.class, "CellServerState");
 
     /**
      * @inheritDoc()

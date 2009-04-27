@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.contextmenu.client;
 
-import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.contextmenu.client.ui.SwingContextMenu;
@@ -29,12 +29,23 @@ import org.jdesktop.wonderland.modules.contextmenu.client.ui.SwingContextMenu;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-public class ContextMenuClientPlugin implements ClientPlugin {
-
+public class ContextMenuClientPlugin extends BaseClientPlugin {
     private SwingContextMenu menu = null;
 
+    @Override
     public void initialize(ServerSessionManager loginInfo) {
-        // Simply create an instance of the context menu
-        menu = new SwingContextMenu();
+        this.menu = new SwingContextMenu();
+
+        super.initialize(loginInfo);
+    }
+
+    @Override
+    protected void activate() {
+        menu.register();
+    }
+
+    @Override
+    protected void deactivate() {
+        menu.unregister();
     }
 }

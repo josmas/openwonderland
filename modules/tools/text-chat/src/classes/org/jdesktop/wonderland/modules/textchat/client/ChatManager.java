@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -46,17 +47,21 @@ public class ChatManager implements TextChatListener {
     private static Logger logger = Logger.getLogger(ChatManager.class.getName());
     private WeakReference<ChatUserListJFrame> userListFrameRef = null;
     private Map<String, WeakReference<TextChatJFrame>> textChatFrameRefMap = null;
+    private JMenu menu = null;
     private JMenuItem textChatMenuItem = null;
     private JMenuItem userListMenuItem = null;
     private TextChatConnection textChatConnection = null;
     private String localUserName = null;
+    private ServerSessionManager loginInfo = null;
+    private SessionLifecycleListener sessionListener = null;
 
     /** Constructor */
     public ChatManager(final ServerSessionManager loginInfo) {
+        this.loginInfo = loginInfo;
         textChatFrameRefMap = new HashMap();
 
         // Create a new Chat menu underneath the "Tools" menu
-        JMenu menu = new JMenu("Chat");
+        menu = new JMenu("Chat");
 
         // First create the text chat frame and keep a weak reference to it so
         // that it gets garbage collected
@@ -104,7 +109,7 @@ public class ChatManager implements TextChatListener {
         // Wait for a primary session to become active. When it does, then
         // we enable the menu items and set the primary sessions on their
         // objects.
-        loginInfo.addLifecycleListener(new SessionLifecycleListener() {
+        sessionListener = new SessionLifecycleListener() {
             public void sessionCreated(WonderlandSession session) {
                 // Do nothing for now
             }
@@ -112,13 +117,25 @@ public class ChatManager implements TextChatListener {
             public void primarySession(WonderlandSession session) {
                 setPrimarySession(session);
             }
-        });
+        };
+        loginInfo.addLifecycleListener(sessionListener);
 
         // XXX Check if we already have primary session, should be handled
         // by addLifecycleListener
         if (loginInfo.getPrimarySession() != null) {
             setPrimarySession(loginInfo.getPrimarySession());
         }
+    }
+
+    /**
+     * Unregister and menus we have created, etc.
+     */
+    public void unregister() {
+        // remove the session listener
+        loginInfo.removeLifecycleListener(sessionListener);
+
+        // Remove the menu item
+        JmeClientMain.getFrame().removeFromWindowMenu(menu);
     }
 
     /**

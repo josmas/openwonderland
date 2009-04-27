@@ -27,6 +27,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * A description of a Wonderland server we are trying to connect to.
@@ -37,6 +38,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class ServerDetails implements Cloneable {
     private String serverURL;
+    private long timeStamp;
     private AuthenticationInfo authInfo;
     private DarkstarServer[] darkstarServers;
 
@@ -58,15 +60,25 @@ public class ServerDetails implements Cloneable {
     /**
      * Create a new ServerDetails with the given information
      * @param serverURL the server URL
+     * @param timeStamp the time this server last had a relevant change. Used
+     * to determine if a session can be reconnected or if it must be
+     * cleaned up first.
      * @param authInfo the authentication information
      * @param darkstarServers the servers to connect to
      */
-    public ServerDetails(String serverURL, AuthenticationInfo authInfo,
+    public ServerDetails(String serverURL, long timeStamp,
+                         AuthenticationInfo authInfo,
                          DarkstarServer[] darkstarServers)
     {
         this.serverURL = serverURL;
+        this.timeStamp = timeStamp;
         this.authInfo = authInfo;
         this.darkstarServers = darkstarServers;
+    }
+
+    @XmlTransient
+    public String getVersion() {
+        return "0.5";
     }
 
     /**
@@ -83,6 +95,23 @@ public class ServerDetails implements Cloneable {
      */
     public void setServerURL(String serverURL) {
         this.serverURL = serverURL;
+    }
+
+    /**
+     * Get the last change timestamp for this server
+     * @return the change timestamp for this server
+     */
+    @XmlElement
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+
+    /**
+     * Set the last change timestamp for this server
+     * @return the change timestamp for this server
+     */
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
     /**
@@ -167,6 +196,7 @@ public class ServerDetails implements Cloneable {
         ServerDetails out = new ServerDetails();
         out.setServerURL(getServerURL());
         out.setAuthInfo(getAuthInfo().clone());
+        out.setTimeStamp(getTimeStamp());
 
         // copy servers array
         DarkstarServer[] inServers = getDarkstarServers();

@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.sun.sgs.kernel.ComponentRegistry;
 import java.util.Properties;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
@@ -45,9 +47,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
+import org.jdesktop.wonderland.common.cell.messages.MovableAvatarMessage;
 import org.jdesktop.wonderland.common.cell.security.ViewAction;
 import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.server.CellAccessControl;
@@ -98,8 +102,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             
     private HashSet<ViewCellCacheRevalidationListener> revalidationsListeners = new HashSet();
 
-    private Properties connectionProperties=null;
-    
+    private Properties connectionProperties = new Properties();
+    private static final String INITIAL_POSITION_PROP_PREFIX = "view.initial.";
+
     /**
      * Creates a new instance of ViewCellCacheMO
      */
@@ -122,6 +127,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         this.clientID = clientID;
 
         ViewCellMO view = viewRef.get();
+
+        // see if there is an initial position specified
+        CellTransform xform = getInitialPosition();
+        if (xform != null) {
+            view.setLocalTransform(xform);
+        }
 
         if (!view.isLive()) {
             try {
@@ -189,6 +200,59 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             // just send the messages directly
             sendLoadMessages(cells);
         }
+    }
+
+    /**
+     * Get the initial position for this view based on the connection
+     * properties
+     * @return the initial transform, or null if there is no initial 
+     * transform
+     */
+    protected CellTransform getInitialPosition() {
+        float transX = 0f;
+        float transY = 0f;
+        float transZ = 0f;
+
+        String transXStr = connectionProperties.getProperty(INITIAL_POSITION_PROP_PREFIX + "x");
+        if (transXStr != null) {
+            transX = Float.parseFloat(transXStr);
+        }
+
+        String transYStr = connectionProperties.getProperty(INITIAL_POSITION_PROP_PREFIX + "y");
+        if (transYStr != null) {
+            transY = Float.parseFloat(transYStr);
+        }
+
+        String transZStr = connectionProperties.getProperty(INITIAL_POSITION_PROP_PREFIX + "z");
+        if (transZStr != null) {
+            transZ = Float.parseFloat(transZStr);
+        }
+
+        Vector3f translation = new Vector3f(transX, transY, transZ);
+
+        float rotX = 0f;
+        float rotY = 0f;
+        float rotZ = 0f;
+
+        String rotXStr = connectionProperties.getProperty(INITIAL_POSITION_PROP_PREFIX + "rotx");
+        if (rotXStr != null) {
+            rotX = Float.parseFloat(rotXStr);
+        }
+
+        String rotYStr = connectionProperties.getProperty(INITIAL_POSITION_PROP_PREFIX + "roty");
+        if (rotYStr != null) {
+            rotY = Float.parseFloat(rotYStr);
+        }
+
+        String rotZStr = connectionProperties.getProperty(INITIAL_POSITION_PROP_PREFIX + "rotz");
+        if (rotZStr != null) {
+            rotZ = Float.parseFloat(rotZStr);
+        }
+
+        Quaternion rotate = new Quaternion();
+        rotate.fromAngles(rotX, rotY, rotZ);
+
+        return new CellTransform(rotate, translation);
     }
 
     private static final class LoadCellsTask implements SecureTask, Serializable {

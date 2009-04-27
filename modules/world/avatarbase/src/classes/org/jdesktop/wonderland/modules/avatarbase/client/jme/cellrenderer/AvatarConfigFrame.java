@@ -65,7 +65,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 //        scrollPane.getViewport().add(basicOptions);
 
         WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
-        avatarManager = AvatarConfigManager.getAvatarConigManager();
+        avatarManager = AvatarConfigManager.getAvatarConfigManager();
 
         DefaultListModel listModel = (DefaultListModel) avatarList.getModel();
 
@@ -84,7 +84,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             }
         });
 
-        defaultAvatarTF.setText(AvatarConfigManager.getAvatarConigManager().getDefaultAvatarName());
+        defaultAvatarTF.setText(AvatarConfigManager.getAvatarConfigManager().getDefaultAvatarName());
     }
 
     /** This method is called from within the constructor to
@@ -423,9 +423,9 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         Thread t = new Thread() {
             public void run() {
                 try {
-                    AvatarConfigManager.getAvatarConigManager().setDefaultAvatarName(selected);
+                    AvatarConfigManager.getAvatarConfigManager().setDefaultAvatarName(selected);
                     AvatarConfigComponent configComponent = avatarRenderer.getCell().getComponent(AvatarConfigComponent.class);
-                    URL selectedURL = AvatarConfigManager.getAvatarConigManager().getNamedAvatarServerURL(
+                    URL selectedURL = AvatarConfigManager.getAvatarConfigManager().getNamedAvatarServerURL(
                                     (String)avatarList.getSelectedValue(),
                                     avatarRenderer.getCell().getCellCache().getSession().getSessionManager());
                     if (selectedURL!=null)
@@ -473,7 +473,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         final JFrame f = this;
         f.setCursor(waitCursor);
-        URL selectedURL = AvatarConfigManager.getAvatarConigManager().getNamedAvatarURL((String)avatarList.getSelectedValue());
+        URL selectedURL = AvatarConfigManager.getAvatarConfigManager().getNamedAvatarURL((String)avatarList.getSelectedValue());
         WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
         ServerSessionManager manager = session.getSessionManager();
         String serverHostAndPort = manager.getServerNameAndPort();

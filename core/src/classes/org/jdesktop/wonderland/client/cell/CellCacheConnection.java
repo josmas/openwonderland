@@ -50,8 +50,6 @@ public class CellCacheConnection extends BaseConnection {
     
     private ClientView clientView;
     private CellID viewCellID = null;
-    private static Properties connectionProperties = null;
-
     
     public CellCacheConnection(ClientView clientView) {
         this.clientView = clientView;
@@ -149,8 +147,10 @@ public class CellCacheConnection extends BaseConnection {
      * {@inheritDoc}
      */
     @Override
-    public void connect(WonderlandSession session) throws ConnectionFailureException {
-        super.connect(session, connectionProperties);
+    public void connect(WonderlandSession session, Properties props)
+            throws ConnectionFailureException
+    {
+        super.connect(session, props);
         ViewCreateResponseMessage msg = registerView(clientView.getViewID());
         clientView.serverInitialized(msg);
         viewCellID = msg.getViewCellID();
@@ -165,14 +165,6 @@ public class CellCacheConnection extends BaseConnection {
         listeners.clear();
     }
     
-
-    public static void setConnectionProperty(String key, String value) {
-        if (connectionProperties==null)
-            connectionProperties = new Properties();
-
-        connectionProperties.setProperty(key, value);
-    }
-
     /**
      * Listener interface for cell cache action messages
      */

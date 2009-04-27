@@ -20,12 +20,9 @@ package org.jdesktop.wonderland.modules.securitygroups.client;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
-import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.MainFrame;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.PrimaryServerListener;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
 /**
@@ -33,29 +30,12 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  * @author jkaplan
  */
 @Plugin
-public class GroupEditorPlugin implements ClientPlugin, PrimaryServerListener {
-    private ServerSessionManager myServer;
+public class GroupEditorPlugin extends BaseClientPlugin {
     private JMenuItem menuItem;
     private GroupManagerFrame gmf;
 
-    public void initialize(ServerSessionManager server) {
-        this.myServer = server;
-
-        LoginManager.addPrimaryServerListener(this);
-        if (LoginManager.getPrimary() == myServer) {
-            addGroupMenuItem();
-        }
-    }
-
-    public void primaryServer(ServerSessionManager server) {
-        if (server == myServer) {
-            addGroupMenuItem();
-        } else {
-            removeGroupMenuItem();
-        }
-    }
-
-    protected void addGroupMenuItem() {
+    @Override
+    protected void activate() {
         MainFrame mf = JmeClientMain.getFrame();
         if (mf == null) {
             return;
@@ -65,8 +45,8 @@ public class GroupEditorPlugin implements ClientPlugin, PrimaryServerListener {
             menuItem = new JMenuItem(new AbstractAction("Groups...") {
                 public void actionPerformed(ActionEvent e) {
                     if (gmf == null) {
-                        gmf = new GroupManagerFrame(myServer.getServerURL(),
-                                                    myServer.getCredentialManager());
+                        gmf = new GroupManagerFrame(getSessionManager().getServerURL(),
+                                                    getSessionManager().getCredentialManager());
                     }
 
                     gmf.setVisible(true);
@@ -77,12 +57,12 @@ public class GroupEditorPlugin implements ClientPlugin, PrimaryServerListener {
         mf.addToEditMenu(menuItem, 2);
     }
 
-    protected void removeGroupMenuItem() {
+    @Override
+    protected void deactivate() {
         MainFrame mf = JmeClientMain.getFrame();
         if (mf == null || menuItem == null) {
             return;
         }
-
-        // XXX REMOVE MENU ITEM XXX
+        mf.removeFromEditMenu(menuItem);
     }
 }

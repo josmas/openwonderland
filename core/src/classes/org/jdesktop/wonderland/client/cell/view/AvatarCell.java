@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.client.jme.AvatarRenderManager.RendererUnavailabl
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarJME;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
@@ -71,7 +72,8 @@ public class AvatarCell extends ViewCell {
             case RENDERER_JME :
                 if (ViewManager.getViewManager().useAvatars) {
                     try {
-                        ret = ClientContextJME.getAvatarRenderManager().createRenderer("org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME", this);
+                        ServerSessionManager session = getCellCache().getSession().getSessionManager();
+                        ret = ClientContextJME.getAvatarRenderManager().createRenderer(session, this);
                     } catch (RendererUnavailable ex) {
                         Logger.getLogger(AvatarCell.class.getName()).log(Level.SEVERE, null, ex);
                         ret = new AvatarJME(this);

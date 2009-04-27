@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
 import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
@@ -35,12 +36,10 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
  * CellPropertiesSPI interface and register their class with the Java service
  * loader mechanism. This class lists all of these cell properties.
  * 
- * XXX This does not work with federation -- need to listen for login events!
- * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @InternalAPI
-public class CellPropertiesManager {
+public class CellPropertiesManager implements PrimaryServerListener {
 
     /* A set of all cell property objects */
     private Set<CellPropertiesSPI> cellPropertiesSet;
@@ -48,25 +47,16 @@ public class CellPropertiesManager {
     /* A map of cell state classes and their cell properties objects */
     private Map<Class, CellPropertiesSPI> cellPropertiesClassMap;
 
-    /* Initialize from the list of service providers in module JARs */
-    static {
-        /* Attempt to load the class names using the service providers */
-        // This needs to work with federation XXX
-        ServerSessionManager manager = LoginManager.getPrimary();
-        ScannedClassLoader cl = manager.getClassloader();
-        
-        Iterator<CellPropertiesSPI> it = cl.getAll(
-                CellProperties.class, CellPropertiesSPI.class);
-        while (it.hasNext() == true) {
-            CellPropertiesSPI spi = it.next();
-            CellPropertiesManager.getCellPropertiesManager().registerCellFactory(spi);
-        }
-    }
+    /* A set of all cell properties associated with the current session */
+    private final Set<CellPropertiesSPI> sessionProperties =
+            new HashSet<CellPropertiesSPI>();
 
     /** Default constructor */
     public CellPropertiesManager() {
         cellPropertiesClassMap = new HashMap();
         cellPropertiesSet = new HashSet();
+
+        LoginManager.addPrimaryServerListener(this);
     }
     
     /**
@@ -92,7 +82,7 @@ public class CellPropertiesManager {
      * 
      * @param properties The CellPropertiesSPI class to register
      */
-    public synchronized void registerCellFactory(CellPropertiesSPI properties) {
+    public synchronized void registerCellProperties(CellPropertiesSPI properties) {
         // First check to see if the fully-qualified client-side cell class
         // name already exists and print a warning message if so (but we'll
         // still add it later)
@@ -107,6 +97,24 @@ public class CellPropertiesManager {
         // the client-side cell class name to the object
         cellPropertiesSet.add(properties);
         cellPropertiesClassMap.put(clazz, properties);
+    }
+
+    /**
+     * Unregisters a CellPropertiesSPI class.
+     *
+     * @param properties The CellPropertiesSPI class to register
+     */
+    public synchronized void unregisterCellProperties(CellPropertiesSPI properties) {
+        Class clazz = properties.getServerCellStateClass();
+
+        // remove the SPI object.  Check to make sure the class maps to the same
+        // properties object before removing the mapping
+        cellPropertiesSet.remove(properties);
+
+        CellPropertiesSPI cur = cellPropertiesClassMap.get(clazz);
+        if (cur == properties) {
+            cellPropertiesClassMap.remove(clazz);
+        }
     }
     
     /**
@@ -130,4 +138,45 @@ public class CellPropertiesManager {
     public CellPropertiesSPI getCellPropertiesByClass(Class clazz) {
         return cellPropertiesClassMap.get(clazz);
     }
+
+    /**
+     * Notification that the primary server has changed
+     * @param server the current primary server
+     */
+    public void primaryServer(ServerSessionManager server) {
+        // get rid of the current properties
+        unregisterProperties();
+
+        // add back the properties from the current server
+        if (server != null) {
+            registerProperties(server);
+        }
+    }
+
+    /**
+     * Register all Properties associated with the given session manager.
+     * @param sessionManager the manager to register
+     */
+    protected synchronized void registerProperties(ServerSessionManager manager) {
+        /* Attempt to load the class names using the service providers */
+        ScannedClassLoader cl = manager.getClassloader();
+
+        Iterator<CellPropertiesSPI> it = cl.getAll(
+                CellProperties.class, CellPropertiesSPI.class);
+        while (it.hasNext() == true) {
+            CellPropertiesSPI spi = it.next();
+            registerCellProperties(spi);
+            sessionProperties.add(spi);
+        }
+    }
+
+    /**
+     * Unregister all Properties associated with the current session
+     */
+     protected synchronized void unregisterProperties() {
+         for (CellPropertiesSPI spi : sessionProperties) {
+            unregisterCellProperties(spi);
+         }
+         sessionProperties.clear();
+     }
 }

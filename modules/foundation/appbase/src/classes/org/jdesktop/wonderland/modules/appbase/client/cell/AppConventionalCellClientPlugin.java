@@ -42,4 +42,13 @@ public class AppConventionalCellClientPlugin implements ClientPlugin {
     public void initialize(ServerSessionManager loginInfo) {
         AppConventionalCell.initialize(loginInfo);
     }
+
+    /**
+     * Clean up this plugin
+     */
+    public void cleanup() {
+        // nothing to clean up -- since AppConventionalCell is defined
+        // in the plugin classloader for this plugin, all changes made
+        // in initialize are only made in the context of this plugin
+    }
 }

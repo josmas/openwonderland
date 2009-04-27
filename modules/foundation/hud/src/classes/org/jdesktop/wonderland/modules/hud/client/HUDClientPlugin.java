@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.hud.client;
 
 import java.awt.Canvas;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDFactory;
@@ -33,10 +33,11 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  * @author nsimpson
  */
 @Plugin
-public class HUDClientPlugin implements ClientPlugin {
+public class HUDClientPlugin extends BaseClientPlugin {
 
     private static final Logger logger = Logger.getLogger(HUDClientPlugin.class.getName());
 
+    @Override
     public void initialize(ServerSessionManager loginManager) {
         logger.fine("initializing HUD client plugin");
 
@@ -67,5 +68,8 @@ public class HUDClientPlugin implements ClientPlugin {
 
         // manage the components in the main HUD
         wonderlandHUD.setComponentManager(compManager);
+    
+        // call the superclass's initialize method
+        super.initialize(loginManager);
     }
 }
