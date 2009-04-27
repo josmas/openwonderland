@@ -28,7 +28,7 @@ public interface AudioMenuListener {
 
     public void mute(boolean isMuted);
 
-    public void showSoftphone(boolean isVisible);
+    public void showSoftphone();
 
     public void setAudioQuality(AudioQuality quality);
 

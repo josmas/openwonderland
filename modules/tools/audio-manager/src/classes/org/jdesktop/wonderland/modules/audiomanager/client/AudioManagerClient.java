@@ -217,8 +217,9 @@ public class AudioManagerClient extends BaseConnection implements
         }
     }
 
-    public void showSoftphone(boolean isVisible) {
-        SoftphoneControlImpl.getInstance().setVisible(isVisible);
+    public void showSoftphone() {
+        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+	sc.setVisible(!sc.isVisible());
     }
 
     public void setAudioQuality(AudioQuality audioQuality) {
@@ -275,7 +276,6 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void softphoneVisible(boolean isVisible) {
-        AudioMenu.updateSoftphoneCheckBoxMenuItem(isVisible);
     }
 
     public void softphoneMuted(boolean isMuted) {
@@ -288,8 +288,6 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void softphoneExited() {
         logger.fine("Softphone exited, reconnect");
-
-        AudioMenu.updateSoftphoneCheckBoxMenuItem(false);
 
         connectSoftphone();
     }

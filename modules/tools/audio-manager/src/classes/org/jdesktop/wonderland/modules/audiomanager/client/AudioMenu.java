@@ -51,7 +51,7 @@ public class AudioMenu extends javax.swing.JPanel {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 if (audioMenuListener != null) {
-                    audioMenuListener.showSoftphone(softphoneCheckBox.isSelected());
+                    audioMenuListener.showSoftphone();
                 }
             }
         });
@@ -108,10 +108,6 @@ public class AudioMenu extends javax.swing.JPanel {
 
     public static JMenuItem getAudioMenuItem(AudioMenuListener audioMenuListener) {
         return getAudioMenu(audioMenuListener).audioMenu;
-    }
-
-    public static void updateSoftphoneCheckBoxMenuItem(boolean selected) {
-        audioM.softphoneCheckBox.setSelected(selected);
     }
 
     /** This method is called from within the constructor to
