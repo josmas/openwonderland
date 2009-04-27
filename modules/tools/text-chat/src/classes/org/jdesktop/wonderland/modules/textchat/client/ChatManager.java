@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -75,20 +74,13 @@ public class ChatManager implements TextChatListener {
         textChatMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFrame textChatJFrame = frameRef.get();
-                textChatJFrame.setVisible(textChatMenuItem.isSelected());
+                if (textChatJFrame.isVisible() == false) {
+                    textChatJFrame.setVisible(true);
+                }
             }
         });
         textChatMenuItem.setEnabled(false);
         menu.add(textChatMenuItem);
-
-        // Listen for when the text chat frame is closed by itself and
-        // uncheck the checkbox item in the menu
-        textChatJFrame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                textChatMenuItem.setSelected(false);
-            }
-        });
 
         // Add the user list frame to the menu item. Listen for when it is
         // selected or de-selected and show/hide the frame as appropriate.
@@ -96,14 +88,15 @@ public class ChatManager implements TextChatListener {
         userListMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JFrame userListJFrame = userListFrameRef.get();
-                userListJFrame.setVisible(userListMenuItem.isSelected());
+                if (userListJFrame.isVisible() == false) {
+                    userListJFrame.setVisible(true);
+                }
             }
         });
         userListMenuItem.setEnabled(false);
         menu.add(userListMenuItem);
 
-        // Add the item to the tools menu and make the Asset Meter visible
-        // by default initially.
+        // Add the Chat menu item to the "Window" menu
         JmeClientMain.getFrame().addToWindowMenu(menu, 2);
 
         // Wait for a primary session to become active. When it does, then
@@ -168,15 +161,6 @@ public class ChatManager implements TextChatListener {
         final ChatUserListJFrame userListJFrame =
                 new ChatUserListJFrame(session.getUserID(), this);
         userListFrameRef = new WeakReference(userListJFrame);
-
-        // Listen for when the text chat frame is closed by itself and uncheck
-        // the checkbox item in the menu
-        userListJFrame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                userListMenuItem.setSelected(false);
-            }
-        });
 
         // Otherwise, enable all of the GUI elements. First enable the user list
         // frame by setting its session
