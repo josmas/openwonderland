@@ -32,7 +32,6 @@ import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
 import org.jdesktop.wonderland.client.hud.HUDComponentListener;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
@@ -73,7 +72,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager, HUDCo
         HUDComponentState state = new HUDComponentState(component);
 
         try {
-            HUDApp2D hudApp = new HUDApp2D("HUD", new ControlArbMulti(), new Vector2f(0.2f, 0.2f));
+            HUDApp2D hudApp = new HUDApp2D("HUD", new ControlArbHUD(), new Vector2f(0.2f, 0.2f));
             window = hudApp.createWindow(component.getWidth(), component.getHeight(), Type.PRIMARY,
                     false, new Vector2f(0.2f, 0.2f), "HUD component");
 
