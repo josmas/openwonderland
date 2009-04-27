@@ -250,7 +250,11 @@ final public class X11WindowManager extends Application
 	active = false;
 	disconnect();
 
-	for (ExitListener exitListener : exitListeners) {
+        // We must clone the list because the exit listener may remove
+        // itself as a listener
+        LinkedList<ExitListener> listenersToNotify = (LinkedList<ExitListener>) exitListeners.clone();
+
+	for (ExitListener exitListener : listenersToNotify) {
 	    exitListener.windowManagerExitted();
 	}
 
