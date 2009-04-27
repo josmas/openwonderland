@@ -63,7 +63,7 @@
     
     <!-- "package" target assumes that everything in all projects has already
          been built. -->
-    <target name="package" depends="-declare-ant-task" description="Package Wonderland into a jar">
+    <target name="package" depends="-declare-ant-task, -set-external-modules-dir" description="Package Wonderland into a jar">
         <fail message="No server.package.dir specified" unless="server.package.dir"/>
         
         <mkdir dir="${server.package.dir}"/>
@@ -141,6 +141,11 @@
                 <include name="*.jar"/>
             </checksumfileset>
 
+            <!-- modules from wonderland-modules project, if it exists and
+                 is a sibling to this one named "wonderland-modules" -->
+            <!-- modules -->
+            <checksumfileset refid="wonderland-modules-stable-includes" prefix="modules"/>
+
             <!-- include any generated META-INF.  These will be updated
                  below if they are out of date. -->
             <fileset dir="${build.dir}/jar"/>
@@ -154,7 +159,26 @@
     <target name="-web-server-build-modules" unless="webserver.nomodules">
         <ant dir="${top.dir}/modules" inheritall="false"/>
     </target>
-    
+
+    <target name="-set-external-modules-dir">
+        <if>
+            <available file="${wonderland-modules.stable.dir}/build.xml"/>
+            <then>
+                <fileset id="wonderland-modules-stable-includes"
+                         dir="${wonderland-modules.stable.dir}/dist">
+                    <include name="*.jar"/>
+                </fileset>
+            </then>
+            <else>
+                <!-- an empty, but valid file set -->
+                <fileset id="wonderland-modules-stable-includes"
+                         dir="${top.dir}/modules/dist">
+                    <exclude name="**"/>
+                </fileset>
+            </else>
+        </if>
+    </target>
+
     <target name="run" depends="-set-package-dir, package">
         <java jar="${build.dir}/lib/Wonderland.jar"/>
     </target>

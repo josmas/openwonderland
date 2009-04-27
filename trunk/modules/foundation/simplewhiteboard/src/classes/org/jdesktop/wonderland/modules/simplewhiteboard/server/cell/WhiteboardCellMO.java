@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction.
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCellClientState;
+import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCellServerState;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.simplewhiteboard.server.WhiteboardComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;

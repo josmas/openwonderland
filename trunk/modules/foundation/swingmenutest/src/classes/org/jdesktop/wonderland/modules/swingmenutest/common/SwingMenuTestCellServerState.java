@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.swingmenutest.server;
+package org.jdesktop.wonderland.modules.swingmenutest.common;
 
 import com.jme.math.Vector2f;
 import java.io.Serializable;
