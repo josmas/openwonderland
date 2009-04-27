@@ -127,7 +127,7 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
-        avatarSettingsMI = new JMenuItem("Avatar Setings...");
+        avatarSettingsMI = new JMenuItem("Avatar Settings...");
         avatarSettingsMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 AvatarInstrumentation in = new AvatarInstrumentation(instrumentation);
