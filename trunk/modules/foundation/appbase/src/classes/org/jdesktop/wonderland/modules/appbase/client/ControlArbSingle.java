@@ -44,9 +44,14 @@ abstract public class ControlArbSingle extends ControlArbAppFocus {
     public synchronized void setController(String controller) {
         String oldController = this.controller;
         this.controller = controller;
-        if ((controller == null && oldController != null) || 
-            !controller.equals(oldController)) {
-            updateControl();
+        if (controller == null) {
+            if (oldController != null) {
+                updateControl();
+            }
+        } else {
+            if (!controller.equals(oldController)) {
+                updateControl();
+            }
         }
     }
 
