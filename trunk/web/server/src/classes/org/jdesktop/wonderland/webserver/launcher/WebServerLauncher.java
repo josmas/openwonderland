@@ -81,7 +81,13 @@ public class WebServerLauncher {
             logger.log(Level.SEVERE, "Error loading default properties", ex);
             System.exit(-1);
         }
-        
+
+        // create the log directory
+        File logDir = new File(SystemPropertyUtil.getProperty("wonderland.log.dir"));
+        if (!logDir.mkdirs()) { 
+            System.err.println("[WebServerLauncher] error creating log directory " +
+                               logDir + ".  Logging may not work.");
+        }
         // now load in the logging configuration
         if (System.getProperty("java.util.logging.config.file") == null &&
                 System.getProperty("java.util.logging.config.class") == null) 
@@ -95,9 +101,8 @@ public class WebServerLauncher {
                 p.load(WebServerLauncher.class.getResourceAsStream("/web-logging.properties"));
                 String filePattern = p.getProperty("java.util.logging.FileHandler.pattern");
                 if (filePattern != null && filePattern.contains("%w")) {
-                    String logDir = SystemPropertyUtil.getProperty("wonderland.log.dir");
                     p.setProperty("java.util.logging.FileHandler.pattern",
-                                  filePattern.replaceAll("%w", logDir));
+                                  filePattern.replaceAll("%w", logDir.getPath()));
                     File tmpLog = File.createTempFile("wonderlandlog", ".properties");
                     p.store(new FileOutputStream(tmpLog), null);
                     

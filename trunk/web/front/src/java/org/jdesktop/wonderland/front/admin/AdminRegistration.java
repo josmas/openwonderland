@@ -31,7 +31,7 @@ public class AdminRegistration {
     private String shortName;
     private String displayName;
     private String url;
-   
+    private boolean absolute;
     
     /**
      * Register a new admin entry
@@ -86,9 +86,23 @@ public class AdminRegistration {
      * @param url the URL to link to
      */
     public AdminRegistration(String shortName, String displayName, String url) {
+        this (shortName, displayName, url, false);
+    }
+
+    /**
+     * Create a new registration for the given name and URL
+     * @param shortName an optional short name for this registration
+     * @param displayName the registration name to display on the admin page
+     * @param url the URL to link to
+     * @param absolute whether or not the registration URL is absolute
+     */
+    public AdminRegistration(String shortName, String displayName, String url,
+                             boolean absolute)
+    {
         this.shortName = shortName;
         this.displayName = displayName;
         this.url = url;
+        this.absolute = absolute;
     }
 
     public String getDisplayName() {
@@ -113,5 +127,13 @@ public class AdminRegistration {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public boolean isAbsolute() {
+        return absolute;
+    }
+
+    public void setAbsolute(boolean absolute) {
+        this.absolute = absolute;
     }
 }

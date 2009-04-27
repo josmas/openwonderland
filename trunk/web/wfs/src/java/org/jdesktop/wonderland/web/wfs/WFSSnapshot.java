@@ -52,9 +52,8 @@ public class WFSSnapshot extends WFSRoot {
     /* The location (beneath the wfs root) of the wfs snapshot directories */
     public static final String SNAPSHOTS_DIR = "snapshots";
 
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    /* The JAXB context for later use */
+    private static JAXBContext context = null;
 
     /** The timestamp for this snapshot */
     private Date timestamp;
@@ -68,10 +67,7 @@ public class WFSSnapshot extends WFSRoot {
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(WFSSnapshot.class);
-            WFSSnapshot.unmarshaller = jc.createUnmarshaller();
-            WFSSnapshot.marshaller = jc.createMarshaller();
-            WFSSnapshot.marshaller.setProperty("jaxb.formatted.output", true);
+            context = JAXBContext.newInstance(WFSSnapshot.class);
         } catch (javax.xml.bind.JAXBException excp) {
             Logger.getLogger(WFSSnapshot.class.getName()).log(Level.WARNING,
                     "[WFS] Unable to create JAXBContext", excp);
@@ -256,7 +252,8 @@ public class WFSSnapshot extends WFSRoot {
             // if the snapshot description file exists, read it in
             FileReader r = new FileReader(snapshotDesc);
             try {
-                snapshot = (WFSSnapshot) WFSSnapshot.unmarshaller.unmarshal(r);
+                Unmarshaller unmarshaller = context.createUnmarshaller();
+                snapshot = (WFSSnapshot) unmarshaller.unmarshal(r);
             } catch (JAXBException je) {
                 IOException ioe = new IOException("Error reading snapshot " +
                         " description from " + snapshotDesc);
@@ -285,7 +282,9 @@ public class WFSSnapshot extends WFSRoot {
         FileWriter fw = new FileWriter(snapshotDesc);
 
         try {
-            WFSSnapshot.marshaller.marshal(this, fw);
+            Marshaller marshaller = context.createMarshaller();
+            marshaller.setProperty("jaxb.formatted.output", true);
+            marshaller.marshal(this, fw);
         } catch (JAXBException je) {
             IOException ioe = new IOException("Error writing snapshot to " +
                                               snapshotDesc);

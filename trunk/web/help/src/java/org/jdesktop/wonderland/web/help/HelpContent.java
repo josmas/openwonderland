@@ -78,18 +78,14 @@ public class HelpContent {
         }
     }
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    /* The JAXB Context for later use */
+    private static JAXBContext context;
     
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
             Collection<Class> clazz = HelpContent.getJAXBClasses();
-            JAXBContext jc = JAXBContext.newInstance(clazz.toArray(new Class[] {}));
-            HelpContent.unmarshaller = jc.createUnmarshaller();
-            HelpContent.marshaller = jc.createMarshaller();
-            HelpContent.marshaller.setProperty("jaxb.formatted.output", true);
+            context = JAXBContext.newInstance(clazz.toArray(new Class[] {}));
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -123,7 +119,8 @@ public class HelpContent {
      * @throw JAXBException Upon error reading the XML file
      */
     public static HelpContent decode(Reader r) throws JAXBException {
-        return (HelpContent)HelpContent.unmarshaller.unmarshal(r);        
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        return (HelpContent) unmarshaller.unmarshal(r);
     }
     
     /**
@@ -133,7 +130,10 @@ public class HelpContent {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        HelpContent.marshaller.marshal(this, w);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+
+        marshaller.marshal(this, w);
     }
     
     public static void main(String[] args) throws JAXBException, IOException {

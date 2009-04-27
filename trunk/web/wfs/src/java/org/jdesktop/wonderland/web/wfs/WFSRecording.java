@@ -52,9 +52,8 @@ public class WFSRecording extends WFSRoot {
     /* The location (beneath the wfs root) of the wfs recording directories */
     public static final String RECORDINGS_DIR = "recordings";
 
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    /* The JAXB context for later use */
+    private static JAXBContext context = null;
 
     /** The timestamp for this recording */
     private Date timestamp;
@@ -68,10 +67,7 @@ public class WFSRecording extends WFSRoot {
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(WFSRecording.class);
-            WFSRecording.unmarshaller = jc.createUnmarshaller();
-            WFSRecording.marshaller = jc.createMarshaller();
-            WFSRecording.marshaller.setProperty("jaxb.formatted.output", true);
+            context = JAXBContext.newInstance(WFSRecording.class);
         } catch (javax.xml.bind.JAXBException excp) {
             Logger.getLogger(WFSRecording.class.getName()).log(Level.WARNING,
                     "[WFS] Unable to create JAXBContext", excp);
@@ -256,7 +252,8 @@ public class WFSRecording extends WFSRoot {
             // if the recording description file exists, read it in
             FileReader r = new FileReader(recordingDesc);
             try {
-                recording = (WFSRecording) WFSRecording.unmarshaller.unmarshal(r);
+                Unmarshaller unmarshaller = context.createUnmarshaller();
+                recording = (WFSRecording) unmarshaller.unmarshal(r);
             } catch (JAXBException je) {
                 IOException ioe = new IOException("Error reading recording " +
                         " description from " + recordingDesc);
@@ -285,7 +282,9 @@ public class WFSRecording extends WFSRoot {
         FileWriter fw = new FileWriter(recordingDesc);
 
         try {
-            WFSRecording.marshaller.marshal(this, fw);
+            Marshaller marshaller = context.createMarshaller();
+            marshaller.setProperty("jaxb.formatted.output", true);
+            marshaller.marshal(this, fw);
         } catch (JAXBException je) {
             IOException ioe = new IOException("Error writing recording to " +
                                               recordingDesc);

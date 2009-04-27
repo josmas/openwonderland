@@ -42,17 +42,13 @@ public class DeploymentPlan {
             new LinkedHashSet<DeploymentEntry>();
 
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    /* The JAXB context for later use */
+    private static JAXBContext context = null;
     
     /* Create the XML marshaller and unmarshaller once for all DeploymentEntries */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(DeploymentPlan.class);
-            DeploymentPlan.unmarshaller = jc.createUnmarshaller();
-            DeploymentPlan.marshaller = jc.createMarshaller();
-            DeploymentPlan.marshaller.setProperty("jaxb.formatted.output", true);
+            context = JAXBContext.newInstance(DeploymentPlan.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -115,7 +111,8 @@ public class DeploymentPlan {
      * @throw JAXBException Upon error reading the XML file
      */
     public static DeploymentPlan decode(Reader r) throws JAXBException {
-        return (DeploymentPlan) DeploymentPlan.unmarshaller.unmarshal(r);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        return (DeploymentPlan) unmarshaller.unmarshal(r);
     }
     
     /**
@@ -125,7 +122,9 @@ public class DeploymentPlan {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        DeploymentPlan.marshaller.marshal(this, w);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 
     /**
@@ -135,6 +134,8 @@ public class DeploymentPlan {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(OutputStream os) throws JAXBException {
-        DeploymentPlan.marshaller.marshal(this, os);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, os);
     }
 }

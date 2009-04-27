@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author jkaplan
  */
 public class AdminServlet extends HttpServlet implements ServletContextListener {
-   private static final String DEFAULT_PAGE_URL = "/wonderland-web-front/admin_default.jsp";
+   private static final String DEFAULT_PAGE_URL = "/wonderland-web-runner";
     
    /** 
     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -120,6 +120,8 @@ public class AdminServlet extends HttpServlet implements ServletContextListener 
         List<AdminRegistration> registry = new ArrayList<AdminRegistration>();
         
         // add built-in registrations
+        registry.add(new AdminRegistration("home", "Home",
+                                           "/wonderland-web-front", true));
         registry.add(new AdminRegistration("runner", "Server Status", 
                                            "/wonderland-web-runner"));
         registry.add(new AdminRegistration("modules", "Manage Modules",

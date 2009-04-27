@@ -79,17 +79,13 @@ public class RunnerChecksums {
     public Map<String, RunnerChecksum> internalChecksums =
             new LinkedHashMap<String, RunnerChecksum>();
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    /* The JAXB context for later use */
+    private static JAXBContext context = null;
     
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(RunnerChecksums.class);
-            RunnerChecksums.unmarshaller = jc.createUnmarshaller();
-            RunnerChecksums.marshaller = jc.createMarshaller();
-            RunnerChecksums.marshaller.setProperty("jaxb.formatted.output", true);
+            context = JAXBContext.newInstance(RunnerChecksums.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -137,7 +133,8 @@ public class RunnerChecksums {
      * @throw JAXBException Upon error reading the XML file
      */
     public static RunnerChecksums decode(Reader r) throws JAXBException {
-        RunnerChecksums rc = (RunnerChecksums) RunnerChecksums.unmarshaller.unmarshal(r);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        RunnerChecksums rc = (RunnerChecksums) unmarshaller.unmarshal(r);
         
         /* Convert metadata to internal representation */
         if (rc.checksums != null) {
@@ -161,7 +158,10 @@ public class RunnerChecksums {
     public void encode(Writer w) throws JAXBException {
         /* Convert internal checksum hash to one suitable for serialization */
         updateInternal();
-        RunnerChecksums.marshaller.marshal(this, w);
+
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 
     /**
@@ -172,7 +172,10 @@ public class RunnerChecksums {
      */
     public void encode(OutputStream os) throws JAXBException {
         updateInternal();
-        RunnerChecksums.marshaller.marshal(this, os);
+
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, os);
     }
     
     /**

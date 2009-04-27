@@ -48,17 +48,13 @@ public class RunnerListWrapper implements Serializable {
     })
     private RunnerWrapper[] runners = null;
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    /* The JAXB context for later use */
+    private static JAXBContext context = null;
     
     /* Create the XML marshaller and unmarshaller once for all ModuleRepositorys */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(RunnerListWrapper.class);
-            RunnerListWrapper.unmarshaller = jc.createUnmarshaller();
-            RunnerListWrapper.marshaller = jc.createMarshaller();
-            RunnerListWrapper.marshaller.setProperty("jaxb.formatted.output", true);
+            context = JAXBContext.newInstance(RunnerListWrapper.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -95,8 +91,8 @@ public class RunnerListWrapper implements Serializable {
      * @throw JAXBException Upon error reading the XML file
      */
     public static RunnerListWrapper decode(Reader r) throws JAXBException {
-        RunnerListWrapper list = (RunnerListWrapper)RunnerListWrapper.unmarshaller.unmarshal(r);
-        return list;
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        return (RunnerListWrapper) unmarshaller.unmarshal(r);
     }
     
     /**
@@ -106,7 +102,9 @@ public class RunnerListWrapper implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        RunnerListWrapper.marshaller.marshal(this, w);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 
     /**
@@ -116,6 +114,8 @@ public class RunnerListWrapper implements Serializable {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(OutputStream os) throws JAXBException {
-        RunnerListWrapper.marshaller.marshal(this, os);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, os);
     }
 }
