@@ -150,6 +150,15 @@ public abstract class BaseRunner implements Runner {
     }
 
     /**
+     * By default, all runners are runnable. Subclasses can override this
+     * to return other values
+     * @return true
+     */
+    public boolean isRunnable() {
+        return true;
+    }
+
+    /**
      * Start the app.  This assumes the default Wonderland packaging, with
      * the ant libraries in "lib/ant" at the top level.  This will create
      * an external ant process to run the top-level build.xml script.

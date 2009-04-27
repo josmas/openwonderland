@@ -89,6 +89,11 @@
         
         service.link.push(new Element('a', { 'href': '/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=edit%26name=' + service.name,
                                              'target': '_top'}).update("edit"));
+
+        // if the service isn't runnable, remove the previous links
+        if (service.runnable != "true") {
+            service.link = [];
+        }
         
         if (service.hasLog) {
             service.link.push(new Element('a', { 'href': '/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=log%26name=' + service.name,
@@ -136,7 +141,7 @@
 </script>
 </head>
 <body onload="updateServices(); setUpdatePeriod(15);">
-<h1>View Server Components</h1>
+<h1>Wonderland Server Status</h1>
 
 <table class="installed" id="runnerTable">
     <tr>

@@ -38,18 +38,15 @@ public class RunnerWrapper {
     private String status;
     private String location = "localhost";
     private boolean hasLog = false;
-    
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    private boolean runnable;
+
+    /* The JAXB context for later use */
+    private static JAXBContext context = null;
     
     /* Create the XML marshaller and unmarshaller once for all ModuleRepositorys */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(RunnerWrapper.class);
-            RunnerWrapper.unmarshaller = jc.createUnmarshaller();
-            RunnerWrapper.marshaller = jc.createMarshaller();
-            RunnerWrapper.marshaller.setProperty("jaxb.formatted.output", true);
+            context = JAXBContext.newInstance(RunnerWrapper.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -62,6 +59,7 @@ public class RunnerWrapper {
         this.name = runner.getName();
         this.status = runner.getStatus().toString();
         this.hasLog = runner.getLogFile().exists();
+        this.runnable = runner.isRunnable();
     }
     
     @XmlElement
@@ -99,7 +97,16 @@ public class RunnerWrapper {
     public void setHasLog(boolean hasLog) {
         this.hasLog = hasLog;
     }
-     
+
+    @XmlElement
+    public boolean isRunnable() {
+        return runnable;
+    }
+
+    public void setRunnable(boolean runnable) {
+        this.runnable = runnable;
+    }
+
     /**
      * Takes the input reader of the XML file and instantiates an instance of
      * the RunnerInfo class
@@ -109,8 +116,8 @@ public class RunnerWrapper {
      * @throw JAXBException Upon error reading the XML file
      */
     public static RunnerWrapper decode(Reader r) throws JAXBException {
-        RunnerWrapper info = (RunnerWrapper) RunnerWrapper.unmarshaller.unmarshal(r);
-        return info;
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        return (RunnerWrapper) unmarshaller.unmarshal(r);
     }
     
     /**
@@ -120,7 +127,9 @@ public class RunnerWrapper {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        RunnerWrapper.marshaller.marshal(this, w);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 
     /**
@@ -130,7 +139,9 @@ public class RunnerWrapper {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(OutputStream os) throws JAXBException {
-        RunnerWrapper.marshaller.marshal(this, os);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, os);
     }
     
     /**

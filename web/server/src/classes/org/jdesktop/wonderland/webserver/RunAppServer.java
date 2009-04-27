@@ -418,7 +418,7 @@ public class RunAppServer {
                 "/domain.xml", install_dir));
 
         File logDir = new File(SystemPropertyUtil.getProperty("wonderland.log.dir"));
-        File logFile = new File(logDir, "webserver.log");
+        File logFile = new File(logDir, "web_server.log");
         efs.setLogFile(logFile);
 
         // setup and launch

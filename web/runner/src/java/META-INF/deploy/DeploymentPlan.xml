@@ -6,6 +6,10 @@
 
 <DeploymentPlan>
     <entry>
+        <runnerClass>org.jdesktop.wonderland.webserver.WebServerRunner</runnerClass>
+        <runnerName>Web Administration Server</runnerName>
+    </entry>
+    <entry>
         <runnerClass>org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner</runnerClass>
         <runnerName>Darkstar Server</runnerName>
     </entry>

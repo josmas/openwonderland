@@ -49,7 +49,14 @@
         
         <div id="moduleMenu">
             <c:forEach var="adminPage" items="${requestScope['adminPages']}">
-                <a href="admin?pageURL=${adminPage.url}">${adminPage.displayName}</a><br/>
+                <c:choose>
+                    <c:when test="${adminPage.absolute}">
+                        <a href="${adminPage.url}">${adminPage.displayName}</a><br/>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="admin?pageURL=${adminPage.url}">${adminPage.displayName}</a><br/>
+                    </c:otherwise>
+                </c:choose>
             </c:forEach>
         </div>
         

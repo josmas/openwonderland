@@ -62,7 +62,15 @@ public interface Runner {
      * @return the default properties for this runner.
      */
     public Properties getDefaultProperties();
-    
+
+    /**
+     * Determine whether or not this runner can be started and stopped by
+     * the system.  Some runners, such as the web server, cannot be
+     * started and stopped.
+     * @return true if the runner can be started and stopped or false if not
+     */
+    public boolean isRunnable();
+
     /**
      * Start the given runner.  Only valid if the runner is in the
      * NOT_RUNNING state.

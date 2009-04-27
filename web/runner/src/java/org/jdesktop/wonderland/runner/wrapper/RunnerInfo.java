@@ -38,17 +38,13 @@ public class RunnerInfo {
     private String name;
     private String status;
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    /* The JAXB context for later use */
+    private static JAXBContext context = null;
     
     /* Create the XML marshaller and unmarshaller once for all ModuleRepositorys */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(RunnerInfo.class);
-            RunnerInfo.unmarshaller = jc.createUnmarshaller();
-            RunnerInfo.marshaller = jc.createMarshaller();
-            RunnerInfo.marshaller.setProperty("jaxb.formatted.output", true);
+            context = JAXBContext.newInstance(RunnerInfo.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -81,8 +77,8 @@ public class RunnerInfo {
      * @throw JAXBException Upon error reading the XML file
      */
     public static RunnerInfo decode(Reader r) throws JAXBException {
-        RunnerInfo info = (RunnerInfo) RunnerInfo.unmarshaller.unmarshal(r);
-        return info;
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        return (RunnerInfo) unmarshaller.unmarshal(r);
     }
     
     /**
@@ -92,7 +88,9 @@ public class RunnerInfo {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        RunnerInfo.marshaller.marshal(this, w);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
 
     /**
@@ -102,6 +100,8 @@ public class RunnerInfo {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(OutputStream os) throws JAXBException {
-        RunnerInfo.marshaller.marshal(this, os);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, os);
     }
 }

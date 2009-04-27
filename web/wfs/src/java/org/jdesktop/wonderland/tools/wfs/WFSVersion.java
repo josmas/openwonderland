@@ -44,17 +44,13 @@ public class WFSVersion {
     @XmlElement(name="major") private int major;
     @XmlElement(name="minor") private int minor;
 
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
+    /* The JAXB context for later use */
+    private static JAXBContext context = null;
     
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(WFSVersion.class);
-            WFSVersion.unmarshaller = jc.createUnmarshaller();
-            WFSVersion.marshaller = jc.createMarshaller();
-            WFSVersion.marshaller.setProperty("jaxb.formatted.output", true);
+            context = JAXBContext.newInstance(WFSVersion.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -90,7 +86,9 @@ public class WFSVersion {
      * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        WFSVersion.marshaller.marshal(this, w);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
     
     /**
@@ -102,7 +100,8 @@ public class WFSVersion {
      * @throw JAXBException Upon error reading the XML file
      */
     public static WFSVersion decode(Reader r) throws JAXBException {
-        return (WFSVersion) WFSVersion.unmarshaller.unmarshal(r);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        return (WFSVersion) unmarshaller.unmarshal(r);
     }
     
     /**

@@ -38,18 +38,14 @@ import org.jdesktop.wonderland.common.help.HelpInfo;
 @XmlRootElement(name="wl-help-layout")
 public class HelpLayout extends HelpInfo {
     
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
+    /* The XML context for later use */
+    private static JAXBContext context;
+
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
             Collection<Class> clazz = getJAXBClasses();
-            JAXBContext jc = JAXBContext.newInstance(clazz.toArray(new Class[] {}));
-            HelpLayout.unmarshaller = jc.createUnmarshaller();
-            HelpLayout.marshaller = jc.createMarshaller();
-            HelpLayout.marshaller.setProperty("jaxb.formatted.output", true);
+            context = JAXBContext.newInstance(clazz.toArray(new Class[] {}));
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
@@ -79,7 +75,8 @@ public class HelpLayout extends HelpInfo {
      * @throw JAXBException Upon error reading the XML file
      */
     public static HelpLayout decode(Reader r) throws JAXBException {
-        return (HelpLayout)HelpLayout.unmarshaller.unmarshal(r);        
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        return (HelpLayout) unmarshaller.unmarshal(r);
     }
     
     /**
@@ -90,7 +87,9 @@ public class HelpLayout extends HelpInfo {
      */
     @Override
     public void encode(Writer w) throws JAXBException {
-        HelpLayout.marshaller.marshal(this, w);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
     
     public static void main(String args[]) throws JAXBException, IOException {
