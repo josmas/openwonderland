@@ -48,6 +48,7 @@ public class SampleRenderer extends BasicRenderer {
         node.detachAllChildren();
         node.attachChild(this.getShapeMesh(name, shapeType));
         node.setModelBound(new BoundingSphere());
+        node.updateModelBound();
 
         ClientContextJME.getWorldManager().addToUpdateList(node);
     }
@@ -83,19 +84,9 @@ public class SampleRenderer extends BasicRenderer {
         node = new Node();
         node.attachChild(mesh);
         node.setModelBound(new BoundingSphere());
+        node.updateModelBound();
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
         return node;
-    }
-
-    private void updateModelBound(String shapeType) {
-        // Set the model bound based upon the type of shape
-        if (shapeType.equals("BOX") == true) {
-            node.setModelBound(new BoundingBox());
-        }
-        else if (shapeType.equals("SPHERE") == true) {
-            node.setModelBound(new BoundingSphere());
-        }
-        node.updateModelBound();
     }
 }
