@@ -113,7 +113,7 @@ public class AudioManagerClient extends BaseConnection implements
         AudioMenu.getAudioMenu(this).setEnabled(false);
 
         userListJMenuItem = new javax.swing.JMenuItem();
-        userListJMenuItem.setText("Show Users");
+        userListJMenuItem.setText("Users");
         userListJMenuItem.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
