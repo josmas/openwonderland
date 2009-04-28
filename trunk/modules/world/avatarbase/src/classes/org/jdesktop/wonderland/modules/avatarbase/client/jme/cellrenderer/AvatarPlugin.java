@@ -102,7 +102,7 @@ public class AvatarPlugin extends BaseClientPlugin
             public void actionPerformed(ActionEvent e) {
                 if (testPanelRef == null || testPanelRef.get() == null) {
                     AvatarTestPanel test = new AvatarTestPanel();
-                    JFrame f = new JFrame("Test Controls");
+                    JFrame f = new JFrame("Avatar Controls");
                     f.getContentPane().add(test);
                     f.pack();
                     f.setVisible(true);

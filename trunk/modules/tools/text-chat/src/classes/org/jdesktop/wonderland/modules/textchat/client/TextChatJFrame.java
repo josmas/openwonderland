@@ -91,7 +91,7 @@ public class TextChatJFrame extends javax.swing.JFrame {
 
         // Set the title based upon the remote user. If the remote user is "",
         // then insert "Everyone"
-        String title = "Text Chat (Everyone)";
+        String title = "Text Chat All";
         if (remoteUser != null && remoteUser.equals("") == false) {
             title = "Text Chat (" + remoteUser + ")";
         }
