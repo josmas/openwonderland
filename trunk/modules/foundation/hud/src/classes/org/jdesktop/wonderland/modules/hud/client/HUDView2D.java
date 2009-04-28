@@ -20,10 +20,7 @@ package org.jdesktop.wonderland.modules.hud.client;
 import org.jdesktop.mtgame.Entity;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
-import com.jme.scene.Node;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.RenderComponent;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
@@ -56,15 +53,6 @@ public class HUDView2D extends View2DEntity {
     public HUDView2D(View2DDisplayer displayer, Window2D window, GeometryNode geometryNode) {
         super(window, geometryNode);
         this.displayer = displayer;
-
-        // Create entity and node
-        entity = new Entity("Entity for " + name);
-        viewNode = new Node("Node for " + name);
-        RenderComponent rc =
-                ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(viewNode);
-        entity.addComponent(RenderComponent.class, rc);
-        entityMakePickable(entity);
-
         changeMask = CHANGED_ALL;
         update();
     }
