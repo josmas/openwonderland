@@ -56,8 +56,8 @@ public class DragAndDropManager {
         // Create the hash map to hold all of the data flavor handlers and add
         // in the default one to handle drag-and-drop of files from the desktop
         dataFlavorHandlerMap = new HashMap();
-//        registerDataFlavorHandler(new FileListDataFlavorHandler());
-//        registerDataFlavorHandler(new URLDataFlavorHandler());
+        registerDataFlavorHandler(new FileListDataFlavorHandler());
+        registerDataFlavorHandler(new URLDataFlavorHandler());
         registerDataFlavorHandler(new URIListDataFlavorHandler());
     }
 
@@ -181,18 +181,25 @@ public class DragAndDropManager {
             // a flavor in our map. We create an ordered list of these to
             // check later
             List<DataFlavor> flavorList = dtde.getCurrentDataFlavorsAsList();
+//            for (DataFlavor flavor : flavorList) {
+//                System.out.println("FLAVOR " + flavor.toString());
+//            }
+
             List<DataFlavor> supportedFlavors = new LinkedList();
             for (DataFlavor dataFlavor : flavorList) {
                 DataFlavorHandlerSPI handler = getDataFlavorHandler(dataFlavor);
                 if (handler != null) {
+//                    System.out.println("ADDING " + dataFlavor.toString());
                     supportedFlavors.add(dataFlavor);
                 }
             }
+
 
             // Check to make sure there is at least one supported flavor,
             // otherwise, we reject the drop
             if (supportedFlavors.isEmpty() == true) {
                 dtde.rejectDrop();
+                return;
             }
 
             // At this point, if there is at least one supported flavor, we
