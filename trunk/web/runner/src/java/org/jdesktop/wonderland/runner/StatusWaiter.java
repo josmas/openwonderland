@@ -52,8 +52,11 @@ public class StatusWaiter implements Runner.RunnerStatusListener {
         this.runner = runner;
         this.targetStatus = targetStatus;
         
-        // register for any status changes
-        currentStatus = runner.addStatusListener(this); 
+        // register for any status changes.  Ignore runners that are
+        // not runnable -- their status never changes
+        if (runner.isRunnable()) {
+            currentStatus = runner.addStatusListener(this);
+        }
     }
     
     /**
@@ -92,6 +95,12 @@ public class StatusWaiter implements Runner.RunnerStatusListener {
     public synchronized Runner.Status waitFor(Runner.Status status) 
             throws InterruptedException
     {
+        // if the runner isn't runnable, its status will never change,
+        // so don't wait for it
+        if (!runner.isRunnable()) {
+            return runner.getStatus();
+        }
+
         while (currentStatus != status && 
                currentStatus != Runner.Status.ERROR)
         {
