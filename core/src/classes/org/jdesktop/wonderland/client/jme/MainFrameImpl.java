@@ -122,6 +122,17 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             }
         });
 
+        // Listen for the "Enter" key on the server text field and activate
+        // the go button
+        serverField.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String serverText = serverField.getText();
+                if (serverText != null && serverText.equals("") == false) {
+                    goButton.doClick();
+                }
+            }
+        });
+
         pack();
     }
 
