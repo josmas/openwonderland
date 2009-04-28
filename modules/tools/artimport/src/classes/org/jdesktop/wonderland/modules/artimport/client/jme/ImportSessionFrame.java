@@ -278,7 +278,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         jLabel4.setText("Loading.... Please wait");
         loadingDialogPanel.add(jLabel4, new java.awt.GridBagConstraints());
 
-        setTitle("Import Manager");
+        setTitle("Import Model");
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentHidden(java.awt.event.ComponentEvent evt) {
                 formComponentHidden(evt);
@@ -404,16 +404,17 @@ public class ImportSessionFrame extends javax.swing.JFrame
                                     .add(targetServerSelector, 0, 260, Short.MAX_VALUE)
                                     .add(descriptionTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))))
                         .add(264, 264, 264))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
                     .add(centerPLayout.createSequentialGroup()
                         .add(modelListL)
-                        .addContainerGap(555, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)))
+                        .addContainerGap(555, Short.MAX_VALUE))))
         );
         centerPLayout.setVerticalGroup(
             centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(centerPLayout.createSequentialGroup()
+                .addContainerGap()
                 .add(modelListL)
-                .add(12, 12, 12)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)

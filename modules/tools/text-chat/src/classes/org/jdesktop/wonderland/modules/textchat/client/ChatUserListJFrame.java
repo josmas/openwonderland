@@ -199,7 +199,7 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
         userList = new javax.swing.JList();
         startChatButton = new javax.swing.JButton();
 
-        setTitle("Chat User List");
+        setTitle("Private Text Chat");
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         userListScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);

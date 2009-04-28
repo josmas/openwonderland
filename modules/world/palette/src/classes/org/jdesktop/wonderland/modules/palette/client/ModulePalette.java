@@ -106,7 +106,7 @@ public class ModulePalette extends javax.swing.JFrame implements ListSelectionLi
         jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Cell Palette");
+        setTitle("Module Art Palette");
         setName("cellFrame"); // NOI18N
 
         moduleList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
