@@ -72,17 +72,17 @@ public class ImageViewerCellRenderer extends BasicRenderer {
         texture.setWrap(Texture.WrapMode.BorderClamp);
         texture.setTranslation(new Vector3f());
 
-        // Figure out what the size of the texture is
+        // Figure out what the size of the texture is, scale it down to something
+        // reasonable.
         Image image = texture.getImage();
-        int width = image.getWidth();
-        int height = image.getHeight();
+        float width = image.getWidth() * 0.01f;
+        float height = image.getHeight() * 0.01f;
 
         // Create a box of suitable dimensions
         Box box = new Box("Box", new Vector3f(0, 0, 0), width, height, 0.1f);
         node.attachChild(box);
-        node.setLocalScale(new Vector3f(0.01f, 0.01f, 1.0f));
-        box.setModelBound(new BoundingSphere());
-        box.updateModelBound();
+        node.setModelBound(new BoundingSphere());
+        node.updateModelBound();
 
         // Set the texture on the node
         TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_TEXTURE);
