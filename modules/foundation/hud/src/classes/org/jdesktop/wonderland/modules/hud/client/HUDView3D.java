@@ -80,7 +80,6 @@ public class HUDView3D extends View2DEntity {
             case PRIMARY:
                 // Attach primaries directly to cell entity
                 return cellEntity;
-
             default:
                 // Attach non-primaries to the entity of their parent, if possible
                 if (parent == null) {
