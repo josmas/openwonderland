@@ -62,11 +62,11 @@ public class WljURLConnection extends URLConnection {
     
     @Override
     public void connect() throws IOException {
-        System.out.println("Connect to "+url);
+//        System.out.println("Connect to "+url);
     }
     
     @Override
-    public InputStream getInputStream() {
+    public InputStream getInputStream() throws IOException {
         try {
             // Since we know this asset belongs to a module, first create a
             // factory to handle its loading.
@@ -77,7 +77,8 @@ public class WljURLConnection extends URLConnection {
             // be loaded
             Asset asset = AssetManager.getAssetManager().getAsset(uri, factory);
             if (asset == null || AssetManager.getAssetManager().waitForAsset(asset) == false) {
-                return null;
+                throw new IOException("No such asset "+url);
+//                return null;
             }
             return new FileInputStream(asset.getLocalCacheFile());
         } catch (FileNotFoundException ex) {
