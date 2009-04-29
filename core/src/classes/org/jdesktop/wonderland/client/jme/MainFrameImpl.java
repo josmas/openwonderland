@@ -545,7 +545,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     }// </editor-fold>//GEN-END:initComponents
 
 private void serverFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverFieldActionPerformed
-    // TODO add your handling code here:
+    goButtonActionPerformed(evt);
 }//GEN-LAST:event_serverFieldActionPerformed
 
 private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButtonActionPerformed
