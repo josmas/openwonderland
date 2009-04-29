@@ -21,6 +21,7 @@ import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -58,6 +59,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private JRadioButtonMenuItem firstPersonRB;
     private JRadioButtonMenuItem thirdPersonRB;
     private JRadioButtonMenuItem frontPersonRB;
+    private DecimalFormat floatFormat = new DecimalFormat("###.0");
 
     private final Map<JMenuItem, Integer> menuWeights =
                                               new HashMap<JMenuItem, Integer>();
@@ -96,7 +98,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         wm.getRenderManager().setFrameRateListener(new FrameRateListener() {
 
             public void currentFramerate(float framerate) {
-                fpsLabel.setText("FPS: " + framerate);
+                fpsLabel.setText("FPS: " + floatFormat.format(framerate));
             }
         }, 100);
 
