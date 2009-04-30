@@ -52,7 +52,10 @@ public class ServerDetailsResource {
 
         // replace the URL in the default with one based on the client's
         // request
-//        out.setServerURL(getServerURL());
+        // XXX the server URL needs to be canonical and constant across
+        // all clients, since it is shared in places like webdav URL. Make
+        // sure this returns the canonical public URL for the server XXX
+        //out.setServerURL(getServerURL());
 
         try {
             ResponseBuilder rb = Response.ok(out);

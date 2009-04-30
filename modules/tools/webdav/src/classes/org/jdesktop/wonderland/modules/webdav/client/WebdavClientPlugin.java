@@ -50,19 +50,19 @@ public class WebdavClientPlugin extends BaseClientPlugin {
 
     @Override
     public void initialize(ServerSessionManager loginInfo) {
-       try {
-           HttpURL baseURL = new HttpURL(loginInfo.getServerURL());
-           baseURL = new HttpURL(baseURL, "webdav/content");
+        try {
+            HttpURL baseURL = new HttpURL(loginInfo.getServerURL());
+            baseURL = new HttpURL(baseURL, "webdav/content");
 
-           //System.out.println("[WebdavClientPlugin] got base URL " + baseURL);
+            //System.out.println("[WebdavClientPlugin] got base URL " + baseURL);
 
-           // get the authentication service for this session
-           AuthenticationService as =
-                   AuthenticationManager.get(loginInfo.getCredentialManager().getAuthenticationURL());
+            // get the authentication service for this session
+            AuthenticationService as =
+                AuthenticationManager.get(loginInfo.getCredentialManager().getAuthenticationURL());
 
-           // activate the webdav repository for this session
-           String authCookieName = as.getCookieName();
-           String authCookieValue = as.getAuthenticationToken();
+            // activate the webdav repository for this session
+            String authCookieName = as.getCookieName();
+            String authCookieValue = as.getAuthenticationToken();
             AuthenticatedWebdavResource wdr =
                     new AuthenticatedWebdavResource(baseURL,
                                                     authCookieName,

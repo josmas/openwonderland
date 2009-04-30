@@ -58,6 +58,8 @@ public class WljURLConnection extends URLConnection {
      */
     public WljURLConnection(URL url) {
         super(url);
+
+        this.setUseCaches(false);
     }
     
     @Override
@@ -80,13 +82,12 @@ public class WljURLConnection extends URLConnection {
                 throw new IOException("No such asset "+url);
 //                return null;
             }
+
             return new FileInputStream(asset.getLocalCacheFile());
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(WljURLConnection.class.getName()).log(Level.SEVERE, null, ex);
         } catch (URISyntaxException excp) {
-            Logger.getLogger(WljURLConnection.class.getName()).log(Level.SEVERE, null, excp);
+            IOException ioe = new IOException("Error in URI syntax");
+            ioe.initCause(excp);
+            throw ioe;
         }
-        return null;
-        
     }
 }

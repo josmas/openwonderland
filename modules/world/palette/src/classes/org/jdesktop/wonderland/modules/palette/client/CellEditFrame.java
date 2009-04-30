@@ -628,6 +628,10 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         if (response instanceof OKMessage) {
             // If successful, add the component to the GUI
             removeComponentFromPanelSet(spi.getDisplayName());
+
+            // Also remove the component server state from the cell server
+            // state
+            cellServerState.removeComponentServerState(clazz);
         }
         else if (response instanceof ErrorMessage) {
             // Log an error. Eventually we should display a dialog

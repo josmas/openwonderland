@@ -101,7 +101,7 @@ public class LoginManager {
         throws IOException
     {
         synchronized (managers) {
-            ServerSessionManager manager = managers.get(serverURL);
+            ServerSessionManager manager = findSessionManager(serverURL);
             if (manager == null) {
                 manager = new ServerSessionManager(serverURL);
                 managers.put(serverURL, manager);
@@ -109,6 +109,31 @@ public class LoginManager {
 
             return manager;
         }
+    }
+
+    /**
+     * Finds an existing session manager that matches the given URL. This
+     * search is based on the URL of existing session managers.  It is not
+     * a direct comparison of strings, it tries to at least deal with
+     * differences in slashes and so on between the URLs.
+     * @param serverURL the url to search for
+     * @return the matching session manager, or null if no session managers
+     * match
+     */
+    public static ServerSessionManager findSessionManager(String serverURL) {
+        ServerSessionManager out = null;
+
+        synchronized (managers) {
+            for (ServerSessionManager m : managers.getAll()) {
+                String mURL = m.getServerURL();
+                if (urlsMatch(serverURL, mURL)) {
+                    out = m;
+                    break;
+                }
+            }
+        }
+
+        return out;
     }
 
     /**
@@ -163,6 +188,25 @@ public class LoginManager {
      */
     public static void removePrimaryServerListener(PrimaryServerListener listener) {
         listeners.remove(listener);
+    }
+
+    /**
+     * Compare two strings as URLs
+     * @param u1 the first URL
+     * @param u2 the second URL
+     * @return true if they match, or false if not
+     */
+    private static boolean urlsMatch(String u1, String u2) {
+        // take off trailing slashes
+        if (u1.endsWith("/")) {
+            u1 = u1.substring(0, u1.length() - 1);
+        }
+
+        if (u2.endsWith("/")) {
+            u2 = u2.substring(0, u2.length() - 1);
+        }
+
+        return u1.equals(u2);
     }
 
     /**
