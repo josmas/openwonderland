@@ -66,7 +66,6 @@ public class AvatarPlugin extends BaseClientPlugin
     private JMenuItem avatarMI;
     private JMenuItem avatarSettingsMI;
     private JMenuItem startingLocationMI;
-    private JMenuItem avatarConfigFrameMI;
 
     private AvatarImiJME curAvatar;
     private boolean menusAdded = false;
@@ -150,19 +149,6 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
-        avatarConfigFrameMI = new JMenuItem(bundle.getString("Avatar_Config..."));
-        avatarConfigFrameMI.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent e) {
-                ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
-                if (cell instanceof AvatarCell) {
-                    AvatarImiJME rend = (AvatarImiJME) ((AvatarCell)cell).getCellRenderer(ClientContext.getRendererType());
-                    AvatarConfigFrame f = new AvatarConfigFrame(rend);
-                    f.setVisible(true);
-                }
-            }
-        });
-
         instrumentation = new DefaultInstrumentation(ClientContextJME.getWorldManager());
 
         // register the renderer for this session
@@ -202,7 +188,6 @@ public class AvatarPlugin extends BaseClientPlugin
             JmeClientMain.getFrame().removeFromEditMenu(avatarMI);
             JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
             JmeClientMain.getFrame().removeFromPlacemarksMenu(startingLocationMI);
-            JmeClientMain.getFrame().removeFromEditMenu(avatarConfigFrameMI);
 
             menusAdded = false;
         }
@@ -234,7 +219,6 @@ public class AvatarPlugin extends BaseClientPlugin
             JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
             JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
             JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
-            JmeClientMain.getFrame().addToEditMenu(avatarConfigFrameMI);
 
             menusAdded = true;
         }
