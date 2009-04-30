@@ -52,7 +52,7 @@ public class ServerDetailsResource {
 
         // replace the URL in the default with one based on the client's
         // request
-        out.setServerURL(getServerURL());
+//        out.setServerURL(getServerURL());
 
         try {
             ResponseBuilder rb = Response.ok(out);
