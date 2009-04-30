@@ -171,7 +171,9 @@ public class PhoneMessageHandler {
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    phoneForm.setCallEnded(msg.getReasonCallEnded());
+		    if (phoneForm != null) {
+                        phoneForm.setCallEnded(msg.getReasonCallEnded());
+		    }
                 }
             });
 
@@ -181,7 +183,9 @@ public class PhoneMessageHandler {
 	if (message instanceof LockUnlockResponseMessage) {
 	    LockUnlockResponseMessage msg = (LockUnlockResponseMessage) message;
 
-	    phoneForm.changeLocked(msg.getLocked(), msg.wasSuccessful());
+	    if (phoneForm != null) {
+	        phoneForm.changeLocked(msg.getLocked(), msg.wasSuccessful());
+	    }
 	    return;
 	}
 
@@ -249,7 +253,9 @@ public class PhoneMessageHandler {
             //ChannelController.getController().getLocalUser().getAvatarCell().setUserWhispering(false);                       
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    phoneForm.setCallEstablished(false);
+	    	    if (phoneForm != null) {
+                        phoneForm.setCallEstablished(false);
+		    }
                 }
             });
 	    return;
@@ -264,7 +270,9 @@ public class PhoneMessageHandler {
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    phoneForm.setCallInvited();
+		    if (phoneForm != null) {
+                        phoneForm.setCallInvited();
+		    }
                 }
             });
             return;
@@ -284,9 +292,11 @@ public class PhoneMessageHandler {
 
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-		    synchronized (phoneForm) {
-                        phoneForm.setCallEstablished(
-			    mostRecentCallListing.isPrivate());
+		    if (phoneForm != null) {
+		        synchronized (phoneForm) {
+                            phoneForm.setCallEstablished(
+			        mostRecentCallListing.isPrivate());
+		        }
 		    }
                 }
             });
