@@ -26,6 +26,8 @@ import java.util.ArrayList;
 
 import java.util.logging.Logger;
 
+import java.awt.Point;
+
 /*
  * AddUserDialog.java
  *
@@ -36,7 +38,7 @@ import java.util.logging.Logger;
  * @author  jp
  */
 public class AddUserDialog extends javax.swing.JFrame implements PresenceManagerListener,
-        MemberChangeListener {
+	MemberChangeListener, KeypadListener {
 
     private static final Logger logger =
             Logger.getLogger(AddUserDialog.class.getName());
@@ -98,11 +100,24 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
                 continue;
             }
 
-            userData.add(NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
-                    info.isMuted));
-        }
+	    userData.add(NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
+		info.isMuted, info.inSecretChat));
+	}
 
         userList.setListData(userData.toArray(new String[0]));
+
+	enableButtons();
+    }
+
+    private void enableButtons() {
+        if (userList.getSelectedValues().length > 0 ||
+                (phoneNumberText.getText().replaceAll(" ", "").length() > 0 &&
+                nameTextField.getText().replaceAll(" ", "").length() > 0)) {
+
+	    okButton.setEnabled(true);
+	} else {
+	    okButton.setEnabled(false);
+	}
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
@@ -135,6 +150,11 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
         userList = new javax.swing.JList();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        phoneNumberText = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        nameTextField = new javax.swing.JTextField();
+        keypadButton = new javax.swing.JButton();
 
         jLabel1.setText("Ask User to Join");
 
@@ -142,6 +162,11 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
+        });
+        userList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                userListValueChanged(evt);
+            }
         });
         jScrollPane1.setViewportView(userList);
 
@@ -159,37 +184,86 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
             }
         });
 
+        jLabel2.setText("Phone Number:");
+
+        phoneNumberText.setText("                            ");
+        phoneNumberText.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                phoneNumberTextActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Name:");
+
+        nameTextField.setText("                            ");
+        nameTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nameTextFieldActionPerformed(evt);
+            }
+        });
+
+        keypadButton.setText("KeyPad");
+        keypadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                keypadButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(84, 84, 84)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 113, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(87, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createSequentialGroup()
-                        .add(34, 34, 34)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(layout.createSequentialGroup()
-                        .add(77, 77, 77)
-                        .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 113, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(38, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .add(keypadButton))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(layout.createSequentialGroup()
+                            .addContainerGap()
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                .add(jLabel3)
+                                .add(jLabel2))
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                .add(nameTextField)
+                                .add(phoneNumberText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)))
+                        .add(layout.createSequentialGroup()
+                            .add(32, 32, 32)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 218, Short.MAX_VALUE)
+                                .add(layout.createSequentialGroup()
+                                    .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 38, Short.MAX_VALUE)
+                                    .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
+                .add(34, 34, 34))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
+                .addContainerGap()
                 .add(jLabel1)
-                .add(31, 31, 31)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(27, 27, 27)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(phoneNumberText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(cancelButton)
-                    .add(okButton))
-                .addContainerGap())
+                    .add(jLabel3)
+                    .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 11, Short.MAX_VALUE)
+                .add(keypadButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 111, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(okButton)
+                    .add(cancelButton))
+                .add(22, 22, 22))
         );
 
         pack();
@@ -201,7 +275,8 @@ private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     for (int i = 0; i < selectedValues.length; i++) {
         PresenceInfo[] info = pm.getAliasPresenceInfo((String) selectedValues[i]);
 
-        session.send(client, new VoiceChatJoinMessage(group, presenceInfo, info, ChatType.PRIVATE));
+	session.send(client, new VoiceChatJoinMessage(group, presenceInfo, info, ChatType.PRIVATE,
+	    phoneNumberText.getText(), nameTextField.getText()));
     }
 
     userList.clearSelection();
@@ -212,6 +287,34 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     userList.clearSelection();
     setVisible(false);
 }//GEN-LAST:event_cancelButtonActionPerformed
+
+private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
+    enableButtons();
+}//GEN-LAST:event_userListValueChanged
+
+private void phoneNumberTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneNumberTextActionPerformed
+    enableButtons();
+}//GEN-LAST:event_phoneNumberTextActionPerformed
+
+private void nameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameTextFieldActionPerformed
+    enableButtons();
+}//GEN-LAST:event_nameTextFieldActionPerformed
+
+private KeypadDialog keypad;
+
+private void keypadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keypadButtonActionPerformed
+    if (keypad == null) {
+        keypad = new KeypadDialog(this);
+        keypad.setListener(this);
+        keypad.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
+    }
+
+    keypad.setVisible(true);
+}//GEN-LAST:event_keypadButtonActionPerformed
+
+public void keypadPressed(char key) {
+    System.out.println("Got key " + key);
+}
 
     /**
      * @param args the command line arguments
@@ -228,8 +331,13 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton keypadButton;
+    private javax.swing.JTextField nameTextField;
     private javax.swing.JButton okButton;
+    private javax.swing.JTextField phoneNumberText;
     private javax.swing.JList userList;
     // End of variables declaration//GEN-END:variables
 }

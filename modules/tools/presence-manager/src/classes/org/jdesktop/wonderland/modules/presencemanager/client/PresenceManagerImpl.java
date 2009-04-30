@@ -87,7 +87,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	PresenceInfo info = cellIDMap.get(presenceInfo.cellID);
 
 	if (info != null && info.equals(presenceInfo) == false) {
-	    logger.warning("cellIDMap already has entry for " + info);
+	    System.out.println("cellIDMap already has entry for " + info);
 	}
 
 	cellIDMap.put(presenceInfo.cellID, presenceInfo);
@@ -96,7 +96,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    info = sessionIDMap.get(presenceInfo.clientID);
 
 	    if (info != null && info.equals(presenceInfo) == false) {
-	        logger.warning("sessionIDMap already has entry for " + info);
+	        System.out.println("sessionIDMap already has entry for " + info);
 	    }
 
 	    sessionIDMap.put(presenceInfo.clientID, presenceInfo);
@@ -105,7 +105,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	info = userIDMap.get(presenceInfo.userID);
 
 	if (info != null && info.equals(presenceInfo) == false) {
-	    logger.warning("userIDMap already has entry for " + info);
+	    System.out.println("userIDMap already has entry for " + info);
 	}
 
 	userIDMap.put(presenceInfo.userID, presenceInfo);
@@ -114,7 +114,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    info = callIDMap.get(presenceInfo.callID);
 
 	    if (info != null && info.equals(presenceInfo) == false) {
-	        logger.warning("callIDMap already has entry for " + info);
+	        System.out.println("callIDMap already has entry for " + info);
 	    }
 
 	    callIDMap.put(presenceInfo.callID, presenceInfo);
@@ -405,6 +405,16 @@ public class PresenceManagerImpl implements PresenceManager {
      */
     public void setEnteredConeOfSilence(PresenceInfo info, boolean inConeOfSilence) {
 	info.inConeOfSilence = inConeOfSilence;
+	notifyListeners(info, ChangeType.ENTER_EXIT_CONE_OF_SILENCE);
+    }
+
+    /**
+     * Set inSecretChat flag
+     * @param PresenceInfo
+     * @param boolean
+     */
+    public void setInSecretChat(PresenceInfo info, boolean inSecretChat) {
+	info.inSecretChat = inSecretChat;
 	notifyListeners(info, ChangeType.ENTER_EXIT_CONE_OF_SILENCE);
     }
 

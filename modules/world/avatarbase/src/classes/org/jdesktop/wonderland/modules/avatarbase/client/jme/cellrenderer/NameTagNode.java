@@ -24,10 +24,6 @@ import com.jme.scene.Spatial;
 
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
-import org.jdesktop.wonderland.client.cell.Cell;
-
 import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
 
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -64,8 +60,10 @@ public class NameTagNode extends Node {
         MUTE,
         UNMUTE,
         CHANGE_NAME,
-        ENTERED_CONE_OF_SILENCE,
-        EXITED_CONE_OF_SILENCE
+	ENTERED_CONE_OF_SILENCE,
+	EXITED_CONE_OF_SILENCE,
+	STARTED_SECRET_CHAT,
+	ENDED_SECRET_CHAT
     }
     private final float height;
     private String name;
@@ -88,10 +86,16 @@ public class NameTagNode extends Node {
         detachChild(q);
     }
 
-    public static String getDisplayName(String name, boolean isSpeaking, boolean isMuted) {
+    public static String getDisplayName(String name, boolean isSpeaking, boolean isMuted,
+	    boolean inSecretChat) {
+
         if (isMuted) {
             return LEFT_MUTE + name + RIGHT_MUTE;
         }
+
+	if (inSecretChat) {
+	    return name;
+	}
 
         if (isSpeaking) {
             return name + SPEAKING;
@@ -128,6 +132,8 @@ public class NameTagNode extends Node {
         this.font = font;
     }
     private boolean inConeOfSilence;
+    private boolean inSecretChat;
+    private boolean isMuted;
 
     public void setNameTag(EventType eventType, String username, String usernameAlias) {
         setNameTag(eventType, username, usernameAlias, null, null);
@@ -138,38 +144,48 @@ public class NameTagNode extends Node {
 
         this.usernameAlias = usernameAlias;
 
-        if (eventType == EventType.ENTERED_CONE_OF_SILENCE) {
-            inConeOfSilence = true;
-        } else if (eventType == EventType.EXITED_CONE_OF_SILENCE) {
-            inConeOfSilence = false;
-            setForegroundColor(NOT_SPEAKING_COLOR);
-        }
+	if (eventType == EventType.ENTERED_CONE_OF_SILENCE) {
+	    inConeOfSilence = true;
+	    return;
+	} else if (eventType == EventType.EXITED_CONE_OF_SILENCE) {
+	    inConeOfSilence = false;
+	    setForegroundColor(NOT_SPEAKING_COLOR);
+	    return;
+	} else if (eventType == EventType.STARTED_SECRET_CHAT) {
+	    inSecretChat = true;
+	    return;
+	} else if (eventType == EventType.ENDED_SECRET_CHAT) {
+	    inSecretChat = false;
+	    return;
+	}
+	    
+	String displayName = usernameAlias;
 
-        String displayName = usernameAlias;
+	switch (eventType) {
+	case STARTED_SPEAKING:
+ 	    displayName = getDisplayName(usernameAlias, true, false, inSecretChat);
+	    setForegroundColor(SPEAKING_COLOR);
+	    break;
+	
+	case STOPPED_SPEAKING:
+ 	    displayName = getDisplayName(usernameAlias, false, false, inSecretChat);
+	    setForegroundColor(NOT_SPEAKING_COLOR);
+	    break;
 
-        switch (eventType) {
-            case STARTED_SPEAKING:
-                displayName = getDisplayName(usernameAlias, true, false);
-                setForegroundColor(SPEAKING_COLOR);
-                break;
+	case MUTE:
+	    isMuted = true;
+ 	    displayName = getDisplayName(usernameAlias, false, true, inSecretChat);
+	    setForegroundColor(NOT_SPEAKING_COLOR);
+	    break;
+	
+	case UNMUTE:
+	    isMuted = false;
+ 	    displayName = getDisplayName(usernameAlias, false, false, inSecretChat);
+	    setForegroundColor(NOT_SPEAKING_COLOR);
+	    break;
 
-            case STOPPED_SPEAKING:
-                displayName = getDisplayName(usernameAlias, false, false);
-                setForegroundColor(NOT_SPEAKING_COLOR);
-                break;
-
-            case MUTE:
-                displayName = getDisplayName(usernameAlias, false, true);
-                setForegroundColor(NOT_SPEAKING_COLOR);
-                break;
-
-            case UNMUTE:
-                displayName = getDisplayName(usernameAlias, false, false);
-                setForegroundColor(NOT_SPEAKING_COLOR);
-                break;
-
-            case CHANGE_NAME:
-                break;
+        case CHANGE_NAME:
+            break;
         }
 
         if (inConeOfSilence) {
@@ -180,9 +196,13 @@ public class NameTagNode extends Node {
             setFont(ALIAS_NAME_FONT);
         }
 
-        if (foregroundColor != null) {
-            setForegroundColor(foregroundColor);
-        }
+	if (inSecretChat == false) {
+            if (foregroundColor != null) {
+                setForegroundColor(foregroundColor);
+            }
+	} else {
+	    setForegroundColor(NOT_SPEAKING_COLOR);
+	}
 
         if (font != null) {
             setFont(font);

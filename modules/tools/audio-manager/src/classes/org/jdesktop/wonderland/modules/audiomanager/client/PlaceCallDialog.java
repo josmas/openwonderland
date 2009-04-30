@@ -34,7 +34,8 @@ import java.awt.Point;
  *
  * @author  jp
  */
-public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManagerListener {
+public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManagerListener,
+	KeypadListener {
 
     private static final Logger logger =
             Logger.getLogger(PlaceCallDialog.class.getName());
@@ -91,16 +92,29 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
                 continue;
             }
 
-            if (info.callID.equals(ourInfo.callID)) {
-                // It's us, skip it.
-                continue;
-            }
+            //if (info.callID.equals(ourInfo.callID)) {
+            //    // It's us, skip it.
+            //    continue;
+            //}
 
             userData.add(NameTagNode.getDisplayName(info.usernameAlias,
-                    info.isSpeaking, info.isMuted));
+                info.isSpeaking, info.isMuted, info.inSecretChat));
         }
 
         buddyList.setListData(userData.toArray(new String[0]));
+
+	enableButtons();
+    }
+
+    private void enableButtons() {
+        if (buddyList.getSelectedValues().length > 0 ||
+                (phoneNumberTextField.getText().replaceAll(" ", "").length() > 0 &&
+                nameTextField.getText().replaceAll(" ", "").length() > 0)) {
+
+            placeCallButton.setEnabled(true);
+        } else {
+            placeCallButton.setEnabled(false);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -113,26 +127,30 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        jLabel1 = new javax.swing.JLabel();
         secretRadioButton = new javax.swing.JRadioButton();
         privateRadioButton = new javax.swing.JRadioButton();
         publicRadioButton = new javax.swing.JRadioButton();
         jLabel3 = new javax.swing.JLabel();
-        phoneNumberText = new javax.swing.JTextField();
+        phoneNumberTextField = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         placeCallButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         buddyList = new javax.swing.JList();
         jLabel2 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        nameTextField = new javax.swing.JTextField();
+        keyPadButton = new javax.swing.JButton();
 
         setTitle("Voice Chat");
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
-        jLabel1.setText("Place Call");
-
         buttonGroup1.add(secretRadioButton);
         secretRadioButton.setText("Secret");
+        secretRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                secretRadioButtonActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(privateRadioButton);
         privateRadioButton.setSelected(true);
@@ -143,13 +161,13 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
 
         jLabel3.setText("Phone Number:");
 
-        phoneNumberText.addActionListener(new java.awt.event.ActionListener() {
+        phoneNumberTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                phoneNumberTextActionPerformed(evt);
+                phoneNumberTextFieldActionPerformed(evt);
             }
         });
 
-        jLabel4.setText("Buddies:");
+        jLabel4.setText("Users:");
 
         placeCallButton.setText("Place Call");
         placeCallButton.addActionListener(new java.awt.event.ActionListener() {
@@ -170,72 +188,100 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        buddyList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                buddyListValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(buddyList);
 
         jLabel2.setText("Privacy:");
+
+        jLabel5.setText("Name:");
+
+        nameTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nameTextFieldActionPerformed(evt);
+            }
+        });
+
+        keyPadButton.setText("KeyPad");
+        keyPadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                keyPadButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(65, Short.MAX_VALUE)
-                .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 96, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(placeCallButton)
-                .add(69, 69, 69))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(54, 54, 54)
-                .add(jLabel2)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(secretRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(privateRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(publicRadioButton)
-                .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabel3)
-                        .add(3, 3, 3)
-                        .add(phoneNumberText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(49, 49, 49)
-                        .add(jLabel4)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)))
-                .add(63, 63, 63))
-            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 104, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(230, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(placeCallButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(4, 4, 4)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                                    .add(layout.createSequentialGroup()
+                                        .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 116, Short.MAX_VALUE))))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(103, 103, 103)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                                    .add(phoneNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, keyPadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 94, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                        .add(63, 63, 63))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(secretRadioButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(privateRadioButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(publicRadioButton)
+                        .add(52, 52, 52))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel3)
+                        .addContainerGap(226, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel5)
+                        .addContainerGap(283, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(secretRadioButton)
                     .add(jLabel2)
+                    .add(secretRadioButton)
                     .add(privateRadioButton)
                     .add(publicRadioButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
-                    .add(phoneNumberText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(phoneNumberTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel5)
+                    .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(4, 4, 4)
+                .add(keyPadButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel4)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 172, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(placeCallButton)
-                    .add(cancelButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 117, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(placeCallButton)
+                            .add(cancelButton)))
+                    .add(jLabel4))
+                .addContainerGap())
         );
 
         pack();
@@ -257,7 +303,7 @@ private void placeCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             chatters += " ";
         }
 
-        chatters += NameTagNode.getUsername((String) selectedValues[i]);
+	chatters += NameTagNode.getUsername((String) selectedValues[i]);
     }
 
     String callerString = caller.usernameAlias;
@@ -278,7 +324,8 @@ private void placeCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     inCallDialog.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
 
-    session.send(client, new VoiceChatJoinMessage(chatGroup, caller, chattersInfo, chatType));
+    session.send(client, new VoiceChatJoinMessage(chatGroup, caller, chattersInfo, chatType,
+	phoneNumberTextField.getText(), nameTextField.getText()));
 
     logger.info("Sent join message, about to enable leave button");
 }//GEN-LAST:event_placeCallButtonActionPerformed
@@ -295,9 +342,33 @@ private void publicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     chatType = ChatType.PUBLIC;
 }//GEN-LAST:event_publicRadioButtonActionPerformed
 
-private void phoneNumberTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneNumberTextActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_phoneNumberTextActionPerformed
+private void phoneNumberTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneNumberTextFieldActionPerformed
+    enableButtons();
+}//GEN-LAST:event_phoneNumberTextFieldActionPerformed
+
+private void buddyListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_buddyListValueChanged
+    enableButtons();
+}//GEN-LAST:event_buddyListValueChanged
+
+private void nameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameTextFieldActionPerformed
+    enableButtons();
+}//GEN-LAST:event_nameTextFieldActionPerformed
+
+private KeypadDialog keypad;
+
+private void keyPadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyPadButtonActionPerformed
+    if (keypad == null) {
+        keypad = new KeypadDialog(this);
+        keypad.setListener(this);
+        keypad.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
+    }
+
+    keypad.setVisible(true);
+}//GEN-LAST:event_keyPadButtonActionPerformed
+
+public void keypadPressed(char key) {
+    System.out.println("Got key " + key);
+}
 
 private PresenceInfo[] getPresenceInfo(String users) {
     String[] tokens = users.split(" ");
@@ -346,12 +417,14 @@ private PresenceInfo[] getPresenceInfo(String users) {
     private javax.swing.JList buddyList;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField phoneNumberText;
+    private javax.swing.JButton keyPadButton;
+    private javax.swing.JTextField nameTextField;
+    private javax.swing.JTextField phoneNumberTextField;
     private javax.swing.JButton placeCallButton;
     private javax.swing.JRadioButton privateRadioButton;
     private javax.swing.JRadioButton publicRadioButton;

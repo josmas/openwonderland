@@ -25,10 +25,31 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  */
 public class VoiceChatJoinMessage extends VoiceChatUserMessage {
     
+    private String phoneNumber;
+    private String name;
+
     public VoiceChatJoinMessage(String group, PresenceInfo caller, 
 	    PresenceInfo[] calleeList, ChatType chatType) {
 
+	this(group, caller, calleeList, chatType, null, null);
+    }
+
+    public VoiceChatJoinMessage(String group, PresenceInfo caller, 
+	    PresenceInfo[] calleeList, ChatType chatType, String phoneNumber, 
+	    String name) {
+
 	super(group, caller, calleeList, chatType);
+
+	this.phoneNumber = phoneNumber;
+	this.name = name;
     }
     
+    public String getPhoneNumber() {
+	return phoneNumber;
+    }
+
+    public String getName() {
+	return name;
+    }
+
 }

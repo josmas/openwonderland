@@ -237,13 +237,34 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		return;
 	    }
 	
+	    AudioGroup livePlayerAudioGroup = vm.getVoiceManagerParameters().livePlayerAudioGroup;
+
+	    AudioGroup stationaryPlayerAudioGroup = vm.getVoiceManagerParameters().stationaryPlayerAudioGroup;
+
 	    if (msg.isOnHold()) {
 		playerInfo.isSpeaking = false;
 		audioGroup.setSpeakingAttenuation(player, 0);
 		audioGroup.setListenAttenuation(player, 0);
+
+		livePlayerAudioGroup.setSpeakingAttenuation(player, AudioGroup.DEFAULT_SPEAKING_ATTENUATION);
+		livePlayerAudioGroup.setListenAttenuation(player, AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+		stationaryPlayerAudioGroup.setSpeakingAttenuation(player, AudioGroup.DEFAULT_SPEAKING_ATTENUATION);
+		stationaryPlayerAudioGroup.setListenAttenuation(player, AudioGroup.DEFAULT_LISTEN_ATTENUATION);
 	    } else {
+		playerInfo.isSpeaking = true;
+
 		audioGroup.setSpeakingAttenuation(player, AudioGroup.DEFAULT_SPEAKING_ATTENUATION);
 		audioGroup.setListenAttenuation(player, AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+
+		if (playerInfo.chatType.equals(ChatType.PUBLIC)) {
+		    livePlayerAudioGroup.setSpeakingAttenuation(player, AudioGroup.DEFAULT_SPEAKING_ATTENUATION);
+		    livePlayerAudioGroup.setListenAttenuation(player, AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+		    stationaryPlayerAudioGroup.setListenAttenuation(player, AudioGroup.DEFAULT_LISTEN_ATTENUATION);
+		} else {
+		    livePlayerAudioGroup.setSpeakingAttenuation(player, 0);
+		    livePlayerAudioGroup.setListenAttenuation(player, AudioGroup.MINIMAL_LISTEN_ATTENUATION);
+		    stationaryPlayerAudioGroup.setListenAttenuation(player, AudioGroup.MINIMAL_LISTEN_ATTENUATION);
+		}
 	    }
 
 	    sender.send(msg);
@@ -272,12 +293,17 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	boolean added = addPlayerToAudioGroup(vm, audioGroup, caller, msg.getChatType());
 
+	if (added) {
+	    sender.send(new VoiceChatJoinAcceptedMessage(group, caller, msg.getChatType()));
+	}
+
 	if (added == false && calleeList.length == 0) {
 	    endVoiceChat(vm, audioGroup);
 	    return;
 	}
 
-	logger.info("Request to join AudioGroup " + group + " caller " + caller);
+	logger.info("Request to join AudioGroup " + group + " caller " + caller + " phoneNumber "
+	    + msg.getPhoneNumber() + " name " + msg.getName());
 
 	for (int i = 0; i < calleeList.length; i++) {
 	    PresenceInfo info = calleeList[i];
@@ -513,12 +539,17 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	Vector3f center = new Vector3f((float) vp.player.getX(), (float) 2.3, 
 	    (float) vp.player.getZ());
 
-	Orb orb = new Orb(VIRTUAL_PLAYER_PREFIX + vp.getUsername(), vp.player.getCall().getId(), center, .1, false, 
-	    vp.playerWithVirtualPlayer.getId());
+        ManagedOrbMap orbMap = (ManagedOrbMap) AppContext.getDataManager().getBinding(ORB_MAP_NAME);
+
+	if (orbMap.get(VIRTUAL_PLAYER_PREFIX + vp.player.getId()) != null) {
+	    logger.info("ORB already exists for " + vp);
+	    return;
+	}
+
+	Orb orb = new Orb(VIRTUAL_PLAYER_PREFIX + vp.getUsername(), 
+	    vp.player.getCall().getId(), center, .1, false, vp.playerWithVirtualPlayer.getId());
 
 	orb.addComponent(new AudioParticipantComponentMO(orb.getOrbCellMO()));
-
-        ManagedOrbMap orbMap = (ManagedOrbMap) AppContext.getDataManager().getBinding(ORB_MAP_NAME);
 
 	orbMap.put(VIRTUAL_PLAYER_PREFIX + vp.player.getId(), 
 	    AppContext.getDataManager().createReference(orb));
@@ -532,9 +563,9 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	    ManagedReference<Orb> orbRef = orbMap.remove(VIRTUAL_PLAYER_PREFIX + vp.player.getId());
 
-	    logger.info("Remove Orb for " + vp + " from " );
-
-	    orbRef.get().done();
+	    if (orbRef != null) {
+	        orbRef.get().done();
+	    }
 	}
     }
 
@@ -603,8 +634,25 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
    	    playersInRange.add(playerInRange);
 
-	    // XXX decide whether or not a bystander orb needs to be created
-	    // or updated with the bystander count.
+	    Orb orb = bystanderOrbMap.get(player);
+
+	    if (false && orb == null) {
+        	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+		Player vPlayer = vm.getPlayer(VIRTUAL_PLAYER_PREFIX + player.getId());
+
+		if (vPlayer == null) {
+		    return;
+		}
+
+		//Vector3f center = new Vector3f((float) vp.player.getX(), (float) 2.3,
+		//    (float) vp.player.getZ());
+
+		//orb = new Orb(String.valueOf(playersInRange.size()), vPlayer.player.getCall().getId(),
+		//    center, .1, false, vPlayer.playerWithVirtualPlayer.getId());
+	    }
+	    
+	    // Update Orb name tag with count of players in range	
 	} else {
 	    if (playersInRange == null) {
 		return;

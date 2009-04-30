@@ -117,11 +117,12 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
     private void setMemberList() {
         ArrayList<String> memberList = new ArrayList();
 
-        synchronized (this) {
-            for (PresenceInfo member : members) {
-                memberList.add(NameTagNode.getDisplayName(
-                        member.usernameAlias, member.isSpeaking, member.isMuted));
-            }
+	synchronized (this) {
+	    for (PresenceInfo member : members) {
+	        memberList.add(NameTagNode.getDisplayName(
+		    member.usernameAlias, member.isSpeaking, member.isMuted,
+		    member.inSecretChat));
+	    }
 
             this.memberList.setListData(memberList.toArray(new String[0]));
         }
@@ -184,7 +185,6 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         memberList = new javax.swing.JList();
-        keyPadButton = new javax.swing.JButton();
         addUserButton = new javax.swing.JButton();
         holdButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
@@ -199,7 +199,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 15));
+        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 15)); // NOI18N
         jLabel1.setText("In Call");
 
         memberList.setModel(new javax.swing.AbstractListModel() {
@@ -207,14 +207,8 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        memberList.setEnabled(false);
         jScrollPane1.setViewportView(memberList);
-
-        keyPadButton.setText("KeyPad");
-        keyPadButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                keyPadButtonActionPerformed(evt);
-            }
-        });
 
         addUserButton.setText("Add User...");
         addUserButton.addActionListener(new java.awt.event.ActionListener() {
@@ -268,34 +262,29 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(128, Short.MAX_VALUE)
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(157, 157, 157))
-            .add(layout.createSequentialGroup()
-                .add(46, 46, 46)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .add(29, 29, 29)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 1, Short.MAX_VALUE)
+                        .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jLabel2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(secretRadioButton))
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, holdButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, keyPadButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)))
-                        .add(6, 6, 6)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(layout.createSequentialGroup()
-                                .add(privateRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(publicRadioButton))
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                .add(org.jdesktop.layout.GroupLayout.TRAILING, addUserButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.TRAILING, endCallButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)))))
-                .addContainerGap(41, Short.MAX_VALUE))
+                        .add(secretRadioButton)
+                        .add(18, 18, 18)
+                        .add(privateRadioButton)
+                        .add(18, 18, 18)
+                        .add(publicRadioButton))
+                    .add(layout.createSequentialGroup()
+                        .add(holdButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(addUserButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(endCallButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 88, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(33, 33, 33))
+            .add(layout.createSequentialGroup()
+                .add(141, 141, 141)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(144, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -310,18 +299,12 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
                     .add(secretRadioButton)
                     .add(privateRadioButton)
                     .add(publicRadioButton))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(18, 18, 18)
-                        .add(keyPadButton))
-                    .add(layout.createSequentialGroup()
-                        .add(18, 18, 18)
-                        .add(addUserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 25, Short.MAX_VALUE)
+                .add(27, 27, 27)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(holdButton)
-                    .add(endCallButton))
-                .addContainerGap())
+                    .add(addUserButton)
+                    .add(endCallButton)
+                    .add(holdButton))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         pack();
@@ -435,7 +418,6 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton keyPadButton;
     private javax.swing.JList memberList;
     private javax.swing.JRadioButton privateRadioButton;
     private javax.swing.JRadioButton publicRadioButton;

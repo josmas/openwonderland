@@ -135,6 +135,13 @@ public interface PresenceManager {
      */
     public void setEnteredConeOfSilence(PresenceInfo info, boolean enteredConeOfSilence);
 
+    /** 
+     * Set inSecretChat flag
+     * @param PresenceInfo
+     * @param boolean
+     */
+    public void setInSecretChat(PresenceInfo info, boolean inSecretChat);
+
     /**
      * Listener for changes
      * @param PresenceManagerListener the listener to be notified of a change
