@@ -124,6 +124,22 @@ public class ChatManager implements TextChatListener {
      * Unregister and menus we have created, etc.
      */
     public void unregister() {
+        // Close down and remove any existing windows, start with the user list
+        // window
+        JFrame userListJFrame = userListFrameRef.get();
+        userListJFrame.setVisible(false);
+        userListJFrame.dispose();
+
+        // Close down all of the individual text chat windows
+        for (Map.Entry<String, WeakReference<TextChatJFrame>> entry :
+            textChatFrameRefMap.entrySet()) {
+
+                TextChatJFrame frame = entry.getValue().get();
+                frame.setVisible(false);
+                frame.dispose();
+        }
+        textChatFrameRefMap.clear();
+
         // remove the session listener
         loginInfo.removeLifecycleListener(sessionListener);
 

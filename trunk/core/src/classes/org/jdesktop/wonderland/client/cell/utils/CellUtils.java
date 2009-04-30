@@ -86,13 +86,13 @@ public class CellUtils {
         float factor = (distance * distance) / lengthSquared;
         Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
 
-        System.out.println("CAMERA POSITION " + cameraPosition);
-        System.out.println("CAMERA LOOK AT " + cameraLookDirection);
-        System.out.println("LENGTH SQ " + lengthSquared);
-        System.out.println("DISTANCE SQ " + (distance * distance));
-        System.out.println("SIZING HINT " + sizingHint);
-        System.out.println("FACTOR " + factor);
-        System.out.println("ORIGIN " + origin);
+//        System.out.println("CAMERA POSITION " + cameraPosition);
+//        System.out.println("CAMERA LOOK AT " + cameraLookDirection);
+//        System.out.println("LENGTH SQ " + lengthSquared);
+//        System.out.println("DISTANCE SQ " + (distance * distance));
+//        System.out.println("SIZING HINT " + sizingHint);
+//        System.out.println("FACTOR " + factor);
+//        System.out.println("ORIGIN " + origin);
         
         // Create a position component that will set the initial origin
         PositionComponentServerState position = new PositionComponentServerState();
