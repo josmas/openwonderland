@@ -5,7 +5,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoi
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
@@ -14,16 +13,12 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFac
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -36,26 +31,20 @@ import java.util.logging.Logger;
  *
  * Created on April 22, 2009, 8:25 AM
  */
-
 /**
  *
  * @author  jp
  */
 public class AddUserDialog extends javax.swing.JFrame implements PresenceManagerListener,
-	MemberChangeListener {
+        MemberChangeListener {
 
     private static final Logger logger =
             Logger.getLogger(AddUserDialog.class.getName());
-
     private AudioManagerClient client;
     private WonderlandSession session;
-
     private PresenceManager pm;
-  
     private PresenceInfo presenceInfo;
-
     private String group;
-
     private InCallDialog inCallDialog;
 
     /** Creates new form AddUserDialog */
@@ -63,19 +52,19 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
         initComponents();
     }
 
-    public AddUserDialog(AudioManagerClient client, WonderlandSession session, 
-	    CellID cellID, String group, InCallDialog inCallDialog) {
+    public AddUserDialog(AudioManagerClient client, WonderlandSession session,
+            CellID cellID, String group, InCallDialog inCallDialog) {
 
         this.client = client;
-	this.session = session;
-	this.group = group;
-	this.inCallDialog = inCallDialog;
+        this.session = session;
+        this.group = group;
+        this.inCallDialog = inCallDialog;
 
         initComponents();
 
-	inCallDialog.addMemberChangeListener(this);
+        inCallDialog.addMemberChangeListener(this);
 
-	pm = PresenceManagerFactory.getPresenceManager(session);
+        pm = PresenceManagerFactory.getPresenceManager(session);
 
         pm.addPresenceManagerListener(this);
 
@@ -86,50 +75,50 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
             return;
         }
 
-	setUserList();
-	setVisible(true);
+        setUserList();
+        setVisible(true);
     }
 
     private void setUserList() {
-	ArrayList<PresenceInfo> members = inCallDialog.getMembers();
+        ArrayList<PresenceInfo> members = inCallDialog.getMembers();
 
-	PresenceInfo[] presenceInfoList = pm.getAllUsers();
+        PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
-	ArrayList<String> userData = new ArrayList();
+        ArrayList<String> userData = new ArrayList();
 
-	for (int i = 0; i < presenceInfoList.length; i++) {
-	    PresenceInfo info = presenceInfoList[i];
-	
-	    if (info.callID == null) {
-		// It's a virtual player, skip it.
-		continue;
-	    }
+        for (int i = 0; i < presenceInfoList.length; i++) {
+            PresenceInfo info = presenceInfoList[i];
 
-	    if (members.contains(info)) {
-		continue;
-	    }
+            if (info.callID == null) {
+                // It's a virtual player, skip it.
+                continue;
+            }
 
-	    userData.add(NameTag.getDisplayName(info.usernameAlias, info.isSpeaking,
-		info.isMuted));
-	}
+            if (members.contains(info)) {
+                continue;
+            }
 
-	userList.setListData(userData.toArray(new String[0]));
+            userData.add(NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
+                    info.isMuted));
+        }
+
+        userList.setListData(userData.toArray(new String[0]));
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
-	setUserList();
+        setUserList();
     }
 
     public void aliasChanged(String previousAlias, PresenceInfo info) {
-	setUserList();
+        setUserList();
     }
 
     public void memberAdded(PresenceInfo info) {
-	setUserList();
+        setUserList();
     }
 
     public void memberRemoved(PresenceInfo info) {
-	setUserList();
+        setUserList();
     }
 
     /** This method is called from within the constructor to
@@ -210,9 +199,9 @@ private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     Object[] selectedValues = userList.getSelectedValues();
 
     for (int i = 0; i < selectedValues.length; i++) {
-	PresenceInfo[] info = pm.getAliasPresenceInfo((String) selectedValues[i]);
+        PresenceInfo[] info = pm.getAliasPresenceInfo((String) selectedValues[i]);
 
-	session.send(client, new VoiceChatJoinMessage(group, presenceInfo, info, ChatType.PRIVATE));
+        session.send(client, new VoiceChatJoinMessage(group, presenceInfo, info, ChatType.PRIVATE));
     }
 
     userList.clearSelection();
@@ -225,10 +214,11 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new AddUserDialog().setVisible(true);
             }
@@ -242,5 +232,4 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JButton okButton;
     private javax.swing.JList userList;
     // End of variables declaration//GEN-END:variables
-
 }

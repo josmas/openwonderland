@@ -3,24 +3,11 @@
  *
  * Created on April 20, 2009, 11:47 AM
  */
-
 package org.jdesktop.wonderland.modules.audiomanager.client;
-
-import org.jdesktop.wonderland.client.ClientContext;
-
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
-
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
@@ -29,8 +16,7 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerLis
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
@@ -38,12 +24,9 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 
-import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.logging.Logger;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
 
 import java.awt.Point;
 
@@ -54,19 +37,13 @@ import java.awt.Point;
 public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManagerListener {
 
     private static final Logger logger =
-        Logger.getLogger(PlaceCallDialog.class.getName());
-
+            Logger.getLogger(PlaceCallDialog.class.getName());
     private ChatType chatType = ChatType.PRIVATE;
-
     private AudioManagerClient client;
     private WonderlandSession session;
-
     private CellID cellID;
-
     private PresenceInfo caller;
-
     private PresenceManager pm;
-
     private int chatGroupNumber;
 
     /** Creates new form PlaceCallDialog */
@@ -74,8 +51,8 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
         initComponents();
     }
 
-    public PlaceCallDialog(AudioManagerClient client, WonderlandSession session, 
-	    CellID cellID, PresenceInfo caller) throws IOException {
+    public PlaceCallDialog(AudioManagerClient client, WonderlandSession session,
+            CellID cellID, PresenceInfo caller) throws IOException {
 
         this.client = client;
         this.cellID = cellID;
@@ -119,8 +96,8 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
                 continue;
             }
 
-            userData.add(NameTag.getDisplayName(info.usernameAlias,
-                info.isSpeaking, info.isMuted));
+            userData.add(NameTagNode.getDisplayName(info.usernameAlias,
+                    info.isSpeaking, info.isMuted));
         }
 
         buddyList.setListData(userData.toArray(new String[0]));
@@ -276,11 +253,11 @@ private void placeCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     Object[] selectedValues = buddyList.getSelectedValues();
 
     for (int i = 0; i < selectedValues.length; i++) {
-	if (i > 0) {
-	    chatters += " ";
-	}
+        if (i > 0) {
+            chatters += " ";
+        }
 
-	chatters += NameTag.getUsername((String) selectedValues[i]);
+        chatters += NameTagNode.getUsername((String) selectedValues[i]);
     }
 
     String callerString = caller.usernameAlias;
@@ -289,13 +266,12 @@ private void placeCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     chatters = chatters.replaceAll(callerString + " ", "");
     chatters = chatters.replaceAll(callerString, "");
 
-    logger.info("JOIN chatGroup " + chatGroup + " caller " + caller
-	+ " chatters " + chatters + " chatType " + chatType);
+    logger.info("JOIN chatGroup " + chatGroup + " caller " + caller + " chatters " + chatters + " chatType " + chatType);
 
     PresenceInfo[] chattersInfo = new PresenceInfo[0];
 
     if (chatters.length() > 0) {
-	chattersInfo = getPresenceInfo(chatters);
+        chattersInfo = getPresenceInfo(chatters);
     }
 
     InCallDialog inCallDialog = new InCallDialog(client, session, cellID, chatGroup, chatType);
@@ -326,39 +302,40 @@ private void phoneNumberTextActionPerformed(java.awt.event.ActionEvent evt) {//G
 private PresenceInfo[] getPresenceInfo(String users) {
     String[] tokens = users.split(" ");
 
-    PresenceInfo[] info = new PresenceInfo[tokens.length];
+        PresenceInfo[] info = new PresenceInfo[tokens.length];
 
-    for (int i = 0; i < tokens.length; i++) {
-	PresenceInfo[] userInfo = pm.getUserPresenceInfo(tokens[i]);
+        for (int i = 0; i < tokens.length; i++) {
+            PresenceInfo[] userInfo = pm.getUserPresenceInfo(tokens[i]);
 
-	if (userInfo == null) {
-	    logger.warning("No PresenceInfo for " + tokens[i]);
-	    return null;
-	}
+            if (userInfo == null) {
+                logger.warning("No PresenceInfo for " + tokens[i]);
+                return null;
+            }
 
-	info[i] = userInfo[0];
+            info[i] = userInfo[0];
 
-	checkLength(userInfo);
+            checkLength(userInfo);
+        }
+
+        return info;
     }
 
-    return info;
-}
+    private void checkLength(PresenceInfo[] info) {
+        if (info.length > 1) {
+            logger.info("More than one PresenceInfo, using first:");
 
-private void checkLength(PresenceInfo[] info) {
-    if (info.length > 1) {
-        logger.info("More than one PresenceInfo, using first:");
-
-        for (int i = 0; i < info.length; i++) {
-            logger.info("  " + info[i]);
+            for (int i = 0; i < info.length; i++) {
+                logger.info("  " + info[i]);
+            }
         }
     }
-}
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new PlaceCallDialog().setVisible(true);
             }
@@ -380,5 +357,4 @@ private void checkLength(PresenceInfo[] info) {
     private javax.swing.JRadioButton publicRadioButton;
     private javax.swing.JRadioButton secretRadioButton;
     // End of variables declaration//GEN-END:variables
-
 }
