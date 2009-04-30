@@ -334,6 +334,7 @@ public class JmeClientMain {
                             public void run() {
                                 ReconnectFrame rf = new ReconnectFrame(JmeClientMain.this, mgr);
                                 rf.pack();
+                                rf.setLocationRelativeTo(JmeClientMain.getFrame().getFrame());
                                 rf.setVisible(true);
                             }
                         });
