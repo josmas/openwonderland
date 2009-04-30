@@ -473,7 +473,13 @@ public class AvatarConfigManager {
             super(ThreadManager.getThreadGroup(), "AvatarServerSyncThread");
             logger.info("SERVER SYNC "+this);
             repository = ContentRepositoryRegistry.getInstance().getRepository(session);
+            
+            System.out.println("[AvatarConfigManager] got repository " + repository);
+            
             ContentCollection userDir = repository.getUserRoot(true);
+
+            System.out.println("[AvatarConfigManager] get user root " + userDir);
+
             avatarsDir = (ContentCollection) userDir.getChild("avatars");
             if (avatarsDir == null) {
                 avatarsDir = (ContentCollection) userDir.createChild("avatars", Type.COLLECTION);

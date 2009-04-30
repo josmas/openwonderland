@@ -17,10 +17,13 @@
  */
 package org.jdesktop.wonderland.client.modules;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.login.ServerStatusListener;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.common.modules.ModuleList;
 
@@ -34,6 +37,11 @@ public class ServerCache {
     /* The base url of the server: http://<server name>:<port> */
     private String serverURL = null;
     
+    /* The session listener to remove this cache when all sessions disconnect
+     * from this server
+     */
+    private SessionListener listener;
+
     /* A hashmap of module names and caches of their information */
     private Map<String, CachedModule> cachedModules = new HashMap();
     
@@ -41,12 +49,22 @@ public class ServerCache {
     private Logger logger = Logger.getLogger(ServerCache.class.getName());
     
     /* A hashmap of base server urls and their ServerCache objects */
-    private static Map<String, ServerCache> serverCaches = new HashMap();
+    private static final Map<String, ServerCache> serverCaches = new HashMap();
     
     /** Constructor, takes base URL  of the server */
     public ServerCache(String serverURL) {
+        System.out.println("[ServerCache] create cache for " + serverURL);
+
         this.serverURL = serverURL;
         this.reload();
+
+        // create the associated with this cache
+        ServerSessionManager ssm = LoginManager.findSessionManager(serverURL);
+        if (ssm == null) {
+            logger.log(Level.WARNING, "Cannot find session for " + serverURL);
+        } else {
+            this.listener = new SessionListener(ssm);
+        }
     }
     
     /**
@@ -67,7 +85,17 @@ public class ServerCache {
             return cache;
         }
     }
-    
+
+    /**
+     * Remove a server cache for the given URL
+     * @param serverURL the base url of the server to remove
+     */
+    static void removeServerCache(String serverURL) {
+        synchronized (serverCaches) {
+            serverCaches.remove(serverURL);
+        }
+    }
+
     /**
      * Returns a collection of cached module names. If no module names exist,
      * returns an empty collection.
@@ -116,6 +144,25 @@ public class ServerCache {
         for (ModuleInfo moduleInfo : list.getModuleInfos()) {
             CachedModule cachedModule = new CachedModule(serverURL, moduleInfo);
             this.cachedModules.put(moduleInfo.getName(), cachedModule);
+        }
+    }
+
+    private class SessionListener implements ServerStatusListener {
+        private ServerSessionManager manager;
+
+        SessionListener(ServerSessionManager manager) {
+            this.manager = manager;
+            manager.addServerStatusListener(this);
+        }
+
+        public void connected(ServerSessionManager sessionManager) {
+            // ignore
+        }
+
+        public void disconnected(ServerSessionManager sessionManager) {
+            // flush the cache
+            logger.fine("[ServerCache] removing cache for " + serverURL);
+            ServerCache.removeServerCache(serverURL);
         }
     }
 }

@@ -172,6 +172,8 @@ public class SecurityComponentMO extends CellComponentMO
 
     @Override
     protected void setLive(boolean live) {
+        System.out.println("[SecurityComponentMO] setLive: " + live);
+
         super.setLive(live);
 
         if (live) {
@@ -186,6 +188,8 @@ public class SecurityComponentMO extends CellComponentMO
             // unregister as a component change listener
             cellRef.getForUpdate().removeComponentChangeListener(this);
             actions = null;
+
+            channelRef.getForUpdate().removeMessageReceiver(PermissionsRequestMessage.class);
         }
     }
 

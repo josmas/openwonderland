@@ -24,6 +24,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -77,8 +78,14 @@ public class ServerSessionManager {
     /** whether or not we are authenticated to the server */
     private LoginControl loginControl;
 
+    /** a lock to prevent connection and disconnection from happening at
+     *  the same time
+     */
+    private final Object connectLock = new Object();
+
     /** the session for this login */
-    private final Set<WonderlandSession> sessions = new HashSet<WonderlandSession>();
+    private final Set<WonderlandSession> sessions = 
+            Collections.synchronizedSet(new HashSet<WonderlandSession>());
 
     /** the primary session */
     private WonderlandSession primarySession;
@@ -87,6 +94,10 @@ public class ServerSessionManager {
     /** session lifecycle listeners */
     private final Set<SessionLifecycleListener> lifecycleListeners =
             new CopyOnWriteArraySet<SessionLifecycleListener>();
+
+    /** server status listeners */
+    private final Set<ServerStatusListener> statusListeners =
+            new CopyOnWriteArraySet<ServerStatusListener>();
 
     /** the list of plugins we have initialized, to make sure we clean up */
     private final Set<ClientPlugin> plugins = new HashSet<ClientPlugin>();
@@ -140,8 +151,10 @@ public class ServerSessionManager {
         // if there are session connected, just return the details that
         // they connected with
         synchronized (this) {
-            if (sessions.size() > 0) {
-                return details;
+            synchronized (sessions) {
+                if (sessions.size() > 0) {
+                    return details;
+                }
             }
         }
 
@@ -175,34 +188,45 @@ public class ServerSessionManager {
      * Disconnect this session.  All sessions will be disconnected, and
      * all plugins will be cleaned up.
      */
-    public synchronized void disconnect() {
+    public void disconnect() {
         logger.log(Level.WARNING, "[ServerSessionManager] Disconnect from " +
                    getServerURL());
 
-        // if we are already disconnected, just return
-        if (loginControl == null) {
-            return;
-        }
+        synchronized (connectLock) {
+            synchronized (this) {
+                // if we are already disconnected, just return
+                if (loginControl == null) {
+                    return;
+                }
 
-        // if we are the primary session, send a notification that there
-        // is no longer a primary session
-        if (this.equals(LoginManager.getPrimary())) {
-            LoginManager.setPrimary(null);
-        }
+                // remove the login control immediately so that
+                // isConnected() will return false during the
+                // disconnect process
+                loginControl = null;
+            }
 
-        // disconnect all sessions
-        for (WonderlandSession session : getAllSessions()) {
-            session.logout();
-        }
+            // if we are the primary session, send a notification that there
+            // is no longer a primary session
+            if (this.equals(LoginManager.getPrimary())) {
+                LoginManager.setPrimary(null);
+            }
 
-        // clean up all plugins
-        for (ClientPlugin plugin : plugins) {
-            plugin.cleanup();
-        }
+            // disconnect all sessions
+            for (WonderlandSession session : getAllSessions()) {
+                session.logout();
+            }
 
-        // all done, clean things up
-        plugins.clear();
-        loginControl = null;
+            // clean up all plugins
+            for (ClientPlugin plugin : plugins) {
+                plugin.cleanup();
+            }
+
+            // all done, clean things up
+            plugins.clear();
+
+            // notify listeners
+            fireServerStatus(false);
+        }
     }
 
     /**
@@ -252,65 +276,81 @@ public class ServerSessionManager {
      * @throws LoginFailureException if there is a problem creating the
      * session with the login credentials from this manager
      */
-    public synchronized <T extends WonderlandSession> T
-            createSession(SessionCreator<T> creator)
+    public <T extends WonderlandSession> T createSession(SessionCreator<T> creator)
         throws LoginFailureException
     {
-        // check the server details to see if the timestamp has changed
-        checkTimeStamp(getDetails());
+        synchronized (connectLock) {
+            // check the server details to see if the timestamp has changed
+            checkTimeStamp(getDetails());
 
-        // determine what type of authentication to use
-        AuthenticationInfo authInfo = getDetails().getAuthInfo();
+            // determine what type of authentication to use
+            AuthenticationInfo authInfo = getDetails().getAuthInfo();
 
-        // create the login control if necessary
-        if (loginControl == null) {
-            loginControl = createLoginControl(authInfo);
-        }
-
-        // see if we are already logged in
-        if (!loginControl.isAuthenticated()) {
-            requestLogin(loginControl);
-        }
-
-        // choose a Darkstar server to connect to
-        DarkstarServer ds = getDetails().getDarkstarServers()[0];
-        WonderlandServerInfo serverInfo =
-                new WonderlandServerInfo(ds.getHostname(), ds.getPort());
-
-        // use the session creator to create a new session
-        T session = creator.createSession(this, serverInfo,
-                                          loginControl.getClassLoader());
-
-        // log in to the session
-        session.login(loginControl.getLoginParameters());
-
-        // the session was created successfully.  Add it to our list of
-        // sessions, and add a listener to remove it when it disconnects
-        session.addSessionStatusListener(new SessionStatusListener() {
-            public void sessionStatusChanged(WonderlandSession session,
-                                             Status status)
-            {
-                synchronized (ServerSessionManager.this) {
-                    if (status.equals(Status.DISCONNECTED)) {
-                        sessions.remove(session);
-                    }
+            synchronized (this) {
+                // create the login control if necessary
+                if (loginControl == null) {
+                    loginControl = createLoginControl(authInfo);
                 }
             }
 
-        });
-        sessions.add(session);
-        fireSessionCreated(session);
+            // see if we are already logged in
+            boolean isConnect = false;
+            if (!loginControl.isAuthenticated()) {
+                requestLogin(loginControl);
 
-        // returnh the session
-        return session;
+                // if we get here, it means that we just requested a new
+                // login and it succeeded.  When this method finishes, we need
+                // to notify server status listeners.
+                isConnect = true;
+            }
+
+            // choose a Darkstar server to connect to
+            DarkstarServer ds = getDetails().getDarkstarServers()[0];
+            WonderlandServerInfo serverInfo =
+                    new WonderlandServerInfo(ds.getHostname(), ds.getPort());
+
+            // use the session creator to create a new session
+            T session = creator.createSession(this, serverInfo,
+                                              loginControl.getClassLoader());
+
+            // log in to the session
+            session.login(loginControl.getLoginParameters());
+
+            // the session was created successfully.  Add it to our list of
+            // sessions, and add a listener to remove it when it disconnects
+            session.addSessionStatusListener(new SessionStatusListener() {
+                public void sessionStatusChanged(WonderlandSession session,
+                                                 Status status)
+                {
+                    synchronized (ServerSessionManager.this) {
+                        if (status.equals(Status.DISCONNECTED)) {
+                            sessions.remove(session);
+                        }
+                    }
+                }
+
+            });
+            sessions.add(session);
+            fireSessionCreated(session);
+
+            // if this is a new connection, notify listeners
+            if (isConnect) {
+                fireServerStatus(true);
+            }
+
+            // return the session
+            return session;
+        }
     }
 
     /**
      * Get all sessions
      * @return a list of all sessions
      */
-    public synchronized Collection<WonderlandSession> getAllSessions() {
-        return new ArrayList(sessions);
+    public Collection<WonderlandSession> getAllSessions() {
+        synchronized (sessions) {
+            return new ArrayList(sessions);
+        }
     }
 
     /**
@@ -400,6 +440,23 @@ public class ServerSessionManager {
     }
 
     /**
+     * Add a session status listener.  This will be notified when this
+     * session connects or disconnects.
+     * @param listener the listener to add
+     */
+    public void addServerStatusListener(ServerStatusListener listener) {
+        statusListeners.add(listener);
+    }
+
+    /**
+     * Remove a session status listener.
+     * @param listener the listener to remove
+     */
+    public void removeServerStatusListener(ServerStatusListener listener) {
+        statusListeners.remove(listener);
+    }
+
+    /**
      * Get the classloader this session uses to load plugins.  Only valid after
      * login has been requested.
      * @return the classloader this session uses, or null if this
@@ -443,11 +500,13 @@ public class ServerSessionManager {
     protected void checkTimeStamp(ServerDetails details)
             throws LoginFailureException
     {
-        logger.fine("[ServerSessionManager] checkTimeStamp old: " +
+        logger.warning("[ServerSessionManager] checkTimeStamp old: " +
                     getDetails().getTimeStamp() + " new: " +
                     details.getTimeStamp());
 
-        if (details.getTimeStamp() > getDetails().getTimeStamp()) {
+        if (this.details == null || 
+                (details.getTimeStamp() > this.details.getTimeStamp()))
+        {
             // the details are newer -- force a disconnect so we reconnect
             // completely on the next login attempt
             if (isConnected()) {
@@ -523,6 +582,22 @@ public class ServerSessionManager {
     private void firePrimarySession(WonderlandSession session) {
         for (SessionLifecycleListener listener : lifecycleListeners) {
             listener.primarySession(session);
+        }
+    }
+
+    /**
+     * Notify any registered status listeners that the server has connected
+     * or disconnected
+     * @param connected true if the status is now connected, or false if it
+     * is now disconnected
+     */
+    private void fireServerStatus(boolean connected) {
+        for (ServerStatusListener listener : statusListeners) {
+            if (connected) {
+                listener.connected(this);
+            } else {
+                listener.disconnected(this);
+            }
         }
     }
 

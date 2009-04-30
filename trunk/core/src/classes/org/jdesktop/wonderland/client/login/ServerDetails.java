@@ -85,6 +85,7 @@ public class ServerDetails implements Cloneable {
      * Get the URL of the server
      * @return the server URL
      */
+    @XmlElement
     public String getServerURL() {
         return serverURL;
     }

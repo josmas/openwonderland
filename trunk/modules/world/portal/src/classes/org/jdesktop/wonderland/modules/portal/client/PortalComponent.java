@@ -24,6 +24,7 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -37,6 +38,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentClientState;
 
 /**
@@ -78,12 +80,11 @@ public class PortalComponent extends CellComponent
     @Override
     public void setStatus(CellStatus status) {
         super.setStatus(status);
-        
-        BoundingVolume[] bounds = new BoundingVolume[] {
-            new BoundingSphere(3.0f, new Vector3f())
-        };
 
-        System.out.println("[PortalComponent] set status: " + status);
+        // get the activation bounds from the cell we are part of
+        BoundingVolume[] bounds = new BoundingVolume[] {
+            this.cell.getLocalBounds()
+        };
 
         if (status == CellStatus.ACTIVE) {
             System.out.println("[PortalComponent] add prox listener");
@@ -99,14 +100,21 @@ public class PortalComponent extends CellComponent
     {
         System.out.println("[PortalComponent] trigger!");
 
-        try {
-            // teleport!
-            ClientContextJME.getClientMain().gotoLocation(serverURL, location, look);
+        // teleport in a separate thread, since we don't know which one we
+        // are called on
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    // teleport!
+                    ClientContextJME.getClientMain().gotoLocation(serverURL, location, look);
 
-            System.out.println("[PortalComponent] going to " + serverURL +
-                               " at " + location + ", " + look);
-        } catch (IOException ex) {
-            logger.log(Level.WARNING, "Error teleporting", ex);
-        }
+                    System.out.println("[PortalComponent] going to " + serverURL +
+                                       " at " + location + ", " + look);
+                } catch (IOException ex) {
+                    logger.log(Level.WARNING, "Error teleporting", ex);
+                }
+            }
+        }, "Teleporter");
+        t.start();
     }
 }

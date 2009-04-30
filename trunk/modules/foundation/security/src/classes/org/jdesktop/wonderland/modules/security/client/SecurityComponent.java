@@ -70,6 +70,9 @@ public class SecurityComponent extends CellComponent
             case ACTIVE:
                 channel.addMessageReceiver(PermissionsChangedMessage.class, this);
                 break;
+            case DISK:
+                channel.removeMessageReceiver(PermissionsChangedMessage.class);
+                break;
         }
     }
 
