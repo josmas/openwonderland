@@ -297,13 +297,17 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    sender.send(new VoiceChatJoinAcceptedMessage(group, caller, msg.getChatType()));
 	}
 
-	if (added == false && calleeList.length == 0) {
+	if (added == false && (calleeList == null || calleeList.length == 0)) {
 	    endVoiceChat(vm, audioGroup);
 	    return;
 	}
 
 	logger.info("Request to join AudioGroup " + group + " caller " + caller + " phoneNumber "
 	    + msg.getPhoneNumber() + " name " + msg.getName());
+
+	if (calleeList == null || calleeList.length == 0) {
+	    return;
+	}
 
 	for (int i = 0; i < calleeList.length; i++) {
 	    PresenceInfo info = calleeList[i];
