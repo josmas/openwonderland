@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.jme.AvatarRenderManager.RendererUnavailable;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ViewManager;
@@ -87,4 +86,10 @@ public class AvatarCell extends ViewCell {
         return ret;
     }
 
+    /**
+     * Temporary interface, used to expose the IMI actions until we uplevel them
+     */
+    public interface AvatarActionTrigger {
+        public void trigger(int trigger, boolean pressed, String animationName);
+    }
 }

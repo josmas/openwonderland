@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CameraComponent;
-import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -41,7 +40,6 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer.MoveProcessor;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import imi.scene.processors.JSceneEventProcessor;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.event.ComponentListener;
@@ -103,7 +101,7 @@ public class ViewManager {
     private HashMap<WonderlandSession, ViewCell> sessionViewCells = new HashMap();
 
     private ViewCell primaryViewCell = null;
-    private ProcessorComponent avatarControls = null;
+    private ViewControls avatarControls = null;
 
     // TODO remove this
     public boolean useAvatars = false;
@@ -250,35 +248,32 @@ public class ViewManager {
         }
         
         if (avatarControls==null) {
-            // This will need to be updated in the future. AvatarControls can
+            // This will need to be updated in the future. ViewControls can
             // only drive true avatars, if the Camera is being attached to
             // another type of cell then another control system will be
             // required.
             
             // Create the input listener and process to control the avatar
             if (useAvatars) {
-                avatarControls = new AvatarControls();
+                avatarControls = AvatarRenderManager.getAvatarRenderManager().createViewControls(cell.getCellCache().getSession().getSessionManager());
             } else {
-                WorldManager wm = ClientContextJME.getWorldManager();
-                avatarControls = new SimpleAvatarControls(cell, wm);
-                avatarControls.setRunInRenderer(true);
+                avatarControls = new SimpleAvatarControls(cell, ClientContextJME.getWorldManager());
             }
-            
+
+            avatarControls.attach((ViewCell) cell);
             // enable the controls
             avatarControls.setEnabled(true);
+            
 
-            // register the avatar controls with the world manager
-            ClientContextJME.getWorldManager().addUserData(JSceneEventProcessor.class, avatarControls);
         }
 
         Entity entity = ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
 
         CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-        if (renderer!=null) {
-            if (renderer instanceof AvatarControls.AvatarInputSelector) {
-                ((AvatarControls.AvatarInputSelector)renderer).selectForInput(true);
-            }
+        avatarControls.setEnabled(true);
 
+        // TODO move this into the SimpleAvatarControls
+        if (renderer!=null) {
             if (renderer instanceof BasicRenderer) {
                 BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
                 if (moveProc!=null) {
@@ -291,7 +286,7 @@ public class ViewManager {
         // Set initial camera position
         cameraProcessor.viewMoved(cell.getWorldTransform());
         
-        entity.addComponent(AvatarControls.class, avatarControls);
+        entity.addComponent(ViewControls.class, avatarControls);
         attachCell = cell;
         attachCell.addTransformChangeListener(listener);
     }
@@ -309,13 +304,13 @@ public class ViewManager {
         }
         
         Entity entity = ((CellRendererJME)attachCell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
-        entity.removeComponent(AvatarControls.class);
+        entity.removeComponent(ViewControls.class);
         
         CellRendererJME renderer = (CellRendererJME) attachCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         if (renderer!=null) {
-            if (renderer instanceof AvatarControls.AvatarInputSelector) {
-                ((AvatarControls.AvatarInputSelector)renderer).selectForInput(false);
-            }
+//            if (renderer instanceof ViewControls.AvatarInputSelector) {
+//                ((ViewControls.AvatarInputSelector)renderer).selectForInput(false);
+//            }
 
             if (renderer instanceof BasicRenderer) {
                 BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
@@ -326,7 +321,7 @@ public class ViewManager {
             }
         }
 
-        entity.removeComponent(AvatarControls.class);
+        entity.removeComponent(ViewControls.class);
         avatarControls.setEnabled(false);
         avatarControls = null;
         attachCell.removeTransformChangeListener(listener);

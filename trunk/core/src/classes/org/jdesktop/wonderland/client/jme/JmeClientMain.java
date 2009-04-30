@@ -25,7 +25,6 @@ import com.sun.scenario.animation.TimingTarget;
 import java.awt.event.ActionEvent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
-import imi.loaders.repository.Repository;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -446,9 +445,9 @@ public class JmeClientMain {
         JPanel canvas3D = frame.getCanvas3DPanel();
         ViewManager.initialize(canvas3D.getWidth(), canvas3D.getHeight()); // Initialize an onscreen view
 
-        ViewManager.getViewManager().attachViewCanvas(frame.getCanvas3DPanel());
-
-
+        // This call will block until the render buffer is ready, for it to become
+        // ready the canvas3D must be visible
+        ViewManager.getViewManager().attachViewCanvas(canvas3D);
 
 	// Initialize the input manager.
 	// Note: this also creates the view manager.
