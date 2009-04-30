@@ -69,6 +69,7 @@ public class TextChatJFrame extends javax.swing.JFrame {
     public void appendTextMessage(String message, String userName) {
         String msg = userName + ": " + message + "\n";
         messageTextArea.append(msg);
+        messageTextArea.setCaretPosition(messageTextArea.getText().length());
     }
 
     /**
