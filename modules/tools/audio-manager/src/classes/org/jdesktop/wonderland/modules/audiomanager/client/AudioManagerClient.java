@@ -81,8 +81,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 
 /**
  *

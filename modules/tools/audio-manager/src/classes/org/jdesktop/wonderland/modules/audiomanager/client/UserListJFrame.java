@@ -3,7 +3,6 @@
  *
  * Created on January 22, 2009, 2:52 PM
  */
-
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
@@ -11,27 +10,23 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeM
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
-import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
-import org.jdesktop.wonderland.common.cell.CellID;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import java.awt.Point;
 
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 
 /**
  *
@@ -42,33 +37,30 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 
     private static final Logger logger =
             Logger.getLogger(UserListJFrame.class.getName());
-
     private ChannelComponent channelComp;
-
     private PresenceManager pm;
-
     private String username;
 
     /** Creates new form UserListJFrame */
     public UserListJFrame(PresenceManager pm, Cell cell) {
-	this.pm = pm;
+        this.pm = pm;
 
         initComponents();
 
-	channelComp = cell.getComponent(ChannelComponent.class);
+        channelComp = cell.getComponent(ChannelComponent.class);
 
-	setTitle("Users");
+        setTitle("Users");
 
-	pm.addPresenceManagerListener(this);
+        pm.addPresenceManagerListener(this);
 
-	PresenceInfo info = pm.getPresenceInfo(cell.getCellID());
+        PresenceInfo info = pm.getPresenceInfo(cell.getCellID());
 
-	if (info == null) {
-	    logger.warning("No Presence info for cell " + cell.getCellID());
-	    return;
-	}
+        if (info == null) {
+            logger.warning("No Presence info for cell " + cell.getCellID());
+            return;
+        }
 
-	username = info.usernameAlias;
+        username = info.usernameAlias;
     }
 
     /** This method is called from within the constructor to
@@ -110,102 +102,99 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
     private HashMap<String, VolumeControlJFrame> userMap = new HashMap();
 
-public Object[] getSelectedValues() {
-    return userList.getSelectedValues();
-}
+    public Object[] getSelectedValues() {
+        return userList.getSelectedValues();
+    }
 
 private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
-        Object[] selectedValues = userList.getSelectedValues();
-        
-        for (int i = 0; i < selectedValues.length; i++) {
-	    String username = NameTag.getUsername((String) selectedValues[i]);
+    Object[] selectedValues = userList.getSelectedValues();
 
-	    VolumeControlJFrame volumeControl = userMap.get(username);
+    for (int i = 0; i < selectedValues.length; i++) {
+        String username = NameTagNode.getUsername((String) selectedValues[i]);
 
-	    if (volumeControl == null) {
-                volumeControl = new VolumeControlJFrame(this, username);
-		volumeControl.setLocation(new Point((int) (getLocation().getX() + getWidth()),
-		    (int) getLocation().getY()));
-		userMap.put(username, volumeControl);
+        VolumeControlJFrame volumeControl = userMap.get(username);
 
-		if (username.equals(this.username)) {
-		    volumeControl.setTitle("Master Volume"); 
-		} else {
-		    volumeControl.setTitle("Private Volume for " + username);
-		}
-	    }
-	
-	    volumeControl.setVisible(true);
+        if (volumeControl == null) {
+            volumeControl = new VolumeControlJFrame(this, username);
+            volumeControl.setLocation(new Point((int) (getLocation().getX() + getWidth()),
+                    (int) getLocation().getY()));
+            userMap.put(username, volumeControl);
+
+            if (username.equals(this.username)) {
+                volumeControl.setTitle("Master Volume");
+            } else {
+                volumeControl.setTitle("Private Volume for " + username);
+            }
         }
 
-	userList.clearSelection();
+        volumeControl.setVisible(true);
+    }
+
+    userList.clearSelection();
     }//GEN-LAST:event_userListValueChanged
 
     public void volumeChanged(String username, double volume) {
-	PresenceInfo[] info = pm.getAliasPresenceInfo(username);
+        PresenceInfo[] info = pm.getAliasPresenceInfo(username);
 
-	if (info == null) {
-	    logger.warning("volumeChanged unable to get presence info for " + username);
-	    return;
-	}
+        if (info == null) {
+            logger.warning("volumeChanged unable to get presence info for " + username);
+            return;
+        }
 
-	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
         channelComp.send(new AudioVolumeMessage(info[0].cellID, sc.getCallID(), volume));
     }
 
     public void done() {
-	setVisible(false);
+        setVisible(false);
     }
-
     private String[] userData;
 
     public void setUserList() {
-	PresenceInfo[] presenceInfoList = pm.getAllUsers();
+        PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
-	String[] userData = new String[presenceInfoList.length];
+        String[] userData = new String[presenceInfoList.length];
 
-	for (int i = 0; i < presenceInfoList.length; i++) {
-	    PresenceInfo info = presenceInfoList[i];
-	
-	    if (info.callID == null) {
-		// It's a virtual player, skip it.
-		continue;
-	    }
+        for (int i = 0; i < presenceInfoList.length; i++) {
+            PresenceInfo info = presenceInfoList[i];
 
-	    userData[i] = NameTag.getDisplayName(info.usernameAlias, info.isSpeaking,
-		info.isMuted);
-	}
+            if (info.callID == null) {
+                // It's a virtual player, skip it.
+                continue;
+            }
 
-	setUserList(userData);
+            userData[i] = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
+                    info.isMuted);
+        }
+
+        setUserList(userData);
     }
 
     public void setUserList(String[] userData) {
-	this.userData = userData;
+        this.userData = userData;
 
-	userList.setListData(userData);
+        userList.setListData(userData);
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
-	setUserList();
+        setUserList();
     }
 
     public void aliasChanged(String previousAlias, PresenceInfo info) {
-	VolumeControlJFrame volumeControl = userMap.remove(previousAlias);
+        VolumeControlJFrame volumeControl = userMap.remove(previousAlias);
 
-	if (volumeControl != null) {
-	    userMap.put(info.usernameAlias, volumeControl);
-	}
+        if (volumeControl != null) {
+            userMap.put(info.usernameAlias, volumeControl);
+        }
 
-	setUserList();
+        setUserList();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList userList;
     // End of variables declaration//GEN-END:variables
-
 }

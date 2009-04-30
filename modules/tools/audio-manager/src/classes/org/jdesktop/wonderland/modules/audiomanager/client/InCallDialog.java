@@ -3,25 +3,14 @@
  *
  * Created on April 20, 2009, 2:19 PM
  */
-
 package org.jdesktop.wonderland.modules.audiomanager.client;
-
-import org.jdesktop.wonderland.client.ClientContext;
-
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
-
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatHoldMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
@@ -30,21 +19,16 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerLis
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
-import java.io.IOException;
 
 import java.util.ArrayList;
 
-import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.logging.Logger;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
 
 import java.awt.Point;
 
@@ -52,18 +36,15 @@ import java.awt.Point;
  *
  * @author  jp
  */
-public class InCallDialog extends javax.swing.JFrame implements KeypadListener, 
-	PresenceManagerListener {
+public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
+        PresenceManagerListener {
 
     private static final Logger logger =
-        Logger.getLogger(InCallDialog.class.getName());
-
+            Logger.getLogger(InCallDialog.class.getName());
     private AudioManagerClient client;
     private WonderlandSession session;
     private CellID cellID;
-
     private String group;
-
     private PresenceInfo presenceInfo;
 
     /** Creates new form InCallDialog */
@@ -71,125 +52,123 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
         initComponents();
     }
 
-    public InCallDialog(AudioManagerClient client, WonderlandSession session, 
-	    CellID cellID, String group, ChatType chatType) {
+    public InCallDialog(AudioManagerClient client, WonderlandSession session,
+            CellID cellID, String group, ChatType chatType) {
 
         this.client = client;
         this.session = session;
-	this.cellID = cellID;
-	this.group = group;
-	
-	initComponents();
+        this.cellID = cellID;
+        this.group = group;
 
-	if (chatType == ChatType.SECRET) {
-	    secretRadioButton.setSelected(true);
-	} else if (chatType == ChatType.PRIVATE) {
-	    privateRadioButton.setSelected(true);
-	} else if (chatType == ChatType.PUBLIC) {
-	    publicRadioButton.setSelected(true);
-	}
+        initComponents();
+
+        if (chatType == ChatType.SECRET) {
+            secretRadioButton.setSelected(true);
+        } else if (chatType == ChatType.PRIVATE) {
+            privateRadioButton.setSelected(true);
+        } else if (chatType == ChatType.PUBLIC) {
+            publicRadioButton.setSelected(true);
+        }
 
         PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
 
         pm.addPresenceManagerListener(this);
 
-	presenceInfo = pm.getPresenceInfo(cellID);
+        presenceInfo = pm.getPresenceInfo(cellID);
 
-	memberList.setListData(new String[0]);
+        memberList.setListData(new String[0]);
 
-	client.addInCallDialog(group, this);
-	session.send(client, new VoiceChatInfoRequestMessage(group));
+        client.addInCallDialog(group, this);
+        session.send(client, new VoiceChatInfoRequestMessage(group));
 
-	setVisible(true);
+        setVisible(true);
     }
-
     private ArrayList<MemberChangeListener> listeners = new ArrayList();
 
     public void addMemberChangeListener(MemberChangeListener listener) {
-	synchronized (listeners) {
-	   listeners.add(listener);
-	}
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
     }
 
     public void removeMemberChangeListener(MemberChangeListener listener) {
-	synchronized (listeners) {
-	   listeners.remove(listener);
-	}
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
     }
-
     private ArrayList<PresenceInfo> members = new ArrayList();
 
     public ArrayList<PresenceInfo> getMembers() {
-	return members;
+        return members;
     }
 
     public void setMembers(PresenceInfo[] memberList) {
-	synchronized (members) {
-	    members.clear();
-	
-	    for (int i = 0; i < memberList.length; i++) {
-		members.add(memberList[i]);
-	    }
-	}
+        synchronized (members) {
+            members.clear();
 
-	setMemberList();
+            for (int i = 0; i < memberList.length; i++) {
+                members.add(memberList[i]);
+            }
+        }
+
+        setMemberList();
     }
 
     private void setMemberList() {
-	ArrayList<String> memberList = new ArrayList();
+        ArrayList<String> memberList = new ArrayList();
 
-	synchronized (this) {
-	    for (PresenceInfo member : members) {
-	        memberList.add(NameTag.getDisplayName(
-		    member.usernameAlias, member.isSpeaking, member.isMuted));
-	    }
+        synchronized (this) {
+            for (PresenceInfo member : members) {
+                memberList.add(NameTagNode.getDisplayName(
+                        member.usernameAlias, member.isSpeaking, member.isMuted));
+            }
 
-	    this.memberList.setListData(memberList.toArray(new String[0]));
-	}
+            this.memberList.setListData(memberList.toArray(new String[0]));
+        }
     }
 
     public void addMember(PresenceInfo member) {
-	synchronized (members) {
-	    if (members.contains(member)) {
-	        return;
-	    }
+        synchronized (members) {
+            if (members.contains(member)) {
+                return;
+            }
 
-	    members.add(member);
-	    setMemberList();
+            members.add(member);
+            setMemberList();
 
-	    for (MemberChangeListener listener : listeners) {
-		listener.memberAdded(member);
-	    }
-	}
+            for (MemberChangeListener listener : listeners) {
+                listener.memberAdded(member);
+            }
+        }
     }
-    
+
     public void removeMember(PresenceInfo member) {
-	synchronized (members) {
-	    members.remove(member.usernameAlias);
+        synchronized (members) {
+            members.remove(member.usernameAlias);
 
-	    setMemberList();
+            setMemberList();
 
-	    for (MemberChangeListener listener : listeners) {
-		listener.memberRemoved(member);
-	    }
-	}
+            for (MemberChangeListener listener : listeners) {
+                listener.memberRemoved(member);
+            }
+        }
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
-	setPresenceInfo(info);
+        setPresenceInfo(info);
         setMemberList();
     }
 
     public void aliasChanged(String previousAlias, PresenceInfo info) {
-	setPresenceInfo(info);
+        setPresenceInfo(info);
         setMemberList();
     }
 
     private void setPresenceInfo(PresenceInfo info) {
-	if (members.contains(info)) {
-	    members.remove(info);
-	    members.add(info);
-	} 
+        if (members.contains(info)) {
+            members.remove(info);
+            members.add(info);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -347,81 +326,78 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-private KeypadDialog keypad;
+    private KeypadDialog keypad;
 
 private void keyPadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyPadButtonActionPerformed
     if (keypad == null) {
-	keypad = new KeypadDialog(this);
-	keypad.setListener(this);
-	if (addUserDialog == null) {
+        keypad = new KeypadDialog(this);
+        keypad.setListener(this);
+        if (addUserDialog == null) {
             keypad.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
-	} else {
-            keypad.setLocation(new Point((int) addUserDialog.getLocation().getX() + addUserDialog.getWidth(), 
-		(int) addUserDialog.getLocation().getY()));
-	}
+        } else {
+            keypad.setLocation(new Point((int) addUserDialog.getLocation().getX() + addUserDialog.getWidth(),
+                    (int) addUserDialog.getLocation().getY()));
+        }
     }
 
     keypad.setVisible(true);
 }//GEN-LAST:event_keyPadButtonActionPerformed
 
-public void keypadPressed(char key) {
-    System.out.println("Got key " + key);
-}
-
-private AddUserDialog addUserDialog;
+    public void keypadPressed(char key) {
+        System.out.println("Got key " + key);
+    }
+    private AddUserDialog addUserDialog;
 
 private void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUserButtonActionPerformed
     if (addUserDialog == null) {
-	addUserDialog = new AddUserDialog(client, session, cellID, group, this);
+        addUserDialog = new AddUserDialog(client, session, cellID, group, this);
 
-	if (keypad == null) {
-	    addUserDialog.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
-	} else {
-	    addUserDialog.setLocation(new Point((int) keypad.getLocation().getX() + keypad.getWidth(), 
-		(int) keypad.getLocation().getY()));
-	}
+        if (keypad == null) {
+            addUserDialog.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
+        } else {
+            addUserDialog.setLocation(new Point((int) keypad.getLocation().getX() + keypad.getWidth(),
+                    (int) keypad.getLocation().getY()));
+        }
     }
 
     addUserDialog.setVisible(true);
 }//GEN-LAST:event_addUserButtonActionPerformed
-
-private HoldDialog holdDialog;
+    private HoldDialog holdDialog;
 
 private void holdButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_holdButtonActionPerformed
     if (holdDialog == null) {
-	holdDialog = new HoldDialog(client, session, group, this);
-	Point location = new Point((int) getLocation().getX(), 
-	    (int) (getLocation().getY() + getHeight() - holdDialog.getHeight()));
-	holdDialog.setLocation(location);
+        holdDialog = new HoldDialog(client, session, group, this);
+        Point location = new Point((int) getLocation().getX(),
+                (int) (getLocation().getY() + getHeight() - holdDialog.getHeight()));
+        holdDialog.setLocation(location);
     }
     holdDialog.setVisible(true);
     setVisible(false);
     setHold(true);
 }//GEN-LAST:event_holdButtonActionPerformed
 
-public void setHold(boolean onHold) {
-    session.send(client, new VoiceChatHoldMessage(group, presenceInfo, onHold));
-}
+    public void setHold(boolean onHold) {
+        session.send(client, new VoiceChatHoldMessage(group, presenceInfo, onHold));
+    }
 
 private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_endCallButtonActionPerformed
     endCall();
 }//GEN-LAST:event_endCallButtonActionPerformed
 
-private void endCall() {
-    client.removeInCallDialog(group);
-    session.send(client, new VoiceChatLeaveMessage(group, presenceInfo));
+    private void endCall() {
+        client.removeInCallDialog(group);
+        session.send(client, new VoiceChatLeaveMessage(group, presenceInfo));
 
-    if (addUserDialog != null) {
-	addUserDialog.setVisible(false);
+        if (addUserDialog != null) {
+            addUserDialog.setVisible(false);
+        }
+
+        if (keypad != null) {
+            keypad.setVisible(false);
+        }
+
+        setVisible(false);
     }
-
-    if (keypad != null) {
-	keypad.setVisible(false);
-    }
-
-    setVisible(false);
-}
 
 private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
     session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], ChatType.SECRET));
@@ -440,10 +416,11 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
 }//GEN-LAST:event_formWindowClosing
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new InCallDialog().setVisible(true);
             }
@@ -464,5 +441,4 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
     private javax.swing.JRadioButton publicRadioButton;
     private javax.swing.JRadioButton secretRadioButton;
     // End of variables declaration//GEN-END:variables
-
 }

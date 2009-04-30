@@ -2,7 +2,7 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
@@ -62,7 +62,7 @@ public class HoldDialog extends javax.swing.JFrame implements MemberChangeListen
 	for (int i = 0; i < members.length; i++) {
 	    PresenceInfo member = members[i];
 
-	    memberText += NameTag.getDisplayName(
+	    memberText += NameTagNode.getDisplayName(
                 member.usernameAlias, member.isSpeaking, member.isMuted);
 
 	    memberText += " ";

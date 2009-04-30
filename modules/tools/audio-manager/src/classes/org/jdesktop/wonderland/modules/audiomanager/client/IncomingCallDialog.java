@@ -1,45 +1,15 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.client.ClientContext;
-
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
-
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
-
 import org.jdesktop.wonderland.common.cell.CellID;
-
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
-
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
-import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
-import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
-
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
-import java.io.IOException;
-
-import java.util.ArrayList;
-
-import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.logging.Logger;
-
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
-
 import java.awt.Point;
 
 /*
@@ -47,9 +17,6 @@ import java.awt.Point;
  *
  * Created on April 20, 2009, 12:31 PM
  */
-
-
-
 /**
  *
  * @author  jp
@@ -57,17 +24,12 @@ import java.awt.Point;
 public class IncomingCallDialog extends javax.swing.JFrame {
 
     private static final Logger logger =
-        Logger.getLogger(IncomingCallDialog.class.getName());
-
+            Logger.getLogger(IncomingCallDialog.class.getName());
     private ChatType chatType = ChatType.PRIVATE;
-
     private AudioManagerClient client;
     private WonderlandSession session;
-
     private CellID cellID;
-
     private String group;
-
     private PresenceInfo caller;
     private PresenceInfo callee;
 
@@ -76,8 +38,8 @@ public class IncomingCallDialog extends javax.swing.JFrame {
         initComponents();
     }
 
-    public IncomingCallDialog(AudioManagerClient client, WonderlandSession session, 
-	    CellID cellID, VoiceChatJoinRequestMessage message) {
+    public IncomingCallDialog(AudioManagerClient client, WonderlandSession session,
+            CellID cellID, VoiceChatJoinRequestMessage message) {
 
         this.client = client;
         this.cellID = cellID;
@@ -85,15 +47,15 @@ public class IncomingCallDialog extends javax.swing.JFrame {
 
         initComponents();
 
-	group = message.getGroup();
+        group = message.getGroup();
 
-	caller = message.getCaller();
+        caller = message.getCaller();
 
-	callerText.setText(caller.usernameAlias);
+        callerText.setText(caller.usernameAlias);
 
         PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
 
-	callee = pm.getPresenceInfo(cellID);
+        callee = pm.getPresenceInfo(cellID);
 
         setVisible(true);
     }
@@ -227,7 +189,7 @@ public class IncomingCallDialog extends javax.swing.JFrame {
 
 private void answerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_answerButtonActionPerformed
     session.send(client, new VoiceChatJoinAcceptedMessage(group, callee, chatType));
- 
+
     logger.info("Sent join message");
 
     InCallDialog inCallDialog = new InCallDialog(client, session, cellID, group, chatType);
@@ -257,10 +219,11 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
 }//GEN-LAST:event_privateRadioButtonActionPerformed
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new IncomingCallDialog().setVisible(true);
             }
@@ -279,5 +242,4 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JRadioButton secretRadioButton;
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
-
 }
