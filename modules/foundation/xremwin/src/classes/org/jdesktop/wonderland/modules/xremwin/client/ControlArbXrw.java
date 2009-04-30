@@ -196,6 +196,7 @@ public class ControlArbXrw extends ControlArbSingle {
      */
     synchronized void controlLost() {
         AppXrw.logger.info("Control lost");
+        super.releaseControl();
         takeControlPending = false;
         eventsEnabled = false;
         appControl = false;
