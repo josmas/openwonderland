@@ -27,6 +27,7 @@ import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;

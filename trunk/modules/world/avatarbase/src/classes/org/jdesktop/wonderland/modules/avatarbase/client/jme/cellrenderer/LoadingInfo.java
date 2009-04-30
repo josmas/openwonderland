@@ -87,8 +87,7 @@ public class LoadingInfo extends javax.swing.JFrame {
         jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(102, 255, 102), 4, true));
 
         jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 24));
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle_en_US"); // NOI18N
-        jLabel1.setText(bundle.getString("Loading_Avatars,_please_wait.....")); // NOI18N
+        jLabel1.setText("null");
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
