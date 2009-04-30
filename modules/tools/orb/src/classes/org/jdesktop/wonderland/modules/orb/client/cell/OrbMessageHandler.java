@@ -193,7 +193,15 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	orbRootNode.attachChild(nameTag);
     }
 	
+    private boolean done;
+
     public void done() {
+	if (done) {
+	    return;
+	}
+
+	done = true;
+
 	synchronized (detachedOrbList) {
 	    detachedOrbList.remove(orbCell);
 	    reorderDetachedOrbs();
@@ -208,6 +216,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	    reorderAttachedOrbs();
 	}
+
+	followMe.done();
 
         channelComp.removeMessageReceiver(OrbAttachMessage.class);
 	channelComp.removeMessageReceiver(OrbChangeNameMessage.class);
