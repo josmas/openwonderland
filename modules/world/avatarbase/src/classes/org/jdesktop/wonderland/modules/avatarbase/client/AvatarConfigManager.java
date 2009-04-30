@@ -473,7 +473,6 @@ public class AvatarConfigManager {
             super(ThreadManager.getThreadGroup(), "AvatarServerSyncThread");
             logger.info("SERVER SYNC "+this);
             repository = ContentRepositoryRegistry.getInstance().getRepository(session);
-            System.err.println("REPOSITORY "+repository);
             ContentCollection userDir = repository.getUserRoot(true);
             avatarsDir = (ContentCollection) userDir.getChild("avatars");
             if (avatarsDir == null) {
@@ -545,22 +544,22 @@ public class AvatarConfigManager {
         }
 
         private void getURLImpl(Job job) {
-            System.err.println("List size "+serverAvatars.size()+"  "+job.filename);
-            for(AvatarConfigFile f : serverAvatars.values())
-                System.err.println(f);
+//            System.err.println("List size "+serverAvatars.size()+"  "+job.filename);
+//            for(AvatarConfigFile f : serverAvatars.values())
+//                System.err.println(f);
             
             AvatarConfigFile r = serverAvatars.get(job.filename);
             if (r==null) {
 //                System.err.println(this);
                 logger.log(Level.SEVERE, "No record of avatar on server "+job.filename);
                 job.returnURL(null);
-            }
-            try {
-                System.err.println("GOT AVATAR CONFIG FILE "+r);
-                System.err.println(r.avatarName+"  "+r.resource.getURL());
-                job.returnURL(r.resource.getURL());
-            } catch (ContentRepositoryException ex) {
-                Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.WARNING, "Unable to find avatar "+job.filename, ex);
+            } else {
+                try {
+                    logger.fine("GOT AVATAR CONFIG FILE "+r+"  "+r.avatarName+"  "+r.resource.getURL());
+                    job.returnURL(r.resource.getURL());
+                } catch (ContentRepositoryException ex) {
+                    Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.WARNING, "Unable to find avatar "+job.filename, ex);
+                }
             }
         }
 
@@ -573,16 +572,16 @@ public class AvatarConfigManager {
                 List<ContentNode> avatarList = avatarsDir.getChildren();
                 for(ContentNode a : avatarList) {
                     if (a instanceof ContentResource) {
-                        System.err.println("RES "+((ContentResource)a).getURL());
+                        logger.fine("RES "+((ContentResource)a).getURL());
                         AvatarConfigFile serverAvatar =  new AvatarConfigFile((ContentResource)a);
                         AvatarConfigFile previous = serverAvatars.put(serverAvatar.avatarName, serverAvatar);
                         if (previous!=null && previous.version>serverAvatar.version) {
-                            System.err.println("put1 "+previous.resource.getURL());
+//                            System.err.println("put1 "+previous.resource.getURL());
                             serverAvatars.put(previous.avatarName, previous);
                             logger.fine("REMOVING OLD AVATAR CONFIG "+serverAvatar.getFilename());
                             avatarsDir.removeChild(serverAvatar.getFilename());
                         } else {
-                            System.err.println("Dropped "+serverAvatar.resource.getURL());
+//                            System.err.println("Dropped "+serverAvatar.resource.getURL());
                         }
                     }
                 }
@@ -603,7 +602,7 @@ public class AvatarConfigManager {
                             tmpServerAvatars.remove(a.avatarName);
                         } else if (serverVersion.version == a.version) {
                             tmpServerAvatars.remove(a.avatarName);
-                            System.err.println("put2 "+serverVersion.resource.getURL());
+//                            System.err.println("put2 "+serverVersion.resource.getURL());
                             serverAvatars.put(serverVersion.avatarName, serverVersion);
                         }
                     }
