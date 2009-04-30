@@ -35,7 +35,11 @@
                 </clientjar> 
             </client>
         </module>
-    </target>                                                       
+    </target>
+
+    <target name="test-parser" depends="build">
+        <java classpath="build/classes" classname="org.jdesktop.wonderland.modules.kmzloader.client.KmlParser"/>
+    </target>
                                            
     <target name="clean" depends="-module-clean"/>
     <target name="deploy" depends="dist, -module-deploy"/>

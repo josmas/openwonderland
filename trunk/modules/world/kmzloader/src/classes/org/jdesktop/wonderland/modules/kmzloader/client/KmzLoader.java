@@ -43,22 +43,16 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import javax.xml.bind.JAXBElement;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
-//import org.jdesktop.wonderland.modules.kmzloader.client.kml_22.AbstractFeatureType;
-//import org.jdesktop.wonderland.modules.kmzloader.client.kml_22.AbstractGeometryType;
-//import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FeatureType;
-//import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.FolderType;
-//import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.GeometryType;
-//import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.ModelType;
-//import org.jdesktop.wonderland.modules.kmzloader.client.kml_21.PlacemarkType;
 
 /**
  *
@@ -91,25 +85,6 @@ class KmzLoader implements ModelLoader {
         try {
             ZipFile zipFile = new ZipFile(file);
             ZipEntry docKmlEntry = zipFile.getEntry("doc.kml");
-//            JAXBContext jc = JAXBContext.newInstance("org.jdesktop.wonderland.modules.kmzloader.client.kml_21",
-//                                                     getClass().getClassLoader());
-//            Unmarshaller u = jc.createUnmarshaller();
-//            JAXBElement docKml = (JAXBElement) u.unmarshal(zipFile.getInputStream(docKmlEntry));
-//
-//            KmlType kml = (KmlType) docKml.getValue();
-//
-//            ArrayList<ModelType> models=new ArrayList();
-//            FeatureType feature = kml.getFeature().getValue();
-//            // For the 2.2 version of KML
-//            //AbstractFeatureType feature = kml.getAbstractFeatureGroup().getValue();
-//            if (feature instanceof FolderType) {
-//                findModels(models, (FolderType)feature);
-//            }
-//
-//            if (models.size()==0) {
-//                logger.severe("No models found in KMZ File");
-//                return null;
-//            }
 
             KmlParser parser = new KmlParser();
             InputStream in = zipFile.getInputStream(docKmlEntry);
@@ -145,7 +120,7 @@ class KmzLoader implements ModelLoader {
         String filename = model.getHref();
         String zipHost = WlzipManager.getWlzipManager().addZip(zipFile);
         ZipResourceLocator zipResource = new ZipResourceLocator(zipHost, zipFile);
-        ResourceLocatorTool.addResourceLocator(
+        ResourceLocatorTool.addThreadResourceLocator(
                 ResourceLocatorTool.TYPE_TEXTURE,
                 zipResource);
 
@@ -172,60 +147,12 @@ class KmzLoader implements ModelLoader {
 
         ColladaImporter.cleanUp();
         
-        ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, zipResource);
+        ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, zipResource);
         WlzipManager.getWlzipManager().removeZip(zipHost, zipFile);
 
         return modelNode;
     }
 
-    /**
-     * Search kmz folders adding any ModelTypes found to the models list
-     * @param models
-     * @param folder
-     */
-//    private void findModels(ArrayList<ModelType> models, FolderType folder) {
-//        List<JAXBElement<? extends FeatureType>> features = folder.getFeature();
-//        for(JAXBElement<? extends FeatureType> featureJAXB : features) {
-//            FeatureType feature = featureJAXB.getValue();
-//
-//            if (feature instanceof FolderType) {
-//                findModels(models, (FolderType)feature);
-//            } else if (feature instanceof PlacemarkType) {
-//                if (((PlacemarkType)feature).getGeometry()!=null) {
-//                    GeometryType geometryType = ((PlacemarkType)feature).getGeometry().getValue();
-//                    if (geometryType instanceof ModelType) {
-//                        models.add((ModelType)geometryType);
-//                    } else {
-//                        logger.info("Unsupported GeometryType "+geometryType);
-//                    }
-//                }
-//            } else
-//                logger.info("Skipping feature "+feature);
-//        }
-//    }
-
-    // For the 2.2 version of KML
-//    private void findModels22(ArrayList<ModelType> models, FolderType folder) {
-//        List<JAXBElement<? extends AbstractFeatureType>> features = folder.getAbstractFeatureGroup();
-//        for(JAXBElement<? extends AbstractFeatureType> featureJAXB : features) {
-//            AbstractFeatureType feature = featureJAXB.getValue();
-//
-//            if (feature instanceof FolderType) {
-//                findModels(models, (FolderType)feature);
-//            } else if (feature instanceof PlacemarkType) {
-//                if (((PlacemarkType)feature).getAbstractGeometryGroup()!=null) {
-//                    AbstractGeometryType geometryType = ((PlacemarkType)feature).getAbstractGeometryGroup().getValue();
-//                    if (geometryType instanceof ModelType) {
-//                        models.add((ModelType)geometryType);
-//                    } else {
-//                        logger.info("Unsupported GeometryType "+geometryType);
-//                    }
-//                }
-//            } else
-//                logger.info("Skipping feature "+feature);
-//        }
-//    }
-    
     public ModelDeploymentInfo deployToModule(File moduleRootDir, ImportedModel model) throws IOException {
         try {
             String modelName = origFile.getName();
@@ -241,6 +168,23 @@ class KmzLoader implements ModelLoader {
             deployTextures(zipFile, targetDir);
             deployModels(zipFile, targetDir);
 
+//            TreeScan.findNode(model.getModelBG(), Geometry.class, new ProcessNodeInterface() {
+//                public boolean processNode(Spatial node) {
+//                    TextureState st = (TextureState)((Geometry)node).getRenderState(StateType.Texture);
+//                    if (st!=null) {
+//                        Texture t = st.getTexture();
+//                        TextureKey key = t.getTextureKey();
+//                        System.err.println("Texture "+t.getImageLocation());
+//                        String filename = t.getImageLocation().substring(t.getImageLocation().lastIndexOf('/')+1);
+//                        t.setImageLocation("../images/"+filename);
+//                        System.err.println("NEW "+t.getImageLocation());
+//                    }
+//                    return true;
+//                }
+//            }, false, true);
+//
+//            BinaryExporter.getInstance().save(model.getModelBG(), new File(targetDir, origFile.getName()+".wbm"));
+//
             if (modelFiles.size() > 1) {
                 logger.warning("Multiple models not supported during deploy");
             }
