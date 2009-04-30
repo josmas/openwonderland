@@ -116,53 +116,59 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                          CellTransform cellTransform, 
                          CellClientState setup,
                          String cellName) {
-        if (cells.containsKey(cellId)) {
-            logger.severe("Attempt to create cell that already exists "+cellId);
-            return null;
-        }
 
-        logger.warning("creating cell "+className+" "+cellId);
-        Cell cell = instantiateCell(className, cellId);
-        if (cell==null)
-            return null;     // Instantiation failed, error has already been logged
-        
-        cell.setName(cellName);
-        Cell parent = cells.get(parentCellID);
-        if (parent!=null) {
-            try {
-                parent.addChild(cell);
-            } catch (MultipleParentException ex) {
-                logger.log(Level.SEVERE, "Failed to load cell", ex);
+        try {
+            if (cells.containsKey(cellId)) {
+                logger.severe("Attempt to create cell that already exists "+cellId);
+                return null;
             }
+
+            logger.info("creating cell "+className+" "+cellId);
+            Cell cell = instantiateCell(className, cellId);
+            if (cell==null)
+                return null;     // Instantiation failed, error has already been logged
+
+            cell.setName(cellName);
+            Cell parent = cells.get(parentCellID);
+            if (parent!=null) {
+                try {
+                    parent.addChild(cell);
+                } catch (MultipleParentException ex) {
+                    logger.log(Level.SEVERE, "Failed to load cell", ex);
+                }
+            }
+
+            cell.setLocalBounds(localBounds);
+            cell.setLocalTransform(cellTransform, TransformChangeListener.ChangeSource.SERVER_ADJUST);
+    //        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
+
+            cells.put(cellId, cell);
+
+            // record the set of root cells
+            if (parent==null) {
+                rootCells.add(cell);
+            }
+
+            if (setup!=null)
+                cell.setClientState(setup);
+            else
+                logger.warning("Cell has null setup "+className+"  "+cell);
+
+            // Force the cell to create the JME renderer entity
+            createCellRenderer(cell);
+
+            if (viewCell!=null) {
+                // No point in makeing cells active if we don't have a view
+                // The changeCellStatus actually changes the status on another thread
+                // so we don't perform geometry load operations on the DS listener thread
+                changeCellStatus(cell, CellStatus.ACTIVE);
+            }
+
+            return cell;
+        } catch(Exception e) {
+            logger.log(Level.SEVERE, "Failed to loadCell", e);
         }
-
-        cell.setLocalBounds(localBounds);
-        cell.setLocalTransform(cellTransform, TransformChangeListener.ChangeSource.SERVER_ADJUST);
-//        System.out.println("Loading Cell "+className+" "+cellTransform.getTranslation(null));
-
-        cells.put(cellId, cell);
-
-        // record the set of root cells
-        if (parent==null) {
-            rootCells.add(cell);
-        }
-
-        if (setup!=null)
-            cell.setClientState(setup);
-        else
-            logger.warning("Cell has null setup "+className+"  "+cell);
-
-        // Force the cell to create the JME renderer entity
-        createCellRenderer(cell);
-
-        if (viewCell!=null) {
-            // No point in makeing cells active if we don't have a view
-            // The changeCellStatus actually changes the status on another thread
-            // so we don't perform geometry load operations on the DS listener thread
-            changeCellStatus(cell, CellStatus.ACTIVE);
-        }
-
-        return cell;
+        return null;
     }
 
     /**

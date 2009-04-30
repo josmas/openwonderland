@@ -27,7 +27,6 @@ import java.util.LinkedList;
 import org.jdesktop.mtgame.AWTInputComponent;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
-import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -49,7 +48,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author Doug Twilleager
  * @deprecated Replaced with AvatarControls
  */
-public class SimpleAvatarControls extends ProcessorComponent {
+public class SimpleAvatarControls extends ViewControls {
     /**
      * The arming conditions for this processor
      */
@@ -170,7 +169,9 @@ public class SimpleAvatarControls extends ProcessorComponent {
         collection = new ProcessorArmingCollection(this);
         collection.addCondition(new NewFrameCondition(this));
 
-        System.out.println("[SimpleAvatarControls] creating " + this);
+        setRunInRenderer(true);
+
+//        System.out.println("[SimpleAvatarControls] creating " + this);
     }
     
     @Override
@@ -182,7 +183,7 @@ public class SimpleAvatarControls extends ProcessorComponent {
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
 
-        System.out.println("[SimpleAvatarControls] set enabled " + enabled + " " + this);
+//        System.out.println("[SimpleAvatarControls] set enabled " + enabled + " " + this);
 
         if (enabled) {
             ClientContext.getInputManager().addGlobalEventListener(globalListener);
@@ -320,6 +321,10 @@ public class SimpleAvatarControls extends ProcessorComponent {
 //            System.err.println("localMoveRequest "+position+"  "+this);
             movableComponent.localMoveRequest(new CellTransform(quaternion, position));
         }
+    }
+
+    public void attach(Cell cell) {
+        
     }
     
     /**

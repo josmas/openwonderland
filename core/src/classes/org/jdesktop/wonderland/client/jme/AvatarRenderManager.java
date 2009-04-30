@@ -35,6 +35,8 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 public class AvatarRenderManager {
     private final Map<ServerSessionManager, Class<? extends CellRenderer>> renderers =
             new HashMap<ServerSessionManager, Class<? extends CellRenderer>>();
+    private final Map<ServerSessionManager, Class<? extends ViewControls>> controls =
+            new HashMap<ServerSessionManager, Class<? extends ViewControls>>();
 
     /**
      * Get the avatar render manager
@@ -52,13 +54,16 @@ public class AvatarRenderManager {
 
 
     public void registerRenderer(ServerSessionManager session, 
-                                 Class<? extends CellRenderer> rendererClass)
+                                 Class<? extends CellRenderer> rendererClass,
+                                 Class<? extends ViewControls> controlClass)
     {
         renderers.put(session, rendererClass);
+        controls.put(session, controlClass);
     }
 
     public void unregisterRenderer(ServerSessionManager session) {
         renderers.remove(session);
+        controls.remove(session);
     }
 
     /**
@@ -74,9 +79,21 @@ public class AvatarRenderManager {
             Constructor con = clazz.getConstructor(Cell.class);
             return (CellRenderer) con.newInstance(cell);
         } catch (Exception e) {
-            Logger.getAnonymousLogger().log(Level.INFO, "Failed to created Renderer because ", e);
+            Logger.getAnonymousLogger().log(Level.INFO, "Failed to create Renderer because ", e);
             throw new RendererUnavailable(clazz.getName());
         }
+    }
+
+    public ViewControls createViewControls(ServerSessionManager session) {
+        Class<? extends ViewControls> clazz = controls.get(session);
+
+        try {
+            return (ViewControls) clazz.newInstance();
+        } catch (Exception e) {
+            Logger.getAnonymousLogger().log(Level.INFO, "Failed to create Control because ", e);
+            throw new RuntimeException("Failed to create control");
+        }
+
     }
 
     public class RendererUnavailable extends Exception {

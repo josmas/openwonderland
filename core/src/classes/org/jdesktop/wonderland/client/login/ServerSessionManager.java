@@ -570,7 +570,7 @@ public class ServerSessionManager {
         // classes, then initialize each one
         Iterator<ClientPlugin> it = loader.getAll(Plugin.class,
                                                   ClientPlugin.class);
-        
+
         while (it.hasNext()) {
             ClientPlugin plugin = it.next();
 

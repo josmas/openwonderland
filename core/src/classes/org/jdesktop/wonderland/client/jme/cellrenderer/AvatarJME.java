@@ -18,12 +18,9 @@
 package org.jdesktop.wonderland.client.jme.cellrenderer;
 
 import com.jme.bounding.BoundingSphere;
-import com.jme.light.PointLight;
-import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.shape.Teapot;
-import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import org.jdesktop.mtgame.Entity;

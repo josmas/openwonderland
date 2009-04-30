@@ -393,7 +393,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         public AssetResourceLocator(URL url) {
             // The modulename can either be in the "user info" field or the
             // "host" field. If "user info" is null, then use the host name.
-            System.out.println("ASSET RESOURCE LOCATOR FOR URL " + url.toExternalForm());
+//            System.out.println("ASSET RESOURCE LOCATOR FOR URL " + url.toExternalForm());
 
             if (url.getUserInfo() == null) {
                 modulename = url.getHost();
@@ -405,22 +405,22 @@ public abstract class BasicRenderer implements CellRendererJME {
             path = path.substring(0, path.lastIndexOf('/')+1);
             protocol = url.getProtocol();
 
-            System.out.println("MODULE NAME " + modulename + " PATH " + path);
+//            System.out.println("MODULE NAME " + modulename + " PATH " + path);
         }
 
         public URL locateResource(String resource) {
-            System.err.println("Looking for resource "+resource);
-            System.err.println("Module "+modulename+"  path "+path);
+//            System.err.println("Looking for resource "+resource);
+//            System.err.println("Module "+modulename+"  path "+path);
             try {
                 if (resource.startsWith("/")) {
                     URL url = getAssetURL(protocol + "://"+modulename+resource);
-                    System.err.println("Using alternate "+url.toExternalForm());
+//                    System.err.println("Using alternate "+url.toExternalForm());
                     return url;
                 } else {
                     String urlStr = trimUrlStr(protocol + "://"+modulename+path + resource);
 
                     URL url = getAssetURL(urlStr);
-                    System.err.println("Using " + url.toExternalForm());
+//                    System.err.println("Using " + url.toExternalForm());
                     return url;
                 }
             } catch (MalformedURLException ex) {
