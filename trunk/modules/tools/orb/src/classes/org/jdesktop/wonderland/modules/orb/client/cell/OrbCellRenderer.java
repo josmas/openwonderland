@@ -23,48 +23,25 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.light.PointLight;
 import com.jme.light.SimpleLightNode;
 import com.jme.math.FastMath;
-import com.jme.math.Matrix3f;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import com.jme.scene.Spatial;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.WireframeState;
-import com.jme.scene.state.ZBufferState;
-
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.RenderComponent;
-import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
-
-import org.jdesktop.wonderland.client.ClientContext;
-
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
-
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-
-import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
-
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.SceneWorker;
-
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-
-import imi.scene.PMatrix;
-import imi.character.CharacterMotionListener;
-
 import javax.media.opengl.GLContext;
 
 import java.lang.reflect.Method;
