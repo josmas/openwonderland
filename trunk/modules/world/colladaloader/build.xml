@@ -14,6 +14,11 @@
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client"/>
+
+    <pathconvert property="module-client.classpath">
+        <path location="${current.dir}/..//avatarbase/lib/avatars.jar"/>
+    </pathconvert>
+
     
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>

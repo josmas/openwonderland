@@ -22,9 +22,6 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.RenderComponent;
-import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -41,6 +38,8 @@ import java.awt.Font;
 import java.util.HashMap;
 
 /**
+ * TODO make this a component
+ *
  * @author jprovino
  */
 public class NameTagNode extends Node {
@@ -48,19 +47,16 @@ public class NameTagNode extends Node {
     public static final Color SPEAKING_COLOR = Color.RED;
     public static final Color NOT_SPEAKING_COLOR = new Color(1f, 1f, 1f);
     public static final Color CONE_OF_SILENCE_COLOR = Color.BLACK;
-
     public static final Font REAL_NAME_FONT = Font.decode("Sans PLAIN 40");
     public static final Font ALIAS_NAME_FONT = Font.decode("Sans ITALIC 40");
-
-    private Color foregroundColor = NOT_SPEAKING_COLOR;;
-
+    private Color foregroundColor = NOT_SPEAKING_COLOR;
+    
     private Color backgroundColor = new Color(0f, 0f, 0f);
-
     private Font font = REAL_NAME_FONT;
-
     public static final String LEFT_MUTE = "[";
     public static final String RIGHT_MUTE = "]";
     public static final String SPEAKING = "...";
+    private boolean done;
 
     public enum EventType {
         STARTED_SPEAKING,
@@ -68,53 +64,28 @@ public class NameTagNode extends Node {
         MUTE,
         UNMUTE,
         CHANGE_NAME,
-	ENTERED_CONE_OF_SILENCE,
-	EXITED_CONE_OF_SILENCE
+        ENTERED_CONE_OF_SILENCE,
+        EXITED_CONE_OF_SILENCE
     }
-
-    private final CellID cellID;
     private final float height;
     private String name;
     private Spatial q;
-    private Entity labelEntity;
-
     private String usernameAlias;
 
-    private static HashMap<CellID, NameTagNode> cellNameTags = new HashMap();
-
-    public NameTagNode(Cell cell, String name, float height) {
+    public NameTagNode(String name, float height) {
         this.name = name;
         this.height = height;
-
-        cellID = cell.getCellID();
-
-	synchronized (cellNameTags) {
-	    cellNameTags.put(cellID, this);
-	}
-
         setNameTag(name);
     }
 
-    public static NameTagNode findNameTag(CellID cellID) {
-	synchronized (cellNameTags) {
-	    return cellNameTags.get(cellID);
-	}
-    }
-
-    private boolean done;
-
     public void done() {
-	if (done) {
-	    return;
-	}
+        if (done) {
+            return;
+        }
 
-	done = true;
-
-	cellNameTags.remove(cellID);
+        done = true;
 
         detachChild(q);
-
-	//ClientContextJME.getWorldManager().removeEntity(labelEntity);
     }
 
     public static String getDisplayName(String name, boolean isSpeaking, boolean isMuted) {
@@ -130,99 +101,99 @@ public class NameTagNode extends Node {
     }
 
     public static String getUsername(String name) {
-	String s = name.replaceAll("\\" + LEFT_MUTE, "");
+        String s = name.replaceAll("\\" + LEFT_MUTE, "");
 
-	s = s.replaceAll("\\" + RIGHT_MUTE, "");
+        s = s.replaceAll("\\" + RIGHT_MUTE, "");
 
-	return s.replaceAll("\\" + SPEAKING, "");
+        return s.replaceAll("\\" + SPEAKING, "");
     }
 
     public void setForegroundColor(Color foregroundColor) {
-	this.foregroundColor = foregroundColor;
+        this.foregroundColor = foregroundColor;
     }
 
     public Color getForegroundColor() {
-	return foregroundColor;
+        return foregroundColor;
     }
 
     public void setBackgroundColor(Color backgroundColor) {
-	this.backgroundColor = backgroundColor;
+        this.backgroundColor = backgroundColor;
     }
 
     public Color getBackgroundColor() {
-	return backgroundColor;
+        return backgroundColor;
     }
 
     public void setFont(Font font) {
-	this.font = font;
+        this.font = font;
     }
-
     private boolean inConeOfSilence;
 
     public void setNameTag(EventType eventType, String username, String usernameAlias) {
-	setNameTag(eventType, username, usernameAlias, null, null);
+        setNameTag(eventType, username, usernameAlias, null, null);
     }
 
-    public void setNameTag(EventType eventType, String username, String usernameAlias, 
-	    Color foregroundColor, Font font) {
+    public void setNameTag(EventType eventType, String username, String usernameAlias,
+            Color foregroundColor, Font font) {
 
-	this.usernameAlias = usernameAlias;
+        this.usernameAlias = usernameAlias;
 
-	if (eventType == EventType.ENTERED_CONE_OF_SILENCE) {
-	    inConeOfSilence = true;
-	} else if (eventType == EventType.EXITED_CONE_OF_SILENCE) {
-	    inConeOfSilence = false;
-	    setForegroundColor(NOT_SPEAKING_COLOR);
-	}
-	    
-	String displayName = usernameAlias;
+        if (eventType == EventType.ENTERED_CONE_OF_SILENCE) {
+            inConeOfSilence = true;
+        } else if (eventType == EventType.EXITED_CONE_OF_SILENCE) {
+            inConeOfSilence = false;
+            setForegroundColor(NOT_SPEAKING_COLOR);
+        }
 
-	switch (eventType) {
-	case STARTED_SPEAKING:
- 	    displayName = getDisplayName(usernameAlias, true, false);
-	    setForegroundColor(SPEAKING_COLOR);
-	    break;
-	
-	case STOPPED_SPEAKING:
- 	    displayName = getDisplayName(usernameAlias, false, false);
-	    setForegroundColor(NOT_SPEAKING_COLOR);
-	    break;
+        String displayName = usernameAlias;
 
-	case MUTE:
- 	    displayName = getDisplayName(usernameAlias, false, true);
-	    setForegroundColor(NOT_SPEAKING_COLOR);
-	    break;
-	
-	case UNMUTE:
- 	    displayName = getDisplayName(usernameAlias, false, false);
-	    setForegroundColor(NOT_SPEAKING_COLOR);
-	    break;
+        switch (eventType) {
+            case STARTED_SPEAKING:
+                displayName = getDisplayName(usernameAlias, true, false);
+                setForegroundColor(SPEAKING_COLOR);
+                break;
 
-	case CHANGE_NAME:
-	    break;
-	}
+            case STOPPED_SPEAKING:
+                displayName = getDisplayName(usernameAlias, false, false);
+                setForegroundColor(NOT_SPEAKING_COLOR);
+                break;
 
-	if (inConeOfSilence) {
-	    setForegroundColor(CONE_OF_SILENCE_COLOR);
-	}
+            case MUTE:
+                displayName = getDisplayName(usernameAlias, false, true);
+                setForegroundColor(NOT_SPEAKING_COLOR);
+                break;
 
-	if (name.equals(usernameAlias) == false) {
-	    setFont(ALIAS_NAME_FONT);
-	}
+            case UNMUTE:
+                displayName = getDisplayName(usernameAlias, false, false);
+                setForegroundColor(NOT_SPEAKING_COLOR);
+                break;
 
-	if (foregroundColor != null) {
-	    setForegroundColor(foregroundColor);
-	}
+            case CHANGE_NAME:
+                break;
+        }
 
-	if (font != null) {
-	    setFont(font);
-	}
+        if (inConeOfSilence) {
+            setForegroundColor(CONE_OF_SILENCE_COLOR);
+        }
 
-	setNameTag(displayName);
+        if (name.equals(usernameAlias) == false) {
+            setFont(ALIAS_NAME_FONT);
+        }
+
+        if (foregroundColor != null) {
+            setForegroundColor(foregroundColor);
+        }
+
+        if (font != null) {
+            setFont(font);
+        }
+
+        setNameTag(displayName);
     }
 
     public void setNameTag(final String name) {
         ClientContextJME.getSceneWorker().addWorker(new WorkCommit() {
+
             public void commit() {
                 setNameTagImpl(name);
                 ClientContextJME.getWorldManager().addToUpdateList(NameTagNode.this);
@@ -237,9 +208,9 @@ public class NameTagNode extends Node {
 
         TextLabel2D label = new TextLabel2D(name, foregroundColor, backgroundColor);
 
-	if (font != null) {
-	    label.setFont(font);
-	}
+        if (font != null) {
+            label.setFont(font);
+        }
 
         q = label.getBillboard(0.3f);
         q.setLocalTranslation(0, height, 0);
@@ -250,5 +221,4 @@ public class NameTagNode extends Node {
 
         attachChild(q);
     }
-
 }

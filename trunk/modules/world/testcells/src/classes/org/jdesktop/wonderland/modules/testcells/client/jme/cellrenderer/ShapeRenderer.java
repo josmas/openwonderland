@@ -54,7 +54,8 @@ public class ShapeRenderer extends BasicRenderer {
     }
 
     public void shapeChanged() {
-
+        geom.removeFromParent();
+        createShapeNode();
     }
 
     public void colorChanged() {
@@ -68,18 +69,6 @@ public class ShapeRenderer extends BasicRenderer {
         
         createShapeNode();
 
-        if (geom!=null) {
-
-            geom.setModelBound(new BoundingSphere());
-            geom.updateModelBound();
-
-            MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
-            MaterialJME matJME = ((SimpleShapeCell)cell).getMaterialJME();
-            if (matJME!=null)
-                matJME.apply(matState);
-            geom.setRenderState(matState);
-        }
-        
         return scene;
     }
 
@@ -112,8 +101,22 @@ public class ShapeRenderer extends BasicRenderer {
                 scene.setLocalScale(0.2f);
                 break;
         }
+        
+        if (geom!=null) {
+
+            geom.setModelBound(new BoundingSphere());
+            geom.updateModelBound();
+
+            MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
+            MaterialJME matJME = ((SimpleShapeCell)cell).getMaterialJME();
+            if (matJME!=null)
+                matJME.apply(matState);
+            geom.setRenderState(matState);
+        }
+
     }
 
+    @Override
     protected float getMass() {
         return ((SimpleShapeCell)cell).getMass();
     }

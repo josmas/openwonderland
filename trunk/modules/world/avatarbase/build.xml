@@ -12,11 +12,17 @@
 
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="${current.dir}/lib/avatars.jar"/>
     </pathconvert>
        
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
-                                                -module-compile-client"/>
+                                                -module-compile-client">
+        <!-- copy resource bundles -->
+	<copy todir="${build.classes.dir}/${module.src}/client/resources">
+            <fileset dir="${current.dir}/src/classes/${module.src}/client/resources"/>
+        </copy>
+    </target>
     
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
@@ -26,9 +32,9 @@
 
             <requires name="content-repository" version="1"/>
 
-            <client>
+            <client dir="${current.dir}/lib">
+		<include name="avatars.jar"/>
                 <clientjar name="avatarbase-client" basedir="${build.classes.dir}">
-                    <clientplugin provider="org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarPlugin"/>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                 </clientjar> 

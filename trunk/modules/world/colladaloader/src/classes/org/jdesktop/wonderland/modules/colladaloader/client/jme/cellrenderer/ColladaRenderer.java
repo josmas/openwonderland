@@ -25,26 +25,15 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Geometry;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
-import com.jme.util.resource.ResourceLocatorTool;
 import imi.environments.ColladaEnvironment;
-import imi.loaders.collada.ColladaLoaderParams;
-import imi.loaders.repository.AssetDescriptor;
-import imi.loaders.repository.SharedAsset;
-import imi.loaders.repository.SharedAsset.SharedAssetType;
-import imi.scene.JScene;
-import imi.scene.PScene;
 import java.net.URL;
 import java.util.logging.Level;
-import org.jdesktop.mtgame.CollisionComponent;
-import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**

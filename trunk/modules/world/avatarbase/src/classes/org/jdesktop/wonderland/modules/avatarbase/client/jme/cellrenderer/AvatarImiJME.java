@@ -17,37 +17,36 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
-import com.jme.math.Matrix3f;
+import com.jme.bounding.BoundingSphere;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.Renderer;
+import com.jme.scene.BillboardNode;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
-import com.jme.scene.shape.Quad;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import com.jme.util.export.binary.BinaryImporter;
+import com.jme.util.resource.ResourceLocator;
+import com.jme.util.resource.ResourceLocatorTool;
 import imi.character.CharacterAttributes;
 import imi.character.CharacterMotionListener;
-import imi.character.avatar.FemaleAvatarAttributes;
 import imi.character.avatar.MaleAvatarAttributes;
 import imi.character.statemachine.GameContextListener;
+import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.CycleActionState;
 import imi.scene.PMatrix;
 import imi.scene.PTransform;
 import imi.scene.processors.JSceneEventProcessor;
-import imi.utils.PMathUtils;
 import imi.utils.input.AvatarControlScheme;
-import java.io.File;
 import java.net.URL;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -56,19 +55,13 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
-import org.jdesktop.wonderland.client.cell.view.ViewCell;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarActionTrigger;
-import org.jdesktop.wonderland.client.jme.AvatarControls.AvatarInputSelector;
-import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent.AvatarConfigChangeListener;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
@@ -79,14 +72,13 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarCon
  * @author paulby
  */
 @ExperimentalAPI
-public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, AvatarActionTrigger {
+public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
     private WlAvatarCharacter avatarCharacter = null;
     private boolean selectedForInput = false;
 
 //    private AvatarRendererChangeRequestEvent.AvatarQuality quality = AvatarRendererChangeRequestEvent.AvatarQuality.High;
     private CharacterMotionListener characterMotionListener;
-    private CharacterMotionListener nameTagMover;
     private GameContextListener gameContextListener;
     private int currentTrigger = -1;
     private boolean currentPressed = false;
@@ -94,7 +86,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
     private float positionMaxDistanceForPull = 3.0f;
     private String username;
     private AvatarControlScheme controlScheme = null;
-    private NameTag nameTag;
+    private NameTagNode nameTag;
 
     public AvatarImiJME(Cell cell) {
         super(cell);
@@ -133,17 +125,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
             
         };
 
-        // Temporary workaround until we can attach the name tag directly
-        // to the avatar
-        nameTagMover = new CharacterMotionListener() {
-            public void transformUpdate(Vector3f translation, PMatrix rotation) {
-                if (nameTag != null) {
-                    nameTag.setLocalTranslation(translation);
-                }
-            };
-
-        };
-
         // This info will be sent to the other clients to animate the avatar
         gameContextListener = new GameContextListener() {
 
@@ -152,7 +133,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
                     currentTrigger = trigger;
                     currentPressed = pressed;
                 }
-                String animationName = avatarCharacter.getContext().getState(CycleActionState.class).getAnimationName();
+                GameState state = avatarCharacter.getContext().getCurrentState();
+                String animationName=null;
+                if (state instanceof CycleActionState) {
+                    animationName = avatarCharacter.getContext().getState(CycleActionState.class).getAnimationName();
+                }
                 ((MovableAvatarComponent) c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, animationName, null);
             }
         };
@@ -185,12 +170,13 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
                                            e.getUsernameAlias(),
                                            e.getForegroundColor(), e.getFont());
                     }
+                } else if (event instanceof AvatarRendererChangeRequestEvent) {
+                    handleAvatarRendererChangeRequest((AvatarRendererChangeRequestEvent)event);
                 }
             }
 
             @Override
             public void computeEvent(Event evtIn) {
-                //System.err.println("TODO - GOT EVENT "+evtIn);
             }
         });
 
@@ -205,8 +191,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         super.setStatus(status);
         switch(status) {
             case DISK :
-                if (nameTag!=null)
-                    nameTag.done();
                 if (entity!=null)
                     ClientContextJME.getWorldManager().removeEntity(entity);
                 break;
@@ -228,9 +212,20 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         // Remove the entity, it will be added when the cell status changes
         ClientContextJME.getWorldManager().removeEntity(avatarCharacter);
 
-        System.out.println("[AvatarImiJME] setting name tag");
-        nameTag = new NameTag(cell, username, 2, avatarCharacter);
+
         return avatarCharacter;
+    }
+
+    private void handleAvatarRendererChangeRequest(AvatarRendererChangeRequestEvent event) {
+        System.err.println("Avatar quality change, not implemented");
+        switch (event.getQuality()) {
+            case High :
+                break;
+            case Medium :
+                break;
+            case Low :
+                break;
+        }
     }
 
     void changeAvatar(WlAvatarCharacter newAvatar) {
@@ -251,8 +246,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
         avatarCharacter = newAvatar;
         
-        avatarCharacter.getController().addCharacterMotionListener(nameTagMover);
-
         RenderComponent rc = (RenderComponent) avatarCharacter.getComponent(RenderComponent.class);
 
         if (rc != null) {
@@ -290,29 +283,24 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         // Don't call super, we don't use a MoveProcessor for avatars
 
         if (!selectedForInput && avatarCharacter != null && avatarCharacter.getController().getModelInstance()!=null ) {
-            Vector3f pos = transform.getTranslation(null);
-            Vector3f dir = new Vector3f(0, 0, -1);
-            transform.getRotation(null).multLocal(dir);
-            PMatrix local = avatarCharacter.getController().getModelInstance().getTransform().getLocalMatrix(true);
-            final Vector3f currentPosition = local.getTranslation();
-            float currentDistance = currentPosition.distance(pos);
-            if (currentDistance < positionMaxDistanceForPull) {
-                pos.set(currentPosition);
-            }
-
-            PMatrix look = PMathUtils.lookAt(pos.add(dir), pos, Vector3f.UNIT_Y);
-            avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(look);
-
-            SceneWorker.addWorker(new WorkCommit() {
-
-                public void commit() {
-                    if (nameTag != null) {
-                        nameTag.setLocalTranslation(currentPosition);
-                    }
+            // If the user is being steered by AI, do not mess it up
+            // (objects that the AI is dealing with gota be synced)
+            System.err.println("Steering "+avatarCharacter.getContext().getSteering().isEnabled()+"  "+avatarCharacter.getContext().getSteering().getCurrentTask());
+            if (avatarCharacter.getContext().getSteering().isEnabled() && avatarCharacter.getContext().getSteering().getCurrentTask() != null) {
+                System.err.println("Avatar steering !");
+            } else {
+                Vector3f pos = transform.getTranslation(null);
+                Vector3f dir = new Vector3f(0, 0, -1);
+                transform.getRotation(null).multLocal(dir);
+                PMatrix local = avatarCharacter.getController().getModelInstance().getTransform().getLocalMatrix(true);
+                final Vector3f currentPosition = local.getTranslation();
+                float currentDistance = currentPosition.distance(pos);
+                if (currentDistance < positionMaxDistanceForPull) {
+                    pos.set(currentPosition);
                 }
-            });
-        }
 
+            }
+        }
     }
 
     protected Entity createAvatarEntities(WorldManager wm) {
@@ -320,9 +308,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         CellTransform transform = cell.getLocalTransform();
         origin.setTranslation(transform.getTranslation(null));
         origin.setRotation(transform.getRotation(null));
-
-        String name = ((ViewCell) cell).getIdentity().getUsername();
-
 
         // Set the base URL
         WonderlandSession session = cell.getCellCache().getSession();
@@ -337,31 +322,45 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
         LoadingInfo.startedLoading(cell.getCellID(), username);
         try {
         // Create the character, but don't add the entity to wm
-        // TODO this will change to take the config
         if (avatarConfigURL == null) {
-//            File defaultConfig = AvatarConfigManager.getDefaultAvatarConfigFile();
-//            if (defaultConfig.exists()) {
-//                try {
-//                    avatarCharacter = new WlAvatarCharacter(defaultConfig.toURI().toURL(), ClientContextJME.getWorldManager(), baseURL);
-//                } catch (MalformedURLException ex) {
-//                    avatarCharacter = null;
-//                    Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, "Error loading default config file" + defaultConfig, ex);
-//                }
-//            }
-
             if (avatarCharacter == null) {
-                CharacterAttributes attributes = new MaleAvatarAttributes(name, true);
+                CharacterAttributes attributes = new MaleAvatarAttributes(username, false);
+
+                // Setup simple model
+                attributes.setUseSimpleStaticModel(true, null);
                 attributes.setBaseURL(baseURL);
                 avatarCharacter = new WlAvatarCharacter(attributes, wm);
-            }
+//                Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(new URL(baseURL+"assets/models/collada/Avatars/placeholder.bin"));
 
+                URL url = new URL(baseURL+"assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
+                ResourceLocator resourceLocator = new RelativeResourceLocator(url);
+
+                ResourceLocatorTool.addThreadResourceLocator(
+                        ResourceLocatorTool.TYPE_TEXTURE,
+                        resourceLocator);
+                Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
+                ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
+
+//                DebugNode d = new DebugNode();
+//                d.attachChild(placeHolder);
+                avatarCharacter.getJScene().getExternalKidsRoot().attachChild(placeHolder);
+            }
         } else {
             avatarCharacter = new WlAvatarCharacter(avatarConfigURL, wm, "wla://avatarbaseart@" + serverHostAndPort + "/");
         }
 
         avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(origin);
 
-        avatarCharacter.getController().addCharacterMotionListener(nameTagMover);
+        Node external = avatarCharacter.getJScene().getExternalKidsRoot();
+//        ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+//        zbuf.setEnabled(true);
+//        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+//        external.setRenderState(zbuf);
+        NameTagComponent nameTagComp = new NameTagComponent(cell, username, 2);
+        nameTag = nameTagComp.getNameTagNode();
+        external.attachChild(nameTag);
+        external.setModelBound(new BoundingSphere());
+        external.updateModelBound();
 
 //        JScene jscene = avatar.getJScene();
 //        jscene.renderToggle();      // both renderers
@@ -370,9 +369,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 //        jscene.toggleRenderPRendererMesh();   // turn off mesh
 //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
-//        wm.removeEntity(avatarCharacter);
         } catch(Exception e) {
-            Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, "Error loading avatar "+avatarConfigURL, e);
+            String badURL=null;
+            if (avatarConfigURL!=null)
+                badURL = avatarConfigURL.toExternalForm();
+            Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, "Error loading avatar "+badURL, e);
         } finally {
             LoadingInfo.finishedLoading(cell.getCellID(), username);
         }
@@ -396,32 +397,33 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
 
     public void selectForInput(boolean selected) {
         WorldManager wm = ClientContextJME.getWorldManager();
-        ((WlAvatarContext) avatarCharacter.getContext()).getSteering().setEnable(false);
-
-        if (controlScheme == null && selected) {
-            controlScheme = (AvatarControlScheme) ((JSceneEventProcessor) wm.getUserData(JSceneEventProcessor.class)).setDefault(new AvatarControlScheme(avatarCharacter));
-        }
 
         selectedForInput = selected;
 
 //        System.err.println("SelectForInput " + selected);
 
-        if (selected) {
-            // Listen for avatar movement and update the cell
-            avatarCharacter.getController().addCharacterMotionListener(characterMotionListener);
+        if (avatarCharacter!=null) {
+            ((WlAvatarContext) avatarCharacter.getContext()).getSteering().setEnable(false);
 
-            // Listen for game context changes
-            avatarCharacter.getContext().addGameContextListener(gameContextListener);
-            avatarCharacter.selectForInput();
-            controlScheme.getAvatarTeam().add(avatarCharacter);
-            controlScheme.setavatar(avatarCharacter);
-        } else {
-            avatarCharacter.getController().removeCharacterMotionListener(characterMotionListener);
-            avatarCharacter.getContext().removeGameContextListener(gameContextListener);
-            if (controlScheme!=null)
-                controlScheme.getAvatarTeam().remove(avatarCharacter);
+            if (controlScheme == null && selected) {
+                controlScheme = (AvatarControlScheme) ((JSceneEventProcessor) wm.getUserData(JSceneEventProcessor.class)).setDefault(new AvatarControlScheme(avatarCharacter));
+            }
+            if (selected) {
+                // Listen for avatar movement and update the cell
+                avatarCharacter.getController().addCharacterMotionListener(characterMotionListener);
+
+                // Listen for game context changes
+                avatarCharacter.getContext().addGameContextListener(gameContextListener);
+                avatarCharacter.selectForInput();
+                controlScheme.getAvatarTeam().add(avatarCharacter);
+                controlScheme.setAvatar(avatarCharacter);
+            } else {
+                avatarCharacter.getController().removeCharacterMotionListener(characterMotionListener);
+                avatarCharacter.getContext().removeGameContextListener(gameContextListener);
+                if (controlScheme!=null)
+                    controlScheme.getAvatarTeam().remove(avatarCharacter);
+            }
         }
-
     }
 
     public void trigger(int trigger, boolean pressed, String animationName) {
@@ -450,6 +452,82 @@ public class AvatarImiJME extends BasicRenderer implements AvatarInputSelector, 
                     // has not yet set female as the default. 
                 }
             }
+        }
+    }
+    /**
+     * Hack for the binary loader, this will need to be made general purpose once
+     * we implement a core binary loader
+     */
+    class RelativeResourceLocator implements ResourceLocator {
+
+        private String modulename;
+        private String path;
+        private String protocol;
+
+        /**
+         * Locate resources for the given file
+         * @param url
+         */
+        public RelativeResourceLocator(URL url) {
+            // The modulename can either be in the "user info" field or the
+            // "host" field. If "user info" is null, then use the host name.
+//            System.out.println("ASSET RESOURCE LOCATOR FOR URL " + url.toExternalForm());
+
+            if (url.getUserInfo() == null) {
+                modulename = url.getHost();
+            }
+            else {
+                modulename = url.getUserInfo();
+            }
+            path = url.getPath();
+            path = path.substring(0, path.lastIndexOf('/')+1);
+            protocol = url.getProtocol();
+
+//            System.out.println("MODULE NAME " + modulename + " PATH " + path);
+        }
+
+        public URL locateResource(String resource) {
+//            System.err.println("Looking for resource "+resource);
+//            System.err.println("Module "+modulename+"  path "+path);
+            try {
+
+                    String urlStr = trimUrlStr(protocol + "://"+modulename+path+".." + resource);
+
+                    URL url = getAssetURL(urlStr);
+//                    System.err.println("Using " + url.toExternalForm());
+                    return url;
+
+            } catch (MalformedURLException ex) {
+                logger.log(Level.SEVERE, "Unable to locateResource "+resource, ex);
+                return null;
+            }
+        }
+
+        /**
+         * Trim ../ from url
+         * @param urlStr
+         */
+        private String trimUrlStr(String urlStr) {
+            int pos = urlStr.indexOf("/../");
+            if (pos==-1)
+                return urlStr;
+
+            StringBuilder buf = new StringBuilder(urlStr);
+            int start = pos;
+            while(buf.charAt(--start)!='/') {}
+            buf.replace(start, pos+4, "/");
+//            System.out.println("Trimmed "+buf.toString());
+
+           return buf.toString();
+        }
+
+    }
+
+    class DebugNode extends Node {
+        public void draw(Renderer r) {
+            System.err.println("START**********************************");
+            super.draw(r);
+            System.err.println("END ***********************************");
         }
     }
 }

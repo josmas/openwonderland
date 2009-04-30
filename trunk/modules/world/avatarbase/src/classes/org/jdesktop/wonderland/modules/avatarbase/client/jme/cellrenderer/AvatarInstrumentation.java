@@ -1,24 +1,32 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * AvatarInstrumentation.java
+/**
+ * Project Wonderland
  *
- * Created on Feb 10, 2009, 4:04:00 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import imi.utils.instruments.Instrumentation;
 import imi.utils.instruments.Instrumentation.InstrumentedSubsystem;
+import java.util.ResourceBundle;
 
 /**
  *
  * @author paulby
  */
 public class AvatarInstrumentation extends javax.swing.JFrame {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
 
     private Instrumentation instrumentation;
 
@@ -48,10 +56,10 @@ public class AvatarInstrumentation extends javax.swing.JFrame {
         vertexDefB = new javax.swing.JCheckBox();
         poseToGpuCB = new javax.swing.JCheckBox();
 
-        jLabel1.setText("Enabled Subsystems");
+        jLabel1.setText(bundle.getString("Enabled_Subsystems")); // NOI18N
 
         animationCB.setSelected(true);
-        animationCB.setText("Animation");
+        animationCB.setText(bundle.getString("Animation")); // NOI18N
         animationCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 animationCBActionPerformed(evt);
@@ -59,7 +67,7 @@ public class AvatarInstrumentation extends javax.swing.JFrame {
         });
 
         texturingCB.setSelected(true);
-        texturingCB.setText("Texturing");
+        texturingCB.setText(bundle.getString("Texturing")); // NOI18N
         texturingCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 texturingCBActionPerformed(evt);
@@ -67,7 +75,7 @@ public class AvatarInstrumentation extends javax.swing.JFrame {
         });
 
         vertexDefB.setSelected(true);
-        vertexDefB.setText("Vertex Deformation");
+        vertexDefB.setText(bundle.getString("Vertex_Deformation")); // NOI18N
         vertexDefB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 vertexDefBActionPerformed(evt);
@@ -75,7 +83,7 @@ public class AvatarInstrumentation extends javax.swing.JFrame {
         });
 
         poseToGpuCB.setSelected(true);
-        poseToGpuCB.setText("Pose Transfer to GPU");
+        poseToGpuCB.setText(bundle.getString("Pose_Transfer_to_GPU")); // NOI18N
         poseToGpuCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 poseToGpuCBActionPerformed(evt);

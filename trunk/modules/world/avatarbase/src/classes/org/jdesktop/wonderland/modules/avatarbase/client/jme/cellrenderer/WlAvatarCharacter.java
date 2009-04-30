@@ -22,7 +22,7 @@ import imi.character.CharacterAttributes;
 import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarContext.TriggerNames;
 import imi.character.statemachine.GameContext;
-//import imi.character.statemachine.corestates.ActionState;
+import imi.scene.PMatrix;
 import imi.scene.polygonmodel.parts.skinned.SkinnedMeshJoint;
 import java.awt.event.KeyEvent;
 import java.net.URL;
@@ -44,7 +44,7 @@ public class WlAvatarCharacter extends Avatar {
     }
 
     public WlAvatarCharacter(URL configURL, WorldManager wm, String baseURL) {
-        super(configURL, wm, baseURL);
+        super(configURL, wm, baseURL, new PMatrix());
     }
 
     @Override

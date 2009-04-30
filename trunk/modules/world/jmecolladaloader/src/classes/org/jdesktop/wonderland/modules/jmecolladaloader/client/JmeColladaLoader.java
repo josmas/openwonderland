@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import com.jme.util.export.binary.BinaryExporter;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jme.util.resource.SimpleResourceLocator;
 import java.io.BufferedInputStream;
@@ -106,6 +107,8 @@ class JmeColladaLoader implements ModelLoader {
 
             deployTextures(targetDir);
             deployModels(origFile.toURI().toURL(), targetDir);
+
+            BinaryExporter.getInstance().save(model.getModelBG(), new File(targetDir, origFile.getName()+".wbm"));
 
 //            if (modelFiles.size() > 1) {
 //                logger.warning("Multiple models not supported during deploy");

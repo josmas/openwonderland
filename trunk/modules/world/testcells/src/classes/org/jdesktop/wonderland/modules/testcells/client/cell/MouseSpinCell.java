@@ -17,23 +17,16 @@
  */
 package org.jdesktop.wonderland.modules.testcells.client.cell;
 
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Interpolators;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.ProcessorCollectionComponent;
-import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.*;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
-import org.jdesktop.wonderland.client.jme.input.test.MouseEvent3DLogger;
-import org.jdesktop.wonderland.client.jme.input.test.SpinObjectEventListener;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer.ShapeRenderer;
 import org.jdesktop.wonderland.modules.testcells.client.timingframework.RotationAnimationProcessor;
 import org.jdesktop.wonderland.modules.testcells.client.timingframework.TranslationAnimationProcessor;
 import org.jdesktop.wonderland.modules.testcells.client.timingframework.util.Mouse3DTrigger;
