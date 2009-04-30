@@ -56,6 +56,10 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoi
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
+
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
+
 import org.jdesktop.wonderland.client.cell.Cell;
 
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
@@ -81,6 +85,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
+
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 
 /**
@@ -402,11 +407,27 @@ public class AudioManagerClient extends BaseConnection implements
                 return;
             }
 
-            inCallDialog.addMember(msg.getCallee());
-        } else if (message instanceof VoiceChatHoldMessage) {
-            VoiceChatHoldMessage msg = (VoiceChatHoldMessage) message;
-        } else if (message instanceof VoiceChatLeaveMessage) {
-            VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
+	    PresenceInfo info = pm.getPresenceInfo(msg.getCallee().cellID);
+
+	    inCallDialog.addMember(info);
+
+	    AvatarNameEvent avatarNameEvent;
+
+	    if (msg.getChatType() == ChatType.SECRET) {
+		info.inSecretChat = true;
+                avatarNameEvent = new AvatarNameEvent(EventType.STARTED_SECRET_CHAT,
+                    info.userID.getUsername(), info.usernameAlias);
+            } else {
+		info.inSecretChat = false;
+                avatarNameEvent = new AvatarNameEvent(EventType.ENDED_SECRET_CHAT,
+                    info.userID.getUsername(), info.usernameAlias);
+	    }
+
+            InputManager.inputManager().postEvent(avatarNameEvent);
+	} else if (message instanceof VoiceChatHoldMessage) {
+	    VoiceChatHoldMessage msg = (VoiceChatHoldMessage) message;
+	} else if (message instanceof VoiceChatLeaveMessage) {
+	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
 
             InCallDialog inCallDialog = inCallDialogs.get(msg.getGroup());
 
@@ -417,7 +438,9 @@ public class AudioManagerClient extends BaseConnection implements
                 return;
             }
 
-            inCallDialog.removeMember(msg.getCallee());
+	    PresenceInfo info = pm.getPresenceInfo(msg.getCallee().cellID);
+
+            inCallDialog.removeMember(info);
         } else if (message instanceof SpeakingMessage) {
             SpeakingMessage msg = (SpeakingMessage) message;
 

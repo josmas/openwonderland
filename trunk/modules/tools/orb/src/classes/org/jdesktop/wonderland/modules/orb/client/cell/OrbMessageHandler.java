@@ -78,6 +78,8 @@ import com.jme.math.Vector3f;
 
 import java.awt.Color;
 
+import com.jme.scene.Node;
+
 /**
  *
  * @author jprovino
@@ -159,8 +161,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	pm.addSession(presenceInfo);
 
-    NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
-    orbCell.addComponent(comp);
+        NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
+	    orbCell.addComponent(comp);
 	nameTag = comp.getNameTagNode();
 
 	if (orbCell.getPlayerWithVpCallID().length() > 0) {
@@ -184,6 +186,13 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	}
     }
 
+    private Node orbRootNode;
+
+    public void setOrbRootNode(Node orbRootNode) {
+	this.orbRootNode = orbRootNode;
+	orbRootNode.attachChild(nameTag);
+    }
+	
     public void done() {
 	synchronized (detachedOrbList) {
 	    detachedOrbList.remove(orbCell);
@@ -207,6 +216,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	channelComp.removeMessageReceiver(OrbSetVolumeMessage.class);
         channelComp.removeMessageReceiver(OrbSpeakingMessage.class);
 
+	orbRootNode.detachChild(nameTag);
 	nameTag.done();
 
 	pm.removeSession(presenceInfo);
@@ -356,7 +366,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	
 	if (isAttached) {
 	    // Position ourself based on other orbs
-	    translation.setY(getOrbHeight());  // Raise orb.
+	    float orbHeight = getOrbHeight();
+
+	    translation.setY(orbHeight);  // Raise orb.
 	    followMe.setTargetPosition(translation);
 	} else {
 	    translation.setZ(translation.getZ() + (float) .2);
@@ -424,11 +436,6 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     }
 
     public void orbSelected() {
-	if (orbCell.getPlayerWithVpCallID().length() > 0) {
-	    logger.info("OrbDialog isn't allowed for Virtual Orbs");
-	    return;
-	}
-	
 	if (orbDialog == null) {
 	    LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
 	    

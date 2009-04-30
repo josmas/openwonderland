@@ -161,13 +161,16 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
         for (int i = 0; i < presenceInfoList.length; i++) {
             PresenceInfo info = presenceInfoList[i];
 
+	    userData[i] = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
+		info.isMuted, info.inSecretChat);
+
             if (info.callID == null) {
                 // It's a virtual player, skip it.
                 continue;
             }
 
             userData[i] = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
-                    info.isMuted);
+                    info.isMuted, info.inSecretChat);
         }
 
         setUserList(userData);

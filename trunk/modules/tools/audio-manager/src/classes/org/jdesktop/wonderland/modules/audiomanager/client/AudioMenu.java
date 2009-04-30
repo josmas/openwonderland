@@ -36,7 +36,7 @@ public class AudioMenu extends javax.swing.JPanel {
 
     private AudioMenuListener audioMenuListener;
     private static AudioMenu audioM = null;
-    private JCheckBoxMenuItem softphoneCheckBox;
+    private JMenuItem softphoneMenuItem;
     private JMenuItem voiceChatMenuItem;
     private JCheckBoxMenuItem muteCheckBox;
 
@@ -46,8 +46,8 @@ public class AudioMenu extends javax.swing.JPanel {
         this.audioMenuListener = audioMenuListener;
         populateAudioQualityMenu();
 
-        softphoneCheckBox = new JCheckBoxMenuItem("Softphone");
-        softphoneCheckBox.addActionListener(new java.awt.event.ActionListener() {
+        softphoneMenuItem = new JMenuItem("Softphone");
+        softphoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 if (audioMenuListener != null) {
@@ -81,19 +81,19 @@ public class AudioMenu extends javax.swing.JPanel {
     @Override
     public void setEnabled(boolean enabled) {
         audioMenu.setEnabled(enabled);
-        softphoneCheckBox.setEnabled(enabled);
+        softphoneMenuItem.setEnabled(enabled);
         muteCheckBox.setEnabled(enabled);
         voiceChatMenuItem.setEnabled(enabled);
     }
 
     public void addMenus() {
-        JmeClientMain.getFrame().addToWindowMenu(softphoneCheckBox, 4);
+        JmeClientMain.getFrame().addToWindowMenu(softphoneMenuItem, 4);
         JmeClientMain.getFrame().addToToolsMenu(muteCheckBox, 0);
         JmeClientMain.getFrame().addToWindowMenu(voiceChatMenuItem, 3);
     }
 
     public void removeMenus() {
-        JmeClientMain.getFrame().removeFromWindowMenu(softphoneCheckBox);
+        JmeClientMain.getFrame().removeFromWindowMenu(softphoneMenuItem);
         JmeClientMain.getFrame().removeFromToolsMenu(muteCheckBox);
         JmeClientMain.getFrame().removeFromWindowMenu(voiceChatMenuItem);
     }

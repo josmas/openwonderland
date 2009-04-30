@@ -56,6 +56,13 @@ public class OrbDialog extends javax.swing.JDialog {
 	
 	initComponents();
 
+	if (orbCell.getPlayerWithVpCallID().length() > 0) {
+	    attachButton.setEnabled(false);
+	    endCallButton.setEnabled(false);
+	    muteButton.setEnabled(false);
+	    nameTextField.setEnabled(false);
+	}
+
 	setTitle(username);
 	setVisible(true);
     }

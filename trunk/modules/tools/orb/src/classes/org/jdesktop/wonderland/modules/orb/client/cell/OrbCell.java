@@ -43,6 +43,8 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.modules.orb.common.OrbCellClientState;
 
+import com.jme.scene.Node;
+
 /**
  *
  * @author jprovino
@@ -78,6 +80,7 @@ public class OrbCell extends Cell {
             if (orbMessageHandler == null) {
 	        logger.fine("Creating orb Message handler for " + getCellID());
                 orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession());
+	        orbMessageHandler.setOrbRootNode(orbCellRenderer.getOrbRootNode());
 	    }
 	    break;
         case DISK:
