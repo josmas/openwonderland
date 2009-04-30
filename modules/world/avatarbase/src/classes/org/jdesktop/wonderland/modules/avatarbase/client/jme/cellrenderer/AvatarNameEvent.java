@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import org.jdesktop.wonderland.client.input.Event;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 
 import java.awt.Color;
 import java.awt.Font;

@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.cell;
 
-import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
@@ -48,6 +47,8 @@ public class AvatarConfigComponent extends CellComponent {
 
     private LinkedList<AvatarConfigChangeListener> avatarChangeListeners = new LinkedList();
 
+    private URL pendingChange = null;
+
     public AvatarConfigComponent(Cell cell) {
         super(cell);
     }
@@ -62,6 +63,7 @@ public class AvatarConfigComponent extends CellComponent {
         super.setClientState(clientState);
         try {
             String str = ((AvatarConfigComponentClientState) clientState).getConfigURL();
+            System.err.println("SET CLIENT STATE "+str);
             if (str!=null)
                 avatarConfigURL = new URL(str);
             else
@@ -90,12 +92,19 @@ public class AvatarConfigComponent extends CellComponent {
                         }
                     };
                     channelComp.addMessageReceiver(getMessageClass(), msgReceiver);
+                    synchronized(this) {
+                        if (pendingChange!=null) {
+                            channelComp.send(AvatarConfigMessage.newRequestMessage(pendingChange));
+                            pendingChange = null;
+                        }
+                    }
                 }
             }
         }
     }
 
     private void notifyConfigUpdate(AvatarConfigMessage msg) {
+        System.err.println("CONFIG UPDATE "+msg.getModelConfigURL());
         if ((avatarConfigURL!=null && avatarConfigURL.toExternalForm().equals(msg.getModelConfigURL())
                 || msg.getModelConfigURL()==null))
             return;
@@ -124,10 +133,19 @@ public class AvatarConfigComponent extends CellComponent {
     }
 
     public void requestConfigChange(URL configURL) {
+        System.err.println("REQUEST CONFIG CHANGE "+configURL);
         if (avatarConfigURL!=null && avatarConfigURL.equals(configURL))
             return;
 
-        channelComp.send(AvatarConfigMessage.newRequestMessage(configURL));
+        // This can be called before channelComp is initialzed
+
+        synchronized(this) {
+            if (channelComp==null) {
+                pendingChange = configURL;
+            } else {
+                channelComp.send(AvatarConfigMessage.newRequestMessage(configURL));
+            }
+        }
     }
 
     /**

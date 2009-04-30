@@ -27,6 +27,7 @@ import imi.utils.instruments.Instrumentation;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -44,15 +45,18 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
+import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
 
 /**
  *
  * @author paulby
  */
+@Plugin
 public class AvatarPlugin extends BaseClientPlugin
         implements ViewManagerListener
 {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
     private ServerSessionManager loginManager;
     private String baseURL;
     private WeakReference<AvatarTestPanel> testPanelRef = null;
@@ -62,6 +66,7 @@ public class AvatarPlugin extends BaseClientPlugin
     private JMenuItem avatarMI;
     private JMenuItem avatarSettingsMI;
     private JMenuItem startingLocationMI;
+    private JMenuItem avatarConfigFrameMI;
 
     private AvatarImiJME curAvatar;
     private boolean menusAdded = false;
@@ -92,17 +97,17 @@ public class AvatarPlugin extends BaseClientPlugin
         // activate or should be registered per session not globally 
         // XXX
         WorldManager worldManager = ClientContextJME.getWorldManager();
-        worldManager.addUserData(Repository.class, new Repository(worldManager, baseURL, ClientContext.getUserDirectory("AvatarCache")));
+        worldManager.addUserData(Repository.class, new Repository(worldManager, new WonderlandAvatarCache(ClientContext.getUserDirectory(bundle.getString("AvatarCache")))));
 
         // Workaround to guarntee that the webdav module has been initialized
         loginManager.addLifecycleListener(lifecycleListener);
 
-        avatarControlsMI = new JMenuItem("Avatar Controls");
+        avatarControlsMI = new JMenuItem(bundle.getString("Avatar_Controls"));
         avatarControlsMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (testPanelRef == null || testPanelRef.get() == null) {
                     AvatarTestPanel test = new AvatarTestPanel();
-                    JFrame f = new JFrame("Avatar Controls");
+                    JFrame f = new JFrame(bundle.getString("Avatar_Controls"));
                     f.getContentPane().add(test);
                     f.pack();
                     f.setVisible(true);
@@ -115,7 +120,7 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
-        avatarMI = new JMenuItem("Avatar...");
+        avatarMI = new JMenuItem(bundle.getString("Avatar..."));
         avatarMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
@@ -127,7 +132,7 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
-        avatarSettingsMI = new JMenuItem("Avatar Settings...");
+        avatarSettingsMI = new JMenuItem(bundle.getString("Avatar_Settings..."));
         avatarSettingsMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 AvatarInstrumentation in = new AvatarInstrumentation(instrumentation);
@@ -135,7 +140,7 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
-        startingLocationMI = new JMenuItem("Starting Location");
+        startingLocationMI = new JMenuItem(bundle.getString("Starting_Location"));
         startingLocationMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 GameContext context = curAvatar.getAvatarCharacter().getContext();
@@ -145,10 +150,23 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
+        avatarConfigFrameMI = new JMenuItem(bundle.getString("Avatar_Config..."));
+        avatarConfigFrameMI.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
+                if (cell instanceof AvatarCell) {
+                    AvatarImiJME rend = (AvatarImiJME) ((AvatarCell)cell).getCellRenderer(ClientContext.getRendererType());
+                    AvatarConfigFrame f = new AvatarConfigFrame(rend);
+                    f.setVisible(true);
+                }
+            }
+        });
+
         instrumentation = new DefaultInstrumentation(ClientContextJME.getWorldManager());
 
         // register the renderer for this session
-        ClientContextJME.getAvatarRenderManager().registerRenderer(loginManager, AvatarImiJME.class);
+        ClientContextJME.getAvatarRenderManager().registerRenderer(loginManager, AvatarImiJME.class, AvatarControls.class);
 
         super.initialize(loginManager);
     }
@@ -184,6 +202,7 @@ public class AvatarPlugin extends BaseClientPlugin
             JmeClientMain.getFrame().removeFromEditMenu(avatarMI);
             JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
             JmeClientMain.getFrame().removeFromPlacemarksMenu(startingLocationMI);
+            JmeClientMain.getFrame().removeFromEditMenu(avatarConfigFrameMI);
 
             menusAdded = false;
         }
@@ -215,6 +234,7 @@ public class AvatarPlugin extends BaseClientPlugin
             JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
             JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
             JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
+            JmeClientMain.getFrame().addToEditMenu(avatarConfigFrameMI);
 
             menusAdded = true;
         }

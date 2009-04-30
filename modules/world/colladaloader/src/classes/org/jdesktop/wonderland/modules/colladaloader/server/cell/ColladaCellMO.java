@@ -17,15 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.colladaloader.server.cell;
 
-import java.net.MalformedURLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.sun.sgs.app.ClientSession;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -34,6 +29,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.colladaloader.common.cell.state.ColladaCellClientState;
 import org.jdesktop.wonderland.modules.colladaloader.common.cell.state.ColladaCellServerState;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 

@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Geometry;
@@ -56,6 +57,7 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.client.cell.JmeColladaCe
 public class JmeColladaRenderer extends BasicRenderer {
 
     private Node model;
+    private boolean groupURI = false;
 
     public JmeColladaRenderer(Cell cell) {
         super(cell);
@@ -74,6 +76,7 @@ public class JmeColladaRenderer extends BasicRenderer {
             } else if (((JmeColladaCell)cell).getModelGroupURI()!=null) {
                 // Bulk of work done in addDefaultComponents
                 model = null;
+                groupURI = true;
             } else {
                 model = new Node();
                 ret.attachChild(model);
@@ -101,7 +104,7 @@ public class JmeColladaRenderer extends BasicRenderer {
     @Override
     protected void addDefaultComponents(Entity entity, Node rootNode) {
         super.addDefaultComponents(entity, rootNode);
-        if (model==null) {
+        if (groupURI) {
             final Entity rootEntity = entity;
             Thread loader = new Thread() {
                 @Override
@@ -130,7 +133,7 @@ public class JmeColladaRenderer extends BasicRenderer {
         
         ResourceLocator resourceLocator = new AssetResourceLocator(url);
 
-        ResourceLocatorTool.addResourceLocator(
+        ResourceLocatorTool.addThreadResourceLocator(
                 ResourceLocatorTool.TYPE_TEXTURE,
                 resourceLocator);
         try {
@@ -150,7 +153,7 @@ public class JmeColladaRenderer extends BasicRenderer {
             logger.log(Level.SEVERE, "Error loading Collada file "+((JmeColladaCell)cell).getModelURI(), e);
         }
         
-        ResourceLocatorTool.removeResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
+        ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
         
         // Make sure all the geometry has model bounds
         TreeScan.findNode(node, Geometry.class, new ProcessNodeInterface() {
@@ -158,7 +161,7 @@ public class JmeColladaRenderer extends BasicRenderer {
             public boolean processNode(Spatial node) {
                 Geometry g = (Geometry)node;
                 if (g.getModelBound()==null) {
-                    g.setModelBound(new BoundingBox());
+                    g.setModelBound(new BoundingSphere());
                     g.updateModelBound();
                 }
 
@@ -170,6 +173,12 @@ public class JmeColladaRenderer extends BasicRenderer {
         return node;
     }
 
+    /**
+     * Internal API
+     * @param in
+     * @param name
+     * @return
+     */
     public static Node loadModel(InputStream in, String name) {
         Node modelNode;
         ColladaImporter.load(in, name);

@@ -45,6 +45,9 @@ public class JmeColladaCellServerState extends CellServerState implements Serial
     @XmlElement(name="model-group")
     public String modelGroup = null;
 
+    @XmlElement(name="model-author")
+    public String modelAuthor = null;
+
     /* The translation for the geometry -- really should be done on the cell level */
     @XmlElement(name="geometry-translation")
     public PositionComponentServerState.Origin geometryTranslation = null;
@@ -132,4 +135,17 @@ public class JmeColladaCellServerState extends CellServerState implements Serial
         this.modelGroup = modelGroup;
     }
 
+    /**
+     * @return the modelAuthor
+     */
+    @XmlTransient public String getModelAuthor() {
+        return modelAuthor;
+    }
+
+    /**
+     * @param modelAuthor the modelAuthor to set
+     */
+    public void setModelAuthor(String modelAuthor) {
+        this.modelAuthor = modelAuthor;
+    }
 }

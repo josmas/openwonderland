@@ -1,4 +1,4 @@
-/**
+ /**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -125,7 +125,8 @@ public class AvatarTestPanel extends javax.swing.JPanel {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Movement"));
 
-        forwardB.setText("Forward");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle_en_US"); // NOI18N
+        forwardB.setText(bundle.getString("Forward")); // NOI18N
         forwardB.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 directionBMousePressed(evt);
@@ -135,7 +136,7 @@ public class AvatarTestPanel extends javax.swing.JPanel {
             }
         });
 
-        backwardB.setText("Backward");
+        backwardB.setText(bundle.getString("Backward")); // NOI18N
         backwardB.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 directionBMousePressed(evt);
@@ -145,7 +146,7 @@ public class AvatarTestPanel extends javax.swing.JPanel {
             }
         });
 
-        leftB.setText("Left");
+        leftB.setText(bundle.getString("Left")); // NOI18N
         leftB.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 directionBMousePressed(evt);
@@ -155,7 +156,7 @@ public class AvatarTestPanel extends javax.swing.JPanel {
             }
         });
 
-        rightB.setText("Right");
+        rightB.setText(bundle.getString("Right")); // NOI18N
         rightB.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 directionBMousePressed(evt);
@@ -205,9 +206,9 @@ public class AvatarTestPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setText("Action:");
+        jLabel1.setText(bundle.getString("Action:")); // NOI18N
 
-        jLabel2.setText("Expression:");
+        jLabel2.setText(bundle.getString("Expression:")); // NOI18N
 
         expressionCB.setEnabled(false);
         expressionCB.addActionListener(new java.awt.event.ActionListener() {
@@ -216,24 +217,23 @@ public class AvatarTestPanel extends javax.swing.JPanel {
             }
         });
 
-        runActionB.setText("Run");
+        runActionB.setText(bundle.getString("Run")); // NOI18N
         runActionB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 runActionBActionPerformed(evt);
             }
         });
 
-        jLabel3.setText("Render Quality:");
+        jLabel3.setText(bundle.getString("Render_Quality:")); // NOI18N
 
         renderQuality.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "High", "Medium", "Low" }));
-        renderQuality.setEnabled(false);
         renderQuality.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renderQualityActionPerformed(evt);
             }
         });
 
-        winkB.setText("Wink");
+        winkB.setText(bundle.getString("Wink")); // NOI18N
         winkB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 winkBActionPerformed(evt);
@@ -242,19 +242,19 @@ public class AvatarTestPanel extends javax.swing.JPanel {
 
         eyeSelectionCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Left Eye", "Right Eye" }));
 
-        jLabel4.setText("Location:");
+        jLabel4.setText(bundle.getString("Location:")); // NOI18N
 
         locationTF.setEditable(false);
 
-        homeB.setText("Go home");
-        homeB.setToolTipText("Go to 0,0,0");
+        homeB.setText(bundle.getString("Go_home")); // NOI18N
+        homeB.setToolTipText(bundle.getString("Go_to_0,0,0")); // NOI18N
         homeB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 homeBActionPerformed(evt);
             }
         });
 
-        closeButton.setText("Close");
+        closeButton.setText(bundle.getString("Close")); // NOI18N
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 closeButtonActionPerformed(evt);
@@ -381,13 +381,12 @@ public class AvatarTestPanel extends javax.swing.JPanel {
                 ClientContext.getInputManager().postEvent(new AvatarRendererChangeRequestEvent(AvatarQuality.Low));
                 break;
             default :
-                Logger.getAnonymousLogger().severe("Unknown render quality");
+                Logger.getAnonymousLogger().severe("Unknown_render_quality");
                 return;
         }
 }//GEN-LAST:event_renderQualityActionPerformed
 
     private void winkBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_winkBActionPerformed
-        // TODO add your handling code here:
         CharacterEyes eyes = avatarCharacter.getEyes();
 
         eyes.wink((eyeSelectionCB.getSelectedIndex()==1));
@@ -399,11 +398,7 @@ public class AvatarTestPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_actionCBActionPerformed
 
     private void homeBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_homeBActionPerformed
-        GameContext context = avatarCharacter.getContext();
-        CharacterSteeringHelm helm = avatarCharacter.getContext().getSteering();
-        helm.addTaskToTop(new GoTo(new Vector3f(0,0,0), context));
-        helm.setEnable(true);
-
+        avatarCharacter.goTo(new Vector3f(0,0,0), new Vector3f(0,0,-1));
 }//GEN-LAST:event_homeBActionPerformed
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed

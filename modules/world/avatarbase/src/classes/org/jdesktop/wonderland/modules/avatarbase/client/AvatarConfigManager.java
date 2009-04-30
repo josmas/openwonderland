@@ -86,7 +86,6 @@ public class AvatarConfigManager {
     private static final Logger logger = Logger.getLogger(AvatarConfigManager.class.getName());
 
     AvatarConfigManager() {
-        logger.setLevel(Level.ALL);
         localContent = ContentRepositoryRegistry.getInstance().getLocalRepository();
         try {
             localAvatarsDir = (ContentCollection) localContent.getChild("avatars");
@@ -206,7 +205,9 @@ public class AvatarConfigManager {
                 AvatarConfigComponent configComponent = newViewCell.getComponent(AvatarConfigComponent.class);
                 URL selectedURL = AvatarConfigManager.getAvatarConfigManager().getDefaultAvatarServerURL(newViewCell.getCellCache().getSession().getSessionManager());
                 logger.info("APPLY "+selectedURL);
+                System.err.println("SETVIEWCEL "+selectedURL);
                 if (selectedURL!=null) {
+                    // TODO check if configComponent is live (ie has an active channel component)
                     configComponent.requestConfigChange(selectedURL);
                 }
             }
@@ -277,7 +278,6 @@ public class AvatarConfigManager {
 
         try {
             ServerSyncThread t = new ServerSyncThread(session);
-            avatarConfigServers.put(session, t);
             t.scheduleSync();
         } catch (ContentRepositoryException ex) {
             Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.SEVERE, null, ex);
@@ -473,6 +473,7 @@ public class AvatarConfigManager {
             super(ThreadManager.getThreadGroup(), "AvatarServerSyncThread");
             logger.info("SERVER SYNC "+this);
             repository = ContentRepositoryRegistry.getInstance().getRepository(session);
+            System.err.println("REPOSITORY "+repository);
             ContentCollection userDir = repository.getUserRoot(true);
             avatarsDir = (ContentCollection) userDir.getChild("avatars");
             if (avatarsDir == null) {
@@ -528,7 +529,7 @@ public class AvatarConfigManager {
         }
 
         public void scheduleUpload(AvatarConfigFile upload) {
-            System.err.println("Scheduling update "+upload);
+//            System.err.println("Scheduling update "+upload);
             jobQueue.add(Job.newUploadJob(upload));
         }
 
@@ -550,11 +551,13 @@ public class AvatarConfigManager {
             
             AvatarConfigFile r = serverAvatars.get(job.filename);
             if (r==null) {
-                System.err.println(this);
-                Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.SEVERE, "No record of avatar on server "+job.filename);
+//                System.err.println(this);
+                logger.log(Level.SEVERE, "No record of avatar on server "+job.filename);
                 job.returnURL(null);
             }
             try {
+                System.err.println("GOT AVATAR CONFIG FILE "+r);
+                System.err.println(r.avatarName+"  "+r.resource.getURL());
                 job.returnURL(r.resource.getURL());
             } catch (ContentRepositoryException ex) {
                 Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.WARNING, "Unable to find avatar "+job.filename, ex);
@@ -570,12 +573,16 @@ public class AvatarConfigManager {
                 List<ContentNode> avatarList = avatarsDir.getChildren();
                 for(ContentNode a : avatarList) {
                     if (a instanceof ContentResource) {
+                        System.err.println("RES "+((ContentResource)a).getURL());
                         AvatarConfigFile serverAvatar =  new AvatarConfigFile((ContentResource)a);
                         AvatarConfigFile previous = serverAvatars.put(serverAvatar.avatarName, serverAvatar);
                         if (previous!=null && previous.version>serverAvatar.version) {
+                            System.err.println("put1 "+previous.resource.getURL());
                             serverAvatars.put(previous.avatarName, previous);
-                            System.err.println("REMOVING OLD AVATAR CONFIG "+serverAvatar.getFilename());
+                            logger.fine("REMOVING OLD AVATAR CONFIG "+serverAvatar.getFilename());
                             avatarsDir.removeChild(serverAvatar.getFilename());
+                        } else {
+                            System.err.println("Dropped "+serverAvatar.resource.getURL());
                         }
                     }
                 }
@@ -596,6 +603,8 @@ public class AvatarConfigManager {
                             tmpServerAvatars.remove(a.avatarName);
                         } else if (serverVersion.version == a.version) {
                             tmpServerAvatars.remove(a.avatarName);
+                            System.err.println("put2 "+serverVersion.resource.getURL());
+                            serverAvatars.put(serverVersion.avatarName, serverVersion);
                         }
                     }
                 }
@@ -611,7 +620,6 @@ public class AvatarConfigManager {
                 for(AvatarConfigFile a : uploadList) {
                     try {
                         uploadFileImpl(a);
-                        serverAvatars.put(a.avatarName, a);
                     } catch (IOException ex) {
                         Logger.getLogger(AvatarConfigManager.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -655,7 +663,7 @@ public class AvatarConfigManager {
             ContentResource serverFile = (ContentResource)avatarsDir.createChild(upload.resource.getName(), Type.RESOURCE);
             serverFile.put(new BufferedInputStream(upload.resource.getURL().openStream()));
             upload.resource = serverFile;
-            System.err.println("UPLOADED "+upload);
+            System.err.println("UPLOADED "+upload +"  TO "+serverFile.getURL());
             serverAvatars.put(upload.avatarName, upload);
         }
 
@@ -701,7 +709,7 @@ public class AvatarConfigManager {
         }
 
         public void returnURL(URL url) {
-            System.err.println("JOB got "+url);
+//            System.err.println("JOB got "+url);
             this.url = url;
             jobDone.release();
         }

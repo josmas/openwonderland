@@ -72,7 +72,9 @@
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Lucida Grande" size="24" style="1"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Loading Avatars, please wait....."/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle_en_US.properties" key="Loading_Avatars,_please_wait....." replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
       </SubComponents>
