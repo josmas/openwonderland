@@ -80,7 +80,7 @@ public class BrowserPlugin extends BaseClientPlugin {
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        newBrowserItem = new JMenuItem("Content Browser (NEW)...");
+        newBrowserItem = new JMenuItem("Content Browser (New)");
         newBrowserItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ContentBrowserJDialog contentBrowserFrame;
