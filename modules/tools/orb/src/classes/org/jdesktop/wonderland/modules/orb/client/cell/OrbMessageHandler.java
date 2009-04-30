@@ -50,8 +50,9 @@ import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangePositionMess
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTag.EventType;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -100,7 +101,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
     private String username;
 
-    private NameTag nameTag;
+    private NameTagNode nameTag;
 
     private PresenceManager pm;
 
@@ -158,7 +159,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	pm.addSession(presenceInfo);
 
-	nameTag = new NameTag(orbCell, username, (float) .17);
+    NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
+    orbCell.addComponent(comp);
+	nameTag = comp.getNameTagNode();
 
 	if (orbCell.getPlayerWithVpCallID().length() > 0) {
 	    PresenceInfo info = pm.getPresenceInfo(orbCell.getPlayerWithVpCallID());
