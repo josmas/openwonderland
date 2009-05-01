@@ -227,6 +227,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void setAudioQuality(AudioQuality audioQuality) {
+	System.out.println("setAudioQuality to " + audioQuality);
         SoftphoneControlImpl.getInstance().setAudioQuality(audioQuality);
         reconnectSoftphone();
     }
