@@ -154,6 +154,10 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	username = orbCell.getUsername();
 
+	if (username == null) {
+	    username = "No user name!";
+	}
+
 	WonderlandIdentity userID = 
 	    new WonderlandIdentity(username, username, null);
 
