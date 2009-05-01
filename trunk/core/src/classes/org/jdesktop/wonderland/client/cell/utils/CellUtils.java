@@ -70,21 +70,24 @@ public class CellUtils {
         Vector3f cameraPosition = viewCell.getWorldTransform().getTranslation(null);
         Vector3f cameraLookDirection = manager.getCameraLookDirection(null);
 
+        // For now, the origin of the Cell is right on top of the avatar
+        Vector3f origin = cameraPosition;
+        
         // HACK ALERT: If we find a "sizing-hint" field in the Cell server state
         // meta data, then we use that to place the Cell 1 unit away from the
         // camera.
-        Map<String, String> metadata = state.getMetaData();
-        String sizingHint = metadata.get("sizing-hint");
-        if (sizingHint != null) {
-            float sizing = Float.parseFloat(sizingHint);
-            distance = 1.0f + sizing;
-        }
+//        Map<String, String> metadata = state.getMetaData();
+//        String sizingHint = metadata.get("sizing-hint");
+//        if (sizingHint != null) {
+//            float sizing = Float.parseFloat(sizingHint);
+//            distance = 1.0f + sizing;
+//        }
 
         // Compute the new vector away from the camera position to be a certain
         // number of scalar units away
-        float lengthSquared = cameraLookDirection.lengthSquared();
-        float factor = (distance * distance) / lengthSquared;
-        Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
+//        float lengthSquared = cameraLookDirection.lengthSquared();
+//        float factor = (distance * distance) / lengthSquared;
+//        Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
 
 //        System.out.println("CAMERA POSITION " + cameraPosition);
 //        System.out.println("CAMERA LOOK AT " + cameraLookDirection);
