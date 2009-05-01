@@ -222,7 +222,6 @@ private void audioQualityMenuActionPerformed(java.awt.event.ActionEvent evt) {//
         for (AudioQuality quality : AudioQuality.values()) {
             final AudioQuality fq = quality;
             JRadioButtonMenuItem mitem = new JRadioButtonMenuItem(new AbstractAction(quality.toString()) {
-
                 public void actionPerformed(ActionEvent arg0) {
                     setAudioQuality(fq);
                 }
@@ -242,7 +241,9 @@ private void audioQualityMenuActionPerformed(java.awt.event.ActionEvent evt) {//
     }
 
     private void setAudioQuality(AudioQuality quality) {
-        audioMenuListener.setAudioQuality(quality);
+        if (audioMenuListener != null) {
+            audioMenuListener.setAudioQuality(quality);
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

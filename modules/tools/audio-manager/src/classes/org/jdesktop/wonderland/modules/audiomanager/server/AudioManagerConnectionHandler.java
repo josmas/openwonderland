@@ -123,6 +123,8 @@ public class AudioManagerConnectionHandler
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	if (message instanceof GetVoiceBridgeMessage) {
+	    System.out.println("Got GetVoiceBridgeMessage");
+
 	    BridgeInfo bridgeInfo;
 
 	    try {
@@ -138,6 +140,8 @@ public class AudioManagerConnectionHandler
 		logger.warning("unable to get voice bridge:  " + e.getMessage());
 		return;
 	    }
+
+	    System.out.println("Sending " + bridgeInfo.toString());
 
 	    sender.send(clientID, new GetVoiceBridgeResponseMessage(bridgeInfo.toString()));
 	    return;
@@ -368,7 +372,7 @@ public class AudioManagerConnectionHandler
 	switch (code) {
 	case CallStatus.ESTABLISHED:
 	    if (player == null) {
-		logger.warning("Couldn't find player for " + call);
+		logger.warning("Couldn't find player for " + callId);
 		return;
 	    }
 
@@ -385,10 +389,28 @@ public class AudioManagerConnectionHandler
 	    break;
 
         case CallStatus.STARTEDSPEAKING:
+	    if (player == null) {
+		logger.warning("Couldn't find player for " + callId);
+		return;
+	    }
+
+	    if (inSecretChat(player)) {
+		return;
+	    }
+
 	    sender.send(new SpeakingMessage(callId, true));
             break;
 
         case CallStatus.STOPPEDSPEAKING:
+	    if (player == null) {
+		logger.warning("Couldn't find player for " + callId);
+		return;
+	    }
+
+	    if (inSecretChat(player)) {
+		return;
+	    }
+
 	    sender.send(new SpeakingMessage(callId, false));
             break;
 
@@ -447,6 +469,20 @@ public class AudioManagerConnectionHandler
 
             break;
         }
+    }
+
+    private boolean inSecretChat(Player player) {
+	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+
+	for (AudioGroup audioGroup : audioGroups) {
+	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
+
+	    if (info.chatType == AudioGroupPlayerInfo.ChatType.SECRET) {
+	        return true;
+	    }
+	}
+
+	return false;
     }
 
 }

@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
+import java.util.ArrayList;
+
 import java.util.logging.Logger;
 
 import com.sun.sgs.app.AppContext;
@@ -45,6 +47,9 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
+import com.sun.mpk20.voicelib.app.AudioGroup;
+import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
+import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo.ChatType;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
@@ -217,13 +222,42 @@ public class AudioParticipantComponentMO extends CellComponentMO
             break;
 
         case CallStatus.STARTEDSPEAKING:
+	    if (inSecretChat(callId)) {
+		return;
+	    }
+
 	    sender.send(new AudioParticipantSpeakingMessage(cellRef.get().getCellID(), true));
             break;
 
         case CallStatus.STOPPEDSPEAKING:
+	    if (inSecretChat(callId)) {
+		return;
+	    }
+
 	    sender.send(new AudioParticipantSpeakingMessage(cellRef.get().getCellID(), false));
             break;
 	}
+    }
+
+    private boolean inSecretChat(String callId) {
+	Player player = AppContext.getManager(VoiceManager.class).getPlayer(callId);
+
+        if (player == null) {
+            logger.warning("Couldn't find player for " + callId);
+            return true;
+        }
+
+        ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+
+        for (AudioGroup audioGroup : audioGroups) {
+            AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
+
+            if (info.chatType == ChatType.SECRET) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     static class MyTransformChangeListener implements TransformChangeListenerSrv {
