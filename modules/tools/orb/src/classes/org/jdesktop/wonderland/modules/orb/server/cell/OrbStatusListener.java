@@ -58,7 +58,11 @@ public class OrbStatusListener implements ManagedCallStatusListener,
     private CellID orbCellID;
     private CellID hostCellID;
 
+    private String callID;
+
     public OrbStatusListener(OrbCellMO orbCellMO, String callID) {
+	this.callID = callID;
+
 	orbCellID = orbCellMO.getCellID();
 
 	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, callID);
@@ -143,7 +147,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 	    break;
 
         case CallStatus.ENDED: 
-	    if (callID.equals(CallID.getCallID(orbCellID))) {
+	    if (this.callID.equals(callID)) {
 	        endCall(callID);
 	    } else {
                 sender.send(new OrbAttachMessage(orbCellID, hostCellID, false));

@@ -147,7 +147,7 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	    call = vm.getCall(callID);
 
 	    if (call == null) {
-	        logger.warning("Can't find call for " + callID);
+	        logger.warning("Can't find call for " + callID + " " + message);
 	        return;
 	    }
 
