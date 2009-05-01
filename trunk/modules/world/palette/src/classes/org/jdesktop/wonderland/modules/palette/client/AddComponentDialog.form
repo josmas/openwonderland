@@ -73,7 +73,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Select Capabilities to Add from the List Below: (NOT YET FUNCTIONAL)"/>
+        <Property name="text" type="java.lang.String" value="Select Capabilities to Add from the List Below:"/>
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="capabilityScrollPane">

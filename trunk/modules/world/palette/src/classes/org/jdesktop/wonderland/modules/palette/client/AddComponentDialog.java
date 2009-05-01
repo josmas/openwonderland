@@ -148,7 +148,7 @@ public class AddComponentDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel1.setText("Select Capabilities to Add from the List Below: (NOT YET FUNCTIONAL)");
+        jLabel1.setText("Select Capabilities to Add from the List Below:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
