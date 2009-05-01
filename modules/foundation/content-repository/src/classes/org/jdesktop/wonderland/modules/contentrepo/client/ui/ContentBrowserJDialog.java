@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -698,44 +699,53 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
      */
     class ContentListModel extends AbstractListModel {
         private ContentCollection dir;
+        private ContentCollection parent;
+        private List<ContentNode> children;
         private boolean hasParent;
+        private int size = 0;
 
         public ContentListModel(ContentCollection dir) {
             this.dir = dir;
 
             hasParent = (dir.getParent() != null);
-        }
-        
-        public int getSize() {
             try {
-                int size = dir.getChildren().size();
-
-                if (hasParent) {
-                    size += 1;
-                }
-
-                return size;
+                size = dir.getChildren().size();
+                size = (hasParent == true) ? size + 1 : size;
             } catch (ContentRepositoryException cce) {
                 logger.log(Level.WARNING, "Error getting size of " +
                            dir.getName(), cce);
-                return 0;
+                size = 0;
             }
+            parent = dir.getParent();
+
+            try {
+                children = dir.getChildren();
+            } catch (ContentRepositoryException cce) {
+                logger.log(Level.WARNING, "Error reading child from " +
+                           dir.getName(), cce);
+                children = null;
+            }
+        }
+        
+        public int getSize() {
+            return size;
         }
 
         public Object getElementAt(int index) {
+            // See if there is a ".." parent node. Adjust the index if so, or
+            // return the parent depending upon the index.
             if (index == 0 && hasParent) {
-                return new ParentHolder(dir.getParent());
+                return new ParentHolder(parent);
             } else if (hasParent) {
                 index -= 1;
             }
 
-            try {
-                return dir.getChildren().get(index);
-            } catch (ContentRepositoryException cce) {
-                logger.log(Level.WARNING, "Error reading child from " +
-                           dir.getName(), cce);
-                return "Error: " + cce.getMessage();
+            // If there are no children, then just return null. Otherwise,
+            // return the child.
+            if (children == null) {
+                return null;
             }
+            return children.get(index);
         }
     }
 
