@@ -215,12 +215,9 @@ public class LoginManager {
      * to a session with no active sessions.  When a session is removed from
      * the cache, all associated plugins are cleaned up.
      */
-    static class ManagerCache implements Runnable {
+    static class ManagerCache {
         private final Map<String, Reference<ServerSessionManager>> refMap =
                 new HashMap<String, Reference<ServerSessionManager>>();
-        private final ReferenceQueue<ServerSessionManager> refQueue =
-                new ReferenceQueue<ServerSessionManager>();
-        private Thread queueCleanupThread;
 
         public synchronized ServerSessionManager get(String key) {
             Reference<ServerSessionManager> ref = refMap.get(key);
@@ -246,14 +243,8 @@ public class LoginManager {
         public synchronized ServerSessionManager put(String key,
                                                      ServerSessionManager value)
         {
-            // see if we need to start the cleanup thread
-            if (refMap.size() == 0) {
-                queueCleanupThread = new Thread(this);
-                queueCleanupThread.start();
-            }
-
             // put the reference
-            CacheReference ref = new CacheReference(value, refQueue);
+            CacheReference ref = new CacheReference(value);
             Reference<ServerSessionManager> old = refMap.put(key, ref);
             if (old == null) {
                 return null;
@@ -268,22 +259,7 @@ public class LoginManager {
                 return null;
             }
 
-            // if the map is now entry, stop the queue cleanup thread
-            if (refMap.size() == 0 && queueCleanupThread != null) {
-                queueCleanupThread.interrupt();
-                queueCleanupThread = null;
-            }
-
             return ref.get();
-        }
-
-        public void run() {
-            try {
-                Reference<? extends ServerSessionManager> ref = refQueue.remove();
-                ref.get().disconnect();
-            } catch (InterruptedException ie) {
-                // the thread has been stopped because the map is empty
-            }
         }
 
         class CacheReference extends SoftReference<ServerSessionManager>
@@ -293,10 +269,9 @@ public class LoginManager {
             // associated with the given session manager
             private ServerSessionManager strongRef;
 
-            public CacheReference(ServerSessionManager manager,
-                                  ReferenceQueue<? super ServerSessionManager> queue)
+            public CacheReference(ServerSessionManager manager)
             {
-                super (manager, queue);
+                super (manager);
 
                 manager.addLifecycleListener(this);
                 if (manager.getAllSessions().size() > 0) {

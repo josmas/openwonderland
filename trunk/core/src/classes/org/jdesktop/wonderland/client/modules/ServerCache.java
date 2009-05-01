@@ -155,6 +155,10 @@ public class ServerCache {
             manager.addServerStatusListener(this);
         }
 
+        public void connecting(ServerSessionManager manager, String message) {
+            // ignore
+        }
+
         public void connected(ServerSessionManager sessionManager) {
             // ignore
         }

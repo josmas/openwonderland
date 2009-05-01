@@ -26,7 +26,9 @@ import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,7 +58,8 @@ public class AssetManager {
     private Logger logger = Logger.getLogger(AssetManager.class.getName());
     private AssetCache assetCache = null;
     private AssetFactory assetFactory = null;
-    private AssetProgressListener progressListener = null;
+    private final Set<AssetProgressListener> progressListeners =
+            new CopyOnWriteArraySet<AssetProgressListener>();
     
     // A map that maintains protocols and the asset repository factories that
     // handle them.
@@ -119,12 +122,21 @@ public class AssetManager {
     }
     
     /**
-     * Sets the sole progress listener for asset loading.
+     * Add a progress listener for asset loading.
      *
      * @param listener The asset progress listener
      */
-    public void setProgressListener(AssetProgressListener listener) {
-        this.progressListener = listener;
+    public void addProgressListener(AssetProgressListener listener) {
+        progressListeners.add(listener);
+    }
+
+    /**
+     * Remove a progress listener for asset loading.
+     *
+     * @param listener the asset progress listener to remove
+     */
+    public void removeProgressListener(AssetProgressListener listener) {
+        progressListeners.remove(listener);
     }
 
     /**
@@ -335,10 +347,8 @@ public class AssetManager {
             in.close();
             out.close();
 
-            // Tell the listener that the asset has been successfully downloaded
-            if (progressListener != null) {
-                progressListener.downloadCompleted(asset);
-            }
+            // Tell the listeners that the asset has been successfully downloaded
+            fireDownloadCompleted(asset);
 
             // We tell the asset stream that we are done, and then fetch the
             // checksum of the asset and put it in the asset. We need to update
@@ -355,14 +365,43 @@ public class AssetManager {
             logger.fine("Downloaded asset to file " + file.getAbsolutePath() +
                     " for asset " + assetID.getAssetURI());
         } catch (IOException excp) {
-            // Tell the listener that the asset has failed
-            if (progressListener != null) {
-                progressListener.downloadFailed(asset);
-            }
+            // Tell the listeners that the asset has failed
+            fireDownloadFailed(asset);
             throw excp;
         }
     }
 
+    /**
+     * Notify listeners of download progress
+     * @param asset the asset that has progress
+     * @param readBytes the bytes read
+     * @param percent the percent of the total
+     */
+    protected void fireDownloadProgress(Asset asset, int readBytes, int percent) {
+        for (AssetProgressListener listener : progressListeners) {
+            listener.downloadProgress(asset, readBytes, percent);
+        }
+    }
+
+    /**
+     * Notify listeners that a download has completed
+     * @param asset the asset that completed
+     */
+    protected void fireDownloadCompleted(Asset asset) {
+        for (AssetProgressListener listener : progressListeners) {
+            listener.downloadCompleted(asset);
+        }
+    }
+
+    /**
+     * Notify listeners that a download has completed
+     * @param asset the asset that completed
+     */
+    protected void fireDownloadFailed(Asset asset) {
+        for (AssetProgressListener listener : progressListeners) {
+            listener.downloadCompleted(asset);
+        }
+    }
     /**
      * Make the directory in which this file will go.
      *
@@ -607,11 +646,8 @@ public class AssetManager {
         }
 
         public void downloadProgress(int readBytes, int percentage) {
-            // If the AssetProgressListener attached to the AssetManager is
-            // not null, then signal it
-            if (progressListener != null) {
-                progressListener.downloadProgress(asset, readBytes, percentage);
-            }
+            // notify the listeners of progress
+            fireDownloadProgress(asset, readBytes, percentage);
         }
     }
 

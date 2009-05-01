@@ -51,6 +51,9 @@ public class AssetMeterJFrame extends javax.swing.JFrame {
     /* The default list model */
     private AssetIndicatorListModel listModel = new AssetIndicatorListModel();
 
+    /* The progress listener */
+    private MeterProgressListener progressListener;
+
     /** Creates new form AssetMeterJFrame */
     public AssetMeterJFrame() {
         initComponents();
@@ -61,8 +64,17 @@ public class AssetMeterJFrame extends javax.swing.JFrame {
         loadingAssetList.setCellRenderer(new AssetIndicatorCellRenderer());
         
         // Add a listener to the asset manager
+        progressListener = new MeterProgressListener();
         AssetManager manager = AssetManager.getAssetManager();
-        manager.setProgressListener(new MeterProgressListener());
+        manager.addProgressListener(progressListener);
+    }
+
+    /**
+     * Stop listener for events
+     */
+    public void deactivate() {
+        AssetManager manager = AssetManager.getAssetManager();
+        manager.removeProgressListener(progressListener);
     }
 
     /** This method is called from within the constructor to
