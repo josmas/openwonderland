@@ -36,19 +36,47 @@ package org.jdesktop.wonderland.client.jme.login;
 
 import java.awt.BorderLayout;
 import java.awt.Frame;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.assetmgr.Asset;
+import org.jdesktop.wonderland.client.assetmgr.AssetManager;
+import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetProgressListener;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.LoginControl;
+import org.jdesktop.wonderland.client.login.ServerStatusListener;
 
 /**
  *
  * @author jkaplan
  */
-public class WonderlandLoginDialog extends javax.swing.JDialog {
-
+public class WonderlandLoginDialog extends javax.swing.JDialog
+    implements AssetProgressListener, ServerStatusListener
+{
     private LoginPanel login;
+
+    /** the set of modules we are downloading */
+    private Map<Integer, String> statusMessages =
+            new LinkedHashMap<Integer, String>();
+    private int nextDownloadID;
+
+    /** a map from asset ids to status message ids for that asset */
+    private Map<Asset, Integer> assetIDs =
+            new HashMap<Asset, Integer>();
+
+    /** the status message id of the server session manager status message */
+    private final int sessionStatusID;
+
 
     /** Creates new form NoAuthLoginDialog */
     public WonderlandLoginDialog(Frame parent, boolean modal,
-            LoginPanel login) {
+                                 LoginPanel login)
+    {
         super(parent, modal);
 
         /* DISABLE for cutoff popup fix
@@ -62,12 +90,103 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         this.login = login;
 
         login.addValidityListener(new ValidityListener());
+        sessionStatusID = nextMessageID();
 
         // create our graphics
         initComponents();
 
+        // set the status text to empty
+        statusLabel.setText("  ");
+
+        // add a listener that will be notified of any downloads in progress
+        // assuming those are relevant to the current login
+        AssetManager.getAssetManager().addProgressListener(this);
+
+        // add a listener that will be notified of server status messages
+        login.getLoginControl().getSessionManager().addServerStatusListener(this);
+
         // add the child panel
         loginSpecificPanel.add(login.getPanel(), BorderLayout.CENTER);
+    }
+
+    @Override
+    public void dispose() {
+        // unregister  listeners
+        AssetManager.getAssetManager().removeProgressListener(this);
+        login.getLoginControl().getSessionManager().removeServerStatusListener(this);
+        super.dispose();
+    }
+
+    public void downloadProgress(final Asset asset,
+                                 final int readBytes,
+                                 final int percentage)
+    {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // remove any session status messages, since they will block
+                // the download message from being displayed
+                statusMessages.remove(sessionStatusID);
+
+                // find the message id for this asset
+                Integer messageID = assetIDs.get(asset);
+                if (messageID == null) {
+                    messageID = nextMessageID();
+                    assetIDs.put(asset, messageID);
+                }
+                
+                // format the asset loading message
+                String name = asset.getAssetURI().getURI();
+                if (name.lastIndexOf('/') != -1) {
+                    name = name.substring(name.lastIndexOf('/') + 1);
+                }
+
+                // set the status text
+                String message = "Downloading module: " + name + " (" +
+                                 percentage + "%)";
+                statusMessages.put(messageID, message);
+                updateStatus();
+            }
+        });
+    }
+
+    public void downloadFailed(final Asset asset) {
+        downloadCompleted(asset);
+    }
+
+    public void downloadCompleted(final Asset asset) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Integer messageID = assetIDs.remove(asset);
+                if (messageID != null) {
+                    statusMessages.remove(messageID);
+                }
+                updateStatus();
+            }
+        });
+    }
+
+    public void connecting(ServerSessionManager manager, final String message) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                statusMessages.put(sessionStatusID, message);
+                updateStatus();
+            }
+        });
+    }
+
+    public void connected(ServerSessionManager sessionManager) {}
+    public void disconnected(ServerSessionManager sessionManager) {}
+
+    private void updateStatus() {
+        if (!statusMessages.isEmpty()) {
+            // get the first message in status message list
+            String message = statusMessages.values().iterator().next();
+            statusLabel.setText(message);
+        }
+    }
+
+    private synchronized int nextMessageID() {
+        return nextDownloadID++;
     }
 
     /** This method is called from within the constructor to
@@ -99,6 +218,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
         loginButton = new javax.swing.JButton();
         getRootPane().setDefaultButton(loginButton);
+        statusLabel = new javax.swing.JLabel();
 
         userPasswordPanel.setOpaque(false);
 
@@ -210,7 +330,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
             .add(gradientPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(worldNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 372, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(90, Short.MAX_VALUE))
+                .addContainerGap(104, Short.MAX_VALUE))
         );
         gradientPanel1Layout.setVerticalGroup(
             gradientPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -228,7 +348,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         loginSpecificPanel.setLayout(new java.awt.BorderLayout());
         gradientPanel2.add(loginSpecificPanel, java.awt.BorderLayout.CENTER);
 
-        tagLineLabel.setFont(new java.awt.Font("Arial", 1, 18));
+        tagLineLabel.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         tagLineLabel.setForeground(new java.awt.Color(255, 255, 255));
         tagLineLabel.setText("Log in");
         tagLineLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
@@ -238,10 +358,10 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         gradientPanel2.add(tagLineLabel, java.awt.BorderLayout.NORTH);
 
         buttonPanel.setOpaque(false);
-        buttonPanel.setPreferredSize(new java.awt.Dimension(453, 50));
+        buttonPanel.setPreferredSize(new java.awt.Dimension(453, 65));
 
         cancelButton.setBackground(new java.awt.Color(255, 255, 255));
-        cancelButton.setFont(new java.awt.Font("Dialog", 1, 13));
+        cancelButton.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
         cancelButton.setText("Cancel");
         cancelButton.setAlignmentX(0.5F);
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -251,7 +371,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         });
 
         loginButton.setBackground(new java.awt.Color(255, 255, 255));
-        loginButton.setFont(new java.awt.Font("Dialog", 1, 13));
+        loginButton.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
         loginButton.setText("Login");
         loginButton.setAlignmentX(0.5F);
         loginButton.addActionListener(new java.awt.event.ActionListener() {
@@ -260,25 +380,35 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
             }
         });
 
+        statusLabel.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        statusLabel.setForeground(new java.awt.Color(45, 45, 45));
+        statusLabel.setText("Status:");
+
         org.jdesktop.layout.GroupLayout buttonPanelLayout = new org.jdesktop.layout.GroupLayout(buttonPanel);
         buttonPanel.setLayout(buttonPanelLayout);
         buttonPanelLayout.setHorizontalGroup(
             buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
-                .addContainerGap(159, Short.MAX_VALUE)
+                .addContainerGap(147, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(loginButton)
                 .add(152, 152, 152))
+            .add(buttonPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(statusLabel)
+                .addContainerGap(435, Short.MAX_VALUE))
         );
         buttonPanelLayout.setVerticalGroup(
             buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(buttonPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cancelButton)
-                    .add(loginButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(statusLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 10, Short.MAX_VALUE)
+                .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(loginButton)
+                    .add(cancelButton))
+                .addContainerGap())
         );
 
         gradientPanel2.add(buttonPanel, java.awt.BorderLayout.PAGE_END);
@@ -293,9 +423,9 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(gradientPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(gradientPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(4, 4, 4)
-                .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE))
+                .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE))
         );
 
         pack();
@@ -307,12 +437,26 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
 }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void loginButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
-        String res = login.doLogin();
-        if (res == null) {
-            // success
-            dispose();
-        }
+        loginButton.setEnabled(false);
+
+        statusLabel.setText("Connecting...");
+
+        // perform the actual login in a separate thread, so we don't
+        // block the AWT event thread
+        new Thread(new Runnable() {
+            public void run() {
+                String res = login.doLogin();
+                if (res == null) {
+                    // success
+                    dispose();
+                } else {
+                    loginButton.setEnabled(true);
+                }
+            }
+        }, "Login thread").start();
 }//GEN-LAST:event_loginButtonActionPerformed
+
+
 
     public class ValidityListener {
         public void setValidity(boolean isValid) {
@@ -323,6 +467,8 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
     public interface LoginPanel {
 
         public JPanel getPanel();
+
+        public LoginControl getLoginControl();
 
         public void setUsername(String username);
 
@@ -350,6 +496,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton loginButton;
     private javax.swing.JPanel loginSpecificPanel;
+    private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel tagLineLabel;
     private javax.swing.JPasswordField upPasswordField;
     private javax.swing.JLabel upPasswordLabel;

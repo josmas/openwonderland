@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 @Plugin
 public class AssetMeterClientPlugin extends BaseClientPlugin {
 
-    private JFrame assetMeterJFrame;
+    private AssetMeterJFrame assetMeterJFrame;
     private final JMenuItem item;
 
     public AssetMeterClientPlugin() {
@@ -78,6 +78,7 @@ public class AssetMeterClientPlugin extends BaseClientPlugin {
         // remove items
         JmeClientMain.getFrame().removeFromWindowMenu(item);
         assetMeterJFrame.setVisible(false);
+        assetMeterJFrame.deactivate();
         assetMeterJFrame = null;
     }
 }

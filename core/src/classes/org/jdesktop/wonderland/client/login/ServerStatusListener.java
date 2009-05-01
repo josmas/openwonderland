@@ -24,6 +24,12 @@ package org.jdesktop.wonderland.client.login;
  */
 public interface ServerStatusListener {
     /**
+     * Notification that a connection is in progress with the given
+     * status.
+     */
+    public void connecting(ServerSessionManager manager, String message);
+
+    /**
      * Notification the the server session manager has connected
      * @param sessionManager the session manager that connected
      */

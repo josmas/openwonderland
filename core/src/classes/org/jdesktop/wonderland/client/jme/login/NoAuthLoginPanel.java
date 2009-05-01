@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.client.jme.login;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -35,6 +34,7 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.LoginPanel;
 import org.jdesktop.wonderland.client.jme.login.WonderlandLoginDialog.ValidityListener;
+import org.jdesktop.wonderland.client.login.ServerSessionManager.LoginControl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
 
 /**
@@ -74,6 +74,10 @@ public class NoAuthLoginPanel extends JPanel implements LoginPanel {
 
     public JPanel getPanel() {
         return this;
+    }
+
+    public LoginControl getLoginControl() {
+        return control;
     }
 
     public void setUsername(String username) {

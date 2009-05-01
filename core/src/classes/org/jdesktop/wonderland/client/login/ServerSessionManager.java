@@ -602,11 +602,24 @@ public class ServerSessionManager {
     }
 
     /**
+     * Notify any registered status listeners that the server is in the process
+     * of connecting
+     * @param message the status message to send
+     */
+    private void fireConnecting(String message) {
+        for (ServerStatusListener listener : statusListeners) {
+            listener.connecting(this, message);
+        }
+    }
+
+    /**
      * Set up the classloader with module jar URLs for this server
      * @param serverURL the URL of the server to connect to
      * @return the classloader setup with this server's URLs
      */
     private ScannedClassLoader setupClassLoader(String serverURL) {
+        fireConnecting("Creating classloader");
+
         // TODO: use the serverURL
         ModulePluginList list = ModuleUtils.fetchPluginJars(serverURL);
         List<URL> urls = new ArrayList<URL>();
@@ -648,6 +661,9 @@ public class ServerSessionManager {
 
         while (it.hasNext()) {
             ClientPlugin plugin = it.next();
+
+            fireConnecting("Initialize plugin: " +
+                           plugin.getClass().getSimpleName());
 
             // check with the filter to see if we should load this plugin
             if (LoginManager.getPluginFilter().shouldInitialize(this, plugin)) {
@@ -697,6 +713,15 @@ public class ServerSessionManager {
          */
         public String getServerURL() {
             return ServerSessionManager.this.getServerURL();
+        }
+
+        /**
+         * Get the server session manager associated with this login control
+         * object.
+         * @return the server session manager
+         */
+        public ServerSessionManager getSessionManager() {
+            return ServerSessionManager.this;
         }
 
         /**
@@ -900,6 +925,7 @@ public class ServerSessionManager {
         public void authenticate(String username, String fullname)
             throws LoginFailureException
         {
+            fireConnecting("Sending authentication details...");
             try {
                 AuthenticationService authService =
                         AuthenticationManager.login(getAuthInfo(), username,
@@ -931,6 +957,7 @@ public class ServerSessionManager {
         public void authenticate(String username, String password)
             throws LoginFailureException
         {
+            fireConnecting("Sending authentication details...");
             try {
                 AuthenticationService authService =
                         AuthenticationManager.login(getAuthInfo(), username,
