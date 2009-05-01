@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Set;
@@ -33,14 +34,14 @@ import org.jdesktop.wonderland.common.login.CredentialManager;
  */
 public class GroupUtils {
     private static final String GROUPS_PATH =
-            "/security-groups/security-groups/resources/groups";
+            "security-groups/security-groups/resources/";
     
     public static GroupDTO getGroup(String baseUrl,
                                     String groupName,
                                     CredentialManager cm)
         throws IOException, JAXBException
     {
-        URL u = new URL(baseUrl + GROUPS_PATH + "/" + groupName);
+        URL u = buildGroupURL(baseUrl, groupName);
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
         uc.setRequestProperty("Accept", "application/xml");
         cm.secureURLConnection(uc);
@@ -57,12 +58,12 @@ public class GroupUtils {
                                           boolean members, CredentialManager cm)
         throws IOException, JAXBException
     {
-        String urlStr = baseUrl + GROUPS_PATH + "?members=" + members;
+        String urlStr = "?members=" + members;
         if (filter != null) {
             urlStr += "&pattern=" + URLEncoder.encode(filter, "UTF-8");
         }
 
-        return getGroups(urlStr, cm);
+        return getGroups(baseUrl, urlStr, cm);
     }
 
     public static Set<GroupDTO> getGroupsForUser(String baseUrl, String userId,
@@ -70,16 +71,18 @@ public class GroupUtils {
                                                  CredentialManager cm)
         throws IOException, JAXBException
     {
-        String urlStr = baseUrl + GROUPS_PATH + "?members=" + members;
+        String urlStr = "?members=" + members;
         urlStr += "&user=" + userId;
 
-        return getGroups(urlStr, cm);
+        return getGroups(baseUrl, urlStr, cm);
     }
 
-    private static Set<GroupDTO> getGroups(String url, CredentialManager cm)
+    private static Set<GroupDTO> getGroups(String baseUrl,
+                                           String url,
+                                           CredentialManager cm)
         throws IOException, JAXBException
     {
-        URL u = new URL(url);
+        URL u = buildGroupURL(baseUrl, url);
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
         uc.setRequestProperty("Accept", "application/xml");
         cm.secureURLConnection(uc);
@@ -93,7 +96,7 @@ public class GroupUtils {
         throws IOException, JAXBException
     {
         // create the URL for the group
-        URL u = new URL(baseUrl + GROUPS_PATH + "/" + group.getId());
+        URL u = buildGroupURL(baseUrl, group.getId());
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
         uc.setRequestMethod("POST");
         uc.setRequestProperty("Content-Type", "application/xml");
@@ -115,7 +118,7 @@ public class GroupUtils {
                                    CredentialManager cm)
             throws IOException
     {
-        URL u = new URL(baseUrl + GROUPS_PATH + "/" + groupName);
+        URL u = buildGroupURL(baseUrl, groupName);
         HttpURLConnection uc = (HttpURLConnection) u.openConnection();
         uc.setRequestMethod("DELETE");
         cm.secureURLConnection(uc);
@@ -124,5 +127,18 @@ public class GroupUtils {
             throw new IOException("Error updating group " + groupName +
                                   ": " + uc.getResponseMessage());
         }
+    }
+
+    private static URL buildGroupURL(String baseURL, String path)
+            throws MalformedURLException
+    {
+        URL out = new URL(baseURL);
+        out = new URL(out, GROUPS_PATH);
+
+        if (!path.startsWith("?")) {
+            path = "/" + path;
+        }
+
+        return new URL(out, "groups" + path);
     }
 }

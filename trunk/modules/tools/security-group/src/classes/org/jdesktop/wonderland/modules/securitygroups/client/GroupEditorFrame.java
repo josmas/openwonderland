@@ -39,11 +39,14 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
     private CredentialManager cm;
     private DefaultTableModel tableModel;
     private boolean isAdd;
+    private GroupManagerFrame parent;
 
     /** Creates new form GroupEditorFrame */
-    public GroupEditorFrame(String baseUrl, GroupDTO group,
+    public GroupEditorFrame(GroupManagerFrame parent,
+                            String baseUrl, GroupDTO group,
                             CredentialManager cm)
     {
+        this.parent = parent;
         this.baseUrl = baseUrl;
         this.cm = cm;
 
@@ -58,11 +61,13 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
             isAdd = true;
             okButton.setText("Create");
             tableModel.addRow(new Object[] { cm.getUsername(), true });
+            setTitle("Create group");
         } else {
             isAdd = false;
             groupnameTF.setText(group.getId());
             groupnameTF.setEditable(false);
             populateTable(group);
+            setTitle("Edit group " + group.getId());
         }
     }
 
@@ -181,44 +186,41 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 497, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(groupnameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE))
+                        .add(groupnameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE))
+                        .add(okButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cancelButton))
                     .add(layout.createSequentialGroup()
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(330, Short.MAX_VALUE)
-                        .add(okButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cancelButton)))
+                        .add(removeButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(groupnameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 214, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addButton)
-                    .add(removeButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(removeButton)
+                    .add(addButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(okButton)
                     .add(cancelButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -245,6 +247,7 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
 
             GroupUtils.updateGroup(baseUrl, toGroup(), cm);
             dispose();
+            parent.loadGroups();
         } catch (IOException ioe) {
             ioe.printStackTrace();
         } catch (JAXBException je) {
