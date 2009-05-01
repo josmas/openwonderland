@@ -219,6 +219,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    PresenceInfo info = cellIDMap.get(cellID);
 
 	    if (info == null) {
+		logger.warning("No presence info for CellID " + cellID);
 		return null;
 	    }
 
@@ -240,6 +241,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    PresenceInfo info = sessionIDMap.get(sessionID);
 
 	    if (info == null) {
+		logger.warning("No presence info for sessionID " + sessionID);
 		return null;
 	    }
 
@@ -256,6 +258,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    PresenceInfo info = userIDMap.get(userID);
 
 	    if (info == null) {
+		logger.warning("No presence info for userID " + userID);
 		return null;
 	    }
 
@@ -273,6 +276,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    PresenceInfo info = callIDMap.get(callID);
 
 	    if (info == null) {
+		logger.warning("No presence info for callID " + callID);
 	  	return null;
 	    }
 
@@ -333,6 +337,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    return userList.toArray(new PresenceInfo[0]);
 	}
 
+	logger.warning("No presence info for " + username);
 	return null;
     }
 
@@ -363,6 +368,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    return userList.toArray(new PresenceInfo[0]);
 	}
 
+	logger.warning("No presence info for " + usernameAlias);
 	return null;
     }
 

@@ -216,7 +216,10 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void connectSoftphone() {
         logger.fine("[AudioManagerClient] Sending message to server to get voice bridge...");
+
         if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+            logger.warning("Sending message to server to get voice bridge... session is "
+	        + session.getStatus());
             session.send(this, new GetVoiceBridgeMessage());
         }
     }
@@ -292,6 +295,8 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void softphoneExited() {
+	System.out.println("Softphone exited, reconnect");
+
         logger.fine("Softphone exited, reconnect");
 
         connectSoftphone();
