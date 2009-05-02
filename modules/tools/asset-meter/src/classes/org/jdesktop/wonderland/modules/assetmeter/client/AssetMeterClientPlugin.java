@@ -19,9 +19,6 @@ package org.jdesktop.wonderland.modules.assetmeter.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
@@ -54,16 +51,9 @@ public class AssetMeterClientPlugin extends BaseClientPlugin {
         // the frame in a weak reference.
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                assetMeterJFrame.setVisible(item.isSelected());
-            }
-        });
-
-        // Listener for when the Asset Meter frame is closed by itself and
-        // uncheck the checkbox item in the menu
-        assetMeterJFrame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                item.setSelected(false);
+                if (assetMeterJFrame.isVisible() == false) {
+                    assetMeterJFrame.setVisible(true);
+                }
             }
         });
 
