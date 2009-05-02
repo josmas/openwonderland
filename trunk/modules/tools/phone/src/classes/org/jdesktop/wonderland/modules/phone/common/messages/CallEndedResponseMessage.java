@@ -35,6 +35,8 @@ public class CallEndedResponseMessage extends PhoneResponseMessage {
 	    String reasonCallEnded) {
 
 	super(cellID, listing, wasSuccessful);
+
+	this.reasonCallEnded = reasonCallEnded;
     }
 
     public String getReasonCallEnded() {
