@@ -404,42 +404,46 @@ public class RotateAffordance extends Affordance {
             // start of the drag and add the bit we dragged the mouse.
             Vector3f dragEndVectorWorld = dragStartVectorWorld.add(dragWorld);
 
-            // Formulate the two vectors in two dimensions. For now, we just
-            // ignore the third dimension (set it to 0). The two new vectors
-            // depend upon what axis we are rotating around. We also figure
-            // out the axis normal and the axis of rotation
-            Vector3f v1 = null, v2 = null, normal = null, axis = null;
+            // Formulate the two vectors in three dimensions, which is just
+            // the normalized start and end vectors
+            Vector3f v1 = dragStartVectorWorld.normalize();
+            Vector3f v2 = dragEndVectorWorld.normalize();
+
+            // We also figure out the axis normal and the axis of rotation
+            Vector3f normal = null, axis = null;
             switch (direction) {
                 case X_AXIS:
-                    v1 = new Vector3f(0, dragStartVectorWorld.y, dragStartVectorWorld.z).normalize();
-                    v2 = new Vector3f(0, dragEndVectorWorld.y, dragEndVectorWorld.z).normalize();
                     normal = new Vector3f(1, 0, 0);
-                    axis = new Vector3f(-1, 0, 0);
+                    axis = new Vector3f(1, 0, 0);
                     break;
 
                 case Y_AXIS:
-                    v1 = new Vector3f(dragStartVectorWorld.x, 0, dragStartVectorWorld.z).normalize();
-                    v2 = new Vector3f(dragEndVectorWorld.x, 0, dragEndVectorWorld.z).normalize();
                     normal = new Vector3f(0, 1, 0);
-                    axis = new Vector3f(0, -1, 0);
+                    axis = new Vector3f(0, 1, 0);
                     break;
 
                 case Z_AXIS:
-                    v1 = new Vector3f(dragStartVectorWorld.x, dragStartVectorWorld.y, 0).normalize();
-                    v2 = new Vector3f(dragEndVectorWorld.x, dragEndVectorWorld.y, 0).normalize();
                     normal = new Vector3f(0, 0, 1);
-                    axis = new Vector3f(0, 0, -1);
+                    axis = new Vector3f(0, 0, 1);
                     break;
-                    
+
                 default:
                     // This should never happen, so just return
                     return;
             }
 
+            // We need to rotate the normal about the rotation already applied
+            // to the Cell. This will make sure that the direction of rotation
+            // comes out properly.
+            Quaternion rotation = rootNode.getLocalRotation();
+            float angles[] = new float[3];
+            rotation.toAngles(angles);
+            normal = rotation.mult(normal);
+
             // Compute the signed angle between v1 and v2. We do this with the
             // following formula: angle = atan2(normal dot (v1 cross x2), v1 dot v2)
-            float dotProduct = v2.dot(v1);
-            Vector3f crossProduct = v2.cross(v1);
+            float dotProduct = v1.dot(v2);
+            Vector3f crossProduct = v1.cross(v2);
             double angle = Math.atan2(normal.dot(crossProduct), dotProduct);
 
             // Set the label with the amount that we have rotated it. We display
