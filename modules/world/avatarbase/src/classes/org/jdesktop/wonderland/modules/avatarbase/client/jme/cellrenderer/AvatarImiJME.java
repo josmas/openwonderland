@@ -21,6 +21,7 @@ import com.jme.bounding.BoundingSphere;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -54,6 +55,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -99,7 +101,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 URL configURL=null;
                 try {
                     configURL = new URL(msg.getModelConfigURL());
-                    System.err.println("Config " + configURL + "  user="+username+"  "+selectedForInput);
+                    logger.info("Config " + configURL + "  user="+username+"  "+selectedForInput);
                 } catch (MalformedURLException ex) {
                     Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, null, ex);
                     return;
@@ -158,7 +160,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             public void commitEvent(Event event) {
                 if (event instanceof AvatarNameEvent) {
                     if (nameTag == null) {
-                        System.out.println("[AvatarImiJME] warning: setting " +
+                        logger.warning("[AvatarImiJME] warning: setting " +
                                 "avatar name when name tag is null");
                         return;
                     }
@@ -193,6 +195,16 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             case DISK :
                 if (entity!=null)
                     ClientContextJME.getWorldManager().removeEntity(entity);
+                break;
+            case BOUNDS :
+                cell.getComponent(MovableComponent.class).addServerCellMoveListener(new CellMoveListener() {
+                    public void cellMoved(CellTransform transform, CellMoveSource source) {
+                        if (source==CellMoveSource.REMOTE) {
+//                            System.err.println("REMOTE MOVE "+transform.getTranslation(null));
+                            avatarCharacter.getModelInst().setTransform(new PTransform(transform.getRotation(null), transform.getTranslation(null), new Vector3f(1,1,1)));
+                        }
+                    }
+                });
                 break;
         }
     }
@@ -292,13 +304,14 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         if (!selectedForInput && avatarCharacter != null && avatarCharacter.getController().getModelInstance()!=null ) {
             // If the user is being steered by AI, do not mess it up
             // (objects that the AI is dealing with gota be synced)
-            System.err.println("Steering "+avatarCharacter.getContext().getSteering().isEnabled()+"  "+avatarCharacter.getContext().getSteering().getCurrentTask());
+//            System.err.println("Steering "+avatarCharacter.getContext().getSteering().isEnabled()+"  "+avatarCharacter.getContext().getSteering().getCurrentTask());
             if (avatarCharacter.getContext().getSteering().isEnabled() && avatarCharacter.getContext().getSteering().getCurrentTask() != null) {
                 System.err.println("Avatar steering !");
             } else {
                 Vector3f pos = transform.getTranslation(null);
                 Vector3f dir = new Vector3f(0, 0, -1);
                 transform.getRotation(null).multLocal(dir);
+//                System.err.println("Setting pos "+pos);
                 PMatrix local = avatarCharacter.getController().getModelInstance().getTransform().getLocalMatrix(true);
                 final Vector3f currentPosition = local.getTranslation();
                 float currentDistance = currentPosition.distance(pos);
@@ -324,7 +337,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
         URL avatarConfigURL = cell.getComponent(AvatarConfigComponent.class).getAvatarConfigURL();
 
-        System.out.println("[AvatarImiJme] AVATAR CONFIG URL "+avatarConfigURL);
+//        System.out.println("[AvatarImiJme] AVATAR CONFIG URL "+avatarConfigURL);
 
         LoadingInfo.startedLoading(cell.getCellID(), username);
         try {
