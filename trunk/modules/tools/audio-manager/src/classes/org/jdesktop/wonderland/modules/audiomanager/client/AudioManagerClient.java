@@ -183,6 +183,7 @@ public class AudioManagerClient extends BaseConnection implements
         avatar.removeViewCellConfiguredListener(this);
 
         SoftphoneControlImpl.getInstance().removeSoftphoneListener(this);
+        SoftphoneControlImpl.getInstance().sendCommandToSoftphone("endCalls");
         //JmeClientMain.getFrame().removeAudioMenuListener(this);
         InputManager.inputManager().removeGlobalEventListener(muteListener);
     }
