@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 
@@ -161,7 +163,15 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	WonderlandIdentity userID = 
 	    new WonderlandIdentity(username, username, null);
 
-        presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, null);
+	String callID = null;
+
+	String s = orbCell.getPlayerWithVpCallID();
+
+	if (s == null || s.length() == 0) {
+	    callID = orbCell.getCallID();
+	}
+
+        presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, callID);
 
 	pm.addSession(presenceInfo);
 
@@ -178,7 +188,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 		return;
 	    }
 
-	    logger.fine("Attach orb " + orbCell.getCellID() 
+	    System.out.println("Attach orb " + orbCell.getCellID() 
 		+ " player with " + orbCell.getPlayerWithVpCallID() + " to " + info);
 
             channelComp.send(new OrbAttachMessage(orbCell.getCellID(), info.cellID, true));
@@ -450,6 +460,17 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     }
 
     public void orbSelected() {
+	String callID = orbCell.getPlayerWithVpCallID();
+
+	if (callID != null) {
+	    /*
+	     * If it's a virtual orb for me, ignore it.
+	     */
+	    if (callID.equals(SoftphoneControlImpl.getInstance().getCallID()) == false) {
+		return;
+	    }
+	}
+
 	if (orbDialog == null) {
 	    LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
 	    

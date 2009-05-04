@@ -83,6 +83,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 
         setVisible(true);
     }
+
     private ArrayList<MemberChangeListener> listeners = new ArrayList();
 
     public void addMemberChangeListener(MemberChangeListener listener) {
@@ -360,7 +361,11 @@ private void holdButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 }//GEN-LAST:event_holdButtonActionPerformed
 
     public void setHold(boolean onHold) {
-        session.send(client, new VoiceChatHoldMessage(group, presenceInfo, onHold));
+	try {
+            session.send(client, new VoiceChatHoldMessage(group, presenceInfo, onHold));
+	} catch (IllegalStateException e) {
+	    endCall();
+	}
     }
 
 private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_endCallButtonActionPerformed
@@ -369,7 +374,6 @@ private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     private void endCall() {
         client.removeInCallDialog(group);
-        session.send(client, new VoiceChatLeaveMessage(group, presenceInfo));
 
         if (addUserDialog != null) {
             addUserDialog.setVisible(false);
@@ -380,6 +384,8 @@ private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         }
 
         setVisible(false);
+
+        session.send(client, new VoiceChatLeaveMessage(group, presenceInfo));
     }
 
 private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
