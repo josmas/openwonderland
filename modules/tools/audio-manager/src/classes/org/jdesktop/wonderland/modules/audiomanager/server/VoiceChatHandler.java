@@ -317,15 +317,17 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	PresenceInfo caller = msg.getCaller();
 
-	boolean added = addPlayerToAudioGroup(vm, audioGroup, caller, msg.getChatType());
+	if (msg.getChatType() != null) {
+	    boolean added = addPlayerToAudioGroup(vm, audioGroup, caller, msg.getChatType());
 
-	if (added) {
-	    sender.send(new VoiceChatJoinAcceptedMessage(group, caller, msg.getChatType()));
-	}
+	    if (added) {
+	        sender.send(new VoiceChatJoinAcceptedMessage(group, caller, msg.getChatType()));
+	    }
 
-	if (added == false && (calleeList == null || calleeList.length == 0)) {
-	    endVoiceChat(vm, audioGroup);
-	    return;
+	    if (added == false && (calleeList == null || calleeList.length == 0)) {
+	        endVoiceChat(vm, audioGroup);
+	        return;
+	    }
 	}
 
 	logger.info("Request to join AudioGroup " + group + " caller " + caller + " phoneNumber "
@@ -578,8 +580,8 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     private static final String VIRTUAL_PLAYER_PREFIX = "V-";
 
     public void virtualPlayerAdded(AudioGroup audioGroup, VirtualPlayer vp) {
-	Vector3f center = new Vector3f((float) vp.player.getX(), (float) 2.3, 
-	    (float) vp.player.getZ());
+	Vector3f center = new Vector3f((float) -vp.playerWithVirtualPlayer.getX(), (float) 2.3, 
+	    (float) vp.playerWithVirtualPlayer.getZ());
 
         ManagedOrbMap orbMap = (ManagedOrbMap) AppContext.getDataManager().getBinding(ORB_MAP_NAME);
 
@@ -587,6 +589,9 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    logger.info("ORB already exists for " + vp);
 	    return;
 	}
+
+	logger.fine("virtualPlayerAdded:  player with vp:  " + vp.playerWithVirtualPlayer
+	    + " Center " + center);
 
 	Orb orb = new Orb(VIRTUAL_PLAYER_PREFIX + vp.getUsername(), 
 	    vp.player.getCall().getId(), center, .1, false, vp.playerWithVirtualPlayer.getId());

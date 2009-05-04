@@ -152,8 +152,7 @@ public class PhoneMessageHandler {
 	    final CallEndedResponseMessage msg = (CallEndedResponseMessage) message;
 
             if (msg.wasSuccessful() == false) {    
-                logger.warning("Failed END_CALL");
-		return;
+                logger.warning("Failed:  " + msg.getReasonCallEnded());
 	    }
 
             CallListing listing = msg.getCallListing();
@@ -271,7 +270,7 @@ public class PhoneMessageHandler {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
 		    if (phoneForm != null) {
-                        phoneForm.setCallInvited();
+                        phoneForm.setStatusMessage("Dialing...");
 		    }
                 }
             });

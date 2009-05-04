@@ -150,8 +150,8 @@ public class PhoneForm extends JDialog implements KeypadListener {
         }
     }
 
-    public void setCallInvited() {
-        statusMessageLabel.setText("Dialing...");
+    public void setStatusMessage(String s) {
+	statusMessageLabel.setText(s);
     }
 
     public void setCallEstablished(boolean enabled) {
@@ -171,12 +171,10 @@ public class PhoneForm extends JDialog implements KeypadListener {
     public void setCallEnded(String reasonCallEnded) {
         if (reasonCallEnded == null) {
             reasonCallEnded = "Hung up";
-        }
-
-        /*
-         * The gateway returns "Not Found" meaning Invalid phone number
-         */
-        if (reasonCallEnded.equals("Not Found")) {
+        } else if (reasonCallEnded.equals("Not Found")) {
+            /*
+             * The gateway returns "Not Found" meaning Invalid phone number
+             */
             reasonCallEnded = "Invalid phone number";
         } else if (reasonCallEnded.indexOf("gateway error") >= 0) {
             /*

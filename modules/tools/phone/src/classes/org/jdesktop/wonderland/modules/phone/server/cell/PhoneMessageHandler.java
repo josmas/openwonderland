@@ -268,7 +268,14 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
             if (listing.simulateCalls()) {
                 FakeVoiceManager.getInstance().setupCall(
 		    externalCallID, listing.getContactNumber());
-            } else {                               
+            } else {
+	        if (softphoneCall == null || softphonePlayer == null) {
+		    logger.warning("Softphone player is not connected!");
+            	    sender.send(clientID, new CallEndedResponseMessage(
+			phoneCellMO.getCellID(), listing, false, "Softphone is not connected!"));
+		    return;
+	        }
+
 		CallSetup setup = new CallSetup();
 	
 		CallParticipant cp = new CallParticipant();

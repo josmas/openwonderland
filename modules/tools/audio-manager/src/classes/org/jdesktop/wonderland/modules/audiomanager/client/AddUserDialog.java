@@ -5,7 +5,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoi
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
 
-
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
@@ -15,10 +14,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 
-
-
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -60,11 +56,11 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
         this.client = client;
         this.session = session;
         this.group = group;
-        this.inCallDialog = inCallDialog;
+	this.inCallDialog = inCallDialog;
 
         initComponents();
 
-        inCallDialog.addMemberChangeListener(this);
+	inCallDialog.addMemberChangeListener(this);
 
         pm = PresenceManagerFactory.getPresenceManager(session);
 
@@ -275,7 +271,10 @@ private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     for (int i = 0; i < selectedValues.length; i++) {
         PresenceInfo[] info = pm.getAliasPresenceInfo((String) selectedValues[i]);
 
-	session.send(client, new VoiceChatJoinMessage(group, presenceInfo, info, ChatType.PRIVATE,
+	/*
+	 * Caller is already in group and doesn't need to be added again.
+	 */
+	session.send(client, new VoiceChatJoinMessage(group, presenceInfo, info, null,
 	    phoneNumberText.getText(), nameTextField.getText()));
     }
 

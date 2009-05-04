@@ -422,6 +422,14 @@ public class AudioManagerConnectionHandler
             break;
 
 	case CallStatus.ENDED:
+	    if (call != null) {
+		try {
+		    call.end(false);
+		} catch (IOException e) {
+		    logger.warning("Call " + call + " ENDED, unable to clean up:  " + e.getMessage());
+		}
+	    }
+
 	    if (player == null) {
 		logger.warning("Couldn't find player for " + call);
 		return;

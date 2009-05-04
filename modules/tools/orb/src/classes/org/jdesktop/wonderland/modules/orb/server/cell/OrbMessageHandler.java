@@ -235,7 +235,11 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 
 	    spatializer.setAttenuator(volume);
 
-	    softphonePlayer.setPrivateSpatializer(player, spatializer);
+	    if (volume == 1) {
+	        softphonePlayer.removePrivateSpatializer(player);
+	    } else {
+	        softphonePlayer.setPrivateSpatializer(player, spatializer);
+	    }
 	    return;
  	}
 	

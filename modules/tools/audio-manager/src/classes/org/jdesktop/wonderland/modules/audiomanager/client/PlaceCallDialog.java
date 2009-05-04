@@ -155,9 +155,19 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
         buttonGroup1.add(privateRadioButton);
         privateRadioButton.setSelected(true);
         privateRadioButton.setText("Private");
+        privateRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                privateRadioButtonActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(publicRadioButton);
         publicRadioButton.setText("Public");
+        publicRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                publicRadioButtonActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Phone Number:");
 
