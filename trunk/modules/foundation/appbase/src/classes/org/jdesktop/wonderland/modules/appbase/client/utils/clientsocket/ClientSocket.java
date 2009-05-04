@@ -199,6 +199,10 @@ public class ClientSocket {
     }
 
     public void close () {
+        close(true);
+    }
+
+    public void close (boolean callListener) {
         if (closed) return;
 
         enable = false;
@@ -217,7 +221,9 @@ public class ClientSocket {
             writeQueue.notifyAll();
         }
 
-        listener.otherClientHasLeft(otherClientID);
+        if (callListener) {
+            listener.otherClientHasLeft(otherClientID);
+        }
 
         if (ENABLE_STATS) {
             statReporter.stop();

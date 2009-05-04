@@ -109,21 +109,6 @@ public interface View2D {
     /** Returns the frame title. */
     public String getTitle ();
 
-    /**
-     * Specify the view's Z (stacking) order. Update afterward.
-     * @param zOrder The Z (stacking) order. Lower values are higher in the stack.
-     */
-    public void setZOrder(int zOrder);
-
-    /**
-     * Specify the view's Z (stacking) order. Update if specified.
-     * @param zOrder The Z (stacking) order. Lower values are higher in the stack.
-     */
-    public void setZOrder(int zOrder, boolean update);
-
-    /** Returns the Z order. */
-    public int getZOrder ();
-
     /** 
      * Specify the portion of the window which is displayed by this view. 
      * Update afterward.
@@ -179,6 +164,11 @@ public interface View2D {
      * A window close which comes from the user. Close the window of this view.
      */
     public void windowCloseUser ();
+
+    /**  
+     * Tells the view that the window's stack position may have changed.
+     */
+    public void stackChanged (boolean update);
 
     /** Moves the window of this view to the top of its app's window stack. */
     public void windowRestackToTop ();

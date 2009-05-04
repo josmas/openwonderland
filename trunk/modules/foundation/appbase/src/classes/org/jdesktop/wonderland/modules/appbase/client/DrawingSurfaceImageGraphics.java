@@ -85,7 +85,7 @@ public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
     private boolean isInSas;
 
     /**  
-     * Create an instance of DrawingSurfaceImageGraphics.
+     * Create an instance of DrawingSurfaceImageGraphics with the given name.
      * Before it can be used you must call setWindow.
      */
     public DrawingSurfaceImageGraphics() {}
@@ -204,7 +204,6 @@ public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
     /**
      * Enable or disabling the updating of the texture.
      */
-    // TODO: perf: must tie processor enable in with setvisible. 
     public synchronized void setUpdateEnable(boolean enable) {
         if (enable == updateEnable) {
             return;
@@ -235,6 +234,7 @@ public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
                 updateEntity.addComponent(ProcessorComponent.class, updateProcessor);
                 ClientContextJME.getWorldManager().addEntity(updateEntity);
                 updateProcessor.start();
+                logger.info("Updating enabled for " + this);
             }
         } else {
             if (updateProcessor != null) {
@@ -243,7 +243,18 @@ public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
                 updateEntity.removeComponent(ProcessorComponent.class);
                 updateEntity = null;
                 updateProcessor = null;
+                logger.info("Updating disabled for " + this);
             }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString () {
+        if (window == null) {
+            return "Anonymous DrawingSurface";
+        } else {
+            return "Surface for window " + window;
         }
     }
 
@@ -256,12 +267,7 @@ public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
 
     protected class UpdateProcessor extends ProcessorComponent {
 
-        /**
-         * Initialze the processor to be called once per frame.
-         */
-        // TODO: perf: don't enable until the window is visible
         public void initialize() {
-            start();
         }
 
         /**
@@ -299,7 +305,9 @@ public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
                 }
 
                 if (checkForUpdate()) {
-                    imageGraphics.update(texture, true);
+                    if (imageGraphics != null && texture != null && texture.getTextureId() != 0) {
+                        imageGraphics.update(texture, true);
+                    }
                 }
             }
         }

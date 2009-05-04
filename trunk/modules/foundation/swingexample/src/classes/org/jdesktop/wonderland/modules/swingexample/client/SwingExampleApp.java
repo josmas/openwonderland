@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.swingexample.client;
 
-import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author paulby,deronj
  */
 @ExperimentalAPI
-public class SwingExampleApp extends AppGraphics2D {
+public class SwingExampleApp extends App2D {
 
     /**
      * Create a new instance of SwingExampleApp. This in turn creates

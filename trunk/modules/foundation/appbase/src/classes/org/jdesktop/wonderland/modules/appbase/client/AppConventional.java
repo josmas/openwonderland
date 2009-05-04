@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author deronj
  */
 @ExperimentalAPI
-public abstract class AppConventional extends AppGraphics2D {
+public abstract class AppConventional extends App2D {
 
     private static final Logger logger = Logger.getLogger(AppConventional.class.getName());
 

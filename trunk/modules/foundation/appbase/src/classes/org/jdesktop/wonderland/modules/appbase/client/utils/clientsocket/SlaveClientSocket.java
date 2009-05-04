@@ -48,6 +48,14 @@ public class SlaveClientSocket extends ClientSocket {
     }
 
     @Override
+    public void close(boolean callListener) {
+        super.close(callListener);
+        if (ENABLE_STATS) {
+            statReporter.stop();
+        }
+    }
+
+    @Override
     public boolean initialize () {
         boolean ret = super.initialize();
         if (ret) {

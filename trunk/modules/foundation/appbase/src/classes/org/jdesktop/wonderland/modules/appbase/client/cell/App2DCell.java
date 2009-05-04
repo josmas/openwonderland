@@ -169,7 +169,6 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
 
     /** {@inheritDoc} */
     public synchronized View2D createView (Window2D window) {
-
         View2DCell view = (View2DCell) getViewFactory().createView(this, window);
 
         // This type of cell allows the app to fully control the visibility
@@ -212,7 +211,14 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      */
     @Override
     public String toString() {
-        return "App2DCell for cellID=" + getCellID() + ",app=" + app.getName();
+        String str = "App2DCell for cellID=" + getCellID();
+        str += ",app=";
+        if (app == null) {
+            str += "UNKNOWN APP";
+        } else {
+            str += app.getName();
+        }
+        return str;
     }
 
     // TODO: getter

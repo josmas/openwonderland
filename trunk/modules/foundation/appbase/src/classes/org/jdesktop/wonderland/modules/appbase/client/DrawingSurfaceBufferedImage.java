@@ -73,7 +73,6 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
     private static boolean isLinux = System.getProperty("os.name").equals("Linux");
     private static Method isAWTLockHeldByCurrentThreadMethod;
 
-
     static {
         if (isLinux) {
             try {
@@ -230,11 +229,7 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
                 }
             }
 
-            /*
-            System.err.println("&&&&&&&&&&&&&&&& DBSI: Drawing to texture " + getTexture());
-            int texid = getTexture().getTextureId();
-            System.err.println("&&&&&&&&&&&&&&&& Drawing to texture id " + texid);
-            */
+            final int texid = getTexture().getTextureId();
 
             // In this implementation, we need to check our DirtyTrackingGraphics to see whether it is dirty.
             // If it is dirty, we copy the entire buffered image into the imageGraphics.
@@ -242,7 +237,13 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
 
                 public void run() {
                     Rectangle dirtyRect = g.getDirtyRectangle();
+                    //System.err.println("&&&&&&&&&&&&&&&& DBSI: surface = " + DrawingSurfaceBufferedImage.this);
+                    //System.err.println("&&&&&&&&&&&&&&&& DBSI: diryRect = " + dirtyRect);
                     if (dirtyRect != null) {
+
+                        //System.err.println("&&&&&&&&&&&&&&&& DBSI: Drawing to texture " + getTexture());
+                        //System.err.println("&&&&&&&&&&&&&&&& Drawing to texture id " + texid);
+
                         /*
                         System.err.println("copy dirty rect = " +
                         dirtyRect.x + ", " + dirtyRect.y + ", " +
@@ -261,6 +262,7 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
                                 bufImage.getWidth(), bufImage.getHeight(), null)) {
                             logger.warning("drawImage returned false. Skipping image rendering.");
                         }
+                        //System.err.println("&&&&&&&&&&& CLEAR DIRTY");
                         g.clearDirty();
                         checkForUpdateReturn = true;
                     } else {

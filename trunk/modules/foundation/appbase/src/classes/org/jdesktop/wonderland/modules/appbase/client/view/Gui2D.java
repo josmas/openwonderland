@@ -22,6 +22,7 @@ import com.jme.math.Vector3f;
 import java.awt.Point;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
@@ -114,6 +115,9 @@ public class Gui2D {
     /** This Gui's view */
     protected View2DEntity view;
 
+    /** The entities to which this GUI's listeners are attached. */
+    private LinkedList<Entity> attachedToEntities = new LinkedList<Entity>();
+
     /**
      * Create a new instance of Gui2D.
      *
@@ -126,7 +130,13 @@ public class Gui2D {
     /**
      * {@inheritDoc}
      */
-    public void cleanup() {
+    public synchronized void cleanup() {
+        for (Entity entity : attachedToEntities) {
+            detachMouseListener(entity);
+            detachKeyListener(entity);
+        }
+        attachedToEntities.clear();
+
         mouseListener = null;
         view = null;
     }
@@ -141,17 +151,19 @@ public class Gui2D {
     /**
      * Attach this GUI controller's event listeners to the given entity.
      */
-    public void attachEventListeners(Entity entity) {
+    public synchronized void attachEventListeners(Entity entity) {
         attachMouseListener(entity);
         attachKeyListener(entity);
+        attachedToEntities.add(entity);
     }
 
     /**
      * Detach this GUI controller's event listeners from the entity to which it is attached.
      */
-    public void detachEventListeners(Entity entity) {
+    public synchronized void detachEventListeners(Entity entity) {
         detachMouseListener(entity);
         detachKeyListener(entity);
+        attachedToEntities.remove(entity);
     }
 
     /**
@@ -199,7 +211,9 @@ public class Gui2D {
          */
         @Override
         public void commitEvent(Event event) {
-            view.deliverEvent(view.getWindow(), (MouseEvent3D) event);
+            if (view != null) {
+                view.deliverEvent(view.getWindow(), (MouseEvent3D) event);
+            }
         }
     }
 

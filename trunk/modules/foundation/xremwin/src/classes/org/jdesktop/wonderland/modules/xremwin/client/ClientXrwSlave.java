@@ -170,4 +170,12 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
             ((ControlArbXrw)controlArb).controlLost();
         }
     }
+
+    /**
+     * Update the app's windows with information received from the slave sync
+     * Used during slave synchronization of conventional apps.
+     */
+    public void updateSlaveWindows () {
+        app.updateSlaveWindows();
+    }
 }

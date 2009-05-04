@@ -176,7 +176,9 @@ public abstract class FrameComponent {
      * Detach and deallocate this component's scene graph nodes.
      */
     protected void cleanupSceneGraph() {
-        entity.removeComponent(RenderComponent.class);
+        if (entity != null) {
+            entity.removeComponent(RenderComponent.class);
+        }
         localToCellNode = null;
     // Note: the subclasses cleanup routine is responsible for cleaning up the spatials.
     }

@@ -1027,14 +1027,6 @@ public abstract class ClientXrw implements Runnable {
         printRLRun();
     }
 
-    /**
-     * Recalculate the stack order based on the Z orders of the windows in the stack.
-     * Used during slave synchronization of conventional apps.
-     */
-    public void restackFromZOrders () {
-        app.restackFromZOrders();
-    }
-
     private class Statistics extends StatisticsSet {
 
         // The number of requests of any type received

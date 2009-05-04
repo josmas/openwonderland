@@ -57,6 +57,12 @@ public class FrameHeaderSwing
     /** The app of the window of the view which this frame decorates. */
     private App2D app;
 
+    /** The view of this header. */
+    private View2DCell view;
+
+    /** Whether the frame is visible. */
+    private boolean visible;
+
     /**
      * Create a new instance of FrameHeaderSwing.
      *
@@ -66,6 +72,7 @@ public class FrameHeaderSwing
     public FrameHeaderSwing(View2DCell view, LinkedList<Frame2DCell.CloseListener> closeListeners) {
         super("FrameHeaderSwing for " + view, view, null);
 
+        this.view = view;
         Window2D viewWindow = view.getWindow();
         app = viewWindow.getApp();
         headerWindow = new WindowSwing(app, Window2D.Type.POPUP, viewWindow, 1, 1, false,
@@ -88,10 +95,6 @@ public class FrameHeaderSwing
         View2DDisplayer displayer = view.getDisplayer();
         View2D frameView = headerWindow.getView(displayer);
         ((View2DEntity)frameView).disableGUI();
-
-        // TODO: HACK:
-        headerWindow.setVisibleApp(true);
-        headerWindow.setVisibleUser(displayer, true);
     }
 
     /**
@@ -101,12 +104,25 @@ public class FrameHeaderSwing
     public void cleanup() {
         super.cleanup();
 
+        setVisible(false);
+
         if (headerWindow != null) {
             headerWindow.cleanup();
             headerWindow = null;
         }
 
         headerPanel.removeMouseListener(this);
+        view = null;
+    }
+
+    /**
+     * Specify the visibility of this header.
+     */
+    public void setVisible (boolean visible) {
+        if (this.visible == visible) return;
+        this.visible = visible;
+        headerWindow.setVisibleApp(visible);
+        headerWindow.setVisibleUser(view.getDisplayer(), visible);
     }
 
     /**

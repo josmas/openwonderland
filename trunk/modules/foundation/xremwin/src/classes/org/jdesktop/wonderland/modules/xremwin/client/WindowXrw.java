@@ -34,6 +34,9 @@ import org.jdesktop.wonderland.modules.appbase.client.WindowConventional;
 @ExperimentalAPI
 public class WindowXrw extends WindowConventional {
 
+    /** The WID value for an invalid WID. */
+    public static final int INVALID_WID = 0;
+
     /** The X11 window ID */
     private int wid;
     /** 
@@ -190,7 +193,7 @@ public class WindowXrw extends WindowConventional {
     super.setVisibleApp(visible);
     }
      */
-    public void setVisibleApp(boolean visible, boolean isPopup) {
+    public synchronized void setVisibleApp(boolean visible, boolean isPopup) {
         if (isVisibleApp() == visible) {
             return;
         }
@@ -210,7 +213,7 @@ public class WindowXrw extends WindowConventional {
             }
         }
 
-        visibleApp = visible;
+        setVisibleAppPart1(visible);
 
         ((AppXrw)app).trackWindowVisibility(this);
 
@@ -219,8 +222,7 @@ public class WindowXrw extends WindowConventional {
             setParent(app.getPrimaryWindow());
         }
 
-        changeMask |= CHANGED_VISIBLE_APP;
-        updateViews();
+        setVisibleAppPart2();
     }
 
     // TODO: This is a kludge. Eventually replace with winTransientFor
