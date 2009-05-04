@@ -58,9 +58,6 @@ public abstract class App2D {
     /** The world size of pixels */
     protected Vector2f pixelScale;
 
-    /** The set of all views of the windows of this app. */
-    private View2DSet viewSet = new View2DSet();
-
     /** The primary window of this app. */
     private Window2D primaryWindow;
 
@@ -75,6 +72,9 @@ public abstract class App2D {
 
     /** The name of the app. */
     private String name;
+
+    /** The set of all views of the windows of this app. */
+    private View2DSet viewSet = new View2DSet();
 
     /**
      * Set the default View2DCell factory to be used for all apps in this client. (Called by 
@@ -148,56 +148,57 @@ public abstract class App2D {
         return new Vector2f(pixelScale);
     }
 
-    public void addDisplayer (View2DDisplayer displayer) {
-        viewSet.add(displayer);
-    }
-
-    public void removeDisplayer (View2DDisplayer displayer) {
-        viewSet.remove(displayer);
-    }
-
-    public WindowStack getWindowStack () {
+    WindowStack getWindowStack () {
         return stack;
     }
 
     /**
-     * Add a window to this app. It is added on top of the app's window stack.
+     * Add a new displayer to this app. This displays all existing windows of the
+     * app in the displayer.
+     */
+    public void addDisplayer (View2DDisplayer displayer) {
+        viewSet.add(displayer);
+    }
+
+    /**
+     * Remove a displayer to this app.
+     */
+    public void removeDisplayer (View2DDisplayer displayer) {
+        viewSet.remove(displayer);
+    }
+
+    /**
+     * Returns an iterator over all the displayers of this app.
+     */
+    public Iterator<View2DDisplayer> getDisplayers() {
+        return viewSet.getDisplayers();
+    }
+    /**
+     * Add a window to this app. 
      * @param window The window to add.
      */
     public synchronized void addWindow(Window2D window) {
         windows.add(window);
         viewSet.add(window);
-        stack.add(window);
     }
 
-     /**
-      * Add a window to this app. It is added to the app's window stack.
-      * But the stack is not revalidated. You must later call windowRestackFromZOrders
-      * @param window The window to add.
-      */
-     public synchronized void addWindowNoStackValidate(Window2D window) {
-         windows.add(window);
-         viewSet.add(window);
-         stack.addNoValidate(window);
-    }
- 
     /**
-     * Remove the given window from the window stack.
+     * Remove the given window from this app.
      * @param window The window to remove.
      */
     public void removeWindow(Window2D window) {
-        stack.remove(window);
         viewSet.remove(window);
         windows.remove(window);
         if (window == primaryWindow) {
             setPrimaryWindow(null);
         }
     }
+
     /**
-     * Returns the number of windows in this view set.
+     * Returns the number of windows in this app.
      */
     public int getNumWindows () {
-        return viewSet.getNumWindows();
+        return windows.size();
     }
 
     /**
@@ -231,11 +232,16 @@ public abstract class App2D {
     }
 
     /**
-     * Recalculate the stack order based on the Z orders of the windows in the stack.
+     * Recalculate the stack order based on the desired Z orders of the windows in the stack.
      * Used during slave synchronization of conventional apps.
      */
-    public void restackFromZOrders () {
-        stack.restackFromZOrders();
+    public void updateSlaveWindows () {
+        stack.restackFromDesiredZOrders();
+
+        // Now update the stack of all windows. 
+        for (Window2D window : windows) {
+            window.changedStack();
+        }
     }
 
     /**
@@ -261,13 +267,6 @@ public abstract class App2D {
      */
     public Iterator<Window2D> getWindows() {
         return windows.iterator();
-    }
-
-    /**
-     * Returns an iterator over all the displayers of this app.
-     */
-    public Iterator<View2DDisplayer> getDisplayers() {
-        return viewSet.getDisplayers();
     }
 
     /**

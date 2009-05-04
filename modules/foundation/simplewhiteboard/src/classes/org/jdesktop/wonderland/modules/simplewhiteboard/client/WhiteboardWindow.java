@@ -23,7 +23,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.simplewhiteboard.client.WhiteboardDrawingSurface;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.WhiteboardAction;
 import org.jdesktop.wonderland.modules.simplewhiteboard.common.cell.WhiteboardCellMessage;
@@ -40,7 +40,7 @@ import org.jdesktop.wonderland.modules.simplewhiteboard.client.cell.WhiteboardCe
  * @author deronj
  */
 @ExperimentalAPI
-public class WhiteboardWindow extends WindowGraphics2D {
+public class WhiteboardWindow extends Window2D {
 
     /** The logger used by this class */
     private static final Logger logger = Logger.getLogger(WhiteboardWindow.class.getName());

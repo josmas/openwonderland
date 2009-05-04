@@ -111,6 +111,11 @@ public class Gui2DInterior extends Gui2D {
     protected class InteriorMouseListener extends Gui2D.MouseListener {
 
         @Override
+        public boolean propagatesToParent (Event event) {
+            return false;
+        }
+
+        @Override
         public boolean consumesEvent(Event event) {
             if (!super.consumesEvent(event)) {
                 // Not a mouse event.
@@ -170,9 +175,11 @@ public class Gui2DInterior extends Gui2D {
                                    view.getWindow().getApp().getControlArb());
                 */
 
-                if (view.getWindow().getApp().getControlArb().hasControl()) {
-                    view.deliverEvent((Window2D) view.getWindow(), me3d);
-                    return;
+                if (view != null) {
+                    if (view.getWindow().getApp().getControlArb().hasControl()) {
+                        view.deliverEvent(view.getWindow(), me3d);
+                        return;
+                    }
                 }
 
                 MouseEvent me = (MouseEvent) me3d.getAwtEvent();
@@ -227,6 +234,11 @@ public class Gui2DInterior extends Gui2D {
     protected class InteriorKeyListener extends EventClassListener {
 
         @Override
+        public boolean propagatesToParent (Event event) {
+            return false;
+        }
+
+        @Override
         public Class[] eventClassesToConsume() {
             return new Class[]{KeyEvent3D.class};
         }
@@ -262,9 +274,11 @@ public class Gui2DInterior extends Gui2D {
 
             // Note: currently no special GUI processing is needed for key events
             // so they are all just sent to the app group if it has control
-            ControlArb controlArb = view.getWindow().getApp().getControlArb();
-            if (controlArb.hasControl()) {
-                controlArb.deliverEvent(view.getWindow(), ke);
+            if (view != null) {
+                ControlArb controlArb = view.getWindow().getApp().getControlArb();
+                if (controlArb.hasControl()) {
+                    controlArb.deliverEvent(view.getWindow(), ke);
+                }
             }
         }
     }

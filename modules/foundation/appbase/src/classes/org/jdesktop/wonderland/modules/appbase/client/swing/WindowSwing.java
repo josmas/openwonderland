@@ -21,7 +21,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import org.jdesktop.wonderland.client.jme.MainFrame;
-import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwingEmbeddedToolkit.WindowSwingEmbeddedPeer;
 import com.sun.embeddedswing.EmbeddedPeer;
@@ -60,7 +60,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 
 // TODO: currently this has JME dependencies. It would be nice to do this in a graphics library independent fashion.
 @ExperimentalAPI
-public class WindowSwing extends WindowGraphics2D {
+public class WindowSwing extends Window2D {
 
     private static final Logger logger = Logger.getLogger(WindowSwing.class.getName());
     /** The Swing component which is displayed in this window */
@@ -251,6 +251,11 @@ public class WindowSwing extends WindowGraphics2D {
     */
 
     private static class MySwingEnterExitListener extends EventClassListener {
+
+        @Override
+        public boolean propagatesToParent (Event event) {
+            return false;
+        }
 
         @Override
         public Class[] eventClassesToConsume() {

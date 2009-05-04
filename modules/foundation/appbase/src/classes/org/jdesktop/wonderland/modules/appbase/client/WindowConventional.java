@@ -43,7 +43,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author deronj
  */
 @ExperimentalAPI
-public abstract class WindowConventional extends WindowGraphics2D {
+public abstract class WindowConventional extends Window2D {
 
     private static final Logger logger = Logger.getLogger(WindowConventional.class.getName());
     /** The app to which the window belongs */

@@ -43,6 +43,9 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /** The control arb of the app to which this frame's view belongs. */
     private ControlArb controlArb;
 
+    /** Whether the frame is currently attached to a view. */
+    private boolean attached;
+
     /**
      * Components who wish to be notified when the user has pressed the
      * close button should implement this interface and register themselves
@@ -129,17 +132,14 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
         if (controlArb != null) {
             controlArb.addListener(this);
         }
-
-        attachToViewEntity(view);
     }
 
     /**
      * {@inheritDoc}
      */
     public synchronized void cleanup() {
-        if (view != null) {
-            detachFromViewEntity(view.getEntity());
-            view = null;
+        if (attached) {
+            detachFromViewEntity();
         }
         if (closeListeners != null) {
             closeListeners.clear();
@@ -173,10 +173,11 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
             controlArb.removeListener(this);
             controlArb = null;
         }
+        view = null;
     }
 
-    private void attachToViewEntity (View2DCell view) {
-        if (view == null) return;
+    public void attachToViewEntity () {
+        if (attached) return;
         Entity viewEntity = view.getEntity();
         if (viewEntity == null) return;
 
@@ -193,16 +194,28 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
                 rcFrame.setAttachPoint(view.getViewNode());
             }
         }
+
+        if (header != null) {
+            header.setVisible(true);
+        }
+
+        attached = true;
     }
 
-    private void detachFromViewEntity (Entity viewEntity) {
-        if (viewEntity == null) return;
+    public void detachFromViewEntity () {
+        if (!attached) return;
 
+        Entity viewEntity = view.getEntity();
+        if (viewEntity == null) return;
         viewEntity.removeEntity(frameEntity);
         RenderComponent rcFrame = (RenderComponent) frameEntity.getComponent(RenderComponent.class);
         if (rcFrame != null) {
             rcFrame.setAttachPoint(null);
         }
+        if (header != null) {
+            header.setVisible(false);
+        }
+        attached = false;
     }
 
     /** {@inheritDoc} */
@@ -247,7 +260,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
      * {@inheritDoc}
      */
     public synchronized void updateControl(ControlArb controlArb) {
-        if (view == null) return;
         
         // Sometimes some of these are null during debugging
         if (header != null) {

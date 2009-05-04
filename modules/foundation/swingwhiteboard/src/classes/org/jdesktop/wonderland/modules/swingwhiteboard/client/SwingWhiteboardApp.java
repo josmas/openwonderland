@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.swingwhiteboard.client;
 
-import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-public class SwingWhiteboardApp extends AppGraphics2D  {
+public class SwingWhiteboardApp extends App2D  {
     
     /** The single window created by this app */
     private SwingWhiteboardWindow window;

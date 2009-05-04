@@ -24,6 +24,7 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.util.HashMap;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.CreateWindowMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DestroyWindowMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.ShowWindowMsgArgs;
@@ -44,6 +45,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetPopupParentMsgArg
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SlaveCloseWindowMsgArgs;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientSocketListener;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.SlaveClientSocket;
 
@@ -96,6 +98,9 @@ class ServerProxySlave implements ServerProxy {
     private int lastPointerX = 0;
     private int lastPointerY = 0;
 
+    /** Used to store window parent associations until all windows have been created. */
+    private HashMap<WindowXrw,Integer> windowParents = new HashMap<WindowXrw,Integer>();
+
     /**
      * Create a new instance of ServerProxySlave.
      * @param client The slave client.
@@ -117,7 +122,7 @@ class ServerProxySlave implements ServerProxy {
     }
 
     public void disconnect() {
-        slaveSocket.close();
+        slaveSocket.close(false);
         if (disconnectListener != null) {
             disconnectListener.disconnected();
         }
@@ -212,19 +217,31 @@ class ServerProxySlave implements ServerProxy {
         bufQueue.nextShort();
 
         clientId = bufQueue.nextInt();
-        System.err.println("My clientId = " + clientId);
+        //System.err.println("My clientId = " + clientId);
         client.setClientId(clientId);
+
+        windowParents.clear();
 
         // Read the initial window state synchronization
         // part of the welcome message
-        System.err.println("Waiting to get numWins");
+        //System.err.println("Waiting to get numWins");
         int numWins = bufQueue.nextInt();
-        System.err.println("numWins = " + numWins);
+        //System.err.println("numWins = " + numWins);
         for (int i = 0; i < numWins; i++) {
             syncWindowStateNext();
         }
 
-        client.restackFromZOrders();
+        // All windows have been defined. Now assign the parents
+        for (WindowXrw win : windowParents.keySet()) {
+            Integer parentWid = windowParents.get(win);
+            if (parentWid != null) {
+                WindowXrw parentWin = client.lookupWindow(parentWid.intValue());
+                win.setParent(parentWin);
+            }
+        }
+        windowParents.clear();
+
+        client.updateSlaveWindows();
     }
 
     private void syncWindowStateNext() {
@@ -233,7 +250,7 @@ class ServerProxySlave implements ServerProxy {
         CreateWindowMsgArgs crtMsgArgs = new CreateWindowMsgArgs();
         WindowXrw win;
         int controllingUserLen;
-        int zOrder;
+        int desiredZOrder;
         float rotY;
         Vector3f userDispl = new Vector3f();
 
@@ -244,7 +261,7 @@ class ServerProxySlave implements ServerProxy {
         crtMsgArgs.hAndBorder = bufQueue.nextInt();
         crtMsgArgs.borderWidth = bufQueue.nextInt();
         controllingUserLen = bufQueue.nextInt();
-        zOrder= bufQueue.nextInt();
+        desiredZOrder= bufQueue.nextInt();
         rotY = bufQueue.nextFloat();
         System.err.println("rotY = " + rotY);
         userDispl.x = bufQueue.nextFloat();
@@ -257,11 +274,16 @@ class ServerProxySlave implements ServerProxy {
          */
         // TODO: 0.4 protocol: skip isTransient
         int transientFor = bufQueue.nextInt();
-
+        int typeOrdinal = bufQueue.nextInt();
+        Window2D.Type type = Window2D.Type.values()[typeOrdinal];
+        System.err.println("type = " + type);
+        int parentWid = bufQueue.nextInt();
+        System.err.println("parentWid = " + parentWid);
+        
         crtMsgArgs.decorated = (bufQueue.nextByte() == 1) ? true : false;
         System.err.println("client = " + client);
         System.err.println("crtMsgArgs = " + crtMsgArgs);
-        System.err.println("zOrder= " + zOrder);
+        System.err.println("desiredZOrder= " + desiredZOrder);
 
         // Make sure window is ready to receive data on creation
         win = client.createWindow(crtMsgArgs);
@@ -270,7 +292,16 @@ class ServerProxySlave implements ServerProxy {
             return;
         }
 
-        win.setZOrder(zOrder);
+        if (win.getType() != type) {
+            win.setType(type);
+        }
+        
+        // Defer parent assignment until all windows are created
+        if (parentWid != WindowXrw.INVALID_WID) {
+            windowParents.put(win, parentWid);
+        }
+
+        win.setDesiredZOrder(desiredZOrder);
 
         /* TODO: window config 
         win.setRotateY(rotY);

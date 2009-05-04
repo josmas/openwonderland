@@ -21,12 +21,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.HashMap;
-import com.jme.math.Vector3f;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientSocketListener;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.MasterSocketSet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
  * The module in the master which broadcasts xremwin messages to slaves.
@@ -148,7 +148,7 @@ class SlaveForwarder {
 
         // Enough to hold approximately ten lines
         private int syncPixelsBufMax = 1280 * 10 * 4;
-        private byte[] syncBuf = new byte[54];
+        private byte[] syncBuf = new byte[62];
         private byte[] syncPixelsBuf = new byte[syncPixelsBufMax];
 
         // Send all known client window state to a slave
@@ -199,6 +199,15 @@ class SlaveForwarder {
             System.err.println("rotY = " + win.getRotateY());
             System.err.println("userTranslation = " + win.getUserTranslation());
              */
+            
+            WindowXrw.Type type = win.getType();
+            System.err.println("type = " + type);
+            WindowXrw parentWindow = (WindowXrw) win.getParent();
+            int parentWid = WindowXrw.INVALID_WID; 
+            if (parentWindow != null) {
+                parentWid = parentWindow.getWid();
+            }
+            System.err.println("parent wid = " + parentWid);
 
             // Send basic window attributes
             encode(syncBuf, 0, win.getWid());
@@ -219,8 +228,11 @@ class SlaveForwarder {
             encode(syncBuf, 48, win.getTransientFor().getWid());
              */
             encode(syncBuf, 48, 0);
-            syncBuf[52] = (byte) (win.isDecorated() ? 1 : 0);
-            syncBuf[53] = (byte) (win.isVisibleApp() ? 1 : 0);
+            encode(syncBuf, 52, type.ordinal());
+            encode(syncBuf, 56, parentWid);
+
+            syncBuf[60] = (byte) (win.isDecorated() ? 1 : 0);
+            syncBuf[61] = (byte) (win.isVisibleApp() ? 1 : 0);
 
             unicastSend(slaveID, syncBuf);
             //System.err.println("Call unicastMessage with " + syncBuf.length + " bytes");

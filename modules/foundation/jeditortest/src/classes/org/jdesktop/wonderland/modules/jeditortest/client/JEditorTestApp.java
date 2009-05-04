@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.jeditortest.client;
 
-import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-public class JEditorTestApp extends AppGraphics2D  {
+public class JEditorTestApp extends App2D  {
     
     /**
      * Create a new instance of JEditorTestApp. 

@@ -136,12 +136,15 @@ public class View2DCell extends View2DEntity {
         setRotationUser(rotation, true);
     }
 
-    /** Specify the rotation (comes from the user). Update afterward. */
+    /** 
+     * Specify the rotation (comes from the user). Update afterward. 
+     * NOTE: Not yet implemented
+     */
     public synchronized void setRotationUser (Quaternion rotation, boolean update) {
         logger.info("change rotationUser = " + rotation);
         userRotationPrev = userRotation;
         userRotation = rotation.clone();
-        changeMask |= CHANGED_USER_TRANSFORM;
+        changeMask |= 0; // TODO: Add a subclass-specific flag for rotation;
         if (update) {
             update();
         }
@@ -163,8 +166,7 @@ public class View2DCell extends View2DEntity {
 
     /** {@inheritDoc} */
     public synchronized void update () {
-        super.processChanges();
-        changeMask = 0;
+        super.update();
     }
 
     // Uses: type, parent
@@ -195,12 +197,36 @@ public class View2DCell extends View2DEntity {
         }
     }                
 
+    // Uses: type, ortho, parent, stack
     protected Vector3f calcStackTranslation () {
         if (isOrtho()) {
             return new Vector3f(0f, 0f, 0f);
         } else {
-            // TODO: quick and dirty. Must eventually fix.
-            return new Vector3f(0f, 0f, (1-zOrder) * STACK_GAP);
+            int stackPos = window.getStackPosition();
+            if (stackPos < 0) {
+                logger.info("ERROR: stack position cannot be calculated for window " + window);
+                stackPos = 0;
+            }
+            logger.fine("View " + this);
+            logger.fine("zOrder = " + window.getZOrder());
+            logger.fine("stackPos = " + stackPos);
+            float localZ;
+            if ((type == Type.POPUP || type == Type.SECONDARY) && parent != null) {
+                Window2D parentWindow = ((View2DCell)parent).window;
+                if (parentWindow == null) {
+                    localZ = 0f;
+                } else {
+                    int stackPosParent = parentWindow.getStackPosition();
+                    logger.fine("stackPosParent = " + stackPosParent);
+                    logger.fine("zOrder Parent = " + parentWindow.getZOrder());
+                    localZ = (stackPos - stackPosParent) * STACK_GAP;
+                }
+            } else {
+                localZ = stackPos * STACK_GAP;
+            }
+
+            logger.fine("localZ = " + localZ);
+            return new Vector3f(0f, 0f, localZ);
         }
     }
 
@@ -268,17 +294,20 @@ public class View2DCell extends View2DEntity {
     /** {@inheritDoc} */
     @Override
     protected void attachFrame () {
-        logger.fine("Create new frame");
-        frame = new Frame2DCell(this);
+        if (frame == null) {
+            logger.fine("Create new frame for view " + this);
+            frame = new Frame2DCell(this);
+        }
+        logger.fine("Attach frame to view " + this);
+        frame.attachToViewEntity();
     }
 
     /** {@inheritDoc} */
     @Override
     protected void detachFrame () {
         if (frame != null) {
-            logger.fine("Destroy frame");
-            frame.cleanup();
-            frame = null;
+            logger.fine("Detach frame from view");
+            frame.detachFromViewEntity();
         }
     }
 

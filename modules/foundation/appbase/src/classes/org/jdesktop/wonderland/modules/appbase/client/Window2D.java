@@ -77,7 +77,7 @@ public abstract class Window2D {
     private static final int CHANGED_OFFSET      = 0x10;
     private static final int CHANGED_SIZE        = 0x20;
     private static final int CHANGED_TITLE       = 0x40;
-    private static final int CHANGED_Z_ORDER     = 0x80;
+    private static final int CHANGED_STACK     = 0x80;
 
     /** The type of the 2D window. */
     public enum Type {
@@ -94,8 +94,8 @@ public abstract class Window2D {
     protected Vector2f pixelScale;
     /** The string to display as the window title */
     protected String title;
-    /** The Z order of all views of the window. */
-    private int zOrder;
+    /** The desired Z order of all views of the window. */
+    private int desiredZOrder;
     /** The texture which contains the contents of the window */
     protected Texture2D texture;
     /** Listeners for key events */
@@ -129,10 +129,10 @@ public abstract class Window2D {
     protected int changeMask;
     /** A list of event listeners to attach to this window's views. */
     private LinkedList<EventListener> eventListeners = new LinkedList<EventListener>();
-    /** If true, the window shares the zOrder of its parent. Only used for popups. */
+    /** If true, the window is in the same local Z plane as parent. Only used for frame header windows. */
     private boolean coplanar;
-    /** The SWS ID for this window, if SWS is being used by this app for sharing window state. */
-   // TODO private BigInteger swsWindowID;
+    /** The surface the client on which subclasses should draw. */
+    protected DrawingSurface surface;
 
     /** A type for entries in the entityComponents list. */
     private static class EntityComponentEntry {
@@ -159,9 +159,11 @@ public abstract class Window2D {
      * @param height The window height (in pixels).
      * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
+     * @param surface The drawing surface on which the creator will draw
      */
-    protected Window2D(App2D app, int width, int height, boolean decorated, Vector2f pixelScale) {
-        this(app, width, height, decorated, pixelScale, null);
+    protected Window2D(App2D app, int width, int height, boolean decorated, Vector2f pixelScale,
+                       DrawingSurface surface) {
+        this(app, width, height, decorated, pixelScale, null, surface);
     }
 
     /**
@@ -173,13 +175,18 @@ public abstract class Window2D {
      * @param decorated Whether the window is top-level (e.g. is decorated) with a frame.
      * @param pixelScale The size of the window pixels.
      * @param name The name of the window.
+     * @param surface The drawing surface on which the creator will draw
      */
-    public Window2D(App2D app, int width, int height, boolean decorated, Vector2f pixelScale, String name) {
+    public Window2D(App2D app, int width, int height, boolean decorated, Vector2f pixelScale, String name,
+                    DrawingSurface surface) {
         this.app = app;
         this.size = new Dimension(width, height);
         this.decorated = decorated;
         this.pixelScale = new Vector2f(pixelScale);
         this.name = name;
+
+        this.surface = surface;
+        surface.setWindow(this);
 
         // Must occur before adding window to the app
         updateTexture();
@@ -188,13 +195,6 @@ public abstract class Window2D {
 
         changeMask = CHANGED_ALL;
         updateViews();
-
-        /* TODO:
-         SwsClient swsClient = getApp().getSwsClient();
-        if (swsClient != null) {
-            swsWindowID = swsClient.allocateID();
-        }
-         */
     }
 
     /**
@@ -206,10 +206,12 @@ public abstract class Window2D {
      * @param height The window height (in pixels).
      * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
+     * @param surface The drawing surface on which the creator will draw
      * Throws a RuntimeException if the rules of setType are not followed.
      */
-    protected Window2D(App2D app, Type type, int width, int height, boolean decorated, Vector2f pixelScale) {
-        this(app, type, width, height, decorated, pixelScale, null);
+    protected Window2D(App2D app, Type type, int width, int height, boolean decorated, Vector2f pixelScale,
+                       DrawingSurface surface) {
+        this(app, type, width, height, decorated, pixelScale, null, surface);
     }
 
     /**
@@ -222,11 +224,12 @@ public abstract class Window2D {
      * @param decorated Whether the window is top-level (e.g. is decorated) with a frame.
      * @param pixelScale The size of the window pixels.
      * @param name The name of the window.
+     * @param surface The drawing surface on which the creator will draw
      * Throws a RuntimeException if the rules of setType are not followed.
      */
     public Window2D(App2D app, Type type, int width, int height, boolean decorated, Vector2f pixelScale,
-            String name) {
-        this(app, type, app.getPrimaryWindow(), width, height, decorated, pixelScale, name);
+            String name, DrawingSurface surface) {
+        this(app, type, app.getPrimaryWindow(), width, height, decorated, pixelScale, name, surface);
     }
 
     /**
@@ -238,11 +241,12 @@ public abstract class Window2D {
      * @param height The window height (in pixels).
      * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
+     * @param surface The drawing surface on which the creator will draw
      * Throws a RuntimeException if the rules of setType are not followed.
      */
     protected Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated,
-            Vector2f pixelScale) {
-        this(app, type, parent, width, height, decorated, pixelScale, null);
+                       Vector2f pixelScale, DrawingSurface surface) {
+        this(app, type, parent, width, height, decorated, pixelScale, null, surface);
     }
 
     /**
@@ -256,10 +260,11 @@ public abstract class Window2D {
      * @param decorated Whether the window is top-level (e.g. is decorated) with a frame.
      * @param pixelScale The size of the window pixels.
      * @param name The name of the window.
+     * @param surface The drawing surface on which the creator will draw
      * Throws a RuntimeException if the rules of setType are not followed.
      */
     public Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated,
-            Vector2f pixelScale, String name) {
+            Vector2f pixelScale, String name, DrawingSurface surface) {
         this.app = app;
         this.size = new Dimension(width, height);
         this.decorated = decorated;
@@ -276,6 +281,9 @@ public abstract class Window2D {
 
         this.parent = parent;
 
+        this.surface = surface;
+        surface.setWindow(this);
+
         // Must occur before adding window to the app
         updateTexture();
 
@@ -291,9 +299,15 @@ public abstract class Window2D {
     public synchronized void cleanup() {
         setParent(null);
         texture = null;
+        if (surface != null) {
+            surface.setUpdateEnable(false);
+            surface.cleanup();
+            surface = null;
+        }
         if (app != null) {
-            app.removeWindow(this);
+            App2D theApp = app;
             app = null;
+            theApp.removeWindow(this);
         }
         visibleApp = false;
     }
@@ -312,6 +326,13 @@ public abstract class Window2D {
         } else {
             return name;
         }
+    }
+
+    /**
+     * Returns the drawing surface of this window. 
+     */
+    public DrawingSurface getSurface() {
+        return surface;
     }
 
     /**
@@ -447,6 +468,7 @@ public abstract class Window2D {
 
     /**
      * Specify the size of the window (excluding the decoration).
+     * Note: the arguments do NOT include the borderWidth.
      *
      * TODO: Currently, the entire window contents will be lost when the window is resized, 
      * so you must repaint the entire window after the resize.
@@ -460,52 +482,13 @@ public abstract class Window2D {
             return;
         }
         this.size = new Dimension(width, height);
-        changeMask |= CHANGED_SIZE;
-        updateViews();
-    }
-
-    /**
-     * Specify the size of the window (excluding the decoration) in this client
-     * and all other clients.
-     *
-     * TODO: Currently, the entire window contents will be lost when the window is resized, 
-     * so you must repaint the entire window after the resize.
-     *
-     * @param width The new width of the window.
-     * @param height The new height of the window.
-     */
-    /* TODO: winconfig: notyet
-    public synchronized void setSize(int width, int height) {
-        setSizeLocal(width, height);
-
-        // TODO: winconfig: swing: resize
-        //if (app.isSwsShared(SwsClient.Attr.WINDOW_SIZE)) {
-          //  SwsClient swsClient = getApp().getSwsClient();
-            //if (swsClient != null) {
-              //  swsClient.setSize(swsWindowID, width, height);
-            //}
-        //}
-    }
-    */
-
-    /**
-     * INTERNAL API.
-     * <br><br>
-     * Specify the size of the window (excluding the decoration) in the local client only.
-     * <br><br>
-     * @param width The new width of the window.
-     * @param height The new height of the window.
-     */
-    /* TODO: winconfig: notyet
-    public synchronized void setSizeLocal(int width, int height) {
-        if (this.size.width == width && this.size.height == height) {
-            return;
+        if (surface != null) {
+            surface.setTexture(texture);
+            surface.setSize(width, height);
         }
-        this.size = new Dimension(width, height);
         changeMask |= CHANGED_SIZE;
         updateViews();
     }
-    */
 
     /**
      * The width of the window (excluding the decoration).
@@ -588,7 +571,7 @@ public abstract class Window2D {
         if (sibling != null) {
             // This will call updateViews if necessary
             app.getWindowStack().restackAbove(this, sibling);
-        } else {
+            changeMask |= CHANGED_STACK;
             updateViews();
         }
     }
@@ -621,9 +604,29 @@ public abstract class Window2D {
             return;
         }
 
+        setVisibleAppPart1(visible);
+        setVisibleAppPart2();
+    }
+
+    protected void setVisibleAppPart1(boolean visible) {
         visibleApp = visible;
         changeMask |= CHANGED_VISIBLE_APP;
-        updateViews();
+    }
+
+    protected void setVisibleAppPart2() {
+        if (visibleApp) {
+            // Add newly visible windows to the stack if they aren't coplanar
+            if (!coplanar) {
+                app.getWindowStack().add(this);
+                changeMask |= CHANGED_STACK;
+                updateViews();
+            }
+        } else {
+            // Remove newly invisible windows from the stack
+            app.getWindowStack().remove(this);
+            changeMask |= CHANGED_STACK;
+            updateViews();
+        }
     }
 
     /** 
@@ -702,17 +705,29 @@ public abstract class Window2D {
     }
 
      /**
-      * Specify whether this popup window has the same zOrder as its parent.
+      * Specify whether this window is in the same local Z plane as its parent.
       * Ignored by non-popups.
       */
     public synchronized void setCoplanar (boolean coplanar) {
         if (this.coplanar == coplanar) return;
         this.coplanar = coplanar;
-        app.getWindowStack().coplanarUpdated(this);
+        if (coplanar) {
+            // Remove newly coplanar windows from the stack
+            app.getWindowStack().remove(this);
+            changeMask |= CHANGED_STACK;
+            updateViews();
+        } else {
+            // If a window has just become non-coplanar and it is visible, add it to the stack
+            if (isVisibleApp()) {
+                app.getWindowStack().add(this);
+                changeMask |= CHANGED_STACK;
+                updateViews();
+            }
+        }
     }
 
     /** 
-     * Returns whether this window is coplanar in the window stack with its parent.
+     * Returns whether this window is in the same local Z plane as its parent.
      */
     public synchronized boolean isCoplanar () {
         return coplanar;
@@ -737,6 +752,8 @@ public abstract class Window2D {
      */
     public synchronized void restackToTopLocal () {
         app.getWindowStack().restackToTop(this);
+        changeMask |= CHANGED_STACK;
+        updateViews();
     }
 
     /**
@@ -758,6 +775,8 @@ public abstract class Window2D {
      */
     public synchronized void restackToBottomLocal () {
         app.getWindowStack().restackToBottom(this);
+        changeMask |= CHANGED_STACK;
+        updateViews();
     }
 
     /**
@@ -785,6 +804,8 @@ public abstract class Window2D {
      */
     public synchronized void restackAbove/*TODO:winconfig:restack:Local*/ (Window2D sibling) {
         app.getWindowStack().restackAbove(this, sibling);
+        changeMask |= CHANGED_STACK;
+        updateViews();
     }
 
     /**
@@ -804,13 +825,16 @@ public abstract class Window2D {
      */
     public synchronized void restackBelowLocal (Window2D sibling) {
         app.getWindowStack().restackBelow(this, sibling);
+        changeMask |= CHANGED_STACK;
+        updateViews();
+    }
 
-        /* TODO: winconfig: swing: stack
-        if (app.isSwsShared(Sws.Op.WINDOW_RESTACK)) {
-            SwsClient swsClient = getApp().getSwsClient();
-            swsClient.restackBelow(swsWindowID, sibling.swsWindowID);
-        }
-        */
+    /**
+     * Called by the App when the stacking order of this window has possibly changed.
+     */
+    public void changedStack () {
+        changeMask |= CHANGED_STACK;
+        updateViews();
     }
 
     /**
@@ -830,30 +854,56 @@ public abstract class Window2D {
     }
 
     /**
-     * Specify the window's Z (stacking) order. This is called by the App's WindowStack.
-     * It is also called by the slave synchronization code of conventional apps.
-     * @param zOrder The Z (stacking) order. Lower values are higher in the stack.
-     * Mainly for use by the window stack.
+     * Specify the window's desired Z (stacking) order. This is used mainly for client/slave 
+     * synchronization of the window stack.
+     * @param zOrder The desired Z (stacking) order. Lower values are higher in the stack.
      */
-    public synchronized void setZOrder(int zOrder) {
-        setZOrderUnsynchronized(zOrder);
-    }
-
-    /** For use by WindowStack only. */
-    void setZOrderUnsynchronized (int zOrder) {
-        if (zOrder == this.zOrder) {
+    public synchronized void setDesiredZOrder(int desiredZOrder) {
+        if (desiredZOrder == this.desiredZOrder) {
             return;
         }
-        this.zOrder = zOrder;
-        changeMask |= CHANGED_Z_ORDER;
-        updateViews();
+        this.desiredZOrder = desiredZOrder;
     }
 
     /**
-     * Returns the window's Z order.
+     * Returns the window's desired Z order. 
+     */
+    public int getDesiredZOrder() {
+        return desiredZOrder;
+    }
+
+    /**
+     * Returns the window's actual Z order in its app's window stack.
+     * @returns The Z order, or -1 if the window is invisible or coplanar.
      */
     public int getZOrder() {
-        return zOrder;
+        if (!isVisibleApp()) return -1;
+        if (coplanar) {
+            if (parent == null) {
+                return -1;
+            } else {
+                return parent.getZOrder();
+            }
+        } else {
+            return app.getWindowStack().getZOrderOfWindow(this);
+        }
+    }
+
+    /**
+     * Returns the window's stack position in its app's window stack.
+     * @returns The stack position, or -1 if the window is invisible or coplanar.
+     */
+    public int getStackPosition() {
+        if (!isVisibleApp()) return -1;
+        if (coplanar) {
+            if (parent == null) {
+                return -1;
+            } else {
+                return parent.getZOrder();
+            }
+        } else {
+            return app.getWindowStack().getStackPositionOfWindow(this);
+        }
     }
 
     /**
@@ -1283,6 +1333,13 @@ public abstract class Window2D {
      * Update all views with the current state of the window.
      */
     protected void updateViews() {
+        
+        // Only update this window's views if the window is visible and this isn't a visibility change.
+        // This improves performance and decreases transient visible artifacts from view frames.
+        if (!isVisibleApp() &&
+            ((changeMask & (CHANGED_VISIBLE_APP | CHANGED_SIZE)) == 0)) {
+            return;
+        }
 
         for (View2D view : views) {
             if ((changeMask & CHANGED_TYPE) != 0) {
@@ -1328,10 +1385,39 @@ public abstract class Window2D {
             if ((changeMask & CHANGED_TITLE) != 0) {
                 view.setTitle(title, false);
             }
-            if ((changeMask & CHANGED_Z_ORDER) != 0) {
-                view.setZOrder(zOrder, false);
+            if ((changeMask & CHANGED_STACK) != 0) {
+                view.stackChanged(false);
             }
             view.update();
+        }
+
+        // The surface only needs to be updated while the window is visible.
+        if (surface != null) {
+
+            // The window is displayed if it has one or more views that is actually visible.
+            boolean isDisplayed = false;
+            Iterator<View2D> it = getViews();
+            while (it.hasNext()) {
+                View2D view = it.next();
+                if (view.isActuallyVisible()) {
+                    isDisplayed = true;
+                    break;
+                }
+            }
+
+            if (isDisplayed) {
+                // If window is displayed somewhere, enable surface updating
+                if (!surface.getUpdateEnable()) {
+                    logger.fine("Enable updating for surface " + surface);
+                    surface.setUpdateEnable(true);
+                }
+            } else {
+                // If window is no longer displayed anywhere, disable surface updating
+                if (surface.getUpdateEnable()) {
+                    logger.fine("Disable updating for surface " + surface);
+                    surface.setUpdateEnable(false);
+                }
+            }
         }
 
         changeMask = 0;
@@ -1377,6 +1463,10 @@ public abstract class Window2D {
     texture.setAnisotropicFilterMode(Texture2D.ANISOTROPIC_SINGLE_VALUE);
     texture.setAnisotropicFilterDegree(8.0f);
      */
+
+        if (surface != null) {
+            surface.setTexture(texture);
+        }
     }
 
     /** 
@@ -1396,5 +1486,17 @@ public abstract class Window2D {
                 return powerValue;
             }
         }
+    }
+
+    /**
+     * Initialize the contents of the surface.
+     */
+    protected void initializeSurface() {
+        if (surface != null) {
+            surface.initializeSurface();
+        }
+    }
+
+    protected void repaint() {
     }
 }

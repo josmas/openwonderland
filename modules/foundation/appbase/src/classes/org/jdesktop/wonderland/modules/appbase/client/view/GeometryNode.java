@@ -119,7 +119,8 @@ public abstract class GeometryNode extends Node {
 
     /**
      * Transform the given 3D point in world coordinates into the corresponding point
-     * in the texel space of the geometry. The given point must be in the plane of the window.
+     * in the texel space of the geometry. The given point must be in the plane of the window
+     * but it doesn't necessarily need to be within the rectangle of the geometry.
      * <br><br>
      * Note: works when called with both a vector or a point.
      * @param point The point to transform.
@@ -154,10 +155,10 @@ public abstract class GeometryNode extends Node {
         Vector3f topRight = local2World.mult(topRightLocal, new Vector3f()); // TODO:prealloc
         Vector3f bottomLeft = local2World.mult(bottomLeftLocal, new Vector3f()); // TODO:prealloc
         Vector3f bottomRight = local2World.mult(bottomRightLocal, new Vector3f()); // TODO:prealloc
-        logger.fine("topLeft = " + topLeft);
-        logger.fine("topRight = " + topRight);
-        logger.fine("bottomLeft = " + bottomLeft);
-        logger.fine("bottomRight = " + bottomRight);
+        logger.fine("topLeft (world) = " + topLeft);
+        logger.fine("topRight (world) = " + topRight);
+        logger.fine("bottomLeft (world) = " + bottomLeft);
+        logger.fine("bottomRight (world) = " + bottomRight);
 
         // Now calculate the x and y coords relative to the view
 
@@ -166,7 +167,6 @@ public abstract class GeometryNode extends Node {
         logger.fine("widthWorld = " + widthWorld);
         logger.fine("heightWorld = " + heightWorld);
 
-        // TODO: doc: point must be on window
         float x = point.x - topLeft.x;
         float y = (topLeft.y - point.y);
         logger.fine("x = " + x);
@@ -234,15 +234,15 @@ public abstract class GeometryNode extends Node {
         Ray rayWorld = InputManager3D.getInputManager().pickRayWorld(x, y);
 
         // Calculate an arbitrary point on the plane (in this case, the top left corner)
-        float width = texture.getImage().getWidth();
-        float height = texture.getImage().getHeight();
+        float width = view.getDisplayerLocalWidth();
+        float height = view.getDisplayerLocalHeight();
         Vector3f topLeftLocal = new Vector3f(-width / 2f, height / 2f, 0f);
         Matrix4f local2World = getLocalToWorldMatrix(null);
         Vector3f topLeftWorld = local2World.mult(topLeftLocal, new Vector3f());
 
         // Calculate the plane normal
         Vector3f planeNormalWorld = getPlaneNormalWorld();
-
+        
         // Now find the intersection of the ray with the plane
         Vector3f intPointWorld = calcPlanarIntersection(rayWorld, topLeftWorld, planeNormalWorld);
         if (intPointWorld == null) {
@@ -252,6 +252,7 @@ public abstract class GeometryNode extends Node {
         // TODO: opt: we can optimize the following by reusing some of the intermediate
         // results from the previous steps
         Point pt = calcPositionInPixelCoordinates(intPointWorld, false);
+        logger.fine("pixel position = " + pt);
         return pt;
     }
 
@@ -261,8 +262,8 @@ public abstract class GeometryNode extends Node {
     protected Vector3f getPlaneNormalWorld() {
         // Find two vectors on the plane and take the cross product and then normalize
 
-        float width = texture.getImage().getWidth();
-        float height = texture.getImage().getHeight();
+        float width = view.getDisplayerLocalWidth();
+        float height = view.getDisplayerLocalHeight();
         Vector3f topLeftLocal = new Vector3f(-width / 2f, height / 2f, 0f);
         Vector3f topRightLocal = new Vector3f(width / 2f, height / 2f, 0f);
         Vector3f bottomLeftLocal = new Vector3f(-width / 2f, -height / 2f, 0f);
@@ -276,6 +277,10 @@ public abstract class GeometryNode extends Node {
         Vector3f topRightWorld = local2World.mult(topRightLocal, new Vector3f()); // TODO:prealloc
         Vector3f bottomLeftWorld = local2World.mult(bottomLeftLocal, new Vector3f()); // TODO:prealloc
         Vector3f bottomRightWorld = local2World.mult(bottomRightLocal, new Vector3f()); // TODO:prealloc
+        logger.fine("topLeftWorld = " + topLeftWorld);
+        logger.fine("topRightWorld = " + topRightWorld);
+        logger.fine("bottomLeftWorld = " + bottomLeftWorld);
+        logger.fine("bottomRightWorld = " + bottomRightWorld);
 
         Vector3f leftVec = bottomLeftWorld.subtract(topLeftWorld);
         Vector3f topVec = topRightWorld.subtract(topLeftWorld);
@@ -283,16 +288,22 @@ public abstract class GeometryNode extends Node {
     }
 
     /**
-     * Calculates the point in world coordinates where the given ray
-     * intersects the "world plane" of this geometry. Returns null if the ray doesn't intersect the plane.
+     * Calculates the point in world coordinates where the given ray intersects the "world plane" 
+     * of this geometry. Returns null if the ray doesn't intersect the plane.
      * <br><br>
      * All inputs are in world coordinates.     
      * <br><br>
      * @param ray The ray.
      * @param planePoint A point on the plane.
      * @param planeNormal The plane normal vector.
+     * @return The intersection point.
      */
     protected Vector3f calcPlanarIntersection(Ray ray, Vector3f planePoint, Vector3f planeNormal) {
+        //System.err.println("CPI: #############");
+        //System.err.println("CPI: ray origin  = " + ray.getOrigin());
+        //System.err.println("CPI: ray dir     = " + ray.getDirection());
+        //System.err.println("CPI: planePoint  = " + planePoint);
+        //System.err.println("CPI: planeNormal = " + planeNormal);
 
         // Ray Equation is X = P + t * V
         // Plane Equation is (X - P0) dot N = 0
@@ -314,7 +325,7 @@ public abstract class GeometryNode extends Node {
         // Source: Various: Lars Bishop book, Geometry Toolbox, Doug T.
 
         Vector3f pointDiffVec = new Vector3f(planePoint);
-        pointDiffVec.subtract(ray.getOrigin());
+        pointDiffVec.subtractLocal(ray.getOrigin());
         float numerator = planeNormal.dot(pointDiffVec);
         float denominator = planeNormal.dot(ray.getDirection());
         if (denominator == 0f) {
@@ -322,71 +333,12 @@ public abstract class GeometryNode extends Node {
             return null;
         }
         float t = numerator / denominator;
+        //System.err.println("CPI: t " + t);
 
         // Now plug t into the Ray Equation is X = P + t * V
         Vector3f x = ray.getDirection().mult(t).add(ray.getOrigin());
+        logger.fine("intersection point (world) = " + x);
         return x;
     }
-    /**/
-
-    /*
-    // TODO
-    // @param N The plane normal in world coords.
-
-    protected Vector3f calcPlanarIntersection(Ray ray, Vector3f planePoint, Vector3f N) {
-
-        // Uses the following formulae for Ray/Plane intersection:
-        //
-        // Ray Equation is P = P0 + t(V)
-        // Plane Equation is P.N + d = 0
-        //
-        // Where,
-        // P = Intersection Point
-        // P0 = Starting Point for Ray
-        // V = Direction of Ray
-        // t = distance along ray to intersection point
-        // N = Normal for plane
-        // d = from definition of plane
-        // 
-        // By substitution:
-        // 
-        // (P0 + t(V)).N + d = 0;
-        // P0.N + tV.N + d = 0;
-        // tV.N = -(P0.N + d);
-        // t = -(P0.N + d)/V.N;
-        // 
-        // Once you have t, simply substitute in the ray equation for P.
-        // 
-        // Source: Doug Twilleager. I'm not sure where he got it from.
-
-        Vector3f V = ray.getDirection();
-        Vector3f P0 = ray.getOrigin();
-
-        // First calculate the denominator: V dot N
-        float denominator = V.dot(N);
-        if (denominator == 0f) {
-            // No intersection
-            return null;
-        }
-
-        // t = -(P0.N +d)
-        // Once you have t, simply substitute in the ray equation for P.
-
-
-        // Now calculate the numerator: -(P0.N + d)
-        float dotTmp = P0.dot(N);
->>>> left off here
-        Vector3f numerator = planePoint.subtract(ray.getOrigin(), new Vector3f());
-        float numerator = planeNormal.dot(vecTmp);
-
-        // Now calculate t
-        float t = numerator / denominator;
-
-        // Now plug t into the ray equation P = P0 + t * rayDirection
-        Vector3f p = ray.getDirection().mult(t).add(ray.getOrigin());
-        return p;
-    }
-    */
-
 }
 

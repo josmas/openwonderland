@@ -24,11 +24,11 @@ import java.util.NoSuchElementException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
- * The stack of visible windows. After the window stack has been validated
- * with a call to <code>validate()</code> each non-coplanar (i.e. "stacked") 
- * windows each has a unique zOrder. The top window has zOrder = 0, 
- * and zOrders increase from top to bottom. The zOrder of the bottom window is 
- * getNumStackedWindows() - 1.
+/**
+ * The stack of visible, non-coplanar windows of an app. Each window in the stack has a unique
+ * zOrder determined by its position in the stack. The topmost visible window has zOrder = 0, 
+ * and zOrders increase from top to bottom. The zOrder of the bottommost visible window is 
+ * getNumWindows() - 1. 
  *
  * @author deronj
  */
@@ -37,168 +37,102 @@ class WindowStack {
 
     /** 
      * The list of stacked windows. Windows in the list appear in top to bottom order.
-     * After validate is called, each has a unique zOrder. The top window has zOrder = 0, 
-     * and zOrders increase from top to bottom. The zOrder of the bottom window is 
-     * getNumStackedWindows() - 1.
+     * The topmost visible window has zOrder = 0, and zOrders increase from top to bottom. The zOrder of the 
+     * bottommost window is getNumWindows() - 1. 
      */
-    protected LinkedList<Window2D> stackedWindows = new LinkedList<Window2D>();
+    protected LinkedList<Window2D> stack = new LinkedList<Window2D>();
  
-    /** 
-     * The (unordered) list of coplanar windows. These have the zOrder of their parents.
-     */
-    protected LinkedList<Window2D> coplanarWindows = new LinkedList<Window2D>();
-
     /**
      * Deallocate resources.
      */
     public synchronized void cleanup() {
-        stackedWindows.clear();
-        coplanarWindows.clear();
+        stack.clear();
     }
 
     /**
-     * Add a new window to the stack. If the window is non-coplanar move it to the top of the stack.
+     * Add a new window to the top of the stack. Does nothing if the window is not visible or is coplanar.
      * @param window The window to be added.
      */
     public synchronized void add(Window2D window) {
-        addNoValidate(window);
-        validate();
+        if (window == null || !window.isVisibleApp() || window.isCoplanar()) return;
+        stack.addFirst(window);
     }
 
-    /**
-     * Same as the <code>add</code> method, but don't validate (i.e. recalculate the window Z orders)
-     * afterward. Used during conventional window slave synchronization.
-     * @param window The window to be added.
-     */
-    public synchronized void addNoValidate(Window2D window) {
-        ensureNotInEitherList(window);
-        if (window.isCoplanar()) {
-            coplanarWindows.add(window);
-        } else {
-            stackedWindows.addFirst(window);
-        }
-     }
-
      /**
-      * Remove the given window from the stack.
+      * Remove the given window from the stack. Does nothing if the window is not visible or is coplanar.
       * @param window The window to be removed.
       */
     public synchronized void remove(Window2D window) {
-        ensureNotInEitherList(window);
-        validate();
-    }
-
-    /** Make sure that the window isn't in either list. */
-    private final void ensureNotInEitherList(Window2D window) {
-        stackedWindows.remove(window);
-        coplanarWindows.remove(window);
-    }
-
-    /** 
-     * Tell the stack that the coplanar attribute of the given window has been updated. 
-     * If the window is no longer coplanar it is placed immediately above its parent.
-     * If it has no parent it is placed on top of the stack.
-     */
-    synchronized void coplanarUpdated(Window2D window) {
-        coplanarUpdatedNoValidate(window);
-        validate();
-    }
-
-    /** 
-     * Same as the <code>coplanarUpdated</code> method, but don't validate afterward.
-     * Used during conventional window slave synchronization.
-     */
-    synchronized void coplanarUpdatedNoValidate(Window2D window) {
-        ensureNotInEitherList(window);
-        if (window.isCoplanar()) {
-            coplanarWindows.add(window);
-        } else {
-            Window2D parentWindow = window.getParent();
-            addNoValidate(window);
-            if (parentWindow != null) {
-                restackAbove(window, parentWindow);
-            }
-        }
+        if (window == null || !window.isVisibleApp() || window.isCoplanar()) return;
+        stack.remove(window);
     }
 
     /**
-     * Returns the number of non-coplanar (i.e. "stacked") windows.
+     * Returns the number of windows in the stack.
      */
-    public synchronized int getNumStackedWindows () {
-        return stackedWindows.size();
+    public synchronized int getNumWindows () {
+        return stack.size();
     }
 
     /**
-     * Returns the number of coplanar windows.
-     */
-    public synchronized int getNumCoplanarWindows () {
-        return coplanarWindows.size();
-    }
-
-
-    /**
-     * Move the given window to the top of the stack. This is ignored for coplanar windows.
+     * Move the given window to the top of the stack. Does nothing if the window is not visible 
+     * or is coplanar.
      * @param window The window to be moved.
      */
     public synchronized void restackToTop(Window2D window) {
-        if (!window.isCoplanar()) {
-            stackedWindows.remove(window);
-            stackedWindows.addFirst(window);
-            validate();
-        }
+        if (window == null || !window.isVisibleApp() || window.isCoplanar()) return;
+        stack.remove(window);
+        stack.addFirst(window);
     }
 
     /**
-     * Move the given window to the bottom of the stack. This is ignored for coplanar windows.
+     * Move the given window to the bottom of the stack. Does nothing if the window is not visible 
+     * or is coplanar.
      * @param window The window to be moved.
      */
     public synchronized void restackToBottom(Window2D window) {
-        if (!window.isCoplanar()) {
-            stackedWindows.remove(window);
-            stackedWindows.addLast(window);
-            validate();
-        }
+        if (window == null || !window.isVisibleApp() || window.isCoplanar()) return;
+        stack.remove(window);
+        stack.addLast(window);
     }
 
     /**
      * Move the given window so that it is above the given sibling window in the stack. If sibling is null,
-     * this is the same as restackToTop. This is ignored for coplanar windows.
+     * this is the same as restackToTop. Does nothing if either window is not visible or is coplanar.
      * @param window The window to be moved.
      */
     public synchronized void restackAbove(Window2D window, Window2D sibling) {
-        if (!window.isCoplanar()) {
-            if (sibling == null) {
-                restackToTop(window);
+        if (window == null || !window.isVisibleApp() || window.isCoplanar()) return;
+        if (sibling == null) {
+            restackToTop(window);
+        } else {
+            if (!sibling.isVisibleApp() || sibling.isCoplanar()) return;
+            int idx = stack.indexOf(sibling);
+            if (idx <= 0) {
+                stack.addFirst(window);
             } else {
-                int idx = stackedWindows.indexOf(sibling);
-                if (idx <= 0) {
-                    stackedWindows.addFirst(window);
-                } else {
-                    stackedWindows.add(idx, window);
-                }
+                stack.add(idx, window);
             }
-            validate();
         }
     }
 
     /**
      * Move the given window so that it is below the given sibling window in the stack. If sibling is null,
-     * this is the same as restackToBottom. This is ignored for coplanar windows.
+     * this is the same as restackToBottom. Does nothing if either window is not visible or is coplanar.
      * @param window The window to be moved.
      */
     public synchronized void restackBelow(Window2D window, Window2D sibling) {
-        if (!window.isCoplanar()) {
-            if (sibling == null) {
-                restackToBottom(window);
+        if (window == null || !window.isVisibleApp() || window.isCoplanar()) return;
+        if (sibling == null) {
+            restackToBottom(window);
+        } else {
+            if (!sibling.isVisibleApp() || sibling.isCoplanar()) return;
+            int idx = stack.indexOf(sibling);
+            if (idx < 0 || idx >= stack.size()) {
+                stack.addLast(window);
             } else {
-                int idx = stackedWindows.indexOf(sibling);
-                if (idx < 0 || idx >= stackedWindows.size()-1) {
-                    stackedWindows.addLast(window);
-                } else {
-                    stackedWindows.add(idx+1, window);
-                }
+                stack.add(idx+1, window);
             }
-            validate();
         }
     }
 
@@ -208,7 +142,7 @@ class WindowStack {
      */
     public synchronized Window2D getTop() {
         try {
-            return stackedWindows.getFirst();
+            return stack.getFirst();
         } catch (NoSuchElementException ex) {
             return null;
         }
@@ -219,7 +153,7 @@ class WindowStack {
      */
     public synchronized Window2D getBottom() {
         try {
-            return stackedWindows.getLast();
+            return stack.getLast();
         } catch (NoSuchElementException ex) {
             return null;
         }
@@ -231,15 +165,11 @@ class WindowStack {
      */
     public synchronized Window2D getAbove(Window2D window) {
         if (window == null) return null;
-        if (window.isCoplanar()) {
-            return getAbove(window.getParent());
+        int idx = stack.indexOf(window);
+        if (idx <= 0) {
+            return null;
         } else {
-            int idx = stackedWindows.indexOf(window);
-            if (idx <= 0) {
-                return null;
-            } else {
-                return stackedWindows.get(idx-1);
-            }
+            return stack.get(idx-1);
         }
     }
 
@@ -249,67 +179,60 @@ class WindowStack {
      */
     public synchronized Window2D getBelow(Window2D window) {
         if (window == null) return null;
-        if (window.isCoplanar()) {
-            return getBelow(window.getParent());
+        int idx = stack.indexOf(window);
+        if (idx < 0 || idx >= stack.size()) {
+            return null;
         } else {
-            int idx = stackedWindows.indexOf(window);
-            if (idx < 0 || idx >= stackedWindows.size()-1) {
-                return null;
-            } else {
-                return stackedWindows.get(idx+1);
-            }
+            return stack.get(idx+1);
         }
     }
 
     /**
-     * Recalculate the Z orders of all stacked windows based on their position in he
-     * list of stacked windows. And recalculate the Z orders of the coplanar windows
-     * based on the Z order of their parents. If a coplanar window doesn't have a parent
-     * set its zOrder to 0.
+     * Return the zOrder of the given window in the stack.
+     * @param window The window whose zOrder is returned.
+     * @return The zOrder of the window, or -1 if the window is not in the stack.
      */
-    private void validate () {
-
-        // Traverse the stacked windows from top to bottom
-        int zOrderNext = 0;
-        for (Window2D window : stackedWindows) {
-            // TODO: TEMP WORKAROUND: fix invalid texcoord updates gt: click left on File
-            //window.setZOrder(zOrderNext);
-            zOrderNext++;
+    public synchronized int getZOrderOfWindow (Window2D window) {
+        if (window == null) return -1;
+        int idx = stack.indexOf(window);
+        //System.err.println("getZOrder: stack idx of window " + window + " = " + idx);
+        if (idx < 0 || idx >= stack.size()) {
+            return -1;
+        } else {
+            return idx;
         }
-
-        // Traverse coplanar wins 
-        for (Window2D window : coplanarWindows) {
-            Window2D stackedParent = findFirstStackedParent(window);
-            if (stackedParent == null) {
-                window.setZOrder(0);
-            } else {
-                window.setZOrder(stackedParent.getZOrder());                
-            }
-        }
-    }
-
-    /** 
-     * Searching upward in the given window's parent chain, return the first non-coplanar 
-     * window encountered. 
-     */
-    private Window2D findFirstStackedParent (Window2D window) {
-        Window2D parent = window.getParent();
-        while (parent != null && parent.isCoplanar()) {
-            parent = window.getParent();
-        }
-        return parent;
     }
 
     /**
-     * Recalculate the stack positions of all non-coplanar windows in the stack based on the 
-     * current Z order attributes of the windows. Used during conventional window 
+     * Return the stack position of the given window in the stack.
+     * The stack position is the position of the window relative to the bottom of the stack.
+     * The stack position of the bottommost window is 0 and the stack position of the topmost
+     * window is getNumWindows()-1.
+     * @param window The window whose stack position is returned.
+     * @return The stack position of the window, or -1 if the window is not in the stack.
+     */
+    public synchronized int getStackPositionOfWindow (Window2D window) {
+        if (window == null) return -1;
+        int idx = stack.indexOf(window);
+        //System.err.println("getStackPos: stack idx of window " + window + " = " + idx);
+        if (idx < 0 || idx >= stack.size()) {
+            return -1;
+        } else {
+            return stack.size()-1-idx;
+        }
+    }
+
+
+    /**
+     * Recalculate the stack positions of all windows in the stack based on the 
+     * current desired Z order attributes of the windows. Used during conventional window 
      * slave synchronization.
      */
-    public synchronized void restackFromZOrders () {
+    public synchronized void restackFromDesiredZOrders () {
         try {
-            Collections.sort(stackedWindows, new ComparatorImpl ());
+            Collections.sort(stack, new ComparatorImpl ());
         } catch (Exception ex) {
-            RuntimeException re = new RuntimeException("Error during window zOrder sort");
+            RuntimeException re = new RuntimeException("Error during window desiredZOrder sort");
             re.initCause(ex);
             throw re;
         }
@@ -321,8 +244,8 @@ class WindowStack {
         }
 
         public int compare(Window2D window1, Window2D window2) {
-            int zOrder1 = window1.getZOrder();
-            int zOrder2 = window2.getZOrder();
+            int zOrder1 = window1.getDesiredZOrder();
+            int zOrder2 = window2.getDesiredZOrder();
             if (zOrder1 < zOrder2) {
                 return -1;
             } else if (zOrder1 > zOrder2) {
@@ -331,10 +254,5 @@ class WindowStack {
                 return 0;
             }
         }
-        /* TODO: really needed?
-        public boolean equals(Object obj) {
-        return false;
-        }
-         */
     }
 }

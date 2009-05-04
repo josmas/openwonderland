@@ -19,8 +19,8 @@ package org.jdesktop.wonderland.modules.appbase.client.view;
 
 import org.jdesktop.mtgame.Entity;
 import com.jme.image.Image;
-import com.jme.image.Texture2D;
 import com.jme.image.Texture;
+import com.jme.image.Texture2D;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
@@ -53,7 +53,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D.Type;
 import java.awt.Button;
-import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
 /**
@@ -70,36 +70,21 @@ public abstract class View2DEntity implements View2D {
 
     private static enum AttachState { DETACHED, ATTACHED_TO_ENTITY, ATTACHED_TO_WORLD };
 
-    // Category changed flags
-    protected static final int CHANGED_TOPOLOGY               = 0x80000000;
-    protected static final int CHANGED_SIZE                   = 0x40000000;
-    protected static final int CHANGED_OFFSET_STACK_TRANSFORM = 0x20000000;
-    protected static final int CHANGED_USER_TRANSFORM         = 0x10000000;
-    protected static final int CHANGED_TEX_COORDS             = 0x08000000;
-    protected static final int CHANGED_FRAME                  = 0x04000000;
-    protected static final int CATEGORY_CHANGE_MASK           = 0xfc000000;
-    // Category group flags
-    protected static final int CHANGED_TRANSFORMS             = CHANGED_OFFSET_STACK_TRANSFORM |
-            	                                                CHANGED_USER_TRANSFORM;
-
-    // Attribute changed flags (these include various categories which depend on them)
-    protected static final int CHANGED_TEXTURE          = 0x800  | CHANGED_TOPOLOGY;
-    protected static final int CHANGED_TYPE             = 0x1    | CHANGED_TOPOLOGY | CHANGED_TRANSFORMS;
-    protected static final int CHANGED_PARENT           = 0x2    | CHANGED_TOPOLOGY
-                                                                 | CHANGED_OFFSET_STACK_TRANSFORM;
-    protected static final int CHANGED_VISIBLE          = 0x4    | CHANGED_TOPOLOGY;
-    protected static final int CHANGED_DECORATED        = 0x8    | CHANGED_FRAME | CHANGED_SIZE;
-    protected static final int CHANGED_GEOMETRY         = 0x10   | CHANGED_TOPOLOGY | CHANGED_TEXTURE;
-    protected static final int CHANGED_SIZE_APP         = 0x20   | CHANGED_SIZE | CHANGED_TEXTURE |
-                                                                   CHANGED_TEX_COORDS; 
-    protected static final int CHANGED_PIXEL_SCALE      = 0x40   | CHANGED_SIZE
-                                                                 | CHANGED_OFFSET_STACK_TRANSFORM;
-    protected static final int CHANGED_OFFSET           = 0x80   | CHANGED_OFFSET_STACK_TRANSFORM;
-    protected static final int CHANGED_USER_TRANSLATION = 0x100  | CHANGED_USER_TRANSFORM;
-    protected static final int CHANGED_TITLE            = 0x200  | CHANGED_FRAME;
-    protected static final int CHANGED_Z_ORDER          = 0x400  | CHANGED_OFFSET_STACK_TRANSFORM;
-    protected static final int CHANGED_ORTHO            = 0x800;
+    // Attribute changed flags 
+    protected static final int CHANGED_TYPE             = 0x0001;
+    protected static final int CHANGED_PARENT           = 0x0002;
+    protected static final int CHANGED_VISIBLE          = 0x0004;
+    protected static final int CHANGED_DECORATED        = 0x0008;
+    protected static final int CHANGED_GEOMETRY         = 0x0010;
+    protected static final int CHANGED_SIZE_APP         = 0x0020;
+    protected static final int CHANGED_PIXEL_SCALE      = 0x0040;
+    protected static final int CHANGED_OFFSET           = 0x0080;
+    protected static final int CHANGED_USER_TRANSLATION = 0x0100;
+    protected static final int CHANGED_TITLE            = 0x0200;
+    protected static final int CHANGED_STACK            = 0x0400;
+    protected static final int CHANGED_ORTHO            = 0x0800;
     protected static final int CHANGED_LOCATION_ORTHO   = 0x1000;
+    protected static final int CHANGED_TEX_COORDS       = 0x2000;
 
     protected static final int CHANGED_ALL = -1;
 
@@ -150,9 +135,6 @@ public abstract class View2DEntity implements View2D {
 
     /** The frame title. */
     private String title;
-
-    /** The Z (stacking) order of the view */
-    protected int zOrder;
 
     /** The size of the view specified by the app. */
     private Dimension sizeApp = new Dimension(1, 1);
@@ -268,6 +250,8 @@ public abstract class View2DEntity implements View2D {
         gui = new Gui2DInterior(this);
         gui.attachEventListeners(entity);
         controlArb = getWindow().getApp().getControlArb();
+
+        logger.info("View2DEntity created: " + this);
     }
 
     /** {@inheritDoc} */
@@ -388,6 +372,7 @@ public abstract class View2DEntity implements View2D {
             throw new RuntimeException("Invalid type change.");
         }
             
+        logger.info("view = " + this);
         logger.info("change type = " + type);
 
         this.type = type;
@@ -426,6 +411,7 @@ public abstract class View2DEntity implements View2D {
             this.parent.children.remove(this);
         }
 
+        logger.info("view = " + this);
         logger.info("change parent of view " + this + " to new parent view = " + parent);
 
         this.parent = (View2DEntity) parent;
@@ -459,6 +445,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setVisibleApp (boolean visible, boolean update) {
+        logger.info("view = " + this);
         logger.info("change visibleApp = " + visible);
         visibleApp = visible;
         changeMask |= CHANGED_VISIBLE;
@@ -480,6 +467,7 @@ public abstract class View2DEntity implements View2D {
     /** {@inheritDoc} */
     public synchronized void setVisibleUser (boolean visible, boolean update) {
         if (visibleUser == visible) return;
+        logger.info("view = " + this);
         logger.info("change visibleUser = " + visible);
         visibleUser = visible;
         changeMask |= CHANGED_VISIBLE;
@@ -515,6 +503,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setDecorated (boolean decorated, boolean update) {
+        logger.info("view = " + this);
         logger.info("change decorated = " + decorated);
         this.decorated = decorated;
         changeMask |= CHANGED_DECORATED;
@@ -551,28 +540,12 @@ public abstract class View2DEntity implements View2D {
 
     /** 
      * {@inheritDoc}
-     * The Z order is the same for both cell and ortho modes.
      */
-    public synchronized void setZOrder(int zOrder) {
-        setZOrder(zOrder, true);
-    }
-
-    /** 
-     * {@inheritDoc}
-     * The Z order is the same for both cell and ortho modes.
-     */
-    public synchronized void setZOrder(int zOrder, boolean update) {
-        logger.info("change zOrder = " + zOrder);
-        this.zOrder = zOrder;
-        changeMask |= CHANGED_Z_ORDER;
+    public void stackChanged (boolean update) {
+        changeMask |= CHANGED_STACK;
         if (update) {
             update();
         }
-    }
-
-    /** {@inheritDoc} */
-    public int getZOrder () {
-        return zOrder;
     }
 
     /** 
@@ -616,6 +589,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setGeometryNode (GeometryNode geometryNode, boolean update) {
+        logger.info("view = " + this);
         logger.info("change geometryNode = " + geometryNode);
         newGeometryNode = geometryNode;
         changeMask |= CHANGED_GEOMETRY;
@@ -636,6 +610,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setSizeApp (Dimension size, boolean update) {
+        logger.info("view = " + this);
         logger.info("change sizeApp = " + sizeApp);
 
         sizeApp = (Dimension) size.clone();
@@ -644,7 +619,7 @@ public abstract class View2DEntity implements View2D {
         size.width = (size.width <= 0) ? 1 : size.width;
         size.height = (size.height <= 0) ? 1 : size.height;
 
-        changeMask |= CHANGED_SIZE_APP | CHANGED_TEXTURE;
+        changeMask |= CHANGED_SIZE_APP;
         if (update) {
             update();
         }
@@ -715,6 +690,7 @@ public abstract class View2DEntity implements View2D {
      * Update if specified. Defaults to the pixel scale of the window.
      */
     public synchronized void setPixelScale (Vector2f pixelScale, boolean update) {
+        logger.info("view = " + this);
         logger.info("change pixelScale cell = " + pixelScale);
         this.pixelScaleCell = pixelScale.clone();
         changeMask |= CHANGED_PIXEL_SCALE;
@@ -745,6 +721,7 @@ public abstract class View2DEntity implements View2D {
      * Update if specified. This defaults to (1.0, 1.0).
      */
     public synchronized void setPixelScaleOrtho (Vector2f pixelScale, boolean update) {
+        logger.info("view = " + this);
         logger.info("change pixelScale ortho = " + pixelScale);
         this.pixelScaleOrtho = pixelScale.clone();
         changeMask |= CHANGED_PIXEL_SCALE;
@@ -798,6 +775,7 @@ public abstract class View2DEntity implements View2D {
      * within the world is derived from WFS and other input. 
      */
     public synchronized void setLocationOrtho (Vector2f location, boolean update) {
+        logger.info("view = " + this);
         logger.info("change location ortho = " + location);
         this.locationOrtho = location.clone();
         changeMask |= CHANGED_LOCATION_ORTHO;
@@ -820,6 +798,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setOffset(Point offset, boolean update) {
+        logger.info("view = " + this);
         logger.info("change offset = " + offset);
         this.offset = (Point) offset.clone();
         changeMask |= CHANGED_OFFSET;
@@ -840,6 +819,7 @@ public abstract class View2DEntity implements View2D {
 
     /** Specify the user-specified translation used when in cell mode. Update if specified. */
     public synchronized void setTranslationUser (Vector3f translation, boolean update) {
+        logger.info("view = " + this);
         logger.info("change translationUserCell = " + translation);
         userTranslationCellPrev = userTranslationCell;
         userTranslationCell = translation.clone();
@@ -861,6 +841,7 @@ public abstract class View2DEntity implements View2D {
 
     /** Specify the user-specified translation used when in ortho mode. Update if specified. */
     public synchronized void setTranslationUserOrtho (Vector3f translation, boolean update) {
+        logger.info("view = " + this);
         logger.info("change translationUserOrtho = " + translation);
         userTranslationOrthoPrev = userTranslationOrtho;
         userTranslationOrtho = translation.clone();
@@ -929,6 +910,7 @@ public abstract class View2DEntity implements View2D {
      */
     public synchronized void setOrtho (boolean ortho, boolean update) {
         if (this.ortho == ortho) return;
+        logger.info("view = " + this);
         logger.info("change ortho = " + ortho);
         this.ortho = ortho;
         changeMask |= CHANGED_ORTHO;
@@ -946,16 +928,18 @@ public abstract class View2DEntity implements View2D {
 
     /** Processes attribute changes. Should be called within a synchronized block. */
     protected void processChanges () {
+
         // Note: all of the scene graph changes are queued up and executed at the end
         boolean windowNeedsValidate = false;
 
-        logger.fine("processing changes for view " + this);
+        logger.fine("------------------ Processing changes for view " + this);
         logger.fine("type " + type);
+        logger.fine("changeMask " + Integer.toHexString(changeMask));
 
         // React to topology related changes
-        if ((changeMask & (CHANGED_TOPOLOGY | CHANGED_ORTHO)) != 0) {
-            logger.fine("Update topology");
-            int chgMask = changeMask & ~CATEGORY_CHANGE_MASK;
+        if ((changeMask & (CHANGED_GEOMETRY | CHANGED_SIZE_APP | CHANGED_TYPE | CHANGED_PARENT | 
+                           CHANGED_VISIBLE | CHANGED_ORTHO)) != 0) {
+            logger.fine("Update topology for view " + this);
             
             // First, detach entity (if necessary)
             switch (attachState) {
@@ -976,7 +960,7 @@ public abstract class View2DEntity implements View2D {
             attachState = AttachState.DETACHED;
 
             // Does the geometry node itself need to change?
-            if ((chgMask & CHANGED_GEOMETRY) != 0) {
+            if ((changeMask & CHANGED_GEOMETRY) != 0) {
                 if (geometryNode != null) {
                     // Note: don't need to do in RenderUpdater because we've detached our entity
                     sgChangeGeometryDetachFromView(viewNode, geometryNode);
@@ -997,11 +981,14 @@ public abstract class View2DEntity implements View2D {
             }
 
             // Uses: window
-            if ((chgMask & (CHANGED_TEXTURE | CHANGED_GEOMETRY)) != 0) {
-                logger.fine("Update texture");
+            if ((changeMask & (CHANGED_GEOMETRY | CHANGED_SIZE_APP)) != 0) {
+                logger.fine("Update texture for view " + this);
                 if (geometryNode != null) {
-                    sgChangeGeometryTextureSet(geometryNode, getWindow().getTexture());
-                    windowNeedsValidate = true;
+                    DrawingSurfaceBufferedImage surface = (DrawingSurfaceBufferedImage)getWindow().getSurface();
+                    if (surface != null) {
+                        sgChangeGeometryTextureSet(geometryNode, getWindow().getTexture(), surface);
+                        windowNeedsValidate = true;
+                    }
                 }
             }
 
@@ -1010,13 +997,13 @@ public abstract class View2DEntity implements View2D {
             // Uses: visible, ortho
             if (isActuallyVisible()) {
                 if (ortho) {
-                    logger.fine("View is ortho");
+                    logger.fine("View is ortho for view " + this);
                     logger.fine("Attach entity " + entity + " to world manager.");
                     ClientContextJME.getWorldManager().addEntity(entity);
                     attachState = AttachState.ATTACHED_TO_WORLD;
                     entity.getComponent(RenderComponent.class).setOrtho(true);
                 } else {
-                    logger.fine("View is not ortho");
+                    logger.fine("View is not ortho for view " + this);
                     parentEntity = getParentEntity();
                     if (parentEntity == null) {
                         logger.warning("getParentEntity() returns null; must be non-null");
@@ -1033,30 +1020,30 @@ public abstract class View2DEntity implements View2D {
                 }
             }
 
-            if ((chgMask & CHANGED_ORTHO) != 0) {
+            if ((changeMask & CHANGED_ORTHO) != 0) {
                 // Propagate our ortho setting to our children
-                logger.fine("Force children ortho to " + ortho);
+                logger.fine("Force children ortho to " + ortho + " for view " + this);
                 for (View2DEntity child : children) {
                     child.setOrtho(ortho);
                 }
             }
 
-            if ((chgMask & CHANGED_VISIBLE) != 0) {
+            if ((changeMask & CHANGED_VISIBLE) != 0) {
                 // Update visibility of children
-                logger.fine("Update children visibility");
+                logger.fine("Update children visibility for view " + this);
                 for (View2DEntity child : children) {
                     child.updateVisibility();
                 }
             }            
-        }
+        } // End Topology Changes
 
         // React to frame changes (must do before handling size changes)
-        // TODO: CHANGED_PIXEL_SCALE
-        if ((changeMask & (CHANGED_FRAME | CHANGED_ORTHO | CHANGED_TYPE)) != 0) { 
-            logger.fine("Update frame");
-            int chgMask = changeMask & ~CATEGORY_CHANGE_MASK;
+        if ((changeMask & (CHANGED_DECORATED | CHANGED_TITLE | CHANGED_ORTHO | CHANGED_TYPE |
+                           CHANGED_PIXEL_SCALE)) != 0) { 
+            logger.fine("Update frame for view " + this);
+            logger.fine("decorated " + decorated);
 
-            if ((chgMask & (CHANGED_DECORATED | CHANGED_ORTHO)) != 0) {
+            if ((changeMask & (CHANGED_DECORATED | CHANGED_ORTHO)) != 0) {
                 if (decorated && !ortho) {
                     if (!hasFrame()) {
                         logger.fine("Attach frame");
@@ -1070,16 +1057,19 @@ public abstract class View2DEntity implements View2D {
                 }
             }
             
-            if ((chgMask & CHANGED_TYPE) != 0) {
+            if ((changeMask & (CHANGED_TYPE | CHANGED_ORTHO)) != 0) {
                 if (decorated && !ortho) {
                     reattachFrame();
                 }
             }
         }            
 
-        if ((changeMask & CHANGED_Z_ORDER) != 0) {
-            logger.fine("Update geometry ortho Z order");
-            sgChangeGeometryOrthoZOrderSet(geometryNode, zOrder);
+        if ((changeMask & (CHANGED_STACK | CHANGED_ORTHO)) != 0) {
+            logger.fine("Update geometry ortho Z order for view " + this);
+            if (ortho) {
+                int zOrder = window.getZOrder();
+                sgChangeGeometryOrthoZOrderSet(geometryNode, zOrder);
+            }
         }
 
         if ((changeMask & CHANGED_ORTHO) != 0) {
@@ -1091,8 +1081,9 @@ public abstract class View2DEntity implements View2D {
         }
 
         // React to size related changes (must be done before handling transform changes)
-        /// TODO       if ((changeMask & CHANGED_SIZE) != 0) {
-        if ((changeMask & (CHANGED_SIZE | CHANGED_ORTHO | CHANGED_PIXEL_SCALE)) != 0) { 
+        if ((changeMask & (CHANGED_DECORATED | CHANGED_SIZE_APP | CHANGED_PIXEL_SCALE | 
+                           CHANGED_ORTHO)) != 0) { 
+
             float width = getDisplayerLocalWidth();
             float height = getDisplayerLocalHeight();
             sgChangeGeometrySizeSet(geometryNode, width, height);
@@ -1106,7 +1097,7 @@ public abstract class View2DEntity implements View2D {
 
         // React to texture coordinate changes
         // Uses: window, texture
-        if ((changeMask & (CHANGED_TEX_COORDS|CHANGED_GEOMETRY)) != 0) {
+        if ((changeMask & (CHANGED_TEX_COORDS|CHANGED_GEOMETRY|CHANGED_SIZE_APP)) != 0) {
             // TODO: for now, texcoords only depend on app size. Eventually this should
             // be the effective aperture rectangle width and height
             float width = (float) sizeApp.width;    
@@ -1119,10 +1110,9 @@ public abstract class View2DEntity implements View2D {
         }
 
         // React to transform related changes
-
-        // Uses: type, parent, pixelscale, size, offset
-        if ((changeMask & 
-             (CHANGED_OFFSET_STACK_TRANSFORM | CHANGED_ORTHO | CHANGED_Z_ORDER | CHANGED_PIXEL_SCALE)) != 0) {
+        // Uses: type, parent, pixelscale, size, offset, ortho, stack
+        if ((changeMask & (CHANGED_TYPE | CHANGED_PARENT | CHANGED_PIXEL_SCALE | CHANGED_SIZE_APP | 
+                           CHANGED_OFFSET | CHANGED_ORTHO | CHANGED_STACK)) != 0) {
             CellTransform transform = null;
 
             switch (type) {
@@ -1140,8 +1130,8 @@ public abstract class View2DEntity implements View2D {
         }
 
         // Uses: type, userTranslation
-        //TODO: if ((changeMask & CHANGED_USER_TRANSFORM) != 0) {
-        if ((changeMask & (CHANGED_USER_TRANSFORM | CHANGED_ORTHO | CHANGED_LOCATION_ORTHO | CHANGED_TYPE)) != 0) {
+        if ((changeMask & (CHANGED_TYPE | CHANGED_USER_TRANSLATION | CHANGED_ORTHO | 
+                           CHANGED_LOCATION_ORTHO | CHANGED_TYPE)) != 0) {
             CellTransform deltaTransform;
 
             switch (type) {
@@ -1162,7 +1152,9 @@ public abstract class View2DEntity implements View2D {
 
         sgProcessChanges();
         
-        frameUpdate();
+        if (!ortho) {
+            frameUpdate();
+        }
 
         /* For Debug 
         System.err.println("************* After View2DEntity.processChanges, viewNode = ");
@@ -1205,6 +1197,7 @@ public abstract class View2DEntity implements View2D {
     protected abstract Entity getParentEntity ();
 
     // Uses: type, parent, pixelscale, size, offset
+    // View2DCell subclass uses: type, ortho, parent, stack
     private CellTransform calcOffsetStackTransform () {
         CellTransform transform = new CellTransform(null, null, null);
 
@@ -1343,10 +1336,13 @@ public abstract class View2DEntity implements View2D {
     private static class SGChangeGeometryTextureSet extends SGChange {
         private GeometryNode geometryNode;
         private Texture2D texture;
-        private SGChangeGeometryTextureSet (GeometryNode geometryNode, Texture2D texture) {
+        private DrawingSurfaceBufferedImage surface;
+        private SGChangeGeometryTextureSet (GeometryNode geometryNode, Texture2D texture,
+                                            DrawingSurfaceBufferedImage surface) {
             super(SGChangeOp.GEOMETRY_TEXTURE_SET);
             this.geometryNode = geometryNode;
             this.texture = texture;
+            this.surface = surface;
         }
     }
 
@@ -1440,8 +1436,9 @@ public abstract class View2DEntity implements View2D {
         sgChanges.add(new SGChangeGeometryTexCoordsSet(geometryNode, widthRatio, heightRatio));
     }
 
-    private synchronized void sgChangeGeometryTextureSet(GeometryNode geometryNode, Texture2D texture) {
-        sgChanges.add(new SGChangeGeometryTextureSet(geometryNode, texture));
+    private synchronized void sgChangeGeometryTextureSet(GeometryNode geometryNode, Texture2D texture,
+                                                         DrawingSurfaceBufferedImage surface) {
+        sgChanges.add(new SGChangeGeometryTextureSet(geometryNode, texture, surface));
     }
 
     private synchronized void sgChangeGeometryOrthoZOrderSet(GeometryNode geometryNode, int zOrder) {
@@ -1503,22 +1500,35 @@ public abstract class View2DEntity implements View2D {
                          SGChangeGeometrySizeSet chg = (SGChangeGeometrySizeSet) sgChange;
                          chg.geometryNode.setSize(chg.width, chg.height);
                          forceTextureIdAssignment(true);
-                         logger.fine("Geometry node setSize, wh = " + chg.width + ", " + chg.height);
+                         logger.fine("******** Geometry node = " + chg.geometryNode);
+                         logger.fine("******** Geometry node setSize, wh = " + chg.width + ", " + chg.height);
                          break;
                      }
 
                      case GEOMETRY_TEX_COORDS_SET: {
                          SGChangeGeometryTexCoordsSet chg = (SGChangeGeometryTexCoordsSet) sgChange;
                          chg.geometryNode.setTexCoords(chg.widthRatio, chg.heightRatio);
-                         logger.fine("viewNode = " + viewNode);
-                         logger.fine("Geometry node setTexCoords, whRatio = " + chg.widthRatio + ", " + 
+                         logger.fine("******** viewNode = " + viewNode);
+                         logger.fine("******** Geometry node setTexCoords, whRatio = " + chg.widthRatio + ", " + 
                                      chg.heightRatio);
                          break;
                      }
 
                      case GEOMETRY_TEXTURE_SET: {
                          SGChangeGeometryTextureSet chg = (SGChangeGeometryTextureSet) sgChange;
+
+                         DrawingSurfaceBufferedImage surface = chg.surface;
+                         boolean restoreUpdating = false;
+                         if (surface.getUpdateEnable()) {
+                             surface.setUpdateEnable(false);
+                             restoreUpdating = true;
+                         }
                          chg.geometryNode.setTexture(chg.texture);
+                         
+                         if (restoreUpdating) {
+                             surface.setUpdateEnable(true);
+                         }
+
                          logger.fine("Geometry node setTexture, texture = " + chg.texture);
                          break;
                      }
@@ -1713,14 +1723,6 @@ public abstract class View2DEntity implements View2D {
         return geometryNode.calcIntersectionPixelOfEyeRay(x, y);
     }
 
-    /** {@inheritDoc} */
-    /* TODO: no longer needed to be public?
-       >>>> I think I can remove this now. But I'm leaving it in a bit longer to be sure.
-    public void forceTextureIdAssignment() { 
-        forceTextureIdAssignment(false);
-    }
-    */
-
     /** 
      * Force the texture ID of the texture to be allocated.
      * @param inRenderLoop true if the call is already being made from inside the render loop.
@@ -1756,10 +1758,12 @@ public abstract class View2DEntity implements View2D {
 
         /* For debug: Verify that ID was actually allocated
         Texture tex = geometryNode.getTexture();
-        int texid = tex.getTextureId();
-        logger.severe("&&&&&&&&&&&& V2E: texid alloc: texid = " + texid);
-        if (texid == 0) {
-            logger.severe("Failed to allocated texture ID");
+        if (tex != null) {
+            int texid = tex.getTextureId();
+            logger.severe("))))))))))) V2E: texid alloc: texid = " + texid);
+            if (texid == 0) {
+                logger.severe("Failed to allocated texture ID");
+            }
         }
         */
     }

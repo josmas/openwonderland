@@ -48,6 +48,14 @@ class MasterClientSocket extends ClientSocket {
         }
     }
 
+    @Override
+    public void close(boolean callListener) {
+        super.close(callListener);
+        if (ENABLE_STATS) {
+            statReporter.stop();
+        }
+    }
+
     public void setEnable(boolean enable) {
         this.enable = enable;
     }

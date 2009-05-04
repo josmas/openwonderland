@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.swingmenutest.client;
 
-import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 
 @ExperimentalAPI
-public class SwingMenuTestApp extends AppGraphics2D  {
+public class SwingMenuTestApp extends App2D  {
     
     /**
      * Create a new instance of SwingMenuTestApp. This in turn creates
