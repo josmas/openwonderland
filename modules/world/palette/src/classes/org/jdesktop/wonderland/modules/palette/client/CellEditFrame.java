@@ -143,8 +143,18 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         // panels
         updatePanelSet(cellServerState);
 
-        // Update the GUI to reflect the values in the cell
+        // Update the GUI to reflect the values in the cell.
         updateGUI();
+    }
+
+    /**
+     * Override the implementation of dispose, making sure we clean up any
+     * items that need to be cleaned up.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        positionPanel.dispose();
     }
     
     /**
@@ -485,8 +495,13 @@ public class CellEditFrame extends javax.swing.JFrame implements CellPropertiesE
         // Update the GUI of the basic panel as a special case
         basicPanel.updateGUI(cellServerState);
 
-        // Update the GUI of the position panel as a special case
+        // Update the GUI of the position panel as a special case. We tell it
+        // that any changes are being updated locally so it does not generate
+        // events back to the movable component. This assumes we are currently
+        // in the AWT Event Thread.
+        positionPanel.setLocalChanges(true);
         positionPanel.updateGUI();
+        positionPanel.setLocalChanges(false);
         
         // Iterate through all of the other panels and tell them to update
         // themselves.

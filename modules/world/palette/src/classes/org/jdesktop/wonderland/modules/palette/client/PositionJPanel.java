@@ -23,11 +23,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
@@ -50,10 +50,31 @@ public class PositionJPanel extends javax.swing.JPanel {
     private CellPropertiesEditor editor = null;
     private MovableComponent movableComponent = null;
 
-    /* The current values for the translation, rotation, and scale */
-    private Vector3f currentTranslation = null;
-    private Quaternion currentRotation = null;
-    private Vector3f currentScale = null;
+    /* Various listener on the Cell and Swing JSpinners */
+    private ComponentChangeListener componentListener = null;
+    private TransformChangeListener transformListener = null;
+    private ChangeListener translationListener = null;
+    private ChangeListener rotationListener = null;
+    private ChangeListener scaleListener = null;
+
+    /* Models for the Swing JSpinners */
+    private SpinnerNumberModel xTranslationModel = null;
+    private SpinnerNumberModel yTranslationModel = null;
+    private SpinnerNumberModel zTranslationModel = null;
+    private SpinnerNumberModel xScaleModel = null;
+    private SpinnerNumberModel yScaleModel = null;
+    private SpinnerNumberModel zScaleModel = null;
+    private SpinnerNumberModel xRotationModel = null;
+    private SpinnerNumberModel yRotationModel = null;
+    private SpinnerNumberModel zRotationModel = null;
+
+    /*
+     * This boolean indicates whether the values of the spinners are being
+     * set programmatically, e.g. when a transform changed event has been
+     * received from the Cell. In such a case, we do not want to generate a
+     * new message to the movable component
+     */
+    private boolean setLocal = false;
     
     /** Creates new form PositionJPanel */
     public PositionJPanel(Cell cell) {
@@ -66,32 +87,32 @@ public class PositionJPanel extends javax.swing.JPanel {
         Float min = new Float(Float.NEGATIVE_INFINITY);
         Float max = new Float(Float.POSITIVE_INFINITY);
         Float step = new Float(0.1);
-        SpinnerNumberModel translationX = new SpinnerNumberModel(value, min, max, step);
-        SpinnerNumberModel translationY = new SpinnerNumberModel(value, min, max, step);
-        SpinnerNumberModel translationZ = new SpinnerNumberModel(value, min, max, step);
-        translationXTF.setModel(translationX);
-        translationYTF.setModel(translationY);
-        translationZTF.setModel(translationZ);
+        xTranslationModel = new SpinnerNumberModel(value, min, max, step);
+        yTranslationModel = new SpinnerNumberModel(value, min, max, step);
+        zTranslationModel = new SpinnerNumberModel(value, min, max, step);
+        translationXTF.setModel(xTranslationModel);
+        translationYTF.setModel(yTranslationModel);
+        translationZTF.setModel(zTranslationModel);
 
         value = new Float(1);
         min = new Float(0);
-        SpinnerNumberModel scaleX = new SpinnerNumberModel(value, min, max, step);
-        SpinnerNumberModel scaleY = new SpinnerNumberModel(value, min, max, step);
-        SpinnerNumberModel scaleZ = new SpinnerNumberModel(value, min, max, step);
-        scaleXTF.setModel(scaleX);
-        scaleYTF.setModel(scaleY);
-        scaleZTF.setModel(scaleZ);
+        xScaleModel = new SpinnerNumberModel(value, min, max, step);
+        yScaleModel = new SpinnerNumberModel(value, min, max, step);
+        zScaleModel = new SpinnerNumberModel(value, min, max, step);
+        scaleXTF.setModel(xScaleModel);
+        scaleYTF.setModel(yScaleModel);
+        scaleZTF.setModel(zScaleModel);
 
         value = new Float(0);
         min = new Float(-360);
         max = new Float(360);
         step = new Float(1);
-        SpinnerNumberModel rotationX = new SpinnerNumberModel(value, min, max, step);
-        SpinnerNumberModel rotationY = new SpinnerNumberModel(value, min, max, step);
-        SpinnerNumberModel rotationZ = new SpinnerNumberModel(value, min, max, step);
-        rotationXTF.setModel(rotationX);
-        rotationYTF.setModel(rotationY);
-        rotationZTF.setModel(rotationZ);
+        xRotationModel = new SpinnerNumberModel(value, min, max, step);
+        yRotationModel = new SpinnerNumberModel(value, min, max, step);
+        zRotationModel = new SpinnerNumberModel(value, min, max, step);
+        rotationXTF.setModel(xRotationModel);
+        rotationYTF.setModel(yRotationModel);
+        rotationZTF.setModel(zRotationModel);
 
         // Fetch the movable component. For now, if it does not exist, then
         // turn off everything
@@ -110,8 +131,7 @@ public class PositionJPanel extends javax.swing.JPanel {
 
         // Listen for changes, if there is a movable component added or removed
         // update the state of the fields
-        cell.addComponentChangeListener(new ComponentChangeListener() {
-
+        componentListener = new ComponentChangeListener() {
             public void componentChanged(Cell cell, ChangeType type, CellComponent component) {
                 if (type == ChangeType.ADDED && component instanceof MovableComponent) {
                     movableComponent = (MovableComponent)component;
@@ -126,7 +146,8 @@ public class PositionJPanel extends javax.swing.JPanel {
                     scaleZTF.setEnabled(true);
                 }
             }
-        });
+        };
+        cell.addComponentChangeListener(componentListener);
 
         // If it does not exist, attempt to add the movable component. Create
         // a suitable message using only the server-side movable component
@@ -143,45 +164,117 @@ public class PositionJPanel extends javax.swing.JPanel {
         }
 
         // Listen for changes to the cell transform that may be done by other
-        // parts of this client or other clients
-        cell.addTransformChangeListener(new TransformChangeListener() {
+        // parts of this client or other clients. We need to do this updating
+        // of the GUI in the AWT Event Thread. We also want to make a note that
+        // the values are being set programmatically so they do not spawn extra
+        // messages to the movable component.
+        transformListener = new TransformChangeListener() {
             public void transformChanged(Cell cell, ChangeSource source) {
-                updateGUI();
-            }
-        });
+//                CellTransform cellTransform = cell.getLocalTransform();
+//                Quaternion rotation = cellTransform.getRotation(null);
+//                float[] angles = rotation.toAngles(new float[3]);
+//                System.out.println("CELL TRANSFORM CHANGED NEW ROTATION VALUES " +
+//                        angles[0] + " " + angles[1] + " " + angles[2]);
 
-        // Listen for changes to the translation values and update the cell
-        // as a result
-        ChangeListener translationListener = new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                updateTranslation();
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            setLocalChanges(true);
+                            updateGUI();
+                        } finally {
+                            setLocalChanges(false);
+                        }
+                    }
+                });
             }
         };
-        ((SpinnerNumberModel)translationXTF.getModel()).addChangeListener(translationListener);
-        ((SpinnerNumberModel)translationYTF.getModel()).addChangeListener(translationListener);
-        ((SpinnerNumberModel)translationZTF.getModel()).addChangeListener(translationListener);
+        cell.addTransformChangeListener(transformListener);
 
-        // Listen for changes to the rotation values and update the cell
-        // as a result
-        ChangeListener roationListener = new ChangeListener() {
+        // Listen for changes to the translation values and update the cell as
+        // a result. Only update the result if it doesn't happen because the
+        // value in the spinner is changed programmatically. The value of
+        // 'setLocal' is set always in the AWT Event Thread, the same thread
+        // as this listener.
+        translationListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                updateRotation();
+                if (setLocal == false) {
+                    updateTranslation();
+                }
             }
         };
-        ((SpinnerNumberModel)rotationXTF.getModel()).addChangeListener(roationListener);
-        ((SpinnerNumberModel)rotationYTF.getModel()).addChangeListener(roationListener);
-        ((SpinnerNumberModel)rotationZTF.getModel()).addChangeListener(roationListener);
+        xTranslationModel.addChangeListener(translationListener);
+        yTranslationModel.addChangeListener(translationListener);
+        zTranslationModel.addChangeListener(translationListener);
 
-        // Listen for changes to the scale values and update the cell
-        // as a result
-        ChangeListener scaleListener = new ChangeListener() {
+        // Listen for changes to the rotation values and update the cell as a
+        // result. See the comments above for 'translationListener' too.
+        rotationListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                updateScale();
+//                float x = (Float) xRotationModel.getValue();
+//                float y = (Float) yRotationModel.getValue();
+//                float z = (Float) zRotationModel.getValue();
+//                System.out.println("STATE CHANGED in JSPINNER VALUES setLocal=" +
+//                        setLocal + " " + x + " " + y + " " + z + " SOURCE " +
+//                        e.getSource());
+
+                if (setLocal == false) {
+                    updateRotation();
+                }
             }
         };
-        ((SpinnerNumberModel)scaleXTF.getModel()).addChangeListener(scaleListener);
-        ((SpinnerNumberModel)scaleYTF.getModel()).addChangeListener(scaleListener);
-        ((SpinnerNumberModel)scaleZTF.getModel()).addChangeListener(scaleListener);
+        xRotationModel.addChangeListener(rotationListener);
+        yRotationModel.addChangeListener(rotationListener);
+        zRotationModel.addChangeListener(rotationListener);
+
+        // Listen for changes to the scale values and update the cell as a
+        // result. See the comments above for 'translationListener' too.
+        scaleListener = new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                if (setLocal == false) {
+                    updateScale();
+                }
+            }
+        };
+        xScaleModel.addChangeListener(scaleListener);
+        yScaleModel.addChangeListener(scaleListener);
+        zScaleModel.addChangeListener(scaleListener);
+    }
+
+    /**
+     * Sets whether the changes being made to the JSpinners are doing so
+     * programmatically, rather than via a movable event. This is used to
+     * make sure that requests to the movable component are not made at the
+     * wrong time.
+     *
+     * @param isLocal True to indicate the JSpinner values are being set
+     * programmatically.
+     */
+    void setLocalChanges(boolean isLocal) {
+        setLocal = isLocal;
+    }
+
+    /**
+     * Cleans up any listeners and resources that are present on this panel.
+     * Once this method is invoked, the panel can no longer be used again.
+     */
+    public void dispose() {
+        cell.removeComponentChangeListener(componentListener);
+        cell.removeTransformChangeListener(transformListener);
+        xTranslationModel.removeChangeListener(translationListener);
+        yTranslationModel.removeChangeListener(translationListener);
+        zTranslationModel.removeChangeListener(translationListener);
+        xRotationModel.removeChangeListener(rotationListener);
+        yRotationModel.removeChangeListener(rotationListener);
+        zRotationModel.removeChangeListener(rotationListener);
+        xScaleModel.removeChangeListener(scaleListener);
+        yScaleModel.removeChangeListener(scaleListener);
+        zScaleModel.removeChangeListener(scaleListener);
+
+        componentListener = null;
+        transformListener = null;
+        translationListener = null;
+        rotationListener = null;
+        scaleListener = null;
     }
 
     /**
@@ -206,49 +299,39 @@ public class PositionJPanel extends javax.swing.JPanel {
         Vector3f scale = cellTransform.getScaling(null);
         float[] angles = rotation.toAngles(new float[3]);
 
-        // Update the translation spinners only if they have changed
-        if (currentTranslation == null || translation.equals(currentTranslation) == false) {
-            translationXTF.setValue(translation.x);
-            translationYTF.setValue(translation.y);
-            translationZTF.setValue(translation.z);
-            currentTranslation = translation;
-        }
+        // Update the translation spinners
+        translationXTF.setValue(translation.x);
+        translationYTF.setValue(translation.y);
+        translationZTF.setValue(translation.z);
 
         // Update the rotation spinners only if they have changed
-        if (currentRotation == null || rotation.equals(currentRotation) == false) {
-            rotationXTF.setValue((float) Math.toDegrees(angles[0]));
-            rotationYTF.setValue((float) Math.toDegrees(angles[1]));
-            rotationZTF.setValue((float) Math.toDegrees(angles[2]));
-            currentRotation = rotation;
-        }
-        
+//        System.out.println("UPDATING GUI WITH ROTATION " +
+//                Math.toDegrees(angles[0]) + " " + Math.toDegrees(angles[1]) +
+//                " " + Math.toDegrees(angles[2]));
+
+        rotationXTF.setValue((float) Math.toDegrees(angles[0]));
+        rotationYTF.setValue((float) Math.toDegrees(angles[1]));
+        rotationZTF.setValue((float) Math.toDegrees(angles[2]));
+
         // Update the scale spinners only if they have changes
-        if (currentScale == null || scale.equals(currentScale) == false) {
-            scaleXTF.setValue((float) scale.x);
-            scaleYTF.setValue((float) scale.y);
-            scaleZTF.setValue((float) scale.z);
-            currentScale = scale;
-        }
+        scaleXTF.setValue((float) scale.x);
+        scaleYTF.setValue((float) scale.y);
+        scaleZTF.setValue((float) scale.z);
     }
 
     /**
      * Updates the translation of the cell with the given values of the GUI.
      */
     private void updateTranslation() {
-        float x = (Float) ((SpinnerNumberModel) translationXTF.getModel()).getValue();
-        float y = (Float) ((SpinnerNumberModel) translationYTF.getModel()).getValue();
-        float z = (Float) ((SpinnerNumberModel) translationZTF.getModel()).getValue();
+        float x = (Float) xTranslationModel.getValue();
+        float y = (Float) yTranslationModel.getValue();
+        float z = (Float) zTranslationModel.getValue();
 
         Vector3f translation = new Vector3f(x, y, z);
-        if (currentTranslation == null ||
-                currentTranslation.x != x || currentTranslation.y != y || currentTranslation.z != z) {
-            currentTranslation = translation;
-
-            if (movableComponent != null) {
-                CellTransform cellTransform = cell.getLocalTransform();
-                cellTransform.setTranslation(translation);
-                movableComponent.localMoveRequest(cellTransform);
-            }
+        if (movableComponent != null) {
+            CellTransform cellTransform = cell.getLocalTransform();
+            cellTransform.setTranslation(translation);
+            movableComponent.localMoveRequest(cellTransform);
         }
     }
 
@@ -257,9 +340,11 @@ public class PositionJPanel extends javax.swing.JPanel {
      */
     private void updateRotation() {
         // Fetch the x, y, z rotation values from the GUI in degrees
-        float x = (Float) ((SpinnerNumberModel) rotationXTF.getModel()).getValue();
-        float y = (Float) ((SpinnerNumberModel) rotationYTF.getModel()).getValue();
-        float z = (Float) ((SpinnerNumberModel) rotationZTF.getModel()).getValue();
+        float x = (Float) xRotationModel.getValue();
+        float y = (Float) yRotationModel.getValue();
+        float z = (Float) zRotationModel.getValue();
+
+//        System.out.println("NEW ROTATION SET IN GUI " + x + " " + y + " " + z);
 
         // Convert to radians
         x = (float)Math.toRadians(x);
@@ -267,15 +352,11 @@ public class PositionJPanel extends javax.swing.JPanel {
         z = (float)Math.toRadians(z);
 
         Quaternion newRotation = new Quaternion(new float[] { x, y, z });
-
-        if (currentRotation == null || newRotation.equals(currentRotation) == false) {
-            currentRotation = newRotation;
-
-            if (movableComponent != null) {
-                CellTransform cellTransform = cell.getLocalTransform();
-                cellTransform.setRotation(newRotation);
-                movableComponent.localMoveRequest(cellTransform);
-            }
+        if (movableComponent != null) {
+//            System.out.println("SENDING ROTATION VALUES TO SERVER");
+            CellTransform cellTransform = cell.getLocalTransform();
+            cellTransform.setRotation(newRotation);
+            movableComponent.localMoveRequest(cellTransform);
         }
     }
 
@@ -283,20 +364,15 @@ public class PositionJPanel extends javax.swing.JPanel {
      * Updates the scale of the cell with the given values of the GUI.
      */
     private void updateScale() {
-        float x = (Float) ((SpinnerNumberModel) scaleXTF.getModel()).getValue();
-        float y = (Float) ((SpinnerNumberModel) scaleYTF.getModel()).getValue();
-        float z = (Float) ((SpinnerNumberModel) scaleZTF.getModel()).getValue();
+        float x = (Float) xScaleModel.getValue();
+        float y = (Float) yScaleModel.getValue();
+        float z = (Float) zScaleModel.getValue();
 
-        Vector3f scale = new Vector3f(x, y, z);
-        if (currentScale == null ||
-                currentScale.x != x || currentScale.y != y || currentScale.z != z) {
-            currentScale = scale;
-            
-            if (movableComponent != null) {
-                CellTransform cellTransform = cell.getLocalTransform();
-                cellTransform.setScaling(scale);
-                movableComponent.localMoveRequest(cellTransform);
-            }
+        Vector3f scale = new Vector3f(x, y, z);            
+        if (movableComponent != null) {
+            CellTransform cellTransform = cell.getLocalTransform();
+            cellTransform.setScaling(scale);
+            movableComponent.localMoveRequest(cellTransform);
         }
     }
 
