@@ -162,7 +162,7 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
             PresenceInfo info = presenceInfoList[i];
 
 	    userData[i] = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
-		info.isMuted, info.inSecretChat);
+		info.isMuted);
 
             if (info.callID == null) {
                 // It's a virtual player, skip it.
@@ -170,7 +170,7 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
             }
 
             userData[i] = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
-                    info.isMuted, info.inSecretChat);
+                    info.isMuted);
         }
 
         setUserList(userData);

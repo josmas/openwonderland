@@ -361,6 +361,8 @@ public class AudioManagerConnectionHandler
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+	AudioGroup audioGroup;
+
 	Call call = vm.getCall(callId);
 
 	Player player = null;
@@ -394,8 +396,10 @@ public class AudioManagerConnectionHandler
 		return;
 	    }
 
-	    if (inSecretChat(player)) {
-		return;
+	    audioGroup = getSecretAudioGroup(player);
+
+	    if (audioGroup != null) {
+		VoiceChatHandler.getInstance().setSecretSpeaking(sender, audioGroup.getId(), callId, true);
 	    }
 
 	    sender.send(new SpeakingMessage(callId, true));
@@ -407,7 +411,10 @@ public class AudioManagerConnectionHandler
 		return;
 	    }
 
-	    if (inSecretChat(player)) {
+	    audioGroup = getSecretAudioGroup(player);
+
+	    if (audioGroup != null) {
+		VoiceChatHandler.getInstance().setSecretSpeaking(sender, audioGroup.getId(), callId, false);
 		return;
 	    }
 
@@ -422,8 +429,8 @@ public class AudioManagerConnectionHandler
 
 	    ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
 
-	    for (AudioGroup audioGroup : audioGroups) {
-		audioGroup.removePlayer(player);
+	    for (AudioGroup group: audioGroups) {
+		group.removePlayer(player);
 	    }
             break;
 	  
@@ -471,18 +478,18 @@ public class AudioManagerConnectionHandler
         }
     }
 
-    private boolean inSecretChat(Player player) {
+    private AudioGroup getSecretAudioGroup(Player player) {
 	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
 
 	for (AudioGroup audioGroup : audioGroups) {
 	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
 
 	    if (info.chatType == AudioGroupPlayerInfo.ChatType.SECRET) {
-	        return true;
+	        return audioGroup;
 	    }
 	}
 
-	return false;
+	return null;
     }
 
 }

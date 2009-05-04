@@ -58,8 +58,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLea
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
 
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
-
 import org.jdesktop.wonderland.client.cell.Cell;
 
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
@@ -221,6 +219,7 @@ public class AudioManagerClient extends BaseConnection implements
         if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
             logger.warning("Sending message to server to get voice bridge... session is "
 	        + session.getStatus());
+
             session.send(this, new GetVoiceBridgeMessage());
         }
     }
@@ -418,19 +417,11 @@ public class AudioManagerClient extends BaseConnection implements
 
 	    inCallDialog.addMember(info);
 
-	    AvatarNameEvent avatarNameEvent;
-
 	    if (msg.getChatType() == ChatType.SECRET) {
 		info.inSecretChat = true;
-                avatarNameEvent = new AvatarNameEvent(EventType.STARTED_SECRET_CHAT,
-                    info.userID.getUsername(), info.usernameAlias);
             } else {
 		info.inSecretChat = false;
-                avatarNameEvent = new AvatarNameEvent(EventType.ENDED_SECRET_CHAT,
-                    info.userID.getUsername(), info.usernameAlias);
 	    }
-
-            InputManager.inputManager().postEvent(avatarNameEvent);
 	} else if (message instanceof VoiceChatHoldMessage) {
 	    VoiceChatHoldMessage msg = (VoiceChatHoldMessage) message;
 	} else if (message instanceof VoiceChatLeaveMessage) {

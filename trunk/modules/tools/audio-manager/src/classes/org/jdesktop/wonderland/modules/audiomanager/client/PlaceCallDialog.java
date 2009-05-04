@@ -98,7 +98,7 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
             //}
 
             userData.add(NameTagNode.getDisplayName(info.usernameAlias,
-                info.isSpeaking, info.isMuted, info.inSecretChat));
+                info.isSpeaking, info.isMuted));
         }
 
         buddyList.setListData(userData.toArray(new String[0]));

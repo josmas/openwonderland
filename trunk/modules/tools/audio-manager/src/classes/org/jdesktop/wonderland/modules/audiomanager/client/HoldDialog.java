@@ -63,7 +63,7 @@ public class HoldDialog extends javax.swing.JFrame implements MemberChangeListen
 	    PresenceInfo member = members[i];
 
 	    memberText += NameTagNode.getDisplayName(
-                member.usernameAlias, member.isSpeaking, member.isMuted, member.inSecretChat);
+                member.usernameAlias, member.isSpeaking, member.isMuted);
 
 	    memberText += " ";
 	}
