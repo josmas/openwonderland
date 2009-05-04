@@ -101,7 +101,7 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
             }
 
 	    userData.add(NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
-		info.isMuted, info.inSecretChat));
+		info.isMuted));
 	}
 
         userList.setListData(userData.toArray(new String[0]));

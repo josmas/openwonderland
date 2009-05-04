@@ -39,6 +39,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayerInRangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatEndMessage;
@@ -66,6 +68,7 @@ import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
@@ -127,6 +130,29 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
     private VoiceChatHandler() {
 	AppContext.getDataManager().setBinding(ORB_MAP_NAME, new ManagedOrbMap());
+    }
+
+    /*
+     * Someone is in an audio group and has privacy set to secret.
+     * Only the  members of that group should get speaking indications.
+     */
+    public void setSecretSpeaking(WonderlandClientSender sender, String audioGroupID,
+	    String callId, boolean isSpeaking) {
+
+	PresenceInfo[] chatters = getChatters(audioGroupID);
+
+	for (int i = 0; i < chatters.length; i++) {
+	    WonderlandClientID id =
+               CommsManagerFactory.getCommsManager().getWonderlandClientID(chatters[i].clientID);
+
+	    if (id == null) {
+		System.out.println("No ClientID for " + chatters[i]);
+		logger.warning("No ClientID for " + chatters[i]);
+		continue;
+	    }
+
+	    sender.send(id, new SpeakingMessage(callId, isSpeaking));
+	}
     }
 
     public void processVoiceChatMessage(WonderlandClientSender sender, 
@@ -469,6 +495,10 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     }
 
     private PresenceInfo[] getChatters(String group) {
+	return getChatters(group, null);
+    }
+
+    private PresenceInfo[] getChatters(String group, ChatType chatType) {
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	AudioGroup audioGroup = vm.getAudioGroup(group);
@@ -483,14 +513,22 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	Player[] players = audioGroup.getPlayers();
 
 	for (int i = 0; i < players.length; i++) {
-	    PresenceInfo info = playerMap.get(players[i].getId());
+	    Player player = players[i];
+
+	    PresenceInfo info = playerMap.get(player.getId());
 	
 	    if (info == null) {
-		logger.warning("Unable to find " + players[i].getId());
+		logger.warning("Unable to find " + player.getId());
 		continue;
 	    }
+
+	    
 		
-	    chatters.add(info);
+	    if (chatType == null || audioGroup.getPlayerInfo(player).chatType == 
+		    getChatType(chatType)) {
+
+	        chatters.add(info);
+	    }
 	}
 
 	return chatters.toArray(new PresenceInfo[0]);

@@ -25,7 +25,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 
 import java.util.ArrayList;
-
+import java.util.Arrays;
 
 import java.util.logging.Logger;
 
@@ -120,10 +120,10 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 	synchronized (this) {
 	    for (PresenceInfo member : members) {
 	        memberList.add(NameTagNode.getDisplayName(
-		    member.usernameAlias, member.isSpeaking, member.isMuted,
-		    member.inSecretChat));
+		    member.usernameAlias, member.isSpeaking, member.isMuted));
 	    }
 
+	    Arrays.sort(memberList.toArray(new String[0]), String.CASE_INSENSITIVE_ORDER);
             this.memberList.setListData(memberList.toArray(new String[0]));
         }
     }
