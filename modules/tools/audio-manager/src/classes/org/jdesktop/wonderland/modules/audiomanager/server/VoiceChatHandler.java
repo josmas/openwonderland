@@ -340,6 +340,18 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	for (int i = 0; i < calleeList.length; i++) {
 	    PresenceInfo info = calleeList[i];
 
+	    if (info.clientID == null) {
+		/*
+		 * This is an outworlder.  We automatically join them to the group
+		 * in a private chat.  There is no reason to have an orb join someone
+		 * in a public chat because the orb can simply be attached.
+	 	 * 
+		 * TODO:  What about SECRET chat?  How does orb end a chat?
+		 */
+	        addPlayerToAudioGroup(vm, audioGroup, info, ChatType.PRIVATE);
+	    	continue;
+	    }
+
 	    CellID cellID = calleeList[i].cellID;
 
 	    logger.fine("  callee:  " + calleeList[i]);
@@ -439,6 +451,11 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	WonderlandClientSender sender = 
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
+
+	if (sender == null) {
+	    logger.warning("Unable to send voice chat info to client.  Sender is null.");
+	    return;
+	}
 
 	sendVoiceChatInfo(sender, audioGroup.getId());
     }
