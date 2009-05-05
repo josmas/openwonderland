@@ -64,6 +64,9 @@ public class ChannelComponent extends CellComponent {
         // changes to bounds, this listener will deliver delayed messages
         cell.addStatusChangeListener(new CellStatusChangeListener() {
             public void cellStatusChanged(Cell cell, CellStatus status) {
+                logger.warning("[ChannelComponent] status of cell " + 
+                               cell.getCellID() + " is " + status);
+
                 if (status == CellStatus.BOUNDS) {
                     deliverDelayedMessages();
                 }
@@ -128,7 +131,8 @@ public class ChannelComponent extends CellComponent {
         synchronized (delayLock) {
             if (delayedMessages != null || cell.getStatus() == CellStatus.DISK) {
                 logger.warning("Delaying message " + message.getClass() +
-                               " from cell " + cell.getClass().getName());
+                               " to cell " + cell.getCellID() +
+                               " (" + cell.getClass().getName() + ")");
                 if (delayedMessages == null) {
                     delayedMessages = new LinkedList<CellMessage>();
                 }
@@ -162,20 +166,25 @@ public class ChannelComponent extends CellComponent {
      * When the status is set to bounds, deliver any queued messages
      */
     protected void deliverDelayedMessages() {
+        logger.warning("Delivering delayed messages to cell " + 
+                       cell.getCellID() + " (" + cell.getClass().getName() + ")");
+
         // deliver delayed messaged
         synchronized (delayLock) {
             if (delayedMessages != null) {
-                for (CellMessage message : delayedMessages) {
-                    logger.warning("Delivering delayed message " +
-                                   message.getClass() + " from cell " +
-                                   cell.getClass().getName());
-      
-                    deliverMessage(message);
+                logger.warning("Delivering " + delayedMessages.size() +
+                               " messages to cell " + cell.getCellID());
+
+                try {
+                    for (CellMessage message : delayedMessages) {
+                        deliverMessage(message);
+                    }
+                } finally {
+                    // make sure to clear the delayed messages list, otherwise
+                    // all future messages will be delayed
+                    delayedMessages = null;
                 }
             }
-            
-            // done delaying messages
-            delayedMessages = null;
         }
     }
 

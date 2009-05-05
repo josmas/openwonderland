@@ -187,6 +187,8 @@ public class CellChannelConnection extends BaseConnection {
         }
 
         public synchronized void cellLoaded(CellID cellID, Cell cell) {
+            logger.warning("Cell loaded " + cellID);
+
             // When a cell is loaded, deliver any queued messages for the cell.
             // Since the cell is guaranteed to be in the DISK state at this 
             // point, the messages will just be added to the cell's delay
@@ -201,6 +203,8 @@ public class CellChannelConnection extends BaseConnection {
                 }
                 
                 // deliver the messages to the cell
+                logger.log(Level.WARNING, "Delivering delayed messages to " +
+                           "cell " + cellID);
                 for (CellMessage message : queue.getMessages()) {
                     cc.messageReceived(message);
                 }
@@ -222,6 +226,8 @@ public class CellChannelConnection extends BaseConnection {
         }
 
         public synchronized void cellUnloaded(final CellID cellID, Cell cell) {
+            logger.warning("Cell unloaded: " + cellID);
+
             // When a cell is unloaded, set the queue to an error queue so
             // we will be notified of any messages that come after the
             // unload.  After a little bit of time, remove this error
