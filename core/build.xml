@@ -73,10 +73,6 @@
 
             <!--start debug-->
             <!--
-            -->
-            <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
-            <!--
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=y"/>
             <jvmarg value="-agentpath:/tmp/NBProfiler32476.link/deployed/jdk15/mac/libprofilerinterface.jnilib=/tmp/NBProfiler32476.link,5140"/>

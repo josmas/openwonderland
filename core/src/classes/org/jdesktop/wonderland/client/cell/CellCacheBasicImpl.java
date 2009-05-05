@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
@@ -66,8 +67,13 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     /** the connection for sending cell information */
     private CellChannelConnection cellChannelConnection;
 
+    /** executor for modifying values in separate threads */
     private ExecutorService cacheExecutor = Executors.newSingleThreadExecutor();
-    
+
+    /** listeners */
+    private final Set<CellCacheListener> listeners =
+            new CopyOnWriteArraySet<CellCacheListener>();
+
     /**
      * Create a new cache implementation
      * @param session the WonderlandSession the cache is associated with
@@ -157,6 +163,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             // Force the cell to create the JME renderer entity
             createCellRenderer(cell);
 
+            // notify listeners
+            fireCellLoaded(cell);
+
             if (viewCell!=null) {
                 // No point in makeing cells active if we don't have a view
                 // The changeCellStatus actually changes the status on another thread
@@ -166,9 +175,11 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
             return cell;
         } catch(Exception e) {
+            // notify listeners
+            fireCellLoadFailed(cellId, className, parentCellID, e);
             logger.log(Level.SEVERE, "Failed to loadCell", e);
+            return null;
         }
-        return null;
     }
 
     /**
@@ -211,6 +222,10 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     public void unloadCell(CellID cellId) {
         Cell cell = cells.remove(cellId);
         if (cell != null) {
+            // notify listeners
+            fireCellUnloaded(cell);
+
+            // update the status
             setCellStatus(cell, CellStatus.DISK);
         }
     }
@@ -221,10 +236,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     public void deleteCell(CellID cellId) {
         // TODO - remove local resources from client asset cache as long
         // as they are not shared
-        Cell cell = cells.remove(cellId);
-        if (cell != null) {
-            setCellStatus(cell, CellStatus.DISK);
-        }
+        unloadCell(cellId);
     }
 
     /**
@@ -318,6 +330,55 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public void addCellCacheListener(CellCacheListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeCellCacheListener(CellCacheListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
+     * Notify listeners that a cell is loaded
+     * @param cell the cell that was loaded
+     */
+    protected void fireCellLoaded(Cell cell) {
+        for (CellCacheListener listener : listeners) {
+            listener.cellLoaded(cell.getCellID(), cell);
+        }
+    }
+
+    /**
+     * Notify listeners that a cell laod failed
+     * @param cellID the id of the cell that failed to load
+     * @param className the class of the cell that failed to load
+     * @param parentCellID the id of the cell's parent
+     * @param cause the reason for failure
+     */
+    protected void fireCellLoadFailed(CellID cellID, String className,
+                                      CellID parentCellID, Throwable cause)
+    {
+        for (CellCacheListener listener : listeners) {
+            listener.cellLoadFailed(cellID, className, parentCellID, cause);
+        }
+    }
+
+    /**
+     * Notify listeners that a cell is unloaded
+     * @param cell the cell that was unloaded
+     */
+    protected void fireCellUnloaded(Cell cell) {
+        for (CellCacheListener listener : listeners) {
+            listener.cellUnloaded(cell.getCellID(), cell);
+        }
+    }
+
+    /**
      * Cell status changes can take a while so should not be performed on the
      * Darkstar listener thread that calls the cache methods. Therefore
      * schedule a task actually apply the status change to the cell.
@@ -327,6 +388,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     private void changeCellStatus(Cell cell, CellStatus status) {
         cacheExecutor.submit(new CellStatusChanger(cell, status));
     }
+
+
 
 
     private class CellStatusChanger implements Runnable {

@@ -79,7 +79,7 @@ public class PhoneCell extends Cell {
         }
 
         switch (status) {
-        case ACTIVE:
+        case BOUNDS:
 	    if (phoneMessageHandler == null) {
                 phoneMessageHandler = new PhoneMessageHandler(this);
 	    }

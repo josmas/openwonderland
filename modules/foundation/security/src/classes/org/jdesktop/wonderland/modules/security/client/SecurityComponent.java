@@ -40,9 +40,7 @@ import org.jdesktop.wonderland.modules.security.common.messages.PermissionsRespo
  * permissions for this particular client.
  * @author jkaplan
  */
-public class SecurityComponent extends CellComponent
-        implements ComponentMessageReceiver
-{
+public class SecurityComponent extends CellComponent {
     private static final Logger logger =
             Logger.getLogger(SecurityComponent.class.getName());
 
@@ -58,6 +56,12 @@ public class SecurityComponent extends CellComponent
     @UsesCellComponent
     private ChannelComponent channel;
 
+    /**
+     * The message receiver to handle messages, or null if listeners
+     * are not registered
+     */
+    private SecurityMessageReceiver receiver = null;
+
     public SecurityComponent(Cell cell) {
         super (cell);
     }
@@ -67,11 +71,16 @@ public class SecurityComponent extends CellComponent
         super.setStatus(status);
 
         switch (status) {
-            case ACTIVE:
-                channel.addMessageReceiver(PermissionsChangedMessage.class, this);
+            case BOUNDS:
+                if (receiver == null) {
+                    receiver = new SecurityMessageReceiver();
+                    channel.addMessageReceiver(PermissionsChangedMessage.class,
+                                               receiver);
+                }
                 break;
             case DISK:
                 channel.removeMessageReceiver(PermissionsChangedMessage.class);
+                receiver = null;
                 break;
         }
     }
@@ -112,12 +121,14 @@ public class SecurityComponent extends CellComponent
         super.setClientState(clientState);
     }
 
-    public void messageReceived(CellMessage message) {
-        if (message instanceof PermissionsChangedMessage) {
-            // reset our view of granted permissions.  The next time someone
-            // requests them, they will be re-fetched from the server.
-            synchronized (this) {
-                granted = null;
+    class SecurityMessageReceiver implements ComponentMessageReceiver {
+        public void messageReceived(CellMessage message) {
+            if (message instanceof PermissionsChangedMessage) {
+                // reset our view of granted permissions.  The next time someone
+                // requests them, they will be re-fetched from the server.
+                synchronized (this) {
+                    granted = null;
+                }
             }
         }
     }

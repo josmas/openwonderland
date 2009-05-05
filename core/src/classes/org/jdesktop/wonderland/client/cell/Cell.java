@@ -25,9 +25,11 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.ComponentChangeListener.ChangeType;
@@ -38,8 +40,6 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.messages.CellClientComponentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -59,15 +59,19 @@ public class Cell {
     private BoundingVolume computedWorldBounds;
     private BoundingVolume localBounds;
     private Cell parent;
-    private ArrayList<Cell> children = null;
+    private final List<Cell> children = new ArrayList<Cell>();
     private CellTransform localTransform;
     private CellTransform local2VW = new CellTransform(null, null);
     private CellTransform worldTransform = new CellTransform(null, null);
     private CellID cellID;
     private String name = null;
     private CellStatus currentStatus = CellStatus.DISK;
+    private final Object statusLock = new Object();
     private CellCache cellCache;
     private HashMap<Class, CellComponent> components = new HashMap<Class, CellComponent>();
+
+    private CellClientStateMessageReceiver clientStateReceiver = null;
+    private CellComponentMessageReceiver componentReceiver = null;
 
     /**
      * An enum representing the various render types supported by Wonderland.
@@ -93,13 +97,19 @@ public class Cell {
          * Low end 3D rendering, cell phone renderer etc, TBD
          */
     };
-    private HashMap<RendererType, CellRenderer> cellRenderers = new HashMap();
+    private final Map<RendererType, CellRenderer> cellRenderers =
+            new HashMap<RendererType, CellRenderer>();
     /**
      * The logger for Cell (and possibly it's subclasses)
      */
     protected static Logger logger = Logger.getLogger(Cell.class.getName());
-    private HashSet<TransformChangeListener> transformChangeListeners = null;
-    private HashSet<ComponentChangeListener> componentChangeListeners = null;
+    
+    private final Set<TransformChangeListener> transformChangeListeners =
+            new CopyOnWriteArraySet<TransformChangeListener>();
+    private final Set<ComponentChangeListener> componentChangeListeners =
+            new CopyOnWriteArraySet<ComponentChangeListener>();
+    private final Set<CellStatusChangeListener> statusChangeListeners =
+            new CopyOnWriteArraySet<CellStatusChangeListener>();
 
     /**
      * Instantiate a new cell
@@ -135,12 +145,9 @@ public class Cell {
      * @return
      */
     public List<Cell> getChildren() {
-        if (children == null) {
-            return new ArrayList<Cell>(0);
-        }
-
         synchronized (children) {
-            return (List<Cell>) children.clone();
+            // return a copy of the children list
+            return new ArrayList<Cell>(children);
         }
     }
 
@@ -153,10 +160,6 @@ public class Cell {
     public void addChild(Cell child) throws MultipleParentException {
         if (child.getParent() != null) {
             throw new MultipleParentException();
-        }
-
-        if (children == null) {
-            children = new ArrayList<Cell>();
         }
 
         synchronized (children) {
@@ -174,10 +177,6 @@ public class Cell {
      * @param child
      */
     public void removeChild(Cell child) {
-        if (children == null) {
-            return;
-        }
-
         synchronized (children) {
             if (children.remove(child)) {
                 child.setParent(null);
@@ -229,7 +228,7 @@ public class Cell {
             throw new IllegalArgumentException("Adding duplicate component of class " + component.getClass().getName());
         }
 
-        synchronized (currentStatus) {
+        synchronized (statusLock) {
             // If the cell is current more than just being on disk, then attempt
             // to find out what components it depends upon and add them
             if (currentStatus.ordinal() > CellStatus.DISK.ordinal()) {
@@ -288,10 +287,6 @@ public class Cell {
      * @return
      */
     public int getNumChildren() {
-        if (children == null) {
-            return 0;
-        }
-
         synchronized (children) {
             return children.size();
         }
@@ -536,7 +531,9 @@ public class Cell {
      * @return returns CellStatus
      */
     public CellStatus getStatus() {
-        return this.currentStatus;
+        synchronized (statusLock) {
+            return currentStatus;
+        }
     }
 
     /**
@@ -564,7 +561,7 @@ public class Cell {
      * @return true if the status was changed, false if the new and previous status are the same
      */
     public boolean setStatus(CellStatus status) {
-        synchronized (currentStatus) {
+        synchronized (statusLock) {
             if (currentStatus == status) {
                 return false;
             }
@@ -591,11 +588,6 @@ public class Cell {
                 case DISK:
                     if (transformChangeListeners != null) {
                         transformChangeListeners.clear();
-                        transformChangeListeners = null;
-                    }
-
-                    if (components != null) {
-                        components.clear();
                     }
 
                     // Also, remove the message listener for updates to the
@@ -605,21 +597,37 @@ public class Cell {
                         channel.removeMessageReceiver(CellClientStateMessage.class);
                         channel.removeMessageReceiver(CellClientComponentMessage.class);
                     }
+
+                    // remove the receivers
+                    clientStateReceiver = null;
+                    componentReceiver = null;
+
+                    // Now clear all components
+                    if (components != null) {
+                        components.clear();
+                    }
                     break;
 
-                case ACTIVE:
-                    // Add the message receiver for all messages meant to update the state
-                    // cell on the client-side
-                    channel = getComponent(ChannelComponent.class);
-                    if (channel != null) {
-                        channel.addMessageReceiver(CellClientStateMessage.class,
-                                new CellClientStateMessageReceiver(this));
-                        channel.addMessageReceiver(CellClientComponentMessage.class,
-                                new CellComponentMessageReceiver(this));
+                case BOUNDS:
+                    if (clientStateReceiver == null) {
+                        // Add the message receiver for all messages meant to
+                        // update the state cell on the client-side
+                        clientStateReceiver = new CellClientStateMessageReceiver(this);
+                        componentReceiver = new CellComponentMessageReceiver(this);
+
+                        channel = getComponent(ChannelComponent.class);
+                        if (channel != null) {
+                            channel.addMessageReceiver(CellClientStateMessage.class,
+                                                       clientStateReceiver);
+                            channel.addMessageReceiver(CellClientComponentMessage.class,
+                                                       componentReceiver);
+                        }
                     }
                     break;
             }
 
+            // update both local and global listeners
+            notifyStatusChangeListeners(status);
             CellManager.getCellManager().notifyCellStatusChange(this, status);
         }
         return true;
@@ -839,9 +847,6 @@ public class Cell {
      * @param listener to add
      */
     public void addTransformChangeListener(TransformChangeListener listener) {
-        if (transformChangeListeners == null) {
-            transformChangeListeners = new HashSet();
-        }
         transformChangeListeners.add(listener);
     }
 
@@ -850,16 +855,10 @@ public class Cell {
      * @param listener to be removed
      */
     public void removeTransformChangeListener(TransformChangeListener listener) {
-        if (transformChangeListeners != null) {
-            transformChangeListeners.remove(listener);
-        }
+        transformChangeListeners.remove(listener);
     }
 
     private void notifyTransformChangeListeners(TransformChangeListener.ChangeSource source) {
-        if (transformChangeListeners == null) {
-            return;
-        }
-
         for (TransformChangeListener listener : transformChangeListeners) {
             listener.transformChanged(this, source);
         }
@@ -872,9 +871,6 @@ public class Cell {
      * @param listener to add
      */
     public void addComponentChangeListener(ComponentChangeListener listener) {
-        if (componentChangeListeners == null) {
-            componentChangeListeners = new HashSet();
-        }
         componentChangeListeners.add(listener);
     }
 
@@ -883,18 +879,36 @@ public class Cell {
      * @param listener to be removed
      */
     public void removeComponentChangeListener(ComponentChangeListener listener) {
-        if (componentChangeListeners != null) {
-            componentChangeListeners.remove(listener);
-        }
+        componentChangeListeners.remove(listener);
     }
 
     private void notifyComponentChangeListeners(ComponentChangeListener.ChangeType source, CellComponent component) {
-        if (componentChangeListeners == null) {
-            return;
-        }
-
         for (ComponentChangeListener listener : componentChangeListeners) {
             listener.componentChanged(this, source, component);
+        }
+    }
+
+    /**
+     * Add a status change listener to this cell.  The listener will be called
+     * for any change to this cell's status.  For changes to any cell's
+     * status, use <code>CellManager</code>.
+     * @param listener the listener to add
+     */
+    public void addStatusChangeListener(CellStatusChangeListener listener) {
+        statusChangeListeners.add(listener);
+    }
+
+    /**
+     * Remove a status change listener from this cell
+     * @param listener the listener to remove
+     */
+    public void removeStatusChangeListener(CellStatusChangeListener listener) {
+        statusChangeListeners.remove(listener);
+    }
+
+    private void notifyStatusChangeListeners(CellStatus status) {
+        for (CellStatusChangeListener listener : statusChangeListeners) {
+            listener.cellStatusChanged(this, status);
         }
     }
 }

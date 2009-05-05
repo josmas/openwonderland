@@ -68,7 +68,7 @@ public class WhiteboardComponent extends CellComponent {
     public void setStatus(CellStatus status) {
         switch (status) {
 
-            case ACTIVE: {
+            case BOUNDS: {
 
                 channelComp = cell.getComponent(ChannelComponent.class);
                 if (channelComp == null) {

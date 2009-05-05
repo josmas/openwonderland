@@ -17,9 +17,16 @@
  */
 package org.jdesktop.wonderland.client.cell;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.ClientConnection.Status;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
@@ -31,74 +38,175 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  * @author paulby
  */
 @ExperimentalAPI
-public abstract class ChannelComponent extends CellComponent {
-    
+public class ChannelComponent extends CellComponent {
+    private static final Logger logger =
+            Logger.getLogger(ChannelComponent.class.getName());
+
+    /** receivers for each message type */
+    private final Map<Class, ComponentMessageReceiver> messageReceivers =
+            new LinkedHashMap<Class, ComponentMessageReceiver>();
+
+    /** the connection to send on */
+    private CellChannelConnection connection;
+
+    /** a list of delayed messages to replay when the cell becomes active */
+    private List<CellMessage> delayedMessages;
+
+    /** a lock to make sure delayed messages are delivered before any others */
+    private final Object delayLock = new Object();
+
     public ChannelComponent(Cell cell) {
         super(cell);
+
+        setCellChannelConnection(cell.getCellCache().getCellChannelConnection());
+
+        // add a status change listener to the parent cell.  When the status
+        // changes to bounds, this listener will deliver delayed messages
+        cell.addStatusChangeListener(new CellStatusChangeListener() {
+            public void cellStatusChanged(Cell cell, CellStatus status) {
+                if (status == CellStatus.BOUNDS) {
+                    deliverDelayedMessages();
+                }
+            }
+        });
+    }
+
+    /**
+     * Notification of the CellChannelConnection to use when sending
+     * data to the server for this cell.  This method will be called
+     * automatically at cell creation time.
+     */
+    public void setCellChannelConnection(CellChannelConnection connection) {
+        this.connection = connection;
     }
 
     /**
      * Register a receiver for a specific message class. Only a single receiver
      * is allowed for each message class, calling this method to add a duplicate
      * receiver will cause an IllegalStateException to be thrown.
-     * 
+     *
      * @param msgClass
      * @param receiver
      */
-    public abstract void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver);
-    
+    public void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver) {
+        Object old = messageReceivers.put(msgClass, receiver);
+
+        // XXX hack to ignore duplicate registrations XXX
+        if (old != null && old != receiver)
+            throw new IllegalStateException("Duplicate Message class added "+msgClass);
+    }
+
     /**
      * Remove the message receiver listening on the specifed message class
      * @param msgClass
      */
-    public abstract void removeMessageReceiver(Class<? extends CellMessage> msgClass);
-    
+    public void removeMessageReceiver(Class<? extends CellMessage> msgClass) {
+        messageReceivers.remove(msgClass);
+    }
+
     /**
      * Dispatch messages to any receivers registered for the particular message class
-     * @param sender
-     * @param session
      * @param message
      */
-    abstract void messageReceived(CellMessage message );
-    
-    public abstract Status getStatus();
-    
-    public abstract void send(CellMessage message, ResponseListener listener);
-    
-    public abstract void send(CellMessage message);
+    public void messageReceived(CellMessage message ) {
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.finest("---> Impl received message for " + 
+                          message.getCellID() + "   impl cell " + 
+                          cell.getCellID() + "  recievers " + 
+                          messageReceivers.size());
+        }
 
-    public abstract ResponseMessage sendAndWait(CellMessage message)
-            throws InterruptedException;
+        // make sure the message is being delivered to the right cell
+        if (!message.getCellID().equals(cell.getCellID())) {
+            logger.severe("Message for wrong cell " + message.getCellID());
+            return;
+        }
 
-    // TODO various send methods required, cell to server, cell to cell, cell to channel
-    // Not sure these need to be defined in this interface, implementors should have
-    // the choice of which send messages to implement and expose (if any) in a cell.
-//    public void send(CellMessage message);
+        // if the component status is DISK it means the cell has been
+        // instantiated but not yet activated to receive messages.  Queue
+        // up messages to deliver when the cell becomes active
+        synchronized (delayLock) {
+            if (delayedMessages != null || cell.getStatus() == CellStatus.DISK) {
+                logger.warning("Delaying message " + message.getClass() +
+                               " from cell " + cell.getClass().getName());
+                if (delayedMessages == null) {
+                    delayedMessages = new LinkedList<CellMessage>();
+                }
+
+                delayedMessages.add(message);
+                return;
+            }
+        }
+
+        deliverMessage(message);
+    }
+
+    /**
+     * Deliver the message to the proper receiver on the cell
+     * @param message the message to deliver
+     */
+    protected void deliverMessage(CellMessage message) {
+        // if we get here, we can actually deliver the message
+        ComponentMessageReceiver recvRef = messageReceivers.get(message.getClass());
+        if (recvRef == null) {
+            logger.warning("No listener for message " + message.getClass() +
+                           " from cell " + cell.getClass().getName() +
+                           " status " + cell.getStatus());
+            return;
+        }
+
+        recvRef.messageReceived(message);
+    }
+
+    /**
+     * When the status is set to bounds, deliver any queued messages
+     */
+    protected void deliverDelayedMessages() {
+        // deliver delayed messaged
+        synchronized (delayLock) {
+            if (delayedMessages != null) {
+                for (CellMessage message : delayedMessages) {
+                    logger.warning("Delivering delayed message " +
+                                   message.getClass() + " from cell " +
+                                   cell.getClass().getName());
+      
+                    deliverMessage(message);
+                }
+            }
+            
+            // done delaying messages
+            delayedMessages = null;
+        }
+    }
+
+    public Status getStatus() {
+        return connection.getStatus();
+    }
+
+    public void send(CellMessage message, ResponseListener listener) {
+        if (message.getCellID() == null) {
+            message.setCellID(cell.getCellID());
+        }
+        connection.send(message, listener);
+    }
+
+    public void send(CellMessage message) {
+        if (message.getCellID() == null) {
+            message.setCellID(cell.getCellID());
+        }
+        connection.send(message);
+    }
+
+    public ResponseMessage sendAndWait(CellMessage message)
+        throws InterruptedException
+    {
+        if (message.getCellID() == null) {
+            message.setCellID(cell.getCellID());
+        }
+        return connection.sendAndWait(message);
+    }
     
     static public interface ComponentMessageReceiver {
         public void messageReceived(CellMessage message );        
-    }
-
-    class ClassWrapper {
-        private Class clazz;
-
-        public ClassWrapper(Class clazz) {
-            this.clazz = clazz;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 59 * hash + (this.clazz != null ? this.clazz.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof Class))
-                return false;
-
-            return ((Class)o).isAssignableFrom(clazz);
-        }
     }
 }
