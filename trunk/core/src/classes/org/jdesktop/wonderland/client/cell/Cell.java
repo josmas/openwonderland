@@ -625,11 +625,14 @@ public class Cell {
                     }
                     break;
             }
-
-            // update both local and global listeners
-            notifyStatusChangeListeners(status);
-            CellManager.getCellManager().notifyCellStatusChange(this, status);
         }
+
+        // update both local and global listeners.  This is done after the
+        // lock is released, so the status may change again before the listeners
+        // are called
+        notifyStatusChangeListeners(status);
+        CellManager.getCellManager().notifyCellStatusChange(this, status);
+        
         return true;
     }
 
