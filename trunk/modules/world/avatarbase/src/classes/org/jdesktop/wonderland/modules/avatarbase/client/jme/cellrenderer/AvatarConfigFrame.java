@@ -286,7 +286,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                         .add(maleRB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(femaleRB)))
-                .addContainerGap(99, Short.MAX_VALUE))
+                .addContainerGap(102, Short.MAX_VALUE))
             .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(createAvatarPanelLayout.createSequentialGroup()
                     .add(17, 17, 17)

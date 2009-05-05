@@ -205,7 +205,6 @@ public class AvatarConfigManager {
                 AvatarConfigComponent configComponent = newViewCell.getComponent(AvatarConfigComponent.class);
                 URL selectedURL = AvatarConfigManager.getAvatarConfigManager().getDefaultAvatarServerURL(newViewCell.getCellCache().getSession().getSessionManager());
                 logger.info("APPLY "+selectedURL);
-                System.err.println("SETVIEWCEL "+selectedURL);
                 if (selectedURL!=null) {
                     // TODO check if configComponent is live (ie has an active channel component)
                     configComponent.requestConfigChange(selectedURL);

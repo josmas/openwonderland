@@ -63,7 +63,6 @@ public class AvatarConfigComponent extends CellComponent {
         super.setClientState(clientState);
         try {
             String str = ((AvatarConfigComponentClientState) clientState).getConfigURL();
-            System.err.println("SET CLIENT STATE "+str);
             if (str!=null)
                 avatarConfigURL = new URL(str);
             else
@@ -104,7 +103,6 @@ public class AvatarConfigComponent extends CellComponent {
     }
 
     private void notifyConfigUpdate(AvatarConfigMessage msg) {
-        System.err.println("CONFIG UPDATE "+msg.getModelConfigURL());
         if ((avatarConfigURL!=null && avatarConfigURL.toExternalForm().equals(msg.getModelConfigURL())
                 || msg.getModelConfigURL()==null))
             return;
@@ -133,7 +131,6 @@ public class AvatarConfigComponent extends CellComponent {
     }
 
     public void requestConfigChange(URL configURL) {
-        System.err.println("REQUEST CONFIG CHANGE "+configURL);
         if (avatarConfigURL!=null && avatarConfigURL.equals(configURL))
             return;
 

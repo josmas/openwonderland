@@ -96,7 +96,7 @@ public class AvatarPlugin extends BaseClientPlugin
         // activate or should be registered per session not globally 
         // XXX
         WorldManager worldManager = ClientContextJME.getWorldManager();
-        worldManager.addUserData(Repository.class, new Repository(worldManager, new WonderlandAvatarCache(ClientContext.getUserDirectory(bundle.getString("AvatarCache")))));
+        worldManager.addUserData(Repository.class, new Repository(worldManager, new WonderlandAvatarCache(baseURL, ClientContext.getUserDirectory(bundle.getString("AvatarCache")))));
 
         // Workaround to guarntee that the webdav module has been initialized
         loginManager.addLifecycleListener(lifecycleListener);
