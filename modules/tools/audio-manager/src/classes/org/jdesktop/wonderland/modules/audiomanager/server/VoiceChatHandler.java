@@ -142,6 +142,13 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	PresenceInfo[] chatters = getChatters(audioGroupID);
 
 	for (int i = 0; i < chatters.length; i++) {
+	    if (chatters[i].clientID == null) {
+		/*
+		 * It's an outworlder.
+		 */
+		continue;
+	    }
+
 	    WonderlandClientID id =
                CommsManagerFactory.getCommsManager().getWonderlandClientID(chatters[i].clientID);
 
@@ -490,6 +497,13 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
         VoiceChatInfoResponseMessage message = new VoiceChatInfoResponseMessage(group, chatters);
 
 	for (int i = 0; i < chatters.length; i++) {
+	    if (chatters[i].clientID == null) {
+		/*
+		 * It's an outworlder.
+		 */
+		continue;
+	    }
+
             WonderlandClientID clientID = cm.getWonderlandClientID(chatters[i].clientID);
 
 	    if (clientID == null) {
