@@ -71,4 +71,50 @@ public interface CellCache {
      * @return the CellChannelConnection for this CellCache
      */
     public CellChannelConnection getCellChannelConnection();
+
+    /**
+     * Add a cell cache listener
+     * @param listener the listener to add
+     */
+    public void addCellCacheListener(CellCacheListener listener);
+
+    /**
+     * Remove a cell cache listener
+     * @param listener the listener to remove
+     */
+    public void removeCellCacheListener(CellCacheListener listener);
+    
+    /**
+     * A listener that will be notified when cells are loaded or unloaded.
+     */
+    public interface CellCacheListener {
+        /**
+         * Notification that a cell has been loaded.  This will be sent
+         * after the cell has been loaded, and its client state has been
+         * set, but before the cell's status has been changed from DISK
+         * to anything else.
+         * @param cellID the id of the loaded cell
+         * @param cell the cell that was loaded
+         */
+        public void cellLoaded(CellID cellID, Cell cell);
+
+        /**
+         * Notification that a cell failed to load.
+         * @param cellID the id of the cell that didn't load
+         * @param className the name of the cell that didn't load
+         * @param parentCellID the id of the cell's parent
+         * @param cause the reason the cell didn't load
+         */
+        public void cellLoadFailed(CellID cellID, String className,
+                                   CellID parentCellID, Throwable cause);
+
+        /**
+         * Notification that a cell was unloaded.  This will be called after
+         * the cell has been unloaded, but before its status has been changed.
+         * @param cellID the id of the unloaded cell
+         * @param cell the cell that was unloaded
+         */
+        public void cellUnloaded(CellID cellID, Cell cell);
+
+    }
 }

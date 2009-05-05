@@ -248,7 +248,7 @@ public class ChannelComponentMO extends CellComponentMO {
 
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.client.cell.ChannelComponentImpl";
+        return "org.jdesktop.wonderland.client.cell.ChannelComponent";
     }
 
     /**

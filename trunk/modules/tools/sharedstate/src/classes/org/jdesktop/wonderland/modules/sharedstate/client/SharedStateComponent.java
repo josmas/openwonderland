@@ -32,9 +32,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.sharedstate.common.messages.ChangeValueMessage;
 
 @ExperimentalAPI
-public class SharedStateComponent extends CellComponent
-    implements ComponentMessageReceiver
-{
+public class SharedStateComponent extends CellComponent {
     private static final Logger logger =
             Logger.getLogger(ComponentMessageReceiver.class.getName());
 
@@ -49,7 +47,9 @@ public class SharedStateComponent extends CellComponent
     private Map<String, SharedMapImpl> maps =
             new LinkedHashMap<String, SharedMapImpl>();
 
- 
+    /** the message receiver, or null if the receiver has not been initialized */
+    private SharedStateMessageReceiver receiver = null;
+
     public SharedStateComponent(Cell cell) {
         super(cell);
     }
@@ -80,22 +80,18 @@ public class SharedStateComponent extends CellComponent
     @Override
     public void setStatus(CellStatus status) {
         super.setStatus(status);
-    
-        if (status == CellStatus.ACTIVE) {
-            channel.addMessageReceiver(ChangeValueMessage.class, this);
-        }
-    }
 
-    public void messageReceived(CellMessage message) {
-        if (message instanceof ChangeValueMessage) {
-            ChangeValueMessage cvm = (ChangeValueMessage) message;
-
-            // get the map
-            SharedMapImpl map = get(cvm.getMapName(), false);
-            map.handleMessage(cvm);
-        } else {
-            logger.log(Level.WARNING, "Unrecognized message " +
-                       message.getClass().getName() + ": " + message);
+        switch (status) {
+            case BOUNDS:
+                if (receiver == null) {
+                    receiver = new SharedStateMessageReceiver();
+                    channel.addMessageReceiver(ChangeValueMessage.class, receiver);
+                }
+                break;
+            case DISK:
+                channel.removeMessageReceiver(ChangeValueMessage.class);
+                receiver = null;
+                break;
         }
     }
 
@@ -138,5 +134,20 @@ public class SharedStateComponent extends CellComponent
 
         // return the map
         return out;
+    }
+
+    class SharedStateMessageReceiver implements ComponentMessageReceiver {
+        public void messageReceived(CellMessage message) {
+            if (message instanceof ChangeValueMessage) {
+                ChangeValueMessage cvm = (ChangeValueMessage) message;
+
+                // get the map
+                SharedMapImpl map = get(cvm.getMapName(), false);
+                map.handleMessage(cvm);
+            } else {
+                logger.log(Level.WARNING, "Unrecognized message " +
+                           message.getClass().getName() + ": " + message);
+            }
+        }
     }
 }

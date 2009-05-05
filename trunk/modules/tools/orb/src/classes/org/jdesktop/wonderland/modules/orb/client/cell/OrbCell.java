@@ -76,7 +76,7 @@ public class OrbCell extends Cell {
 	boolean changed = super.setStatus(status);
 
 	switch (status) {
-	case ACTIVE:
+	case BOUNDS:
             if (orbMessageHandler == null) {
 	        logger.fine("Creating orb Message handler for " + getCellID());
                 orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession());
