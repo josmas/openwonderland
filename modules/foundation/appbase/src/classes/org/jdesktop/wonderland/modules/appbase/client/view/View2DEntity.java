@@ -53,6 +53,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D.Type;
 import java.awt.Button;
+import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
@@ -1180,7 +1181,11 @@ public abstract class View2DEntity implements View2D {
             }
         }
 
-
+        // Lastly, inform the window's surface of the view visibility.
+        DrawingSurface surface = window.getSurface();
+        if (surface != null) {
+            surface.setViewIsVisible(this, isActuallyVisible());
+        }
     }
 
     /** {@inheritDoc} */

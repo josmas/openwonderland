@@ -21,6 +21,7 @@ import com.jme.image.Texture;
 import java.awt.Graphics2D;
 import com.jmex.awt.swingui.ImageGraphics;
 import java.awt.Point;
+import java.util.HashSet;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
@@ -28,6 +29,7 @@ import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 
 /**
  * INTERNAL API 
@@ -83,7 +85,8 @@ public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
     private Window2D window;
     /** Whether this drawing surface is for an app running in the sas. */
     private boolean isInSas;
-
+    /** The set of views which are visible and which are displaying this surface. */
+    private HashSet<View2D> visibleViews = new HashSet<View2D>();
     /**  
      * Create an instance of DrawingSurfaceImageGraphics with the given name.
      * Before it can be used you must call setWindow.
@@ -219,6 +222,32 @@ public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
         return updateEnable;
     }
 
+    /** {@inheritDoc} */
+    public void setViewIsVisible(View2D view, boolean isVisible) {
+        if (isVisible) {
+            if (!visibleViews.contains(view)) {
+                visibleViews.add(view);
+            }
+        } else {
+            if (visibleViews.contains(view)) {
+                visibleViews.remove(view);
+            }
+        }
+
+        // If there are any views which are visible, make sure drawing surface is being updated
+        if (visibleViews.size() > 0) {
+            if (!getUpdateEnable()) {
+                logger.info("Enable updating for surface " + this);
+                setUpdateEnable(true);
+            }
+        } else {
+            if (getUpdateEnable()) {
+                logger.info("Disable updating for surface " + this);
+                setUpdateEnable(false);
+            }
+        }
+    }
+
     /**
      * Check whether or not updating should be activated.
      */
@@ -254,7 +283,7 @@ public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
         if (window == null) {
             return "Anonymous DrawingSurface";
         } else {
-            return "Surface for window " + window;
+            return "Surface for window " + window.getName();
         }
     }
 
