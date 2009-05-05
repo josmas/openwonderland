@@ -276,7 +276,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         System.err.println("!!!!!!!!!!! Slaves notified of connection info " + connInfo);
     }
 
-    void setConnectionInfo (String connInfo) {
+    public void setConnectionInfo (String connInfo) {
         logger.warning("Connection info for cellID " + cellID + " = " + connInfo);
         connectionInfo = connInfo;
         if (clientState != null) {

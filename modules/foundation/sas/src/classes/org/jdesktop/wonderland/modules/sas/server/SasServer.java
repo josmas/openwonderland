@@ -87,7 +87,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
      * Called when a new provider client connects to the SAS server.
      */
     public void providerConnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-        logger.severe("**** Sas provider connected, clientID = " + clientID);
+        logger.info("**** Sas provider connected, clientID = " + clientID);
         
         // TODO: for now everything uses xremwin
         String execCap = "xremwin";
@@ -103,7 +103,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         }
         providers.add(provider);
 
-        logger.severe("**** provider added to xremwin list, clientID = " + clientID);
+        logger.info("**** provider added to xremwin list, clientID = " + clientID);
 
         // See if there are any pending launches
         tryPendingLaunches(execCap);
@@ -116,8 +116,33 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
      * Called when provider client disconnects from the SAS server.
      */
     public void providerDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-        logger.severe("**** Sas provider disconnnected, clientID = " + clientID);
-        //providers.remove(clientID);
+        logger.info("**** Sas provider disconnnected, clientID = " + clientID);
+
+        // TODO: for now everything uses xremwin
+        String execCap = "xremwin";
+
+        // Remove provider from execution capability list 
+        LinkedList<ProviderProxy> providers = execCapToProviderList.get(execCap);
+        if (providers != null) {
+            ProviderProxy toRemove = null;
+            for (ProviderProxy provider : providers) {
+                if (provider.getClientID().equals(clientID)) {
+                    toRemove = provider;
+                    break;
+                }
+            }
+            if (toRemove != null) {
+                toRemove.cleanup();
+                providers.remove(toRemove);
+            }
+
+            if (providers.size() <= 0) {
+                execCapToProviderList.remove(execCap);
+            }
+        }
+
+        // Mark server modified
+        AppContext.getDataManager().markForUpdate(this);
     }
 
     /**
@@ -125,7 +150,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
      */
     public void appLaunch (AppConventionalCellMO cell, String executionCapability, String appName, 
                            String command) {
-        logger.severe("***** appLaunch, command = " + command);
+        logger.info("***** appLaunch, command = " + command);
 
         CellID cellID = cell.getCellID();
 
@@ -158,10 +183,10 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
      * Called by the provider proxy to report the result of a launch
      */
     public void appLaunchResult (AppServerLauncher.LaunchStatus status, CellID cellID, String connInfo) {
-        logger.severe("############### SasServer: Launch result received");
-        logger.severe("status = " + status);
-        logger.severe("cellID = " + cellID);
-        logger.severe("connInfo = " + connInfo);
+        logger.info("############### SasServer: Launch result received");
+        logger.info("status = " + status);
+        logger.info("cellID = " + cellID);
+        logger.info("connInfo = " + connInfo);
 
         // Get the request that we used to launch the app
         LaunchRequest launchReq = launchesInFlight.get(cellID);
@@ -179,7 +204,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             return;
         }
         if (!(cell instanceof AppConventionalCellMO)) {
-            logger.warning("Cell reported in app launch result is not AppConventionalMO, launch request = " + 
+            logger.warning("Cell reported in app launch result is not an AppConventionalMO, launch request = " + 
                            launchReq);
             return;
         }
@@ -204,7 +229,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
      * {@inheritDoc}
      */
     public void appStop (CellID cellID) {
-        logger.severe("***** appLaunch, cellID = " + cellID);
+        logger.info("***** appLaunch, cellID = " + cellID);
         // TODO: tell the provider to stop the app, if it is still connected
         // TODO: make sure we remove all inflight requests and messages and pending messages as well
     }

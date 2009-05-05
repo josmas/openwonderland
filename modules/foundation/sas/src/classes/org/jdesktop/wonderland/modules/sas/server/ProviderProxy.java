@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.sas.server;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchMessage;
@@ -27,6 +28,10 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO.AppServerLauncher;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchStatusMessage;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
 
 /**
  * This represents a provider on the server side.
@@ -56,9 +61,30 @@ class ProviderProxy implements Serializable {
     /** The connection info of the last successful launch. */
     private String lastLaunchConnInfo;
 
+    /** 
+     * The name of the Darkstar binding we use to store the reference to the cells launched by 
+     * this provider. 
+     */
+    // TODO: AppConventionalCellMO should notify SAS of deleted cells so that we can better 
+    // clean out this list
+    private static String PROVIDER_CELLS_LAUNCHED_BINDING_NAME = 
+        "org.jdesktop.wonderland.modules.sas.server.ProviderCellsLaunched";
+
     ProviderProxy (WonderlandClientID clientID, WonderlandClientSender sender) {
         this.clientID = clientID;
         this.sender = sender;
+
+        ProviderCellsLaunched cellsLaunched = new ProviderCellsLaunched();
+        AppContext.getDataManager().setBinding(PROVIDER_CELLS_LAUNCHED_BINDING_NAME, cellsLaunched);
+    }
+
+    public static ProviderCellsLaunched getProviderCellsLaunched () {
+        return (ProviderCellsLaunched)
+            AppContext.getDataManager().getBinding(PROVIDER_CELLS_LAUNCHED_BINDING_NAME);
+    }
+
+    WonderlandClientID getClientID () {
+        return clientID;
     }
 
     synchronized void addExecutionCapability (String executionCapability) {
@@ -88,7 +114,7 @@ class ProviderProxy implements Serializable {
         SasProviderLaunchMessage msg = new SasProviderLaunchMessage(executionCapability, appName, command);
 
         // Record this message so we can match it up with its corresponding status message
-        logger.severe("message ID = " + msg.getMessageID());
+        logger.info("message ID = " + msg.getMessageID());
         SasProviderConnectionHandler.addProviderMessageInFlight(msg.getMessageID(), this, cellID);
 
         // Now send the message. The response will come back asynchronously via the 
@@ -109,13 +135,34 @@ class ProviderProxy implements Serializable {
         AppConventionalCellMO.AppServerLauncher.LaunchStatus aslStatus = AppServerLauncher.LaunchStatus.FAIL;
         if (status == SasProviderLaunchStatusMessage.LaunchStatus.SUCCESS) {
             aslStatus = AppServerLauncher.LaunchStatus.SUCCESS;
+            getProviderCellsLaunched().add(cellID);
         }
 
-        logger.severe("############### ProviderProxy: Launch result received");
-        logger.severe("aslStatus = " + aslStatus);
-        logger.severe("cellID = " + cellID);
-        logger.severe("connInfo = " + connInfo);
+        logger.info("############### ProviderProxy: Launch result received");
+        logger.info("aslStatus = " + aslStatus);
+        logger.info("cellID = " + cellID);
+        logger.info("connInfo = " + connInfo);
 
         sasServer.appLaunchResult(aslStatus, cellID, connInfo);
+    }
+
+    /**
+     * Clean up resources.
+     */
+    public void cleanup () {
+        // Traverse through cells which have launched an app on this provider and ensure
+        // that their connection infos are cleaned up.
+        Iterator<CellID> it = getProviderCellsLaunched().getIterator();
+        while (it.hasNext()) {
+            CellID cellID = it.next();
+            CellMO cell = CellManagerMO.getCell(cellID);
+            if (cell != null) {
+                if (!(cell instanceof AppConventionalCellMO)) {
+                    logger.warning("Cell being cleaned up is not an AppConventionalMO");
+                }
+                ((AppConventionalCellMO)cell).setConnectionInfo(null);
+            }
+        }
+        getProviderCellsLaunched().clear();
     }
 }
