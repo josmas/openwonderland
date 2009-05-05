@@ -164,7 +164,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     if (e.getUsername().equals(username)) {
                         if (nameTag == null) {
                             logger.warning("[AvatarImiJME] warning: setting " +
-                                "avatar name when name tag is null");
+                                "avatar name when name tag is null.  username " 
+				+ username);
                             return;
                         }
 
