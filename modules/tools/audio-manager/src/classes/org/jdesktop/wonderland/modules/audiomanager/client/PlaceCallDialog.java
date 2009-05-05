@@ -44,7 +44,7 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
     private WonderlandSession session;
     private CellID cellID;
     private PresenceInfo caller;
-    private PresenceManager pm;
+    private static PresenceManager pm;
     private int chatGroupNumber;
 
     /** Creates new form PlaceCallDialog */
@@ -380,7 +380,7 @@ public void keypadPressed(char key) {
     System.out.println("Got key " + key);
 }
 
-private PresenceInfo[] getPresenceInfo(String users) {
+public static PresenceInfo[] getPresenceInfo(String users) {
     String[] tokens = users.split(" ");
 
         PresenceInfo[] info = new PresenceInfo[tokens.length];
@@ -401,15 +401,15 @@ private PresenceInfo[] getPresenceInfo(String users) {
         return info;
     }
 
-    private void checkLength(PresenceInfo[] info) {
-        if (info.length > 1) {
-            logger.info("More than one PresenceInfo, using first:");
+private static void checkLength(PresenceInfo[] info) {
+    if (info.length > 1) {
+        logger.info("More than one PresenceInfo, using first:");
 
-            for (int i = 0; i < info.length; i++) {
-                logger.info("  " + info[i]);
-            }
+        for (int i = 0; i < info.length; i++) {
+            logger.info("  " + info[i]);
         }
     }
+}
 
     /**
      * @param args the command line arguments

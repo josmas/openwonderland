@@ -18,6 +18,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 
 import java.util.logging.Logger;
@@ -100,6 +101,7 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
 		info.isMuted));
 	}
 
+	Arrays.sort(userData.toArray(new String[0]), String.CASE_INSENSITIVE_ORDER);
         userList.setListData(userData.toArray(new String[0]));
 
 	enableButtons();

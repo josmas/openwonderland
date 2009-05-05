@@ -189,6 +189,8 @@ public class WonderlandSessionListener
             // find the handler
             ClientConnectionHandler handler = getHandler(clientID);
             if (handler == null) {
+                System.out.println("Session " + getSession().getName() + 
+                            " unknown handler ID: " + clientID);
                 logger.fine("Session " + getSession().getName() + 
                             " unknown handler ID: " + clientID);
                 sendError(m.getMessageID(), clientID,
@@ -233,6 +235,7 @@ public class WonderlandSessionListener
                 handler.messageReceived(sender, getWonderlandClientID(), m);
             }
         } catch (PackerException eme) {
+            System.out.println("Error extracting message from client");
             logger.log(Level.WARNING, "Error extracting message from client", 
                        eme);
             

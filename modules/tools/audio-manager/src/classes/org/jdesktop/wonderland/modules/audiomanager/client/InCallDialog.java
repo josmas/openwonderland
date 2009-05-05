@@ -46,6 +46,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
     private CellID cellID;
     private String group;
     private PresenceInfo presenceInfo;
+    private PresenceManager pm;
 
     /** Creates new form InCallDialog */
     public InCallDialog() {
@@ -70,7 +71,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
             publicRadioButton.setSelected(true);
         }
 
-        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
+        pm = PresenceManagerFactory.getPresenceManager(session);
 
         pm.addPresenceManagerListener(this);
 
@@ -115,62 +116,76 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
         setMemberList();
     }
 
-    private void setMemberList() {
-        ArrayList<String> memberList = new ArrayList();
-
-	synchronized (this) {
-	    for (PresenceInfo member : members) {
-	        memberList.add(NameTagNode.getDisplayName(
-		    member.usernameAlias, member.isSpeaking, member.isMuted));
-	    }
-
-	    Arrays.sort(memberList.toArray(new String[0]), String.CASE_INSENSITIVE_ORDER);
-            this.memberList.setListData(memberList.toArray(new String[0]));
-        }
-    }
 
     public void addMember(PresenceInfo member) {
         synchronized (members) {
-            if (members.contains(member)) {
-                return;
-            }
-
-            members.add(member);
-            setMemberList();
+            if (members.contains(member) == false) {
+                members.add(member);
+	    }
 
             for (MemberChangeListener listener : listeners) {
                 listener.memberAdded(member);
             }
         }
+
+	setMemberList();
     }
 
     public void removeMember(PresenceInfo member) {
         synchronized (members) {
-            members.remove(member.usernameAlias);
-
-            setMemberList();
+            members.remove(member);
 
             for (MemberChangeListener listener : listeners) {
                 listener.memberRemoved(member);
             }
         }
+
+	if (members.size() == 0) {
+	    setVisible(false);
+
+	    if (keypad != null) {
+		keypad.setVisible(false);
+	    }
+
+	    if (addUserDialog != null) {
+		addUserDialog.setVisible(false);
+	    }
+	}
+
+	setMemberList();
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
-        setPresenceInfo(info);
-        setMemberList();
+	setMemberList();
     }
 
     public void aliasChanged(String previousAlias, PresenceInfo info) {
-        setPresenceInfo(info);
-        setMemberList();
+	setMemberList();
     }
 
-    private void setPresenceInfo(PresenceInfo info) {
-        if (members.contains(info)) {
-            members.remove(info);
-            members.add(info);
-        }
+    private void setMemberList() {
+        PresenceInfo[] presenceInfoList = pm.getAllUsers();
+
+        ArrayList<String> memberData = new ArrayList();
+
+        for (int i = 0; i < presenceInfoList.length; i++) {
+            PresenceInfo info = presenceInfoList[i];
+
+            if (info.callID == null) {
+                // It's a virtual player, skip it.
+                continue;
+            }
+
+	    if (members.contains(info) == false) {
+		continue;
+	    }
+
+	    memberData.add(NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
+                info.isMuted));
+	}
+
+	Arrays.sort(memberData.toArray(new String[0]), String.CASE_INSENSITIVE_ORDER);
+        memberList.setListData(memberData.toArray(new String[0]));
     }
 
     /** This method is called from within the constructor to
@@ -200,7 +215,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 15)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 15));
         jLabel1.setText("In Call");
 
         memberList.setModel(new javax.swing.AbstractListModel() {
@@ -208,7 +223,11 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        memberList.setEnabled(false);
+        memberList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                memberListValueChanged(evt);
+            }
+        });
         jScrollPane1.setViewportView(memberList);
 
         addUserButton.setText("Add User...");
@@ -373,7 +392,7 @@ private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_endCallButtonActionPerformed
 
     private void endCall() {
-        client.removeInCallDialog(group);
+        //client.removeInCallDialog(group);
 
         if (addUserDialog != null) {
             addUserDialog.setVisible(false);
@@ -383,9 +402,36 @@ private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             keypad.setVisible(false);
         }
 
-        setVisible(false);
+        Object[] selectedValues = memberList.getSelectedValues();
 
-        session.send(client, new VoiceChatLeaveMessage(group, presenceInfo));
+        String members = "";
+
+        for (int i = 0; i < selectedValues.length; i++) {
+            if (i > 0) {
+                members += " ";
+            }
+
+            members += NameTagNode.getUsername((String) selectedValues[i]);
+        }
+
+        if (members.length() == 0) {
+            session.send(client, new VoiceChatLeaveMessage(group, presenceInfo));
+	    return;
+        }
+
+        PresenceInfo[] membersInfo = PlaceCallDialog.getPresenceInfo(members);
+
+        for (int i = 0; i < membersInfo.length; i++) {
+	    PresenceInfo info = membersInfo[i];
+
+	    /*
+	     * You can only select yourself or outworlders
+	     */
+	    if (info.clientID != null && presenceInfo.equals(info) == false) {
+		continue;
+	    }
+	    session.send(client, new VoiceChatLeaveMessage(group, info));
+	}
     }
 
 private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
@@ -403,6 +449,9 @@ private void publicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
     endCall();
 }//GEN-LAST:event_formWindowClosing
+
+private void memberListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_memberListValueChanged
+}//GEN-LAST:event_memberListValueChanged
 
     /**
      * @param args the command line arguments
