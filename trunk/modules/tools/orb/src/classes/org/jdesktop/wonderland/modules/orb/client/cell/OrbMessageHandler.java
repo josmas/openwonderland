@@ -249,6 +249,13 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     public void processMessage(final Message message) {
 	logger.finest("process message " + message);
 
+	if (message instanceof OrbEndCallMessage) {
+	    if (orbDialog != null) {
+		orbDialog.setVisible(false);
+	    }
+	    return;
+	}
+
 	if (message instanceof OrbSpeakingMessage) {
 	    OrbSpeakingMessage msg = (OrbSpeakingMessage) message;
 

@@ -149,6 +149,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
         case CallStatus.ENDED: 
 	    if (this.callID.equals(callID)) {
 	        endCall(callID);
+                sender.send(new OrbEndCallMessage(orbCellID));
 	    } else {
                 sender.send(new OrbAttachMessage(orbCellID, hostCellID, false));
 	    }
