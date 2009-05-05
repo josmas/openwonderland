@@ -74,6 +74,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import java.util.logging.Logger;
@@ -105,6 +106,8 @@ public class AudioManagerClient extends BaseConnection implements
     private final MyEventListener muteListener = new MyEventListener();
     private JMenuItem userListJMenuItem;
 
+    private ArrayList<DisconnectListener> disconnectListeners = new ArrayList();
+
     /** 
      * Create a new AudioManagerClient
      * @param session the session to connect to, guaranteed to be in
@@ -125,6 +128,20 @@ public class AudioManagerClient extends BaseConnection implements
         userListJMenuItem.setEnabled(false);
         
         logger.fine("Starting AudioManagerCLient");
+    }
+
+    public void addDisconnectListener(DisconnectListener listener) {
+	disconnectListeners.add(listener);
+    }
+
+    public void removeDisconnectListener(DisconnectListener listener) {
+	disconnectListeners.add(listener);
+    }
+
+    private void notifyDisconnectListeners() {
+	for (DisconnectListener listener : disconnectListeners) {
+	     listener.disconnected();
+	}
     }
 
     private UserListJFrame userListJFrame;
@@ -184,6 +201,7 @@ public class AudioManagerClient extends BaseConnection implements
         SoftphoneControlImpl.getInstance().sendCommandToSoftphone("endCalls");
         //JmeClientMain.getFrame().removeAudioMenuListener(this);
         InputManager.inputManager().removeGlobalEventListener(muteListener);
+	notifyDisconnectListeners();
     }
 
     public void addMenus() {
@@ -220,6 +238,8 @@ public class AudioManagerClient extends BaseConnection implements
             logger.warning("Sending message to server to get voice bridge... session is "
 	        + session.getStatus());
 
+	    System.out.println("Sending message to connect softphone");
+
             session.send(this, new GetVoiceBridgeMessage());
         }
     }
@@ -230,7 +250,6 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void setAudioQuality(AudioQuality audioQuality) {
-	System.out.println("setAudioQuality to " + audioQuality);
         SoftphoneControlImpl.getInstance().setAudioQuality(audioQuality);
         reconnectSoftphone();
     }

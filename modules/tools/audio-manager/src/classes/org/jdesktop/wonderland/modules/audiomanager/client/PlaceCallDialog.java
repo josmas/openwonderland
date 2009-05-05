@@ -35,7 +35,7 @@ import java.awt.Point;
  * @author  jp
  */
 public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManagerListener,
-	KeypadListener {
+	KeypadListener, DisconnectListener {
 
     private static final Logger logger =
             Logger.getLogger(PlaceCallDialog.class.getName());
@@ -65,6 +65,8 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
         pm = PresenceManagerFactory.getPresenceManager(session);
 
         pm.addPresenceManagerListener(this);
+
+	client.addDisconnectListener(this);
 
         setVisible(true);
     }
@@ -115,6 +117,10 @@ public class PlaceCallDialog extends javax.swing.JFrame implements PresenceManag
         } else {
             placeCallButton.setEnabled(false);
         }
+    }
+
+    public void disconnected() {
+	setVisible(false);
     }
 
     /** This method is called from within the constructor to
