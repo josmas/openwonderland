@@ -160,7 +160,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             public void commitEvent(Event event) {
                 if (event instanceof AvatarNameEvent) {
                     if (nameTag == null) {
-                        logger.warning("[AvatarImiJME] warning: setting " +
+                        logger.fine("[AvatarImiJME] warning: setting " +
                                 "avatar name when name tag is null");
                         return;
                     }
