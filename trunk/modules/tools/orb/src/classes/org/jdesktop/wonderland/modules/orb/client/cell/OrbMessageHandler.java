@@ -188,7 +188,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 		return;
 	    }
 
-	    System.out.println("Attach orb " + orbCell.getCellID() 
+	    logger.fine("Attach orb " + orbCell.getCellID() 
 		+ " player with " + orbCell.getPlayerWithVpCallID() + " to " + info);
 
             channelComp.send(new OrbAttachMessage(orbCell.getCellID(), info.cellID, true));
@@ -466,7 +466,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    /*
 	     * If it's a virtual orb for me, ignore it.
 	     */
-	    if (callID.equals(SoftphoneControlImpl.getInstance().getCallID()) == false) {
+	    if (callID.equals(SoftphoneControlImpl.getInstance().getCallID()) == true) {
 		return;
 	    }
 	}
