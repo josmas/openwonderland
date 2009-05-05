@@ -347,7 +347,8 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
 
         topPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        newCollectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/add_directory_icon.png"))); // NOI18N
+        newCollectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserNewDirectory32x32.png"))); // NOI18N
+        newCollectionButton.setToolTipText("New Directory");
         newCollectionButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         newCollectionButton.setMaximumSize(new java.awt.Dimension(32, 32));
         newCollectionButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -359,7 +360,8 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         });
         topButtonPanel.add(newCollectionButton);
 
-        deleteCollectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/delete_icon.png"))); // NOI18N
+        deleteCollectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserDeleteFile32x32.png"))); // NOI18N
+        deleteCollectionButton.setToolTipText("Delete");
         deleteCollectionButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         deleteCollectionButton.setMaximumSize(new java.awt.Dimension(32, 32));
         deleteCollectionButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -371,7 +373,8 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         });
         topButtonPanel.add(deleteCollectionButton);
 
-        uploadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/upload_icon.png"))); // NOI18N
+        uploadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserUploadFile32x32.png"))); // NOI18N
+        uploadButton.setToolTipText("Upload File");
         uploadButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         uploadButton.setMaximumSize(new java.awt.Dimension(32, 32));
         uploadButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -383,7 +386,8 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         });
         topButtonPanel.add(uploadButton);
 
-        downloadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/download_icon.png"))); // NOI18N
+        downloadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserDownloadFile32x32.png"))); // NOI18N
+        downloadButton.setToolTipText("Download File");
         downloadButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         downloadButton.setMaximumSize(new java.awt.Dimension(32, 32));
         downloadButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -428,8 +432,9 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
 
         categoryScrollPane.setBackground(new java.awt.Color(204, 204, 204));
         categoryScrollPane.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        categoryScrollPane.setMaximumSize(new java.awt.Dimension(114, 32767));
+        categoryScrollPane.setMinimumSize(new java.awt.Dimension(114, 23));
 
-        categoryList.setBackground(new java.awt.Color(153, 153, 255));
         categoryList.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         categoryList.setFont(new java.awt.Font("Lucida Grande", 1, 12));
         categoryList.setModel(new javax.swing.AbstractListModel() {
@@ -438,6 +443,8 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
             public Object getElementAt(int i) { return strings[i]; }
         });
         categoryList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        categoryList.setFixedCellWidth(100);
+        categoryList.setMinimumSize(new java.awt.Dimension(100, 44));
         categoryScrollPane.setViewportView(categoryList);
 
         listSplitPane.setLeftComponent(categoryScrollPane);
@@ -445,6 +452,8 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         subSplitPane.setBorder(null);
         subSplitPane.setDividerLocation(300);
         subSplitPane.setDividerSize(7);
+        subSplitPane.setResizeWeight(1.0);
+        subSplitPane.setMaximumSize(new java.awt.Dimension(105, 2147483647));
 
         fileScrollPane.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
 
@@ -478,7 +487,7 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         );
         previewPanelLayout.setVerticalGroup(
             previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 192, Short.MAX_VALUE)
+            .add(0, 212, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -519,13 +528,13 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
                     .add(jLabel3)
                     .add(jLabel4)
                     .add(jLabel5))
-                .add(28, 28, 28)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(urlLabel)
-                    .add(typeLabel)
-                    .add(sizeLabel)
-                    .add(modifiedLabel))
-                .addContainerGap(127, Short.MAX_VALUE))
+                    .add(urlLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 199, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(sizeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
+                    .add(typeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, modifiedLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
+                .addContainerGap())
         );
         infoPanelLayout.setVerticalGroup(
             infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -545,7 +554,7 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
                 .add(infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(urlLabel)
                     .add(jLabel5))
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(9, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
