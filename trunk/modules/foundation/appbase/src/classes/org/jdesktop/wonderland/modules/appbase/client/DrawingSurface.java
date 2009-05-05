@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.client;
 import com.jme.image.Texture;
 import java.awt.Graphics2D;
 import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 
 /**
  * INTERNAL API.
@@ -100,4 +101,9 @@ public interface DrawingSurface {
      * Return whether texture updating is enabled.
      */
     public boolean getUpdateEnable();
+
+    /**
+     * Specifies whether a particular view on a surface is visible.
+     */
+    public void setViewIsVisible(View2D view, boolean visible);
 }

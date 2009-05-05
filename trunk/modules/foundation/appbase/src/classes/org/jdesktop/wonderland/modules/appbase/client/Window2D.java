@@ -1341,6 +1341,9 @@ public abstract class Window2D {
             return;
         }
 
+        logger.info("=================== Processing window changes for window " + getName());
+        logger.info(" changeMask = " + Integer.toHexString(changeMask));
+
         for (View2D view : views) {
             if ((changeMask & CHANGED_TYPE) != 0) {
                 View2D.Type viewType;
@@ -1391,35 +1394,7 @@ public abstract class Window2D {
             view.update();
         }
 
-        // The surface only needs to be updated while the window is visible.
-        if (surface != null) {
-
-            // The window is displayed if it has one or more views that is actually visible.
-            boolean isDisplayed = false;
-            Iterator<View2D> it = getViews();
-            while (it.hasNext()) {
-                View2D view = it.next();
-                if (view.isActuallyVisible()) {
-                    isDisplayed = true;
-                    break;
-                }
-            }
-
-            if (isDisplayed) {
-                // If window is displayed somewhere, enable surface updating
-                if (!surface.getUpdateEnable()) {
-                    logger.fine("Enable updating for surface " + surface);
-                    surface.setUpdateEnable(true);
-                }
-            } else {
-                // If window is no longer displayed anywhere, disable surface updating
-                if (surface.getUpdateEnable()) {
-                    logger.fine("Disable updating for surface " + surface);
-                    surface.setUpdateEnable(false);
-                }
-            }
-        }
-
+        logger.info("Done processing changes for window " + getName());
         changeMask = 0;
     }
 
