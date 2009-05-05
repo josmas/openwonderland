@@ -18,7 +18,10 @@
 package org.jdesktop.wonderland.modules.avatarbase.server.cell;
 
 import org.jdesktop.wonderland.server.ServerPlugin;
+import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 
 /**
  *
@@ -28,6 +31,11 @@ public class AvatarPluginSrv implements ServerPlugin {
 
     public void initialize() {
         CellManagerMO.getCellManager().registerAvatarCellComponent(AvatarConfigComponentMO.class);
+        
+//        CellManagerMO.getCellManager().insertCellInWorld(cell);
     }
 
+//    private CellMO createDemoAvatar(String filename) {
+//        UserMO user = new UserMO();
+//    }
 }

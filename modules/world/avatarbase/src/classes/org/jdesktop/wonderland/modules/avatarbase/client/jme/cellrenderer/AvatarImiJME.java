@@ -372,10 +372,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(origin);
 
         Node external = avatarCharacter.getJScene().getExternalKidsRoot();
-//        ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-//        zbuf.setEnabled(true);
-//        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-//        external.setRenderState(zbuf);
+        ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+        zbuf.setEnabled(true);
+        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+        external.setRenderState(zbuf);
         NameTagComponent nameTagComp = new NameTagComponent(cell, username, 2);
         nameTag = nameTagComp.getNameTagNode();
         external.attachChild(nameTag);
