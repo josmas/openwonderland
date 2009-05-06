@@ -140,6 +140,8 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
                 listener.memberRemoved(member);
             }
         }
+
+	setMemberList();
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
