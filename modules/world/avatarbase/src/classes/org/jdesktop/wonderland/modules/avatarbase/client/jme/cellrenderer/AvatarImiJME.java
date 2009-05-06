@@ -203,7 +203,14 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     public void cellMoved(CellTransform transform, CellMoveSource source) {
                         if (source==CellMoveSource.REMOTE) {
 //                            System.err.println("REMOTE MOVE "+transform.getTranslation(null));
-                            avatarCharacter.getModelInst().setTransform(new PTransform(transform.getRotation(null), transform.getTranslation(null), new Vector3f(1,1,1)));
+                            if (avatarCharacter!=null) {
+                                if (avatarCharacter.getModelInst()==null) {
+                                    logger.severe("MODEL INST IS NULL !");
+                                    Thread.dumpStack();
+                                    return;
+                                }
+                                avatarCharacter.getModelInst().setTransform(new PTransform(transform.getRotation(null), transform.getTranslation(null), new Vector3f(1,1,1)));
+                            }
                         }
                     }
                 });
