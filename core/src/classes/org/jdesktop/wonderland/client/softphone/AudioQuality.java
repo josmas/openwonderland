@@ -22,9 +22,9 @@ package org.jdesktop.wonderland.client.softphone;
      */
 public enum AudioQuality {
     MINIMUM (8000, 1, 8000, 1, "Minimum (8k mono)"),
-    STEREO  (8000, 2, 8000, 1, "Stereo (8k stereo)"),
-    VPN     (16000, 2, 16000, 1, "VPN (16k stereo)"),
-    BEST    (44100, 2, 44100, 1, "Intranet (44.1k stereo)");
+    STEREO  (8000, 2, 8000, 1, "Low (8k stereo)"),
+    VPN     (16000, 2, 16000, 1, "Normal (16k stereo)"),
+    BEST    (44100, 2, 44100, 1, "High (44.1k stereo)");
     
     private final int sampleRate;
     private final int channels;
