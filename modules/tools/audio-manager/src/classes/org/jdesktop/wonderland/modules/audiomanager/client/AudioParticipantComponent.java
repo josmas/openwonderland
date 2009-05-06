@@ -26,9 +26,13 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 
+import org.jdesktop.wonderland.client.softphone.AudioQuality;
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
@@ -46,74 +50,124 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeM
 
 import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
 
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
+
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
+
+import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassFocusListener;
+
 /**
  * A component that provides audio participant control
  * 
  * @author jprovino
  */
 @ExperimentalAPI
-public class AudioParticipantComponent extends CellComponent implements VolumeChangeListener {
+public class AudioParticipantComponent extends CellComponent implements 
+	ComponentMessageReceiver, VolumeChangeListener {
     
     private static Logger logger = Logger.getLogger(AudioParticipantComponent.class.getName());
 
     private ChannelComponent channelComp;
-    private ChannelComponent.ComponentMessageReceiver msgReceiver;
 
     @UsesCellComponent
     private ContextMenuComponent contextMenu;
 
-    private static String[] menuItem = new String[] {"Volume"};  // TODO I18N
+    private static String[] menuItem;
+
+    PresenceManager pm;
 
     public AudioParticipantComponent(Cell cell) {
         super(cell);
+
+	pm = PresenceManagerFactory.getPresenceManager(cell.getCellCache().getSession());
     }
     
     @Override
     public void setStatus(CellStatus status) {
 	switch(status) {
         case DISK:
-	    if (msgReceiver != null) {
-		channelComp.removeMessageReceiver(AudioParticipantSpeakingMessage.class);
-		channelComp.removeMessageReceiver(AudioParticipantMuteCallMessage.class);
-		msgReceiver = null;
-	    }
+	    channelComp.removeMessageReceiver(AudioParticipantSpeakingMessage.class);
+	    channelComp.removeMessageReceiver(AudioParticipantMuteCallMessage.class);
             break;
 
 	case BOUNDS:
-	    if (msgReceiver == null) {
-                msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-                    public void messageReceived(CellMessage message) {
-			if (message instanceof AudioParticipantSpeakingMessage) {
-                            AudioParticipantSpeakingMessage msg = (AudioParticipantSpeakingMessage) message;
-			    logger.info(msg.getCellID()
-			        + (msg.isSpeaking() ? " Started speaking" : " Stopped speaking"));
-			} else if (message instanceof AudioParticipantMuteCallMessage) {
-                            AudioParticipantMuteCallMessage msg = (AudioParticipantMuteCallMessage) message;
-			    logger.info(msg.getCellID()
-			        + (msg.isMuted() ? " Muted " : " Unmuted"));
-			}
-                    }
-                };
+            channelComp = cell.getComponent(ChannelComponent.class);
+            channelComp.addMessageReceiver(AudioParticipantSpeakingMessage.class, this);
+            channelComp.addMessageReceiver(AudioParticipantMuteCallMessage.class, this);
 
-                channelComp = cell.getComponent(ChannelComponent.class);
-                channelComp.addMessageReceiver(AudioParticipantSpeakingMessage.class, msgReceiver);
-                channelComp.addMessageReceiver(AudioParticipantMuteCallMessage.class, msgReceiver);
+	    if (cell instanceof OrbCell == false && menuItem == null) {
+		menuItem = new String[] {"Volume"};
 
-		if (cell instanceof OrbCell == false) {
                 contextMenu.addMenuItem(new SimpleContextMenuItem("Volume",
-                        new ContextMenuActionListener() {
-                            public void actionPerformed(ContextMenuItemEvent event) {
-                                adjustVolume(event);
-                            }
-                        })
+                    new ContextMenuActionListener() {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            adjustVolume(event);
+                        }
+                    })
                 );
-                }
-            }
+	    }
 
 	    break;
         }
     }
     
+    public void messageReceived(CellMessage message) {
+        if (message instanceof AudioParticipantSpeakingMessage) {
+            AudioParticipantSpeakingMessage msg = (AudioParticipantSpeakingMessage) message;
+
+            PresenceInfo info = pm.getPresenceInfo(msg.getCellID());
+
+            if (info == null) {
+                logger.warning("No presence info for " + msg.getCellID());
+                return;
+            }
+
+            pm.setSpeaking(info, msg.isSpeaking());
+
+            AvatarNameEvent avatarNameEvent;
+
+            if (msg.isSpeaking()) {
+                avatarNameEvent = new AvatarNameEvent(EventType.STARTED_SPEAKING,
+                        info.userID.getUsername(), info.usernameAlias);
+            } else {
+                avatarNameEvent = new AvatarNameEvent(EventType.STOPPED_SPEAKING,
+                        info.userID.getUsername(), info.usernameAlias);
+            }
+
+            InputManager.inputManager().postEvent(avatarNameEvent);
+        } else if (message instanceof AudioParticipantMuteCallMessage) {
+            AudioParticipantMuteCallMessage msg = (AudioParticipantMuteCallMessage) message;
+
+            PresenceInfo info = pm.getPresenceInfo(msg.getCellID());
+
+            if (info == null) {
+                logger.warning("No presence info for " + msg.getCellID());
+                return;
+            }
+
+            pm.setMute(info, msg.isMuted());
+
+            AvatarNameEvent avatarNameEvent;
+
+            if (msg.isMuted()) {
+                avatarNameEvent = new AvatarNameEvent(EventType.MUTE,
+                        info.userID.getUsername(), info.usernameAlias);
+            } else {
+                avatarNameEvent = new AvatarNameEvent(EventType.UNMUTE,
+                        info.userID.getUsername(), info.usernameAlias);
+            }
+
+            InputManager.inputManager().postEvent(avatarNameEvent);
+	}
+    }
+
     private VolumeControlJFrame volumeControlJFrame;
 
     private void adjustVolume(ContextMenuItemEvent event) {

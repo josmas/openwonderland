@@ -41,13 +41,13 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterExitMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayerInRangeMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoResponseMessage;
@@ -83,6 +83,7 @@ import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 
 import javax.swing.JMenuItem;
+
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
 
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
@@ -280,16 +281,6 @@ public class AudioManagerClient extends BaseConnection implements
         session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
     }
 
-    private void toggleMute() {
-        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-        boolean isMuted = sc.isMuted();
-
-        isMuted = !isMuted;
-
-        sc.mute(isMuted);
-        session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
-    }
-
     public void voiceChat() {
         if (presenceInfo == null) {
             return;
@@ -458,60 +449,6 @@ public class AudioManagerClient extends BaseConnection implements
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallee().cellID);
 
             inCallDialog.removeMember(info);
-        } else if (message instanceof SpeakingMessage) {
-            SpeakingMessage msg = (SpeakingMessage) message;
-
-            PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
-
-            if (info == null) {
-                logger.warning("No presence info for " + msg.getCallID());
-                return;
-            }
-
-            pm.setSpeaking(info, msg.isSpeaking());
-
-            if (userListJFrame != null) {
-                userListJFrame.setUserList();
-            }
-
-            AvatarNameEvent avatarNameEvent;
-
-            if (msg.isSpeaking()) {
-                avatarNameEvent = new AvatarNameEvent(EventType.STARTED_SPEAKING,
-                        info.userID.getUsername(), info.usernameAlias);
-            } else {
-                avatarNameEvent = new AvatarNameEvent(EventType.STOPPED_SPEAKING,
-                        info.userID.getUsername(), info.usernameAlias);
-            }
-
-            InputManager.inputManager().postEvent(avatarNameEvent);
-        } else if (message instanceof MuteCallMessage) {
-            MuteCallMessage msg = (MuteCallMessage) message;
-
-            PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
-
-            if (info == null) {
-                logger.warning("No presence info for " + msg.getCallID());
-                return;
-            }
-
-            pm.setMute(info, msg.isMuted());
-
-            if (userListJFrame != null) {
-                userListJFrame.setUserList();
-            }
-
-            AvatarNameEvent avatarNameEvent;
-
-            if (msg.isMuted()) {
-                avatarNameEvent = new AvatarNameEvent(EventType.MUTE,
-                        info.userID.getUsername(), info.usernameAlias);
-            } else {
-                avatarNameEvent = new AvatarNameEvent(EventType.UNMUTE,
-                        info.userID.getUsername(), info.usernameAlias);
-            }
-
-            InputManager.inputManager().postEvent(avatarNameEvent);
         } else if (message instanceof ConeOfSilenceEnterExitMessage) {
             ConeOfSilenceEnterExitMessage msg = (ConeOfSilenceEnterExitMessage) message;
 
@@ -539,6 +476,30 @@ public class AudioManagerClient extends BaseConnection implements
             PlayerInRangeMessage msg = (PlayerInRangeMessage) message;
 
             logger.fine("Player in range " + msg.isInRange() + " " + msg.getPlayerID() + " player in range " + msg.getPlayerInRangeID());
+        } else if (message instanceof AudioParticipantSpeakingMessage) {
+	    AudioParticipantSpeakingMessage msg = (AudioParticipantSpeakingMessage) message;
+
+            PresenceInfo info = pm.getPresenceInfo(msg.getCellID());
+
+            if (info == null) {
+                logger.warning("No presence info for " + msg.getCellID());
+                return;
+            }
+
+            pm.setSpeaking(info, msg.isSpeaking());
+
+
+            AvatarNameEvent avatarNameEvent;
+
+            if (msg.isSpeaking()) {
+                avatarNameEvent = new AvatarNameEvent(EventType.STARTED_SPEAKING,
+                        info.userID.getUsername(), info.usernameAlias);
+            } else {
+                avatarNameEvent = new AvatarNameEvent(EventType.STOPPED_SPEAKING,
+                        info.userID.getUsername(), info.usernameAlias);
+            }
+
+            InputManager.inputManager().postEvent(avatarNameEvent);
         } else {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -556,16 +517,6 @@ public class AudioManagerClient extends BaseConnection implements
         return AudioManagerConnectionType.CONNECTION_TYPE;
     }
 
-    private void inputEvent(Event event) {
-        if (event instanceof KeyEvent3D) {
-            KeyEvent3D e = (KeyEvent3D) event;
-
-            if (e.isPressed() && e.getKeyChar() == '[') {
-                toggleMute();
-            }
-        }
-    }
-
     /**
      * Global listener for keyboard and mouse events. Reports back to the Selection
      * Manager on any updates.
@@ -580,7 +531,28 @@ public class AudioManagerClient extends BaseConnection implements
         // Note: we don't override computeEvent because we don't do any computation in this listener.
         @Override
         public void commitEvent(Event event) {
-            inputEvent(event);
-        }
+	    inputEvent(event);
+	}
     }
+
+    private void inputEvent(Event event) {
+        if (event instanceof KeyEvent3D == false) {
+	    return;
+	}
+
+	KeyEvent3D e = (KeyEvent3D) event;
+
+        if (e.isPressed() == false || e.getKeyChar() != '[') {
+	    return;
+        }
+
+	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
+        boolean isMuted = sc.isMuted();
+
+        isMuted = !isMuted;
+
+        sc.mute(isMuted);
+        session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
+    }
+
 }
