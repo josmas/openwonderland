@@ -5,29 +5,32 @@
     -->
     <available classname="java.io.Console" property="build.java6"/>
 
-    <!-- 
+    <!--
         Determine the platform. One of these conditions should match
-        the Java os.name and os.arch values.  If so, set the 
+        the Java os.name and os.arch values.  If so, set the
         Wonderland name appropriately.
     -->
     <condition property="system.type" value="windows-x86">
 	<os family="windows" arch="x86"/>
     </condition>
-    
+    <condition property="system.type" value="windows-amd64">
+	<os name="Windows Vista" arch="amd64"/>
+    </condition>
+
     <condition property="system.type" value="linux-i386">
 	<os name="linux" arch="i386"/>
     </condition>
     <condition property="system.type" value="linux-amd64">
 	<os name="linux" arch="amd64"/>
     </condition>
-    
+
     <condition property="system.type" value="sunos-x86">
 	<os name="SunOS" arch="x86"/>
     </condition>
     <condition property="system.type" value="sunos-sparc">
 	<os name="SunOS" arch="sparc"/>
     </condition>
-    
+
     <condition property="system.type" value="macos-x86">
 	<os name="Mac OS X" arch="i386"/>
     </condition>
@@ -37,7 +40,7 @@
     <condition property="system.type" value="macos-ppc">
 	<os name="Mac OS X" arch="ppc"/>
     </condition>
-    
+
     <!-- setup platform properties -->
     <switch value="${system.type}">
 	<!-- TODO: win32 should be renamed as windows -->
@@ -49,10 +52,18 @@
 	    <property name="env.path.value" value="${env.Path}"/>
 	</case>
 
+	<case value="windows-amd64">
+	    <property name="ostype" value="win32"/>
+	    <property name="arch" value="amd64"/>
+
+	    <property name="env.path.name" value="Path"/>
+	    <property name="env.path.value" value="${env.Path}"/>
+	</case>
+
 	<case value="linux-i386">
 	    <property name="ostype" value="linux"/>
 	    <property name="arch" value="i686"/>
-            
+
 	    <property name="env.path.name" value="LD_LIBRARY_PATH"/>
 	    <property name="env.path.value" value="${env.LD_LIBRARY_PATH}"/>
  	</case>
@@ -78,7 +89,7 @@
             <property name="env.path.name" value="LD_LIBRARY_PATH"/>
 	    <property name="env.path.value" value="${env.LD_LIBRARY_PATH}"/>
 	</case>
-        
+
         <case value="sunos-sparc">
 	    <property name="ostype" value="solaris"/>
 	    <property name="arch" value="sparc"/>
@@ -86,7 +97,7 @@
             <property name="env.path.name" value="LD_LIBRARY_PATH"/>
 	    <property name="env.path.value" value="${env.LD_LIBRARY_PATH}"/>
 	</case>
-        
+
 	<case value="macos-x86">
 	    <property name="ostype" value="macosx"/>
 	    <property name="arch" value="i386"/>
@@ -102,12 +113,12 @@
             <property name="env.path.name" value="DYLD_LIBRARY_PATH"/>
 	    <property name="env.path.value" value="${env.DYLD_LIBRARY_PATH}"/>
         </case>
-        
+
 	<default>
-	    <fail message="Platform ${system.type} not supported!"/>
+	    <fail message="Platform ${os.name}-${os.arch} not supported!"/>
 	</default>
     </switch>
-    
+
     <!-- all supported ostypes -->
     <property name="ostypes" value="win32,linux,solaris,macosx"/>
 </project>
