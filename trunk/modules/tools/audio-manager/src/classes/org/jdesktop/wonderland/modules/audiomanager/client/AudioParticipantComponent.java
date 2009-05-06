@@ -99,6 +99,10 @@ public class AudioParticipantComponent extends CellComponent implements
         super.setClientState(clientState);
 
 	AudioParticipantComponentClientState state = (AudioParticipantComponentClientState) clientState;
+
+	System.out.println("setClientState " + state.isSpeaking() + " " + state.isMuted());
+
+	setSpeakingIndicator(cell.getCellID(), state.isSpeaking());
 	setMuteIndicator(cell.getCellID(), state.isMuted());
     }
 
@@ -134,32 +138,35 @@ public class AudioParticipantComponent extends CellComponent implements
     public void messageReceived(CellMessage message) {
         if (message instanceof AudioParticipantSpeakingMessage) {
             AudioParticipantSpeakingMessage msg = (AudioParticipantSpeakingMessage) message;
-
-            PresenceInfo info = pm.getPresenceInfo(msg.getCellID());
-
-            if (info == null) {
-                logger.warning("No presence info for " + msg.getCellID());
-                return;
-            }
-
-            pm.setSpeaking(info, msg.isSpeaking());
-
-            AvatarNameEvent avatarNameEvent;
-
-            if (msg.isSpeaking()) {
-                avatarNameEvent = new AvatarNameEvent(EventType.STARTED_SPEAKING,
-                        info.userID.getUsername(), info.usernameAlias);
-            } else {
-                avatarNameEvent = new AvatarNameEvent(EventType.STOPPED_SPEAKING,
-                        info.userID.getUsername(), info.usernameAlias);
-            }
-
-            InputManager.inputManager().postEvent(avatarNameEvent);
+	    setSpeakingIndicator(msg.getCellID(), msg.isSpeaking());
         } else if (message instanceof AudioParticipantMuteCallMessage) {
             AudioParticipantMuteCallMessage msg = (AudioParticipantMuteCallMessage) message;
 
 	    setMuteIndicator(msg.getCellID(), msg.isMuted());
 	}
+    }
+
+    private void setSpeakingIndicator(CellID cellID, boolean isSpeaking) {
+	PresenceInfo info = pm.getPresenceInfo(cellID);
+
+        if (info == null) {
+            logger.warning("No presence info for " + cellID);
+            return;
+        }
+
+        pm.setSpeaking(info, isSpeaking);
+
+        AvatarNameEvent avatarNameEvent;
+
+        if (isSpeaking) {
+            avatarNameEvent = new AvatarNameEvent(EventType.STARTED_SPEAKING,
+                info.userID.getUsername(), info.usernameAlias);
+        } else {
+            avatarNameEvent = new AvatarNameEvent(EventType.STOPPED_SPEAKING,
+                info.userID.getUsername(), info.usernameAlias);
+        }
+
+        InputManager.inputManager().postEvent(avatarNameEvent);
     }
 
     private void setMuteIndicator(CellID cellID, boolean isMuted) {

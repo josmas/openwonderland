@@ -34,14 +34,20 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class AudioParticipantComponentServerState extends CellComponentServerState {
 
+    private boolean isSpeaking;
     private boolean isMuted;
 
     public AudioParticipantComponentServerState() {
     }
 
-    public AudioParticipantComponentServerState(boolean isMuted) {
-	this.isMuted = isMuted();
+    public AudioParticipantComponentServerState(boolean isSpeaking, boolean isMuted) {
+	this.isSpeaking = isSpeaking;
+	this.isMuted = isMuted;
+    }
 
+    @XmlElement
+    public boolean isSpeaking() {
+	return isSpeaking;
     }
 
     @XmlElement

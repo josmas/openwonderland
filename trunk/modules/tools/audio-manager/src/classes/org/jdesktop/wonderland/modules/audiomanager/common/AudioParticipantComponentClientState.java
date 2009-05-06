@@ -30,13 +30,20 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 public class AudioParticipantComponentClientState extends CellComponentClientState {
 
+    private boolean isSpeaking;
     private boolean isMuted;
 
     public AudioParticipantComponentClientState() {
     }
 
-    public AudioParticipantComponentClientState(boolean isMuted) {
+    public AudioParticipantComponentClientState(boolean isSpeaking, boolean isMuted) {
+	this.isSpeaking = isSpeaking;
 	this.isMuted = isMuted;
+    }
+
+    @XmlElement
+    public boolean isSpeaking() {
+	return isSpeaking;
     }
 
     @XmlElement
