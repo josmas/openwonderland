@@ -122,7 +122,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
             WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
-	System.out.println("Get client state " + isSpeaking + " " + isMuted);
+	System.out.println("Get client state for " + cellID + " " + isSpeaking + " " + isMuted);
 	return new AudioParticipantComponentClientState(isSpeaking, isMuted);
     }
 
@@ -169,8 +169,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
             compRef = AppContext.getDataManager().createReference(comp);
         }
 
-        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
-                CellMessage message) {
+        public void messageReceived(WonderlandClientSender sender, 
+	        WonderlandClientID clientID, CellMessage message) {
 
             if (message instanceof AudioVolumeMessage == false) {
 		logger.warning("Unknown message:  " + message);
@@ -269,7 +269,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	switch (code) {
 	case CallStatus.ESTABLISHED:
 	    if (player == null) {
-		logger.warning("Couldn't find player for " + callId);
+		logger.warning("Couldn't find player for " + status);
 		return;
 	    }
 
@@ -291,7 +291,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    isSpeaking = true;
 
 	    if (player == null) {
-		logger.warning("Couldn't find player for " + callId);
+		logger.warning("Couldn't find player for " + status);
 		return;
 	    }
 
@@ -310,7 +310,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    isSpeaking = false;
 
 	    if (player == null) {
-		logger.warning("Couldn't find player for " + callId);
+		logger.warning("Couldn't find player for " + status);
 		return;
 	    }
 
@@ -335,7 +335,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    }
 
 	    if (player == null) {
-		logger.warning("Couldn't find player for " + call);
+		logger.warning("Couldn't find player for " + status);
 		return;
 	    }
 
@@ -398,7 +398,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
 
 	for (AudioGroup audioGroup : audioGroups) {
-	    if (audioGroup.equals(parameters.livePlayerAudioGroup) == false ||
+	    if (audioGroup.equals(parameters.livePlayerAudioGroup) == false &&
 	    	    audioGroup.equals(parameters.stationaryPlayerAudioGroup) == false) {
 
 		return true;
