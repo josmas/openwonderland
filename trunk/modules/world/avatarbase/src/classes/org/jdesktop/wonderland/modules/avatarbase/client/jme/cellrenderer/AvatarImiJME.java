@@ -118,7 +118,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
         });
 
-        username = ((AvatarCell) cell).getIdentity().getUsername();
+        if (cell instanceof AvatarCell)
+            username = ((AvatarCell) cell).getIdentity().getUsername();
+        else
+            username = "npc"; // HACK !
 
         characterMotionListener = new CharacterMotionListener() {
             public void transformUpdate(Vector3f translation, PMatrix rotation) {
@@ -185,7 +188,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     /**
-     * TODO remove once we attach the nametag to the avatar scene
      * @param status
      */
     @Override
@@ -289,6 +291,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
         selectForInput(selectedForInput);
 //        System.err.println("Change Avatar to " + entity);
+
+        System.gc();        // Force a GC to dispose of direct buffers
+
         LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
     }
 
@@ -370,6 +375,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         }
 
         avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(origin);
+
+        if (username.equals("npc") && avatarConfigURL!=null) {
+            String u = avatarConfigURL.getFile();
+            username=u.substring(u.lastIndexOf('/')+1, u.lastIndexOf('.'));
+        }
+
 
         Node external = avatarCharacter.getJScene().getExternalKidsRoot();
         ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);

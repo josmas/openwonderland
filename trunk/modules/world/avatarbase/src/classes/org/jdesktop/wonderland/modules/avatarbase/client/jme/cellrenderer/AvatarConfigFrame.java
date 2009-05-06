@@ -25,11 +25,13 @@ import imi.gui.SceneEssentials;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -66,6 +68,9 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         SceneEssentials scene = new SceneEssentials();
         scene.setAvatar(avatarRenderer.getAvatarCharacter());
         scene.setWM(ClientContextJME.getWorldManager());
+
+        // Disable the import button, it requires the assets dir to be simlinked in core
+        importB.setEnabled(false);
 
         // Test code using IMI BasicOptions panel to customise avatar
         if (enableCustomisation) {
@@ -132,6 +137,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         avatarNameTF = new javax.swing.JTextField();
         randomizeB = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        importB = new javax.swing.JButton();
 
         jPanel2.setLayout(new java.awt.BorderLayout());
         jPanel2.add(scrollPane, java.awt.BorderLayout.CENTER);
@@ -271,6 +277,14 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         jLabel4.setText(bundle.getString("Gender:")); // NOI18N
 
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle"); // NOI18N
+        importB.setText(bundle.getString("Import...")); // NOI18N
+        importB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                importBActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout createAvatarPanelLayout = new org.jdesktop.layout.GroupLayout(createAvatarPanel);
         createAvatarPanel.setLayout(createAvatarPanelLayout);
         createAvatarPanelLayout.setHorizontalGroup(
@@ -281,18 +295,21 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(addB)
-                    .add(randomizeB)
+                    .add(createAvatarPanelLayout.createSequentialGroup()
+                        .add(randomizeB)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(importB))
                     .add(createAvatarPanelLayout.createSequentialGroup()
                         .add(maleRB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(femaleRB)))
-                .addContainerGap(102, Short.MAX_VALUE))
+                .addContainerGap(50, Short.MAX_VALUE))
             .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(createAvatarPanelLayout.createSequentialGroup()
                     .add(17, 17, 17)
                     .add(jLabel1)
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(avatarNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                    .add(avatarNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
                     .add(8, 8, 8)))
         );
         createAvatarPanelLayout.setVerticalGroup(
@@ -304,7 +321,9 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                     .add(jLabel4)
                     .add(femaleRB))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(randomizeB)
+                .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(randomizeB)
+                    .add(importB))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(addB)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -507,6 +526,35 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         customiseFrame.setVisible(true);
 }//GEN-LAST:event_customiseBActionPerformed
 
+    private void importBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importBActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        int returnVal = chooser.showOpenDialog(this);
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+           System.out.println("You chose to open this file: " +
+                chooser.getSelectedFile().getName());
+            URL selectedURL;
+            try {
+                selectedURL = chooser.getSelectedFile().toURI().toURL();
+                final WlAvatarCharacter avatarCharacter = new WlAvatarCharacter(selectedURL,
+                        ClientContextJME.getWorldManager(),
+                        "");
+                final JFrame f = this;
+                f.setCursor(waitCursor);
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            avatarRenderer.changeAvatar(avatarCharacter);
+                        } finally {
+                            f.setCursor(normalCursor);
+                        }
+                    }
+                });
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_importBActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addB;
@@ -521,6 +569,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     private javax.swing.JButton deleteB;
     private javax.swing.JRadioButton femaleRB;
     private javax.swing.ButtonGroup genderGrou;
+    private javax.swing.JButton importB;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
