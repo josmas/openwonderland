@@ -129,13 +129,13 @@ public class WonderlandAvatarCache implements CacheBehavior {
         }
 
         // Get the path relative to the "assets" folder
-        String urlString = location.toString();
-        int assetsIndex = urlString.indexOf("assets/");
-
-        if (assetsIndex != 1) // If found, truncate
-        {
-            urlString = urlString.substring(assetsIndex + 7);
-        }
+        String urlString = location.toExternalForm();
+//        int assetsIndex = urlString.indexOf("assets/");
+//
+//        if (assetsIndex != 1) // If found, truncate
+//        {
+//            urlString = urlString.substring(assetsIndex + 7);
+//        }
 
         String hashFileName = MD5HashUtils.getStringFromHash(urlString.getBytes());
         File result = new File(cacheFolder, hashFileName);
@@ -154,7 +154,7 @@ public class WonderlandAvatarCache implements CacheBehavior {
     }
 
     public Texture loadTexture(URL location) {
-        logger.warning("WonderlandAvatarCache "+location.toExternalForm());
+        logger.fine("WonderlandAvatarCache "+location.toExternalForm());
         if (location.getProtocol().equalsIgnoreCase("file")) {
             // Workaround for hard coded file:// urls in head bhf files
             String relativePath = location.toExternalForm();
