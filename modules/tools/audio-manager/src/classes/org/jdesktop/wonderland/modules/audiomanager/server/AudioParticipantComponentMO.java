@@ -30,8 +30,16 @@ import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentClientState;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentServerState;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
@@ -82,6 +90,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
     private CellID cellID;
 
+    private boolean isMuted;
+
     /**
      * Create a AudioParticipantComponent for the given cell. 
      * @param cell
@@ -92,6 +102,26 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	cellID = cellMO.getCellID();
 
 	//System.out.println("Adding AudioParticipantComponent to " + cellMO.getName());
+    }
+
+    @Override
+    public CellComponentServerState getServerState(CellComponentServerState serverState) {
+        AudioParticipantComponentServerState state = (AudioParticipantComponentServerState) serverState;
+
+        if (state == null) {
+            state = new AudioParticipantComponentServerState(isMuted);
+        }
+
+        return state;
+    }
+
+    @Override
+    public CellComponentClientState getClientState(
+            CellComponentClientState clientState,
+            WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
+
+	return new AudioParticipantComponentClientState(isMuted);
     }
 
     @Override
@@ -246,10 +276,12 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    break;
 
 	case CallStatus.MUTED:
+	    isMuted = true;
 	    channelCompMO.sendAll(null, new AudioParticipantMuteCallMessage(cellID, true));
 	    break;
 
 	case CallStatus.UNMUTED:
+	    isMuted = false;
 	    channelCompMO.sendAll(null, new AudioParticipantMuteCallMessage(cellID, false));
 	    break;
 

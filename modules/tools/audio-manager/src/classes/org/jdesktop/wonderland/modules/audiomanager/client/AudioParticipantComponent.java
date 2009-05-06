@@ -41,8 +41,13 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
 import org.jdesktop.wonderland.common.cell.CallID;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentClientState;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
@@ -89,6 +94,14 @@ public class AudioParticipantComponent extends CellComponent implements
 	pm = PresenceManagerFactory.getPresenceManager(cell.getCellCache().getSession());
     }
     
+   @Override
+    public void setClientState(CellComponentClientState clientState) {
+        super.setClientState(clientState);
+
+	AudioParticipantComponentClientState state = (AudioParticipantComponentClientState) clientState;
+	setMuteIndicator(cell.getCellID(), state.isMuted());
+    }
+
     @Override
     public void setStatus(CellStatus status) {
 	switch(status) {
@@ -145,27 +158,31 @@ public class AudioParticipantComponent extends CellComponent implements
         } else if (message instanceof AudioParticipantMuteCallMessage) {
             AudioParticipantMuteCallMessage msg = (AudioParticipantMuteCallMessage) message;
 
-            PresenceInfo info = pm.getPresenceInfo(msg.getCellID());
-
-            if (info == null) {
-                logger.warning("No presence info for " + msg.getCellID());
-                return;
-            }
-
-            pm.setMute(info, msg.isMuted());
-
-            AvatarNameEvent avatarNameEvent;
-
-            if (msg.isMuted()) {
-                avatarNameEvent = new AvatarNameEvent(EventType.MUTE,
-                        info.userID.getUsername(), info.usernameAlias);
-            } else {
-                avatarNameEvent = new AvatarNameEvent(EventType.UNMUTE,
-                        info.userID.getUsername(), info.usernameAlias);
-            }
-
-            InputManager.inputManager().postEvent(avatarNameEvent);
+	    setMuteIndicator(msg.getCellID(), msg.isMuted());
 	}
+    }
+
+    private void setMuteIndicator(CellID cellID, boolean isMuted) {
+	PresenceInfo info = pm.getPresenceInfo(cellID);
+
+        if (info == null) {
+            logger.warning("No presence info for " + cellID);
+            return;
+        }
+
+        pm.setMute(info, isMuted);
+
+        AvatarNameEvent avatarNameEvent;
+
+        if (isMuted) {
+            avatarNameEvent = new AvatarNameEvent(EventType.MUTE,
+                info.userID.getUsername(), info.usernameAlias);
+        } else {
+            avatarNameEvent = new AvatarNameEvent(EventType.UNMUTE,
+                info.userID.getUsername(), info.usernameAlias);
+        }
+
+        InputManager.inputManager().postEvent(avatarNameEvent);
     }
 
     private VolumeControlJFrame volumeControlJFrame;

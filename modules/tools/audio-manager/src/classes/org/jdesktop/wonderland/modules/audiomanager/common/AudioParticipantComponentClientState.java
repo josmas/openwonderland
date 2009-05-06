@@ -17,41 +17,31 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
-
 /**
  * The component server state
  * @author jprovino
  */
-@XmlRootElement(name="audio-participant-component")
-@ServerState
-public class AudioParticipantComponentServerState extends CellComponentServerState {
+public class AudioParticipantComponentClientState extends CellComponentClientState {
 
     private boolean isMuted;
 
-    public AudioParticipantComponentServerState() {
+    public AudioParticipantComponentClientState() {
     }
 
-    public AudioParticipantComponentServerState(boolean isMuted) {
-	this.isMuted = isMuted();
-
+    public AudioParticipantComponentClientState(boolean isMuted) {
+	this.isMuted = isMuted;
     }
 
     @XmlElement
     public boolean isMuted() {
 	return isMuted;
-    }
-
-    @Override
-    public String getServerComponentClassName() {
-	return "org.jdesktop.wonderland.modules.audiomanager.server.AudioParticipantComponentMO";
     }
 
 }
