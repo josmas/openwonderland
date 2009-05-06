@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
+import java.io.IOException;
+
 import java.util.ArrayList;
 
 import java.util.logging.Logger;
@@ -46,12 +48,16 @@ import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo.ChatType;
+import com.sun.mpk20.voicelib.app.Call;
+import com.sun.mpk20.voicelib.app.CallSetup;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.PlayerSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
 
 import com.jme.math.Vector3f;
 
@@ -74,12 +80,16 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
     private MyTransformChangeListener myTransformChangeListener;
 
+    private CellID cellID;
+
     /**
      * Create a AudioParticipantComponent for the given cell. 
      * @param cell
      */
     public AudioParticipantComponentMO(CellMO cellMO) {
         super(cellMO);
+
+	cellID = cellMO.getCellID();
 
 	//System.out.println("Adding AudioParticipantComponent to " + cellMO.getName());
     }
@@ -106,8 +116,6 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	CellMO cellMO = cellRef.get();
 
 	cellMO.addTransformChangeListener(myTransformChangeListener);
-
-	AppContext.getManager(VoiceManager.class).addCallStatusListener(this);
 
 	channelComponent.addMessageReceiver(AudioVolumeMessage.class, 
             new ComponentMessageReceiverImpl(cellRef, this));
@@ -202,8 +210,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
     public void callStatusChanged(CallStatus status) {
 	logger.finer("AudioParticipantComponent go call status:  " + status);
 
-	WonderlandClientSender sender = 
-	    WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
+        ChannelComponentMO channelCompMO = (ChannelComponentMO)
+            cellRef.get().getComponent(ChannelComponentMO.class);
 
 	String callId = status.getCallId();
 
@@ -212,52 +220,168 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    return;
 	}
 
-	switch (status.getCode()) {
-        case CallStatus.MUTED:
-            sender.send(new AudioParticipantMuteCallMessage(cellRef.get().getCellID(), true));
-            break;
+	int code = status.getCode();
 
-        case CallStatus.UNMUTED:
-            sender.send(new AudioParticipantMuteCallMessage(cellRef.get().getCellID(), false));
-            break;
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        case CallStatus.STARTEDSPEAKING:
-	    if (inSecretChat(callId)) {
+	AudioGroup audioGroup;
+
+	Call call = vm.getCall(callId);
+
+	Player player = null;
+
+	if (call != null) {
+	    player = call.getPlayer();
+	}
+
+	switch (code) {
+	case CallStatus.ESTABLISHED:
+	    if (player == null) {
+		logger.warning("Couldn't find player for " + callId);
 		return;
 	    }
 
-	    sender.send(new AudioParticipantSpeakingMessage(cellRef.get().getCellID(), true));
+	    vm.dump("all");
+	    player.setPrivateMixes(true);
+	    break;
+
+	case CallStatus.MUTED:
+	    channelCompMO.sendAll(null, new AudioParticipantMuteCallMessage(cellID, true));
+	    break;
+
+	case CallStatus.UNMUTED:
+	    channelCompMO.sendAll(null, new AudioParticipantMuteCallMessage(cellID, false));
+	    break;
+
+        case CallStatus.STARTEDSPEAKING:
+	    if (player == null) {
+		logger.warning("Couldn't find player for " + callId);
+		return;
+	    }
+
+	    if (playerIsChatting(player)) {
+		VoiceChatHandler.getInstance().setSpeaking(player, cellID, true);
+	    }
+
+	    if (inSecretChat(player)) {
+		return;
+	    }
+
+	    channelCompMO.sendAll(null, new AudioParticipantSpeakingMessage(cellID, true));
             break;
 
         case CallStatus.STOPPEDSPEAKING:
-	    if (inSecretChat(callId)) {
+	    if (player == null) {
+		logger.warning("Couldn't find player for " + callId);
 		return;
 	    }
 
-	    sender.send(new AudioParticipantSpeakingMessage(cellRef.get().getCellID(), false));
+	    if (playerIsChatting(player)) {
+		VoiceChatHandler.getInstance().setSpeaking(player, cellID, false);
+	    }
+
+	    if (inSecretChat(player)) {
+		return;
+	    }
+
+	    channelCompMO.sendAll(null, new AudioParticipantSpeakingMessage(cellID, false));
             break;
-	}
+
+	case CallStatus.ENDED:
+	    if (call != null) {
+		try {
+		    call.end(false);
+		} catch (IOException e) {
+		    logger.warning("Call " + call + " ENDED, unable to clean up:  " + e.getMessage());
+		}
+	    }
+
+	    if (player == null) {
+		logger.warning("Couldn't find player for " + call);
+		return;
+	    }
+
+	    ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+
+	    for (AudioGroup group: audioGroups) {
+		group.removePlayer(player);
+	    }
+            break;
+	  
+	case CallStatus.BRIDGE_OFFLINE:
+            logger.info("Bridge offline: " + status);
+		// XXX need a way to tell the voice manager to reset all of the private mixes.
+		Call c = vm.getCall(callId);
+
+	    if (callId == null || callId.length() == 0) {
+                /*
+                 * After the last BRIDGE_OFFLINE notification
+                 * we have to tell the voice manager to restore
+                 * all the pm's for live players.
+                 */
+                logger.fine("Restoring private mixes...");
+	    } else {
+		if (c == null) {
+		    logger.warning("No call for " + callId);
+		    break;
+		}
+
+		Player p = c.getPlayer();
+
+		if (p == null) {
+		    logger.warning("No player for " + callId);
+		    break;
+		}
+
+		try {
+		    c.end(true);
+		} catch (IOException e) {
+		    logger.warning("Unable to end call " + callId);
+		}
+
+		try {
+		    AudioManagerConnectionHandler.setupCall(
+		 	callId, c.getSetup(), -p.getX(), p.getY(), p.getZ(), p.getOrientation());
+		} catch (IOException e) {
+		    logger.warning("Unable to setupCall " + c + " "
+			+ e.getMessage());
+		}
+	    }
+
+            break;
+        }
     }
 
-    private boolean inSecretChat(String callId) {
-	Player player = AppContext.getManager(VoiceManager.class).getPlayer(callId);
+    private boolean playerIsChatting(Player player) {
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        if (player == null) {
-            logger.warning("Couldn't find player for " + callId);
-            return true;
-        }
+	VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
 
-        ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+
+	for (AudioGroup audioGroup : audioGroups) {
+	    if (audioGroup.equals(parameters.livePlayerAudioGroup) == false ||
+	    	    audioGroup.equals(parameters.stationaryPlayerAudioGroup) == false) {
+
+		return true;
+	    }
+	}
+
+	return false;
+    }
+
+    private boolean inSecretChat(Player player) {
+	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
 
         for (AudioGroup audioGroup : audioGroups) {
             AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
 
-            if (info.chatType == ChatType.SECRET) {
-                return true;
-            }
-        }
+            if (info.chatType == AudioGroupPlayerInfo.ChatType.SECRET) {
+		return true;
+	    }
+	}
 
-        return false;
+	return false;
     }
 
     static class MyTransformChangeListener implements TransformChangeListenerSrv {

@@ -39,7 +39,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayerInRangeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
@@ -136,8 +137,19 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
      * Someone is in an audio group and has privacy set to secret.
      * Only the  members of that group should get speaking indications.
      */
-    public void setSecretSpeaking(WonderlandClientSender sender, String audioGroupID,
-	    String callId, boolean isSpeaking) {
+    public void setSpeaking(Player player, CellID cellID, boolean isSpeaking) {
+	WonderlandClientSender sender = 
+	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
+
+	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+
+	for (AudioGroup audioGroup : audioGroups) {
+	     setSpeaking(sender, audioGroup.getId(), cellID, isSpeaking);    
+	}
+    }
+
+    private void setSpeaking(WonderlandClientSender sender, String audioGroupID, CellID cellID, 
+	    boolean isSpeaking) {
 
 	PresenceInfo[] chatters = getChatters(audioGroupID);
 
@@ -158,7 +170,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		continue;
 	    }
 
-	    sender.send(id, new SpeakingMessage(callId, isSpeaking));
+	    sender.send(id, new AudioParticipantSpeakingMessage(cellID, isSpeaking));
 	}
     }
 

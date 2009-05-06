@@ -80,7 +80,6 @@ public class OrbCell extends Cell {
             if (orbMessageHandler == null) {
 	        logger.fine("Creating orb Message handler for " + getCellID());
                 orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession());
-	        orbMessageHandler.setOrbRootNode(orbCellRenderer.getOrbRootNode());
 	    }
 	    break;
         case DISK:
@@ -92,6 +91,10 @@ public class OrbCell extends Cell {
 	}
 
 	return changed;
+    }
+
+    public void setOrbRootNode(Node orbRootNode) {
+	orbMessageHandler.setOrbRootNode(orbRootNode);
     }
 
     /**

@@ -28,7 +28,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBrid
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.SpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
@@ -37,6 +36,9 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
+
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
 
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -62,7 +64,6 @@ import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.BridgeInfo;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
-import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
@@ -81,7 +82,7 @@ import java.math.BigInteger;
  * @author jprovino
  */
 public class AudioManagerConnectionHandler 
-        implements ClientConnectionHandler, Serializable, ManagedCallStatusListener {
+        implements ClientConnectionHandler, Serializable {
 
     private static final Logger logger =
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
@@ -154,6 +155,17 @@ public class AudioManagerConnectionHandler
 
 	    PresenceInfo info = msg.getPresenceInfo();
 
+	    CellMO cellMO = CellManagerMO.getCellManager().getCell(info.cellID);
+
+	    AudioParticipantComponentMO audioParticipantComponentMO = 
+		cellMO.getComponent(AudioParticipantComponentMO.class);
+
+	    if (audioParticipantComponentMO == null) {
+		logger.warning("Cell " + cellMO.getCellID() 
+		    + " doesn't have an AudioParticipantComponent!");
+		return;
+	    }
+
 	    CallSetup setup = new CallSetup();
 
 	    CallParticipant cp = new CallParticipant();
@@ -163,7 +175,7 @@ public class AudioManagerConnectionHandler
 
 	    String callID = info.callID;
 	
-	    vm.addCallStatusListener(this, callID);
+	    vm.addCallStatusListener(audioParticipantComponentMO, callID);
 
 	    logger.fine("callID " + callID);
 
@@ -217,7 +229,6 @@ public class AudioManagerConnectionHandler
 		return;
 	    }
 
-	    sender.send(new MuteCallMessage(callID, msg.isMuted()));
 	    return;
 	}
 	
@@ -270,7 +281,7 @@ public class AudioManagerConnectionHandler
         throw new UnsupportedOperationException("Unknown message:  " + message);
     }
 
-    private void setupCall(String callID, CallSetup setup, double x, 
+    public static void setupCall(String callID, CallSetup setup, double x, 
 	    double y, double z, double direction) throws IOException {
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
@@ -341,163 +352,6 @@ public class AudioManagerConnectionHandler
 	} catch (IOException e) {
 	    logger.warning("Unable to end call " + call + " " + e.getMessage());
 	}
-    }
-
-    public void callStatusChanged(CallStatus status) {
-	logger.finer("GOT STATUS " + status);
-
-	int code = status.getCode();
-
-	String callId = status.getCallId();
-
-	if (callId == null) {
-	    logger.warning("No callId in status:  " + status);
-	    return;
-	}
-
-	CommsManager cm = WonderlandContext.getCommsManager();
-
-	WonderlandClientSender sender = cm.getSender(AudioManagerConnectionType.CONNECTION_TYPE);
-
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	AudioGroup audioGroup;
-
-	Call call = vm.getCall(callId);
-
-	Player player = null;
-
-	if (call != null) {
-	    player = call.getPlayer();
-	}
-
-	switch (code) {
-	case CallStatus.ESTABLISHED:
-	    if (player == null) {
-		logger.warning("Couldn't find player for " + callId);
-		return;
-	    }
-
-	    vm.dump("all");
-	    player.setPrivateMixes(true);
-	    break;
-
-	case CallStatus.MUTED:
-	    sender.send(new MuteCallMessage(callId, true));
-	    break;
-
-	case CallStatus.UNMUTED:
-	    sender.send(new MuteCallMessage(callId, false));
-	    break;
-
-        case CallStatus.STARTEDSPEAKING:
-	    if (player == null) {
-		logger.warning("Couldn't find player for " + callId);
-		return;
-	    }
-
-	    audioGroup = getSecretAudioGroup(player);
-
-	    if (audioGroup != null) {
-		VoiceChatHandler.getInstance().setSecretSpeaking(sender, audioGroup.getId(), callId, true);
-	    }
-
-	    sender.send(new SpeakingMessage(callId, true));
-            break;
-
-        case CallStatus.STOPPEDSPEAKING:
-	    if (player == null) {
-		logger.warning("Couldn't find player for " + callId);
-		return;
-	    }
-
-	    audioGroup = getSecretAudioGroup(player);
-
-	    if (audioGroup != null) {
-		VoiceChatHandler.getInstance().setSecretSpeaking(sender, audioGroup.getId(), callId, false);
-		return;
-	    }
-
-	    sender.send(new SpeakingMessage(callId, false));
-            break;
-
-	case CallStatus.ENDED:
-	    if (call != null) {
-		try {
-		    call.end(false);
-		} catch (IOException e) {
-		    logger.warning("Call " + call + " ENDED, unable to clean up:  " + e.getMessage());
-		}
-	    }
-
-	    if (player == null) {
-		logger.warning("Couldn't find player for " + call);
-		return;
-	    }
-
-	    ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
-
-	    for (AudioGroup group: audioGroups) {
-		group.removePlayer(player);
-	    }
-            break;
-	  
-	case CallStatus.BRIDGE_OFFLINE:
-            logger.info("Bridge offline: " + status);
-		// XXX need a way to tell the voice manager to reset all of the private mixes.
-		Call c = vm.getCall(callId);
-
-	    if (callId == null || callId.length() == 0) {
-                /*
-                 * After the last BRIDGE_OFFLINE notification
-                 * we have to tell the voice manager to restore
-                 * all the pm's for live players.
-                 */
-                logger.fine("Restoring private mixes...");
-	    } else {
-		if (c == null) {
-		    logger.warning("No call for " + callId);
-		    break;
-		}
-
-		Player p = c.getPlayer();
-
-		if (p == null) {
-		    logger.warning("No player for " + callId);
-		    break;
-		}
-
-		try {
-		    c.end(true);
-		} catch (IOException e) {
-		    logger.warning("Unable to end call " + callId);
-		}
-
-		try {
-		    setupCall(callId, c.getSetup(), -p.getX(), p.getY(), p.getZ(), 
-		        p.getOrientation());
-		} catch (IOException e) {
-		    logger.warning("Unable to setupCall " + c + " "
-			+ e.getMessage());
-		}
-	    }
-
-            break;
-        }
-    }
-
-    private AudioGroup getSecretAudioGroup(Player player) {
-	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
-
-	for (AudioGroup audioGroup : audioGroups) {
-	    AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
-
-	    if (info.chatType == AudioGroupPlayerInfo.ChatType.SECRET) {
-	        return audioGroup;
-	    }
-	}
-
-	return null;
     }
 
 }

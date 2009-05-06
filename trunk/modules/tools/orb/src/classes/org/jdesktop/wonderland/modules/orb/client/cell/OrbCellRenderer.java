@@ -51,8 +51,6 @@ import java.lang.reflect.Method;
  */
 public class OrbCellRenderer extends BasicRenderer {
     
-    private Node orbRootNode;
-
     private Entity entity;
     private MyMouseListener listener;
 
@@ -64,10 +62,6 @@ public class OrbCellRenderer extends BasicRenderer {
 	username = ((OrbCell) cell).getUsername();
     }
     
-    public Node getOrbRootNode() {
-	return orbRootNode;
-    }
-
     protected Node createSceneGraph(Entity entity) {
 	this.entity = entity;
 
@@ -131,8 +125,8 @@ public class OrbCellRenderer extends BasicRenderer {
         wiState.setEnabled(true);
         node.setRenderState(wiState);
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
-
-	orbRootNode = node;
+	System.out.println("Setting orb root node");
+	((OrbCell) cell).setOrbRootNode(node);
         return node;
     }
 
@@ -213,7 +207,8 @@ public class OrbCellRenderer extends BasicRenderer {
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
 	logger.fine("ANIMATION ENTITY CREATED");
-	orbRootNode = node;
+	System.out.println("Setting orb root node");
+	((OrbCell) cell).setOrbRootNode(node);
 	return node;
     }
 
