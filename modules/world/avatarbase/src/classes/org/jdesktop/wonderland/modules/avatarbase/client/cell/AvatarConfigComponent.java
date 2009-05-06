@@ -26,6 +26,9 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -63,9 +66,17 @@ public class AvatarConfigComponent extends CellComponent {
         super.setClientState(clientState);
         try {
             String str = ((AvatarConfigComponentClientState) clientState).getConfigURL();
-            if (str!=null)
-                avatarConfigURL = new URL(str);
-            else
+            if (str!=null) {
+                if (str.startsWith("assets")) {
+                    // FOR NPC
+                    WonderlandSession session = cell.getCellCache().getSession();
+                    ServerSessionManager manager = session.getSessionManager();
+                    String serverHostAndPort = manager.getServerNameAndPort();
+                    avatarConfigURL = AssetUtils.getAssetURL("wla://avatarbaseart@" + serverHostAndPort + "/"+str, cell);
+                    System.err.println("------> NPC URL "+avatarConfigURL);
+                } else
+                    avatarConfigURL = new URL(str);
+            } else
                 avatarConfigURL = null;
         } catch (MalformedURLException ex) {
             Logger.getLogger(AvatarConfigComponent.class.getName()).log(Level.SEVERE, null, ex);
