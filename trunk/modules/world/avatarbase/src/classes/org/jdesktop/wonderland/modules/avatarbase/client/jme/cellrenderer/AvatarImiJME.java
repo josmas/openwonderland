@@ -252,7 +252,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         WorldManager wm = ClientContextJME.getWorldManager();
         if (avatarCharacter != null) {
             if (nameTag!=null) {
-                avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTag);
+                //avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTag);
             }
             currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
             wm.removeEntity(avatarCharacter);
