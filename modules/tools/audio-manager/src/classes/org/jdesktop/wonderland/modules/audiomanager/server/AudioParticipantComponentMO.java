@@ -90,6 +90,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
     private CellID cellID;
 
+    private boolean isSpeaking;
     private boolean isMuted;
 
     /**
@@ -109,7 +110,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
         AudioParticipantComponentServerState state = (AudioParticipantComponentServerState) serverState;
 
         if (state == null) {
-            state = new AudioParticipantComponentServerState(isMuted);
+            state = new AudioParticipantComponentServerState(isSpeaking, isMuted);
         }
 
         return state;
@@ -121,7 +122,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
             WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
-	return new AudioParticipantComponentClientState(isMuted);
+	System.out.println("Get client state " + isSpeaking + " " + isMuted);
+	return new AudioParticipantComponentClientState(isSpeaking, isMuted);
     }
 
     @Override
@@ -286,6 +288,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    break;
 
         case CallStatus.STARTEDSPEAKING:
+	    isSpeaking = true;
+
 	    if (player == null) {
 		logger.warning("Couldn't find player for " + callId);
 		return;
@@ -303,6 +307,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
             break;
 
         case CallStatus.STOPPEDSPEAKING:
+	    isSpeaking = false;
+
 	    if (player == null) {
 		logger.warning("Couldn't find player for " + callId);
 		return;
