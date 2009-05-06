@@ -154,6 +154,7 @@ public class WonderlandAvatarCache implements CacheBehavior {
     }
 
     public Texture loadTexture(URL location) {
+        logger.warning("WonderlandAvatarCache "+location.toExternalForm());
         if (location.getProtocol().equalsIgnoreCase("file")) {
             // Workaround for hard coded file:// urls in head bhf files
             String relativePath = location.toExternalForm();
