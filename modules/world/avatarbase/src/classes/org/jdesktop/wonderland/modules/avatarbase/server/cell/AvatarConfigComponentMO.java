@@ -88,7 +88,6 @@ public class AvatarConfigComponentMO extends CellComponentMO {
             clientState = new AvatarConfigComponentClientState();
         }
         ((AvatarConfigComponentClientState)clientState).setConfigURL(avatarConfig);
-        System.err.println("GET CLIENT STATE "+avatarConfig);
         return super.getClientState(clientState, clientID, capabilities);
     }
 
