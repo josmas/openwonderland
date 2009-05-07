@@ -66,7 +66,6 @@ import org.jdesktop.wonderland.testharness.common.Client3DRequest;
 import org.jdesktop.wonderland.testharness.common.TestRequest;
 import org.jdesktop.wonderland.testharness.slave.ProcessingException;
 import org.jdesktop.wonderland.testharness.slave.RequestProcessor;
-import sun.misc.RequestProcessor;
 
 /**
  * A test client that simulates a 3D client
@@ -122,13 +121,13 @@ public class Client3DSim
         // create a fake mainframe
         JmeClientMain.setFrame(new FakeMainFrame());
 
-        try {
-            ServerSessionManager mgr = LoginManager.getInstance(serverURL);
+        try {        
+            ServerSessionManager mgr = LoginManager.getSessionManager(serverURL);
             session = mgr.createSession(new SessionCreator<CellClientSession>() {
 
-                public CellClientSession createSession(WonderlandServerInfo serverInfo,
-                        ClassLoader loader) {
-                    CellClientSession ccs = new CellClientSession(serverInfo, loader) {
+                public CellClientSession createSession(ServerSessionManager sessionMgr,
+                        WonderlandServerInfo serverInfo, ClassLoader loader) {
+                    CellClientSession ccs = new CellClientSession(sessionMgr, serverInfo, loader) {
 
                         @Override
                         protected CellCache createCellCache() {
@@ -168,6 +167,7 @@ public class Client3DSim
         } catch (IOException ioe) {
             throw new ProcessingException(ioe);
         } catch (LoginFailureException lfe) {
+            lfe.printStackTrace();
             throw new ProcessingException(lfe);
         }
     }
@@ -577,6 +577,30 @@ public class Client3DSim
         public void addServerURLListener(ServerURLListener listener) {
             // ignore
         }
+
+        public void removeFromFileMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromEditMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromViewMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromToolsMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromPlacemarksMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void removeFromWindowMenu(JMenuItem menuItem) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     class BlacklistPluginFilter implements PluginFilter {
@@ -588,7 +612,8 @@ public class Client3DSim
             "audiomanager-client",
             "avatarbase-client",
             "defaultenvironment-client",
-            "kmzloader-client"
+            "kmzloader-client",
+            "contextmenu"
         };
         private final String[] CLASS_BLACKLIST = {};
 
