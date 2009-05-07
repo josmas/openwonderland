@@ -39,6 +39,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
@@ -440,8 +441,13 @@ public class JmeClientMain {
         // center the frame
         frame.getFrame().setLocationRelativeTo(null);
 
-        // show frame
-        frame.getFrame().setVisible(true);
+        // invokeLater is a work around for an occasional linux deadlock
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // show frame
+                frame.getFrame().setVisible(true);
+            }
+        });
 
         JPanel canvas3D = frame.getCanvas3DPanel();
         ViewManager.initialize(canvas3D.getWidth(), canvas3D.getHeight()); // Initialize an onscreen view
@@ -450,40 +456,40 @@ public class JmeClientMain {
         // ready the canvas3D must be visible
         ViewManager.getViewManager().attachViewCanvas(canvas3D);
 
-	// Initialize the input manager.
-	// Note: this also creates the view manager.
-	// TODO: low bug: we would like to initialize the input manager BEFORE frame.setVisible.
-	// But if we create the camera before frame.setVisible the client window never appears.
-	CameraComponent cameraComp = ViewManager.getViewManager().getCameraComponent();
-	InputManager inputManager = ClientContext.getInputManager();
-	inputManager.initialize(frame.getCanvas(), cameraComp);
+        // Initialize the input manager.
+        // Note: this also creates the view manager.
+        // TODO: low bug: we would like to initialize the input manager BEFORE frame.setVisible.
+        // But if we create the camera before frame.setVisible the client window never appears.
+        CameraComponent cameraComp = ViewManager.getViewManager().getCameraComponent();
+        InputManager inputManager = ClientContext.getInputManager();
+        inputManager.initialize(frame.getCanvas(), cameraComp);
 
-	// Default Policy: Enable global key and mouse focus everywhere 
-	// Note: the app base will impose its own (different) policy later
-	inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
+        // Default Policy: Enable global key and mouse focus everywhere
+        // Note: the app base will impose its own (different) policy later
+        inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
 
-	/* Note: Example of global key and mouse event listener 
-	InputManager3D.getInputManager().addGlobalEventListener(
-	    new EventClassFocusListener () {
-		private final Logger logger = Logger.getLogger("My Logger");
-		public Class[] eventClassesToConsume () {
-		    return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
-		}
-		public void commitEvent (Event event) {
-		    // NOTE: to test, change the two logger.fine calls below to logger.warning
-		    if (event instanceof KeyEvent3D) {
-			if (((KeyEvent3D)event).isPressed()) {
-			    logger.fine("Global listener: received key event, event = " + event );
-			}
-		    } else {
-			logger.fine("Global listener: received mouse event, event = " + event);
-			MouseEvent3D mouseEvent = (MouseEvent3D) event;
-			System.err.println("Event pickDetails = " + mouseEvent.getPickDetails());
-			System.err.println("Event entity = " + mouseEvent.getEntity());
-		    }
-		}
-    	    });
-	*/
+        /* Note: Example of global key and mouse event listener
+        InputManager3D.getInputManager().addGlobalEventListener(
+            new EventClassFocusListener () {
+            private final Logger logger = Logger.getLogger("My Logger");
+            public Class[] eventClassesToConsume () {
+                return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
+            }
+            public void commitEvent (Event event) {
+                // NOTE: to test, change the two logger.fine calls below to logger.warning
+                if (event instanceof KeyEvent3D) {
+                if (((KeyEvent3D)event).isPressed()) {
+                    logger.fine("Global listener: received key event, event = " + event );
+                }
+                } else {
+                logger.fine("Global listener: received mouse event, event = " + event);
+                MouseEvent3D mouseEvent = (MouseEvent3D) event;
+                System.err.println("Event pickDetails = " + mouseEvent.getPickDetails());
+                System.err.println("Event entity = " + mouseEvent.getEntity());
+                }
+            }
+                });
+        */
     }
 
     /**
