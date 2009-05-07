@@ -98,10 +98,11 @@ public class AudioParticipantComponent extends CellComponent implements
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
 
-	AudioParticipantComponentClientState state = (AudioParticipantComponentClientState) clientState;
+	AudioParticipantComponentClientState state = (AudioParticipantComponentClientState) 
+	    clientState;
 
-	System.out.println("setClientState for " + cell.getCellID() + " " 
-	    + state.isSpeaking() + " " + state.isMuted());
+	logger.warning("setClientState for " + cell.getCellID() 
+	    + " " + state.isSpeaking() + " " + state.isMuted());
 
 	setSpeakingIndicator(cell.getCellID(), state.isSpeaking());
 	setMuteIndicator(cell.getCellID(), state.isMuted());
