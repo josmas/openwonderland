@@ -87,7 +87,7 @@ public class PortalComponent extends CellComponent
         };
 
         if (status == CellStatus.ACTIVE) {
-            System.out.println("[PortalComponent] add prox listener");
+            System.out.println("[PortalComponent] add prox listener: " + bounds[0]);
             prox.addProximityListener(this, bounds);
         } else if (status == CellStatus.INACTIVE) {
             System.out.println("[PortalComponent] remove prox listener");

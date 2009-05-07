@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.xremwin.client;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
@@ -62,7 +64,7 @@ public class RunXAppCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        // TODO
-        return null;
+        URL url = RunXAppCellFactory.class.getResource("resources/RunXApp2.png");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
