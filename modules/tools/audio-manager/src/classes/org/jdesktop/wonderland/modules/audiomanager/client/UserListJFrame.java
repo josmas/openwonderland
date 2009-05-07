@@ -20,6 +20,7 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import java.awt.Point;
@@ -173,6 +174,7 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
                     info.isMuted);
         }
 
+	Arrays.sort(userData, String.CASE_INSENSITIVE_ORDER);
         setUserList(userData);
     }
 
