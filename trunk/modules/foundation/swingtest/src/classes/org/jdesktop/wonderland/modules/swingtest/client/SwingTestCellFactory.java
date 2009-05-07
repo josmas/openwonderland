@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.swingtest.client;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -54,8 +56,7 @@ public class SwingTestCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        return null;
-//        URL url = SwingTestCellFactory.class.getResource("resources/sample_preview.jpg");
-//        return Toolkit.getDefaultToolkit().createImage(url);
+        URL url = SwingTestCellFactory.class.getResource("resources/swingtest_preview.png");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
