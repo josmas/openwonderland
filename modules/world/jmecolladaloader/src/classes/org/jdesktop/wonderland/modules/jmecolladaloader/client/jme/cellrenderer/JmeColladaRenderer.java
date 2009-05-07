@@ -190,12 +190,11 @@ public class JmeColladaRenderer extends BasicRenderer {
         modelNode.setLocalScale(unitMeter);
 
         String upAxis = ColladaImporter.getInstance().getUpAxis();
-        if (upAxis.equals("Z_UP")) {
+        if ("Z_UP".equals(upAxis)) {
             modelNode.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
-        } else if (upAxis.equals("X_UP")) {
+        } else if ("X_UP".equals(upAxis)) {
             modelNode.setLocalRotation(new Quaternion(new float[] {0f, 0f, (float)Math.PI/2}));
         } // Y_UP is the Wonderland default
-
 
         ColladaImporter.cleanUp();
         
