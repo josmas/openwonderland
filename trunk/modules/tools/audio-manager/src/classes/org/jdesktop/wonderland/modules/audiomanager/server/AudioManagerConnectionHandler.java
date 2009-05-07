@@ -175,6 +175,7 @@ public class AudioManagerConnectionHandler
 
 	    String callID = info.callID;
 
+	    vm.removeCallStatusListener(audioParticipantComponentMO, callID);
 	    vm.addCallStatusListener(audioParticipantComponentMO, callID);
 
 	    logger.fine("callID " + callID);
@@ -217,7 +218,7 @@ public class AudioManagerConnectionHandler
 	    Call call = vm.getCall(callID);
 
 	    if (call == null) {
-		logger.warning("Unable to mute/unmute call " + callID);
+		logger.fine("Unable to mute/unmute call " + callID);
 		return;
 	    }	
 
@@ -343,7 +344,7 @@ public class AudioManagerConnectionHandler
 	Call call = vm.getCall(callID);
 
 	if (call == null) {
-	    logger.warning("Can't find call for " + callID);
+	    logger.fine("Can't find call for " + callID);
 	    return;
 	}
 
