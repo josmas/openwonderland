@@ -334,6 +334,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 		}
 	    }
 
+	    player = vm.getPlayer(callId);
+
 	    if (player == null) {
 		logger.warning("Couldn't find player for " + status);
 		return;
@@ -344,6 +346,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    for (AudioGroup group: audioGroups) {
 		group.removePlayer(player);
 	    }
+
+	    vm.removeCallStatusListener(this, callId);
             break;
 	  
 	case CallStatus.BRIDGE_OFFLINE:

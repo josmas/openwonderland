@@ -64,6 +64,7 @@ import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.BridgeInfo;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
+import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
@@ -171,10 +172,9 @@ public class AudioManagerConnectionHandler
 	    CallParticipant cp = new CallParticipant();
 
 	    setup.cp = cp;
-	    //setup.listener = this;
 
 	    String callID = info.callID;
-	
+
 	    vm.addCallStatusListener(audioParticipantComponentMO, callID);
 
 	    logger.fine("callID " + callID);
