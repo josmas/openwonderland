@@ -17,15 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.portal.client;
 
-import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
@@ -68,6 +68,7 @@ public class PortalCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        return null;
+        URL url = PortalCellFactory.class.getResource("resources/Portal2.png");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
