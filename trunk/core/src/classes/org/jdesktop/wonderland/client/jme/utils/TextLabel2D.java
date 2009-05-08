@@ -21,15 +21,19 @@ import com.jme.math.FastMath;
 import com.jme.math.Vector2f;
 import com.jme.renderer.Renderer;
 import com.jme.scene.BillboardNode;
+import com.jme.scene.Node;
 import com.jme.scene.Spatial.LightCombineMode;
 import com.jme.scene.shape.Quad;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.TextureState;
 import com.jme.scene.state.BlendState.TestFunction;
+import com.jme.scene.state.RenderState.StateType;
 import com.jme.system.DisplaySystem;
 import com.jme.util.TextureManager;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 
-public class TextLabel2D {
+public class TextLabel2D extends Node {
     private String text;
     private float blurIntensity = 0.1f;
     private int kernelSize = 5;
@@ -40,21 +44,53 @@ public class TextLabel2D {
     private int shadowOffsetX = 2;
     private int shadowOffsetY = 2;
     private Font font;
+    private Font drawFont;
+    private float height=1f;
+
+    private FontRenderContext fontRenderContext = null;
+    private Quad quad;
 
     public TextLabel2D(String text) {
-        this(text, new Color(1f,1f,1f), new Color(0f,0f,0f));
+        this(text, new Color(1f,1f,1f), new Color(0f,0f,0f), 0.3f, false, null);
     }
     
-    public TextLabel2D(String text, Color foreground, Color background) {
+    public TextLabel2D(String text,
+                       Color foreground,
+                       Color background,
+                       float height,
+                       boolean billboard,
+                       Font font) {
+        super();
         this.text = text;
         this.foreground = foreground;
         this.background = background;
+        this.height = height;
         updateKernel();
-        setFont(Font.decode("Sans PLAIN 40"));
+        if (font==null)
+            font = Font.decode("Sans PLAIN 40");
+        setFont(font);
+        attachChild(getBillboard());
     }
 
     public void setFont(Font font){
         this.font = font;
+        BufferedImage tmp0 = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
+        drawFont = font.deriveFont(fontResolution);
+
+        fontRenderContext = g2d.getFontRenderContext();
+    }
+
+    public void setText(String text, Color foreground, Color background) {
+        this.text = text;
+        this.foreground = foreground;
+        this.background = background;
+        Node tmpParent = quad.getParent();
+        quad.removeFromParent();
+        TextureState texState = (TextureState) quad.getRenderState(StateType.Texture);
+        Texture tex = texState.getTexture();
+        TextureManager.releaseTexture(tex);
+        tmpParent.attachChild(getQuad());
     }
 
     public void setShadowOffsetX(int offsetPixelX){
@@ -87,11 +123,9 @@ public class TextLabel2D {
      * to the next-power-of-two- sized resulting image
      */
     private BufferedImage getImage(Vector2f scaleFactors){
-        BufferedImage tmp0 = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
-        Font drawFont = font.deriveFont(fontResolution);
-        g2d.setFont(drawFont);
-        Rectangle2D b = g2d.getFontMetrics().getStringBounds(text, g2d);
+
+        TextLayout layout = new TextLayout(text, font, fontRenderContext);
+        Rectangle2D b = layout.getBounds();
 
         int actualX = (int)b.getWidth()+kernelSize+1+shadowOffsetX;
         int actualY = (int)b.getHeight()+kernelSize+1+shadowOffsetY;
@@ -104,9 +138,9 @@ public class TextLabel2D {
             scaleFactors.y = (float)actualY/desiredY;
         }
 
-        tmp0 = new BufferedImage(desiredX, desiredY, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage tmp0 = new BufferedImage(desiredX, desiredY, BufferedImage.TYPE_INT_ARGB);
 
-        g2d = (Graphics2D) tmp0.getGraphics();
+        Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
         g2d.setFont(drawFont);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -130,7 +164,7 @@ public class TextLabel2D {
         return ret;
     }
 
-    public Quad getQuad(float height){
+    private Quad getQuad(){
         Vector2f scales = new Vector2f();
         BufferedImage img = getImage(scales);
         float w = img.getWidth() * scales.x;
@@ -168,13 +202,13 @@ public class TextLabel2D {
 
         ret.setLightCombineMode(LightCombineMode.Off);
         ret.updateRenderState();
+        this.quad = ret;
         return ret;
     }
     
-    public BillboardNode getBillboard(float height){
+    private BillboardNode getBillboard(){
         BillboardNode bb = new BillboardNode("bb");
-        Quad q = getQuad(height);
-        bb.attachChild(q);
+        bb.attachChild(getQuad());
         return bb;
     }
 }
