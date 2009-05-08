@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDuplicateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage.EditType;
+import org.jdesktop.wonderland.common.cell.messages.CellReparentMessage;
 import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
@@ -126,6 +127,11 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                     out = crm.getCellResource(dupMO.getParent().getCellID());
                 }
                 break;
+
+            case REPARENT_CELL:
+                // Huh?
+                break;
+
         }
 
         return out;
@@ -247,6 +253,16 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                         newCellMO.getName() + " of type " + newCellMO.getClass() +
                         ", has multiple parents", excp);
             }
+        }
+        else if (editMessage.getEditType() == EditType.REPARENT_CELL) {
+            // Find the cell id to move and the new parent id
+            CellID cellID = ((CellReparentMessage)editMessage).getCellID();
+            CellID parentID = ((CellReparentMessage)editMessage).getParentCellID();
+
+            // Figure out the new local coordinates of the cell wrt the new
+            // parent
+
+            // Change the parent cell
         }
     }
 

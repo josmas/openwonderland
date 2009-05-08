@@ -15,14 +15,14 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.palette.client;
+package org.jdesktop.wonderland.modules.celleditor.client;
 
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
@@ -30,41 +30,71 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class BasicJPanel extends javax.swing.JPanel {
-    /* The properties editor */
-    private CellPropertiesEditor editor = null;
+public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
 
-    /* The original name of the cell */
+    private CellPropertiesEditor editor = null;
     private String originalCellName = null;
 
-    /* The cell ID, should not change */
-    private CellID cellID = null;
-
     /** Creates new form BasicJPanel */
-    public BasicJPanel(Cell cell) {
-        // Initialize the GUI
-        cellID = cell.getCellID();
+    public BasicJPanel() {
         initComponents();
-        cellIDLabel.setText(cell.getCellID().toString());
 
         // Listen for changes in the entry for the text field
         cellNameTextField.getDocument().addDocumentListener(new NameTextFieldListener());
     }
 
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
+    /**
+     * @inheritDoc()
+     */
+    public void apply() {
+        // Update the server-side state for the Cell.
+        String name = cellNameTextField.getText();
+        CellServerState cellServerState = editor.getCellServerState();
+        ((CellServerState)cellServerState).setName(name);
+        editor.addToUpdateList(cellServerState);
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void close() {
+        // We do nothing here, since any changes in the GUI property sheet do
+        // not take effect until apply(), so there is no state to revert here.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public String getDisplayName() {
+        return "Basic";
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public JPanel getPropertiesJPanel() {
         return this;
     }
 
-    public <T extends CellServerState> void updateGUI(T cellServerState) {
-        originalCellName = ((CellServerState)cellServerState).getName();
-        cellNameTextField.setText(originalCellName);
+    /**
+     * @inheritDoc()
+     */
+    public void refresh() {
+        // Fetch the name and CellID from the Cell and Cell server state and
+        // update the GUI
+        Cell cell = editor.getCell();
+        CellServerState cellServerState = editor.getCellServerState();
 
+        originalCellName = cellServerState.getName();
+        cellNameTextField.setText(originalCellName);
+        cellIDLabel.setText(cell.getCellID().toString());
     }
 
-    public <T extends CellServerState> void getCellServerState(T cellServerState) {
-        String name = cellNameTextField.getText();
-        ((CellServerState)cellServerState).setName(name);
+    /**
+     * @inheritDoc()
+     */
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
     }
 
     /**

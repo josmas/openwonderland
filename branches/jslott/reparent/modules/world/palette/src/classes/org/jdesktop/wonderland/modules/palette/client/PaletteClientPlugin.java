@@ -20,13 +20,9 @@ package org.jdesktop.wonderland.modules.palette.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
-import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -40,7 +36,6 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
@@ -61,8 +56,6 @@ import org.jdesktop.wonderland.modules.security.client.SecurityComponent;
 public class PaletteClientPlugin extends BaseClientPlugin
         implements ContextMenuFactorySPI
 {
-    private static Logger logger = Logger.getLogger(PaletteClientPlugin.class.getName());
-
     /* The single instance of the cell palette dialog */
     private WeakReference<CellPalette> cellPaletteFrameRef = null;
 
@@ -212,7 +205,6 @@ public class PaletteClientPlugin extends BaseClientPlugin
         }
 
         return new ContextMenuItem[] {
-            new SimpleContextMenuItem("Properties...", null, new PropertiesListener()),
             deleteItem,
             duplicateItem,
         };
@@ -253,24 +245,6 @@ public class PaletteClientPlugin extends BaseClientPlugin
         }
 
         return out;
-    }
-
-    /**
-     * Listener class for the "Properties..." context menu item
-     */
-    private class PropertiesListener implements ContextMenuActionListener {
-
-        public void actionPerformed(ContextMenuItemEvent event) {
-            // Create a new cell edit frame passing in the Cell and make
-            // it visible
-            Cell cell = event.getCell();
-            try {
-                CellEditFrame frame = new CellEditFrame(cell);
-                frame.setVisible(true);
-            } catch (IllegalStateException excp) {
-                Logger.getLogger(PaletteClientPlugin.class.getName()).log(Level.WARNING, null, excp);
-            }
-        }
     }
 
     /**

@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.palette.client;
+package org.jdesktop.wonderland.modules.celleditor.client;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -50,10 +50,10 @@ public class AddComponentDialog extends javax.swing.JDialog {
     private CellComponentFactorySPI cellComponentFactorySPI = null;
 
     /* The edit property frame displaying this dialog */
-    private CellEditFrame editframe = null;
+    private CellPropertiesJFrame editframe = null;
 
     /** Creates new form AddComponentDialog */
-    public AddComponentDialog(CellEditFrame editframe, boolean modal, Cell cell) {
+    public AddComponentDialog(CellPropertiesJFrame editframe, boolean modal, Cell cell) {
         super(editframe, modal);
         this.cell = cell;
         this.editframe = editframe;

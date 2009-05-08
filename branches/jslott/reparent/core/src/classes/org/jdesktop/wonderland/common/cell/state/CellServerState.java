@@ -164,6 +164,13 @@ public abstract class CellServerState implements Serializable {
     public void removeComponentServerState(Class clazz) {
         internalComponentMap.remove(clazz);
     }
+
+    /**
+     * Removes all of the CellComponentServerStates on this Cell server state.
+     */
+    public void removeAllComponentServerStates() {
+        internalComponentMap.clear();
+    }
     
     /**
      * Returns the cell metadata.

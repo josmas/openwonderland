@@ -22,8 +22,8 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
-import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentServerState;
@@ -32,8 +32,8 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentServerSt
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@CellComponentProperties
-public class SampleComponentProperties extends javax.swing.JPanel implements CellComponentPropertiesSPI {
+@PropertiesFactory(SampleCellComponentServerState.class)
+public class SampleComponentProperties extends JPanel implements PropertiesFactorySPI {
 
     private CellPropertiesEditor editor = null;
     private String originalInfo = null;
@@ -51,13 +51,6 @@ public class SampleComponentProperties extends javax.swing.JPanel implements Cel
     /**
      * @inheritDoc()
      */
-    public Class getServerCellComponentClass() {
-        return SampleCellComponentServerState.class;
-    }
-
-    /**
-     * @inheritDoc()
-     */
     public String getDisplayName() {
         return "Sample Component";
     }
@@ -65,21 +58,42 @@ public class SampleComponentProperties extends javax.swing.JPanel implements Cel
     /**
      * @inheritDoc()
      */
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
+    public JPanel getPropertiesJPanel() {
         return this;
     }
 
     /**
      * @inheritDoc()
      */
-    public <T extends CellServerState> void updateGUI(T cellServerState) {
+    public void apply() {
+        // Do nothing for now.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void close() {
+        // Do nothing for now.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void refresh() {
+        CellServerState cellServerState = editor.getCellServerState();
         CellComponentServerState state = cellServerState.getComponentServerState(SampleCellComponentServerState.class);
         if (state != null) {
             originalInfo = ((SampleCellComponentServerState) state).getInfo();
             infoTextField.setText(originalInfo);
             return;
         }
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
     }
 
     /**

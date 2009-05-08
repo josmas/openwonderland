@@ -46,17 +46,39 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     private static JFrame affordanceHUDFrame = null;
     private static AffordanceHUDPanel affordanceHUDPanel = null;
 
+    /* The single instance of the Position HUD Panel */
+    private static JFrame positionHUDFrame = null;
+    private static PositionHUDPanel positionHUDPanel = null;
+
     /**
      * Creates the affordance HUD frame
      */
-    private void createHUDFrame() {
+    private void createAffordanceHUDFrame() {
+        // Create the HUD panel that displays the toggle buttons for the visual
+        // affordances.
         affordanceHUDFrame = new JFrame();
         affordanceHUDFrame.getContentPane().setLayout(new GridLayout(1, 1));
-        affordanceHUDFrame.getContentPane().add(affordanceHUDPanel = new AffordanceHUDPanel(affordanceHUDFrame));
+        affordanceHUDPanel = new AffordanceHUDPanel(affordanceHUDFrame);
+        affordanceHUDFrame.getContentPane().add(affordanceHUDPanel);
         affordanceHUDFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         affordanceHUDFrame.addWindowListener(new FrameCloseListener());
         affordanceHUDFrame.setTitle("Edit Cell");
         affordanceHUDFrame.pack();
+    }
+
+    /**
+     * Creates the position HUD frame
+     */
+    private void createPositionHUDFrame() {
+        // Create the HUD panel that displays the position panel and text fields
+        // for position, rotation, scaling.
+        positionHUDFrame = new JFrame();
+        positionHUDFrame.getContentPane().setLayout(new GridLayout(1, 1));
+        positionHUDPanel = new PositionHUDPanel(positionHUDFrame);
+        positionHUDFrame.getContentPane().add(positionHUDPanel);
+        positionHUDFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        positionHUDFrame.setTitle("Edit Cell");
+        positionHUDFrame.pack();
     }
 
     /**
@@ -123,13 +145,22 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
         
         public void actionPerformed(ContextMenuItemEvent event) {
             
-            // Display the affordance HUD Panel
+            // Display the affordance HUD Panel, creating it if it does not
+            // already exist.
             if (affordanceHUDFrame == null) {
-                createHUDFrame();
+                createAffordanceHUDFrame();
             }
             affordanceHUDPanel.setTranslationVisible(true);
             affordanceHUDFrame.setVisible(true);
             affordanceHUDPanel.updateGUI();
+
+            // Display the position HUD Panel, creating it if it does not
+            // already exist.
+            if (positionHUDFrame == null) {
+                createPositionHUDFrame();
+            }
+            positionHUDFrame.setVisible(true);
+            positionHUDPanel.updateGUI();
         }
     }
 }

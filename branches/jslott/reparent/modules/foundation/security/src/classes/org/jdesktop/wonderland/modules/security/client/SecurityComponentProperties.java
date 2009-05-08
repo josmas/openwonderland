@@ -45,8 +45,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
-import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
+//import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
+//import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.security.common.ActionDTO;
 import org.jdesktop.wonderland.modules.security.common.CellPermissions;
@@ -59,9 +59,9 @@ import org.jdesktop.wonderland.modules.security.common.SecurityComponentServerSt
  *
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-@CellComponentProperties
+//@CellComponentProperties
 public class SecurityComponentProperties extends JPanel 
-        implements CellComponentPropertiesSPI
+       /// implements CellComponentPropertiesSPI
 {
     private CellPropertiesEditor editor = null;
     private PermTableModel perms = new PermTableModel();
