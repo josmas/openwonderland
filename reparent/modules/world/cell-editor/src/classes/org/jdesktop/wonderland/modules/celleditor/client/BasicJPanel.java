@@ -85,9 +85,11 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
         Cell cell = editor.getCell();
         CellServerState cellServerState = editor.getCellServerState();
 
-        originalCellName = cellServerState.getName();
-        cellNameTextField.setText(originalCellName);
-        cellIDLabel.setText(cell.getCellID().toString());
+        if (cellServerState != null) {
+            originalCellName = cellServerState.getName();
+            cellNameTextField.setText(originalCellName);
+            cellIDLabel.setText(cell.getCellID().toString());
+        }
     }
 
     /**
