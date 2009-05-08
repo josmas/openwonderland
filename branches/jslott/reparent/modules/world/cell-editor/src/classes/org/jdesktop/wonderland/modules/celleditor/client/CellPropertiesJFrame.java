@@ -56,6 +56,7 @@ import javax.swing.tree.TreePath;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
@@ -65,8 +66,10 @@ import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.messages.CellReparentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerStateRequestMessage;
@@ -742,17 +745,19 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         cellHierarchyTree.removeTreeSelectionListener(treeListener);
 
         // Refresh the Cell hierarchy tree. Expand the tree path around the
-        // selected cell and select it in the tree.
+        // selected cell and select it in the tree, if there is one.
         refreshCells(LoginManager.getPrimary().getPrimarySession());
-        DefaultMutableTreeNode node = cellNodes.get(selectedCell);
-        if (node == null) {
-            logger.warning("Unable to find tree node for selected Cell " + selectedCell);
-            return;
+        if (selectedCell != null) {
+            DefaultMutableTreeNode node = cellNodes.get(selectedCell);
+            if (node == null) {
+                logger.warning("Unable to find tree node for selected Cell " + selectedCell);
+                return;
+            }
+            TreePath path = new TreePath(node.getPath());
+            cellHierarchyTree.expandPath(path);
+            cellHierarchyTree.setSelectionPath(path);
         }
-        TreePath path = new TreePath(node.getPath());
-        cellHierarchyTree.expandPath(path);
-        cellHierarchyTree.setSelectionPath(path);
-
+        
         // Start listening to the tree once again
         cellHierarchyTree.addTreeSelectionListener(treeListener);
     }
@@ -1092,6 +1097,13 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                 parentCellID = ((Cell)userObject).getCellID();
             }
             System.out.println("Parent CELL ID " + parentCellID.toString());
+
+            // Send a message to the server indicating the change in the
+            // parent. We need to send this over the cell edit connection,
+            // rather than the cell connection.
+            CellEditChannelConnection connection = (CellEditChannelConnection)
+                    session.getConnection(CellEditConnectionType.CLIENT_TYPE);
+            connection.send(new CellReparentMessage(cellID, parentCellID));
 
             // Turn off the selected node border and repaint the tree.
             dragOverTreeNode = null;

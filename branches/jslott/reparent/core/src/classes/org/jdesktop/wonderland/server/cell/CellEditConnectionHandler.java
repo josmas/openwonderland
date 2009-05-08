@@ -259,6 +259,8 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             CellID cellID = ((CellReparentMessage)editMessage).getCellID();
             CellID parentID = ((CellReparentMessage)editMessage).getParentCellID();
 
+            logger.warning("REPARENT CELL " + cellID + " " + parentID);
+
             // Figure out the new local coordinates of the cell wrt the new
             // parent
 
