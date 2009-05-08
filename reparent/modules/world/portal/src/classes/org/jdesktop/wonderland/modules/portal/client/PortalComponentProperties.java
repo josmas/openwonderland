@@ -23,8 +23,8 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
-import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
+//import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
+//import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
@@ -34,8 +34,8 @@ import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@CellComponentProperties
-public class PortalComponentProperties extends javax.swing.JPanel implements CellComponentPropertiesSPI {
+//@CellComponentProperties
+public class PortalComponentProperties extends javax.swing.JPanel /*implements CellComponentPropertiesSPI*/ {
 
     private CellPropertiesEditor editor = null;
     

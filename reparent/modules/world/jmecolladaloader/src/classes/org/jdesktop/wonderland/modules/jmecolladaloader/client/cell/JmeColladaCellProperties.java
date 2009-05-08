@@ -19,9 +19,9 @@
 package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
 
 import javax.swing.JPanel;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
+//import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
+//import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
 
@@ -30,8 +30,8 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeCol
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@CellProperties
-public class JmeColladaCellProperties extends javax.swing.JPanel implements CellPropertiesSPI {
+//@CellProperties
+public class JmeColladaCellProperties extends javax.swing.JPanel /*implements CellPropertiesSPI*/ {
     private CellPropertiesEditor editor = null;
 
     /** Creates new form SampleCellProperties */
@@ -92,10 +92,10 @@ public class JmeColladaCellProperties extends javax.swing.JPanel implements Cell
         return "JME Collada Cell";
     }
 
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
-        return this;
-    }
+////    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
+////        this.editor = editor;
+////        return this;
+////    }
 
     public <T extends CellServerState> void updateGUI(T cellServerState) {
         authorTF.setText(((JmeColladaCellServerState)cellServerState).getModelAuthor());

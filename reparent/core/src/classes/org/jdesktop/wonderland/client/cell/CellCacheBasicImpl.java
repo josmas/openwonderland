@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -238,6 +239,61 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         // as they are not shared
         unloadCell(cellId);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void changeParent(CellID cellID, CellID parentCellID, CellTransform cellTransform) {
+        // Find the current parent of the Cell and remove the Cell. If the Cell
+        // does not exist in the cache, then do nothing. It could perhaps be
+        // created on the client at a later date.
+        logger.warning("Changing the parent of Cell with ID " + cellID);
+        logger.warning("The ID of the new parent " + parentCellID);
+        logger.warning("The new transform is " + cellTransform.toString());
+
+        Cell cell = cells.get(cellID);
+        if (cell == null) {
+            logger.warning("Unable to find Cell in Cache with ID " + cellID);
+            return;
+        }
+
+        // First, remove the Cell from its parent, if the parent is not null. If
+        // the parent is null, this means it is a "root" Cell and we need to
+        // remove it from the list of root Cells.
+        Cell parentCell = cell.getParent();
+        if (parentCell != null) {
+            // The removeChild() method will remove from the parent but also
+            // null the parent reference in the child Cell.
+            logger.warning("Removing the Cell from old parent " + parentCell.getCellID());
+            parentCell.removeChild(cell);
+        }
+        else {
+            logger.warning("Removing the Cell from the root");
+            rootCells.remove(cell);
+        }
+
+        // Find the new parent Cell. If the parent Cell ID is -1 (which will
+        // result in no parent Cell being found, it means we wish to add this
+        // to the root.
+        Cell newParentCell = cells.get(parentCellID);
+        if (newParentCell != null) {
+            try {
+                logger.warning("Adding the Cell to new parent " + newParentCell.getCellID());
+                newParentCell.addChild(cell);
+            } catch (MultipleParentException excp) {
+                logger.log(Level.WARNING, "Multiple parents are set for Cell" +
+                        " with ID " + cellID, excp);
+            }
+        }
+        else {
+            logger.warning("Adding the Cell to the root");
+            rootCells.add(cell);
+        }
+
+        // Update the Cell transform with the new local transform
+        cell.setLocalTransform(cellTransform, ChangeSource.REMOTE);
+    }
+
 
     /**
      * Set the cell status, ensuring that the cell passes through any intermediate

@@ -35,7 +35,7 @@ public abstract class CellEditMessage extends Message {
     
     /** Enumeration of kinds of editing */
     public enum EditType {
-        CREATE_CELL, DELETE_CELL, DUPLICATE_CELL
+        CREATE_CELL, DELETE_CELL, DUPLICATE_CELL, REPARENT_CELL
     };
     
     /**
