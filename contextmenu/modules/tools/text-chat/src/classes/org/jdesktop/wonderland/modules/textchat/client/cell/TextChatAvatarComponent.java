@@ -19,19 +19,16 @@ package org.jdesktop.wonderland.modules.textchat.client.cell;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
-import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
-import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
  * Client-side component for avatars to register Context Menu item.
- *
+ * XXX Not used right now XXXX
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class TextChatAvatarComponent extends CellComponent {
 
-    @UsesCellComponent private ContextMenuComponent contextComp = null;
+//    @UsesCellComponent private ContextMenuComponent contextComp = null;
 
     public TextChatAvatarComponent(Cell cell) {
         super(cell);
@@ -44,11 +41,11 @@ public class TextChatAvatarComponent extends CellComponent {
     public void setStatus(CellStatus status) {
         super.setStatus(status);
 
-        if (status == CellStatus.ACTIVE) {
-            contextComp.addMenuItem(new SimpleContextMenuItem("Text Chat...", null, null));
-        }
-        else if (status == CellStatus.DISK) {
-            // XXX remove menu item, but really don't have to....
-        }
+//        if (status == CellStatus.ACTIVE) {
+//            contextComp.addMenuItem(new SimpleContextMenuItem("Text Chat...", null, null));
+//        }
+//        else if (status == CellStatus.DISK) {
+//            // XXX remove menu item, but really don't have to....
+//        }
     }
 }

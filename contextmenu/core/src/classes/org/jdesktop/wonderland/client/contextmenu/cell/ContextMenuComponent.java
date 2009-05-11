@@ -20,62 +20,81 @@ package org.jdesktop.wonderland.client.contextmenu.cell;
 import java.util.HashSet;
 import java.util.Set;
 import org.jdesktop.wonderland.client.cell.*;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 
 /**
  * A cell component which provides cell specific ContextMenu items to the
- * ContextMenu system. Users of this component can add and remove items.
+ * ContextMenu system. Users of this component can add and remove context menu
+ * factories.
  *
  * @author paulby
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class ContextMenuComponent extends CellComponent {
 
-    private Set<ContextMenuItem> menuItems;
+    private Set<ContextMenuFactorySPI> factories;
+    private boolean showStandardMenuItems = true;
 
     public ContextMenuComponent(Cell cell) {
         super(cell);
-        menuItems = new HashSet();
+        factories = new HashSet();
     }
 
     /**
-     * Add a menu item to the context menu for this cell component.
+     * Add a context menu factory for this cell component. If the factory
+     * already exists, this method does nothing.
      *
-     * @param menuItem The menu item to add
-     * @return true if the item was addedd successfully, false if the menu item
-     * already exists on the component
+     * @param factory The context menu factory to add
      */
-    public boolean addMenuItem(ContextMenuItem menuItem) {
-        synchronized (menuItems) {
-            if (menuItems.contains(menuItem) == true) {
-                return false;
-            }
-            menuItems.add(menuItem);
+    public void addContextMenuFactory(ContextMenuFactorySPI factory) {
+        synchronized (factories) {
+            factories.add(factory);
         }
-        return true;
     }
 
     /**
-     * Remove the indicated menu item from the context menu for this cell.
-     * This change will not effect a menu that is currently being displayed,
+     * Remove the gives context menu factory from the cell component. This
+     * change will not effect a menu that is currently being displayed,
      * but will be applied next time the menu is displayed
      * 
-     * @param menuItem The menu item to remove
+     * @param factory The context menu factory to remove
      */
-    public void removeMenuItem(ContextMenuItem menuItem) {
-        synchronized (menuItems) {
-            menuItems.remove(menuItem);
+    public void removeContextMenuFactory(ContextMenuFactorySPI factory) {
+        synchronized (factories) {
+            factories.remove(factory);
         }
     }
 
     /**
-     * Returns an array of context menu items.
+     * Sets whether the context menu should show the stanard menu items, in
+     * addition to any menu items this Cell component adds. By default, this
+     * value is 'true'.
+     *
+     * @param show True to display the standard context menu items, false to
+     * not display the standard context menu items
+     */
+    public void setShowStandardMenuItems(boolean show) {
+        showStandardMenuItems = show;
+    }
+
+    /**
+     * Returns true if the context menu should display the standard menu items
+     * for this Cell, false to not display them.
+     *
+     * @return True to display the standard context menu items
+     */
+    public boolean isShowStandardMenuItems() {
+        return showStandardMenuItems;
+    }
+
+    /**
+     * Returns an array of context menu factories.
      *
      * @return An array of context menu items
      */
-    public ContextMenuItem[] getContextMenuItems() {
-        synchronized (menuItems) {
-            return menuItems.toArray(new ContextMenuItem[]{});
+    public ContextMenuFactorySPI[] getContextMenuFactories() {
+        synchronized (factories) {
+            return factories.toArray(new ContextMenuFactorySPI[] {});
         }
     }
 }
