@@ -155,6 +155,14 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         contextPanel.add(titlePanel);
         contextPanel.invalidate();
 
+        // Look for the context component on the current Cell, we need to find
+        // out whether we want to show the standard menu items.
+        ContextMenuComponent cmc = cell.getComponent(ContextMenuComponent.class);
+        boolean showStandardMenuItems = true;
+        if (cmc != null) {
+            showStandardMenuItems = cmc.isShowStandardMenuItems();
+        }
+
         // Fetch the manager of the context menu and all of the factories
         // that generate menu items.
         ContextMenuManager cmm = ContextMenuManager.getContextMenuManager();
@@ -162,19 +170,24 @@ public class SwingContextMenu implements MenuItemRepaintListener {
 
         // For each of the factories, loop through each of its items and
         // add to the menu
-        for (ContextMenuFactorySPI factory : factoryList) {
-            ContextMenuItem items[] = factory.getContextMenuItems(cell);
-            for (ContextMenuItem item : items) {
-                addContextMenuItem(item, cell);
+        if (showStandardMenuItems == true) {
+            for (ContextMenuFactorySPI factory : factoryList) {
+                ContextMenuItem items[] = factory.getContextMenuItems(cell);
+                for (ContextMenuItem item : items) {
+                    addContextMenuItem(item, cell);
+                }
             }
         }
 
-        // Look for the context component and add its items
-        ContextMenuComponent cmc = cell.getComponent(ContextMenuComponent.class);
+        // Look for the context component and add its items from the registered
+        // factories
         if (cmc != null) {
-            ContextMenuItem items[] = cmc.getContextMenuItems();
-            for (ContextMenuItem item : items) {
-                addContextMenuItem(item, cell);
+            ContextMenuFactorySPI factories[] = cmc.getContextMenuFactories();
+            for (ContextMenuFactorySPI factory : factories) {
+                ContextMenuItem items[] = factory.getContextMenuItems(cell);
+                for (ContextMenuItem item : items) {
+                    addContextMenuItem(item, cell);
+                }
             }
         }
     }

@@ -92,11 +92,15 @@ public class DefaultSceneManagerPolicy implements SceneManagerPolicy {
     
     public boolean isContext(Event event) {
         // If the event is a press of the right-mouse button and there is an
-        // Entity.
+        // Entity. Also check for now modifiers!
         if (event instanceof MouseButtonEvent3D) {
             MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
             return mbe.isPressed() == true && mbe.getButton() == ButtonId.BUTTON3 &&
-                    mbe.getAwtEvent().isShiftDown() == false;
+                    mbe.getAwtEvent().isShiftDown() == false /* &&
+                    mbe.getAwtEvent().isAltDown() == false &&
+                    mbe.getAwtEvent().isAltGraphDown() == false &&
+                    mbe.getAwtEvent().isControlDown() == false &&
+                    mbe.getAwtEvent().isMetaDown() == false */;
         }
         return false;
     }
