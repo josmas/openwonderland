@@ -39,7 +39,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
+import org.jdesktop.wonderland.client.cell.registry.CellRegistry.CellRegistryListener;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.modules.palette.client.dnd.PaletteDragGestureListener;
 
@@ -52,6 +54,7 @@ public class HUDCellPalette extends javax.swing.JFrame {
 
     private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
     private Image noPreviewAvailableImage = null;
+    private CellRegistryListener cellListener = null;
 
     private int index = 0;
     private JPanel palettePanel;
@@ -75,7 +78,6 @@ public class HUDCellPalette extends javax.swing.JFrame {
         palettePanel.setLayout(layout);
         layout.setHgap(0);
         layout.setVgap(0);
-        updatePanelIcons();
 
         viewport.setView(palettePanel);
         width = getWidth(NUMBER_VISIBLE, SIZE, SPACING);
@@ -83,6 +85,38 @@ public class HUDCellPalette extends javax.swing.JFrame {
         mainPanel.add(viewport);
         pack();
         setResizable(false);
+
+        // Create a listener for changes to the list of registered Cell
+        // factories, to be used in setVisible(). When the list changes we
+        // simply do a fresh update of all values.
+        cellListener = new CellRegistryListener() {
+            public void cellRegistryChanged() {
+                // Since this is not happening (necessarily) in the AWT Event
+                // Thread, we should put it in one
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        updatePanelIcons();
+                    }
+                });
+            }
+        };
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        // Update the panel icons. We also want to (de)register a listener for
+        // changes to the list of registered Cell factories any time after we
+        // make it (in)visible.
+        if (visible == true) {
+            updatePanelIcons();
+            CellRegistry.getCellRegistry().addCellRegistryListener(cellListener);
+        }
+        else {
+            CellRegistry.getCellRegistry().removeCellRegistryListener(cellListener);
+        }
+
+        // Finally, ask the superclass to make the dialog visible.
+        super.setVisible(visible);
     }
 
     /** This method is called from within the constructor to
@@ -160,48 +194,45 @@ public class HUDCellPalette extends javax.swing.JFrame {
      * Updates the list of values displayed from the CellRegistry
      */
     private void updatePanelIcons() {
-        // Fetch the registry of cells and for each, get the palette info and
-        // populate the list.
-        CellRegistry registry = CellRegistry.getCellRegistry();
-        Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
-        
-        for (CellFactorySPI cellFactory : cellFactories) {
-            try {
-                // We only add the entry if it has a non-null display name.
-                // Fetch the preview image (use the default if none exists
-                // and add to the panel
-                String name = cellFactory.getDisplayName();
-                Image preview = cellFactory.getPreviewImage();
-                if (name != null) {
-                    cellFactoryMap.put(name, cellFactory);
-                    JPanel label = createJLabel(preview, name, SIZE);
-                    palettePanel.add(label);
-                }
-            } catch (java.lang.Exception excp) {
-                // Just ignore, but log a message
-                Logger logger = Logger.getLogger(CellPalette.class.getName());
-                logger.log(Level.WARNING, "No Display Name for Cell Factory " +
-                        cellFactory, excp);
-            }
-        }
-    }
+        // We synchronized around the cellFactoryMap so that this action does not
+        // interfere with any changes in the map.
+        synchronized (cellFactoryMap) {
+            // First remove all of the entries in the map and the panel
+            cellFactoryMap.clear();
+            palettePanel.removeAll();
 
-    /**
-     * Returns the cell factory given its display name
-     */
-    private CellFactorySPI getCellFactory(String name) {
-        CellRegistry registry = CellRegistry.getCellRegistry();
-        Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
-        for (CellFactorySPI cellFactory : cellFactories) {
-            try {
-                String cellName = cellFactory.getDisplayName();
-                if (cellName.equals(name) == true) {
-                    return cellFactory;
+            // Fetch the registry of cells and for each, get the palette info and
+            // populate the list.
+            CellRegistry registry = CellRegistry.getCellRegistry();
+            Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
+
+            for (CellFactorySPI cellFactory : cellFactories) {
+                try {
+                    // We only add the entry if it has a non-null display name.
+                    // Fetch the preview image (use the default if none exists
+                    // and add to the panel
+                    String name = cellFactory.getDisplayName();
+                    Image preview = cellFactory.getPreviewImage();
+                    if (name != null) {
+                        cellFactoryMap.put(name, cellFactory);
+                        JPanel label = createJLabel(preview, name, SIZE);
+                        palettePanel.add(label);
+                    }
+                } catch (java.lang.Exception excp) {
+                    // Just ignore, but log a message
+                    Logger logger = Logger.getLogger(CellPalette.class.getName());
+                    logger.log(Level.WARNING, "No Display Name for Cell Factory " +
+                            cellFactory, excp);
                 }
-            } catch (java.lang.Exception excp) {
             }
+
+            // Tell the panel to invalide itself and re-do its layout
+            palettePanel.invalidate();
+            palettePanel.repaint();
+            index = 0;
+            int offset = getOffset(index, SIZE, SPACING);
+            palettePanel.scrollRectToVisible(new Rectangle(offset, 0, width, SIZE));
         }
-        return null;
     }
 
     /**
@@ -270,7 +301,7 @@ public class HUDCellPalette extends javax.swing.JFrame {
         DragSource ds = DragSource.getDefaultDragSource();
         PaletteDragGestureListener listener = new PaletteDragGestureListener();
         listener.previewImage = resizedImage;
-        listener.cellFactory = getCellFactory(displayName);
+        listener.cellFactory = cellFactoryMap.get(displayName);
         ds.createDefaultDragGestureRecognizer(label,
                 DnDConstants.ACTION_COPY_OR_MOVE, listener);
 

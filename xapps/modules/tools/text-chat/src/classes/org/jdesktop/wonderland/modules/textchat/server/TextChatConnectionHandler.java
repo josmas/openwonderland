@@ -66,6 +66,7 @@ class TextChatConnectionHandler implements ClientConnectionHandler, Serializable
         String toUser = tcm.getToUserName();
         Set<WonderlandClientID> clientIDs = sender.getClients();
 
+	System.out.println("TEXT CHAT MESSAGE TO " + toUser);
         if (toUser == null || toUser.equals("") == true) {
             clientIDs.remove(clientID);
             sender.send(clientIDs, message);

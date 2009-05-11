@@ -17,6 +17,7 @@
       <path location="${current.dir}/../appbase/build/client/appbase-client.jar"/>
       <path location="${current.dir}/../appbase/build/client/appbase-client-cell.jar"/>
       <path location="${current.dir}/lib/escher-0.2.2.lg.jar"/>
+      <path location="${current.dir}/../content-repository/build/client/contentrepo-client.jar"/>
     </pathconvert>
 
     <property name="module-server.classpath" value="${current.dir}/../appbase/build/server/appbase-server.jar"/>

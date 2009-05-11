@@ -24,7 +24,6 @@ import java.awt.dnd.DragSource;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +31,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
+import org.jdesktop.wonderland.client.cell.registry.CellRegistry.CellRegistryListener;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -58,7 +59,10 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
 
     /* The handler for the drag source for the preview image */
     private PaletteDragGestureListener gestureListener = null;
-    
+
+    /* The listener for changes in the list of registered Cell factories */
+    private CellRegistryListener cellListener = null;
+
     /** Creates new form CellPalette */
     public CellPalette() {
         // Initialize the GUI components
@@ -82,13 +86,37 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         ds.createDefaultDragGestureRecognizer(cellList,
                 DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
 
+        // Create a listener for changes to the list of registered Cell
+        // factories, to be used in setVisible(). When the list changes we
+        // simply do a fresh update of all values.
+        cellListener = new CellRegistryListener() {
+            public void cellRegistryChanged() {
+                // Since this is not happening (necessarily) in the AWT Event
+                // Thread, we should put it in one
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        updateListValues();
+                    }
+                });
+            }
+        };
     }
 
     @Override
-    public void setVisible(boolean b) {
-        // Update the list values and set it visible or not
-        updateListValues();
-        super.setVisible(b);
+    public void setVisible(boolean visible) {
+        // Update the list values. We also want to (de)register a listener for
+        // changes to the list of registered Cell factories any time after we
+        // make it (in)visible.
+        if (visible == true) {
+            updateListValues();
+            CellRegistry.getCellRegistry().addCellRegistryListener(cellListener);
+        }
+        else {
+            CellRegistry.getCellRegistry().removeCellRegistryListener(cellListener);
+        }
+
+        // Finally, ask the superclass to make the dialog visible.
+        super.setVisible(visible);
     }
 
     /** This method is called from within the constructor to
@@ -169,76 +197,64 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
 
 private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createActionPerformed
 
-    // From the selected value, find the proper means to create the object
-    String cellDisplayName = (String) cellList.getSelectedValue();
-    CellFactorySPI factory = getCellFactory(cellDisplayName);
-    CellServerState setup = factory.getDefaultCellServerState(null);
+    // We synchronized around the cellFactoryMap so that this action does not
+    // interfere with any changes in the map.
+    synchronized (cellFactoryMap) {
+        // From the selected value, find the proper means to create the object
+        String cellDisplayName = (String) cellList.getSelectedValue();
+        CellFactorySPI factory = cellFactoryMap.get(cellDisplayName);
+        CellServerState setup = factory.getDefaultCellServerState(null);
 
-    // Create the new cell at a distance away from the avatar
-    try {
-        CellUtils.createCell(setup, NEW_CELL_DISTANCE);
-    } catch (CellCreationException excp) {
-        Logger logger= Logger.getLogger(CellPalette.class.getName());
-        logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +
-                " using palette", excp);
+        // Create the new cell at a distance away from the avatar
+        try {
+            CellUtils.createCell(setup, NEW_CELL_DISTANCE);
+        } catch (CellCreationException excp) {
+            Logger logger = Logger.getLogger(CellPalette.class.getName());
+            logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +
+                    " using palette", excp);
+        }
     }
 }//GEN-LAST:event_createActionPerformed
 
-
-
     /**
-     * Updates the list of values displayed from the CellRegistry
+     * Updates the list of values displayed from the CellRegistry.
      */
     private void updateListValues() {
-        // Fetch the registry of cells and for each, get the palette info and
-        // populate the list.
-        CellRegistry registry = CellRegistry.getCellRegistry();
-        Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
-        List<String> listNames = new LinkedList();
-        
-        // Loop through each cell factory we find. Insert the cell names into
-        // a list. Ignore any factories without a cell name.
-        for (CellFactorySPI cellFactory : cellFactories) {
-            try {
-                String name = cellFactory.getDisplayName();
-                if (name != null) {
-                    listNames.add(name);
-                    cellFactoryMap.put(name, cellFactory);
-                }
-            } catch (java.lang.Exception excp) {
-                // Just ignore, but log a message
-                Logger logger = Logger.getLogger(CellPalette.class.getName());
-                logger.log(Level.WARNING, "No Display Name for Cell Factory " +
-                        cellFactory, excp);
-            }
-        }
+        // Let's synchronized around cellFactoryMap so that any selections do
+        // not interfere with changes in this map
+        synchronized (cellFactoryMap) {
+            // Clear out any existing entries in the map of registered Cells
+            cellFactoryMap.clear();
 
-        // Set the names of the list, first sorting the list in alphabetical
-        // order
-        Collections.sort(listNames);
-        cellList.setListData(listNames.toArray(new String[] {}));
-        cellList.setDragEnabled(true);        
-    }
+            // Fetch the registry of cells and for each, get the palette info and
+            // populate the list.
+            CellRegistry registry = CellRegistry.getCellRegistry();
+            Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
+            List<String> listNames = new LinkedList();
 
-    /**
-     * Returns the cell factory given its display name
-     */
-    private CellFactorySPI getCellFactory(String name) {
-        CellRegistry registry = CellRegistry.getCellRegistry();
-        Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
-        Iterator<CellFactorySPI> it = cellFactories.iterator();
-        int i = 0;
-        while (it.hasNext() == true) {
-            CellFactorySPI cellFactory = it.next();
-            try {
-                String cellName = cellFactory.getDisplayName();
-                if (cellName.equals(name) == true) {
-                    return cellFactory;
+            // Loop through each cell factory we find. Insert the cell names into
+            // a list. Ignore any factories without a cell name.
+            for (CellFactorySPI cellFactory : cellFactories) {
+                try {
+                    String name = cellFactory.getDisplayName();
+                    if (name != null) {
+                        listNames.add(name);
+                        cellFactoryMap.put(name, cellFactory);
+                    }
+                } catch (java.lang.Exception excp) {
+                    // Just ignore, but log a message
+                    Logger logger = Logger.getLogger(CellPalette.class.getName());
+                    logger.log(Level.WARNING, "No Display Name for Cell Factory " +
+                            cellFactory, excp);
                 }
-            } catch (java.lang.Exception excp) {
             }
+
+            // Set the names of the list, first sorting the list in alphabetical
+            // order
+            Collections.sort(listNames);
+            cellList.setListData(listNames.toArray(new String[]{}));
+            cellList.setDragEnabled(true);
         }
-        return null;
     }
     
     /**
@@ -246,28 +262,44 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
      * @param e
      */
     public void valueChanged(ListSelectionEvent e) {
-        // Create a JLabel with the image, resized to be 128x128.
-        String selectedName = (String)cellList.getSelectedValue();
-        if (selectedName != null) {
-            CellFactorySPI cellFactory = cellFactoryMap.get(selectedName);
-            if (cellFactory != null) {
-                Image previewImage = cellFactory.getPreviewImage();
-                if (previewImage != null) {
-                    ImageIcon icon = new ImageIcon(previewImage);
-                    previewLabel.setIcon(icon);
-                    
-                    // Pass the necessary information for drag and drop
-                    gestureListener.cellFactory = cellFactory;
-                    gestureListener.previewImage = previewImage;
-                }
-                else {
-                    ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
-                    previewLabel.setIcon(icon);
 
-                    // Pass the necessary information for drag and drop
-                    gestureListener.cellFactory = cellFactory;
-                    gestureListener.previewImage = noPreviewAvailableImage;
-                }
+        // We synchronized around the cellFactoryMap so that this action does not
+        // interfere with any changes in the map.
+        synchronized (cellFactoryMap) {
+
+            // Fetch the display name of the cell selected. If it happens to
+            // be null (not sure why this would happen), then simply return.
+            String selectedName = (String) cellList.getSelectedValue();
+            if (selectedName == null) {
+                return;
+            }
+
+            // Next, fetch the Cell factory associated with the display name.
+            // If it happens to be null (not sure why this would happen), then
+            // simply return.
+            CellFactorySPI cellFactory = cellFactoryMap.get(selectedName);
+            if (cellFactory == null) {
+                return;
+            }
+
+            // Otherwise, update the preview image, if one exists, otherwise
+            // use the default image.
+            Image previewImage = cellFactory.getPreviewImage();
+            if (previewImage != null) {
+                ImageIcon icon = new ImageIcon(previewImage);
+                previewLabel.setIcon(icon);
+
+                // Pass the necessary information for drag and drop
+                gestureListener.cellFactory = cellFactory;
+                gestureListener.previewImage = previewImage;
+            }
+            else {
+                ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
+                previewLabel.setIcon(icon);
+
+                // Pass the necessary information for drag and drop
+                gestureListener.cellFactory = cellFactory;
+                gestureListener.previewImage = noPreviewAvailableImage;
             }
         }
     }
