@@ -1,0 +1,55 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
+ */
+package org.jdesktop.wonderland.modules.securitysession.auth.web;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import org.jdesktop.wonderland.common.login.AuthenticationInfo;
+import org.jdesktop.wonderland.front.admin.ServerInfo;
+import org.jdesktop.wonderland.utils.Constants;
+
+/**
+ *
+ * @author jkaplan
+ */
+public class SecuritySetupContextListener implements ServletContextListener {
+    private static final String SECURITY_PATH =
+            "security-session-auth/security-session-auth/identity";
+
+    public void contextInitialized(ServletContextEvent evt) {
+        // get the URL for the web server
+        String serverUrl = System.getProperty(Constants.WEBSERVER_URL_PROP);
+        serverUrl += SECURITY_PATH;
+        
+        // set the login type and URL
+        AuthenticationInfo authInfo = new AuthenticationInfo(
+                                       AuthenticationInfo.Type.WEB, serverUrl);
+        
+        System.out.println("Setting auth URL: " + serverUrl);
+
+        ServerInfo.getServerDetails().setAuthInfo(authInfo);
+
+        // set the session manager to our internal session manager
+        System.setProperty("session.manager.class",
+            "org.jdesktop.wonderland.modules.securitysession.auth.weblib.AuthSessionManagerImpl");
+    }
+
+    public void contextDestroyed(ServletContextEvent evt) {
+        // nothing to do here
+    }
+}
