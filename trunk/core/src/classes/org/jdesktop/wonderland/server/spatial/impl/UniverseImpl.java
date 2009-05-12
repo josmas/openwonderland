@@ -115,7 +115,11 @@ public class UniverseImpl implements Universe {
 
     public void revalidateCell(CellID id) {
         SpatialCell cell = getSpatialCell(id);
-        cell.revalidate();
+        if (cell == null) {
+            logger.warning("Attempt to revalidate non-existant cell " + id);
+        } else {
+            cell.revalidate();
+        }
     }
 
     public void removeCell(CellID id) {
