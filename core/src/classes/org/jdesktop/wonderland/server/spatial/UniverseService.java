@@ -610,7 +610,12 @@ public class UniverseService extends AbstractService implements UniverseManager 
                     change = changeList.take();
                     change.run();
                 } catch (InterruptedException ex) {
-
+                    // if the thread is interrupted, exit
+                    break;
+                } catch (Throwable t) {
+                    // for any other exception, print a warning and continue.
+                    logger.logThrow(Level.WARNING, t, "[UniverseService] " +
+                                    "Unexpected error in change thread", t);
                 }
             }
         }
