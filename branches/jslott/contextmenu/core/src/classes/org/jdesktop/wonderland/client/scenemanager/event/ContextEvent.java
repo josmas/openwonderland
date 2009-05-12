@@ -57,8 +57,8 @@ public class ContextEvent extends SceneEvent {
     public MouseEvent getMouseEvent() {
         return mouseEvent;
     }
-    
-    /** 
+
+    /**
      * {@inheritDoc}
      * <br>
      * If event is null, a new event of this class is created and returned.

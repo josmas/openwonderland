@@ -64,6 +64,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.Avatar
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 
 /**
  * A component that provides audio participant control
@@ -130,7 +131,7 @@ public class AudioParticipantComponent extends CellComponent implements
 
             // Create a new ContextMenuFactory for the Volume... control
             ContextMenuFactorySPI factory = new ContextMenuFactorySPI() {
-                public ContextMenuItem[] getContextMenuItems(Cell cell) {
+                public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
                     return new ContextMenuItem[] {
                         new SimpleContextMenuItem("Volume", l)
                     };

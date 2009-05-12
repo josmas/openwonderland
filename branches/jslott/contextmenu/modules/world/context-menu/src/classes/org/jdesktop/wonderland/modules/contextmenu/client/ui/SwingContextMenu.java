@@ -133,7 +133,7 @@ public class SwingContextMenu implements MenuItemRepaintListener {
      * would be repaintMenuItem() which may try to access the context menu
      * before it has been created.
      */
-    private synchronized void initializeMenu(Cell cell) {
+    private synchronized void initializeMenu(ContextEvent event, Cell cell) {
         // Loop through any menu item and remove the listener
         for (Map.Entry<JMenuItem, ContextMenuItem> entry : menuItemMap.entrySet()) {
             entry.getValue().removeMenuItemRepaintListener(this);
@@ -172,7 +172,7 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         // add to the menu
         if (showStandardMenuItems == true) {
             for (ContextMenuFactorySPI factory : factoryList) {
-                ContextMenuItem items[] = factory.getContextMenuItems(cell);
+                ContextMenuItem items[] = factory.getContextMenuItems(event);
                 for (ContextMenuItem item : items) {
                     addContextMenuItem(item, cell);
                 }
@@ -184,7 +184,7 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         if (cmc != null) {
             ContextMenuFactorySPI factories[] = cmc.getContextMenuFactories();
             for (ContextMenuFactorySPI factory : factories) {
-                ContextMenuItem items[] = factory.getContextMenuItems(cell);
+                ContextMenuItem items[] = factory.getContextMenuItems(event);
                 for (ContextMenuItem item : items) {
                     addContextMenuItem(item, cell);
                 }
@@ -357,22 +357,12 @@ public class SwingContextMenu implements MenuItemRepaintListener {
             else if (event instanceof ContextEvent) {
                 // Show the context menu, initialize the menu if this is the
                 // first time
-                Entity entity = null;
-                List<Entity> entityList = ((ContextEvent)event).getEntityList();
-                if (entityList != null && entityList.isEmpty() == false) {
-                    entity = entityList.get(0);
-                }
-                
-                Cell cell = null;
-                if (entity != null) {
-                    cell = SceneManager.getCellForEntity(entity);
-                }
+                Cell cell = ((ContextEvent)event).getPrimaryCell();
                 if (cell == null) {
                     return;
                 }
-
-                initializeMenu(cell);
                 ContextEvent ce = (ContextEvent) event;
+                initializeMenu(ce, cell);
                 showContextMenu(ce.getMouseEvent(), cell);
             }
         }
