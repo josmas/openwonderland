@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -96,7 +97,7 @@ public class SampleCell extends Cell {
      * Context menu factory for the Sample menu item
      */
     class SampleContextMenuFactory implements ContextMenuFactorySPI {
-        public ContextMenuItem[] getContextMenuItems(Cell cell) {
+        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
             return new ContextMenuItem[] {
                         new SimpleContextMenuItem("Sample", null,
                                 new SampleContextMenuListener())
