@@ -25,9 +25,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
-import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.xremwin.common.registry.XAppRegistryItem;
 
 /**
@@ -232,8 +230,8 @@ public class EditXAppsJFrame extends javax.swing.JFrame {
             // Register the new app in the Cell registry. The listener mechanism
             // on CellRegistry will notify everyone else of the update.
             CellRegistry registry = CellRegistry.getCellRegistry();
-            XAppCellFactory factory = new XAppCellFactory(item.getAppName(),
-                    item.getCommand());
+            appName = appName + " (User)";
+            XAppCellFactory factory = new XAppCellFactory(appName, command);
             registry.registerCellFactory(factory);
         }
     }//GEN-LAST:event_userAddButtonActionPerformed
@@ -247,12 +245,9 @@ public class EditXAppsJFrame extends javax.swing.JFrame {
             return;
         }
 
-        // Remove it from the Cell Registry for this session.
+        // Fetch the selected appName and command from the table row
         String appName = (String)xAppTableModel.getValueAt(row, 0);
         String command = (String)xAppTableModel.getValueAt(row, 1);
-        CellRegistry registry = CellRegistry.getCellRegistry();
-        XAppCellFactory factory = new XAppCellFactory(appName, command);
-        registry.unregisterCellFactory(factory);
 
         // Remove it permenantly from the user's repository
         XAppRegistryItem item = new XAppRegistryItem(appName, command);
@@ -265,6 +260,13 @@ public class EditXAppsJFrame extends javax.swing.JFrame {
 
         // Remove it from the table model too.
         xAppTableModel.removeItem(item);
+
+        // Remove it from the Cell registry, make sure we add " (User)" to the
+        // app name, since that is how it appears in the Cell registry
+        CellRegistry registry = CellRegistry.getCellRegistry();
+        appName = appName + " (User)";
+        XAppCellFactory factory = new XAppCellFactory(appName, command);
+        registry.unregisterCellFactory(factory);
     }//GEN-LAST:event_userRemoveButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -23,14 +23,11 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
-import org.jdesktop.wonderland.modules.xremwin.client.registry.EditXAppsJFrame;
 import org.jdesktop.wonderland.modules.xremwin.client.registry.XAppCellFactory;
 import org.jdesktop.wonderland.modules.xremwin.client.registry.XAppRegistryItemUtils;
 import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwServerState;
@@ -76,8 +73,10 @@ public class RunXAppCellFactory implements CellFactorySPI {
                         "user's local x-apps store", ex);
             }
 
-            // Add the item immediately to this session's cell palette.
-            XAppCellFactory factory = new XAppCellFactory(appName, command);
+            // Add the item immediately to this session's cell palette. Make
+            // sure we add the " (User)" to the app name for the palette
+            String tmpAppName = appName + " (User)";
+            XAppCellFactory factory = new XAppCellFactory(tmpAppName, command);
             CellRegistry.getCellRegistry().registerCellFactory(factory);
         }
 

@@ -57,11 +57,7 @@ public class RunXAppDialog extends javax.swing.JDialog {
 
         appNameLabel.setText("App Name:");
 
-        appNameTextField.setText("jTextField1");
-
         commandLabel.setText("Command");
-
-        commandTextField.setText("jTextField2");
 
         rememberCheckBox.setText("Add entry to the Cell Palette");
 

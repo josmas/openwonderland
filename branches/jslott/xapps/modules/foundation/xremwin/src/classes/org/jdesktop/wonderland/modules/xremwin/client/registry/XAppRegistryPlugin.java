@@ -39,13 +39,25 @@ public class XAppRegistryPlugin extends BaseClientPlugin {
     protected void activate() {
         CellRegistry registry = CellRegistry.getCellRegistry();
 
-        // Fetch the list of X Apps registered on the system and register them
+        // Fetch the list of X Apps registered for the user and register them
         // with the Cell Registry
         List<XAppRegistryItem> userItems =
                 XAppRegistryItemUtils.getUserXAppRegistryItemList();
         for (XAppRegistryItem item : userItems) {
-            XAppCellFactory factory = new XAppCellFactory(item.getAppName(),
-                    item.getCommand());
+            String appName = item.getAppName() + " (User)";
+            String command = item.getCommand();
+            XAppCellFactory factory = new XAppCellFactory(appName, command);
+            registry.registerCellFactory(factory);
+        }
+
+        // Fetch the list of X Apps registered for the system and register them
+        // with the Cell Registry
+        List<XAppRegistryItem> systemItems =
+                XAppRegistryItemUtils.getSystemXAppRegistryItemList();
+        for (XAppRegistryItem item : systemItems) {
+            String appName = item.getAppName() + " (System)";
+            String command = item.getCommand();
+            XAppCellFactory factory = new XAppCellFactory(appName, command);
             registry.registerCellFactory(factory);
         }
     }
