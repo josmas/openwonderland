@@ -83,9 +83,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="appNameTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="jTextField1"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="commandLabel">
       <Properties>
@@ -93,9 +90,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="commandTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="jTextField2"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="rememberCheckBox">
       <Properties>

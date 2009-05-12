@@ -131,11 +131,11 @@ public class XAppRegistryItemUtils {
                 XAppRegistryItem item = parseResource(resource);
                 itemList.add(item);
             } catch (ContentRepositoryException excp) {
-                logger.log(Level.WARNING, "Unable to read entry in x-apps" +
-                        node.getPath());
+                logger.log(Level.WARNING, "Unable to read entry in x-apps: " +
+                        node.getPath(), excp);
             } catch (JAXBException excp) {
-                logger.log(Level.WARNING, "Unable to parse entry in x-apps" +
-                        " x-apps " + node.getPath());
+                logger.log(Level.WARNING, "Unable to parse entry in x-apps: " +
+                        node.getPath(), excp);
             }
         }
         return itemList;
@@ -215,9 +215,6 @@ public class XAppRegistryItemUtils {
 
         ContentCollection sysRoot = getSystemContentRepository();
         ContentCollection dir = (ContentCollection)sysRoot.getChild("x-apps");
-//        if (dir == null) {
-//            dir = (ContentCollection)sysRoot.createChild("x-apps", Type.COLLECTION);
-//        }
         return dir;
     }
 
@@ -234,9 +231,7 @@ public class XAppRegistryItemUtils {
         ContentCollection userRoot = getUserContentRepository();
         ContentCollection dir = (ContentCollection)userRoot.getChild("x-apps");
         if (dir == null) {
-            System.out.println("CREATING x-apps CHILD....");
             dir = (ContentCollection)userRoot.createChild("x-apps", Type.COLLECTION);
-            System.out.println("DIR = " + dir);
         }
         return dir;
     }
@@ -250,7 +245,6 @@ public class XAppRegistryItemUtils {
     private static ContentCollection getUserContentRepository()
             throws ContentRepositoryException {
 
-        ServerSessionManager session = LoginManager.getPrimary();
         ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
         return registry.getLocalRepository();
     }
