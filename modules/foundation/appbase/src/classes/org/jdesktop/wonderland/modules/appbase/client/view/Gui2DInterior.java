@@ -45,22 +45,6 @@ public class Gui2DInterior extends Gui2D {
 
     private static final Logger logger = Logger.getLogger(Gui2DInterior.class.getName());
 
-    // We need to call this method reflectively because it isn't available in Java 5
-    // BTW: we don't support Java 5 on Linux, so this is okay.
-    private static boolean isLinux = System.getProperty("os.name").equals("Linux");
-    private static Method isAWTLockHeldByCurrentThreadMethod;
-
-    static {
-        if (isLinux) {
-            try {
-                Class awtToolkitClass = Class.forName("sun.awt.SunToolkit");
-                isAWTLockHeldByCurrentThreadMethod =
-                        awtToolkitClass.getMethod("isAWTLockHeldByCurrentThread");
-            } catch (ClassNotFoundException ex) {
-            } catch (NoSuchMethodException ex) {
-            }
-        }
-    }
     /** A listener for keys pressed and released */
     protected InteriorKeyListener keyListener;
 
@@ -110,6 +94,11 @@ public class Gui2DInterior extends Gui2D {
      */
     protected class InteriorMouseListener extends Gui2D.MouseListener {
 
+        public InteriorMouseListener () {
+            // Tell the processor component super class that we are going to use some swing UI in commitEvent
+            setSwingSafe(true);
+        }
+
         @Override
         public boolean propagatesToParent (Event event) {
             return false;
@@ -146,59 +135,26 @@ public class Gui2DInterior extends Gui2D {
             logger.fine("Interior mouse commitEvent, event = " + event);
             MouseEvent3D me3d = (MouseEvent3D) event;
 
-            // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
-            // In order to avoid deadlock with any threads which are already holding the AWT lock and which
-            // want to acquire the lock on the dirty rectangle so they can draw (e.g Embedded Swing threads)
-            // we need to temporarily release the AWT lock before we lock the dirty rectangle and then reacquire
-            // the AWT lock afterward.
-            GLContext glContext = null;
-            if (isAWTLockHeldByCurrentThreadMethod != null) {
-                try {
-                    Boolean ret = (Boolean) isAWTLockHeldByCurrentThreadMethod.invoke(null);
-                    if (ret.booleanValue()) {
-                        glContext = GLContext.getCurrent();
-                        glContext.release();
-                    }
-                } catch (Exception ex) {
-                }
-            }
-
             // When user has control all events over the interior are sent to the app.
             // First send it to the app's view for conversion to a 2D event.
-            try {
-
-                /*
-                System.err.println("view = " + view);
-                System.err.println("view.getWindow() = " + view.getWindow());
-                System.err.println("view.getWindow().getApp() = " + view.getWindow().getApp());
-                System.err.println("view.getWindow().getApp().getControlArb() = " + 
-                                   view.getWindow().getApp().getControlArb());
-                */
-
-                if (view != null) {
-                    if (view.getWindow().getApp().getControlArb().hasControl()) {
-                        view.deliverEvent(view.getWindow(), me3d);
-                        return;
-                    }
-                }
-
-                MouseEvent me = (MouseEvent) me3d.getAwtEvent();
-
-                // Handle miscellaneous events over interior when user doesn't have control
-                Action action = determineIfMiscAction(me, me3d);
-                if (action != null) {
-                    performMiscAction(action, me, me3d);
+            
+            if (view != null) {
+                if (view.getWindow().getApp().getControlArb().hasControl()) {
+                    view.deliverEvent(view.getWindow(), me3d);
                     return;
                 }
-
-                super.commitEvent(event);
-
-            } finally {
-                // Linux-specific workaround: Reacquire the lock if necessary.
-                if (glContext != null) {
-                    glContext.makeCurrent();
-                }
             }
+
+            MouseEvent me = (MouseEvent) me3d.getAwtEvent();
+
+            // Handle miscellaneous events over interior when user doesn't have control
+            Action action = determineIfMiscAction(me, me3d);
+            if (action != null) {
+                performMiscAction(action, me, me3d);
+                return;
+            }
+
+            super.commitEvent(event);
         }
     }
 
@@ -233,6 +189,11 @@ public class Gui2DInterior extends Gui2D {
      */
     protected class InteriorKeyListener extends EventClassListener {
 
+        public InteriorKeyListener () {
+            // Tell the processor component super class that we are going to use some swing UI in commitEvent
+            setSwingSafe(true);
+        }
+
         @Override
         public boolean propagatesToParent (Event event) {
             return false;
@@ -266,11 +227,21 @@ public class Gui2DInterior extends Gui2D {
             KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
 
             if (ke3d.isPressed() &&
-                    ke.getKeyCode() == KeyEvent.VK_F12 &&
-                    (ke.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+                ke.getKeyCode() == KeyEvent.VK_F12 &&
+                (ke.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
                 ControlArb.releaseControlAll();
                 return;
             }
+
+            /* For ortho subwindow debugging
+            if (ke3d.isPressed() &&
+                ke.getKeyCode() == KeyEvent.VK_F11 &&
+                (ke.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+                System.err.println("******* toggleortho");
+                view.getWindow().toggleOrtho();
+                return;
+            }
+            */
 
             // Note: currently no special GUI processing is needed for key events
             // so they are all just sent to the app group if it has control
