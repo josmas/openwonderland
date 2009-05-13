@@ -24,6 +24,9 @@ import java.awt.Component;
 import java.awt.Color;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
@@ -63,6 +66,19 @@ public class FrameHeaderSwing
     /** Whether the frame is visible. */
     private boolean visible;
 
+    /* The view of this header in the cell displayer. */
+    private View2DEntity frameView;
+
+    /** 
+     * An event listener which accepts (consumes) events for this WindowSwing if 
+     * it has control. 
+     *
+     * Note that consumed events are sent directly to Swing,
+     * *NOT* to the compute/commitEvent methods of this listener!
+     * There is special code in InputPicker to make this happen.
+     */
+     private EventListenerBaseImpl consumingListener = new ConsumeOnControlListener();
+
     /**
      * Create a new instance of FrameHeaderSwing.
      *
@@ -93,8 +109,21 @@ public class FrameHeaderSwing
         // to the control arb of the application and they will look like they
         // are coming from the interior of the main window's view. We don't want this.
         View2DDisplayer displayer = view.getDisplayer();
-        View2D frameView = headerWindow.getView(displayer);
-        ((View2DEntity)frameView).disableGUI();
+        frameView = (View2DEntity) headerWindow.getView(displayer);
+        frameView.disableGUI();
+
+        // Arrange for InputPicker to send the event to swing when the app has control.
+        consumingListener.addToEntity(frameView.getEntity());
+    }
+
+    private class ConsumeOnControlListener extends EventListenerBaseImpl {
+        public boolean consumesEvent (Event event) {
+            return app.getControlArb().hasControl();
+
+        }
+        public boolean propagatesToParent (Event event) {
+            return false;
+        }
     }
 
     /**
@@ -112,6 +141,12 @@ public class FrameHeaderSwing
         }
 
         headerPanel.removeMouseListener(this);
+
+        Entity viewEntity = getEntity();
+        if (viewEntity != null) {
+            consumingListener.removeFromEntity(viewEntity);
+        }
+
         view = null;
     }
 
@@ -211,6 +246,11 @@ public class FrameHeaderSwing
     public void	mousePressed(MouseEvent e) {
     }
     public void mouseReleased(MouseEvent e) {
+    }
+
+    public void close () {
+        Window2D viewWindow = view.getWindow();
+        viewWindow.closeUser();
     }
 }
 

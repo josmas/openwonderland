@@ -49,6 +49,9 @@ public abstract class App2D {
 
     private static final Logger logger = Logger.getLogger(App2D.class.getName());
 
+    /** All of the apps which have been created by this client. */
+    private static LinkedList<App2D> apps = new LinkedList<App2D>();
+
     /** The global default appbase View2DCell factory.*/
     private static View2DCellFactory view2DCellFactory;
 
@@ -75,6 +78,13 @@ public abstract class App2D {
 
     /** The set of all views of the windows of this app. */
     private View2DSet viewSet = new View2DSet();
+
+    // Register the appbase shutdown hook
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() { App2D.shutdown(); }
+        });
+    }
 
     /**
      * Set the default View2DCell factory to be used for all apps in this client. (Called by 
@@ -119,12 +129,17 @@ public abstract class App2D {
         this.controlArb = controlArb;
         this.pixelScale = pixelScale;
         focusEntity = new Entity("App focus entity for app " + getName());
+
+        synchronized(apps) {
+            apps.add(this);
+        }
     }
 
     /**
      * Deallocate resources.
      */
     public void cleanup() {
+        viewSet.cleanup();
         if (controlArb != null) {
             controlArb.cleanup();
             controlArb = null;
@@ -138,7 +153,6 @@ public abstract class App2D {
         }
         windows.clear();
         pixelScale = null;
-        viewSet.cleanup();
     }
 
     /** 
@@ -284,5 +298,17 @@ public abstract class App2D {
     @Override
     public String toString () {
         return getName();
+    }
+
+    /** Executed by the JVM shutdown process. */
+    private static void shutdown () {
+        logger.warning("Shutting down app base");
+
+        synchronized (apps) {
+            for (App2D app : apps) {
+                app.cleanup();
+            }
+        }
+        apps.clear();
     }
 }

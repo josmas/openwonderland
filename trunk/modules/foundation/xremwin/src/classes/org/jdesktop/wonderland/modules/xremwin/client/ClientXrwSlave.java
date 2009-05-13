@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.Proto.ServerMessageType;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetPopupParentMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.SetWindowTitleMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.UserNameMsgArgs;
+import org.jdesktop.wonderland.modules.xremwin.client.Proto.SlaveCloseWindowMsgArgs;
 
 /**
  * The slave version of the Xremwin protocol client. This communicates with an
@@ -42,6 +43,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
     private SetWindowTitleMsgArgs setWindowTitleMsgArgs = new SetWindowTitleMsgArgs();
     private SetPopupParentMsgArgs setPopupParentMsgArgs = new SetPopupParentMsgArgs();
     private UserNameMsgArgs userNameMsgArgs = new UserNameMsgArgs();
+    private SlaveCloseWindowMsgArgs slaveCloseWindowMsgArgs = new SlaveCloseWindowMsgArgs();
 
     /**
      * Create a new instance of ClientXrwSlave.
@@ -92,6 +94,10 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
                 ((ServerProxySlave) serverProxy).getData(userNameMsgArgs);
                 return userNameMsgArgs;
 
+            case SLAVE_CLOSE_WINDOW:
+                ((ServerProxySlave) serverProxy).getData(slaveCloseWindowMsgArgs);
+                return slaveCloseWindowMsgArgs;
+
             default:
                 return super.readMessageArgs(msgType);
         }
@@ -133,6 +139,12 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
             case CONTROLLING_USER_NAME:
                 ((ControlArbXrw)controlArb).setController(userNameMsgArgs.userName);
                 break;
+
+            case SLAVE_CLOSE_WINDOW:
+                // All slaves receive this when the window closes. Don't need to do anything
+                // because the cell is about to go away.
+                break;
+
 
             default:
                 super.processMessage(msgType);
