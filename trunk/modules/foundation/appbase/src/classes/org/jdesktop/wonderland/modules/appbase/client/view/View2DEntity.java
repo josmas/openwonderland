@@ -1182,9 +1182,11 @@ public abstract class View2DEntity implements View2D {
         }
 
         // Lastly, inform the window's surface of the view visibility.
-        DrawingSurface surface = window.getSurface();
-        if (surface != null) {
-            surface.setViewIsVisible(this, isActuallyVisible());
+        if (window != null) {
+            DrawingSurface surface = window.getSurface();
+            if (surface != null) {
+                surface.setViewIsVisible(this, isActuallyVisible());
+            }
         }
     }
 
@@ -1631,18 +1633,9 @@ public abstract class View2DEntity implements View2D {
 
 
                  sgChanges.clear();
-                 synchronized (sgChanges) {
-                     sgChanges.notifyAll();
-                 }
              }
-         }, null);
-
-         // Wait until all changes are performed
-         synchronized (sgChanges) {
-             while (sgChanges.size() > 0) {
-                 try { sgChanges.wait(); } catch (InterruptedException ex) {}
-             }
-         }
+         }, null, true);
+         // NOTE: it is critical that this render updater runs to completion before anything else happens
     }
 
     /** {@inheritDoc} */
