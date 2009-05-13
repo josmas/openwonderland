@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 
 /**
@@ -1505,4 +1506,39 @@ public abstract class Window2D {
 
     protected void repaint() {
     }
+
+    /* For ortho subwindows debug 
+    private boolean ortho = false;
+
+    public void toggleOrtho () {
+        ortho = ! ortho;
+
+        // Get first view, should be the cell view
+        Iterator<View2D> it = getViews();
+        View2DEntity view = (View2DEntity) it.next();
+
+        if (ortho) {
+            
+            // In this test, the view in the ortho plane is at a fixed location.
+            view.setLocationOrtho(new Vector2f(500f, 300f), false);
+            
+            // Test
+            //view.setPixelScaleOrtho(2.0f, 2.0f);
+            //view.setPixelScaleOrtho(0.5f, 0.5f);
+
+            // Move the window view into the ortho plane
+            System.err.println("Move view into ortho " + view);
+            view.setOrtho(true, false);
+
+        } else {
+
+            // Move the window view into the cell
+            System.err.println("Move view out of ortho " + view);
+            view.setOrtho(false, false);
+        }
+
+        // Now make it all happen
+        view.update();
+    }
+    */
 }
