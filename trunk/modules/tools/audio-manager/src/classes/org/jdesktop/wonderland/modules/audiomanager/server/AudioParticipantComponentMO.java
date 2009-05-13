@@ -262,6 +262,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
 	Player player = vm.getPlayer(callId);
 
+	AudioGroup secretAudioGroup;
+
 	switch (code) {
 	case CallStatus.ESTABLISHED:
 	    if (player == null) {
@@ -291,11 +293,13 @@ public class AudioParticipantComponentMO extends CellComponentMO
 		return;
 	    }
 
+	    secretAudioGroup = getSecretAudioGroup(player);
+
 	    if (playerIsChatting(player)) {
-		VoiceChatHandler.getInstance().setSpeaking(player, cellID, true);
+		VoiceChatHandler.getInstance().setSpeaking(player, cellID, true, secretAudioGroup);
 	    }
 
-	    if (inSecretChat(player)) {
+	    if (secretAudioGroup != null) {
 		return;
 	    }
 
@@ -310,11 +314,13 @@ public class AudioParticipantComponentMO extends CellComponentMO
 		return;
 	    }
 
+	    secretAudioGroup = getSecretAudioGroup(player);
+
 	    if (playerIsChatting(player)) {
-		VoiceChatHandler.getInstance().setSpeaking(player, cellID, false);
+		VoiceChatHandler.getInstance().setSpeaking(player, cellID, false, secretAudioGroup);
 	    }
 
-	    if (inSecretChat(player)) {
+	    if (secretAudioGroup != null) {
 		return;
 	    }
 
@@ -396,18 +402,18 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	return false;
     }
 
-    private boolean inSecretChat(Player player) {
+    private AudioGroup getSecretAudioGroup(Player player) {
 	AudioGroup[] audioGroups = player.getAudioGroups();
 
 	for (int i = 0; i < audioGroups.length; i++) {
             AudioGroupPlayerInfo info = audioGroups[i].getPlayerInfo(player);
 
             if (info.chatType == AudioGroupPlayerInfo.ChatType.SECRET) {
-		return true;
+		return audioGroups[i];
 	    }
 	}
 
-	return false;
+	return null;
     }
 
     static class MyTransformChangeListener implements TransformChangeListenerSrv {

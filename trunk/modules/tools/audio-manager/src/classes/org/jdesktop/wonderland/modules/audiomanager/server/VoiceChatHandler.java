@@ -134,12 +134,16 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     }
 
     /*
-     * Someone is in an audio group and has privacy set to secret.
-     * Only the  members of that group should get speaking indications.
+     * members of the group should get speaking indications no matter where they are.
      */
-    public void setSpeaking(Player player, CellID cellID, boolean isSpeaking) {
+    public void setSpeaking(Player player, CellID cellID, boolean isSpeaking, AudioGroup secretAudioGroup) {
 	WonderlandClientSender sender = 
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
+
+	if (secretAudioGroup != null) {
+	    setSpeaking(sender, secretAudioGroup.getId(), cellID, isSpeaking);    
+	    return;
+	}
 
 	AudioGroup[] audioGroups = player.getAudioGroups();
 
@@ -496,6 +500,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
 	logger.fine("Player added " + player + " group " + audioGroup);
+	System.out.println("Player added " + player + " group " + audioGroup);
 
 	WonderlandClientSender sender = 
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
