@@ -174,7 +174,7 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
                     info.isMuted);
         }
 
-	Arrays.sort(userData, String.CASE_INSENSITIVE_ORDER);
+	SortUsers.sortUsers(userData);
         setUserList(userData);
     }
 

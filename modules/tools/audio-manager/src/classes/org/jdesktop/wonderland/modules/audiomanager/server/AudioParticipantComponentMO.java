@@ -327,10 +327,10 @@ public class AudioParticipantComponentMO extends CellComponentMO
 		return;
 	    }
 
-	    ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+	    AudioGroup[] audioGroups = player.getAudioGroups();
 
-	    for (AudioGroup group: audioGroups) {
-		group.removePlayer(player);
+	    for (int i = 0; i < audioGroups.length; i++) {
+		audioGroups[i].removePlayer(player);
 	    }
             break;
 	  
@@ -383,11 +383,11 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
 	VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
 
-	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+	AudioGroup[] audioGroups = player.getAudioGroups();
 
-	for (AudioGroup audioGroup : audioGroups) {
-	    if (audioGroup.equals(parameters.livePlayerAudioGroup) == false &&
-	    	    audioGroup.equals(parameters.stationaryPlayerAudioGroup) == false) {
+	for (int i = 0; i < audioGroups.length; i++) {
+	    if (audioGroups[i].equals(parameters.livePlayerAudioGroup) == false &&
+	    	    audioGroups[i].equals(parameters.stationaryPlayerAudioGroup) == false) {
 
 		return true;
 	    }
@@ -397,10 +397,10 @@ public class AudioParticipantComponentMO extends CellComponentMO
     }
 
     private boolean inSecretChat(Player player) {
-	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+	AudioGroup[] audioGroups = player.getAudioGroups();
 
-        for (AudioGroup audioGroup : audioGroups) {
-            AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
+	for (int i = 0; i < audioGroups.length; i++) {
+            AudioGroupPlayerInfo info = audioGroups[i].getPlayerInfo(player);
 
             if (info.chatType == AudioGroupPlayerInfo.ChatType.SECRET) {
 		return true;

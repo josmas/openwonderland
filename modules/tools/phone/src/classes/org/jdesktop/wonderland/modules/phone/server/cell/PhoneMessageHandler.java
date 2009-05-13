@@ -106,16 +106,10 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
     private static final Logger logger =
         Logger.getLogger(PhoneMessageHandler.class.getName());
      
-    private ManagedReference<PhoneStatusListener> phoneStatusListenerRef;
-
     private int callNumber = 0;
 
     public PhoneMessageHandler(PhoneCellMO phoneCellMO) {
 	super(phoneCellMO);
-
-	PhoneStatusListener phoneStatusListener = new PhoneStatusListener(phoneCellMO);
-	
-	phoneStatusListenerRef =  AppContext.getDataManager().createReference(phoneStatusListener);
 
         ChannelComponentMO channelComponentMO = getChannelComponent();
 
@@ -241,6 +235,9 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 	    } catch (IOException e) {
 		logger.warning("Unable to play treatment to " + softphoneCall + ":  "
 		    + e.getMessage());
+		sender.send(clientID, new CallEndedResponseMessage(
+                    phoneCellMO.getCellID(), listing, true, "Softphone is not connected!"));
+                return;
 	    }
 
 	    return;
@@ -255,9 +252,6 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 	    logger.fine("Got place call message " + externalCallID);
 
-	    phoneStatusListenerRef.get().mapCall(externalCallID, clientID, 
-		listing);
-
 	    PlayerSetup playerSetup = new PlayerSetup();
 	    //playerSetup.x =  translation.x;
 	    //playerSetup.y =  translation.y;
@@ -265,14 +259,15 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 	    playerSetup.isOutworlder = true;
 	    playerSetup.isLivePlayer = true;
 
-            if (listing.simulateCalls()) {
-                FakeVoiceManager.getInstance().setupCall(
-		    externalCallID, listing.getContactNumber());
-            } else {
+            if (listing.simulateCalls() == false) {
+	        PhoneStatusListener phoneStatusListener = 
+		    new PhoneStatusListener(phoneCellMO, listing, clientID);
+
 	        if (softphoneCall == null || softphonePlayer == null) {
 		    logger.warning("Softphone player is not connected!");
             	    sender.send(clientID, new CallEndedResponseMessage(
-			phoneCellMO.getCellID(), listing, false, "Softphone is not connected!"));
+			phoneCellMO.getCellID(), listing, false, 
+			"Softphone is not connected!"));
 		    return;
 	        }
 
@@ -298,14 +293,6 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 		cp.setDtmfDetection(true);
 		cp.setVoiceDetectionWhileMuted(true);
 		cp.setHandleSessionProgress(true);
-
-        	if (listing.simulateCalls()) { 
-            	    FakeVoiceManager.getInstance().addCallStatusListener(
-			phoneStatusListenerRef.get(), externalCallID);
-		} else {
-		    //setup.listener = phoneStatusListenerRef.get();
-		    vm.addCallStatusListener(phoneStatusListenerRef.get(), externalCallID);
-		}
 
 		try {
                     externalCall = vm.createCall(externalCallID, setup);
@@ -487,9 +474,7 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 	            vm.removeAudioGroup(audioGroup);
 		}
-            } else {                
-                FakeVoiceManager.getInstance().endCall(externalCallID);
-            }         
+            } 
             
             //Send SUCCESS to phone cell
             sender.send(clientID, new EndCallResponseMessage(

@@ -170,7 +170,8 @@ public class AudioManagerClient extends BaseConnection implements
         super.connect(session);
 
         this.session = session;
-        this.pm = PresenceManagerFactory.getPresenceManager(session);
+
+        pm = PresenceManagerFactory.getPresenceManager(session);
 
         LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
         avatar.addViewCellConfiguredListener(this);
@@ -287,7 +288,7 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         try {
-            new PlaceCallDialog(this, session, cell.getCellID(), presenceInfo);
+            new VoiceChatDialog(this, session, cell.getCellID(), presenceInfo);
         } catch (IOException e) {
             logger.warning("Unable to get voice chat dialog:  " + e.getMessage());
         }
@@ -423,7 +424,14 @@ public class AudioManagerClient extends BaseConnection implements
                 return;
             }
 
-	    PresenceInfo info = pm.getPresenceInfo(msg.getCallee().cellID);
+	    PresenceInfo info = pm.getPresenceInfo(msg.getCallee().callID);
+
+	    if (info == null) {
+		info = msg.getCallee();
+
+	 	logger.warning("adding pm for " + info);
+		pm.addSession(info);
+	    }
 
 	    inCallDialog.addMember(info);
 
@@ -446,7 +454,7 @@ public class AudioManagerClient extends BaseConnection implements
                 return;
             }
 
-	    PresenceInfo info = pm.getPresenceInfo(msg.getCallee().cellID);
+	    PresenceInfo info = pm.getPresenceInfo(msg.getCallee().callID);
 
             inCallDialog.removeMember(info);
         } else if (message instanceof ConeOfSilenceEnterExitMessage) {
@@ -501,8 +509,18 @@ public class AudioManagerClient extends BaseConnection implements
 
             InputManager.inputManager().postEvent(avatarNameEvent);
         } else {
+	    logger.warning("Unknown message " + message);
+
             throw new UnsupportedOperationException("Not supported yet.");
         }
+    }
+
+    public InCallDialog[] getInCallDialogs() {
+	return inCallDialogs.values().toArray(new InCallDialog[0]);
+    }
+
+    public InCallDialog getInCallDialog(String group) {
+	return inCallDialogs.get(group);
     }
 
     public void addInCallDialog(String group, InCallDialog inCallDialog) {

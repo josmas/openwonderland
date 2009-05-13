@@ -285,29 +285,29 @@ public class PhoneForm extends JDialog implements KeypadListener {
         contactNameLabel.setFont(new java.awt.Font("Dialog", 0, 13));
         contactNameLabel.setText("Contact Name:");
 
-        contactNameTextField.setFont(new java.awt.Font("Dialog", 0, 13));
+        contactNameTextField.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         contactNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                contactNameTextFieldKeyTyped(evt);
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                contactNameTextFieldKeyReleased(evt);
             }
         });
 
         contactNumberLabel.setFont(new java.awt.Font("Dialog", 0, 13));
         contactNumberLabel.setText("Phone Number:");
 
-        contactNumberTextField.setFont(new java.awt.Font("Dialog", 0, 13));
+        contactNumberTextField.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         contactNumberTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 contactNumberTextFieldActionPerformed(evt);
             }
         });
         contactNumberTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                contactNumberTextFieldKeyTyped(evt);
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                contactNumberTextFieldKeyReleased(evt);
             }
         });
 
-        callButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        callButton.setFont(new java.awt.Font("Dialog", 0, 13));
         callButton.setText("Call");
         callButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -315,7 +315,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
             }
         });
 
-        privateCallCheckBox.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        privateCallCheckBox.setFont(new java.awt.Font("Dialog", 0, 13));
         privateCallCheckBox.setSelected(true);
         privateCallCheckBox.setText("Private Call");
 
@@ -369,7 +369,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
             }
         });
 
-        closeButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        closeButton.setFont(new java.awt.Font("Dialog", 0, 13));
         closeButton.setText("Close");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -406,8 +406,8 @@ public class PhoneForm extends JDialog implements KeypadListener {
                             .add(contactNumberLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(contactNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, contactNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
+                            .add(contactNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, contactNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(keypadButton)
                         .add(37, 37, 37))
@@ -432,7 +432,7 @@ public class PhoneForm extends JDialog implements KeypadListener {
                                         .add(simulationLabel))))))
                     .add(layout.createSequentialGroup()
                         .add(placeCallLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 355, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 341, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
             .add(statusPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -555,14 +555,6 @@ private void keypadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         phoneMessageHandler.dtmf(key);
     }
 
-private void contactNumberTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_contactNumberTextFieldKeyTyped
-    setDialoutButtonState();
-}//GEN-LAST:event_contactNumberTextFieldKeyTyped
-
-private void contactNameTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_contactNameTextFieldKeyTyped
-    setDialoutButtonState();
-}//GEN-LAST:event_contactNameTextFieldKeyTyped
-
 private void contactNumberTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_contactNumberTextFieldActionPerformed
     if (callButton.isEnabled()) {
         callButton.doClick();
@@ -572,6 +564,14 @@ private void contactNumberTextFieldActionPerformed(java.awt.event.ActionEvent ev
 private void windowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_windowClosed
 // TODO add your handling code here:
 }//GEN-LAST:event_windowClosed
+
+private void contactNameTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_contactNameTextFieldKeyReleased
+    setDialoutButtonState();
+}//GEN-LAST:event_contactNameTextFieldKeyReleased
+
+private void contactNumberTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_contactNumberTextFieldKeyReleased
+    setDialoutButtonState();
+}//GEN-LAST:event_contactNumberTextFieldKeyReleased
 
     /**
     * @param args the command line arguments

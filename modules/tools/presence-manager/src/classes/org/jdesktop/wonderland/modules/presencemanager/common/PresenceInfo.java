@@ -55,11 +55,27 @@ public class PresenceInfo implements Serializable {
     }
 
     public boolean equals(Object info) {
-	return cellID.equals(((PresenceInfo) info).cellID);
+	PresenceInfo pi = (PresenceInfo) info;
+
+	if (cellID == null) {
+	    return callID.equals(pi.callID);
+	}
+
+	return cellID.equals(pi.cellID);
+    }
+
+    public Object clone() {
+	return new PresenceInfo(cellID, clientID, userID, callID);
     }
 
     public String toString() {
-        return "cellID=" + cellID + ", userID=" + userID.toString()
+	String s = "null";
+
+	if (userID != null) {
+	    s = userID.toString();
+	}
+
+        return "cellID=" + cellID + ", userID=" + s
             + ", clientID=" + clientID + ", callID=" + callID 
 	    + ", alias=" + usernameAlias;
     }
