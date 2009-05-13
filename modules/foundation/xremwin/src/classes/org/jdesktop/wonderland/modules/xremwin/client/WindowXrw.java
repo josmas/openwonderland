@@ -163,10 +163,12 @@ public class WindowXrw extends WindowConventional {
      */
     @Override
     public void closeUser() {
-        super.closeUser();
 
         // Notify the Xremwin server and other clients
         ((AppXrw) app).getClient().windowCloseUser(this);
+
+        // now clean up the window.
+        super.closeUser();
     }
 
     /**

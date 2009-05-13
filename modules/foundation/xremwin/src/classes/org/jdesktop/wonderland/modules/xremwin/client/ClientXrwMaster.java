@@ -211,7 +211,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
 
     /** {@inheritDoc} */
     public void windowCloseUser(WindowXrw win) {
-        AppXrw.logger.finer("User closed window " + win.getWid());
+        AppXrw.logger.info("User closed window " + win.getWid());
         windowClose(win.getWid());
     }
 
@@ -221,7 +221,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
      * @param wid The wid of the window the slave has closed.
      */
     private void windowCloseSlave(int wid) {
-        AppXrw.logger.finer("Slave closed window " + wid);
+        AppXrw.logger.info("Slave closed window " + wid);
         windowClose(wid);
     }
 
@@ -229,6 +229,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
      * Close the given window.
      */
     private void windowClose (int wid) {
+        AppXrw.logger.info("Tell the window system to delete the window " + wid);
         winSys.deleteWindow(wid);
     }
 

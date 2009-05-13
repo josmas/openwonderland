@@ -152,6 +152,17 @@ public abstract class Window2D {
     private LinkedList<EntityComponentEntry> entityComponents = new LinkedList<EntityComponentEntry>();
 
     /**
+     * A close listener is a listener which is called when the window is closed (e.g. via the user 
+     * clicking on frame close button).
+     */
+    public interface CloseListener {
+        public void windowClosed (Window2D window);
+    }
+
+    /** The attached close listeners. */
+    private LinkedList<CloseListener> closeListeners = new LinkedList<CloseListener>();
+
+    /**
      * Create an instance of Window2D with a default name. The first such window created for an app 
      * becomes the primary window. Subsequent windows are secondary windows.
      * @param app The application to which this window belongs.
@@ -1131,25 +1142,45 @@ public abstract class Window2D {
         // User must have control in order to close the window
         if (!app.getControlArb().hasControl()) {
             // TODO: bring up swing option window: "You cannot close this window because you do not have control"
+            logger.warning("You cannot close this window because you do not have control");
             return;
         }
 
-        // TODO: call close listeners
-
-        /* TODO: winconfig: swing: close
-        if (app.isSwsShared(Sws.Op.WINDOW_CLOSE)) {
-            SwsClient swsClient = getApp().getSwsClient();
-            // TODO: This verifies client has control on server. This isn't something the Xremwin server 
-            // does. Eventually migrate Xremwin close to use sws close
-            swsClient.windowClose(swsWindowID);  
-        }    
-        // TODO: what else do we need to do to close the swing window and quit the app if the 
-        // window is primary? Does WindowSwing.cleanup() suffice? Prob not. Doesn't quit app. Since 
-        // hasControl is checked on the server we need to implement the actual window closure in a 
-        // message handler in reaction to an "actually close" message coming back from the server.
-        */
+        // Call close listeners
+        synchronized (closeListeners) {
+            for (CloseListener listener : closeListeners) {
+                listener.windowClosed(this);
+            }
+        }
 
         cleanup();
+    }
+
+    /**
+     * Add a close listener to this window. The listener will be called when the window is closed.
+     */
+    public void addCloseListener (CloseListener listener) {
+        synchronized (closeListeners) {
+            closeListeners.add(listener);
+        }
+    }
+
+    /**
+     * Remove a close listener from this window. 
+     */
+    public void removeCloseListener (CloseListener listener) {
+        synchronized (closeListeners) {
+            closeListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Return an iterator over the close listeners for this window. 
+     */
+    public Iterator<CloseListener> getCloseListeners () {
+        synchronized (closeListeners) {
+            return closeListeners.iterator();
+        }
     }
 
     /**
