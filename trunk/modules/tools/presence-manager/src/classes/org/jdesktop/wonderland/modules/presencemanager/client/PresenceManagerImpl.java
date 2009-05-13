@@ -72,7 +72,7 @@ public class PresenceManagerImpl implements PresenceManager {
 		    synchronized (callIDMap) {
 			if (alreadyInMaps(presenceInfo) == false) {
 			    addPresenceInfo(presenceInfo);
-			}
+			} 
 		    }
 	        }
 	    }
@@ -84,13 +84,17 @@ public class PresenceManagerImpl implements PresenceManager {
     private void addPresenceInfo(PresenceInfo presenceInfo) {
 	logger.finer("Adding presenceInfo for " + presenceInfo);
 
-	PresenceInfo info = cellIDMap.get(presenceInfo.cellID);
+	PresenceInfo info;
 
-	if (info != null && info.equals(presenceInfo) == false) {
-	    System.out.println("cellIDMap already has entry for " + info);
+	if (presenceInfo.cellID != null) {
+	    info = cellIDMap.get(presenceInfo.cellID);
+
+	    if (info != null && info.equals(presenceInfo) == false) {
+	        System.out.println("cellIDMap already has entry for " + info);
+	    }
+
+	    cellIDMap.put(presenceInfo.cellID, presenceInfo);
 	}
-
-	cellIDMap.put(presenceInfo.cellID, presenceInfo);
 
 	if (presenceInfo.clientID != null) {
 	    info = sessionIDMap.get(presenceInfo.clientID);
@@ -122,10 +126,14 @@ public class PresenceManagerImpl implements PresenceManager {
     }
 
     private boolean alreadyInMaps(PresenceInfo presenceInfo) {
-	PresenceInfo info = cellIDMap.get(presenceInfo.cellID);
+ 	PresenceInfo info;
 
-	if (info != null && info.equals(presenceInfo)) {
-	    return true;
+	if (presenceInfo.cellID != null) {
+	    info = cellIDMap.get(presenceInfo.cellID);
+
+	    if (info != null && info.equals(presenceInfo)) {
+	        return true;
+	    }
 	}
 
 	if (presenceInfo.clientID != null) {
@@ -136,10 +144,12 @@ public class PresenceManagerImpl implements PresenceManager {
 	    }
 	}
 
-	info = userIDMap.get(presenceInfo.userID);
+	if (presenceInfo.userID != null) {
+	    info = userIDMap.get(presenceInfo.userID);
 
-	if (info != null && info.equals(presenceInfo)) {
-	    return true;
+	    if (info != null && info.equals(presenceInfo)) {
+	        return true;
+	    }
 	}
 
 	if (presenceInfo.callID != null) {

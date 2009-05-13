@@ -49,6 +49,8 @@ public class HoldDialog extends javax.swing.JFrame implements MemberChangeListen
 
         initComponents();
 
+	setTitle(group);
+
 	inCallDialog.addMemberChangeListener(this);
 
 	setMembers();
@@ -99,6 +101,11 @@ public class HoldDialog extends javax.swing.JFrame implements MemberChangeListen
                 formMousePressed(evt);
             }
         });
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jLabel1.setText("On Hold:");
 
@@ -140,6 +147,10 @@ private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_
     inCallDialog.setHold(false);
     setVisible(false);
 }//GEN-LAST:event_formMousePressed
+
+private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+    inCallDialog.endHeldCall();
+}//GEN-LAST:event_formWindowClosing
 
     /**
     * @param args the command line arguments

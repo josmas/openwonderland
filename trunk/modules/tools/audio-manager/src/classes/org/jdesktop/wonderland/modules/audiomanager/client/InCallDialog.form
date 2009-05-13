@@ -39,7 +39,7 @@
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="addUserButton" max="32767" attributes="1"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="endCallButton" min="-2" pref="88" max="-2" attributes="1"/>
+                              <Component id="leaveButton" min="-2" pref="88" max="-2" attributes="1"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
@@ -83,10 +83,10 @@
               <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="holdButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="endCallButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="leaveButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="addUserButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="21" max="32767" attributes="0"/>
+              <EmptySpace pref="31" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -180,12 +180,12 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="publicRadioButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="endCallButton">
+    <Component class="javax.swing.JButton" name="leaveButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="End Call"/>
+        <Property name="text" type="java.lang.String" value="Leave"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="endCallButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="leaveButtonActionPerformed"/>
       </Events>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane2">
@@ -207,6 +207,9 @@
               </StringArray>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="selectableMemberListValueChanged"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

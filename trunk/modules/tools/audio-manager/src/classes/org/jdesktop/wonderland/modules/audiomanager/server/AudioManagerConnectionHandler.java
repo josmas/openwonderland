@@ -31,6 +31,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMes
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatDialOutMessage;
+
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -150,7 +152,7 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof PlaceCallMessage) {
-	    logger.fine("Got place call message from " + clientID);
+	    logger.fine("Got join chat message from " + clientID);
 
 	    PlaceCallMessage msg = (PlaceCallMessage) message;
 
@@ -345,6 +347,12 @@ public class AudioManagerConnectionHandler
 
 	if (call == null) {
 	    logger.fine("Can't find call for " + callID);
+
+	    Player player = vm.getPlayer(callID);
+
+	    if (player != null) {
+		vm.removePlayer(player);
+	    }
 	    return;
 	}
 

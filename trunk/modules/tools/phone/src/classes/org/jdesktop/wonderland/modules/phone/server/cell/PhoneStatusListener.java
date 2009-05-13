@@ -53,23 +53,11 @@ import java.io.Serializable;
 
 import java.util.logging.Logger;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.jdesktop.wonderland.common.messages.Message;
 
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
-
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
-import org.jdesktop.wonderland.server.UserManager;
-
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.CellMOFactory;
 
 import com.jme.math.Vector3f;
 
@@ -83,58 +71,30 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
     private static final Logger logger =
         Logger.getLogger(PhoneStatusListener.class.getName());
      
-    private ConcurrentHashMap<String, WonderlandClientID> senderMap =
-        new ConcurrentHashMap();
-
-    private ConcurrentHashMap<String, CallListing> callListingMap = 
-	new ConcurrentHashMap(); 
-
     private CellID cellID;
+    private CallListing listing;
+    private WonderlandClientID clientID;
 
-    public PhoneStatusListener(PhoneCellMO phoneCellMO) {
+    public PhoneStatusListener(PhoneCellMO phoneCellMO, CallListing listing,
+	    WonderlandClientID clientID) {
+
         cellID = phoneCellMO.getCellID();
+	this.listing = listing;
+	this.clientID = clientID;
+
+	AppContext.getManager(VoiceManager.class).addCallStatusListener(this,
+	    listing.getExternalCallID());
     }
 
-    public void mapCall(String externalCallID, WonderlandClientID clientID, 
-	    CallListing listing) {
-
-	senderMap.put(externalCallID, clientID);
-	callListingMap.put(externalCallID, listing);
-    }
-	
     public void callStatusChanged(CallStatus status) {    
 	logger.finer("got status " + status);
 
-        String externalCallID = status.getCallId();
-
-	if (externalCallID == null || externalCallID.length() == 0) {
-	    logger.warning("Missing call id in status:  " + status);
-	    return;
-	}
-
-	WonderlandClientID clientID = senderMap.get(externalCallID);
-
-	if (clientID == null) {
-	    logger.warning("Can't find clientID:  " + status);
-	    return;
-	}
-
-        CommsManager cm = WonderlandContext.getCommsManager();
-
-        WonderlandClientSender sender = cm.getSender(CellChannelConnectionType.CLIENT_TYPE);
-
-	CallListing listing;
-
-	listing = callListingMap.get(externalCallID);
-
-	if (listing == null) {
-	    logger.warning("No callListing for " + externalCallID);
-	    return;
-	}
+        WonderlandClientSender sender = WonderlandContext.getCommsManager().getSender(
+	    CellChannelConnectionType.CLIENT_TYPE);
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	Call externalCall = vm.getCall(externalCallID);
+	Call externalCall = vm.getCall(listing.getExternalCallID());
 	Call softphoneCall = vm.getCall(listing.getSoftphoneCallID());
 
 	logger.fine("external call:  " + externalCall);
@@ -158,10 +118,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 	        }
             }
             
-            CallInvitedResponseMessage invitedResponse = 
-		new CallInvitedResponseMessage(cellID, listing, true);
-
-            sender.send(clientID, invitedResponse);
+            sender.send(clientID, new CallInvitedResponseMessage(cellID, listing, true));
             break;
 
         //Something's picked up, the call has been connected
@@ -176,20 +133,12 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 	        }
             }
 
-            CallEstablishedResponseMessage EstablishedResponse = 
-		new CallEstablishedResponseMessage(cellID, listing, true);
-
-	    logger.fine("Sending ESTABLISHED RESPONSE");
-            sender.send(clientID, EstablishedResponse);
-            break;
-
-        case CallStatus.STARTEDSPEAKING:
-            break;
-
-        case CallStatus.STOPPEDSPEAKING:
+            sender.send(clientID, new CallEstablishedResponseMessage(cellID, listing, true));
             break;
 
         case CallStatus.ENDED: 
+	    vm.removeCallStatusListener(this);
+
             //Stop the ringing
 	    if (softphoneCall != null) {
 	        try {
@@ -237,13 +186,8 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
                 //   FakeVoiceHandler.getInstance().endCall(externalCallID);
             }    
                 
-	    senderMap.remove(externalCallID);
-	    callListingMap.remove(externalCallID);
-
-            CallEndedResponseMessage endedResponse = new CallEndedResponseMessage(cellID,
-		listing, true, status.getOption("Reason"));
-
-            sender.send(clientID, endedResponse);
+            sender.send(clientID, new CallEndedResponseMessage(cellID,
+		listing, true, status.getOption("Reason")));
             break;
         }
     }
