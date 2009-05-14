@@ -42,8 +42,11 @@ public class CellRegistry implements PrimaryServerListener {
     /* A set of all cell factories */
     private Set<CellFactorySPI> cellFactorySet = null;
     
-    /* A map of cell factories and the extensions the support */
-    private Map<String, Set<CellFactorySPI>> cellFactoryExtensionMap = null;
+    /*
+     * A map of cell factories and the extensions they support. All extensions
+     * are stored in lower case.
+     */
+    private Map<String, Set<CellFactorySPI>> extensionMap = null;
 
     /* The set of all cell factories associated with the cuurent session */
     private final Set<CellFactorySPI> sessionFactories =
@@ -51,7 +54,7 @@ public class CellRegistry implements PrimaryServerListener {
 
     /** Default constructor */
     public CellRegistry() {
-        cellFactoryExtensionMap = new HashMap();
+        extensionMap = new HashMap();
         cellFactorySet = new HashSet();
 
         LoginManager.addPrimaryServerListener(this);
@@ -89,10 +92,13 @@ public class CellRegistry implements PrimaryServerListener {
         String[] extensions = factory.getExtensions();
         if (extensions != null) {
             for (String extension : extensions) {
-                Set<CellFactorySPI> factories = cellFactoryExtensionMap.get(extension);
+                // Convert the extension to lower case so that, for example
+                // JPG is the same as jpg
+                extension = extension.toLowerCase();
+                Set<CellFactorySPI> factories = extensionMap.get(extension);
                 if (factories == null) {
                     factories = new HashSet<CellFactorySPI>();
-                    cellFactoryExtensionMap.put(extension, factories);
+                    extensionMap.put(extension, factories);
                 }
                 factories.add(factory);
             }
@@ -113,12 +119,15 @@ public class CellRegistry implements PrimaryServerListener {
         String[] extensions = factory.getExtensions();
         if (extensions != null) {
             for (String extension : extensions) {
-                Set<CellFactorySPI> factories = cellFactoryExtensionMap.get(extension);
+                // Convert the extension to lower case so that, for example
+                // JPG is the same as jpg
+                extension = extension.toLowerCase();
+                Set<CellFactorySPI> factories = extensionMap.get(extension);
                 if (factories != null) {
                     factories.remove(factory);
 
                     if (factories.isEmpty()) {
-                        cellFactoryExtensionMap.remove(factories);
+                        extensionMap.remove(factories);
                     }
                 }
             }
@@ -139,14 +148,17 @@ public class CellRegistry implements PrimaryServerListener {
     }
     
     /**
-     * Returns a set of cell factories given the extension type. If no factories
-     * are present for the given extension, returns null.
+     * Returns a set of cell factories given the case-insensitive extension
+     * type. If no factories are present for the given extension, returns null.
      * 
      * @param extension File type extension (e.g. 'jpg', 'dae')
      * @return A set of CellFactory objects registered on the extension
      */
     public Set<CellFactorySPI> getCellFactoriesByExtension(String extension) {
-        return cellFactoryExtensionMap.get(extension);
+        // Convert the extension to lower case so that, for example
+        // JPG is the same as jpg
+        extension = extension.toLowerCase();
+        return extensionMap.get(extension);
     }
 
     /**

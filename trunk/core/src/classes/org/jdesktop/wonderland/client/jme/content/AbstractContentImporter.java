@@ -54,9 +54,10 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
      */
     public String importFile(File file, String extension) {
 
+        final JFrame frame = JmeClientMain.getFrame().getFrame();
+
         // Next check whether the content already exists and ask the user if
         // the upload should still proceed.
-        final JFrame frame = JmeClientMain.getFrame().getFrame();
         if (isContentExists(file) == true) {
             int result = JOptionPane.showConfirmDialog(frame,
                     "The file " + file.getName() + " already exists in the " +
@@ -142,21 +143,25 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
     public void createCell(String uri) {
         // Figure out what the file extension is from the uri, looking for
         // the final '.'.
-        logger.warning("URI " + uri);
-        int index = uri.lastIndexOf(".");
-        if (index == -1) {
+        String extension = getFileExtension(uri);
+        if (extension == null) {
             logger.warning("Could not find extension for " + uri);
             return;
         }
-        String extension = uri.substring(index + 1);
         
         // Next look for a cell type that handles content with this file
         // extension and create a new cell with it.
         CellRegistry registry = CellRegistry.getCellRegistry();
         Set<CellFactorySPI> factories = registry.getCellFactoriesByExtension(extension);
         if (factories == null) {
+            final JFrame frame = JmeClientMain.getFrame().getFrame();
             logger.warning("Could not find cell factory for " + extension);
+            JOptionPane.showMessageDialog(frame,
+                    "Unable to launch Cell that supports " + uri,
+                    "Launch Failed", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
         CellFactorySPI factory = factories.iterator().next();
 
         // Get the cell server state, injecting the content URI into it via
@@ -171,5 +176,19 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         } catch (CellCreationException excp) {
             logger.log(Level.WARNING, "Unable to create cell for uri " + uri, excp);
         }
+    }
+
+    /**
+     * Utility routine to fetch the file extension from the URI, or null if
+     * none can be found.
+     */
+    private String getFileExtension(String uri) {
+        // Figure out what the file extension is from the uri, looking for
+        // the final '.'.
+        int index = uri.lastIndexOf(".");
+        if (index == -1) {
+            return null;
+        }
+        return uri.substring(index + 1);
     }
 }
