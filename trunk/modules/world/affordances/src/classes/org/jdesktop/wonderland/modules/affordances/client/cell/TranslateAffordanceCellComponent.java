@@ -17,8 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.affordances.client.cell;
 
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.affordances.client.jme.TranslateAffordance;
+import org.jdesktop.wonderland.modules.affordances.client.jme.TranslateAffordance.TranslationListener;
 
 /**
  * A client-side cell component for translate affordances
@@ -27,16 +31,63 @@ import org.jdesktop.wonderland.modules.affordances.client.jme.TranslateAffordanc
  */
 public class TranslateAffordanceCellComponent extends AffordanceCellComponent {
 
-    public TranslateAffordanceCellComponent(Cell cell) throws AffordanceException {
+    private TranslateAffordanceListener listener = null;
+
+    public TranslateAffordanceCellComponent(Cell cell) {
         super(cell);
-        affordance = new TranslateAffordance(cell);
+        listener = new TranslateAffordanceListener();
     }
 
+    /**
+     * @inheritDoc()
+     */
     @Override
-    public void remove() {
-        super.remove();
-        affordance.remove();
-        cell.removeComponent(TranslateAffordanceCellComponent.class);
-        affordance = null;
+    public void setStatus(CellStatus status) {
+        // If we are making the affordance ACTIVE, we want to create the
+        // visual affordance Entity. We must do this *before* we call the
+        // super.setStatus() method which relies upon a valid affordance
+        if (status == CellStatus.ACTIVE) {
+            // Create the affordance. Register a listener for all translation
+            // events for the affordance and update the translation of the
+            // movable component
+            affordance = new TranslateAffordance(getSceneGraphRoot());
+            ((TranslateAffordance)affordance).addTranslationListener(listener);
+        }
+        else if (status == CellStatus.DISK) {
+            ((TranslateAffordance)affordance).removeTranslationListener(listener);
+        }
+
+        // Now call the super setStatus() method after we've created the
+        // affordance
+        super.setStatus(status);
+    }
+
+    /**
+     * Listener that handles events back from the affordance. This listener
+     * assumes the movable component is already present on the Cell when this
+     * event happens
+     */
+    private class TranslateAffordanceListener implements TranslationListener {
+
+        private Vector3f translationOnPress = null;
+
+        /**
+         * @inheritDoc()
+         */
+        public void translationPerformed(Vector3f translation) {
+            // Move the cell via the moveable comopnent
+            CellTransform transform = cell.getLocalTransform();
+            Vector3f newTranslation = translationOnPress.add(translation);
+            transform.setTranslation(newTranslation);
+            movableComp.localMoveRequest(transform);
+        }
+
+        /**
+         * @inheritDoc()
+         */
+        public void translationStarted() {
+            CellTransform transform = cell.getLocalTransform();
+            translationOnPress = transform.getTranslation(null);
+        }
     }
 }

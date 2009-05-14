@@ -17,8 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.affordances.client.cell;
 
+import com.jme.math.Quaternion;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.affordances.client.jme.RotateAffordance;
+import org.jdesktop.wonderland.modules.affordances.client.jme.RotateAffordance.RotationListener;
 
 /**
  * A client-side cell component for rotate affordances
@@ -27,16 +31,60 @@ import org.jdesktop.wonderland.modules.affordances.client.jme.RotateAffordance;
  */
 public class RotateAffordanceCellComponent extends AffordanceCellComponent {
 
-    public RotateAffordanceCellComponent(Cell cell) throws AffordanceException {
+    private RotateAffordanceListener listener = null;
+
+    public RotateAffordanceCellComponent(Cell cell) {
         super(cell);
-        affordance = new RotateAffordance(cell);
+        listener = new RotateAffordanceListener();
     }
 
+    /**
+     * @inheritDoc()
+     */
     @Override
-    public void remove() {
-        super.remove();
-        affordance.remove();
-        cell.removeComponent(RotateAffordanceCellComponent.class);
-        affordance = null;
+    public void setStatus(CellStatus status) {
+        // If we are making the affordance ACTIVE, we want to create the
+        // visual affordance Entity. We must do this *before* we call the
+        // super.setStatus() method which relies upon a valid affordance
+        if (status == CellStatus.ACTIVE) {
+            affordance = new RotateAffordance(getSceneGraphRoot());
+            ((RotateAffordance)affordance).addRotationListener(listener);
+        }
+        else if (status == CellStatus.DISK) {
+            ((RotateAffordance)affordance).removeRotationListener(listener);
+        }
+
+        // Now call the super setStatus() method after we've created the
+        // affordance
+        super.setStatus(status);
+    }
+
+    /**
+     * Listener that handles events back from the affordance. This listener
+     * assumes the movable component is already present on the Cell when this
+     * event happens
+     */
+    private class RotateAffordanceListener implements RotationListener {
+
+        private Quaternion rotationOnPress = null;
+
+        /**
+         * @inheritDoc()
+         */
+        public void rotationPerformed(Quaternion rotation) {
+            // Move the cell via the moveable comopnent
+            CellTransform transform = cell.getLocalTransform();
+            Quaternion newRotation = rotationOnPress.mult(rotation);
+            transform.setRotation(newRotation);
+            movableComp.localMoveRequest(transform);
+        }
+
+        /**
+         * @inheritDoc()
+         */
+        public void rotationStarted() {
+            CellTransform transform = cell.getLocalTransform();
+            rotationOnPress = transform.getRotation(null);
+        }
     }
 }
