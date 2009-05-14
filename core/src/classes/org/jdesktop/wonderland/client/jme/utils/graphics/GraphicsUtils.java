@@ -108,7 +108,8 @@ public class GraphicsUtils {
         System.err.println("environmentalMapMode = " + texture.getEnvironmentalMapMode());
         System.err.println("matrix = " + texture.getMatrix());
 
-        printImage(texture.getImage());
+        // TODO: doesn't handle small images properly
+        //printImage(texture.getImage());
     }
 
     /**
