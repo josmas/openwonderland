@@ -19,8 +19,6 @@ package org.jdesktop.wonderland.modules.affordances.client;
 
 import java.util.Hashtable;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -33,7 +31,6 @@ import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.scenemanager.SceneManager;
 import org.jdesktop.wonderland.client.scenemanager.event.SelectionEvent;
 import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceCellComponent;
-import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceException;
 import org.jdesktop.wonderland.modules.affordances.client.cell.ResizeAffordanceCellComponent;
 import org.jdesktop.wonderland.modules.affordances.client.cell.RotateAffordanceCellComponent;
 import org.jdesktop.wonderland.modules.affordances.client.cell.TranslateAffordanceCellComponent;
@@ -275,11 +272,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         // component if it is not already on there. Also, set its size.
         if (visible == true) {
             if (component == null) {
-                try {
-                    component = new TranslateAffordanceCellComponent(cell);
-                } catch (AffordanceException ex) {
-                    Logger.getLogger(AffordanceHUDPanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                component = new TranslateAffordanceCellComponent(cell);
                 cell.addComponent(component);
             }
             ((AffordanceCellComponent)component).setSize(getSliderSize());
@@ -319,11 +312,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         // component if it is not already on there. Also, set its size.
         if (visible == true) {
             if (component == null) {
-                try {
-                    component = new RotateAffordanceCellComponent(cell);
-                } catch (AffordanceException ex) {
-                    Logger.getLogger(AffordanceHUDPanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                component = new RotateAffordanceCellComponent(cell);
                 cell.addComponent(component);
             }
             ((AffordanceCellComponent)component).setSize(getSliderSize());
@@ -363,11 +352,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         // component if it is not already on there. Also, set its size.
         if (visible == true) {
             if (component == null) {
-                try {
-                    component = new ResizeAffordanceCellComponent(cell);
-                } catch (AffordanceException ex) {
-                    Logger.getLogger(AffordanceHUDPanel.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                component = new ResizeAffordanceCellComponent(cell);
                 cell.addComponent(component);
             }
             ((AffordanceCellComponent)component).setSize(getSliderSize());

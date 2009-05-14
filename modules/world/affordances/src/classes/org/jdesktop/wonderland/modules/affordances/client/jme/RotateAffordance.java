@@ -29,13 +29,14 @@ import com.jme.scene.Spatial;
 import com.jme.scene.shape.Tube;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
-import com.jme.scene.state.ZBufferState;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.Formatter;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -43,18 +44,12 @@ import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
-import org.jdesktop.mtgame.RenderUpdater;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceException;
 
 /**
  * Affordance to rotate a cell along each major axis.
@@ -92,13 +87,6 @@ public class RotateAffordance extends Affordance {
     /* The root of the scene graph of the cell */
     private Node sceneRoot = null;
 
-    private static ZBufferState zbuf = null;
-    static {
-        zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-        zbuf.setEnabled(true);
-        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-    }
-
     /* Listener for changes in the translation of the cell */
     private GeometricUpdateListener updateListener = null;
 
@@ -108,12 +96,12 @@ public class RotateAffordance extends Affordance {
     /**
      * TBD
      */
-    public RotateAffordance(Cell cell) throws AffordanceException {
-        super("Rotate", cell);
+    public RotateAffordance(Node sceneRoot) {
+        super("Rotate");
         
         // Figure out the bounds of the root entity of the cell and create a
         // tube to be just a bit larger than that
-        sceneRoot = getSceneGraphRoot();
+        this.sceneRoot = sceneRoot;
         BoundingVolume bounds = sceneRoot.getWorldBound();
         float outerRadius = 0.0f;
         if (bounds instanceof BoundingSphere) {
@@ -129,10 +117,15 @@ public class RotateAffordance extends Affordance {
         }
 
         // Fetch the world translation for the root node of the cell and set
-        // the translation for this entity root node
+        // the translation and rotation for this entity root node
         Vector3f translation = sceneRoot.getWorldTranslation();
+        Quaternion rotation = sceneRoot.getWorldRotation();
         rootNode.setLocalTranslation(translation);
+        rootNode.setLocalRotation(rotation);
 
+        float[] angles = new float[3];
+        rotation.toAngles(angles);
+        
         // Create a tube to rotate about the X axis. The tube is drawn in the
         // X-Z plane, so we must rotate 90 degrees about the +z axis so that the
         // axis of rotation is about +x axis.
@@ -165,11 +158,6 @@ public class RotateAffordance extends Affordance {
         zNode.setRenderState(zbuf);
         addSubEntity(zEntity, zNode);
         zListener = addRotateListener(zEntity, zNode, RotateAxis.Z_AXIS);
-
-        // Make sure we rotate the affordance based upon the current rotation
-        // of the geometry when we first display it.
-        Quaternion rotation = cell.getLocalTransform().getRotation(null);
-        rootNode.setLocalRotation(rotation);
         
         // Listen for changes to the cell's translation and apply the same
         // update to the root node of the affordances
@@ -229,29 +217,31 @@ public class RotateAffordance extends Affordance {
     /**
      * @inheritDoc()
      */
-    public void remove() {
-        // Remove the Entity from the scene graph. We also want to unregister
-        // the listener from the cell's node. We need to do this in a special
-        // update thread
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                ClientContextJME.getWorldManager().removeEntity(RotateAffordance.this);
-                CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-                RenderComponent cellRC = (RenderComponent) renderer.getEntity().getComponent(RenderComponent.class);
-                cellRC.getSceneRoot().removeGeometricUpdateListener(updateListener);
-                xListener.removeFromEntity(xEntity);
-                yListener.removeFromEntity(yEntity);
-                zListener.removeFromEntity(zEntity);
-                xListener = yListener = zListener = null;
-                xEntity = yEntity = zEntity = null;
-            }}, null);
+    @Override
+    public void dispose() {
+        // Call the superclass dispose() first, to make sure the affordance
+        // is no longer visible
+        super.dispose();
+
+        // Clean up all of the listeners so this class gets properly garbage
+        // collected.
+        sceneRoot.removeGeometricUpdateListener(updateListener);
+        xListener.removeFromEntity(xEntity);
+        yListener.removeFromEntity(yEntity);
+        zListener.removeFromEntity(zEntity);
+        xListener = yListener = zListener = null;
+        xEntity = yEntity = zEntity = null;
+        updateListener = null;
+        listenerSet.clear();
     }
 
     /**
      * Adds a rotation listener for the Entity and the node, given the axis along
      * which the rotate should take place.
      */
-    private RotationDragListener addRotateListener(Entity entity, Node node, RotateAxis direction) {
+    private RotationDragListener addRotateListener(Entity entity, Node node,
+            RotateAxis direction) {
+
         makeEntityPickable(entity, node);
         RotationDragListener l = new RotationDragListener(direction);
         l.addToEntity(entity);
@@ -275,7 +265,8 @@ public class RotateAffordance extends Affordance {
         // color shows up. Attach the tube to the node.
         Node n = new Node();
         RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        MaterialState matState3 = (MaterialState)rm.createRendererState(RenderState.RS_MATERIAL);
+        MaterialState matState3 = (MaterialState)
+                rm.createRendererState(RenderState.StateType.Material);
         matState3.setDiffuse(color);
         n.setRenderState(matState3);
         n.attachChild(t);
@@ -284,6 +275,72 @@ public class RotateAffordance extends Affordance {
         t.setModelBound(new BoundingSphere());
         t.updateModelBound();
         return n;
+    }
+
+    private Set<RotationListener> listenerSet = new HashSet();
+
+    /**
+     * Adds a listener for rotation events. If the listener has already been
+     * added, this method does nothing.
+     *
+     * @param listener The listener to add
+     */
+    public void addRotationListener(RotationListener listener) {
+        synchronized (listenerSet) {
+            listenerSet.add(listener);
+        }
+    }
+
+    /**
+     * Removes a listener for rotation events. If the listener does not exist,
+     * this method does nothing.
+     *
+     * @param listener The listener to remove
+     */
+    public void removeRotationListener(RotationListener listener) {
+        synchronized (listenerSet) {
+            listenerSet.remove(listener);
+        }
+    }
+
+    /**
+     * Informs all of the listeners that a rotation has begun
+     */
+    private void fireRotationStarted() {
+        synchronized (listenerSet) {
+            for (RotationListener listener : listenerSet) {
+                listener.rotationStarted();
+            }
+        }
+    }
+
+    /**
+     * Informs all of the listeners of the new rotation
+     */
+    private void fireRotationChanged(Quaternion rotation) {
+        synchronized (listenerSet) {
+            for (RotationListener listener : listenerSet) {
+                listener.rotationPerformed(rotation);
+            }
+        }
+    }
+
+    /**
+     * Listener for translation events.
+     */
+    public interface RotationListener {
+        /**
+         * Indicates that the rotation has begun using the affordance.
+         */
+        public void rotationStarted();
+
+        /**
+         * Indicates that the rotation affordance has been moved by a certain
+         * amount, giving a Quaternion.
+         *
+         * @param rotation The rotation amount as a Quaternion
+         */
+        public void rotationPerformed(Quaternion rotation);
     }
 
     /**
@@ -301,9 +358,6 @@ public class RotateAffordance extends Affordance {
 
         // The screen coordinates of the button press event.
         private Point dragStartScreen;
-
-        // The rotation of the cell when the mouse button is first pressed.
-        private Quaternion rotationOnPress = null;
 
         // The center of the affordance in world coordinates
         private Vector3f centerWorld;
@@ -354,7 +408,6 @@ public class RotateAffordance extends Affordance {
             // Figure out where the initial mouse button press happened and
             // store the initial position. We also store the center of the
             // affordance.
-            CellTransform transform = cell.getLocalTransform();
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D)event;
                 if (buttonEvent.isPressed() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
@@ -363,7 +416,6 @@ public class RotateAffordance extends Affordance {
                     MouseEvent awtButtonEvent = (MouseEvent)buttonEvent.getAwtEvent();
                     dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
                     dragStartWorld = buttonEvent.getIntersectionPointWorld();
-                    rotationOnPress = transform.getRotation(null);
                     
                     // Figure out the world coordinates of the center of the
                     // affordance.
@@ -380,6 +432,9 @@ public class RotateAffordance extends Affordance {
                     labelFrame.toFront();
                     labelFrame.setVisible(true);
                     labelFrame.repaint();
+
+                    // Tell the listeners that a rotation has started
+                    fireRotationStarted();
                 }
                 else if (buttonEvent.isReleased() == true) {
                     labelFrame.setVisible(false);
@@ -408,7 +463,7 @@ public class RotateAffordance extends Affordance {
             // the normalized start and end vectors
             Vector3f v1 = dragStartVectorWorld.normalize();
             Vector3f v2 = dragEndVectorWorld.normalize();
-
+            
             // We also figure out the axis normal and the axis of rotation
             Vector3f normal = null, axis = null;
             switch (direction) {
@@ -439,13 +494,13 @@ public class RotateAffordance extends Affordance {
             float angles[] = new float[3];
             rotation.toAngles(angles);
             normal = rotation.mult(normal);
-
+            
             // Compute the signed angle between v1 and v2. We do this with the
-            // following formula: angle = atan2(normal dot (v1 cross x2), v1 dot v2)
+            // following formula: angle = atan2(normal dot (v1 cross v2), v1 dot v2)
             float dotProduct = v1.dot(v2);
             Vector3f crossProduct = v1.cross(v2);
             double angle = Math.atan2(normal.dot(crossProduct), dotProduct);
-
+            
             // Set the label with the amount that we have rotated it. We display
             // the rotated amount to two decimal points
             StringBuilder rotateString = new StringBuilder();
@@ -460,9 +515,7 @@ public class RotateAffordance extends Affordance {
 
             // Rotate the object along the defined axis and angle.
             Quaternion q = new Quaternion().fromAngleAxis((float)angle, axis);
-            Quaternion newRotation = rotationOnPress.mult(q);
-            transform.setRotation(newRotation);
-            movableComp.localMoveRequest(transform);
+            fireRotationChanged(q);
         }
 
         /**

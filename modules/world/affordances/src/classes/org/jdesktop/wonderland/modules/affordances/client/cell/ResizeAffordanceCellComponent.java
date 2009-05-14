@@ -17,8 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.affordances.client.cell;
 
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.affordances.client.jme.ResizeAffordance;
+import org.jdesktop.wonderland.modules.affordances.client.jme.ResizeAffordance.ResizingListener;
 
 /**
  * A client-side cell component for resize affordances
@@ -27,22 +31,60 @@ import org.jdesktop.wonderland.modules.affordances.client.jme.ResizeAffordance;
  */
 public class ResizeAffordanceCellComponent extends AffordanceCellComponent {
 
-    public ResizeAffordanceCellComponent(Cell cell) throws AffordanceException {
+    private ResizingAffordanceListener listener = null;
+
+    public ResizeAffordanceCellComponent(Cell cell) {
         super(cell);
-        affordance = new ResizeAffordance(cell);
+        listener = new ResizingAffordanceListener();
     }
 
+    /**
+     * @inheritDoc()
+     */
     @Override
-    public void setSize(float size) {
-        super.setSize(size);
-        affordance.setSize(size);
+    public void setStatus(CellStatus status) {
+        // If we are making the affordance ACTIVE, we want to create the
+        // visual affordance Entity. We must do this *before* we call the
+        // super.setStatus() method which relies upon a valid affordance
+        if (status == CellStatus.ACTIVE) {
+            affordance = new ResizeAffordance(getSceneGraphRoot());
+            ((ResizeAffordance)affordance).addResizingListener(listener);
+        }
+        else if (status == CellStatus.DISK) {
+            ((ResizeAffordance)affordance).removeResizingListener(listener);
+        }
+
+        // Now call the super setStatus() method after we've created the
+        // affordance
+        super.setStatus(status);
     }
 
-    @Override
-    public void remove() {
-        super.remove();
-        affordance.remove();
-        cell.removeComponent(ResizeAffordanceCellComponent.class);
-        affordance = null;
+    /**
+     * Listener that handles events back from the affordance. This listener
+     * assumes the movable component is already present on the Cell when this
+     * event happens
+     */
+    private class ResizingAffordanceListener implements ResizingListener {
+
+        private Vector3f scalingOnPress = null;
+
+        /**
+         * @inheritDoc()
+         */
+        public void resizingPerformed(Vector3f resizing) {
+            // Move the cell via the moveable comopnent
+            CellTransform transform = cell.getLocalTransform();
+            Vector3f newResizing = scalingOnPress.mult(resizing);
+            transform.setScaling(newResizing);
+            movableComp.localMoveRequest(transform);
+        }
+
+        /**
+         * @inheritDoc()
+         */
+        public void resizingStarted() {
+            CellTransform transform = cell.getLocalTransform();
+            scalingOnPress = transform.getScaling(null);
+        }
     }
 }

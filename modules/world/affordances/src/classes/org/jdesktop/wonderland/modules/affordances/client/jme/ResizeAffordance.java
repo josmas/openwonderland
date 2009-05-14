@@ -29,14 +29,15 @@ import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
-import com.jme.scene.state.ZBufferState;
+import com.jme.scene.state.RenderState.StateType;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.Formatter;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -44,18 +45,12 @@ import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
-import org.jdesktop.mtgame.RenderUpdater;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceException;
 
 /**
  * Visual affordance (manipulator) to resize a cell in the world.
@@ -80,14 +75,7 @@ public class ResizeAffordance extends Affordance {
     private Entity resizeEntity = null;
 
     /* Listener for resize drag events */
-    private ResizeDragListener listener = null;
-
-    private static ZBufferState zbuf = null;
-    static {
-        zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-        zbuf.setEnabled(true);
-        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-    }
+    private ResizeDragListener resizeListener = null;
 
     /* Listener for changes in the transform of the cell */
     private GeometricUpdateListener updateListener = null;
@@ -96,12 +84,12 @@ public class ResizeAffordance extends Affordance {
      * Constructor, create a new resize affordance entity given the Cell to
      * attach it to.
      */
-    public ResizeAffordance(Cell cell) throws AffordanceException {
-        super("Resize", cell);
+    public ResizeAffordance(Node sceneRoot) {
+        super("Resize");
 
         // Figure out the bounds of the root entity of the cell and create a
         // cube to be just a bit larger than that
-        sceneRoot = getSceneGraphRoot();
+        this.sceneRoot = sceneRoot;
         BoundingVolume bounds = sceneRoot.getWorldBound();
         if (bounds instanceof BoundingSphere) {
             radius = ((BoundingSphere)bounds).radius;
@@ -122,7 +110,7 @@ public class ResizeAffordance extends Affordance {
         resizeEntity = new Entity("Sphere Entity");
         Node sphereNode = createSphereNode("Sphere Node");
         addSubEntity(resizeEntity, sphereNode);
-        listener = addResizeListener(resizeEntity, sphereNode);
+        resizeListener = addResizeListener(resizeEntity, sphereNode);
 
         // Listen for changes to the cell's translation and apply the same
         // update to the root node of the affordances. We also re-set the size
@@ -175,20 +163,19 @@ public class ResizeAffordance extends Affordance {
      * @inheritDoc()
      */
     @Override
-    public void remove() {
-        // Remove the Entity from the scene graph. We also want to unregister
-        // the listener from the cell's node. We need to do this in a special
-        // update thread
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                listener.removeFromEntity(resizeEntity);
-                ClientContextJME.getWorldManager().removeEntity(ResizeAffordance.this);
-                CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-                RenderComponent cellRC = (RenderComponent) renderer.getEntity().getComponent(RenderComponent.class);
-                cellRC.getSceneRoot().removeGeometricUpdateListener(updateListener);
-                listener = null;
-                resizeEntity = null;
-            }}, null);
+    public void dispose() {
+        // Call the superclass dispose() first, to make sure the affordance
+        // is no longer visible
+        super.dispose();
+
+        // Clean up all of the listeners so this class gets properly garbage
+        // collected.
+        resizeListener.removeFromEntity(resizeEntity);
+        sceneRoot.removeGeometricUpdateListener(updateListener);
+        resizeListener = null;
+        resizeEntity = null;
+        updateListener = null;
+        listenerSet.clear();
     }
 
     /**
@@ -202,19 +189,18 @@ public class ResizeAffordance extends Affordance {
         sphereNode.attachChild(sphere);
 
         // Set the color to black and the transparency
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
         sphere.setSolidColor(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
         sphereNode.setRenderState(zbuf);
-        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        MaterialState matState = (MaterialState) rm.createRendererState(RenderState.RS_MATERIAL);
+        MaterialState matState = (MaterialState)rm.createRendererState(StateType.Material);
         sphereNode.setRenderState(matState);
         matState.setDiffuse(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
         matState.setAmbient(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
-//        matState.setSpecular(new ColorRGBA(1.0f, 1.0f, 1.0f, 0.5f));
         matState.setShininess(128.0f);
         matState.setEmissive(new ColorRGBA(0.0f, 0.0f, 0.0f, 0.5f));
         matState.setEnabled(true);
 
-        BlendState alphaState = (BlendState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_BLEND);
+        BlendState alphaState = (BlendState)rm.createRendererState(StateType.Blend);
         alphaState.setBlendEnabled(true);
         alphaState.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
         alphaState.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
@@ -224,7 +210,7 @@ public class ResizeAffordance extends Affordance {
         sphere.setRenderState(alphaState);
 
         // Remove the back faces of the object so transparency works properly
-        CullState cullState = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_CULL);
+        CullState cullState = (CullState)rm.createRendererState(StateType.Cull);
         cullState.setCullFace(CullState.Face.Back);
         sphereNode.setRenderState(cullState);
 
@@ -243,6 +229,72 @@ public class ResizeAffordance extends Affordance {
         ResizeDragListener l = new ResizeDragListener();
         l.addToEntity(entity);
         return l;
+    }
+
+    private Set<ResizingListener> listenerSet = new HashSet();
+
+    /**
+     * Adds a listener for resizing events. If the listener has already been
+     * added, this method does nothing.
+     *
+     * @param listener The listener to add
+     */
+    public void addResizingListener(ResizingListener listener) {
+        synchronized (listenerSet) {
+            listenerSet.add(listener);
+        }
+    }
+
+    /**
+     * Removes a listener for resizing events. If the listener does not exist,
+     * this method does nothing.
+     *
+     * @param listener The listener to remove
+     */
+    public void removeResizingListener(ResizingListener listener) {
+        synchronized (listenerSet) {
+            listenerSet.remove(listener);
+        }
+    }
+
+    /**
+     * Informs all of the listeners that a resizing has begun
+     */
+    private void fireResizingStarted() {
+        synchronized (listenerSet) {
+            for (ResizingListener listener : listenerSet) {
+                listener.resizingStarted();
+            }
+        }
+    }
+
+    /**
+     * Informs all of the listeners of the new resizing
+     */
+    private void fireResizingChanged(Vector3f resizing) {
+        synchronized (listenerSet) {
+            for (ResizingListener listener : listenerSet) {
+                listener.resizingPerformed(resizing);
+            }
+        }
+    }
+
+    /**
+     * Listener for resize events.
+     */
+    public interface ResizingListener {
+        /**
+         * Indicates that the resizing has begun using the affordance.
+         */
+        public void resizingStarted();
+
+        /**
+         * Indicates that the resize affordance has been moved by a certain
+         * amount, giving a Vector3f of the scaling along each axis
+         *
+         * @param resizing The resizing amount as a 3D vector
+         */
+        public void resizingPerformed(Vector3f resizing);
     }
 
     /**
@@ -264,9 +316,6 @@ public class ResizeAffordance extends Affordance {
 
         // The length of the vector when we started dragging
         private float dragStartRadius;
-
-        // The original scaling of the cell when the drag started
-        private Vector3f dragStartScaling;
 
         // The label (and frame) to display the current drag amount
         private JFrame labelFrame = null;
@@ -308,7 +357,6 @@ public class ResizeAffordance extends Affordance {
             // Figure out where the initial mouse button press happened and
             // store the initial position. We also store the center of the
             // affordance.
-            CellTransform transform = cell.getLocalTransform();
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D be = (MouseButtonEvent3D)event;
                 if (be.isPressed() && be.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
@@ -317,9 +365,6 @@ public class ResizeAffordance extends Affordance {
                     MouseEvent awtButtonEvent = (MouseEvent)be.getAwtEvent();
                     dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
                     dragStartWorld = be.getIntersectionPointWorld();
-
-                    // The scaling of the cell when the drag first started
-                    dragStartScaling = transform.getScaling(null);
 
                     // Figure out the world coordinates of the center of the
                     // affordance.
@@ -337,6 +382,9 @@ public class ResizeAffordance extends Affordance {
                     labelFrame.toFront();
                     labelFrame.setVisible(true);
                     labelFrame.repaint();
+
+                    // Tell the listeners that a resizing has started
+                    fireResizingStarted();
                 } else if (be.isReleased() == true) {
                     labelFrame.setVisible(false);
                 }
@@ -379,9 +427,7 @@ public class ResizeAffordance extends Affordance {
             setLabelPosition(awtMouseEvent);
 
             // Rotate the object along the defined axis and angle.
-            Vector3f scaling = dragStartScaling.mult(scale);
-            transform.setScaling(scaling);
-            movableComp.localMoveRequest(transform);
+            fireResizingChanged(new Vector3f(scale, scale, scale));
         }
 
         /**

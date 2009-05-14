@@ -28,33 +28,27 @@ import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Arrow;
 import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
-import com.jme.scene.state.ZBufferState;
+import com.jme.scene.state.RenderState.StateType;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.Formatter;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
-import org.jdesktop.mtgame.RenderUpdater;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceException;
 
 /**
  * Visual affordance (manipulator) to move a cell around in the world.
@@ -92,13 +86,6 @@ public class TranslateAffordance extends Affordance {
     /* The endities representing the double-edged arrows for each axis */
     private Entity xEntity = null, yEntity = null, zEntity = null;
 
-    private static ZBufferState zbuf = null;
-    static {
-        zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-        zbuf.setEnabled(true);
-        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-    }
-
     /* Listener for changes in the transform of the cell */
     private GeometricUpdateListener updateListener = null;
 
@@ -112,12 +99,12 @@ public class TranslateAffordance extends Affordance {
      * @param cell
      * @throw AffordanceException Upon error creating the affordance
      */
-    public TranslateAffordance(Cell cell) throws AffordanceException {
-        super("Translate", cell);
+    public TranslateAffordance(Node sceneRoot) {
+        super("Translate");
 
         // Figure out the bounds of the root entity of the cell and create an
         // arrow to be just a bit larger than that
-        sceneRoot = getSceneGraphRoot();
+        this.sceneRoot = sceneRoot;
         BoundingVolume bounds = sceneRoot.getWorldBound();
         if (bounds instanceof BoundingSphere) {
             extent = ((BoundingSphere)bounds).radius;
@@ -220,29 +207,31 @@ public class TranslateAffordance extends Affordance {
     /**
      * @inheritDoc()
      */
-    public void remove() {
-        // Remove the Entity from the scene graph. We also want to unregister
-        // the listener from the cell's node. We need to do this in a special
-        // update thread
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                ClientContextJME.getWorldManager().removeEntity(TranslateAffordance.this);
-                CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-                RenderComponent cellRC = (RenderComponent) renderer.getEntity().getComponent(RenderComponent.class);
-                cellRC.getSceneRoot().removeGeometricUpdateListener(updateListener);
-                xListener.removeFromEntity(xEntity);
-                yListener.removeFromEntity(yEntity);
-                zListener.removeFromEntity(zEntity);
-                xListener = yListener = zListener = null;
-                xEntity = yEntity = zEntity = null;
-            }}, null);
+    @Override
+    public void dispose() {
+        // Call the superclass dispose() first, to make sure the affordance
+        // is no longer visible
+        super.dispose();
+
+        // Clean up all of the listeners so this class gets properly garbage
+        // collected.
+        sceneRoot.removeGeometricUpdateListener(updateListener);
+        xListener.removeFromEntity(xEntity);
+        yListener.removeFromEntity(yEntity);
+        zListener.removeFromEntity(zEntity);
+        xListener = yListener = zListener = null;
+        xEntity = yEntity = zEntity = null;
+        updateListener = null;
+        listenerSet.clear();
     }
 
     /**
      * Adds a drag listener for the Entity and the node, given the axis along
      * which the drag should take place.
      */
-    private TranslateDragListener addDragListener(Entity entity, Node node, TranslateAxis direction) {
+    private TranslateDragListener addDragListener(Entity entity, Node node,
+            TranslateAxis direction) {
+        
         makeEntityPickable(entity, node);
         TranslateDragListener l = new TranslateDragListener(direction);
         l.addToEntity(entity);
@@ -267,7 +256,7 @@ public class TranslateAffordance extends Affordance {
         // color shows up
         Node n = new Node();
         RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        MaterialState matState3 = (MaterialState)rm.createRendererState(RenderState.RS_MATERIAL);
+        MaterialState matState3 = (MaterialState)rm.createRendererState(StateType.Material);
         matState3.setDiffuse(color);
         n.setRenderState(matState3);
 
@@ -300,6 +289,72 @@ public class TranslateAffordance extends Affordance {
         return n;
     }
 
+    private Set<TranslationListener> listenerSet = new HashSet();
+
+    /**
+     * Adds a listener for translation events. If the listener has already
+     * been added, this method does nothing.
+     *
+     * @param listener The listener to add
+     */
+    public void addTranslationListener(TranslationListener listener) {
+        synchronized (listenerSet) {
+            listenerSet.add(listener);
+        }
+    }
+
+    /**
+     * Removes a listener for translation events. If the listener does not
+     * exist, this method does nothing.
+     *
+     * @param listener The listener to remove
+     */
+    public void removeTranslationListener(TranslationListener listener) {
+        synchronized (listenerSet) {
+            listenerSet.remove(listener);
+        }
+    }
+
+    /**
+     * Informs all of the listeners that a translation has begun
+     */
+    private void fireTranslationStarted() {
+        synchronized (listenerSet) {
+            for (TranslationListener listener : listenerSet) {
+                listener.translationStarted();
+            }
+        }
+    }
+
+    /**
+     * Informs all of the listeners of the new translation
+     */
+    private void fireTranslationChanged(Vector3f translation) {
+        synchronized (listenerSet) {
+            for (TranslationListener listener : listenerSet) {
+                listener.translationPerformed(translation);
+            }
+        }
+    }
+    
+    /**
+     * Listener for translation events.
+     */
+    public interface TranslationListener {
+        /**
+         * Indicates that the translation has begun using the affordance.
+         */
+        public void translationStarted();
+        
+        /**
+         * Indicates that the translation affordance has been moved by a certain
+         * amount, giving a Vector3f.
+         *
+         * @param translation The translation amount as a 3D vector
+         */
+        public void translationPerformed(Vector3f translation);
+    }
+
     /**
      * Inner class that handles the dragging movement and updates the position
      * of the cell accordingly
@@ -315,9 +370,6 @@ public class TranslateAffordance extends Affordance {
 
         // The screen coordinates of the button press event.
         private Point dragStartScreen;
-
-        // The translation of the cell when the mouse button is first pressed.
-        private Vector3f translationOnPress = null;
 
         // The label (and frame) to display the current drag amount
         private JFrame labelFrame = null;
@@ -360,22 +412,25 @@ public class TranslateAffordance extends Affordance {
 
             // Figure out where the initial mouse button press happened and
             // store the initial position
-            CellTransform transform = cell.getLocalTransform();
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
-                if (buttonEvent.isPressed() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+                if (buttonEvent.isPressed() &&
+                        buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+                    
                     // Fetch the initial location of the mouse drag event and
                     // store away the necessary information
                     MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
                     dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
                     dragStartWorld = buttonEvent.getIntersectionPointWorld();
-                    translationOnPress = transform.getTranslation(null);
                     
                     // Set the initial value of the label to 0.0 and display
                     setLabelPosition(awtMouseEvent);
                     labelFrame.toFront();
                     labelFrame.setVisible(true);
                     labelFrame.repaint();
+
+                    // Tell the listeners that a translation has started.
+                    fireTranslationStarted();
                 }
                 else if (buttonEvent.isReleased() == true) {
                     labelFrame.setVisible(false);
@@ -431,9 +486,7 @@ public class TranslateAffordance extends Affordance {
             setLabelPosition(awtMouseEvent);
 
             // Move the cell via the moveable comopnent
-            Vector3f newTranslation = translationOnPress.add(addVector);
-            transform.setTranslation(newTranslation);
-            movableComp.localMoveRequest(transform);
+            fireTranslationChanged(addVector);
         }
 
         /**

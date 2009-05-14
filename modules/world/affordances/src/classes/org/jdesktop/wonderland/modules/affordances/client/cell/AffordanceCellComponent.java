@@ -17,13 +17,25 @@
  */
 package org.jdesktop.wonderland.modules.affordances.client.cell;
 
+import com.jme.scene.Node;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
+import org.jdesktop.wonderland.client.cell.ComponentChangeListener.ChangeType;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.jme.CellRefComponent;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemoveEvent;
 import org.jdesktop.wonderland.modules.affordances.client.jme.Affordance;
 
@@ -37,19 +49,88 @@ public abstract class AffordanceCellComponent extends CellComponent {
     private AffordanceCloseListener listener = null;
     private float size = 1.5f;
     protected Affordance affordance = null;
+    protected MovableComponent movableComp = null;
 
     public AffordanceCellComponent(Cell cell) {
         super(cell);
-        InputManager.inputManager().addGlobalEventListener(listener = new AffordanceCloseListener());
+
+        // Listen for the global event to turn off all affordances
+        listener = new AffordanceCloseListener();
+        InputManager.inputManager().addGlobalEventListener(listener);
     }
 
     @Override
     public void setStatus(CellStatus status) {
+
         // If we are making this component active, then create the affordance,
         // if the first time through.
         super.setStatus(status);
         if (status == CellStatus.ACTIVE) {
-            affordance.addAffordanceToScene();
+            // Add a cell ref component to the entity. This will let us associated
+            // the entity with the cell and make it easy to detect when we click
+            // off of the cell
+            CellRefComponent refComponent = new CellRefComponent(cell);
+            affordance.addComponent(CellRefComponent.class, refComponent);
+
+            // First try to add the movable component. The presence of the
+            // movable component will determine when we actually add the
+            // affordance to the scene graph. We do this in a separate thread
+            // because adding the movable component is a synchronous call (it
+            // waits for a response message. That would block the thread calling
+            // the setStatus() method. This won't work since this thread cannot
+            // be blocked when adding the component.
+            new Thread() {
+                @Override
+                public void run() {
+                    checkMovableComponent();
+                    if (movableComp == null) {
+                        addMovableComponent();
+                    }
+                    addAffordanceToScene();
+                }
+            }.start();
+        }
+        else if (status == CellStatus.DISK) {
+            // Remove the affordance and clean it up. Set it to null, because
+            // it must be created again when the Cell becomes visible.
+            affordance.dispose();
+            affordance = null;
+        }
+    }
+
+    /**
+     * Adds the affordance to the scene graph.
+     */
+    public void addAffordanceToScene() {
+        // We should add a listener just in case the movable component gets
+        // added. We add the listener first, just in case the component gets
+        // added inbetween the time we check and the time we add the listener.
+        if (movableComp == null) {
+            cell.addComponentChangeListener(new ComponentChangeListener() {
+                public void componentChanged(Cell cell, ChangeType type, CellComponent component) {
+                    if (type == ChangeType.ADDED && component instanceof MovableComponent) {
+                        checkMovableComponent();
+                        updateSceneGraph();
+                    }
+                }
+            });
+        }
+
+        // Recheck whether the movable component exists here. If so, then add
+        // to the scene graph right away.
+        checkMovableComponent();
+        if (movableComp != null) {
+            updateSceneGraph();
+        }
+
+    }
+
+    /**
+     * Checks whether the movable component exists and sets it if so.
+     */
+    private synchronized void checkMovableComponent() {
+        if (movableComp == null) {
+            movableComp = cell.getComponent(MovableComponent.class);
         }
     }
 
@@ -77,7 +158,57 @@ public abstract class AffordanceCellComponent extends CellComponent {
      * Remove the affordance component from the cell
      */
     public void remove() {
+        // Remove the listener for the event that causes all affordances to
+        // disappear and then remove this component itself. This will cause
+        // the affordance to be removed in setStatus()
         InputManager.inputManager().removeGlobalEventListener(listener);
+        cell.removeComponent(getClass());
+    }
+
+    /**
+     * Returns the scene root for the Cell's scene graph
+     */
+    protected Node getSceneGraphRoot() {
+        CellRendererJME renderer = (CellRendererJME)
+                cell.getCellRenderer(RendererType.RENDERER_JME);
+        RenderComponent cellRC = (RenderComponent)
+                renderer.getEntity().getComponent(RenderComponent.class);
+        return cellRC.getSceneRoot();
+    }
+
+    /**
+     * Adds the movable component, assumes it does not already exist.
+     */
+    private void addMovableComponent() {
+
+        // Go ahead and try to add the affordance. If we cannot, then log an
+        // error and return.
+        CellID cellID = cell.getCellID();
+        String className = "org.jdesktop.wonderland.server.cell.MovableComponentMO";
+        CellServerComponentMessage cscm =
+                CellServerComponentMessage.newAddMessage(cellID, className);
+        ResponseMessage response = cell.sendCellMessageAndWait(cscm);
+        if (response instanceof ErrorMessage) {
+            logger.warning("Unable to add movable component for Cell" +
+                    cell.getName() + " with ID " + cell.getCellID());
+        }
+    }
+
+    /* True if the affordance has been added to the scene graph. */
+    private boolean addedToSceneGraph = false;
+
+    /**
+     * Updates the scene graph to add this affordance
+     */
+    private synchronized void updateSceneGraph() {
+        // Since we are updating the scene graph, we need to put this in a
+        // special update thread. Also this method is synchronized and we keep
+        // track of whether it has been added in a boolean. This ensures that
+        // it only gets added once.
+        if (addedToSceneGraph == false) {
+            affordance.setVisible(true);
+            addedToSceneGraph = true;
+        }
     }
 
     /**
@@ -96,7 +227,6 @@ public abstract class AffordanceCellComponent extends CellComponent {
         public void commitEvent(Event event) {
             // Just tell the affordance to remove itself
             remove();
-            InputManager.inputManager().removeGlobalEventListener(this);
         }
     }
 }
