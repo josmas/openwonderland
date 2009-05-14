@@ -139,7 +139,7 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
-        avatarMI = new JMenuItem(bundle.getString("Avatar..."));
+        avatarMI = new JMenuItem(bundle.getString("Avatar_Appearance..."));
         avatarMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();

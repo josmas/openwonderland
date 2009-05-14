@@ -473,33 +473,37 @@ public class AvatarConfigManager {
             logger.info("SERVER SYNC "+this);
             repository = ContentRepositoryRegistry.getInstance().getRepository(session);
             
-            System.out.println("[AvatarConfigManager] got repository " + repository);
+            logger.fine("[AvatarConfigManager] got repository " + repository);
             
             ContentCollection userDir = repository.getUserRoot(true);
+            if (userDir==null) {
+                logger.severe("UserDir is NULL !");
+            } else {
+                logger.fine("[AvatarConfigManager] get user root " + userDir);
 
-            System.out.println("[AvatarConfigManager] get user root " + userDir);
+                avatarsDir = (ContentCollection) userDir.getChild("avatars");
+                if (avatarsDir == null) {
+                    avatarsDir = (ContentCollection) userDir.createChild("avatars", Type.COLLECTION);
+                }
+                synchronized (avatarConfigServers) {
+                    avatarConfigServers.put(session, this);
+                }
+                session.getPrimarySession().addSessionStatusListener(new SessionStatusListener() {
 
-            avatarsDir = (ContentCollection) userDir.getChild("avatars");
-            if (avatarsDir == null) {
-                avatarsDir = (ContentCollection) userDir.createChild("avatars", Type.COLLECTION);
-            }
-            synchronized (avatarConfigServers) {
-                avatarConfigServers.put(session, this);
-            }
-            session.getPrimarySession().addSessionStatusListener(new SessionStatusListener() {
-
-                public void sessionStatusChanged(WonderlandSession session, Status status) {
-                    if (status == Status.DISCONNECTED) {
-                        synchronized (avatarConfigServers) {
-                            avatarConfigServers.remove(session);
-                            connected = false;
+                    public void sessionStatusChanged(WonderlandSession session, Status status) {
+                        if (status == Status.DISCONNECTED) {
+                            synchronized (avatarConfigServers) {
+                                avatarConfigServers.remove(session);
+                                connected = false;
+                            }
                         }
                     }
-                }
-            });
-            this.start();
+                });
+                this.start();
+            }
         }
 
+        @Override
         public void run() {
             while(connected) {
                 try {

@@ -32,6 +32,7 @@ import com.jme.scene.Spatial;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import com.jme.util.export.binary.BinaryImporter;
+import com.jme.util.geom.BufferUtils;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import imi.character.CharacterAttributes;
@@ -42,10 +43,14 @@ import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.CycleActionState;
 import imi.scene.PMatrix;
 import imi.scene.PTransform;
+import imi.scene.processors.CharacterAnimationProcessor;
+import imi.scene.processors.CharacterProcessor;
 import imi.scene.processors.JSceneEventProcessor;
 import imi.utils.input.AvatarControlScheme;
 import java.net.URL;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorCollectionComponent;
+import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -76,6 +81,7 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarCon
 @ExperimentalAPI
 public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
+    private WlAvatarCharacter pendingAvatar = null;
     private WlAvatarCharacter avatarCharacter = null;
     private boolean selectedForInput = false;
 
@@ -90,13 +96,21 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private AvatarControlScheme controlScheme = null;
     private NameTagNode nameTag;
 
+    private ProcessorComponent cameraChainedProcessor = null;  // The processor to which the camera is chained
+
+    private CellMoveListener cellMoveListener = null;
+
+    private CellStatus status = CellStatus.DISK;
+
+    private Entity rootEntity = null;
+
     public AvatarImiJME(Cell cell) {
         super(cell);
         assert (cell != null);
         final Cell c = cell;
 
+        // Listen for avatar configuration changes.
         cell.getComponent(AvatarConfigComponent.class).addAvatarConfigChageListener(new AvatarConfigChangeListener() {
-
             public void AvatarConfigChanged(AvatarConfigMessage msg) {
                 URL configURL=null;
                 try {
@@ -107,14 +121,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     return;
                 }
 
-                WonderlandSession session = c.getCellCache().getSession();
-                ServerSessionManager manager = session.getSessionManager();
-                String serverHostAndPort = manager.getServerNameAndPort();
-                final WlAvatarCharacter avatarCharacter = new WlAvatarCharacter(configURL,
-                        ClientContextJME.getWorldManager(),
-                        "wla://avatarbaseart@" + serverHostAndPort + "/");
-
-                changeAvatar(avatarCharacter);
+                changeAvatar(loadAvatar(configURL));
             }
         });
 
@@ -147,6 +154,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
         };
 
+        // TODO - not fully implemented/tested
         ClientContext.getInputManager().addGlobalEventListener(new EventClassListener() {
 
             private Class[] consumeClasses = new Class[]{
@@ -193,115 +201,125 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     @Override
     public void setStatus(CellStatus status) {
         super.setStatus(status);
+        this.status = status;
         switch(status) {
             case DISK :
-                if (entity!=null)
-                    ClientContextJME.getWorldManager().removeEntity(entity);
                 break;
-            case BOUNDS :
-                cell.getComponent(MovableComponent.class).addServerCellMoveListener(new CellMoveListener() {
-                    public void cellMoved(CellTransform transform, CellMoveSource source) {
-                        if (source==CellMoveSource.REMOTE) {
-//                            System.err.println("REMOTE MOVE "+transform.getTranslation(null));
-                            if (avatarCharacter!=null) {
-                                if (avatarCharacter.getModelInst()==null) {
-                                    logger.severe("MODEL INST IS NULL !");
-                                    Thread.dumpStack();
-                                    return;
+            case INACTIVE :
+                break;
+            case ACTIVE :
+                if (cellMoveListener!=null) {
+                    cell.getComponent(MovableComponent.class).removeServerCellMoveListener(cellMoveListener);
+                    cellMoveListener = null;
+                }
+                if (avatarCharacter==null) {
+                    AvatarConfigComponent configComp = cell.getComponent(AvatarConfigComponent.class);
+                    URL configURL = null;
+                    if (configComp!=null)
+                        configURL = configComp.getAvatarConfigURL();
+                    pendingAvatar = (WlAvatarCharacter) loadAvatar(configURL);
+                } else {
+                    ClientContextJME.getWorldManager().removeEntity(avatarCharacter);
+                    pendingAvatar = null;
+                }
+                
+                cell.getComponent(MovableComponent.class).addServerCellMoveListener(cellMoveListener);
+                changeAvatar(pendingAvatar);
+                if (cellMoveListener==null) {
+                    cellMoveListener = new CellMoveListener() {
+                        public void cellMoved(CellTransform transform, CellMoveSource source) {
+                            if (source==CellMoveSource.REMOTE) {
+    //                            System.err.println("REMOTE MOVE "+transform.getTranslation(null));
+                                if (avatarCharacter!=null) {
+                                    if (avatarCharacter.getModelInst()==null) {  // Extra debug check
+                                        logger.severe("MODEL INST IS NULL !");
+                                        Thread.dumpStack();
+                                        return;
+                                    }
+                                    avatarCharacter.getModelInst().setTransform(new PTransform(transform.getRotation(null), transform.getTranslation(null), new Vector3f(1,1,1)));
                                 }
-                                avatarCharacter.getModelInst().setTransform(new PTransform(transform.getRotation(null), transform.getTranslation(null), new Vector3f(1,1,1)));
                             }
                         }
-                    }
-                });
+                    };
+                }
                 break;
         }
     }
 
     @Override
     protected Entity createEntity() {
-        avatarCharacter = (WlAvatarCharacter) createAvatarEntities(ClientContextJME.getWorldManager());
-
-        RenderComponent rc = (RenderComponent) avatarCharacter.getComponent(RenderComponent.class);
-
-        if (rc != null) {
-            addDefaultComponents(avatarCharacter, rc.getSceneRoot());
-        } else {
-            logger.warning("NO RenderComponent for Avatar");
-        }
-
-        // Remove the entity, it will be added when the cell status changes
-        ClientContextJME.getWorldManager().removeEntity(avatarCharacter);
-
-
-        return avatarCharacter;
+        assert(rootEntity==null);
+        rootEntity = new Entity("AvatarRoot");
+        return rootEntity;
     }
 
     private void handleAvatarRendererChangeRequest(AvatarRendererChangeRequestEvent event) {
-        System.err.println("Avatar quality change, not implemented");
         switch (event.getQuality()) {
             case High :
+                URL avatarConfigURL = null;
+                avatarConfigURL = cell.getComponent(AvatarConfigComponent.class).getAvatarConfigURL();
+                changeAvatar(loadAvatar(avatarConfigURL));
                 break;
             case Medium :
+                changeAvatar(loadAvatar(null));
                 break;
             case Low :
+                changeAvatar(loadAvatar(null));
                 break;
         }
     }
 
+    /**
+     * Change the current avatar to the newAvatar
+     * 
+     * @param newAvatar
+     */
     void changeAvatar(WlAvatarCharacter newAvatar) {
-        LoadingInfo.startedLoading(cell.getCellID(), newAvatar.getName());
-        ViewManager viewManager = ViewManager.getViewManager();
+        synchronized(this) {
+            WorldManager wm = ClientContextJME.getWorldManager();
 
-        if (viewManager.getPrimaryViewCell()==cell) {
-            ViewManager.getViewManager().detach();
-        }
-        PMatrix currentLocation = null;
+            LoadingInfo.startedLoading(cell.getCellID(), newAvatar.getName());
 
-        WorldManager wm = ClientContextJME.getWorldManager();
-        if (avatarCharacter != null) {
-            if (nameTag!=null) {
-                //avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTag);
+            PMatrix currentLocation = null;
+
+            if (avatarCharacter != null) {
+                currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
+                rootEntity.removeEntity(avatarCharacter);
+                if (nameTag!=null) { // THis must be done after the entity is no longer live
+                    avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTag);
+                }
+
+                enableInputListeners(false);
+                avatarCharacter.destroy();
             }
-            currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
-            wm.removeEntity(avatarCharacter);
-            avatarCharacter.destroy();
+
+            avatarCharacter = newAvatar;
+
+            if (newAvatar==null)
+                return;
+
+            RenderComponent rc = (RenderComponent) avatarCharacter.getComponent(RenderComponent.class);
+
+            if (rc != null) {
+                addDefaultComponents(avatarCharacter, rc.getSceneRoot());
+            } else {
+                logger.warning("NO RenderComponent for Avatar");
+            }
+
+            if (currentLocation != null && avatarCharacter.getModelInst()!=null) {
+                avatarCharacter.getModelInst().setTransform(new PTransform(currentLocation));
+            }
+
+            if (nameTag!=null) {
+                avatarCharacter.getJScene().getExternalKidsRoot().attachChild(nameTag);
+            }
+
+            rootEntity.addEntity(avatarCharacter);
+
+            selectForInput(selectedForInput);
+
+            LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
         }
-
-        avatarCharacter = newAvatar;
-        
-        RenderComponent rc = (RenderComponent) avatarCharacter.getComponent(RenderComponent.class);
-
-        if (rc != null) {
-            addDefaultComponents(avatarCharacter, rc.getSceneRoot());
-        } else {
-            logger.warning("NO RenderComponent for Avatar");
-        }
-        if (currentLocation != null) {
-            avatarCharacter.getModelInst().setTransform(new PTransform(currentLocation));
-        }
-
-        if (nameTag!=null) {
-            avatarCharacter.getJScene().getExternalKidsRoot().attachChild(nameTag);
-        }
-
-        wm.addEntity(avatarCharacter);
-
-        entity = newAvatar;     // This needs to be set before calls to the viewmanager
-
-        if (viewManager.getPrimaryViewCell()==cell) {
-            ViewManager.getViewManager().attach(cell);
-        }
-
-        // reset the control scheme before selecting the new avatar
-        controlScheme = null;
-
-        selectForInput(selectedForInput);
-//        System.err.println("Change Avatar to " + entity);
-
-        System.gc();        // Force a GC to dispose of direct buffers
-
-        LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
     }
 
     @Override
@@ -335,87 +353,97 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         }
     }
 
-    protected Entity createAvatarEntities(WorldManager wm) {
-        PMatrix origin = new PMatrix();
-        CellTransform transform = cell.getLocalTransform();
-        origin.setTranslation(transform.getTranslation(null));
-        origin.setRotation(transform.getRotation(null));
+    /**
+     * Load and return the avatar. To make this the current avatar changeAvatar()
+     * must be called
+     * 
+     * @param avatarConfigURL
+     * @return
+     */
+    protected WlAvatarCharacter loadAvatar(URL avatarConfigURL) {
+        WlAvatarCharacter ret=null;
+            WorldManager wm = ClientContextJME.getWorldManager();
+            PMatrix origin = new PMatrix();
+            CellTransform transform = cell.getLocalTransform();
+            origin.setTranslation(transform.getTranslation(null));
+            origin.setRotation(transform.getRotation(null));
 
-        // Set the base URL
-        WonderlandSession session = cell.getCellCache().getSession();
-        ServerSessionManager manager = session.getSessionManager();
-        String serverHostAndPort = manager.getServerNameAndPort();
-        String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
+            // Set the base URL
+            WonderlandSession session = cell.getCellCache().getSession();
+            ServerSessionManager manager = session.getSessionManager();
+            String serverHostAndPort = manager.getServerNameAndPort();
+            String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
 
-        URL avatarConfigURL = cell.getComponent(AvatarConfigComponent.class).getAvatarConfigURL();
+            logger.info("[AvatarImiJme] AVATAR CONFIG URL "+avatarConfigURL);
 
-//        System.out.println("[AvatarImiJme] AVATAR CONFIG URL "+avatarConfigURL);
+            LoadingInfo.startedLoading(cell.getCellID(), username);
+            try {
+                // Create the character, but don't add the entity to wm
+                String avatarDetail = System.getProperty("avatar.detail", "high");
+                if (avatarConfigURL == null || avatarDetail.equalsIgnoreCase("low")) {
+                    CharacterAttributes attributes = new MaleAvatarAttributes(username, false);
 
-        LoadingInfo.startedLoading(cell.getCellID(), username);
-        try {
-        // Create the character, but don't add the entity to wm
-        if (avatarConfigURL == null) {
-            if (avatarCharacter == null) {
-                CharacterAttributes attributes = new MaleAvatarAttributes(username, false);
+                    // Setup simple model
+                    attributes.setUseSimpleStaticModel(true, null);
+                    attributes.setBaseURL(baseURL);
+                    ret = new WlAvatarCharacter(attributes, wm);
+    //                Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(new URL(baseURL+"assets/models/collada/Avatars/placeholder.bin"));
 
-                // Setup simple model
-                attributes.setUseSimpleStaticModel(true, null);
-                attributes.setBaseURL(baseURL);
-                avatarCharacter = new WlAvatarCharacter(attributes, wm);
-//                Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(new URL(baseURL+"assets/models/collada/Avatars/placeholder.bin"));
+                    URL url = new URL(baseURL+"assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
+                    ResourceLocator resourceLocator = new RelativeResourceLocator(url);
 
-                URL url = new URL(baseURL+"assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
-                ResourceLocator resourceLocator = new RelativeResourceLocator(url);
+                    ResourceLocatorTool.addThreadResourceLocator(
+                            ResourceLocatorTool.TYPE_TEXTURE,
+                            resourceLocator);
+                    Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
+                    ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
-                ResourceLocatorTool.addThreadResourceLocator(
-                        ResourceLocatorTool.TYPE_TEXTURE,
-                        resourceLocator);
-                Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
-                ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
+                    ret.getJScene().getExternalKidsRoot().attachChild(placeHolder);
+                } else {
+                    ret = new WlAvatarCharacter(avatarConfigURL, wm, "wla://avatarbaseart@" + serverHostAndPort + "/");
+                }
 
-//                DebugNode d = new DebugNode();
-//                d.attachChild(placeHolder);
-                avatarCharacter.getJScene().getExternalKidsRoot().attachChild(placeHolder);
+                ret.getModelInst().getTransform().getLocalMatrix(true).set(origin);
+
+                // TODO - remove hardcoded npc support
+                if (username.equals("npc") && avatarConfigURL!=null) {
+                    String u = avatarConfigURL.getFile();
+                    username=u.substring(u.lastIndexOf('/')+1, u.lastIndexOf('.'));
+                }
+
+
+                Node external = ret.getJScene().getExternalKidsRoot();
+                ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+                zbuf.setEnabled(true);
+                zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+                external.setRenderState(zbuf);
+
+                NameTagComponent nameTagComp = cell.getComponent(NameTagComponent.class);
+                if (nameTagComp==null) {
+                    nameTagComp = new NameTagComponent(cell, username, 2);
+                    cell.addComponent(nameTagComp);
+                }
+                nameTag = nameTagComp.getNameTagNode();
+                external.attachChild(nameTag);
+                external.setModelBound(new BoundingSphere());
+                external.updateModelBound();
+
+        //        JScene jscene = avatar.getJScene();
+        //        jscene.renderToggle();      // both renderers
+        //        jscene.renderToggle();      // jme renderer only
+        //        jscene.setRenderPRendererMesh(true);  // Force pRenderer to be instantiated
+        //        jscene.toggleRenderPRendererMesh();   // turn off mesh
+        //        jscene.toggleRenderBoundingVolume();  // turn off bounds
+
+            } catch(Exception e) {
+                String badURL=null;
+                if (avatarConfigURL!=null)
+                    badURL = avatarConfigURL.toExternalForm();
+                Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, "Error loading avatar "+badURL, e);
+            } finally {
+                LoadingInfo.finishedLoading(cell.getCellID(), username);
             }
-        } else {
-            avatarCharacter = new WlAvatarCharacter(avatarConfigURL, wm, "wla://avatarbaseart@" + serverHostAndPort + "/");
-        }
-
-        avatarCharacter.getModelInst().getTransform().getLocalMatrix(true).set(origin);
-
-        if (username.equals("npc") && avatarConfigURL!=null) {
-            String u = avatarConfigURL.getFile();
-            username=u.substring(u.lastIndexOf('/')+1, u.lastIndexOf('.'));
-        }
-
-
-        Node external = avatarCharacter.getJScene().getExternalKidsRoot();
-        ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-        zbuf.setEnabled(true);
-        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-        external.setRenderState(zbuf);
-        NameTagComponent nameTagComp = new NameTagComponent(cell, username, 2);
-        nameTag = nameTagComp.getNameTagNode();
-        external.attachChild(nameTag);
-        external.setModelBound(new BoundingSphere());
-        external.updateModelBound();
-
-//        JScene jscene = avatar.getJScene();
-//        jscene.renderToggle();      // both renderers
-//        jscene.renderToggle();      // jme renderer only
-//        jscene.setRenderPRendererMesh(true);  // Force pRenderer to be instantiated
-//        jscene.toggleRenderPRendererMesh();   // turn off mesh
-//        jscene.toggleRenderBoundingVolume();  // turn off bounds
-
-        } catch(Exception e) {
-            String badURL=null;
-            if (avatarConfigURL!=null)
-                badURL = avatarConfigURL.toExternalForm();
-            Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, "Error loading avatar "+badURL, e);
-        } finally {
-            LoadingInfo.finishedLoading(cell.getCellID(), username);
-        }
-        return avatarCharacter;
+            return ret;
     }
 
     @Override
@@ -434,19 +462,20 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     public void selectForInput(boolean selected) {
-        WorldManager wm = ClientContextJME.getWorldManager();
-
         selectedForInput = selected;
+        enableInputListeners(selected);
+    }
 
-//        System.err.println("SelectForInput " + selected);
-
+    private void enableInputListeners(boolean enabled) {
         if (avatarCharacter!=null) {
+             WorldManager wm = ClientContextJME.getWorldManager();
+
             ((WlAvatarContext) avatarCharacter.getContext()).getSteering().setEnable(false);
 
-            if (controlScheme == null && selected) {
+            if (controlScheme == null && enabled) {
                 controlScheme = (AvatarControlScheme) ((JSceneEventProcessor) wm.getUserData(JSceneEventProcessor.class)).setDefault(new AvatarControlScheme(avatarCharacter));
             }
-            if (selected) {
+            if (enabled) {
                 // Listen for avatar movement and update the cell
                 avatarCharacter.getController().addCharacterMotionListener(characterMotionListener);
 
@@ -455,11 +484,45 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 avatarCharacter.selectForInput();
                 controlScheme.getAvatarTeam().add(avatarCharacter);
                 controlScheme.setAvatar(avatarCharacter);
+
+                // Chain the camera processor to the avatar motion processor for
+                // smooth animation. For animated avatars we use CharacterAnimationProcessor for the simple
+                // avatar CharacterProcessor
+                ProcessorCollectionComponent pcc = avatarCharacter.getComponent(ProcessorCollectionComponent.class);
+                ProcessorComponent characterProcessor = null;
+                ProcessorComponent characterAnimationProcessor = null;
+                for(ProcessorComponent pc : pcc.getProcessors()) {
+                    if (pc instanceof CharacterProcessor)
+                        characterProcessor = pc;
+                    else if (pc instanceof CharacterAnimationProcessor) {
+                        characterAnimationProcessor = pc;
+                        break;
+                    }
+                }
+
+                cameraChainedProcessor=null;
+                if (characterAnimationProcessor!=null) {
+                    cameraChainedProcessor = characterAnimationProcessor;
+                } else if (characterProcessor!=null)
+                    cameraChainedProcessor = characterProcessor;
+
+                if (cameraChainedProcessor!=null) {
+                    cameraChainedProcessor.addToChain(ViewManager.getViewManager().getCameraProcessor());
+                    cameraChainedProcessor.setRunInRenderer(true);
+                }
+
             } else {
                 avatarCharacter.getController().removeCharacterMotionListener(characterMotionListener);
                 avatarCharacter.getContext().removeGameContextListener(gameContextListener);
-                if (controlScheme!=null)
+                if (controlScheme!=null) {
                     controlScheme.getAvatarTeam().remove(avatarCharacter);
+                    controlScheme.setAvatar(null);
+                }
+
+                if (cameraChainedProcessor!=null) {
+                    cameraChainedProcessor.removeFromChain(ViewManager.getViewManager().getCameraProcessor());
+                    cameraChainedProcessor = null;
+                }
             }
         }
     }

@@ -44,7 +44,7 @@ public class WlAvatarCharacter extends Avatar {
     }
 
     public WlAvatarCharacter(URL configURL, WorldManager wm, String baseURL) {
-        super(configURL, wm, baseURL, new PMatrix());
+        super(configURL, wm, baseURL, new PMatrix(), false);
     }
 
     @Override
