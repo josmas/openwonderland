@@ -75,11 +75,26 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /** Creates new form MainFrame */
     public MainFrameImpl(WorldManager wm, int width, int height) {
 
-        // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
-        // For now, force the cross-platform (metal) LAF to be used
-        // Also workaround bug 10.
         try {
-            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+
+            boolean hasNimbus = false;
+
+            try {
+                Class.forName("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+                hasNimbus = true;
+            } catch(ClassNotFoundException e) {
+            }
+
+            // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
+            // For now, force the cross-platform (metal) LAF to be used, or Nimbus
+            // Also workaround bug 10.
+            if (hasNimbus)
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+            else {
+                // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            }
+            
             if ("Mac OS X".equals(System.getProperty("os.name"))) {
                 //to workaround popup clipping on the mac we force top-level popups
                 //note: this is implemented in scenario's EmbeddedPopupFactory
@@ -203,11 +218,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
     private void cameraChangedActionPerformed(java.awt.event.ActionEvent evt) {
         if (evt.getSource() == firstPersonRB) {
-            ClientContextJME.getViewManager().setCameraProcessor(new FirstPersonCameraProcessor());
+            ClientContextJME.getViewManager().setCameraController(new FirstPersonCameraProcessor());
         } else if (evt.getSource() == thirdPersonRB) {
-            ClientContextJME.getViewManager().setCameraProcessor(new ThirdPersonCameraProcessor());
+            ClientContextJME.getViewManager().setCameraController(new ThirdPersonCameraProcessor());
         } else if (evt.getSource() == frontPersonRB) {
-            ClientContextJME.getViewManager().setCameraProcessor(new FrontHackPersonCameraProcessor());
+            ClientContextJME.getViewManager().setCameraController(new FrontHackPersonCameraProcessor());
         }
 
     }
