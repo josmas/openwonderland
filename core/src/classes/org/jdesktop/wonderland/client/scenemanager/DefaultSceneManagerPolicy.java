@@ -17,7 +17,9 @@
  */
 package org.jdesktop.wonderland.client.scenemanager;
 
+import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.jme.input.InputEvent3D.ModifierId;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
@@ -92,11 +94,25 @@ public class DefaultSceneManagerPolicy implements SceneManagerPolicy {
     
     public boolean isContext(Event event) {
         // If the event is a press of the right-mouse button and there is an
-        // Entity.
+        // Entity. Look to see if any modifiers are present on the event, and
+        // if so, then ignore the event.
         if (event instanceof MouseButtonEvent3D) {
-            MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
-            return mbe.isPressed() == true && mbe.getButton() == ButtonId.BUTTON3 &&
-                    mbe.getAwtEvent().isShiftDown() == false;
+            // If the event is not pressed and not for button 3 then ignore
+            MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
+            ButtonId button = mbe.getButton();
+            if (mbe.isPressed() == false || button != ButtonId.BUTTON3) {
+                return false;
+            }
+
+            // Check to see if there are any modifiers present. If so, then
+            // ignore. The only modifier that should be present is BUTTON3
+            ModifierId[] ids = mbe.getModifiersEx(null);
+            for (ModifierId id : ids) {
+                if (id != ModifierId.BUTTON3) {
+                    return false;
+                }
+            }
+            return true;
         }
         return false;
     }
