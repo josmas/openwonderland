@@ -30,6 +30,7 @@
             </classpath>
 
             <sysproperty key="java.library.path" value="${current.dir}/lib/${ostype}/native"/>
+            <sysproperty key="wonderland.web.server.url" value="${wonderland.web.server.url}"/>
         </java>
     </target>
 </project>
