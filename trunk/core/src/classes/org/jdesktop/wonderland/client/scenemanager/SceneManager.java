@@ -214,21 +214,23 @@ public class SceneManager {
             inputManager.postEvent(new ActivatedEvent(entity));
         }
         else if (policy.isContext(event) == true) {
-            // Upon a context event, if there is no Entity associated with the
-            // event (the context event happened outside an Entity), then just
-            // use the currently selected list of Entities. Otherwise, if we
-            // perform a context event on an Entity, first clear the selection
-            // list and set the entity as the new selection.
+            // We use the context event to clear the selected entity list first
+            selectedEntityList.clear();
+
+            // If there is an entity for the mouse event, then add the entity to
+            // the list and pass a Selection event too.
             if (entity != null) {
-                selectedEntityList.clear();
                 selectedEntityList.add(entity);
-                inputManager.postEvent(new SelectionEvent(new LinkedList(selectedEntityList)));
+                LinkedList entityList = new LinkedList(selectedEntityList);
+                inputManager.postEvent(new SelectionEvent(entityList));
             }
 
             // Pass the mouse event for now so we know where the event was
-            // fired. This has to be replaced at some point. XXX
-            MouseEvent mouseEvent = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
-            inputManager.postEvent(new ContextEvent(new LinkedList(selectedEntityList), mouseEvent));
+            // fired. We sent this even if the entity is null, so the context
+            // menu can be cleared.
+            LinkedList entityList = new LinkedList(selectedEntityList);
+            MouseEvent mouseEvent = (MouseEvent) ((MouseEvent3D) event).getAwtEvent();
+            inputManager.postEvent(new ContextEvent(entityList, mouseEvent));
         }
     }
     
