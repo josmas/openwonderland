@@ -355,6 +355,7 @@ public class SwingContextMenu implements MenuItemRepaintListener {
                     cell = SceneManager.getCellForEntity(entity);
                 }
                 if (cell == null) {
+                    hideContextMenu();
                     return;
                 }
 
