@@ -907,7 +907,7 @@ public abstract class View2DEntity implements View2D {
 
     /**
      * Specifies whether the view entity is to be displayed in ortho mode ("on the glass").
-     * Update if specified.
+     * Update if specified. Also changes the ortho attribute of all descendent views.
      */
     public synchronized void setOrtho (boolean ortho, boolean update) {
         if (this.ortho == ortho) return;
@@ -915,6 +915,13 @@ public abstract class View2DEntity implements View2D {
         logger.info("change ortho = " + ortho);
         this.ortho = ortho;
         changeMask |= CHANGED_ORTHO;
+
+        logger.info("Make corresponding ortho changes to descendents");
+        logger.info("Num children = " + children.size());
+        for (View2DEntity child : children) {
+            child.setOrtho(ortho, false);
+        }
+
         if (update) {
             update();
         }
@@ -999,10 +1006,30 @@ public abstract class View2DEntity implements View2D {
             if (isActuallyVisible()) {
                 if (ortho) {
                     logger.fine("View is ortho for view " + this);
-                    logger.fine("Attach entity " + entity + " to world manager.");
-                    ClientContextJME.getWorldManager().addEntity(entity);
-                    attachState = AttachState.ATTACHED_TO_WORLD;
                     entity.getComponent(RenderComponent.class).setOrtho(true);
+
+                    if (type == Type.PRIMARY  || type == Type.UNKNOWN) {
+                        // Attach top level ortho views directly to world
+                        ClientContextJME.getWorldManager().addEntity(entity);
+                        attachState = AttachState.ATTACHED_TO_WORLD;
+                        logger.fine("Attached entity " + entity + " to world manager.");
+                    } else {
+                        parentEntity = getParentEntity();
+                        if (parentEntity == null) {
+                            // Has no Parent; attach directly to world
+                            ClientContextJME.getWorldManager().addEntity(entity);
+                            attachState = AttachState.ATTACHED_TO_WORLD;
+                            logger.fine("Attached parentless entity " + entity + " to world manager.");
+                        } else {
+                            parentEntity.addEntity(entity);
+                            RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
+                            RenderComponent rcParent = 
+                                (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+                            sgChangeAttachPointSet(rc, rcParent.getSceneRoot());
+                            attachState = AttachState.ATTACHED_TO_ENTITY;
+                            logger.fine("Attach ortho entity " + entity + " to parent entity " + parentEntity);
+                        }
+                    }
                 } else {
                     logger.fine("View is not ortho for view " + this);
                     parentEntity = getParentEntity();
@@ -1018,14 +1045,6 @@ public abstract class View2DEntity implements View2D {
                         attachState = AttachState.ATTACHED_TO_ENTITY;
                         entity.getComponent(RenderComponent.class).setOrtho(false);
                     }
-                }
-            }
-
-            if ((changeMask & CHANGED_ORTHO) != 0) {
-                // Propagate our ortho setting to our children
-                logger.fine("Force children ortho to " + ortho + " for view " + this);
-                for (View2DEntity child : children) {
-                    child.setOrtho(ortho);
                 }
             }
 
@@ -1069,7 +1088,10 @@ public abstract class View2DEntity implements View2D {
             logger.fine("Update geometry ortho Z order for view " + this);
             if (ortho) {
                 int zOrder = window.getZOrder();
-                sgChangeGeometryOrthoZOrderSet(geometryNode, zOrder);
+                logger.fine("Z order = " + zOrder);
+                if (zOrder >= 0) {
+                    sgChangeGeometryOrthoZOrderSet(geometryNode, zOrder);
+                }
             }
         }
 
@@ -1124,7 +1146,7 @@ public abstract class View2DEntity implements View2D {
                 break;
             case SECONDARY:
             case POPUP:
-                // Uses: type, parent, pixelScale, size, offset
+                // Uses: type, parent, pixelScale, size, offset, ortho
                 transform = calcOffsetStackTransform();
             }
             sgChangeGeometryTransformOffsetStackSet(geometryNode, transform);
@@ -1181,11 +1203,19 @@ public abstract class View2DEntity implements View2D {
             }
         }
 
-        // Lastly, inform the window's surface of the view visibility.
+        // Inform the window's surface of the view visibility.
         if (window != null) {
             DrawingSurface surface = window.getSurface();
             if (surface != null) {
                 surface.setViewIsVisible(this, isActuallyVisible());
+            }
+        }
+
+        // Make sure that all descendent views are up-to-date
+        logger.fine("Update children for view " + this);
+        for (View2DEntity child : children) {
+            if (child.changeMask != 0) {
+                child.update();
             }
         }
     }
@@ -1208,7 +1238,7 @@ public abstract class View2DEntity implements View2D {
     private CellTransform calcOffsetStackTransform () {
         CellTransform transform = new CellTransform(null, null, null);
 
-        // Uses: parent, pixelScale, size, offset
+        // Uses: parent, pixelScale, size, offset, ortho
         Vector3f offsetTranslation = calcOffsetTranslation();
 
         // Uses: type
@@ -1226,15 +1256,27 @@ public abstract class View2DEntity implements View2D {
         Vector3f translation = new Vector3f();
         if (parent == null) return translation;
 
-        // TODO: does the width/height need to include the scroll bars?
-        Vector2f pixelScale = getPixelScaleCurrent();
-        Dimension parentSize = parent.getSizeApp();
-        translation.x = -parentSize.width * pixelScale.x / 2f;
-        translation.y = parentSize.height * pixelScale.y / 2f;
-        translation.x += sizeApp.width * pixelScale.x / 2f;
-        translation.y -= sizeApp.height * pixelScale.y / 2f;
-        translation.x += offset.x * pixelScale.x;
-        translation.y -= offset.y * pixelScale.y;
+        if (ortho) {
+            if (type == Type.PRIMARY || type == Type.UNKNOWN) {
+                translation.x = locationOrtho.x;
+                translation.y = locationOrtho.y;
+            } else {
+                translation.x = locationOrtho.x - sizeApp.width/2f + offset.x;
+                translation.y = locationOrtho.y + sizeApp.height/2f - offset.y;
+            }
+            logger.fine("Translation for view " + this);
+            logger.fine("translation = " + translation);
+        } else {    
+            // TODO: does the width/height need to include the scroll bars?
+            Vector2f pixelScale = getPixelScaleCurrent();
+            Dimension parentSize = parent.getSizeApp();
+            translation.x = -parentSize.width * pixelScale.x / 2f;
+            translation.y = parentSize.height * pixelScale.y / 2f;
+            translation.x += sizeApp.width * pixelScale.x / 2f;
+            translation.y -= sizeApp.height * pixelScale.y / 2f;
+            translation.x += offset.x * pixelScale.x;
+            translation.y -= offset.y * pixelScale.y;
+        }
 
         return translation;
     }
