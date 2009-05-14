@@ -17,6 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import com.jme.math.Vector3f;
+import com.jme.scene.Spatial;
+import com.jme.scene.shape.Box;
+import com.jme.util.export.binary.BinaryImporter;
+import com.jme.util.resource.ResourceLocator;
+import com.jme.util.resource.ResourceLocatorTool;
 import imi.character.CharacterAttributes;
 import imi.character.avatar.FemaleAvatarAttributes;
 import imi.character.avatar.MaleAvatarAttributes;
@@ -42,6 +48,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager.AvatarManagerListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME.RelativeResourceLocator;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 
 /**
@@ -290,7 +297,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         createAvatarPanelLayout.setHorizontalGroup(
             createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(createAvatarPanelLayout.createSequentialGroup()
-                .add(54, 54, 54)
+                .add(43, 43, 43)
                 .add(jLabel4)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -303,7 +310,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                         .add(maleRB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(femaleRB)))
-                .addContainerGap(50, Short.MAX_VALUE))
+                .addContainerGap(61, Short.MAX_VALUE))
             .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(createAvatarPanelLayout.createSequentialGroup()
                     .add(17, 17, 17)

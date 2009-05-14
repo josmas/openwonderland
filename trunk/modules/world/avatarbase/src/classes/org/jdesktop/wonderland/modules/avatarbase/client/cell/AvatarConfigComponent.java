@@ -73,7 +73,7 @@ public class AvatarConfigComponent extends CellComponent {
                     ServerSessionManager manager = session.getSessionManager();
                     String serverHostAndPort = manager.getServerNameAndPort();
                     avatarConfigURL = AssetUtils.getAssetURL("wla://avatarbaseart@" + serverHostAndPort + "/"+str, cell);
-                    System.err.println("------> NPC URL "+avatarConfigURL);
+//                    System.err.println("------> NPC URL "+avatarConfigURL);
                 } else
                     avatarConfigURL = new URL(str);
             } else
