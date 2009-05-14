@@ -100,9 +100,6 @@ public class FrameHeaderSwing
         headerPanel.setContainer(this);
         headerWindow.setComponent(headerPanel);
 
-        // TODO: window close: maintain list of close listeners
-        // Call them on close button press.
-
         headerPanel.addMouseListener(this);
 
         // Unless we do this the interior of the frame will deliver events 
@@ -248,9 +245,16 @@ public class FrameHeaderSwing
     public void mouseReleased(MouseEvent e) {
     }
 
+    // For ortho subwindow debug: set to true to debug ortho subwindows with close button
+    private static final boolean orthoSubwindowDebug = false;
+
     public void close () {
         Window2D viewWindow = view.getWindow();
-        viewWindow.closeUser();
+        if (orthoSubwindowDebug) {
+            viewWindow.toggleOrtho();
+        } else {
+            viewWindow.closeUser();
+        }
     }
 }
 

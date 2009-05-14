@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.AppConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;

@@ -178,7 +178,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
      */
     public void disconnected() {
         // We no longer control the remote app group
-        if (controlArb.hasControl()) {
+        if (controlArb != null && controlArb.hasControl()) {
             ((ControlArbXrw)controlArb).controlLost();
         }
     }

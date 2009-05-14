@@ -1507,9 +1507,10 @@ public abstract class Window2D {
     protected void repaint() {
     }
 
-    /* For ortho subwindows debug 
+    // For ortho subwindows debug 
     private boolean ortho = false;
 
+    // For ortho subwindows debug 
     public void toggleOrtho () {
         ortho = ! ortho;
 
@@ -1540,5 +1541,4 @@ public abstract class Window2D {
         // Now make it all happen
         view.update();
     }
-    */
 }
