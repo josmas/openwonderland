@@ -441,13 +441,8 @@ public class JmeClientMain {
         // center the frame
         frame.getFrame().setLocationRelativeTo(null);
 
-        // invokeLater is a work around for an occasional linux deadlock
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                // show frame
-                frame.getFrame().setVisible(true);
-            }
-        });
+        // show frame
+        frame.getFrame().setVisible(true);
 
         JPanel canvas3D = frame.getCanvas3DPanel();
         ViewManager.initialize(canvas3D.getWidth(), canvas3D.getHeight()); // Initialize an onscreen view

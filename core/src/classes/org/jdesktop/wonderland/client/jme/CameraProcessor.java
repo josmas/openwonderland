@@ -17,37 +17,91 @@
  */
 package org.jdesktop.wonderland.client.jme;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.jme.scene.CameraNode;
+import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
- * Interface for various implementations of Camera movement
+ * The processor for the camera, the behavior of the camera is controlled by
+ * the pluggable CameraControllers.
  * 
  * @author paulby
  */
-public abstract class CameraProcessor extends ProcessorComponent {
+public class CameraProcessor extends ProcessorComponent {
 
     protected CameraNode cameraNode;
+    private CameraController cameraController;
+
+    private CameraController pendingController = null;
+    private CellTransform worldTransform = new CellTransform(new Quaternion(), new Vector3f());
+    private boolean pendingViewMoved = false;
 
     /**
      * Create a CameraProcessor for the specified cameraNode.
      *
      * @param cameraNode the cameraNode this processor will manipulate
      */
-    public CameraProcessor() {
+    public CameraProcessor(CameraNode cameraNode, CameraController cameraController) {
+        this.pendingController = cameraController;
+        this.cameraNode = cameraNode;
     }
 
-    protected void initialize(CameraNode cameraNode) {
-        this.cameraNode = cameraNode;
+    public void initialize() {
+        // Chained, nothing to do.
     }
     
     /**
-     * The view cell has moved, update the camera position
+     * The view cell has moved, update the camera position. This must be called
+     * from a commit or compute thread.
+     * 
      * @param worldTransform the worldTransform of the view cell
      */
-    public abstract void viewMoved(CellTransform worldTransform);
+    public void viewMoved(CellTransform worldTransform) {
+        synchronized(this) {
+            this.worldTransform = worldTransform.clone(worldTransform);
+            pendingViewMoved = true;
+        }
+    }
 
+    @Override
+    public void commit(ProcessorArmingCollection p) {
+        if (cameraController!=null) {
+//            System.err.println("Calling commit");
+            cameraController.commit();
+        }
+    }
 
+    @Override
+    public void compute(ProcessorArmingCollection p) {
+        synchronized(this) {
+            if (pendingController!=null) {
+                if(cameraController!=null) {
+                    cameraController.setEnabled(false, null);
+                }
+
+                pendingController.setEnabled(true, cameraNode);
+                cameraController = pendingController;
+                pendingController=null;
+            }
+        }
+
+        if (cameraController!=null) {
+            synchronized(this) {
+                if (pendingViewMoved) {
+                    cameraController.viewMoved(worldTransform);
+                    pendingViewMoved = false;
+                }
+            }
+            cameraController.compute();
+        }
+    }
+
+    public void setCameraController(CameraController cameraController) {
+        synchronized(this) {
+            pendingController = cameraController;
+        }
+    }
 }

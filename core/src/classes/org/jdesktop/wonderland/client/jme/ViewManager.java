@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CameraComponent;
+import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -47,6 +48,7 @@ import java.util.HashSet;
 import java.util.concurrent.Semaphore;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.BufferUpdater;
+import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderBuffer;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -84,6 +86,7 @@ public class ViewManager {
     private CameraNode cameraNode;
     private CameraProcessor cameraProcessor = null;
     private CameraComponent cameraComponent = null;
+    private CameraController cameraController = new ThirdPersonCameraProcessor();
             
     /**
      * The width and height of our 3D window
@@ -109,14 +112,14 @@ public class ViewManager {
     private RenderBuffer rb;
 
     private HashSet<CameraListener> cameraListeners = null;
-    
+
     ViewManager(int width, int height) {
         this.width = width;
         this.height = height;
         this.aspect = (float)width/(float)height;
 
-        String avatarDetail = System.getProperty("avatar.detail", "high");
-        if (avatarDetail.equalsIgnoreCase("high") || avatarDetail.equalsIgnoreCase("medium"))
+//        String avatarDetail = System.getProperty("avatar.detail", "high");
+//        if (avatarDetail.equalsIgnoreCase("high") || avatarDetail.equalsIgnoreCase("medium"))
             useAvatars=true;
     }
 
@@ -329,27 +332,20 @@ public class ViewManager {
     }
     
     /**
-     * TODO
-     * 
-     * Set the processor used to position the camera. Examples would be
-     * First and Third person.
+     * Set the controller for the camera processor
      */
-    public void setCameraProcessor(CameraProcessor cameraProcessor) {
-        if (this.cameraProcessor!=null)
-            avatarControls.removeFromChain(this.cameraProcessor);
-
-        this.cameraProcessor = cameraProcessor;
-        cameraProcessor.initialize(cameraNode);
-        Entity entity = ((CellRendererJME)attachCell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
-
-        CellRendererJME renderer = (CellRendererJME) attachCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-
-            if (renderer instanceof BasicRenderer) {
-                BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
-                if (moveProc!=null) {
-                    moveProc.addToChain(cameraProcessor);
-                }
-            }
+    public void setCameraController(CameraController cameraController) {
+        cameraProcessor.setCameraController(cameraController);
+//        Entity entity = ((CellRendererJME)attachCell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
+//
+//        CellRendererJME renderer = (CellRendererJME) attachCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+//
+//            if (renderer instanceof BasicRenderer) {
+//                BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
+//                if (moveProc!=null) {
+//                    moveProc.addToChain(cameraProcessor);
+//                }
+//            }
 
         cameraProcessor.viewMoved(primaryViewCell.getWorldTransform());
     }
@@ -392,9 +388,10 @@ public class ViewManager {
         cameraComponent.setCameraSceneGraph(cameraSG);
         cameraComponent.setCameraNode(cameraNode);
         camera.addComponent(CameraComponent.class, cameraComponent);
-        
-        cameraProcessor = new ThirdPersonCameraProcessor();
-        cameraProcessor.initialize(cameraNode);
+
+        cameraController = new ThirdPersonCameraProcessor();
+        cameraProcessor = new CameraProcessor(cameraNode, cameraController);
+        camera.addComponent(ProcessorComponent.class, cameraProcessor);
 
         rb.setCameraComponent(cameraComponent);
         
