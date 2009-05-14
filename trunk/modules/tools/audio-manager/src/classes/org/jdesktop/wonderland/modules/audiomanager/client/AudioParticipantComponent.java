@@ -20,8 +20,8 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.util.logging.Logger;
 
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
@@ -30,13 +30,12 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageRece
 
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 
-import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
@@ -65,8 +64,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.Avatar
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 
 import org.jdesktop.wonderland.client.input.InputManager;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassFocusListener;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 
 /**
  * A component that provides audio participant control
@@ -122,15 +120,24 @@ public class AudioParticipantComponent extends CellComponent implements
             channelComp.addMessageReceiver(AudioParticipantMuteCallMessage.class, this);
 
 	    if (cell instanceof OrbCell == false && menuItem == null) {
-		menuItem = new String[] {"Volume"};
+            menuItem = new String[]{"Volume"};
 
-                contextMenu.addMenuItem(new SimpleContextMenuItem("Volume",
-                    new ContextMenuActionListener() {
-                        public void actionPerformed(ContextMenuItemEvent event) {
-                            adjustVolume(event);
-                        }
-                    })
-                );
+            // An event to handle the context menu item action
+            final ContextMenuActionListener l = new ContextMenuActionListener() {
+                public void actionPerformed(ContextMenuItemEvent event) {
+                    adjustVolume(event);
+                }
+            };
+
+            // Create a new ContextMenuFactory for the Volume... control
+            ContextMenuFactorySPI factory = new ContextMenuFactorySPI() {
+                public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                    return new ContextMenuItem[] {
+                        new SimpleContextMenuItem("Volume", l)
+                    };
+                }
+            };
+            contextMenu.addContextMenuFactory(factory);
 	    }
 
 	    break;

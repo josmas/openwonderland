@@ -19,7 +19,9 @@ package org.jdesktop.wonderland.client.scenemanager.event;
 
 import java.util.List;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.scenemanager.SceneManager;
 
 /**
  * The base event class for all scene manager events. This base class manages
@@ -54,6 +56,46 @@ public class SceneEvent extends Event {
         return entityList;
     }
 
+    /**
+     * Returns the Cell corresonding to the given Entity, or null if there is
+     * none.
+     *
+     * @param entity The entity for fetch the Cell for
+     * @return The Cell
+     */
+    public static Cell getCellForEntity(Entity entity) {
+        return SceneManager.getCellForEntity(entity);
+    }
+
+    /**
+     * Returns the Entity associated with the "primary" selection. That is, if
+     * multiple Entity's are selected, the "primary" Entity was the first one
+     * selected. Returns null if none.
+     *
+     * @return The primary Entity, or null
+     */
+    public Entity getPrimaryEntity() {
+        if (entityList != null && entityList.size() > 0) {
+            return entityList.get(0);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the Cell associated with the "primary" selection. That is, if
+     * multiple Entity's are selected, the "primary" Cell is the Cell associated
+     * with the first Entity selected. Returns null if none.
+     *
+     * @return The primary Cell, or null
+     */
+    public Cell getPrimaryCell() {
+        Entity entity = getPrimaryEntity();
+        if (entity != null) {
+            return getCellForEntity(entity);
+        }
+        return null;
+    }
+    
     /**
      * {@inheritDoc}
      * <br>
