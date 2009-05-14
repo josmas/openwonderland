@@ -54,7 +54,10 @@ public class SasXrwProviderMain implements SasProviderConnectionListener {
         String userName = "sasxprovider";
         String fullName = "SAS Provider for Xremwin";
         String password = "foo";
-        String serverUrl = "http://localhost:8080";
+
+        
+        String serverUrl = System.getProperty("wonderland.web.server.url", "http://localhost:8080");
+        System.err.println("Connecting to server " + serverUrl);
 
         try {
             SasProvider provider = new SasProvider(userName, fullName, password, serverUrl, this);
