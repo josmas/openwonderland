@@ -22,11 +22,9 @@ import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
-import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -40,8 +38,8 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
@@ -178,7 +176,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
     /**
      * @inheritDoc()
      */
-    public ContextMenuItem[] getContextMenuItems(final Cell cell) {
+    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
         final SimpleContextMenuItem deleteItem = 
                 new SimpleContextMenuItem("Delete", null, new DeleteListener());
 
@@ -187,6 +185,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         // find the security component for both this cell and it's parent,
         // if any
+        final Cell cell = event.getPrimaryCell();
         final SecurityComponent sc = cell.getComponent(SecurityComponent.class);
         final SecurityComponent psc;
         if (cell.getParent() != null) {

@@ -133,7 +133,7 @@ public class SwingContextMenu implements MenuItemRepaintListener {
      * would be repaintMenuItem() which may try to access the context menu
      * before it has been created.
      */
-    private synchronized void initializeMenu(Cell cell) {
+    private synchronized void initializeMenu(ContextEvent event, Cell cell) {
         // Loop through any menu item and remove the listener
         for (Map.Entry<JMenuItem, ContextMenuItem> entry : menuItemMap.entrySet()) {
             entry.getValue().removeMenuItemRepaintListener(this);
@@ -155,6 +155,14 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         contextPanel.add(titlePanel);
         contextPanel.invalidate();
 
+        // Look for the context component on the current Cell, we need to find
+        // out whether we want to show the standard menu items.
+        ContextMenuComponent cmc = cell.getComponent(ContextMenuComponent.class);
+        boolean showStandardMenuItems = true;
+        if (cmc != null) {
+            showStandardMenuItems = cmc.isShowStandardMenuItems();
+        }
+
         // Fetch the manager of the context menu and all of the factories
         // that generate menu items.
         ContextMenuManager cmm = ContextMenuManager.getContextMenuManager();
@@ -162,19 +170,24 @@ public class SwingContextMenu implements MenuItemRepaintListener {
 
         // For each of the factories, loop through each of its items and
         // add to the menu
-        for (ContextMenuFactorySPI factory : factoryList) {
-            ContextMenuItem items[] = factory.getContextMenuItems(cell);
-            for (ContextMenuItem item : items) {
-                addContextMenuItem(item, cell);
+        if (showStandardMenuItems == true) {
+            for (ContextMenuFactorySPI factory : factoryList) {
+                ContextMenuItem items[] = factory.getContextMenuItems(event);
+                for (ContextMenuItem item : items) {
+                    addContextMenuItem(item, cell);
+                }
             }
         }
 
-        // Look for the context component and add its items
-        ContextMenuComponent cmc = cell.getComponent(ContextMenuComponent.class);
+        // Look for the context component and add its items from the registered
+        // factories
         if (cmc != null) {
-            ContextMenuItem items[] = cmc.getContextMenuItems();
-            for (ContextMenuItem item : items) {
-                addContextMenuItem(item, cell);
+            ContextMenuFactorySPI factories[] = cmc.getContextMenuFactories();
+            for (ContextMenuFactorySPI factory : factories) {
+                ContextMenuItem items[] = factory.getContextMenuItems(event);
+                for (ContextMenuItem item : items) {
+                    addContextMenuItem(item, cell);
+                }
             }
         }
     }
@@ -344,23 +357,13 @@ public class SwingContextMenu implements MenuItemRepaintListener {
             else if (event instanceof ContextEvent) {
                 // Show the context menu, initialize the menu if this is the
                 // first time
-                Entity entity = null;
-                List<Entity> entityList = ((ContextEvent)event).getEntityList();
-                if (entityList != null && entityList.isEmpty() == false) {
-                    entity = entityList.get(0);
-                }
-                
-                Cell cell = null;
-                if (entity != null) {
-                    cell = SceneManager.getCellForEntity(entity);
-                }
+                Cell cell = ((ContextEvent)event).getPrimaryCell();
                 if (cell == null) {
                     hideContextMenu();
                     return;
                 }
-
-                initializeMenu(cell);
                 ContextEvent ce = (ContextEvent) event;
+                initializeMenu(ce, cell);
                 showContextMenu(ce.getMouseEvent(), cell);
             }
         }

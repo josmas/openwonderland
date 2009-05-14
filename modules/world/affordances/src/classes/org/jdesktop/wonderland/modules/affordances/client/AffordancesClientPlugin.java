@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.security.MoveAction;
 import org.jdesktop.wonderland.modules.affordances.client.event.AffordanceRemoveEvent;
 import org.jdesktop.wonderland.modules.security.client.SecurityComponent;
@@ -62,12 +63,13 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     /**
      * @inheritDoc()
      */
-    public ContextMenuItem[] getContextMenuItems(Cell cell) {
+    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
         final SimpleContextMenuItem editItem =
                 new SimpleContextMenuItem("Edit...", new EditContextListener());
         
         // if there is security on this cell, do some calculation to
         // figure out if the user has access to this cell
+        Cell cell = event.getPrimaryCell();
         final SecurityComponent sc = cell.getComponent(SecurityComponent.class);
         if (sc != null) {
             // see if the permissions are available immediately
