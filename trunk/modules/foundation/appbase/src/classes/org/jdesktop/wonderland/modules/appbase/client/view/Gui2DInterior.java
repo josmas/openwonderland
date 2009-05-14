@@ -110,7 +110,7 @@ public class Gui2DInterior extends Gui2D {
                 // Not a mouse event.
                 return false;
             }
-            logger.fine("Event is meant for this listener, event = " + event);
+            logger.fine("Mouse event is meant for this listener, event = " + event);
 
             // Always consume the control change event over the interior even when the app 
             // doesn't have control and the app entity doesn't have focus
@@ -210,14 +210,17 @@ public class Gui2DInterior extends Gui2D {
                 // Not meant for us
                 return false;
             }
-
+            logger.fine("Key event is meant for this listener, event = " + event);
 
             if (!app.getControlArb().hasControl()) {
                 return false;
             }
+            logger.fine("User has control of app");
 
             // When the app has control only consume if app has focus.
-            return InputManager3D.entityHasFocus(event, appFocusEntity);
+            boolean entityHasFocus = InputManager3D.entityHasFocus(event, appFocusEntity);
+            logger.fine("Entity has focus = " + entityHasFocus);
+            return entityHasFocus;
         }
 
         @Override
@@ -233,7 +236,7 @@ public class Gui2DInterior extends Gui2D {
                 return;
             }
 
-            /* For ortho subwindow debugging
+            /* For ortho subwindow debugging -- TODO: doesn't work. See bug 203 
             if (ke3d.isPressed() &&
                 ke.getKeyCode() == KeyEvent.VK_F11 &&
                 (ke.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {

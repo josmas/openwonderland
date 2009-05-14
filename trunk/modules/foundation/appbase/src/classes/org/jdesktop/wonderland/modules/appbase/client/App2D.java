@@ -81,7 +81,7 @@ public abstract class App2D {
 
     // Register the appbase shutdown hook
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
+        Runtime.getRuntime().addShutdownHook(new Thread("App Base Shutdown Hook") {
             public void run() { App2D.shutdown(); }
         });
     }
@@ -148,10 +148,12 @@ public abstract class App2D {
             stack.cleanup();
             stack = null;
         }
-        for (Window2D window : windows) {
+        LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
+        for (Window2D window : toRemoveList) {
             window.cleanup();
         }
         windows.clear();
+        toRemoveList.clear();
         pixelScale = null;
     }
 
@@ -302,13 +304,16 @@ public abstract class App2D {
 
     /** Executed by the JVM shutdown process. */
     private static void shutdown () {
-        logger.warning("Shutting down app base");
+        logger.warning("Shutting down app base...");
 
-        synchronized (apps) {
-            for (App2D app : apps) {
-                app.cleanup();
-            }
+        // Note: I tried to run this in a synchronized block, but it hung.
+        for (App2D app : apps) {
+            logger.warning("Shutting down app " + app);
+            app.cleanup();
         }
+        logger.warning("Done shutting down apps.");
+
         apps.clear();
+        logger.warning("Done shutting down app base.");
     }
 }

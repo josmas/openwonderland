@@ -131,7 +131,9 @@ public class ControlArbXrw extends ControlArbSingle {
         takeControlPending = false;
 
         try {
-            serverProxy.writeReleaseControl();
+            if (serverProxy != null) {
+                serverProxy.writeReleaseControl();
+            }
         } catch (IOException ex) {
         }
 

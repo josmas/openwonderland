@@ -193,12 +193,16 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
 
     /** {@inheritDoc} */
     public synchronized void destroyAllViews () {
-        for (View2D view : views) {
+        LinkedList<View2D> toRemoveList = (LinkedList<View2D>) views.clone();
+        for (View2D view : toRemoveList) {
             Window2D window = view.getWindow();
-            window.removeView(view);
+            if (window != null) {
+                window.removeView(view);
+            }
             view.cleanup();
         }
         views.clear();
+        toRemoveList.clear();
     }
 
     /** {@inheritDoc} */

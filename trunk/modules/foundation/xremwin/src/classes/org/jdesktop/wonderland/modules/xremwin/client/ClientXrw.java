@@ -195,10 +195,12 @@ public abstract class ClientXrw implements Runnable {
     public void cleanup() {
         if (!stop && thread != null) {
             stop = true;
+            /* Note: can't join thread here. Conflicts with app base shutdown hook.
             try {
                 thread.join();
             } catch (InterruptedException ex) {
             }
+            */
             thread = null;
         }
 

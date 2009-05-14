@@ -235,7 +235,9 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
 
     // Called by window system exit listener 
     public void windowSystemExitted() {
-        controlArb.releaseControl();
+        if (controlArb != null) {
+            controlArb.releaseControl();
+        }
     }
 
     public void writeSyncSlavePixels(BigInteger slaveID, byte[] pixelBytes) {
