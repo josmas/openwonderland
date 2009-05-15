@@ -253,7 +253,7 @@ public abstract class EventDistributor implements Runnable {
     static Event createEventForGlobalListener (Event baseEvent) {
         Event event = baseEvent.clone(null);
         event.setFocussed(entityHasFocus(baseEvent, InputManager.inputManager().getGlobalFocusEntity()));
-            return event;
+        return event;
     }
 
 

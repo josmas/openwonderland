@@ -52,7 +52,7 @@ class Gui2DSide extends Gui2D {
      */
     @Override
     protected void attachMouseListener(Entity entity) {
-        mouseListener = new SideMouseListener();
+        mouseListener = new SideMouseListener(entity);
         mouseListener.addToEntity(entity);
     }
 
@@ -61,8 +61,13 @@ class Gui2DSide extends Gui2D {
      */
     protected class SideMouseListener extends Gui2D.MouseListener {
 
+        // The entity to which this listener is attached.
+        private Entity entity;
+
         /** Create a new instance of SideMouseListener. */
-        public SideMouseListener () {
+        public SideMouseListener (Entity entity) {
+            this.entity = entity;
+
             // Tell the processor component super class that we are going to use some swing UI in commitEvent
             setSwingSafe(true);
         }
@@ -75,16 +80,17 @@ class Gui2DSide extends Gui2D {
             MouseEvent3D me3d = (MouseEvent3D) event;
             MouseEvent me = (MouseEvent) me3d.getAwtEvent();
 
-            /* TODO: notyet
-            // Window menu event?
-            if (me.getID() == MouseEvent.MOUSE_CLICKED &&
-                me.getButton() == MouseEvent.BUTTON3) {
-                ((View2DCell)getView()).getFrame().windowMenuShowAt(me);
-            }
-            */
-
-            // We only recognize config on the border when user has control
+            // We only recognize some events on the border when user has control
             if (view.getWindow().getApp().getControlArb().hasControl()) {
+
+                // Is this a Window menu event?
+                if (me.getID() == MouseEvent.MOUSE_PRESSED &&
+                    me.getButton() == MouseEvent.BUTTON3 &&
+                    me.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK) {
+                    ((View2DCell)getView()).getWindow().displayWindowMenu(entity, me);
+                    return;
+                }
+
                 action = determineIfConfigAction(me, me3d);
                 if (action != null) {
                     performConfigAction(action, me, me3d);

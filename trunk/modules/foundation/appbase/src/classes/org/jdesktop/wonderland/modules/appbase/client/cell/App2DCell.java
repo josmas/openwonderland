@@ -36,6 +36,15 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactor
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
  * The generic 2D application superclass. Displays the windows of a single 2D application. 
@@ -66,6 +75,10 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
 
     /** The app displayed in this cell. */
     protected App2D app;
+
+    // For the Window Menu
+    @UsesCellComponent private ContextMenuComponent contextComp = null;
+    private ContextMenuFactorySPI menuFactory = null;
 
     /** 
      * Creates a new instance of App2DCell.
@@ -147,6 +160,65 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /**
+     * This is called when the status of the cell changes.
+     */
+    @Override
+    public boolean setStatus(CellStatus status) {
+        boolean ret = super.setStatus(status);
+
+        switch (status) {
+
+            // The cell is now visible
+            case ACTIVE:
+                if (menuFactory == null) {
+                    menuFactory = new ContextMenuFactorySPI() {
+                        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                            return windowMenuItemsForEvent(event);
+                        }
+                    };
+                    contextComp.addContextMenuFactory(menuFactory);
+                }
+
+                break;
+
+            // The cell is no longer visible
+            case DISK:
+                if (menuFactory != null) {
+                    contextComp.removeContextMenuFactory(menuFactory);
+                    menuFactory = null;
+                }
+                break;
+        }
+
+        return ret;
+    }
+
+    /**
+     * Returns the window menu items that are appropriate for the given context event.
+     */
+    private ContextMenuItem[] windowMenuItemsForEvent (ContextEvent event) {
+        if (event instanceof Window2D.WindowContextMenuEvent) {
+            Window2D.WindowContextMenuEvent windowMenuEvent = (Window2D.WindowContextMenuEvent) event;
+            return windowMenuEvent.getWindow().windowMenuItems();
+        } else {
+            return windowMenuItemsForNoControl();
+        }
+    }
+
+    /**
+     * Return the app-specific window menu items for the case where the app doesn't have control.
+     */
+    private ContextMenuItem[] windowMenuItemsForNoControl () {
+        return new ContextMenuItem[] {
+            new SimpleContextMenuItem("Take Control", new ContextMenuActionListener () {
+                public void actionPerformed(ContextMenuItemEvent event) {
+                    app.getControlArb().takeControl();
+                }
+            })
+        };
+    }
+
+    /**
      * Returns the pixel scale.
      */
     public Vector2f getPixelScale() {
@@ -210,6 +282,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         return views.iterator();
     }
     
+
     /**
      * {@inheritDoc}
      */
