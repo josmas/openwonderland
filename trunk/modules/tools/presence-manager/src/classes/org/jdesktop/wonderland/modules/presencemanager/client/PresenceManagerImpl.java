@@ -38,6 +38,9 @@ import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
+
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
 
 import com.jme.bounding.BoundingBox;
@@ -65,14 +68,22 @@ public class PresenceManagerImpl implements PresenceManager {
 	this.session = session;
     }
 
-    public void addSession(PresenceInfo presenceInfo) {
+    public void addPresenceInfo(PresenceInfo presenceInfo) {
+	session.send(PresenceManagerClient.getInstance(), new PresenceInfoAddedMessage(presenceInfo));
+	//presenceInfoAdded(presenceInfo);
+    }
+
+    public void presenceInfoAdded(PresenceInfo presenceInfo) {
 	synchronized (cellIDMap) {
 	    synchronized (sessionIDMap) {
 		synchronized (userIDMap) {
 		    synchronized (callIDMap) {
 			if (alreadyInMaps(presenceInfo) == false) {
-			    addPresenceInfo(presenceInfo);
-			} 
+			    System.out.println("Adding pi for " + presenceInfo);
+			    addPresenceInfoInternal(presenceInfo);
+			} else {
+			    System.out.println("pi already in map " + presenceInfo);
+			}
 		    }
 	        }
 	    }
@@ -81,7 +92,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	notifyListeners(presenceInfo, ChangeType.USER_ADDED);
     }
 
-    private void addPresenceInfo(PresenceInfo presenceInfo) {
+    private void addPresenceInfoInternal(PresenceInfo presenceInfo) {
 	logger.finer("Adding presenceInfo for " + presenceInfo);
 
 	PresenceInfo info;
@@ -195,7 +206,12 @@ public class PresenceManagerImpl implements PresenceManager {
 	}
     }
 
-    public void removeSession(PresenceInfo presenceInfo) {
+    public void removePresenceInfo(PresenceInfo presenceInfo) {
+	session.send(PresenceManagerClient.getInstance(),
+	    new PresenceInfoRemovedMessage(presenceInfo));
+    }
+
+    public void presenceInfoRemoved(PresenceInfo presenceInfo) {
 	synchronized (cellIDMap) {
 	    synchronized (sessionIDMap) {
 		synchronized (userIDMap) {

@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatDialOutMessage;
 
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
 import java.awt.Point;
 
 /*
- * AddUserDialog.java
+ * AddMemberDialog.java
  *
  * Created on April 22, 2009, 8:25 AM
  */
@@ -36,11 +37,11 @@ import java.awt.Point;
  *
  * @author  jp
  */
-public class AddUserDialog extends javax.swing.JFrame implements PresenceManagerListener,
+public class AddMemberDialog extends javax.swing.JFrame implements PresenceManagerListener,
 	MemberChangeListener, KeypadListener {
 
     private static final Logger logger =
-            Logger.getLogger(AddUserDialog.class.getName());
+            Logger.getLogger(AddMemberDialog.class.getName());
     private AudioManagerClient client;
     private WonderlandSession session;
     private PresenceManager pm;
@@ -48,12 +49,12 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
     private String group;
     private InCallDialog inCallDialog;
 
-    /** Creates new form AddUserDialog */
-    public AddUserDialog() {
+    /** Creates new form AddMemberDialog */
+    public AddMemberDialog() {
         initComponents();
     }
 
-    public AddUserDialog(AudioManagerClient client, WonderlandSession session,
+    public AddMemberDialog(AudioManagerClient client, WonderlandSession session,
             CellID cellID, String group, InCallDialog inCallDialog) {
 
         this.client = client;
@@ -65,7 +66,7 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
 
 	setTitle(group);
 
-	inCallDialog.addMemberChangeListener(this);
+	client.addMemberChangeListener(group, this);
 
         pm = PresenceManagerFactory.getPresenceManager(session);
 
@@ -78,16 +79,16 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
             return;
         }
 
-        setUserList();
+	session.send(client, new VoiceChatInfoRequestMessage(group));
         setVisible(true);
     }
 
-    private void setUserList() {
-        ArrayList<PresenceInfo> members = inCallDialog.getMembers();
+    private ArrayList<PresenceInfo> members = new ArrayList();
 
+    public void setMemberList() {
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
-        ArrayList<String> userData = new ArrayList();
+        ArrayList<String> memberData = new ArrayList();
 
         for (int i = 0; i < presenceInfoList.length; i++) {
             PresenceInfo info = presenceInfoList[i];
@@ -101,21 +102,23 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
                 continue;
             }
 
-	    userData.add(NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
+	    members.add(info);
+
+	    memberData.add(NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
 		info.isMuted));
 	}
 
-	String[] userArray = userData.toArray(new String[0]);
+	String[] memberArray = memberData.toArray(new String[0]);
 
-	SortUsers.sortUsers(userArray);
+	SortUsers.sort(memberArray);
 
-        userList.setListData(userArray);
+        memberList.setListData(memberArray);
 
 	enableButtons();
     }
 
     private void enableButtons() {
-        if (userList.getSelectedValues().length > 0 ||
+        if (memberList.getSelectedValues().length > 0 ||
                 (phoneNumberTextField.getText().replaceAll(" ", "").length() > 0 &&
                 nameTextField.getText().replaceAll(" ", "").length() > 0)) {
 
@@ -126,19 +129,35 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
-        setUserList();
+        setMemberList();
     }
 
     public void aliasChanged(String previousAlias, PresenceInfo info) {
-        setUserList();
+        setMemberList();
     }
 
-    public void memberAdded(PresenceInfo info) {
-        setUserList();
+    public void memberChange(PresenceInfo info, boolean added) {
+	if (added) {
+	    if (members.contains(info)) {
+		logger.warning("AddMemberDialog:  already a member " + info);
+		return;
+	    }
+	    members.add(info);
+	} else {
+	    members.remove(info);
+	}
+
+        setMemberList();
     }
 
-    public void memberRemoved(PresenceInfo info) {
-        setUserList();
+    public void setMemberList(PresenceInfo[] members) {
+	this.members.clear();
+
+	for (int i = 0; i < members.length; i++) {
+	    this.members.add(members[i]);
+	}
+
+	setMemberList();
     }
 
     /** This method is called from within the constructor to
@@ -152,7 +171,7 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        userList = new javax.swing.JList();
+        memberList = new javax.swing.JList();
         joinButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
@@ -161,19 +180,25 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
         nameTextField = new javax.swing.JTextField();
         keypadButton = new javax.swing.JButton();
 
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
+
         jLabel1.setText("Ask User to Join");
 
-        userList.setModel(new javax.swing.AbstractListModel() {
+        memberList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        userList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+        memberList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                userListValueChanged(evt);
+                memberListValueChanged(evt);
             }
         });
-        jScrollPane1.setViewportView(userList);
+        jScrollPane1.setViewportView(memberList);
 
         joinButton.setText("Join");
         joinButton.addActionListener(new java.awt.event.ActionListener() {
@@ -285,7 +310,7 @@ public class AddUserDialog extends javax.swing.JFrame implements PresenceManager
     }// </editor-fold>//GEN-END:initComponents
 
 private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_joinButtonActionPerformed
-    Object[] selectedValues = userList.getSelectedValues();
+    Object[] selectedValues = memberList.getSelectedValues();
 
     for (int i = 0; i < selectedValues.length; i++) {
         PresenceInfo[] info = pm.getAliasPresenceInfo((String) selectedValues[i]);
@@ -304,6 +329,8 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         pi.userID = new WonderlandIdentity(name, name, null);
         pi.usernameAlias = name;
 
+	pm.addPresenceInfo(pi);
+
         session.send(client, new VoiceChatDialOutMessage(group, pi, ChatType.PRIVATE, 
 	    name, phoneNumberTextField.getText()));
 
@@ -311,17 +338,18 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         phoneNumberTextField.setText("");
     }
 
-    userList.clearSelection();
+    memberList.clearSelection();
 }//GEN-LAST:event_joinButtonActionPerformed
 
 private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-    userList.clearSelection();
+    memberList.clearSelection();
+    client.removeMemberChangeListener(group, this);
     setVisible(false);
 }//GEN-LAST:event_cancelButtonActionPerformed
 
-private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
+private void memberListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_memberListValueChanged
     enableButtons();
-}//GEN-LAST:event_userListValueChanged
+}//GEN-LAST:event_memberListValueChanged
 
 private void phoneNumberTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneNumberTextFieldActionPerformed
     enableButtons();
@@ -359,6 +387,10 @@ private void phoneNumberTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN
     enableButtons();
 }//GEN-LAST:event_phoneNumberTextFieldKeyReleased
 
+private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+    client.removeMemberChangeListener(group, this);
+}//GEN-LAST:event_formWindowClosing
+
 public void keypadPressed(char key) {
     System.out.println("Got key " + key);
 }
@@ -370,7 +402,7 @@ public void keypadPressed(char key) {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                new AddUserDialog().setVisible(true);
+                new AddMemberDialog().setVisible(true);
             }
         });
     }
@@ -383,8 +415,8 @@ public void keypadPressed(char key) {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton joinButton;
     private javax.swing.JButton keypadButton;
+    private javax.swing.JList memberList;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JTextField phoneNumberTextField;
-    private javax.swing.JList userList;
     // End of variables declaration//GEN-END:variables
 }

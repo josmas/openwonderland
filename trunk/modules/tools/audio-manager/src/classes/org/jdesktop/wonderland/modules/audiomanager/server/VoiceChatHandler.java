@@ -374,10 +374,10 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    if (info.clientID == null) {
 		/*
 		 * This is an outworlder.  We automatically join them to the group
-		 * in a chat the same type as the caller.  
 	 	 * The InCallDialog can be used to change the privacy setting
-		 * and to remove the orb from the chat.
+		 * and to remove the outworlder from the chat.
 		 */
+		logger.fine("Adding " + info + " chatType " + msg.getChatType());
 	        addPlayerToAudioGroup(audioGroup, player, info, msg.getChatType());
 	    	continue;
 	    }
@@ -500,7 +500,6 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
 	logger.fine("Player added " + player + " group " + audioGroup);
-	System.out.println("Player added " + player + " group " + audioGroup);
 
 	WonderlandClientSender sender = 
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
@@ -511,6 +510,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	}
 
 	updateAttenuation(player);
+
 	sendVoiceChatInfo(sender, audioGroup.getId());
     }
 
@@ -537,12 +537,29 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	PresenceInfo[] chatters = getChatters(group);
 
 	if (chatters == null || chatters.length == 0) {
+	    logger.fine("No chatters in " + group);
+	    return;
+	}
+
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	AudioGroup livePlayerAudioGroup = vm.getVoiceManagerParameters().livePlayerAudioGroup;
+
+	AudioGroup stationaryPlayerAudioGroup = vm.getVoiceManagerParameters().stationaryPlayerAudioGroup;
+
+	if (group.equals(livePlayerAudioGroup.getId()) || group.equals(stationaryPlayerAudioGroup.getId())) {
 	    return;
 	}
 
 	CommsManager cm = CommsManagerFactory.getCommsManager();
 	    
         VoiceChatInfoResponseMessage message = new VoiceChatInfoResponseMessage(group, chatters);
+
+	String c = "";
+
+	for (int i = 0; i < chatters.length; i++) {
+	    c += chatters[i] + " ";
+	}
 
 	for (int i = 0; i < chatters.length; i++) {
 	    if (chatters[i].clientID == null) {
@@ -559,6 +576,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		continue;
 	    }
 
+	    logger.finest("Sending chat info to " + chatters[i] + " chatters " + c);
             sender.send(clientID, message);
 	}
     }
@@ -785,7 +803,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    return AudioGroupPlayerInfo.ChatType.EXCLUSIVE;
 	}
 
-	return AudioGroupPlayerInfo.ChatType.PUBLIC;
+	return AudioGroupPlayerInfo.ChatType.PRIVATE;
     }
 
 }

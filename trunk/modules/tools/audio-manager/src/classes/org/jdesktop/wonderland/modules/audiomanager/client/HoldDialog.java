@@ -1,5 +1,7 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
+
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
@@ -51,34 +53,44 @@ public class HoldDialog extends javax.swing.JFrame implements MemberChangeListen
 
 	setTitle(group);
 
-	inCallDialog.addMemberChangeListener(this);
+	client.addMemberChangeListener(group, this);
 
-	setMembers();
+        session.send(client, new VoiceChatInfoRequestMessage(group));
     }
 
-    public void setMembers() {
-	PresenceInfo[] members = inCallDialog.getMembers().toArray(new PresenceInfo[0]);
+    private ArrayList<PresenceInfo> members;
 
+    public void setMemberList() {
 	String memberText = "";
 
-	for (int i = 0; i < members.length; i++) {
-	    PresenceInfo member = members[i];
-
+	for (PresenceInfo member : members) {
 	    memberText += NameTagNode.getDisplayName(
                 member.usernameAlias, member.isSpeaking, member.isMuted);
 
 	    memberText += " ";
 	}
 
-	userText.setText(memberText);
+	this.memberText.setText(memberText);
     }
 
-    public void memberAdded(PresenceInfo info) {
-	setMembers();
+    public void memberChange(PresenceInfo info, boolean added) {
+	if (added) {
+	    members.add(info);
+	} else {
+	    members.remove(info);
+	}
+
+	setMemberList();
     }
 
-    public void memberRemoved(PresenceInfo info) {
-	setMembers();
+    public void setMemberList(PresenceInfo[] presenceInfo) {
+	members.clear();
+
+	for (int i = 0; i < presenceInfo.length; i++) {
+	     members.add(presenceInfo[i]);
+	}
+
+	setMemberList();
     }
 
     /** This method is called from within the constructor to
@@ -91,7 +103,7 @@ public class HoldDialog extends javax.swing.JFrame implements MemberChangeListen
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        userText = new javax.swing.JTextField();
+        memberText = new javax.swing.JTextField();
 
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -109,8 +121,8 @@ public class HoldDialog extends javax.swing.JFrame implements MemberChangeListen
 
         jLabel1.setText("On Hold:");
 
-        userText.setEditable(false);
-        userText.setText("                                                                   ");
+        memberText.setEditable(false);
+        memberText.setText("                                                                   ");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -119,7 +131,7 @@ public class HoldDialog extends javax.swing.JFrame implements MemberChangeListen
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(userText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
+                    .add(memberText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
                     .add(jLabel1))
                 .addContainerGap())
         );
@@ -129,7 +141,7 @@ public class HoldDialog extends javax.swing.JFrame implements MemberChangeListen
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(userText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(memberText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -165,7 +177,7 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField userText;
+    private javax.swing.JTextField memberText;
     // End of variables declaration//GEN-END:variables
 
 }

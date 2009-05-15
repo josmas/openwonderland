@@ -199,7 +199,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    String otherCallID = CallID.getCallID(cellID);
 
             if (softphoneCallID.equals(otherCallID)) {
-                System.out.println("Setting master volume for " + getCell().getName());
+                //System.out.println("Setting master volume for " + getCell().getName());
                 softphonePlayer.setMasterVolume(volume);
                 return;
             }
@@ -211,7 +211,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
             Player player = vm.getPlayer(otherCallID);
 
  	    if (player == null) {
-                System.out.println("Can't find player for callID " + otherCallID);
+                logger.warning("Can't find player for callID " + otherCallID);
 		return;
             } 
 

@@ -15,18 +15,31 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.client;
+package org.jdesktop.wonderland.modules.presencemanager.common.messages;
+
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
- *
- * @author jm57878
+ * Message indicating a new session has been created
+ * @author jprovino
  */
-public interface MemberChangeListener {
+@ExperimentalAPI
+public class PresenceInfoChangeMessage extends CellMessage {
 
-    public void memberChange(PresenceInfo member, boolean added);
+    private PresenceInfo presenceInfo;
 
-    public void setMemberList(PresenceInfo[] memberList);
-    
+    public PresenceInfoChangeMessage(PresenceInfo presenceInfo) {
+	super(presenceInfo.cellID);
+
+	this.presenceInfo = presenceInfo;
+    }
+
+    public PresenceInfo getPresenceInfo() {
+	return presenceInfo;
+    }
+
 }

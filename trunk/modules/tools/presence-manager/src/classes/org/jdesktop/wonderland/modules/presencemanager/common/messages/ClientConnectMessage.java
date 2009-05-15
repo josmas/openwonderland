@@ -17,29 +17,34 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.common.messages;
 
-import org.jdesktop.wonderland.common.ExperimentalAPI;
-
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+import org.jdesktop.wonderland.common.messages.Message;
+
 /**
- * Message indicating a new session has been created
+ * Message indicating a client has connected or disconnected
  * @author jprovino
  */
 @ExperimentalAPI
-public class SessionCreatedMessage extends CellMessage {
+public class ClientConnectMessage extends Message {
 
     private PresenceInfo presenceInfo;
 
-    public SessionCreatedMessage(PresenceInfo presenceInfo) {
-	super(presenceInfo.cellID);
+    private boolean isConnected;
 
-	this.presenceInfo = presenceInfo;
+    public ClientConnectMessage(PresenceInfo presenceInfo, boolean isConnected) {
+	this.presenceInfo= presenceInfo;
+	this.isConnected = isConnected;
     }
 
     public PresenceInfo getPresenceInfo() {
 	return presenceInfo;
+    }
+
+    public boolean isConnected() {
+	return isConnected;
     }
 
 }

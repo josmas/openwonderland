@@ -110,7 +110,7 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
 
 	String[] userArray = userData.toArray(new String[0]);
 
-	SortUsers.sortUsers(userArray);
+	SortUsers.sort(userArray);
 
         buddyList.setListData(userArray);
 
@@ -350,7 +350,7 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     PresenceInfo[] chattersInfo = new PresenceInfo[0];
 
     if (chatters.length() > 0) {
-        chattersInfo = getPresenceInfo(chatters);
+        chattersInfo = getPresenceInfo(pm, chatters);
     }
 
     InCallDialog inCallDialog = new InCallDialog(client, session, cellID, group, chatType);
@@ -368,6 +368,8 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 	info.userID = new WonderlandIdentity(name, name, null);
 	info.usernameAlias = name;
+
+	pm.addPresenceInfo(info);
 
 	session.send(client, new VoiceChatDialOutMessage(group, info,
 	    chatType, nameTextField.getText(), phoneNumberTextField.getText()));
@@ -432,26 +434,26 @@ public void keypadPressed(char key) {
     System.out.println("Got key " + key);
 }
 
-public static PresenceInfo[] getPresenceInfo(String users) {
+public static PresenceInfo[] getPresenceInfo(PresenceManager pm, String users) {
     String[] tokens = users.split(" ");
 
-        PresenceInfo[] info = new PresenceInfo[tokens.length];
+    PresenceInfo[] info = new PresenceInfo[tokens.length];
 
-        for (int i = 0; i < tokens.length; i++) {
-            PresenceInfo[] userInfo = pm.getUserPresenceInfo(tokens[i]);
+    for (int i = 0; i < tokens.length; i++) {
+        PresenceInfo[] userInfo = pm.getUserPresenceInfo(tokens[i]);
 
-            if (userInfo == null) {
-                logger.warning("No PresenceInfo for " + tokens[i]);
-                return null;
-            }
-
-            info[i] = userInfo[0];
-
-            checkLength(userInfo);
+        if (userInfo == null) {
+            logger.warning("No PresenceInfo for " + tokens[i]);
+            return null;
         }
 
-        return info;
+        info[i] = userInfo[0];
+
+        checkLength(userInfo);
     }
+
+    return info;
+}
 
 private static void checkLength(PresenceInfo[] info) {
     if (info.length > 1) {

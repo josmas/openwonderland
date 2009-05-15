@@ -7,7 +7,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTa
 
 public class SortUsers {
 
-    public static void sortUsers(String[] list) {
+    public static void sort(String[] list) {
         Arrays.sort(list, new Comparator<String>() {
             public int compare(String s1, String s2) {
 		if (s1.startsWith(NameTagNode.LEFT_MUTE)) {
