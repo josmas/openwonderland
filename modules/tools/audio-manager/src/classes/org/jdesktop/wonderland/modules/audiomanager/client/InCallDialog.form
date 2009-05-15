@@ -37,7 +37,7 @@
                           <Group type="102" alignment="0" attributes="1">
                               <Component id="holdButton" min="-2" pref="79" max="-2" attributes="1"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="addUserButton" max="32767" attributes="1"/>
+                              <Component id="addMemberButton" max="32767" attributes="1"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="leaveButton" min="-2" pref="88" max="-2" attributes="1"/>
                           </Group>
@@ -84,7 +84,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="holdButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="leaveButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="addUserButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="addMemberButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="31" max="32767" attributes="0"/>
           </Group>
@@ -126,12 +126,12 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JButton" name="addUserButton">
+    <Component class="javax.swing.JButton" name="addMemberButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Add User..."/>
+        <Property name="text" type="java.lang.String" value="Add Member"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addUserButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addMemberButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="holdButton">

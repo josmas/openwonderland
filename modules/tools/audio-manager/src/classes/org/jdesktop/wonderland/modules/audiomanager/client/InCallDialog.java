@@ -37,7 +37,7 @@ import java.awt.Point;
  * @author  jp
  */
 public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
-        PresenceManagerListener, DisconnectListener {
+        PresenceManagerListener, MemberChangeListener, DisconnectListener {
 
     private static final Logger logger =
             Logger.getLogger(InCallDialog.class.getName());
@@ -84,36 +84,22 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 
         memberList.setListData(new String[0]);
 
+        client.addMemberChangeListener(group, this);
+
         client.addInCallDialog(group, this);
-        //session.send(client, new VoiceChatInfoRequestMessage(group));
 
 	client.addDisconnectListener(this);
 
 	holdOtherCalls();
 
+        session.send(client, new VoiceChatInfoRequestMessage(group));
+
         setVisible(true);
     }
 
-    private ArrayList<MemberChangeListener> listeners = new ArrayList();
-
-    public void addMemberChangeListener(MemberChangeListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
-    }
-
-    public void removeMemberChangeListener(MemberChangeListener listener) {
-        synchronized (listeners) {
-            listeners.remove(listener);
-        }
-    }
     private ArrayList<PresenceInfo> members = new ArrayList();
 
-    public ArrayList<PresenceInfo> getMembers() {
-        return members;
-    }
-
-    public void setMembers(PresenceInfo[] memberList) {
+    public void setMemberList(PresenceInfo[] memberList) {
         synchronized (members) {
             members.clear();
 
@@ -126,7 +112,15 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
     }
 
 
-    public void addMember(PresenceInfo member) {
+    public void memberChange(PresenceInfo member, boolean added) {
+	if (added) {
+	    addMember(member);
+	} else {
+	    removeMember(member);
+ 	}
+    }
+
+    private void addMember(PresenceInfo member) {
 	if (holdDialog != null && holdDialog.isVisible()) {
 	    hold(false);
 	}
@@ -135,22 +129,14 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
             if (members.contains(member) == false) {
                 members.add(member);
 	    }
-
-            for (MemberChangeListener listener : listeners) {
-                listener.memberAdded(member);
-            }
         }
 
 	setMemberList();
     }
 
-    public void removeMember(PresenceInfo member) {
+    private void removeMember(PresenceInfo member) {
         synchronized (members) {
             members.remove(member);
-
-            for (MemberChangeListener listener : listeners) {
-                listener.memberRemoved(member);
-            }
         }
 
 	setMemberList();
@@ -194,13 +180,13 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 
 	String[] memberArray = memberData.toArray(new String[0]);
 
-	SortUsers.sortUsers(memberArray);
+	SortUsers.sort(memberArray);
 
         memberList.setListData(memberArray);
 
 	String[] selectableMemberArray = selectableMemberData.toArray(new String[0]);
 
-	SortUsers.sortUsers(selectableMemberArray);
+	SortUsers.sort(selectableMemberArray);
         selectableMemberList.setListData(selectableMemberArray);
 
 	return selectableMemberData.size();
@@ -217,8 +203,8 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 	    keypad.setVisible(false);
 	}
 
-	if (addUserDialog != null) {
-	    addUserDialog.setVisible(false);
+	if (addMemberDialog != null) {
+	    addMemberDialog.setVisible(false);
 	}
 
 	if (holdDialog != null) {
@@ -239,7 +225,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         memberList = new javax.swing.JList();
-        addUserButton = new javax.swing.JButton();
+        addMemberButton = new javax.swing.JButton();
         holdButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         secretRadioButton = new javax.swing.JRadioButton();
@@ -271,10 +257,10 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
         });
         jScrollPane1.setViewportView(memberList);
 
-        addUserButton.setText("Add User...");
-        addUserButton.addActionListener(new java.awt.event.ActionListener() {
+        addMemberButton.setText("Add Member");
+        addMemberButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addUserButtonActionPerformed(evt);
+                addMemberButtonActionPerformed(evt);
             }
         });
 
@@ -345,7 +331,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(holdButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(addUserButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(addMemberButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(leaveButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 88, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
@@ -382,7 +368,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(holdButton)
                     .add(leaveButton)
-                    .add(addUserButton))
+                    .add(addMemberButton))
                 .addContainerGap(31, Short.MAX_VALUE))
         );
 
@@ -394,11 +380,11 @@ private void keyPadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     if (keypad == null) {
         keypad = new KeypadDialog(this);
         keypad.setListener(this);
-        if (addUserDialog == null) {
+        if (addMemberDialog == null) {
             keypad.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
         } else {
-            keypad.setLocation(new Point((int) addUserDialog.getLocation().getX() + addUserDialog.getWidth(),
-                    (int) addUserDialog.getLocation().getY()));
+            keypad.setLocation(new Point((int) addMemberDialog.getLocation().getX() + addMemberDialog.getWidth(),
+                    (int) addMemberDialog.getLocation().getY()));
         }
     }
 
@@ -408,22 +394,22 @@ private void keyPadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     public void keypadPressed(char key) {
         System.out.println("Got key " + key);
     }
-    private AddUserDialog addUserDialog;
+    private AddMemberDialog addMemberDialog;
 
-private void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUserButtonActionPerformed
-    if (addUserDialog == null) {
-        addUserDialog = new AddUserDialog(client, session, cellID, group, this);
+private void addMemberButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addMemberButtonActionPerformed
+    if (addMemberDialog == null) {
+        addMemberDialog = new AddMemberDialog(client, session, cellID, group, this);
 
         if (keypad == null) {
-            addUserDialog.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
+            addMemberDialog.setLocation(new Point((int) getLocation().getX() + getWidth(), (int) getLocation().getY()));
         } else {
-            addUserDialog.setLocation(new Point((int) keypad.getLocation().getX() + keypad.getWidth(),
+            addMemberDialog.setLocation(new Point((int) keypad.getLocation().getX() + keypad.getWidth(),
                     (int) keypad.getLocation().getY()));
         }
     }
 
-    addUserDialog.setVisible(true);
-}//GEN-LAST:event_addUserButtonActionPerformed
+    addMemberDialog.setVisible(true);
+}//GEN-LAST:event_addMemberButtonActionPerformed
 
 private void holdButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_holdButtonActionPerformed
     hold(true);
@@ -498,7 +484,7 @@ private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 	    return;
         }
 
-        PresenceInfo[] membersInfo = VoiceChatDialog.getPresenceInfo(members);
+        PresenceInfo[] membersInfo = VoiceChatDialog.getPresenceInfo(pm, members);
 
         for (int i = 0; i < membersInfo.length; i++) {
 	    PresenceInfo info = membersInfo[i];
@@ -515,7 +501,7 @@ private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     public void endHeldCall() {
 	session.send(client, new VoiceChatLeaveMessage(group, presenceInfo));
-        client.removeInCallDialog(group);
+        //client.removeInCallDialog(group);
     }
 
 private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
@@ -533,6 +519,7 @@ private void publicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
     endCall();
     client.removeInCallDialog(group);
+    client.removeMemberChangeListener(group, this);
 }//GEN-LAST:event_formWindowClosing
 
     private void changePrivacy(ChatType chatType) {
@@ -553,7 +540,7 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
 	    return;
         }
 
-        PresenceInfo[] membersInfo = VoiceChatDialog.getPresenceInfo(members);
+        PresenceInfo[] membersInfo = VoiceChatDialog.getPresenceInfo(pm, members);
 
         for (int i = 0; i < membersInfo.length; i++) {
 	    PresenceInfo info = membersInfo[i];
@@ -604,7 +591,7 @@ private void selectableMemberListValueChanged(javax.swing.event.ListSelectionEve
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addUserButton;
+    private javax.swing.JButton addMemberButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton holdButton;
     private javax.swing.JLabel jLabel1;

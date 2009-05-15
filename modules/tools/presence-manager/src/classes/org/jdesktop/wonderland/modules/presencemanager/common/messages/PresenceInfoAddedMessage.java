@@ -17,29 +17,29 @@
  */
 package org.jdesktop.wonderland.modules.presencemanager.common.messages;
 
-import java.math.BigInteger;
-
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
- * Message indicating a client has disconnected
+ * Message to add a new PresenceInfo
  * @author jprovino
  */
 @ExperimentalAPI
-public class ClientDisconnectedMessage extends Message {
+public class PresenceInfoAddedMessage extends CellMessage {
 
-    private BigInteger clientID;
+    private PresenceInfo presenceInfo;
 
-    public ClientDisconnectedMessage(BigInteger clientID) {
-	this.clientID = clientID;
+    public PresenceInfoAddedMessage(PresenceInfo presenceInfo) {
+	super(presenceInfo.cellID);
+
+	this.presenceInfo = presenceInfo;
     }
 
-    public BigInteger getClientID() {
-	return clientID;
+    public PresenceInfo getPresenceInfo() {
+	return presenceInfo;
     }
 
 }

@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.common.NetworkAddress;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
+import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.client.input.InputManager;
@@ -42,6 +43,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.CallEndedResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterExitMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
@@ -102,12 +104,15 @@ public class AudioManagerClient extends BaseConnection implements
     private PresenceManager pm;
     private PresenceInfo presenceInfo;
     private Cell cell;
-    private HashMap<String, InCallDialog> inCallDialogs = new HashMap();
 
     private final MyEventListener muteListener = new MyEventListener();
     private JMenuItem userListJMenuItem;
 
     private ArrayList<DisconnectListener> disconnectListeners = new ArrayList();
+
+    private HashMap<String, ArrayList<MemberChangeListener>> memberChangeListeners = new HashMap();
+
+    private HashMap<String, InCallDialog> inCallDialogs = new HashMap();
 
     /** 
      * Create a new AudioManagerClient
@@ -145,6 +150,39 @@ public class AudioManagerClient extends BaseConnection implements
 	}
     }
 
+    public void addMemberChangeListener(String group, MemberChangeListener listener) {
+	ArrayList<MemberChangeListener> listeners = memberChangeListeners.get(group);
+
+	if (listeners == null) {
+	    listeners = new ArrayList();
+	    memberChangeListeners.put(group, listeners);
+	}
+
+	listeners.add(listener);
+    }
+
+    public void removeMemberChangeListener(String group, MemberChangeListener listener) {
+	ArrayList<MemberChangeListener> listeners = memberChangeListeners.get(group);
+
+	listeners.remove(listener);
+    }
+
+    public void notifyMemberChangeListeners(String group, PresenceInfo member, boolean added) {
+	ArrayList<MemberChangeListener> listeners = memberChangeListeners.get(group);
+
+	for (MemberChangeListener listener : listeners) {
+	    listener.memberChange(member, added);
+	}
+    }
+	
+    public void notifyMemberChangeListeners(String group, PresenceInfo[] members) {
+	ArrayList<MemberChangeListener> listeners = memberChangeListeners.get(group);
+
+	for (MemberChangeListener listener : listeners) {
+	    listener.setMemberList(members);
+	}
+    }
+	
     private UserListJFrame userListJFrame;
 
     public void showUsers(java.awt.event.ActionEvent evt) {
@@ -192,6 +230,8 @@ public class AudioManagerClient extends BaseConnection implements
     public void disconnected() {
         super.disconnected();
 
+	pm.removePresenceInfo(presenceInfo);
+
         // remove listeners
 
         // TODO: add methods to remove listeners!
@@ -225,10 +265,16 @@ public class AudioManagerClient extends BaseConnection implements
 
         CellID cellID = cell.getCellID();
 
-        presenceInfo = pm.getPresenceInfo(cellID);
+	String callID = CallID.getCallID(cellID);
 
-    logger.fine("[AudioManagerClient] view configured for cell " +
-                cellID + " presence: " + presenceInfo + " from " + pm);
+        SoftphoneControlImpl.getInstance().setCallID(callID);
+
+        presenceInfo = new PresenceInfo(cellID, session.getID(), session.getUserID(), callID);
+
+	pm.addPresenceInfo(presenceInfo);
+
+        logger.fine("[AudioManagerClient] view configured for cell " +
+            cellID + " presence: " + presenceInfo + " from " + pm);
 
 	connectSoftphone();
     }
@@ -400,63 +446,51 @@ public class AudioManagerClient extends BaseConnection implements
 
             new VoiceChatBusyDialog(msg.getGroup(), msg.getCallee());
         } else if (message instanceof VoiceChatInfoResponseMessage) {
-            VoiceChatInfoResponseMessage msg = (VoiceChatInfoResponseMessage) message;
-
-            InCallDialog inCallDialog = inCallDialogs.get(msg.getGroup());
-
-            logger.fine("GOT INFO RESP");
-
-            if (inCallDialog == null) {
-                logger.fine("No InCallDialog for group " + msg.getGroup());
-                return;
-            }
-
-            inCallDialog.setMembers(msg.getChatters());
+	    VoiceChatInfoResponseMessage msg = (VoiceChatInfoResponseMessage) message;
+	    notifyMemberChangeListeners(msg.getGroup(), msg.getChatters());
         } else if (message instanceof VoiceChatJoinAcceptedMessage) {
             VoiceChatJoinAcceptedMessage msg = (VoiceChatJoinAcceptedMessage) message;
 
-            InCallDialog inCallDialog = inCallDialogs.get(msg.getGroup());
-
             logger.fine("GOT JOIN ACCEPTED MESSAGE FOR " + msg.getCallee());
 
-            if (inCallDialog == null) {
-                logger.fine("No InCallDialog for group " + msg.getGroup());
-                return;
-            }
-
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallee().callID);
+
+	    logger.fine("GOT JOIN ACCEPTED FOR " + msg.getCallee() + " info " + info);
 
 	    if (info == null) {
 		info = msg.getCallee();
 
 	 	logger.warning("adding pm for " + info);
-		pm.addSession(info);
+		pm.addPresenceInfo(info);
 	    }
-
-	    inCallDialog.addMember(info);
 
 	    if (msg.getChatType() == ChatType.SECRET) {
 		info.inSecretChat = true;
             } else {
 		info.inSecretChat = false;
 	    }
+
+	    notifyMemberChangeListeners(msg.getGroup(), info, true);
 	} else if (message instanceof VoiceChatHoldMessage) {
 	    VoiceChatHoldMessage msg = (VoiceChatHoldMessage) message;
 	} else if (message instanceof VoiceChatLeaveMessage) {
 	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
 
-            InCallDialog inCallDialog = inCallDialogs.get(msg.getGroup());
-
             logger.fine("GOT LEAVE MESSAGE FOR " + msg.getCallee());
-
-            if (inCallDialog == null) {
-                logger.fine("No InCallDialog for group " + msg.getGroup());
-                return;
-            }
 
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallee().callID);
 
-            inCallDialog.removeMember(info);
+	    notifyMemberChangeListeners(msg.getGroup(), info, false);
+	} else if (message instanceof CallEndedResponseMessage) {
+	    CallEndedResponseMessage msg = (CallEndedResponseMessage) message;
+
+	    PresenceInfo info = pm.getPresenceInfo(msg.getExternalCallID());
+	    
+	    if (info != null) {
+		pm.removePresenceInfo(info);
+	    }
+
+	    notifyMemberChangeListeners(msg.getGroup(), info, false);
         } else if (message instanceof ConeOfSilenceEnterExitMessage) {
             ConeOfSilenceEnterExitMessage msg = (ConeOfSilenceEnterExitMessage) message;
 

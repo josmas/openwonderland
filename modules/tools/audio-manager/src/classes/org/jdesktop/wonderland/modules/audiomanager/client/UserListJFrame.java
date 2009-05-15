@@ -174,7 +174,7 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
                     info.isMuted);
         }
 
-	SortUsers.sortUsers(userData);
+	SortUsers.sort(userData);
         setUserList(userData);
     }
 

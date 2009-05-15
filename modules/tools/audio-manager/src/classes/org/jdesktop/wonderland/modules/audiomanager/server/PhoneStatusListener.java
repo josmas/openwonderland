@@ -101,8 +101,8 @@ public class PhoneStatusListener implements ManagedCallStatusListener, Serializa
 		vm.removePlayer(player);
 	    }
 
-            //sender.send(clientID, new CallEndedResponseMessage(group, externalCallID, 
-	    //    status.getOption("Reason")));
+            sender.send(clientID, new CallEndedResponseMessage(group, externalCallID, 
+	        status.getOption("Reason")));
 	}
     }
 

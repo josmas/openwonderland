@@ -31,10 +31,15 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerConnectionType;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.SessionCreatedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.SessionEndedMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellManager;
+
+import java.util.ArrayList;
+
 import java.util.logging.Logger;
 
 /**
@@ -52,6 +57,12 @@ public class PresenceManagerClient extends BaseConnection implements
     private PresenceManagerImpl presenceManager;
     private PresenceInfo presenceInfo;
 
+    private static PresenceManagerClient client;
+
+    public static PresenceManagerClient getInstance() {
+	return client;
+    }
+
     /** 
      * Create a new PresenceManagerClient
      * @param session the session to connect to, guaranteed to be in
@@ -60,6 +71,7 @@ public class PresenceManagerClient extends BaseConnection implements
      */
     public PresenceManagerClient() {
         logger.fine("Starting PresenceManagerClient");
+	client = this;
     }
 
     public synchronized void execute(final Runnable r) {
@@ -71,7 +83,8 @@ public class PresenceManagerClient extends BaseConnection implements
     {
         super.connect(session);
         this.session = session;
-        this.presenceManager = (PresenceManagerImpl) PresenceManagerFactory.getPresenceManager(session);
+
+        presenceManager = (PresenceManagerImpl) PresenceManagerFactory.getPresenceManager(session);
 
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
         avatar.addViewCellConfiguredListener(this);
@@ -86,7 +99,9 @@ public class PresenceManagerClient extends BaseConnection implements
         // LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
         // avatar.removeViewCellConfiguredListener(this);
         super.disconnect();
-        session.send(this, new SessionEndedMessage(presenceInfo));
+	
+        session.send(this, new ClientConnectMessage(presenceInfo, false));
+	presenceManager.removePresenceInfo(presenceInfo);
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
@@ -97,32 +112,49 @@ public class PresenceManagerClient extends BaseConnection implements
         SoftphoneControlImpl.getInstance().setCallID(callID);
 
         presenceInfo = new PresenceInfo(cellID, session.getID(),
-                session.getUserID(), callID);
+            session.getUserID(), callID);
 
-	presenceManager.addSession(presenceInfo);
-        session.send(this, new SessionCreatedMessage(presenceInfo));
+        session.send(this, new ClientConnectMessage(presenceInfo, true));
 
-        System.out.println("[PresenceManagerClient] view configured fpr " + cellID + " in " + presenceManager);
+	presenceManager.addPresenceInfo(presenceInfo);
+
+        logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + presenceManager);
     }
 
     @Override
     public void handleMessage(Message message) {
         logger.fine("got a message...");
 
-        if (message instanceof SessionCreatedMessage) {
-            SessionCreatedMessage m = (SessionCreatedMessage) message;
+	if (message instanceof ClientConnectResponseMessage) {
+	    ClientConnectResponseMessage msg = (ClientConnectResponseMessage) message;
 
-            logger.fine("GOT SessionCreatedMessage for " + m.getPresenceInfo());
+	    ArrayList<PresenceInfo> presenceInfoList = msg.getPresenceInfoList();
 
-            presenceManager.addSession(m.getPresenceInfo());
+	    for (PresenceInfo presenceInfo : presenceInfoList) {
+		if (msg.isConnected()) {
+		    presenceManager.presenceInfoAdded(presenceInfo);
+		} else {
+		    presenceManager.presenceInfoRemoved(presenceInfo);
+		}
+	    }
+
+	    return;
+	}
+
+        if (message instanceof PresenceInfoAddedMessage) {
+            PresenceInfoAddedMessage m = (PresenceInfoAddedMessage) message;
+
+            logger.fine("GOT PresenceInfoAddedMessage for " + m.getPresenceInfo());
+
+            presenceManager.presenceInfoAdded(m.getPresenceInfo());
             return;
         }
 
-        if (message instanceof SessionEndedMessage) {
-            SessionEndedMessage m = (SessionEndedMessage) message;
+        if (message instanceof PresenceInfoRemovedMessage) {
+            PresenceInfoRemovedMessage m = (PresenceInfoRemovedMessage) message;
 
-            logger.fine("GOT SessionEndedMessage for " + m.getPresenceInfo());
-            presenceManager.removeSession(m.getPresenceInfo());
+            logger.fine("GOT PresenceInfoRemovedMessage for " + m.getPresenceInfo());
+            presenceManager.presenceInfoRemoved(m.getPresenceInfo());
             return;
         }
 

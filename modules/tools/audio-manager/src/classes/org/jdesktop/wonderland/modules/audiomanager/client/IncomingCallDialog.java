@@ -188,17 +188,16 @@ public class IncomingCallDialog extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
 private void answerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_answerButtonActionPerformed
-    session.send(client, new VoiceChatJoinAcceptedMessage(group, callee, chatType));
-
     logger.info("Sent join message");
 
     InCallDialog inCallDialog = client.getInCallDialog(group);
 
     if (inCallDialog == null) {
         inCallDialog = new InCallDialog(client, session, cellID, group, chatType);
-        inCallDialog.setLocation(new Point((int) getLocation().getX(), (int) getLocation().getY()));
+        inCallDialog.setLocation(new Point((int) (getLocation().getX() + getWidth()), (int) getLocation().getY()));
     }
 
+    session.send(client, new VoiceChatJoinAcceptedMessage(group, callee, chatType));
     setVisible(false);
 }//GEN-LAST:event_answerButtonActionPerformed
 

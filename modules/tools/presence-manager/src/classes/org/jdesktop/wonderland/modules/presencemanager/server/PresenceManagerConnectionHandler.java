@@ -23,10 +23,10 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerConnectionType;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.SessionCreatedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.SessionEndedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientDisconnectedMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
@@ -43,6 +43,7 @@ import java.util.logging.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -62,8 +63,8 @@ public class PresenceManagerConnectionHandler
     private static final Logger logger =
             Logger.getLogger(PresenceManagerConnectionHandler.class.getName());
     
-    private ConcurrentHashMap<BigInteger, PresenceInfo> sessions = 
-	new ConcurrentHashMap();
+    private ConcurrentHashMap<BigInteger, ArrayList<PresenceInfo>> sessions = 
+    	new ConcurrentHashMap();
 
     public PresenceManagerConnectionHandler() {
         super();
@@ -80,78 +81,70 @@ public class PresenceManagerConnectionHandler
     public void clientConnected(WonderlandClientSender sender, 
 	    WonderlandClientID clientID, Properties properties) {
 
-        //throw new UnsupportedOperationException("Not supported yet.");
 	logger.fine("client connected...");
     }
 
     public void messageReceived(WonderlandClientSender sender, 
 	    WonderlandClientID clientID, Message message) {
 
-	if (message instanceof SessionCreatedMessage) {
-	    sessionCreated(sender, clientID, (SessionCreatedMessage) message);
+	if (message instanceof ClientConnectMessage) {
+	    ClientConnectMessage msg = (ClientConnectMessage) message;
+
+	    ArrayList<PresenceInfo> presenceInfoList = new ArrayList();
+
+	    presenceInfoList.add(msg.getPresenceInfo());
+
+	    sessions.put(clientID.getID(), presenceInfoList);
+
+	    sendPresenceInfo(sender, clientID, msg.isConnected());
+	    return;
+	}
+
+	if (message instanceof PresenceInfoAddedMessage) {
+	    PresenceInfo presenceInfo = ((PresenceInfoAddedMessage) message).getPresenceInfo();
+
+	    ArrayList<PresenceInfo> presenceInfoList = sessions.get(clientID.getID());
+
+	    presenceInfoList.add(presenceInfo);
+
+	    sender.send(message);
 	    return;
 	} 
 
-	if (message instanceof SessionEndedMessage) {
-	    sessionEnded(sender, ((SessionEndedMessage) message).getPresenceInfo());
+	if (message instanceof PresenceInfoRemovedMessage) {
+	    PresenceInfo presenceInfo = ((PresenceInfoRemovedMessage) message).getPresenceInfo();
+
+	    ArrayList<PresenceInfo> presenceInfoList = sessions.get(clientID.getID());
+
+	    presenceInfoList.remove(presenceInfo);
+
+	    sender.send(message);
 	    return;
 	}
 
         throw new UnsupportedOperationException("Unknown message: " + message);
     }
 
-    public void clientDisconnected(WonderlandClientSender sender, 
-	    WonderlandClientID clientID) {
-
-	PresenceInfo info = sessions.get(clientID.getID());
-
-	if (info == null) {
-	    logger.warning("Can't find PresenceInfo for " + clientID.getID());
-	    return;
-	}
-
-	sessionEnded(sender, info);
+    public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
     }
 
-    private void sessionCreated(WonderlandClientSender sender, WonderlandClientID clientID,
-	    SessionCreatedMessage message) {
-
-	PresenceInfo info = message.getPresenceInfo();
-
-	logger.fine("SESSION CREATED " + info);
-
+    private void sendPresenceInfo(WonderlandClientSender sender, WonderlandClientID clientID, boolean isConnected) {
 	/*
-	 * Send back all of the PresenceInfo data to the new client
-	 */
-	Iterator<BigInteger> it = sessions.keySet().iterator();
+         * Send back all of the PresenceInfo data to the new client
+         */
+        Iterator<BigInteger> it = sessions.keySet().iterator();
 
-	while (it.hasNext()) {
-	    BigInteger sessionID = it.next();
+        while (it.hasNext()) {
+            BigInteger id = it.next();
 
-	    PresenceInfo sessionInfo = sessions.get(sessionID);
+            if (clientID.getID().equals(id)) {
+                continue;
+            }
 
-	    logger.fine("Sending session created message to " + sessionInfo.userID
-		+ " new session:  " + sessionInfo.userID);
+            ArrayList<PresenceInfo> presenceInfoList = sessions.get(id);
 
-	    sender.send(clientID, new SessionCreatedMessage(sessionInfo));
-	}
-
-	sessions.put(info.clientID, info);
-
-	/*
-	 * Send new client's presence info to all clients.
-	 */
-	sender.send(message);
-    }
-
-    private void sessionEnded(WonderlandClientSender sender, PresenceInfo presenceInfo) {
-	logger.fine("SESSION ENDED " + presenceInfo);
-
-	if (sessions.remove(presenceInfo.clientID) == null) {
-	    logger.warning("Can't find PresenceInfo for " + presenceInfo.clientID);
-	}
-
-	sender.send(new SessionEndedMessage(presenceInfo));
+            sender.send(clientID, new ClientConnectResponseMessage(presenceInfoList, isConnected));
+        }
     }
 
 }
