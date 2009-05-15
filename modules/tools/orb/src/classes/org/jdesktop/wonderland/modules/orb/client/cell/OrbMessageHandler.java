@@ -173,7 +173,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
         presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, callID);
 
-	pm.addSession(presenceInfo);
+	pm.addPresenceInfo(presenceInfo);
 
         NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
 	    orbCell.addComponent(comp);
@@ -183,7 +183,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    PresenceInfo info = pm.getPresenceInfo(orbCell.getPlayerWithVpCallID());
 
 	    if (info == null) {
-		System.out.println("Can't find presence info for CallID " 
+		logger.warning("Can't find presence info for CallID " 
 		    + orbCell.getPlayerWithVpCallID());
 		return;
 	    }
@@ -243,7 +243,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	orbRootNode.detachChild(nameTag);
 	nameTag.done();
 
-	pm.removeSession(presenceInfo);
+	pm.removePresenceInfo(presenceInfo);
     }
 
     public void processMessage(final Message message) {
@@ -306,7 +306,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    Cell newHostCell = ClientContext.getCellCache(session).getCell(msg.getHostCellID());
 
 	    if (newHostCell == null) {
-		System.out.println("Can't find host cell for " + msg.getHostCellID());
+		logger.warning("Can't find host cell for " + msg.getHostCellID());
 		return;
 	    }
 

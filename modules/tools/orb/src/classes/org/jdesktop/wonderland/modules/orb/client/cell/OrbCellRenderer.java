@@ -125,7 +125,6 @@ public class OrbCellRenderer extends BasicRenderer {
         wiState.setEnabled(true);
         node.setRenderState(wiState);
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
-	System.out.println("Setting orb root node");
 	((OrbCell) cell).setOrbRootNode(node);
         return node;
     }
@@ -207,7 +206,6 @@ public class OrbCellRenderer extends BasicRenderer {
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
 
 	logger.fine("ANIMATION ENTITY CREATED");
-	System.out.println("Setting orb root node");
 	((OrbCell) cell).setOrbRootNode(node);
 	return node;
     }
@@ -243,7 +241,7 @@ public class OrbCellRenderer extends BasicRenderer {
 		try {
 		    MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
 		    if (buttonEvent.isPressed()) {
-			System.out.println("Orb Selected");
+			logger.info("Orb Selected");
 		        ((OrbCell) cell).orbSelected();
 		    }
 		    return;
