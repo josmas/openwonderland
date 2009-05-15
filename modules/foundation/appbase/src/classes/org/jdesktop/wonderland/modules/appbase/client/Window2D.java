@@ -32,7 +32,6 @@ import com.jme.image.Image;
 import com.jme.image.Texture;
 import com.jme.image.Texture2D;
 import com.jme.math.Vector2f;
-import com.jme.math.Vector3f;
 import com.jme.util.geom.BufferUtils;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -41,6 +40,15 @@ import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
@@ -161,7 +169,7 @@ public abstract class Window2D {
     }
 
     /** The attached close listeners. */
-    private LinkedList<CloseListener> closeListeners = new LinkedList<CloseListener>();
+    private final LinkedList<CloseListener> closeListeners = new LinkedList<CloseListener>();
 
     /**
      * Create an instance of Window2D with a default name. The first such window created for an app 
@@ -1540,5 +1548,91 @@ public abstract class Window2D {
 
         // Now make it all happen
         view.update();
+    }
+
+    /**
+     * Call this when the app has control in order to display the window menu for this window.
+     * @param entity An arbitrary entity belonging to the window's cell.
+     * @param mouseEvent The triggering AWT event.
+     */
+    public void displayWindowMenu (Entity entity, MouseEvent mouseEvent) {
+        LinkedList<Entity> entities = new LinkedList<Entity>();
+        entities.add(entity);
+        WindowContextMenuEvent windowMenuEvent = new WindowContextMenuEvent(entities, mouseEvent);
+        InputManager.inputManager().postEvent(windowMenuEvent);
+    }
+
+    /**
+     * NOTE: INTERNAL API.
+     * <br>
+     * This helps us distinguish menu events when the window has control versus doesn't have control
+     * These are only ever sent when the window has control.
+     */
+    @InternalAPI
+    public class WindowContextMenuEvent extends ContextEvent {
+        private Window2D window;
+
+        // Default constructor -- For clone only.
+        private WindowContextMenuEvent () {
+            super();
+        }
+
+        public WindowContextMenuEvent (LinkedList<Entity> entities, MouseEvent mouseEvent) {
+            super(entities, mouseEvent);
+            window = Window2D.this;
+        }
+
+        public Window2D getWindow () {
+            return window;
+        }
+
+        /** 
+         * {@inheritDoc}
+         * <br>
+         * If event is null, a new event of this class is created and returned.
+         */
+        @Override
+        public Event clone (Event event) {
+            if (event == null) {
+                event = new WindowContextMenuEvent();
+            }
+            ((WindowContextMenuEvent)event).window = window;
+            return super.clone(event);
+        }
+    }
+
+    /**
+     * Return the window menu items for this window based on its current state.
+     */
+    public ContextMenuItem[] windowMenuItems () {
+        switch (type) {
+
+        case PRIMARY:
+        case UNKNOWN:
+            return new ContextMenuItem[] {
+                new SimpleContextMenuItem("Release Control", new ContextMenuActionListener () {
+                    public void actionPerformed(ContextMenuItemEvent event) {
+                        app.getControlArb().releaseControl();
+                    }
+                })
+                /*
+                ,
+                new SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
+                    public void actionPerformed(ContextMenuItemEvent event) {
+                        System.err.println("Show in HUD Not yet implemented.");
+                    }
+                })
+                */
+            };
+
+        case SECONDARY:
+            // TODO: for now there are no extra items
+            // TODO: don't show std items
+            return new ContextMenuItem[] {};
+
+        case POPUP:
+        default:
+            return null;
+        }
     }
 }

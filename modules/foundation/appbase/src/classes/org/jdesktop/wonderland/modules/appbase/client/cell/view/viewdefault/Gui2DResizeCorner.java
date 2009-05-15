@@ -67,7 +67,7 @@ class Gui2DResizeCorner extends Gui2DSide {
      */
     @Override
     protected void attachMouseListener(Entity entity) {
-        mouseListener = new ResizeCornerMouseListener();
+        mouseListener = new ResizeCornerMouseListener(entity);
         mouseListener.addToEntity(entity);
     }
 
@@ -75,6 +75,10 @@ class Gui2DResizeCorner extends Gui2DSide {
      * The mouse listener for this GUI.
      */
     protected class ResizeCornerMouseListener extends Gui2DSide.SideMouseListener {
+
+        public ResizeCornerMouseListener (Entity entity) {
+            super(entity);
+        }
 
         /**
          * Called when a 3D event has occurred.
