@@ -202,7 +202,8 @@ public class ControlArbXrw extends ControlArbSingle {
         takeControlPending = false;
         eventsEnabled = false;
         appControl = false;
-        setController(serverProxy.getControllingUser());
+        setController(null);
+        updateControl();
     }
 
     // TODO: not yet implemented

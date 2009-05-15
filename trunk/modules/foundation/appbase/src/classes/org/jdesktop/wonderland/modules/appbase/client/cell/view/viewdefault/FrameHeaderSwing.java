@@ -31,10 +31,10 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
-import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 
@@ -199,9 +199,16 @@ public class FrameHeaderSwing
      * @param text The new title.
      */
     public void setTitle(String title) {
-        if (title != null) {
-            headerPanel.setTitle(title);
-        }
+        headerPanel.setTitle(title);
+    }
+
+    /**
+     * Set the controller displayed in the header.
+     *
+     * @param text The new controller.
+     */
+    public void setController(String controller) {
+        headerPanel.setController(controller);
     }
 
     /**
@@ -254,6 +261,20 @@ public class FrameHeaderSwing
             viewWindow.toggleOrtho();
         } else {
             viewWindow.closeUser();
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void updateControl(ControlArb controlArb) {
+        super.updateControl(controlArb);
+
+        if (controlArb instanceof ControlArbSingle) {
+            ControlArbSingle ca = (ControlArbSingle) controlArb;
+            setController(ca.getController());
+        } else {
+            // TODO: someday: if it's Multi it would be nice to display the number of users controlling,
+            // or actually a list of users controlling.
         }
     }
 }

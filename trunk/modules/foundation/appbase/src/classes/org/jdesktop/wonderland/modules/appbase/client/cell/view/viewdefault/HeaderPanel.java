@@ -60,9 +60,7 @@ public class HeaderPanel extends javax.swing.JPanel {
 
         jLabel1.setText("Window Title");
 
-        jLabel2.setText("Controller");
-
-        jButton1.setFont(new java.awt.Font("DejaVu Sans", 0, 10)); // NOI18N
+        jButton1.setFont(new java.awt.Font("DejaVu Sans", 0, 10));
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close.png"))); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -80,13 +78,12 @@ public class HeaderPanel extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(jButton1)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jButton1)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(jLabel2)
+                        .add(jLabel1)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(jLabel1))
-                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -140,10 +137,22 @@ public class HeaderPanel extends javax.swing.JPanel {
     public void setTitle (String title) {
         //System.err.println("########## HeaderPanel = " + this);
         //System.err.println("########## HeaderPanel, title = " + title);
+        if (title == null) {
+            title = " ";
+        }
         if (jLabel1 != null) {
             //System.err.println("########## HeaderPanel, actually setting title = " + title);
             // TODO: notyet
             //jLabel1.setText(title);
+        }
+    }
+
+    public void setController (String controller) {
+        if (controller == null) {
+            controller = " ";
+        }
+        if (jLabel1 != null) {
+            jLabel2.setText(controller);
         }
     }
 
