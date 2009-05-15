@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
  * The cell registry manages the collection of cell types registered with the
  * system. This is used to display them in the palette and also provides the
  * necessary information to create them in-world.
- * 
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class CellRegistry implements PrimaryServerListener {
@@ -42,19 +42,19 @@ public class CellRegistry implements PrimaryServerListener {
     /* A set of all cell factories */
     private Set<CellFactorySPI> cellFactorySet = null;
     
-    /*
-     * A map of cell factories and the extensions they support. All extensions
-     * are stored in lower case.
-     */
-    private Map<String, Set<CellFactorySPI>> extensionMap = null;
+    /* A map of cell factories and the extensions the support */
+    private Map<String, Set<CellFactorySPI>> cellFactoryExtensionMap = null;
 
     /* The set of all cell factories associated with the cuurent session */
     private final Set<CellFactorySPI> sessionFactories =
             new LinkedHashSet<CellFactorySPI>();
 
+    /* A list of listeners for changes to the cell factory entries */
+    private Set<CellRegistryListener> listeners = new HashSet();
+
     /** Default constructor */
     public CellRegistry() {
-        extensionMap = new HashMap();
+        cellFactoryExtensionMap = new HashMap();
         cellFactorySet = new HashSet();
 
         LoginManager.addPrimaryServerListener(this);
@@ -82,59 +82,31 @@ public class CellRegistry implements PrimaryServerListener {
      * classes, GUI panels to configuration the cell setup information, and
      * information so that the cell type can be used in a world assembly palette
      * of cell types.
+     * <p>
+     * This method also generates an event to the listeners for changes in the
+     * set of registered cell factories.
      * 
      * @param factory The cell factory
      */
     public synchronized void registerCellFactory(CellFactorySPI factory) {
-        // For now, don't check if the factory already exists. We may need to
-        // create an entry in cellFactoryExtensionMap for the extension type if it does
-        // not yet exist.
-        String[] extensions = factory.getExtensions();
-        if (extensions != null) {
-            for (String extension : extensions) {
-                // Convert the extension to lower case so that, for example
-                // JPG is the same as jpg
-                extension = extension.toLowerCase();
-                Set<CellFactorySPI> factories = extensionMap.get(extension);
-                if (factories == null) {
-                    factories = new HashSet<CellFactorySPI>();
-                    extensionMap.put(extension, factories);
-                }
-                factories.add(factory);
-            }
-        }
-        
-        // Add to the set containing all cell factories
-        cellFactorySet.add(factory);
+        // Add the factory to the list and then notify listeners of the change
+        addFactory(factory);
+        fireCellRegistryListener();
     }
 
     /**
      * Removes a CellFactory registration.
+     *
+     * This method also generates an event to the listeners for changes in the
+     * set of registered cell factories.
+     *
      * @param factory The cell factory
      */
     public synchronized void unregisterCellFactory(CellFactorySPI factory) {
-        // For now, don't check if the factory already exists. We may need to
-        // create an entry in cellFactoryExtensionMap for the extension type if it does
-        // not yet exist.
-        String[] extensions = factory.getExtensions();
-        if (extensions != null) {
-            for (String extension : extensions) {
-                // Convert the extension to lower case so that, for example
-                // JPG is the same as jpg
-                extension = extension.toLowerCase();
-                Set<CellFactorySPI> factories = extensionMap.get(extension);
-                if (factories != null) {
-                    factories.remove(factory);
-
-                    if (factories.isEmpty()) {
-                        extensionMap.remove(factories);
-                    }
-                }
-            }
-        }
-
-        // Add to the set containing all cell factories
-        cellFactorySet.remove(factory);
+        // Remove the factory from the list and then notify listeners of the
+        // change
+        removeFactory(factory);
+        fireCellRegistryListener();
     }
     
     /**
@@ -148,8 +120,8 @@ public class CellRegistry implements PrimaryServerListener {
     }
     
     /**
-     * Returns a set of cell factories given the case-insensitive extension
-     * type. If no factories are present for the given extension, returns null.
+     * Returns a set of cell factories given the extension type. If no factories
+     * are present for the given extension, returns null.
      * 
      * @param extension File type extension (e.g. 'jpg', 'dae')
      * @return A set of CellFactory objects registered on the extension
@@ -158,12 +130,13 @@ public class CellRegistry implements PrimaryServerListener {
         // Convert the extension to lower case so that, for example
         // JPG is the same as jpg
         extension = extension.toLowerCase();
-        return extensionMap.get(extension);
+        return cellFactoryExtensionMap.get(extension);
     }
 
     /**
-     * Notification that the primary server has changed.  Update our maps
+     * Notification that the primary server has changed. Update our maps
      * accordingly.
+     *
      * @param server the new primary server (may be null)
      */
     public void primaryServer(ServerSessionManager server) {
@@ -174,6 +147,9 @@ public class CellRegistry implements PrimaryServerListener {
         if (server != null) {
             registerFactories(server);
         }
+
+        // Fire an even that the list of Cell factories has changed
+        fireCellRegistryListener();
     }
 
     /**
@@ -187,7 +163,7 @@ public class CellRegistry implements PrimaryServerListener {
                                                 CellFactorySPI.class);
         while (it.hasNext()) {
             CellFactorySPI factory = it.next();
-            registerCellFactory(factory);
+            addFactory(factory);
             sessionFactories.add(factory);
         }
     }
@@ -197,9 +173,109 @@ public class CellRegistry implements PrimaryServerListener {
      */
     protected synchronized void unregisterFactories() {
         for (CellFactorySPI factory : sessionFactories) {
-            unregisterCellFactory(factory);
+            removeFactory(factory);
         }
 
         sessionFactories.clear();
+    }
+
+    /**
+     * Actually adds the given cell factory to the necessary maps. This method
+     * assumes synchronized access.
+     */
+    private void addFactory(CellFactorySPI factory) {
+        // For now, don't check if the factory already exists. We may need to
+        // create an entry in cellFactoryExtensionMap for the extension type if
+        // it does not yet exist.
+        String[] extensions = factory.getExtensions();
+        if (extensions != null) {
+            for (String extension : extensions) {
+                // Convert the extension to lower case so that, for example
+                // JPG is the same as jpg
+                extension = extension.toLowerCase();
+                Set<CellFactorySPI> factories = cellFactoryExtensionMap.get(extension);
+                if (factories == null) {
+                    factories = new HashSet<CellFactorySPI>();
+                    cellFactoryExtensionMap.put(extension, factories);
+                }
+                factories.add(factory);
+            }
+        }
+
+        // Add to the set containing all cell factories
+        cellFactorySet.add(factory);
+    }
+
+    /**
+     * Actually removes the given cell factory from the maps. This method
+     * assumed synchronized access.
+     */
+    private void removeFactory(CellFactorySPI factory) {
+        String[] extensions = factory.getExtensions();
+        if (extensions != null) {
+            for (String extension : extensions) {
+                // Convert the extension to lower case so that, for example
+                // JPG is the same as jpg
+                extension = extension.toLowerCase();
+                Set<CellFactorySPI> factories = cellFactoryExtensionMap.get(extension);
+                if (factories != null) {
+                    factories.remove(factory);
+
+                    if (factories.isEmpty()) {
+                        cellFactoryExtensionMap.remove(factories);
+                    }
+                }
+            }
+        }
+
+        // Add to the set containing all cell factories
+        cellFactorySet.remove(factory);
+    }
+
+    /**
+     * Adds a new listener for changes to the Cell registry. If this listener
+     * is already present, this method does nothing.
+     *
+     * @param listener The new listener to add
+     */
+    public void addCellRegistryListener(CellRegistryListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a listener for changes to the Cell registry. If this listener is
+     * not present, this method does nothing.
+     *
+     * @param listener The listener to remove
+     */
+    public void removeCellRegistryListener(CellRegistryListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+    }
+
+    /**
+     * Sends an event to all registered listeners that a changes has occurred
+     * in the list of Cell factories.
+     */
+    private void fireCellRegistryListener() {
+        synchronized (listeners) {
+            for (CellRegistryListener listener : listeners) {
+                listener.cellRegistryChanged();
+            }
+        }
+    }
+
+    /**
+     * A listener indicating that a change has happened to the set of registered
+     * Cell factories.
+     */
+    public interface CellRegistryListener {
+        /**
+         * A change has occurred to the list of registered Cell factories.
+         */
+        public void cellRegistryChanged();
     }
 }
