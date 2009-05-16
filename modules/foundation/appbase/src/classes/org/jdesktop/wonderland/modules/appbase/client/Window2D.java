@@ -704,8 +704,6 @@ public abstract class Window2D {
      * @param title The string to display as the window title.
      */
     public synchronized void setTitle(String title) {
-        //System.err.println("@@@@@@@@@@@@ window = " + this);
-        //System.err.println("@@@@@@@@@@@@ title = " + title);
         if (title == null && this.title == null) {
             return;
         }
@@ -1536,13 +1534,13 @@ public abstract class Window2D {
             //view.setPixelScaleOrtho(0.5f, 0.5f);
 
             // Move the window view into the ortho plane
-            System.err.println("Move view into ortho " + view);
+            logger.warning("Move view into ortho " + view);
             view.setOrtho(true, false);
 
         } else {
 
             // Move the window view into the cell
-            System.err.println("Move view out of ortho " + view);
+            logger.warning("Move view out of ortho " + view);
             view.setOrtho(false, false);
         }
 

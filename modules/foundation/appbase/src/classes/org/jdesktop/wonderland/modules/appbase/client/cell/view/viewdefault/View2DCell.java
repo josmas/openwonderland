@@ -322,13 +322,8 @@ public class View2DCell extends View2DEntity {
     /** {@inheritDoc} */
     @Override
     protected void frameUpdateTitle () {
-        //System.err.println("%%%%%%%%%%% view " + this);
-        //System.err.println("%%%%%%%%%%% 1 title " + getTitle());
         if (frame != null) {
             // Note: doesn't need to be done in render updater
-            logger.fine("Update title");
-            //System.err.println("%%%%%%%%%%% frame " + frame);
-            //System.err.println("%%%%%%%%%%% 2 title " + getTitle());
             frame.setTitle(getTitle());
         }
     }

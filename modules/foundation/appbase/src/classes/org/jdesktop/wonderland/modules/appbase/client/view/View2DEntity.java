@@ -525,8 +525,6 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setTitle (String title, boolean update) {
-        //System.err.println("$$$$$$$$$$$$ view = " + this);
-        //System.err.println("$$$$$$$$$$$$ change title = " + title);
         this.title = title;
         changeMask |= CHANGED_TITLE;
         if (update) {
@@ -1077,11 +1075,18 @@ public abstract class View2DEntity implements View2D {
                 }
             }
             
+            if ((changeMask & CHANGED_TITLE) != 0) {
+                if (decorated && !ortho && hasFrame()) {
+                    frameUpdateTitle();
+                }
+            }
+
             if ((changeMask & (CHANGED_TYPE | CHANGED_ORTHO)) != 0) {
                 if (decorated && !ortho) {
                     reattachFrame();
                 }
             }
+
         }            
 
         if ((changeMask & (CHANGED_STACK | CHANGED_ORTHO)) != 0) {
