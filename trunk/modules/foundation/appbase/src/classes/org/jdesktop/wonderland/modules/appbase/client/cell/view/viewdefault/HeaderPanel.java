@@ -58,8 +58,6 @@ public class HeaderPanel extends javax.swing.JPanel {
         setMaximumSize(new java.awt.Dimension(32767, 29));
         setMinimumSize(new java.awt.Dimension(50, 29));
 
-        jLabel1.setText("Window Title");
-
         jButton1.setFont(new java.awt.Font("DejaVu Sans", 0, 10));
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close.png"))); // NOI18N
 
@@ -135,15 +133,11 @@ public class HeaderPanel extends javax.swing.JPanel {
     }
 
     public void setTitle (String title) {
-        //System.err.println("########## HeaderPanel = " + this);
-        //System.err.println("########## HeaderPanel, title = " + title);
         if (title == null) {
             title = " ";
         }
         if (jLabel1 != null) {
-            //System.err.println("########## HeaderPanel, actually setting title = " + title);
-            // TODO: notyet
-            //jLabel1.setText(title);
+            jLabel1.setText(title);
         }
     }
 
