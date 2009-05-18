@@ -60,9 +60,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private JRadioButtonMenuItem thirdPersonRB;
     private JRadioButtonMenuItem frontPersonRB;
     private DecimalFormat floatFormat = new DecimalFormat("###.0");
-
+    private float minFrameRate = Float.MAX_VALUE;
+    private float maxFrameRate = 0.0f;
     private final Map<JMenuItem, Integer> menuWeights =
-                                              new HashMap<JMenuItem, Integer>();
+            new HashMap<JMenuItem, Integer>();
+    private WorldManager wm;
 
     static {
         new LogControl(MainFrameImpl.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
@@ -74,7 +76,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
     /** Creates new form MainFrame */
     public MainFrameImpl(WorldManager wm, int width, int height) {
-
+        this.wm = wm;
         try {
 
             boolean hasNimbus = false;
@@ -197,6 +199,54 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         addToViewMenu(frontPersonRB, 2);
         cameraButtonGroup.add(frontPersonRB);
 
+        // Frame Rate menu
+        JMenu frameRateMenu = new JMenu(bundle.getString("Max Frame Rate"));
+
+        JMenuItem fps15 = new JMenuItem(bundle.getString("15 fps"));
+        JMenuItem fps30 = new JMenuItem(bundle.getString("30 fps (default)"));
+        JMenuItem fps60 = new JMenuItem(bundle.getString("60 fps"));
+        JMenuItem fps120 = new JMenuItem(bundle.getString("120 fps"));
+        JMenuItem fps200 = new JMenuItem(bundle.getString("200 fps"));
+
+        frameRateMenu.add(fps15);
+        frameRateMenu.add(fps30);
+        frameRateMenu.add(fps60);
+        frameRateMenu.add(fps120);
+        frameRateMenu.add(fps200);
+
+        addToViewMenu(frameRateMenu, 4);
+        
+        fps15.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frameRateActionPerformed(evt);
+            }
+        });
+        fps30.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frameRateActionPerformed(evt);
+            }
+        });
+        fps60.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frameRateActionPerformed(evt);
+            }
+        });
+        fps120.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frameRateActionPerformed(evt);
+            }
+        });
+        fps200.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frameRateActionPerformed(evt);
+            }
+        });
+
         // Help menu
         HelpSystem helpSystem = new HelpSystem();
         JMenu helpMenu = helpSystem.getHelpJMenu();
@@ -225,6 +275,14 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             ClientContextJME.getViewManager().setCameraController(new FrontHackPersonCameraProcessor());
         }
 
+    }
+
+    private void frameRateActionPerformed(java.awt.event.ActionEvent evt) {
+        JMenuItem mi = (JMenuItem) evt.getSource();
+        String[] fpsString = mi.getText().split(" ");
+        int fps = Integer.valueOf(fpsString[0]);
+        System.err.println("maximum fps: " + fps);
+        wm.getRenderManager().setDesiredFrameRate(fps);
     }
 
     public void updateGoButton() {
@@ -266,8 +324,8 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             weight = Integer.MAX_VALUE;
         }
 
-        logger.fine(menu.getText() + " menu: inserting [" + menuItem.getText() + 
-                    "] with weight: " + weight);
+        logger.fine(menu.getText() + " menu: inserting [" + menuItem.getText() +
+                "] with weight: " + weight);
 
         // find the index of the first menu item with a higher weight or
         // the same weight and later in the alphabet
@@ -283,8 +341,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 }
 
                 if (menuItem.getName() != null &&
-                    menuItem.getName().compareTo(curItem.getName()) > 0)
-                {
+                        menuItem.getName().compareTo(curItem.getName()) > 0) {
                     break;
                 }
             }
@@ -589,5 +646,4 @@ private void messageLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JMenu viewMenu;
     private javax.swing.JMenu windowMenu;
     // End of variables declaration//GEN-END:variables
-
 }
