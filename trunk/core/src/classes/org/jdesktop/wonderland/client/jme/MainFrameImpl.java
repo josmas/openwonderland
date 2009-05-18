@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.common.LogControl;
 import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
@@ -60,10 +61,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private JRadioButtonMenuItem thirdPersonRB;
     private JRadioButtonMenuItem frontPersonRB;
     private DecimalFormat floatFormat = new DecimalFormat("###.0");
-    private float minFrameRate = Float.MAX_VALUE;
-    private float maxFrameRate = 0.0f;
     private final Map<JMenuItem, Integer> menuWeights =
             new HashMap<JMenuItem, Integer>();
+    private JMenu frameRateMenu;
     private WorldManager wm;
 
     static {
@@ -200,13 +200,13 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         cameraButtonGroup.add(frontPersonRB);
 
         // Frame Rate menu
-        JMenu frameRateMenu = new JMenu(bundle.getString("Max Frame Rate"));
+        frameRateMenu = new JMenu(bundle.getString("Max Frame Rate"));
 
-        JMenuItem fps15 = new JMenuItem(bundle.getString("15 fps"));
-        JMenuItem fps30 = new JMenuItem(bundle.getString("30 fps (default)"));
-        JMenuItem fps60 = new JMenuItem(bundle.getString("60 fps"));
-        JMenuItem fps120 = new JMenuItem(bundle.getString("120 fps"));
-        JMenuItem fps200 = new JMenuItem(bundle.getString("200 fps"));
+        JMenuItem fps15 = new JCheckBoxMenuItem(bundle.getString("15 fps"));
+        JMenuItem fps30 = new JCheckBoxMenuItem(bundle.getString("30 fps (default)"));
+        JMenuItem fps60 = new JCheckBoxMenuItem(bundle.getString("60 fps"));
+        JMenuItem fps120 = new JCheckBoxMenuItem(bundle.getString("120 fps"));
+        JMenuItem fps200 = new JCheckBoxMenuItem(bundle.getString("200 fps"));
 
         frameRateMenu.add(fps15);
         frameRateMenu.add(fps30);
@@ -214,6 +214,8 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         frameRateMenu.add(fps120);
         frameRateMenu.add(fps200);
 
+        fps30.setSelected(true);
+        
         addToViewMenu(frameRateMenu, 4);
         
         fps15.addActionListener(new java.awt.event.ActionListener() {
@@ -278,10 +280,14 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     }
 
     private void frameRateActionPerformed(java.awt.event.ActionEvent evt) {
+        for (int i=0;i < frameRateMenu.getItemCount();i++) {
+                frameRateMenu.getItem(i).setSelected(false);
+        }
+        ((JMenuItem)evt.getSource()).setSelected(true);
         JMenuItem mi = (JMenuItem) evt.getSource();
         String[] fpsString = mi.getText().split(" ");
         int fps = Integer.valueOf(fpsString[0]);
-        System.err.println("maximum fps: " + fps);
+        logger.info("maximum fps: " + fps);
         wm.getRenderManager().setDesiredFrameRate(fps);
     }
 
