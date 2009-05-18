@@ -69,6 +69,8 @@ public class TestPanel extends javax.swing.JPanel {
         styleBumpShaderRB = new javax.swing.JRadioButton();
         styleNormalRB = new javax.swing.JRadioButton();
         jSlider1 = new javax.swing.JSlider();
+        // For vertical slider debugging
+        //jSlider1 = new javax.swing.JSlider(javax.swing.JSlider.VERTICAL);
 
 	jSlider1.setToolTipText("This is a slider");
 

@@ -785,7 +785,7 @@ public abstract class InputPicker {
     /**
      * Actually perform the pick.
      */
-    private PickInfo pickEventScreenPos (int x, int y) {
+    PickInfo pickEventScreenPos (int x, int y) {
 	if (cameraComp == null) return null;
 
 	logger.fine("pick at " + x + ", " + y);
