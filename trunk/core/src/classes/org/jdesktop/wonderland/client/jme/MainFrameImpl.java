@@ -43,6 +43,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
+import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 
 /**
@@ -66,6 +67,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private JMenu frameRateMenu;
     private WorldManager wm;
 
+
     static {
         new LogControl(MainFrameImpl.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
     }
@@ -84,19 +86,19 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             try {
                 Class.forName("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
                 hasNimbus = true;
-            } catch(ClassNotFoundException e) {
+            } catch (ClassNotFoundException e) {
             }
 
             // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
             // For now, force the cross-platform (metal) LAF to be used, or Nimbus
             // Also workaround bug 10.
-            if (hasNimbus)
+            if (hasNimbus) {
                 UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-            else {
+            } else {
                 // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
                 UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             }
-            
+
             if ("Mac OS X".equals(System.getProperty("os.name"))) {
                 //to workaround popup clipping on the mac we force top-level popups
                 //note: this is implemented in scenario's EmbeddedPopupFactory
@@ -214,10 +216,8 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         frameRateMenu.add(fps120);
         frameRateMenu.add(fps200);
 
-        fps30.setSelected(true);
-        
         addToViewMenu(frameRateMenu, 4);
-        
+
         fps15.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -249,6 +249,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             }
         });
 
+        RenderManager rm;
         // Help menu
         HelpSystem helpSystem = new HelpSystem();
         JMenu helpMenu = helpSystem.getHelpJMenu();
@@ -280,15 +281,25 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     }
 
     private void frameRateActionPerformed(java.awt.event.ActionEvent evt) {
-        for (int i=0;i < frameRateMenu.getItemCount();i++) {
-                frameRateMenu.getItem(i).setSelected(false);
-        }
-        ((JMenuItem)evt.getSource()).setSelected(true);
         JMenuItem mi = (JMenuItem) evt.getSource();
         String[] fpsString = mi.getText().split(" ");
         int fps = Integer.valueOf(fpsString[0]);
         logger.info("maximum fps: " + fps);
-        wm.getRenderManager().setDesiredFrameRate(fps);
+        setDesiredFrameRate(fps);
+    }
+
+    public void setDesiredFrameRate(int desiredFrameRate) {
+        for (int i = 0; i < frameRateMenu.getItemCount(); i++) {
+            JMenuItem item = frameRateMenu.getItem(i);
+            String[] fpsString = item.getText().split(" ");
+            int fps = Integer.valueOf(fpsString[0]);
+            if (fps == desiredFrameRate) {
+                item.setSelected(true);
+            } else {
+                item.setSelected(false);
+            }
+        }
+        wm.getRenderManager().setDesiredFrameRate(desiredFrameRate);
     }
 
     public void updateGoButton() {

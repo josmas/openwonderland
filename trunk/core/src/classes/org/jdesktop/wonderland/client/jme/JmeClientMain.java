@@ -22,7 +22,6 @@ import com.jme.math.Vector3f;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Interpolators;
 import com.sun.scenario.animation.TimingTarget;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
@@ -59,11 +58,10 @@ import org.jdesktop.wonderland.client.login.LoginManager;
  *
  */
 public class JmeClientMain {
+
     private static final Logger logger =
             Logger.getLogger(JmeClientMain.class.getName());
-
     public static final String SERVER_URL_PROP = "sgs.server";
-
     /** The frame of the Wonderland client window. */
     private static MainFrame frame;
 
@@ -77,15 +75,12 @@ public class JmeClientMain {
     private static final String SERVER_URL_DEFAULT = "http://localhost:8080";
     private static final String DESIRED_FPS_DEFAULT = "30";
     private static final String WINDOW_SIZE_DEFAULT = "800x600";
-
     private int desiredFrameRate = Integer.parseInt(DESIRED_FPS_DEFAULT);
-
     /**
      * The width and height of our 3D window
      */
     private int width = 800;
     private int height = 600;
-    
     // the current Wonderland login and session
     private JmeLoginUI login;
     private JmeClientSession curSession;
@@ -109,7 +104,7 @@ public class JmeClientMain {
             if (windowSize.equalsIgnoreCase("fullscreen")) {
                 GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
                 GraphicsDevice[] gs = ge.getScreenDevices();
-                if (gs.length>1) {
+                if (gs.length > 1) {
                     logger.warning("Fullscreen using size of first screen");
                 }
                 GraphicsConfiguration gc = gs[0].getDefaultConfiguration();
@@ -118,12 +113,12 @@ public class JmeClientMain {
                 height = size.height; // -50 hack for current swing decorations
             } else {
                 String sizeWidth = windowSize.substring(0, windowSize.indexOf('x'));
-                String sizeHeight = windowSize.substring(windowSize.indexOf('x')+1);
+                String sizeHeight = windowSize.substring(windowSize.indexOf('x') + 1);
                 width = Integer.parseInt(sizeWidth);
                 height = Integer.parseInt(sizeHeight);
             }
-        } catch(Exception e) {
-            logger.warning(WINDOW_SIZE_PROP+" error, should be of the form 640x480 (or fullscreen), instead of the current "+windowSize);
+        } catch (Exception e) {
+            logger.warning(WINDOW_SIZE_PROP + " error, should be of the form 640x480 (or fullscreen), instead of the current " + windowSize);
         }
 
         // make sure the server URL is set
@@ -151,7 +146,6 @@ public class JmeClientMain {
 
             public void resume() {
             }
-
         });
         clip2.setInterpolator(Interpolators.getEasingInstance(0.4f, 0.4f));
         clip2.start();
@@ -161,12 +155,12 @@ public class JmeClientMain {
         WorldManager worldManager = ClientContextJME.getWorldManager();
 
         String requestedFPS = System.getProperty(DESIRED_FPS_PROP, DESIRED_FPS_DEFAULT);
-        if (requestedFPS!=null) {
+        if (requestedFPS != null) {
             try {
                 desiredFrameRate = Integer.parseInt(requestedFPS);
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 // No action required, the default has already been set.
-                logger.warning(DESIRED_FPS_PROP+" property format error for '"+requestedFPS+"', using default");
+                logger.warning(DESIRED_FPS_PROP + " property format error for '" + requestedFPS + "', using default");
             }
         }
         worldManager.getRenderManager().setDesiredFrameRate(desiredFrameRate);
@@ -180,15 +174,17 @@ public class JmeClientMain {
         // add a listener that will be notified when the user selects a new
         // server
         frame.addServerURLListener(new ServerURLListener() {
+
             public void serverURLChanged(final String serverURL) {
                 // run in a new thread so we don't block the AWT thread
                 new Thread(ThreadManager.getThreadGroup(), new Runnable() {
+
                     public void run() {
                         try {
                             loadServer(serverURL);
                         } catch (IOException ioe) {
                             logger.log(Level.WARNING, "Error connecting to " +
-                                       serverURL, ioe);
+                                    serverURL, ioe);
                         }
                     }
                 }).start();
@@ -196,6 +192,7 @@ public class JmeClientMain {
 
             public void logout() {
                 new Thread(ThreadManager.getThreadGroup(), new Runnable() {
+
                     public void run() {
                         JmeClientMain.this.logout();
                     }
@@ -207,12 +204,13 @@ public class JmeClientMain {
         physicsMI.setEnabled(false);
         physicsMI.setSelected(false);
         physicsMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 PhysicsSystem phySystem = ClientContextJME.getPhysicsSystem(curSession.getSessionManager(), "Default");
                 if (phySystem instanceof JBulletPhysicsSystem) {
-                    ((JBulletPhysicsSystem)phySystem).setStarted(((JCheckBoxMenuItem)e.getSource()).isSelected());
+                    ((JBulletPhysicsSystem) phySystem).setStarted(((JCheckBoxMenuItem) e.getSource()).isSelected());
                 } else {
-                    logger.severe("Unsupported physics system "+phySystem);
+                    logger.severe("Unsupported physics system " + phySystem);
                 }
             }
         });
@@ -223,9 +221,9 @@ public class JmeClientMain {
             loadServer(serverURL);
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error connecting to default server " +
-                       serverURL, ioe);
+                    serverURL, ioe);
         }
-        
+
     }
 
     /**
@@ -239,9 +237,8 @@ public class JmeClientMain {
      * @throws IOException if there is an error going to the new location
      */
     public void gotoLocation(String serverURL, Vector3f translation,
-                             Quaternion look)
-        throws IOException
-    {
+            Quaternion look)
+            throws IOException {
         if (serverURL == null) {
             // get the server from the current session
             if (curSession == null) {
@@ -253,8 +250,7 @@ public class JmeClientMain {
 
         // see if we need to change servers
         if (curSession != null &&
-            serverURL.equals(curSession.getSessionManager().getServerURL()))
-        {
+                serverURL.equals(curSession.getSessionManager().getServerURL())) {
             curSession.getLocalAvatar().localMoveRequest(translation, look);
         } else {
             loadServer(serverURL, translation, look);
@@ -264,11 +260,10 @@ public class JmeClientMain {
     protected void loadServer(String serverURL) throws IOException {
         loadServer(serverURL, null, null);
     }
-    
+
     protected void loadServer(String serverURL, Vector3f translation,
-                              Quaternion look)
-        throws IOException
-    {
+            Quaternion look)
+            throws IOException {
         logger.info("[JmeClientMain] loadServer " + serverURL);
 
         logout();
@@ -281,8 +276,7 @@ public class JmeClientMain {
 //                ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JBulletDynamicCollisionSystem.class);
 //        JBulletPhysicsSystem physicsSystem = (JBulletPhysicsSystem)
 //                ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, collisionSystem);
-        JMECollisionSystem collisionSystem = (JMECollisionSystem)
-                ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
+        JMECollisionSystem collisionSystem = (JMECollisionSystem) ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
         ClientContextJME.addCollisionSystem(lm, "Default", collisionSystem);
 //        ClientContextJME.addPhysicsSystem(lm, "Default", physicsSystem);
 
@@ -295,7 +289,7 @@ public class JmeClientMain {
             curSession = lm.createSession(login);
         } catch (LoginFailureException lfe) {
             IOException ioe = new IOException("Error connecting to " +
-                                              serverURL);
+                    serverURL);
             ioe.initCause(lfe);
             throw ioe;
         }
@@ -308,8 +302,9 @@ public class JmeClientMain {
 
         // Listen for session disconnected and remove session physics and collision systems
         curSession.addSessionStatusListener(new SessionStatusListener() {
+
             public void sessionStatusChanged(WonderlandSession session, Status status) {
-                if (status==Status.DISCONNECTED) {
+                if (status == Status.DISCONNECTED) {
                     ClientContextJME.removeAllPhysicsSystems(session.getSessionManager());
                     ClientContextJME.removeAllCollisionSystems(session.getSessionManager());
 
@@ -332,6 +327,7 @@ public class JmeClientMain {
                         logout();
 
                         SwingUtilities.invokeLater(new Runnable() {
+
                             public void run() {
                                 ReconnectFrame rf = new ReconnectFrame(JmeClientMain.this, mgr);
                                 rf.pack();
@@ -380,7 +376,7 @@ public class JmeClientMain {
         String propURLStr = System.getProperty(PROPS_URL_PROP);
         try {
             URL propsURL;
-            
+
             if (propURLStr == null) {
                 String configDir = System.getProperty(CONFIG_DIR_PROP);
                 if (configDir == null) {
@@ -394,7 +390,7 @@ public class JmeClientMain {
             } else {
                 propsURL = new URL(propURLStr);
             }
-            
+
             return propsURL;
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Unable to load properties", ioe);
@@ -409,34 +405,34 @@ public class JmeClientMain {
         if (Webstart.isWebstart()) {
             Webstart.webstartSetup();
         }
-        
+
         JmeClientMain worldTest = new JmeClientMain(args);
-        
+
     }
-    
+
     /**
      * Process any command line args
      */
     private void processArgs(String[] args) {
-        for (int i=0; i<args.length;i++) {
+        for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-fps")) {
-                desiredFrameRate = Integer.parseInt(args[i+1]);
+                desiredFrameRate = Integer.parseInt(args[i + 1]);
                 System.out.println("DesiredFrameRate: " + desiredFrameRate);
                 i++;
             }
 
             if (args[i].equals("-p")) {
-                System.setProperty(PROPS_URL_PROP, "file:" + args[i+1]);
+                System.setProperty(PROPS_URL_PROP, "file:" + args[i + 1]);
                 i++;
             }
         }
     }
-    
+
     /**
      * Create all of the Swing windows - and the 3D window
      */
     private void createUI(WorldManager wm) {
-        
+
         frame = new MainFrameImpl(wm, width, height);
         // center the frame
         frame.getFrame().setLocationRelativeTo(null);
@@ -465,32 +461,33 @@ public class JmeClientMain {
 
         /* Note: Example of global key and mouse event listener
         InputManager3D.getInputManager().addGlobalEventListener(
-            new EventClassFocusListener () {
-            private final Logger logger = Logger.getLogger("My Logger");
-            public Class[] eventClassesToConsume () {
-                return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
-            }
-            public void commitEvent (Event event) {
-                // NOTE: to test, change the two logger.fine calls below to logger.warning
-                if (event instanceof KeyEvent3D) {
-                if (((KeyEvent3D)event).isPressed()) {
-                    logger.fine("Global listener: received key event, event = " + event );
-                }
-                } else {
-                logger.fine("Global listener: received mouse event, event = " + event);
-                MouseEvent3D mouseEvent = (MouseEvent3D) event;
-                System.err.println("Event pickDetails = " + mouseEvent.getPickDetails());
-                System.err.println("Event entity = " + mouseEvent.getEntity());
-                }
-            }
-                });
-        */
+        new EventClassFocusListener () {
+        private final Logger logger = Logger.getLogger("My Logger");
+        public Class[] eventClassesToConsume () {
+        return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
+        }
+        public void commitEvent (Event event) {
+        // NOTE: to test, change the two logger.fine calls below to logger.warning
+        if (event instanceof KeyEvent3D) {
+        if (((KeyEvent3D)event).isPressed()) {
+        logger.fine("Global listener: received key event, event = " + event );
+        }
+        } else {
+        logger.fine("Global listener: received mouse event, event = " + event);
+        MouseEvent3D mouseEvent = (MouseEvent3D) event;
+        System.err.println("Event pickDetails = " + mouseEvent.getPickDetails());
+        System.err.println("Event entity = " + mouseEvent.getEntity());
+        }
+        }
+        });
+         */
+        frame.setDesiredFrameRate(desiredFrameRate);
     }
 
     /**
      * Returns the frame of the Wonderland client window.
      */
-    public static MainFrame getFrame () {
+    public static MainFrame getFrame() {
         return frame;
     }
 
@@ -512,8 +509,8 @@ public class JmeClientMain {
                 System.getProperties().load(propsURL.openStream());
             } catch (IOException ioe) {
                 logger.log(Level.WARNING, "Error reading properties from " +
-                           propsURL, ioe);
+                        propsURL, ioe);
             }
         }
-    }    
+    }
 }
