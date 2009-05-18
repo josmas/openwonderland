@@ -79,7 +79,6 @@ public interface MainFrame {
      */
     public void removeFromFileMenu(JMenuItem menuItem);
 
-
     /**
      * Add the specified menu item to the end of the Edit menu
      *
@@ -140,7 +139,7 @@ public interface MainFrame {
      */
     public void addToToolsMenu(JMenuItem menuItem, int index);
 
-     /**
+    /**
      * Remove the specified menu item from the tools menu.
      *
      * @param menuItem
@@ -207,6 +206,12 @@ public interface MainFrame {
     public void addServerURLListener(ServerURLListener listener);
 
     public void setMessageLabel(String msg);
+
+    /**
+     * Set the desired frame rate
+     * @param desiredFrameRate the desired frame rate in frames per second
+     */
+    public void setDesiredFrameRate(int desiredFrameRate);
 
     /**
      * A listener that will be notified when the server URL changes
