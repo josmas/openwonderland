@@ -31,6 +31,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import com.jme.image.Texture;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.mtgame.PickDetails;
+import org.jdesktop.mtgame.PickInfo;
 
 /**
  * If you want to customize the geometry of a displayer, implement
@@ -248,6 +250,7 @@ public abstract class GeometryNode extends Node {
         if (intPointWorld == null) {
             return null;
         }
+        logger.fine("intPointWorld = " + intPointWorld);
 
         // TODO: opt: we can optimize the following by reusing some of the intermediate
         // results from the previous steps
