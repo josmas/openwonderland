@@ -71,7 +71,15 @@ public class DeploymentManager {
         return plan;
     }
     
-    
+    /**
+     * Set the plan to a different one.  Note this is not saved by default
+     * until savePlan() is called.
+     * @param plan the new plan
+     */
+    public void setPlan(DeploymentPlan plan) {
+        this.plan = plan;
+    }
+
     /**
      * Get a deployment entry by name
      * @param name the name of the deployment entry to get
@@ -121,7 +129,20 @@ public class DeploymentManager {
             throw ioe;
         }
     }
-    
+
+    /**
+     * Remove the current plan, restoring the defaults
+     */
+    public void removePlan() throws IOException {
+        File planFile = getPlanFile();
+        if (planFile.exists()) {
+            planFile.delete();
+        }
+
+        // reload the default plan
+        plan = loadPlan();
+    }
+
     /**
      * Get the directory to load or save deployment plans from
      * @return the deployment plan directory

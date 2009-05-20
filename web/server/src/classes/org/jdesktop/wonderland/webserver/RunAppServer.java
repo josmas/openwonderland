@@ -113,7 +113,7 @@ public class RunAppServer {
      * @param appServerHostname the hostname as detected by the application
      * server.  This will be used, unless we have specified another value.
      */
-    private void setupProperties() {
+    protected void setupProperties() {
 
         String host = System.getProperty(Constants.WEBSERVER_HOST_PROP);
         if (host != null) {
@@ -200,7 +200,7 @@ public class RunAppServer {
     }
 
 
-    private void deployWebApps() throws IOException {
+    protected void deployWebApps() throws IOException {
         WonderlandAppServer as = getAppServer();
 
         // deploy all webapps
@@ -215,7 +215,7 @@ public class RunAppServer {
         }
     }
 
-    private void writeDocumentRoot() throws IOException {
+    protected void writeDocumentRoot() throws IOException {
         File docDir = new File(RunUtil.getRunDir(), "docRoot");
         docDir.mkdirs();
 
@@ -243,7 +243,7 @@ public class RunAppServer {
         RunUtil.extract(getClass(), "/META-INF/docroot/files.list", docDir);
     }
 
-    private void writeWebApps() throws IOException {
+    protected void writeWebApps() throws IOException {
         // write to a subdirectory of the default temp directory
         File deployDir = new File(RunUtil.getRunDir(), "deploy");
         deployDir.mkdirs();
@@ -278,7 +278,7 @@ public class RunAppServer {
      * the Wonderland.jar file.
      * @throws IOException if there is an error reading or writing modules
      */
-    private void updateModules() throws IOException {
+    protected void updateModules() throws IOException {
         ModuleManager mm = ModuleManager.getModuleManager();
 
         // create the directory to extract modules to, if it doesn't already

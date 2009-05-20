@@ -63,7 +63,10 @@ public class RunManager {
     
     /** the path of the deploy information in this archive */
     public static final String DEPLOY_DIR = "runner";
-    
+
+    /** the name of the location we are starting runners for */
+    private String location = "localhost";
+
     /** the set of runners we manage, index by name */
     private Map<String, Runner> runners = new LinkedHashMap<String, Runner>();
 
@@ -87,7 +90,23 @@ public class RunManager {
      */
     private RunManager() {
     }
-    
+
+    /**
+     * Get the location this RunManager will start entries for
+     * @return the location for this run manager
+     */
+    public String getLocation() {
+        return location;
+    }
+
+    /**
+     * Set the location this RunManager will start entries for
+     * @param location the location for this run manager
+     */
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
     /**
      * Initialize this manager by loading all runners from the
      * default deployment plan, and starting them if they are set
@@ -144,11 +163,15 @@ public class RunManager {
             // copy System properties to pass into this runner
             Properties props = new Properties(System.getProperties());
             props.setProperty("runner.name", de.getRunnerName());
+            props.setProperty("runner.location", de.getLocation());
 
             try {
                 Runner r = RunnerFactory.create(de.getRunnerClass(), props);
                 r = add(r);
-                if (start) {
+
+                // only start runners if they have the same location
+                // specified as this manager
+                if (start && r.getLocation().equals(getLocation())) {
                     r.start(getStartProperties(r));
                 }
             } catch (IOException ioe) {
@@ -164,13 +187,21 @@ public class RunManager {
     public void shutdown() {
         System.out.println("[RunManager] Stopping all apps");
 
+        // copy the list of runners into a new list, so we don't get
+        // concurrent modification issues
+        Collection<Runner> all = new ArrayList(getAll());
+
         // stop all active applications
-        for (Runner runner : getAll()) {
+        for (Runner runner : all) {
             if (runner.getStatus() == Runner.Status.RUNNING ||
                     runner.getStatus() == Runner.Status.STARTING_UP)
             {
                 runner.stop();
             }
+
+            // remove runners and notify listeners.  A new call to
+            // initialize() will recreate all appropriate runners.
+            remove(runner.getName());
         }
     }
 
@@ -329,6 +360,10 @@ public class RunManager {
         Properties props = runner.getDefaultProperties();
         if (de != null) {
             props.putAll(de.getRunProps());
+
+            // add in the name and location (since these might have changed)
+            props.setProperty("runner.name", de.getRunnerName());
+            props.setProperty("runner.location", de.getLocation());
         }
 
         return props;

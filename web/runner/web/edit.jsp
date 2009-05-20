@@ -30,6 +30,10 @@
                     <td>Class:</td>
                     <td>${requestScope['entry'].runnerClass}</td>
                 </tr>
+                <tr>
+                    <td>Location:</td>
+                    <td><input type="text" name="location" value="${requestScope['entry'].location}"></td>
+                </tr>
                 <tr><td colspan="2" style="height:2em;"></td></tr>
                 
                 <tr>
