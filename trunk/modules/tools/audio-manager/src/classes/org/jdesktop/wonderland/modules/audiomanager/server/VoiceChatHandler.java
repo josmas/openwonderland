@@ -21,8 +21,8 @@ import org.jdesktop.wonderland.modules.orb.server.cell.Orb;
 
 import java.lang.reflect.Method;
 
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -123,7 +123,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	return voiceChatHandler;
     }
 
-    class ManagedOrbMap extends ConcurrentHashMap<String, ManagedReference<Orb>> implements ManagedObject {
+    class ManagedOrbMap extends ConcurrentHashMap<String, ConcurrentHashMap<String, ManagedReference<Orb>>> implements ManagedObject {
 
 	private static final long serialVersionUID = 1;
 
@@ -156,6 +156,10 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    boolean isSpeaking) {
 
 	PresenceInfo[] chatters = getChatters(audioGroupID);
+
+	if (chatters == null) {
+	    return;
+	}
 
 	for (int i = 0; i < chatters.length; i++) {
 	    if (chatters[i].clientID == null) {
@@ -476,6 +480,8 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	        return true;
 	    }
 
+	//System.out.println("Adding player " + player + " type " + chatType);
+
 	playerInfo = new AudioGroupPlayerInfo(true, getChatType(chatType));
 	playerInfo.speakingAttenuation = AudioGroup.DEFAULT_SPEAKING_ATTENUATION;
 	playerInfo.listenAttenuation = AudioGroup.DEFAULT_LISTEN_ATTENUATION;
@@ -607,6 +613,14 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    return null;
 	}
 
+	AudioGroup livePlayerAudioGroup = vm.getVoiceManagerParameters().livePlayerAudioGroup;
+
+        AudioGroup stationaryPlayerAudioGroup = vm.getVoiceManagerParameters().stationaryPlayerAudioGroup;
+
+	if (audioGroup.equals(livePlayerAudioGroup) || audioGroup.equals(stationaryPlayerAudioGroup)) {
+	    return null;
+	}
+
 	ArrayList<PresenceInfo> chatters = new ArrayList();
 
 	Player[] players = audioGroup.getPlayers();
@@ -662,29 +676,53 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	vm.removeAudioGroup(audioGroup);
     }
 
-    private static final String VIRTUAL_PLAYER_PREFIX = "V-";
-
     public void virtualPlayerAdded(AudioGroup audioGroup, VirtualPlayer vp) {
-	Vector3f center = new Vector3f((float) -vp.playerWithVirtualPlayer.getX(), (float) 2.3, 
-	    (float) vp.playerWithVirtualPlayer.getZ());
-
         ManagedOrbMap orbMap = (ManagedOrbMap) AppContext.getDataManager().getBinding(ORB_MAP_NAME);
 
-	if (orbMap.get(VIRTUAL_PLAYER_PREFIX + vp.player.getId()) != null) {
-	    logger.info("ORB already exists for " + vp);
+	ConcurrentHashMap<String, ManagedReference<Orb>> orbs = 
+	    orbMap.get(vp.realPlayer.getId());
+
+	ManagedReference<Orb> orbRef = null;
+
+	if (orbs != null) {
+	    orbRef = orbs.get(vp.getId());
+	}
+
+	if (orbRef != null) {
+	    //System.out.println("ORB already exists for " + vp);
+	    orbRef.get().addToUseCount(1);
 	    return;
 	}
 
-	logger.fine("virtualPlayerAdded:  player with vp:  " + vp.playerWithVirtualPlayer
-	    + " Center " + center);
+	Vector3f center = new Vector3f((float) -vp.playerWithVirtualPlayer.getX(), (float) 2.3, 
+	    (float) vp.playerWithVirtualPlayer.getZ());
 
-	Orb orb = new Orb(VIRTUAL_PLAYER_PREFIX + vp.getUsername(), 
-	    vp.player.getCall().getId(), center, .1, false, vp.playerWithVirtualPlayer.getId());
+	Orb orb = new Orb(vp, center, .1, vp.playerWithVirtualPlayer.getId());
 
 	orb.addComponent(new AudioParticipantComponentMO(orb.getOrbCellMO()));
 
-	orbMap.put(VIRTUAL_PLAYER_PREFIX + vp.player.getId(), 
-	    AppContext.getDataManager().createReference(orb));
+	if (orbs == null) {
+	    orbs = new ConcurrentHashMap();
+
+	    orbMap.put(vp.realPlayer.getId(), orbs);
+	}
+
+	orbs.put(vp.getId(), AppContext.getDataManager().createReference(orb));
+
+	CopyOnWriteArrayList<Player> playersInRange = playersInRangeMap.get(vp.realPlayer);
+
+	int n = 0;
+
+	if (playersInRange != null) {
+	    n = playersInRange.size();
+	}
+
+	logger.info("virtualPlayerAdded:  " + vp + " Center " + center + " orbs size " 
+	    + orbs.size() + " players in range " + n);
+
+	if (playersInRange != null) {
+            orb.setBystanderCount(playersInRange.size());
+	}
     }
 
     public void virtualPlayersRemoved(AudioGroup audioGroup, VirtualPlayer[] virtualPlayers) {
@@ -693,10 +731,34 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
             ManagedOrbMap orbMap = (ManagedOrbMap) AppContext.getDataManager().getBinding(ORB_MAP_NAME);
 
-	    ManagedReference<Orb> orbRef = orbMap.remove(VIRTUAL_PLAYER_PREFIX + vp.player.getId());
+	    ConcurrentHashMap<String, ManagedReference<Orb>> orbs = orbMap.get(vp.realPlayer.getId());
 
-	    if (orbRef != null) {
-	        orbRef.get().done();
+	    logger.info("removing " + vp);
+
+	    if (orbs == null) {
+		logger.warning("No orbs for " + vp.realPlayer);
+		return;
+	    }
+
+	    ManagedReference<Orb> orbRef = orbs.get(vp.getId());
+
+	    if (orbRef == null) {
+		logger.warning("orbRef is null for " + vp.getId());
+		return;
+	    }
+
+	    Orb orb = orbRef.get();
+
+	    if (orb.addToUseCount(-1) == 0) {
+		logger.fine("Removing " + vp.getId() + " from orbs");
+		orbs.remove(vp.getId());
+
+		if (orbs.size() == 0) {
+		    orbMap.remove(vp.realPlayer.getId());
+		    logger.info("Removing orbMap for " + vp.realPlayer);
+		}
+
+	        orb.done();
 	    }
 	}
     }
@@ -709,13 +771,30 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     private ConcurrentHashMap<Player, CopyOnWriteArrayList<Player>> playersInRangeMap =
 	new ConcurrentHashMap();
 
-    private ConcurrentHashMap<Player, Orb> bystanderOrbMap = new ConcurrentHashMap();
-
     public void playerInRange(Player player, Player playerInRange, boolean isInRange) {
 	CopyOnWriteArrayList<Player> playersInRange = playersInRangeMap.get(player);
 
-	logger.fine("Player in range " + isInRange + " " + player
-	    + " player in range " + playerInRange);
+        ManagedOrbMap orbMap = (ManagedOrbMap) AppContext.getDataManager().getBinding(ORB_MAP_NAME);
+
+	ConcurrentHashMap<String, ManagedReference<Orb>> orbs = orbMap.get(player.getId());
+
+	if (orbs == null) {
+	    orbs = new ConcurrentHashMap();
+	}
+
+	System.out.println("Player in range " + isInRange + " " + player
+	    + " player in range " + playerInRange + " orbs size " + orbs.size());
+
+	Iterator<ManagedReference<Orb>> it = orbs.values().iterator();
+
+	while (it.hasNext()) {
+	    Orb orb = it.next().get();
+	    
+	    // Update Orb name tag with count of players in range	
+
+	    orb.setBystanderCount(playersInRange.size());
+	    //System.out.println("Setting bystander count to " + playersInRange.size());
+	}
 
 	if (isInRange) {
 	    if (playersInRange == null) {
@@ -726,25 +805,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
    	    playersInRange.add(playerInRange);
 
-	    Orb orb = bystanderOrbMap.get(player);
-
-	    if (false && orb == null) {
-        	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-		Player vPlayer = vm.getPlayer(VIRTUAL_PLAYER_PREFIX + player.getId());
-
-		if (vPlayer == null) {
-		    return;
-		}
-
-		//Vector3f center = new Vector3f((float) vp.player.getX(), (float) 2.3,
-		//    (float) vp.player.getZ());
-
-		//orb = new Orb(String.valueOf(playersInRange.size()), vPlayer.player.getCall().getId(),
-		//    center, .1, false, vPlayer.playerWithVirtualPlayer.getId());
-	    }
-	    
-	    // Update Orb name tag with count of players in range	
+	    //System.out.println(playersInRange.size() + " players in range of " + player);
 	} else {
 	    if (playersInRange == null) {
 		return;
@@ -755,15 +816,38 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    if (playersInRange.size() == 0) {
 		playersInRangeMap.remove(player);
 	    }
-
-	    // XXX decide whether or not a bystander orb needs to be removed or updated
-	    // with the bystander count.
 	}
 
 	WonderlandClientSender sender = 
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
 	sender.send(new PlayerInRangeMessage(player.getId(), playerInRange.getId(), isInRange));
+    }
+
+    private AudioGroup[] getPublicAudioGroups(Player player) {
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	AudioGroup livePlayerAudioGroup = vm.getVoiceManagerParameters().livePlayerAudioGroup;
+
+        AudioGroup stationaryPlayerAudioGroup = vm.getVoiceManagerParameters().stationaryPlayerAudioGroup;
+
+	ArrayList<AudioGroup> groups = new ArrayList();
+
+	AudioGroup[] audioGroups = player.getAudioGroups();
+
+	for (int i = 0; i < audioGroups.length; i++) {
+	    AudioGroup audioGroup = audioGroups[i];
+
+	    if (audioGroup.equals(livePlayerAudioGroup) || audioGroup.equals(stationaryPlayerAudioGroup)) {
+		continue;
+	    }
+
+	    if (audioGroup.getPlayerInfo(player).chatType == AudioGroupPlayerInfo.ChatType.PUBLIC) {
+		groups.add(audioGroup);
+	    }
+	}
+
+	return groups.toArray(new AudioGroup[0]);
     }
 
     /*
@@ -801,6 +885,10 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	if (chatType == ChatType.EXCLUSIVE) {
 	    return AudioGroupPlayerInfo.ChatType.EXCLUSIVE;
+	}
+
+	if (chatType == ChatType.PUBLIC) {
+	    return AudioGroupPlayerInfo.ChatType.PUBLIC;
 	}
 
 	return AudioGroupPlayerInfo.ChatType.PRIVATE;

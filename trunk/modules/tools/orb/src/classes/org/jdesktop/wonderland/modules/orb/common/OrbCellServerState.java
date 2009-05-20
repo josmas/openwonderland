@@ -38,6 +38,7 @@ public class OrbCellServerState extends CellServerState
         implements Serializable, CellServerStateSPI {
 
     private String username;
+    private String usernameAlias;
     private String callID;
     private String playerWithVpCallID;
 
@@ -45,16 +46,21 @@ public class OrbCellServerState extends CellServerState
     public OrbCellServerState() {
     }
     
-    public OrbCellServerState(String username, String callID,
+    public OrbCellServerState(String username, String usernameAlias, String callID,
 	    String playerWithVpCallID) {
 
 	this.username = username;
+	this.usernameAlias = usernameAlias;
 	this.callID = callID;
 	this.playerWithVpCallID = playerWithVpCallID;
     }
     
     public String getUsername() {
 	return username;
+    }
+
+    public String getUsernameAlias() {
+	return usernameAlias;
     }
 
     public String getCallID() {

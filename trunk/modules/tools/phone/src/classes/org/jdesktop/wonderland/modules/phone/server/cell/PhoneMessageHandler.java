@@ -375,8 +375,8 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
         	center.setY((float)1.5);
 
-                new Orb(listing.getContactName(), externalCallID, 
-		    center, .1, listing.simulateCalls(), "");
+                new Orb(listing.getContactName(), listing.getContactName(), 
+		    externalCallID, center, .1, listing.simulateCalls());
 	    }
 
             if (listing.simulateCalls() == false) {
@@ -444,7 +444,8 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
             center.setY((float) 1.5);
 
-            new Orb(listing.getContactName(), externalCallID, center, .1, false, "");
+            new Orb(listing.getContactName(), listing.getContactName(), externalCallID, 
+		center, .1, false);
 	    return;
 	}
 

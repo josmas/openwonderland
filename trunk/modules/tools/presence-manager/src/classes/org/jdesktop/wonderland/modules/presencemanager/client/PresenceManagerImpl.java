@@ -79,11 +79,8 @@ public class PresenceManagerImpl implements PresenceManager {
 		synchronized (userIDMap) {
 		    synchronized (callIDMap) {
 			if (alreadyInMaps(presenceInfo) == false) {
-			    System.out.println("Adding pi for " + presenceInfo);
 			    addPresenceInfoInternal(presenceInfo);
-			} else {
-			    System.out.println("pi already in map " + presenceInfo);
-			}
+			} 
 		    }
 	        }
 	    }
@@ -93,45 +90,27 @@ public class PresenceManagerImpl implements PresenceManager {
     }
 
     private void addPresenceInfoInternal(PresenceInfo presenceInfo) {
-	logger.finer("Adding presenceInfo for " + presenceInfo);
+	logger.fine("Adding presenceInfo for " + presenceInfo);
 
 	PresenceInfo info;
 
 	if (presenceInfo.cellID != null) {
-	    info = cellIDMap.get(presenceInfo.cellID);
-
-	    if (info != null && info.equals(presenceInfo) == false) {
-	        System.out.println("cellIDMap already has entry for " + info);
-	    }
-
 	    cellIDMap.put(presenceInfo.cellID, presenceInfo);
 	}
 
 	if (presenceInfo.clientID != null) {
-	    info = sessionIDMap.get(presenceInfo.clientID);
-
-	    if (info != null && info.equals(presenceInfo) == false) {
-	        System.out.println("sessionIDMap already has entry for " + info);
-	    }
-
 	    sessionIDMap.put(presenceInfo.clientID, presenceInfo);
 	}
 
 	info = userIDMap.get(presenceInfo.userID);
 
 	if (info != null && info.equals(presenceInfo) == false) {
-	    System.out.println("userIDMap already has entry for " + info);
+	    logger.warning("userIDMap already has entry for " + info);
 	}
 
 	userIDMap.put(presenceInfo.userID, presenceInfo);
 
 	if (presenceInfo.callID != null) {
-	    info = callIDMap.get(presenceInfo.callID);
-
-	    if (info != null && info.equals(presenceInfo) == false) {
-	        System.out.println("callIDMap already has entry for " + info);
-	    }
-
 	    callIDMap.put(presenceInfo.callID, presenceInfo);
 	}
     }
@@ -143,6 +122,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    info = cellIDMap.get(presenceInfo.cellID);
 
 	    if (info != null && info.equals(presenceInfo)) {
+		logger.warning("Already in cellIDMap:  Existing PI " + info + " new PI " + presenceInfo);
 	        return true;
 	    }
 	}
@@ -151,6 +131,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    info = sessionIDMap.get(presenceInfo.clientID);
 
 	    if (info != null && info.equals(presenceInfo)) {
+		logger.warning("Already in clientIDMap:  Existing PI " + info + " new PI " + presenceInfo);
 	        return true;
 	    }
 	}
@@ -159,6 +140,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    info = userIDMap.get(presenceInfo.userID);
 
 	    if (info != null && info.equals(presenceInfo)) {
+		logger.warning("Already in userIDMap:  Existing PI " + info + " new PI " + presenceInfo);
 	        return true;
 	    }
 	}
@@ -167,6 +149,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    info = callIDMap.get(presenceInfo.callID);
 
 	    if (info != null && info.equals(presenceInfo)) {
+		logger.warning("Already in callIDMap:  Existing PI " + info + " new PI " + presenceInfo);
 	        return true;
 	    }
 	}
@@ -482,4 +465,22 @@ public class PresenceManagerImpl implements PresenceManager {
 	}
     }
     
+    /**
+     * Display all presenceInfo
+     */
+    public void dump() {
+	dump("Cell ID MAP", cellIDMap.values().toArray(new PresenceInfo[0]));
+        dump("Session ID Map", sessionIDMap.values().toArray(new PresenceInfo[0]));
+        dump("User ID Map", userIDMap.values().toArray(new PresenceInfo[0]));
+        dump("Call ID Map", callIDMap.values().toArray(new PresenceInfo[0]));
+    }
+
+    private void dump(String message, PresenceInfo[] info) {
+	System.out.println(message);
+
+	for (int i = 0; i < info.length; i++) {
+	    System.out.println("  " + info[i]);
+	}
+    }
+
 }

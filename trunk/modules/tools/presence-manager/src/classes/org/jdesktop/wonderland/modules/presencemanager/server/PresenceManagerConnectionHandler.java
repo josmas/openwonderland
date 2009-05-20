@@ -63,11 +63,12 @@ public class PresenceManagerConnectionHandler
     private static final Logger logger =
             Logger.getLogger(PresenceManagerConnectionHandler.class.getName());
     
-    private ConcurrentHashMap<BigInteger, ArrayList<PresenceInfo>> sessions = 
-    	new ConcurrentHashMap();
+    private ConcurrentHashMap<BigInteger, ArrayList<PresenceInfo>> sessions;
 
     public PresenceManagerConnectionHandler() {
         super();
+
+	sessions = new ConcurrentHashMap();
     }
 
     public ConnectionType getConnectionType() {
@@ -96,6 +97,7 @@ public class PresenceManagerConnectionHandler
 
 	    sessions.put(clientID.getID(), presenceInfoList);
 
+	    logger.fine("CLIENTCONNECTMESSAGE:  " + msg.getPresenceInfo());
 	    sendPresenceInfo(sender, clientID, msg.isConnected());
 	    return;
 	}
@@ -107,6 +109,7 @@ public class PresenceManagerConnectionHandler
 
 	    presenceInfoList.add(presenceInfo);
 
+	    logger.fine("PRESENCEINFOADDEDMESSAGE:  " + presenceInfo);
 	    sender.send(message);
 	    return;
 	} 
@@ -118,6 +121,7 @@ public class PresenceManagerConnectionHandler
 
 	    presenceInfoList.remove(presenceInfo);
 
+	    logger.fine("PRESENCEINFOREMOVEDMESSAGE:  " + presenceInfo);
 	    sender.send(message);
 	    return;
 	}

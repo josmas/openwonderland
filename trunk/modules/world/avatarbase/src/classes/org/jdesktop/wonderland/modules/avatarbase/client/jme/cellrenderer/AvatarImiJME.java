@@ -223,7 +223,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     pendingAvatar = null;
                 }
                 
-                cell.getComponent(MovableComponent.class).addServerCellMoveListener(cellMoveListener);
                 changeAvatar(pendingAvatar);
                 if (cellMoveListener==null) {
                     cellMoveListener = new CellMoveListener() {
@@ -242,6 +241,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                         }
                     };
                 }
+                cell.getComponent(MovableComponent.class).addServerCellMoveListener(cellMoveListener);
                 break;
         }
     }

@@ -23,6 +23,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectio
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CallEndedResponseMessage;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
@@ -34,7 +36,6 @@ import com.sun.voip.client.connector.CallStatus;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
 
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -64,17 +65,15 @@ public class PhoneStatusListener implements ManagedCallStatusListener, Serializa
     private static final Logger logger =
         Logger.getLogger(PhoneStatusListener.class.getName());
      
-    String group;
-    private WonderlandClientID clientID;
-    private String softphoneCallID;
+    private String group;
+    private PresenceInfo presenceInfo;
     private String externalCallID;
 
-    public PhoneStatusListener(String group, WonderlandClientID clientID, String softphoneCallID, 
+    public PhoneStatusListener(String group, PresenceInfo presenceInfo, 
 	    String externalCallID) {
 
 	this.group = group;
-	this.clientID = clientID;
-	this.softphoneCallID = softphoneCallID;
+	this.presenceInfo = presenceInfo;
 	this.externalCallID = externalCallID;
 
 	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, 
@@ -101,14 +100,14 @@ public class PhoneStatusListener implements ManagedCallStatusListener, Serializa
 		vm.removePlayer(player);
 	    }
 
-            sender.send(clientID, new CallEndedResponseMessage(group, externalCallID, 
-	        status.getOption("Reason")));
+            sender.send(new CallEndedResponseMessage(group, presenceInfo, 
+		externalCallID, status.getOption("Reason")));
 	}
     }
 
     private void stopRinging(VoiceManager vm) {
         //Stop the ringing
-	Call softphoneCall = vm.getCall(softphoneCallID);
+	Call softphoneCall = vm.getCall(presenceInfo.callID);
 
 	if (softphoneCall != null) {
 	    try {

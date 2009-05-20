@@ -122,7 +122,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
             WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
-	System.out.println("Get client state for " + cellID + " " + isSpeaking + " " + isMuted);
+	//System.out.println("Get client state for " + cellID + " " + isSpeaking + " " + isMuted);
 	return new AudioParticipantComponentClientState(isSpeaking, isMuted);
     }
 

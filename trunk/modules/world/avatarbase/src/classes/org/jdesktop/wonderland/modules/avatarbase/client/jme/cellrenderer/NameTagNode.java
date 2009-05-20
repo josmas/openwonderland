@@ -122,12 +122,17 @@ public class NameTagNode extends Node {
 
     public void setFont(Font font) {
         this.font = font;
+
+	if (label != null) {
+	    label.setFont(font);
+	}
     }
+
     private boolean inConeOfSilence;
     private boolean isMuted;
 
     public void setNameTag(EventType eventType, String username, String usernameAlias) {
-        setNameTag(eventType, username, usernameAlias, null, null);
+        setNameTag(eventType, username, usernameAlias, foregroundColor, font);
     }
 
     public void setNameTag(EventType eventType, String username, String usernameAlias,
