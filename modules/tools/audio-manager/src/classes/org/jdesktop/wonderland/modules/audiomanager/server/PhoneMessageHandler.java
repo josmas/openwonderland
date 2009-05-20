@@ -134,7 +134,7 @@ public class PhoneMessageHandler implements Serializable {
  	if (softphonePlayer == null) {
 	    logger.warning("Softphone player is not connected!");
             sender.send(clientID, new CallEndedResponseMessage(
-	        group, externalCallID, "Softphone is not connected!"));
+	        group, presenceInfo, externalCallID, "Softphone is not connected!"));
 	    return;
 	}
 
@@ -153,6 +153,8 @@ public class PhoneMessageHandler implements Serializable {
 
 	CallSetup setup = new CallSetup();
 	
+	setup.externalOutgoingCall = true;
+
 	CallParticipant cp = new CallParticipant();
 
 	setup.cp = cp;
@@ -163,7 +165,7 @@ public class PhoneMessageHandler implements Serializable {
 	    logger.warning("Unable to get voice bridge for call " + cp + ":  "
 		+ e.getMessage());
             sender.send(clientID, new CallEndedResponseMessage(
-	        group, externalCallID, "No voice bridge available!"));
+	        group, presenceInfo, externalCallID, "No voice bridge available!"));
 	    return;
 	}
 
@@ -172,7 +174,7 @@ public class PhoneMessageHandler implements Serializable {
 	if (audioGroup == null) {
 	    logger.warning("No audio group " + group);
             sender.send(clientID, new CallEndedResponseMessage(
-	        group, externalCallID, "Audio group not found!"));
+	        group, presenceInfo, externalCallID, "Audio group not found!"));
 	    return;
 	}
 
@@ -185,7 +187,7 @@ public class PhoneMessageHandler implements Serializable {
 	cp.setVoiceDetectionWhileMuted(true);
 	cp.setHandleSessionProgress(true);
 
-	new PhoneStatusListener(group, clientID, softphoneCallID, externalCallID);
+	new PhoneStatusListener(group, presenceInfo, externalCallID);
 	
 	Call externalCall;
 
@@ -195,7 +197,7 @@ public class PhoneMessageHandler implements Serializable {
 	    logger.warning("Unable to create call " + cp + ":  "
 		+ e.getMessage());
             sender.send(clientID, new CallEndedResponseMessage(
-	        group, externalCallID, "Can't create call!"));
+	        group, presenceInfo, externalCallID, "Can't create call!"));
 	    return;
 	}
 

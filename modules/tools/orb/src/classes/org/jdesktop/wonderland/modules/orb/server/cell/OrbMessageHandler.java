@@ -279,4 +279,8 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 	logger.warning("Unknown message:  " + message);
     }
 
+    public void setUsername(String username) {
+	this.username = username;
+    }
+
 }

@@ -154,5 +154,10 @@ public interface PresenceManager {
      */
     public void removePresenceManagerListener(PresenceManagerListener listener);
  
+    /**
+     * Display all presenceInfo
+     */
+    public void dump();
+
  }
  

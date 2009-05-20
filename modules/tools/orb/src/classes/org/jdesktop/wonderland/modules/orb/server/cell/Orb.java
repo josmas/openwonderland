@@ -41,6 +41,11 @@ import com.jme.bounding.BoundingVolume;
 
 import com.jme.math.Vector3f;
 
+import com.sun.mpk20.voicelib.app.Call;
+import com.sun.mpk20.voicelib.app.CallSetup;
+import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.VirtualPlayer;
+
 /**
  * Spawn an orb at a specified location
  * @author jprovino
@@ -52,22 +57,48 @@ public class Orb implements ManagedObject, Serializable {
      
     private ManagedReference<OrbCellMO> orbCellMORef;
 
+    private String id;
     private String username;
+    private VirtualPlayer vp;
+
     private CellID cellID;
 
-    public Orb(String username, String externalCallID, Vector3f center, 
-	    double size, boolean simulateCalls, String playerWithVpCallID) {
+    private int useCount = 1;
 
+    public Orb(String id, String username, String externalCallID, Vector3f center, 
+	    double size, boolean simulateCalls) {
+
+	this(id, username, externalCallID, center, size, simulateCalls, null);
+    }    
+
+    public Orb(VirtualPlayer vp, Vector3f center, double size, String hostCallID) {
+	this(vp.getId(), vp.realPlayer.getCall().getSetup().cp.getName(), vp.player.getCall().getId(), 
+	center, .1, false, vp);
+
+	orbCellMORef.get().attach(hostCallID);
+    }
+
+    private Orb(String orbID, String username, String externalCallID, Vector3f center, 
+	    double size, boolean simulateCalls, VirtualPlayer vp) {
+
+	this.id = id;
 	this.username = username;
+	this.vp = vp;
 
 	logger.fine("orb center :  " + center + " size " + size);
 
         String cellType = 
 	    "org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO";
 
-        OrbCellMO orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
-	    center, (float) size, username, externalCallID, simulateCalls,
-	    playerWithVpCallID);
+	OrbCellMO orbCellMO;
+
+	if (vp != null) {
+            orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
+	        center, (float) size, username, externalCallID, simulateCalls, vp);
+	} else {
+            orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
+	        center, (float) size, username, externalCallID, simulateCalls);
+	}
 
 	if (orbCellMO == null) {
 	    logger.warning("Unable to spawn orb");
@@ -95,12 +126,35 @@ public class Orb implements ManagedObject, Serializable {
 	orbCellMORef = AppContext.getDataManager().createReference(orbCellMO);
     }
 
+    public void setUsername(String username) {
+	this.username = username;
+
+	orbCellMORef.get().setUsername(username);
+    }
+
+    public void setBystanderCount(int bystanderCount) {
+	orbCellMORef.get().setBystanderCount(bystanderCount);
+    }
+
+    public String getID() {
+	return id;
+    }
+
     public CellID getCellID() {
 	return cellID;
     }
 
     public OrbCellMO getOrbCellMO() {
 	return orbCellMORef.get();
+    }
+
+    public VirtualPlayer getVirtualPlayer() {
+	return vp;
+    }
+
+    public int addToUseCount(int n) {
+	useCount += n;
+	return useCount;
     }
 
     public void addComponent(CellComponentMO component) {

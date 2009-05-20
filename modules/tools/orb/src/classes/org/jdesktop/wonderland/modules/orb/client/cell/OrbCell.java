@@ -114,6 +114,10 @@ public class OrbCell extends Cell {
 	username = orbCellClientState.getUsername();
 	callID = orbCellClientState.getCallID();
 	playerWithVpCallID = orbCellClientState.getPlayerWithVpCallID();
+
+	if (playerWithVpCallID != null && playerWithVpCallID.length() == 0) {
+	    playerWithVpCallID = null;
+	}
     }
 
     @Override

@@ -116,7 +116,7 @@ public class PresenceManagerClient extends BaseConnection implements
 
         session.send(this, new ClientConnectMessage(presenceInfo, true));
 
-	presenceManager.addPresenceInfo(presenceInfo);
+	//presenceManager.addPresenceInfo(presenceInfo);
 
         logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + presenceManager);
     }

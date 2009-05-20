@@ -170,6 +170,11 @@ public class AudioManagerClient extends BaseConnection implements
     public void notifyMemberChangeListeners(String group, PresenceInfo member, boolean added) {
 	ArrayList<MemberChangeListener> listeners = memberChangeListeners.get(group);
 
+	if (listeners == null) {
+	    logger.warning("NO LISTENERS!");
+	    return;
+	}
+
 	for (MemberChangeListener listener : listeners) {
 	    listener.memberChange(member, added);
 	}
@@ -177,6 +182,15 @@ public class AudioManagerClient extends BaseConnection implements
 	
     public void notifyMemberChangeListeners(String group, PresenceInfo[] members) {
 	ArrayList<MemberChangeListener> listeners = memberChangeListeners.get(group);
+
+	if (listeners == null) {
+	    logger.warning("NO LISTENERS!");
+	    return;
+	}
+
+	for (int i = 0; i < members.length; i++) {
+	    //System.out.println("setMembers:  " + members[i]);
+	}
 
 	for (MemberChangeListener listener : listeners) {
 	    listener.setMemberList(members);
@@ -287,7 +301,6 @@ public class AudioManagerClient extends BaseConnection implements
 	        + session.getStatus());
 
 	    System.out.println("Sending message to connect softphone");
-
             session.send(this, new GetVoiceBridgeMessage());
         }
     }
@@ -325,7 +338,11 @@ public class AudioManagerClient extends BaseConnection implements
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
         sc.mute(isMuted);
 
-        session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
+        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+            session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
+	} else {
+	    logger.warning("Unabled to send MuteCallMessage.  Session is not connected.");
+	}
     }
 
     public void voiceChat() {
@@ -345,7 +362,12 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void softphoneMuted(boolean isMuted) {
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-        session.send(this, new MuteCallMessage(sc.getCallID(), sc.isMuted()));
+
+        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+            session.send(this, new MuteCallMessage(sc.getCallID(), sc.isMuted()));
+	} else {
+	    logger.warning("Unabled to send MuteCallMessage.  Session is not connected.");
+	}
     }
 
     public void softphoneConnected(boolean connected) {
@@ -476,7 +498,7 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof VoiceChatLeaveMessage) {
 	    VoiceChatLeaveMessage msg = (VoiceChatLeaveMessage) message;
 
-            logger.fine("GOT LEAVE MESSAGE FOR " + msg.getCallee());
+            logger.info("GOT LEAVE MESSAGE FOR " + msg.getCallee());
 
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallee().callID);
 
@@ -484,11 +506,17 @@ public class AudioManagerClient extends BaseConnection implements
 	} else if (message instanceof CallEndedResponseMessage) {
 	    CallEndedResponseMessage msg = (CallEndedResponseMessage) message;
 
-	    PresenceInfo info = pm.getPresenceInfo(msg.getExternalCallID());
+	    PresenceInfo info = msg.getPresenceInfo();
+
+	    String reason = msg.getReasonCallEnded();
+
+	    logger.warning("Call ended for " + info + " Reason:  " + reason);
 	    
-	    if (info != null) {
-		pm.removePresenceInfo(info);
+	    if (reason.equalsIgnoreCase("Hung up") == false) {
+		new CallStatusJFrame(reason);
 	    }
+
+	    pm.removePresenceInfo(info);
 
 	    notifyMemberChangeListeners(msg.getGroup(), info, false);
         } else if (message instanceof ConeOfSilenceEnterExitMessage) {
@@ -517,7 +545,8 @@ public class AudioManagerClient extends BaseConnection implements
         } else if (message instanceof PlayerInRangeMessage) {
             PlayerInRangeMessage msg = (PlayerInRangeMessage) message;
 
-            logger.fine("Player in range " + msg.isInRange() + " " + msg.getPlayerID() + " player in range " + msg.getPlayerInRangeID());
+            logger.info("Player in range " + msg.isInRange() + " " + msg.getPlayerID() 
+		+ " player in range " + msg.getPlayerInRangeID());
         } else if (message instanceof AudioParticipantSpeakingMessage) {
 	    AudioParticipantSpeakingMessage msg = (AudioParticipantSpeakingMessage) message;
 
@@ -528,8 +557,9 @@ public class AudioManagerClient extends BaseConnection implements
                 return;
             }
 
-            pm.setSpeaking(info, msg.isSpeaking());
+	    System.out.println("Speaking " + msg.isSpeaking() + " " + info);
 
+            pm.setSpeaking(info, msg.isSpeaking());
 
             AvatarNameEvent avatarNameEvent;
 

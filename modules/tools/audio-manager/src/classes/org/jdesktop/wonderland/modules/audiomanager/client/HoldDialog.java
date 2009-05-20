@@ -58,7 +58,7 @@ public class HoldDialog extends javax.swing.JFrame implements MemberChangeListen
         session.send(client, new VoiceChatInfoRequestMessage(group));
     }
 
-    private ArrayList<PresenceInfo> members;
+    private ArrayList<PresenceInfo> members = new ArrayList();
 
     public void setMemberList() {
 	String memberText = "";

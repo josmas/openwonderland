@@ -104,6 +104,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
             members.clear();
 
             for (int i = 0; i < memberList.length; i++) {
+		//System.out.println("InCall " + memberList[i]);
                 members.add(memberList[i]);
             }
         }
@@ -125,6 +126,8 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 	    hold(false);
 	}
 
+	//System.out.println("InCall addMember " + member);
+
         synchronized (members) {
             if (members.contains(member) == false) {
                 members.add(member);
@@ -135,6 +138,8 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
     }
 
     private void removeMember(PresenceInfo member) {
+	//System.out.println("InCall remove Member " + member);
+
         synchronized (members) {
             members.remove(member);
         }
@@ -161,18 +166,21 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 
             if (info.callID == null) {
                 // It's a virtual player, skip it.
+		//System.out.println("InCall:  skipping virtual player " + info);
                 continue;
             }
 
 	    if (members.contains(info) == false) {
-		logger.fine("Members doesn't contain member " + info);
+		//System.out.println("InCall:  Members doesn't contain member " + info);
 		continue;
 	    }
 
 	    if (info.clientID == null || info.equals(presenceInfo)) {
+		//System.out.println("InCall: adding to selectable " + info);
 	        selectableMemberData.add(NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
                     info.isMuted));
 	    } else {
+		//System.out.println("InCall: adding to non-selectable " + info);
 	        memberData.add(NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
                     info.isMuted));
 	    }    
@@ -181,6 +189,8 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 	String[] memberArray = memberData.toArray(new String[0]);
 
 	SortUsers.sort(memberArray);
+
+	//System.out.println("memberData size " + memberData.size() + " sorted " + memberArray.length);
 
         memberList.setListData(memberArray);
 
