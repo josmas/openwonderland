@@ -30,14 +30,13 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Store information for starting runners
  * @author jkaplan
  */
 @XmlRootElement(name="DeploymentPlan")
-public class DeploymentPlan {
+public class DeploymentPlan implements Cloneable {
     private Collection<DeploymentEntry> entries = 
             new LinkedHashSet<DeploymentEntry>();
 
@@ -137,5 +136,15 @@ public class DeploymentPlan {
         Marshaller marshaller = context.createMarshaller();
         marshaller.setProperty("jaxb.formatted.output", true);
         marshaller.marshal(this, os);
+    }
+
+    /**
+     * Create a shallow copy of this plan.  The plan itself is new, but the
+     * entry objects are shared.
+     * @return the cloned plan
+     */
+    @Override
+    public DeploymentPlan clone() {
+        return new DeploymentPlan(entries);
     }
 }

@@ -18,9 +18,6 @@
 package org.jdesktop.wonderland.runner;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
 import java.util.Properties;
 
 /**
@@ -48,7 +45,14 @@ public interface Runner {
      * @return the name
      */
     public String getName();
-    
+
+    /**
+     * Get the location of this runner.  The location is the name of a server
+     * or server-group where the runner is running.
+     * @return the location
+     */
+    public String getLocation();
+
     /**
      * Configure this runner.  This method is guaranteed to be called before
      * any other method (including getName()).

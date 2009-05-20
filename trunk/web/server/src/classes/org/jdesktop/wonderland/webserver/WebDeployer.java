@@ -50,7 +50,10 @@ public class WebDeployer implements ModuleDeployerSPI {
     /** list of deployed wars to avoid duplicate deploys */
     private static final List<DeployRecord> deployed =
             new ArrayList<DeployRecord>();
-    
+
+    /** property for disabling the deployer */
+    static final String WEBDEPLOY_DISABLE_PROP = "web.deployer.disable";
+
     /**
      * Get the name of this deployer
      * @return the deployer
@@ -179,6 +182,11 @@ public class WebDeployer implements ModuleDeployerSPI {
     }
 
     protected void doDeploy(DeployRecord record) throws IOException {
+        // see if web deployment is disabled
+        if (System.getProperty(WEBDEPLOY_DISABLE_PROP) != null) {
+            return;
+        }
+
         // create a context root for this app.  The context root is
         // <module-name>/<war-name>, where <war-name> is the name of
         // the .war file with ".war" taken off.

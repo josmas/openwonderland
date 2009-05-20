@@ -31,11 +31,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import org.jdesktop.wonderland.runner.DeploymentEntry;
 import org.jdesktop.wonderland.runner.DeploymentManager;
 import org.jdesktop.wonderland.runner.DeploymentPlan;
 import org.jdesktop.wonderland.runner.RunManager;
 import org.jdesktop.wonderland.runner.Runner;
+import org.jdesktop.wonderland.runner.RunnerException;
 
 /**
  *
@@ -45,7 +47,10 @@ public class RunnerServlet extends HttpServlet {
     /** a logger */
     private static final Logger logger =
             Logger.getLogger(RunnerServlet.class.getName());
-    
+
+    private static final String DEPLOYMENT_PLAN_SESSION_KEY =
+            RunnerServlet.class.getName() + ".DeploymentPlan";
+
     /** 
     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
     * @param request servlet request
@@ -71,6 +76,16 @@ public class RunnerServlet extends HttpServlet {
             doEdit(request, response, runner, null);
         } else if (action.equalsIgnoreCase("editForm")) {
             doEditForm(request, response, runner);
+        } else if (action.equalsIgnoreCase("editRunners")) {
+            doEditRunners(request, response);
+        } else if (action.equalsIgnoreCase("editRunnersForm")) {
+            doEditRunnersForm(request, response);
+        } else if (action.equalsIgnoreCase("addRunner")) {
+            doAddRunner(request, response, null);
+        } else if (action.equalsIgnoreCase("addRunnerForm")) {
+            doAddRunnerForm(request, response);
+        } else if (action.equalsIgnoreCase("removeRunner")) {
+            doRemoveRunner(request, response);
         } else {
             // default case -- show the view page
             doView(request, response);
@@ -166,11 +181,178 @@ public class RunnerServlet extends HttpServlet {
         
         redirectToRun(response);
     }
+
+    protected void doEditRunners(HttpServletRequest request,
+                                 HttpServletResponse response)
+        throws ServletException, IOException
+    {
+        DeploymentPlan dp = getSessionDeploymentPlan(request);
+        request.setAttribute("entries", dp.getEntries());
+
+        RequestDispatcher rd = request.getRequestDispatcher("/editRunners.jsp");
+        rd.forward(request, response);
+    }
+
+    protected void doEditRunnersForm(HttpServletRequest request,
+                                   HttpServletResponse response)
+        throws ServletException, IOException
+    {
+        String button = request.getParameter("button");
+        if (button.equalsIgnoreCase("Cancel")) {
+            // remove the temporary session
+            request.getSession().removeAttribute(DEPLOYMENT_PLAN_SESSION_KEY);
+            redirectToRun(response);
+        } else if (button.equalsIgnoreCase("Save")) {
+            // store the new plan
+            DeploymentPlan sessionPlan = getSessionDeploymentPlan(request);
+            DeploymentManager.getInstance().setPlan(sessionPlan);
+            DeploymentManager.getInstance().savePlan();
+            
+            // restart the RunManager
+            restartRunManager();
+
+            // remove the session key
+            request.getSession().removeAttribute(DEPLOYMENT_PLAN_SESSION_KEY);
+
+            // redirect
+            redirectToRun(response);
+        } else if (button.equalsIgnoreCase("Restore Defaults")) {
+            // restore the default plan
+            DeploymentManager.getInstance().removePlan();
+
+            // restart the RunManager
+            restartRunManager();
+
+            // remove the session key
+            request.getSession().removeAttribute(DEPLOYMENT_PLAN_SESSION_KEY);
+
+            // redirect
+            redirectToRun(response);
+        } else {
+            // otherwise there was an error -- go back to the add page
+            doEditRunners(request, response);
+        }
+    }
+
+    protected void restartRunManager() throws ServletException {
+        RunManager.getInstance().shutdown();
+        try {
+            RunManager.getInstance().initialize();
+        } catch (RunnerException re) {
+            throw new ServletException(re);
+        }
+    }
+
+    protected void doAddRunner(HttpServletRequest request,
+                               HttpServletResponse response,
+                               DeploymentEntry entry)
+        throws ServletException, IOException
+    {
+        if (entry == null) {
+            entry = new DeploymentEntry();
+        }
+        request.setAttribute("entry", entry);
+
+        RequestDispatcher rd = request.getRequestDispatcher("/addRunner.jsp");
+        rd.forward(request, response);
+    }
+
+    protected void doAddRunnerForm(HttpServletRequest request,
+                                   HttpServletResponse response)
+        throws ServletException, IOException
+    {
+        DeploymentEntry de = getEntry(request);
+
+        String button = request.getParameter("button");
+        if (button.equalsIgnoreCase("Cancel") ||
+                (button.equalsIgnoreCase("OK") &&
+                    addRunnerToPlan(request, de)))
+        {
+            // if we cancelled or save succefully, go back to the edit
+            // page
+            redirectToEditRunners(response);
+        } else {
+            // otherwise there was an error -- go back to the add page
+            doAddRunner(request, response, de);
+        }
+    }
+
+    protected boolean addRunnerToPlan(HttpServletRequest request,
+                                      DeploymentEntry de)
+        throws ServletException, IOException
+    {
+        // make sure we got an entry
+        if (de == null || de.getRunnerName() == null ||
+            de.getRunnerClass() == null)
+        {
+            request.setAttribute("error", "Invalid entry");
+            return false;
+        }
+
+        DeploymentPlan dp = getSessionDeploymentPlan(request);
+
+        // make sure this isn't a duplicate
+        if (dp.getEntry(de.getRunnerName()) != null) {
+            request.setAttribute("error", "Duplicate name");
+            return false;
+        }
+        
+        dp.addEntry(de);
+        return true;
+    }
+
+    protected void doRemoveRunner(HttpServletRequest request,
+                                  HttpServletResponse response)
+        throws ServletException, IOException
+    {
+        String name = (String) request.getParameter("name");
+        if (name == null) {
+            return;
+        }
+
+        DeploymentPlan dp = getSessionDeploymentPlan(request);
+
+        // find the entry and remove it
+        DeploymentEntry de = dp.getEntry(name);
+        if (de != null) {
+            dp.removeEntry(de);
+        }
+
+        redirectToEditRunners(response);
+    }
+
+    /**
+     * Get the deployment plan stored in the session, or copy the current
+     * plan if there is none in the session.
+     * @return the session deployment plan
+     */
+    protected DeploymentPlan getSessionDeploymentPlan(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        DeploymentPlan dp = (DeploymentPlan) session.getAttribute(DEPLOYMENT_PLAN_SESSION_KEY);
+        if (dp == null) {
+            DeploymentManager dm = DeploymentManager.getInstance();
+            dp = dm.getPlan().clone();
+            session.setAttribute(DEPLOYMENT_PLAN_SESSION_KEY, dp);
+        }
+
+        return dp;
+    }
     
     protected void redirectToRun(HttpServletResponse response) 
         throws IOException
     {
-        String page = "/wonderland-web-runner/run";
+        redirectTo(response, "/wonderland-web-runner/run");
+    }
+
+    protected void redirectToEditRunners(HttpServletResponse response)
+        throws IOException
+    {
+        redirectTo(response, "/wonderland-web-runner/run?action=editRunners");
+    }
+
+    protected void redirectTo(HttpServletResponse response, String page)
+            throws IOException
+    {
         String url = "/wonderland-web-front/admin?pageURL=" +
                 URLEncoder.encode(page, "utf-8");
         
@@ -183,10 +365,11 @@ public class RunnerServlet extends HttpServlet {
     protected DeploymentEntry getEntry(HttpServletRequest request) 
         throws ServletException
     {
-        // read name and class
+        // read name, class & location
         String name = request.getParameter("name");
         String clazz = request.getParameter("class");
-        
+        String location = request.getParameter("location");
+
         // read properties
         Properties props = new Properties();
         int c = 1;
@@ -214,6 +397,7 @@ public class RunnerServlet extends HttpServlet {
         }
         
         DeploymentEntry de = new DeploymentEntry(name, clazz);
+        de.setLocation(location);
         de.setRunProps(props);
         
         return de;
