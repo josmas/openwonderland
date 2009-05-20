@@ -1266,8 +1266,13 @@ public abstract class View2DEntity implements View2D {
                 translation.x = locationOrtho.x;
                 translation.y = locationOrtho.y;
             } else {
-                translation.x = locationOrtho.x - sizeApp.width/2f + offset.x;
-                translation.y = locationOrtho.y + sizeApp.height/2f - offset.y;
+                Dimension parentSize = parent.getSizeApp();
+                translation.x = -parentSize.width / 2f;
+                translation.y = parentSize.height / 2f;
+                translation.x += sizeApp.width / 2f;
+                translation.y -= sizeApp.height / 2f;
+                translation.x += offset.x;
+                translation.y -= offset.y;
             }
             logger.fine("Translation for view " + this);
             logger.fine("translation = " + translation);
