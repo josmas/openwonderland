@@ -174,6 +174,10 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     CellFactorySPI factory = getCellFactory(cellDisplayName);
     CellServerState setup = factory.getDefaultCellServerState(null);
 
+    if (setup.getName()==null) {
+        setup.setName(cellDisplayName);
+    }
+
     // Create the new cell at a distance away from the avatar
     try {
         CellUtils.createCell(setup, NEW_CELL_DISTANCE);
