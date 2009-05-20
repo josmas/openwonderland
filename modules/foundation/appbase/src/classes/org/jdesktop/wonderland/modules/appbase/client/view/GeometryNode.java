@@ -21,6 +21,7 @@ import com.jme.image.Texture2D;
 import com.jme.math.Matrix4f;
 import com.jme.math.Ray;
 import com.jme.math.Vector3f;
+import com.jme.math.Vector2f;
 import com.jme.scene.Node;
 import java.awt.Point;
 import com.jme.scene.state.TextureState;
@@ -33,6 +34,7 @@ import com.jme.image.Texture;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.mtgame.PickDetails;
 import org.jdesktop.mtgame.PickInfo;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**
  * If you want to customize the geometry of a displayer, implement
@@ -221,6 +223,8 @@ public abstract class GeometryNode extends Node {
      * Given a point in the pixel space of the Wonderland canvas calculates
      * the texel coordinates of the point on the geometry where a
      * ray starting from the current eye position intersects the geometry.
+     * This method is used only for drag events that start on an view which is in the 
+     * world (that is, it is not in the ortho plane).
      *
      * Note on subclassing:
      *
@@ -302,11 +306,6 @@ public abstract class GeometryNode extends Node {
      * @return The intersection point.
      */
     protected Vector3f calcPlanarIntersection(Ray ray, Vector3f planePoint, Vector3f planeNormal) {
-        //System.err.println("CPI: #############");
-        //System.err.println("CPI: ray origin  = " + ray.getOrigin());
-        //System.err.println("CPI: ray dir     = " + ray.getDirection());
-        //System.err.println("CPI: planePoint  = " + planePoint);
-        //System.err.println("CPI: planeNormal = " + planeNormal);
 
         // Ray Equation is X = P + t * V
         // Plane Equation is (X - P0) dot N = 0
@@ -336,12 +335,46 @@ public abstract class GeometryNode extends Node {
             return null;
         }
         float t = numerator / denominator;
-        //System.err.println("CPI: t " + t);
 
         // Now plug t into the Ray Equation is X = P + t * V
         Vector3f x = ray.getDirection().mult(t).add(ray.getOrigin());
-        logger.fine("intersection point (world) = " + x);
         return x;
+    }
+
+    /**
+     * Given a point in the pixel space of the Wonderland canvas calculates
+     * the texel coordinates of the point on the geometry where a
+     * ray starting from the current eye position intersects the geometry.
+     * This method is used only for drag events that start on an ortho view.
+     *
+     * Note on subclassing:
+     *
+     * If the geometry is nonplanar it is recommended that the subclass
+     * implement this method by performing a pick. If this pick misses the
+     * subclass will need to decide how to handle the miss. One possible way to
+     * handle this is to assume that there is a planar "halo" surrounding the
+     * the window with which the ray can be intersected.
+     */
+    public Point calcIntersectionPixelOfEyeRayOrtho(int x, int y) {
+        View2DEntity v2e = (View2DEntity) view;
+
+        // Calculate an arbitrary point on the plane (in this case, the top left corner)
+        int width = (int) v2e.getDisplayerLocalWidth();
+        int height = (int) v2e.getDisplayerLocalHeight();
+
+        // TODO: must handle subwindow case
+        Vector2f locOrtho = v2e.getLocationOrtho();
+
+        // Compute top left in canvas coords
+        int canvasHeight = JmeClientMain.getFrame().getCanvas().getHeight();
+        Point topLeft = new Point();
+        topLeft.x = (int)locOrtho.x - width/2;
+        topLeft.y = canvasHeight - (int)locOrtho.y - height/2;
+        Point bottomRight = new Point(topLeft.x + width - 1, topLeft.y + height - 1);
+
+        Point pt = new Point(x - topLeft.x, y - topLeft.y);
+        logger.fine("pixel position = " + pt);
+        return pt;
     }
 }
 

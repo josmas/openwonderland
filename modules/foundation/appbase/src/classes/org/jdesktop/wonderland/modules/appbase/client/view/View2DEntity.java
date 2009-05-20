@@ -751,8 +751,8 @@ public abstract class View2DEntity implements View2D {
 
     /**
      * Specify the location of a primary view used when the view is in ortho mode.
-     * The location is an offset relative to the origin of the displayer and is in
-     * the coordinate system of the ortho plane. Update afterward.
+     * The location is the offset of the view center relative to the origin of the displayer 
+     * and is in the coordinate system of the ortho plane. Update afterward.
      * This attribute is ignored for non-primary views.
      *
      * Note: there is no corresponding attribute for cell mode because the cell itself automatically
@@ -765,8 +765,8 @@ public abstract class View2DEntity implements View2D {
 
     /**
      * Specify the location of a primary view used when the view is in ortho mode.
-     * The location is an offset relative to the origin of the displayer and is in
-     * the coordinate system of the ortho plane. Update if specified.
+     * The location the offset of the view center relative to the origin of the displayer 
+     * and is in the coordinate system of the ortho plane. Update if specified.
      * This attribute is ignored for non-primary views.
      *
      * Note: there is no corresponding attribute for cell mode because the cell itself automatically
@@ -1765,7 +1765,11 @@ public abstract class View2DEntity implements View2D {
         if (geometryNode == null) {
             return null;
         }
-        return geometryNode.calcIntersectionPixelOfEyeRay(x, y);
+        if (isOrtho()) {
+            return geometryNode.calcIntersectionPixelOfEyeRayOrtho(x, y);
+        } else {
+            return geometryNode.calcIntersectionPixelOfEyeRay(x, y);
+        }
     }
 
     /** 
