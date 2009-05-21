@@ -643,9 +643,11 @@ public abstract class Window2D {
             }
         } else {
             // Remove newly invisible windows from the stack
-            app.getWindowStack().remove(this);
-            changeMask |= CHANGED_STACK;
-            updateViews();
+            if (app != null) {
+                app.getWindowStack().remove(this);
+                changeMask |= CHANGED_STACK;
+                updateViews();
+            }
         }
     }
 

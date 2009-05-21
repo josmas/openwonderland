@@ -144,10 +144,7 @@ public abstract class App2D {
             controlArb.cleanup();
             controlArb = null;
         }
-        if (stack != null) {
-            stack.cleanup();
-            stack = null;
-        }
+        stack.cleanup();
         LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
         for (Window2D window : toRemoveList) {
             window.cleanup();
