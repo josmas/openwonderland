@@ -833,12 +833,10 @@ public abstract class View2DEntity implements View2D {
      * Vec
      */
     public synchronized void userMovePlanarUpdate (Vector2f dragVector) {
-        //System.err.println("****** Drag update, dragVector = " + dragVector);
         
         // Calculate the delta of the movement since the last update
         Vector2f deltaDragVector = dragVector.clone();
-        deltaDragVector.subtract(userMovePlanarDragVectorPrev);
-        //System.err.println("****** deltaDragVector = " + deltaDragVector);
+        deltaDragVector.subtractLocal(userMovePlanarDragVectorPrev);
         userMovePlanarDragVectorPrev = dragVector;
 
         applyDeltaTranslationUser(new Vector3f(deltaDragVector.x, deltaDragVector.y, 0f), true);

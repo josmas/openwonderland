@@ -104,6 +104,8 @@ public class Gui2D {
     protected ConfigDragType configDragType;
     /** The intersection point on the entity over which the button was pressed, in world coordinates. */
     private Vector3f dragStartWorld;
+    /** The intersection point in parent local coordinates. */
+    private Vector3f dragStartLocal;
     /** The screen coordinates of the button press event. */
     private Point dragStartScreen;
     /** The amount that the cursor has been dragged in local coordinates. */
@@ -343,6 +345,10 @@ public class Gui2D {
                 dragStartScreen = new Point(me.getX(), me.getY());
                 dragStartWorld = buttonEvent.getIntersectionPointWorld();
                 configDragType = ConfigDragType.MOVING_PLANAR;
+
+                // Remember: the move occurs in parent coords
+                Node viewNode = ((View2DEntity)view.getParent()).getNode();
+                dragStartLocal = viewNode.worldToLocal(dragStartWorld, new Vector3f());
             }
             return action;
 
@@ -355,13 +361,12 @@ public class Gui2D {
                 MouseDraggedEvent3D dragEvent = (MouseDraggedEvent3D) me3d;
                 Vector3f dragVectorWorld = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen,
                                                                         new Vector3f());
-                logger.fine("dragVectorWorld = " + dragVectorWorld);
 
-                // Convert world to local coordinates
-                // Remember to use inverse because we're transforming a vector.
-                Node viewNode = view.getNode();
-                dragVectorLocal = viewNode.worldToLocal(dragVectorWorld, new Vector3f());
-                logger.fine("dragVectorLocal = " + dragVectorLocal);
+                // Convert from world to parent coordinates.
+                Node viewNode = ((View2DEntity)view.getParent()).getNode();
+                Vector3f curWorld = dragStartWorld.add(dragVectorWorld, new Vector3f());
+                Vector3f curLocal = viewNode.worldToLocal(curWorld, new Vector3f());
+                dragVectorLocal = curLocal.subtract(dragStartLocal);
             }
             return action;
 
