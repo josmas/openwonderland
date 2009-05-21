@@ -82,9 +82,10 @@ public class CellExporterUtils {
      * @param worldRoot the root this cell will be written to
      * @param parentPath the path of the parent cell
      * @param cellMO the cell to get a descriptor for
+     * @param recordCellIDs if true, record the cellID of the cell
      */
     public static CellDescriptor getCellDescriptor(WorldRoot worldRoot,
-            CellPath parentPath, CellMO cellMO)
+            CellPath parentPath, CellMO cellMO, boolean recordCellIDs)
         throws IOException, JAXBException
     {
         // Create the cell on the server, fetch the setup information from the
@@ -94,6 +95,12 @@ public class CellExporterUtils {
         CellServerState setup = cellMO.getServerState(null);
         if (setup == null) {
             return null;
+        }
+        // If required, put the cellID of the cell in its metadata
+        // Required by event recorder
+        if (recordCellIDs) {
+            String cellID = cellMO.getCellID().toString();
+            setup.getMetaData().put("CellID", cellID);
         }
 
         // Write the setup information as an XML string. If we have trouble

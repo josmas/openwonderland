@@ -222,7 +222,8 @@ public class CellExportService extends AbstractService {
 
     public void exportCells(WorldRoot worldRoot,
                             Set<CellID> cellIDs,
-                            CellExportListener listener)
+                            CellExportListener listener,
+                            boolean recordCellIDs)
     {
         if (!(listener instanceof ManagedObject)) {
             listener = new ManagedCellExportWrapper(listener);
@@ -242,9 +243,10 @@ public class CellExportService extends AbstractService {
         // now add the snapshot request to the transaction.  On commit
         // this request will be passed on to the executor for long-running
         // tasks
-        ExportCells ec = new ExportCells(worldRoot, ids, scl.getId());
+        ExportCells ec = new ExportCells(worldRoot, ids, scl.getId(), recordCellIDs);
         ctxFactory.joinTransaction().add(ec);
     }
+
 
     /**
      * A task that creates a new snapshot, and then notifies the snapshot
@@ -325,13 +327,15 @@ public class CellExportService extends AbstractService {
         private WorldRoot root;
         private Queue<CellExportEntry> cells;
         private BigInteger listenerID;
+        private boolean recordCellIDs;
 
         public ExportCells(WorldRoot root, Queue<CellExportEntry> cells,
-                           BigInteger listenerID)
+                           BigInteger listenerID, boolean recordCellIDs)
         {
             this.root = root;
             this.cells = cells;
             this.listenerID = listenerID;
+            this.recordCellIDs = recordCellIDs;
         }
 
         public void run() {
@@ -355,7 +359,7 @@ public class CellExportService extends AbstractService {
 
                 // first, resolve the cell ID into a CellDescriptor in a task.
                 GetCellDescriptor get = new GetCellDescriptor(entry.cellID,
-                        root, entry.parentPath);
+                        root, entry.parentPath, recordCellIDs);
                 try {
                     transactionScheduler.runTask(get, taskOwner);
                 } catch (Exception ex) {
@@ -450,16 +454,18 @@ public class CellExportService extends AbstractService {
         private CellID cellID;
         private WorldRoot root;
         private CellPath parentPath;
+        private boolean recordCellIDs;
 
         private CellDescriptor out;
         private Collection<CellID> children = new LinkedList<CellID>();
 
         public GetCellDescriptor(CellID cellID, WorldRoot root,
-                                 CellPath parentPath)
+                                 CellPath parentPath, boolean recordCellIDs)
         {
             this.cellID = cellID;
             this.root = root;
             this.parentPath = parentPath;
+            this.recordCellIDs = recordCellIDs;
         }
 
         public String getBaseTaskType() {
@@ -482,7 +488,7 @@ public class CellExportService extends AbstractService {
             }
             
             // now create a cell descriptor for the cell
-            out = CellExporterUtils.getCellDescriptor(root, parentPath, cell);
+            out = CellExporterUtils.getCellDescriptor(root, parentPath, cell, recordCellIDs);
 
             // if the output is null, it means the cell doesn't implement
             // the getCellServerState() method.  That's fine, just ignore any

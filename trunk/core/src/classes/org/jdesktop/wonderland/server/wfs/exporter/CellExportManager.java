@@ -70,9 +70,10 @@ public interface CellExportManager {
      * for the set be serializable and work correctly in the face of concurrent
      * access.  Typically, a ScalableHashSet is the best choice for the set.
      * @param listener a listener that will be notified of the results
+     * @param recordCellID if true, record the cellID of the cells
      */
     public void exportCells(WorldRoot worldRoot, Set<CellID> cellIDs,
-                            CellExportListener listener);
+                            CellExportListener listener, boolean recordCellIDs);
 
     /**
      * A listener that will be notified of the success or failure of
@@ -155,4 +156,5 @@ public interface CellExportManager {
          */
         public Throwable getFailureCause();
     }
+
 }
