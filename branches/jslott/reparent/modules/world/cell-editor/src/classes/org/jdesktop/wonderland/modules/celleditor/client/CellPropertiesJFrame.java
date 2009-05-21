@@ -120,8 +120,14 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         // Create and add a basic panel for all cells as a special case.
         BasicJPanel basicPanel = new BasicJPanel();
         basicPanel.setCellPropertiesEditor(this);
-        listModel.add(0, "Basic");
+        listModel.add(0, basicPanel.getDisplayName());
         factoryList.add(0, basicPanel);
+
+        // Create the position panel for all cells as a special case.
+        PositionJPanel positionPanel = new PositionJPanel();
+        positionPanel.setCellPropertiesEditor(this);
+        listModel.add(1, positionPanel.getDisplayName());
+        factoryList.add(1, positionPanel);
 
         // Set up all of the stuff we need to the tree to display Cells
         treeRoot = new DefaultMutableTreeNode("World Root");
@@ -618,10 +624,10 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             // sheets other than the first two. (The first three if the Cell
             // property sheet is non-null.
             if (cellProperties == null) {
-                removeCapabilityButton.setEnabled(index >= 1);
+                removeCapabilityButton.setEnabled(index >= 2);
             }
             else {
-                removeCapabilityButton.setEnabled(index >= 2);
+                removeCapabilityButton.setEnabled(index >= 3);
             }
 
             // Invalidate the layout and repaint
@@ -704,11 +710,11 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         }
 
         // Next, loop through all the factories (again), and remove them from
-        // the list model. We do not remove the first, since is it the fixed
-        // "Basic" panel. Also, remove the item from the list of factories now
+        // the list model. We do not remove the first two, since they are the
+        // fixed panels. Also, remove the item from the list of factories now
         // too.
         int size = factoryList.size();
-        for (int i = 1; i < size; i++) {
+        for (int i = 2; i < size; i++) {
             listModel.remove(i);
             factoryList.remove(i);
         }
