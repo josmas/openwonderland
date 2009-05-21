@@ -68,7 +68,7 @@ public class CellExporter implements Serializable, SnapshotCreationListener,
 
         // export those cells
         CellExportManager em = AppContext.getManager(CellExportManager.class);
-        em.exportCells(worldRoot, rootCells, this);
+        em.exportCells(worldRoot, rootCells, this, false);
     }
 
     public void snapshotFailed(String reason, Throwable cause) {
