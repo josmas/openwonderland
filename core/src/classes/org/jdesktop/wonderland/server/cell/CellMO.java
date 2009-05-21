@@ -563,7 +563,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             } catch (IllegalArgumentException ex) {
                 Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
             } catch (InvocationTargetException ex) {
-                Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, "Error in " + this + " invoking constructor on component "+componentClazz, ex);
             } catch (NoSuchMethodException ex) {
                 Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
             } catch (SecurityException ex) {
