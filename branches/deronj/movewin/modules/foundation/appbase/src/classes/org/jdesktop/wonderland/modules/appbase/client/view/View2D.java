@@ -218,14 +218,19 @@ public interface View2D {
     /** Returns the offset. */
     public Point getOffset ();
 
-    /** Specify the user-specified translation of this view. Update afterward. */
-    public void setTranslationUser (Vector3f translation);
+    /** 
+     * Apply the given translation vector as a delta to the current user transform of the view. 
+     * Update immediately. Note: ortho and non-ortho modes have separate user transforms.
+     * The value of the ortho attribute determines which one is current.
+     */
+    public void applyDeltaTranslationUser (Vector3f deltaTranslation);
 
-    /** Specify the user-specified translation of this view. Update if specified. */
-    public void setTranslationUser (Vector3f translation, boolean update);
-
-    /** Returns the user translation of this view. */
-    public Vector3f getTranslationUser ();
+    /** 
+     * Apply the given translation vector as a delta to the current user transform of the view. 
+     * Update if specified. Note: ortho and non-ortho modes have separate user transforms.
+     * The value of the ortho attribute determines which one is current.
+     */
+    public void applyDeltaTranslationUser (Vector3f deltaTranslation, boolean update);
 
     /** Apply all pending updates. */
     public void update ();
