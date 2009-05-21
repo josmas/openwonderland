@@ -277,6 +277,8 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 
 		setup.cp = cp;
 
+		setup.externalOutgoingCall = true;
+
 		try {
 		    setup.bridgeInfo = vm.getVoiceBridge();
 	 	} catch (IOException e) {
