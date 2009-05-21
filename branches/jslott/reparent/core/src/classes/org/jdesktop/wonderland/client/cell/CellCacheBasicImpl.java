@@ -303,7 +303,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * @param status
      */
     private void setCellStatus(Cell cell, CellStatus status) {
-        logger.warning("Set status of cell " + cell.getCellID() +
+        logger.fine("Set status of cell " + cell.getCellID() +
                        " to " + status);
 
         int currentStatus = cell.getStatus().ordinal();

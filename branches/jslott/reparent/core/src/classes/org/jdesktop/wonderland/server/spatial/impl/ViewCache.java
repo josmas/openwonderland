@@ -201,6 +201,32 @@ class ViewCache {
         }
     }
 
+    void childCellAdded(SpatialCellImpl child) {
+        viewCell.acquireRootReadLock();
+
+        try {
+            synchronized(pendingCacheUpdates) {
+                pendingCacheUpdates.add(new CacheUpdate(child, (SpatialCellImpl) child.getParent(), true));
+            }
+        } finally {
+            viewCell.releaseRootReadLock();
+        }
+
+    }
+
+    void childCellRemoved(SpatialCellImpl parent, SpatialCellImpl child) {
+        viewCell.acquireRootReadLock();
+
+        try {
+            synchronized(pendingCacheUpdates) {
+                pendingCacheUpdates.add(new CacheUpdate(child, parent, false));
+            }
+        } finally {
+            viewCell.releaseRootReadLock();
+        }
+
+    }
+
     /**
      * Called to add a root cell when the root cell is added to a space with which
      * this cache is already registered
@@ -211,7 +237,7 @@ class ViewCache {
 
         try {
             synchronized(pendingCacheUpdates) {
-                pendingCacheUpdates.add(new CacheUpdate(rootCell, true));
+                pendingCacheUpdates.add(new CacheUpdate(rootCell, null, true));
             }
         } finally {
             viewCell.releaseRootReadLock();
@@ -223,7 +249,7 @@ class ViewCache {
 
         try {
             synchronized(pendingCacheUpdates) {
-                pendingCacheUpdates.add(new CacheUpdate(rootCell, false));
+                pendingCacheUpdates.add(new CacheUpdate(rootCell, null, false));
             }
         } finally {
             viewCell.releaseRootReadLock();
@@ -348,6 +374,7 @@ class ViewCache {
     class CacheUpdate implements Runnable {
 
         private SpatialCellImpl cell;
+        private SpatialCellImpl parentCell;
         private CellTransform worldTransform;
         private Space space;
         private Set<Space> spaces;
@@ -356,8 +383,8 @@ class ViewCache {
         private static final int CELL_MOVED = 1;
         private static final int EXIT_SPACE = 2;
         private static final int ENTER_SPACE = 3;
-        private static final int ROOT_ADDED = 4;
-        private static final int ROOT_REMOVED = 5;
+        private static final int CELL_ADDED = 4;
+        private static final int CELL_REMOVED = 5;
         private static final int CELL_REVALIDATED = 6;
         private static final int CACHE_REVALIDATED = 7;
 
@@ -396,9 +423,10 @@ class ViewCache {
          * @param rootCell
          * @param add
          */
-        public CacheUpdate(SpatialCellImpl rootCell, boolean add) {
-            jobType = (add) ? ROOT_ADDED : ROOT_REMOVED;
+        public CacheUpdate(SpatialCellImpl rootCell, SpatialCellImpl parent, boolean add) {
+            jobType = (add) ? CELL_ADDED : CELL_REMOVED;
             this.cell = rootCell;
+            this.parentCell = parent;
         }
 
         /**
@@ -451,16 +479,26 @@ class ViewCache {
                         }
                     }
                     break;
-                case ROOT_ADDED:
-                    type = ViewCacheUpdateType.LOAD;
-                    synchronized(rootCells) {
-                        addRootCellImpl(cell, cells);
+                case CELL_ADDED:
+                    if (parentCell==null) {
+                        type = ViewCacheUpdateType.LOAD;
+                        synchronized(rootCells) {
+                            addRootCellImpl(cell, cells);
+                        }
+                    } else {
+                        type = ViewCacheUpdateType.LOAD;
+                        addOrRemoveSubgraphCellImpl(cell, cells);
                     }
                     break;
-                case ROOT_REMOVED:
-                    type = ViewCacheUpdateType.UNLOAD;
-                    synchronized(rootCells) {
-                        removeRootCellImpl(cell, cells);
+                case CELL_REMOVED:
+                    if (parentCell==null) {
+                        type = ViewCacheUpdateType.UNLOAD;
+                        synchronized(rootCells) {
+                            removeRootCellImpl(cell, cells);
+                        }
+                    } else {
+                        type = ViewCacheUpdateType.UNLOAD;
+                        addOrRemoveSubgraphCellImpl(cell, cells);
                     }
                     break;
                 case CELL_REVALIDATED:
@@ -488,8 +526,26 @@ class ViewCache {
             }
 
             if (cells.size() > 0 && type != null) {
-                UniverseImpl.getUniverse().scheduleTransaction(
-                        new ViewCacheUpdateTask(cells, type), identity);
+                System.err.println("Scheduling "+type);
+                UniverseImpl.getUniverse().scheduleQueuedTransaction(
+                        new ViewCacheUpdateTask(cells, type), identity, this);
+            }
+        }
+
+        /**
+         * A non root cell has been added or removed, traverse the new subgraph
+         * and add/remove all the cells
+         * 
+         * @param child the root of the subgraph
+         * @param newCells the set of cells in the subgraph (including child)
+         */
+        private void addOrRemoveSubgraphCellImpl(SpatialCellImpl child, List<CellDescription> newCells) {
+            child.acquireRootReadLock();
+            try {
+                newCells.add(new CellDesc(child.getCellID()));
+                processChildCells(newCells, child, CellStatus.ACTIVE);
+            } finally {
+                child.releaseRootReadLock();
             }
         }
 
@@ -577,15 +633,18 @@ class ViewCache {
 
         public void run() throws Exception {
             ViewCellCacheMO cacheMO = (ViewCellCacheMO) dataService.createReferenceForId(cellCacheId).get();
+            System.err.println("ViewCacheUpdate "+type);
             switch (type) {
                 case LOAD:
+                    // Check security and generate appropriate load messages
                     cacheMO.generateLoadMessagesService(cells);
                     break;
                 case REVALIDATE:
                     cacheMO.revalidateCellsService(cells);
                     break;
                 case UNLOAD:
-                    cacheMO.generateUnloadMessagesService(cells);
+                    // No need to check security, just generate unload messages
+                    cacheMO.sendUnloadMessages(cells);
             }
 
 //            StringBuffer buf = new StringBuffer();

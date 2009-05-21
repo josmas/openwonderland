@@ -239,7 +239,9 @@ public class CellTransform implements Serializable {
      */
     public void invert() {
         rotation.inverseLocal();
-        scale.multLocal(-1);
+        scale.x = 1f/scale.x;
+        scale.y = 1f/scale.y;
+        scale.z = 1f/scale.z;
         translation.multLocal(-1);
     }
     

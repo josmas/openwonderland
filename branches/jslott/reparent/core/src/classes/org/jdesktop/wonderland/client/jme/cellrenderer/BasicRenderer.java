@@ -107,13 +107,8 @@ public abstract class BasicRenderer implements CellRendererJME {
 
                     thisEntity.addComponent(CellRefComponent.class, new CellRefComponent(cell));
 
-                    if (parentEntity!=null) {
-                        parentEntity.addEntity(thisEntity);
-                    } else {
-                        ClientContextJME.getWorldManager().addEntity(thisEntity);
-                    }
-
                     // Figure out the correct parent entity for this cells entity.
+                    // Do this before the Entity becomes live
                     if (parentEntity!=null && thisEntity!=null) {
                         RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
                         RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);
@@ -121,6 +116,13 @@ public abstract class BasicRenderer implements CellRendererJME {
                             thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
                         }
                     }
+
+                    if (parentEntity!=null) {
+                        parentEntity.addEntity(thisEntity);
+                    } else {
+                        ClientContextJME.getWorldManager().addEntity(thisEntity);
+                    }
+
                     isRendering = true;
 
                 } else {
@@ -192,7 +194,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         rootNode.setName("CellRoot_"+cell.getCellID());
         sceneRoot = createSceneGraph(ret);
         rootNode.attachChild(sceneRoot);
-        applyTransform(rootNode, cell.getWorldTransform());
+        applyTransform(rootNode, cell.getLocalTransform());
         addRenderState(rootNode);
 
         addDefaultComponents(ret, rootNode);

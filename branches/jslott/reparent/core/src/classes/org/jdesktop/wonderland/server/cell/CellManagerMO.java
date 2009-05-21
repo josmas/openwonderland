@@ -104,6 +104,9 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * @return the cell with the given ID
      */
     public static CellMO getCell(CellID cellID) {
+        if (cellID.equals(CellID.getInvalidCellID()))
+            return null;
+
         try {
             return (CellMO) AppContext.getDataManager().getBinding(getCellBinding(cellID));
         } catch(NameNotBoundException e) {

@@ -236,9 +236,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
         child.setParent(this);
         
         childCellRefs.add(AppContext.getDataManager().createReference(child));
-        
+
         if (live) {
-           child.setLive(true);
+           child.setLive(true);     // setLive will add the child to the universe and form the parent/child relationship
         }
 
     }
@@ -259,7 +259,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 if (live) {
                     child.setLive(false);
                 }
-                UniverseManagerFactory.getUniverseManager().removeChild(this, child);
                 return true;
             } catch (MultipleParentException ex) {
                 // This should never happen
