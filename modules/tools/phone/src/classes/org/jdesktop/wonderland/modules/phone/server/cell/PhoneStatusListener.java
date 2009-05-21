@@ -180,11 +180,9 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 		        }
 
 	                vm.removeAudioGroup(audioGroup);
-		    }
+		    } 
 		}
-            } else {
-                //   FakeVoiceHandler.getInstance().endCall(externalCallID);
-            }    
+            } 
                 
             sender.send(clientID, new CallEndedResponseMessage(cellID,
 		listing, true, status.getOption("Reason")));

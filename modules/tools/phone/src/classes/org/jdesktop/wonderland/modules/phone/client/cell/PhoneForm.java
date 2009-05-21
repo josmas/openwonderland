@@ -163,7 +163,6 @@ public class PhoneForm extends JDialog implements KeypadListener {
             // allow calls to be ended whether private or public if not
             // simulating calls
             // REMIND: should allow simulated calls to be ended too
-            callButton.setText("End Call");
             keypadButton.setEnabled(true);
         }
     }
@@ -489,14 +488,15 @@ private void callButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     // We'll update our display lists from the phone cell once the success message echos back.
     String privateClientName = "";
 
-    if (privateCallCheckBox.isSelected()) {
-        privateClientName = "Private"; // This is going to be updated on the server side        
-    }
-
     //Disallow empty contact names
     if (contactNameTextField.getText().equals("")) {
         JOptionPane.showMessageDialog(this, "You must enter a contact name.");
         return;
+    }
+
+    if (privateCallCheckBox.isSelected()) {
+        privateClientName = "Private"; // This is going to be updated on the server side        
+        callButton.setText("End Call");
     }
 
     CallListing listing = new CallListing(getContactName(), getContactNumber(),
@@ -512,8 +512,7 @@ private void callButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     if (simulationModeCheckBox.isSelected()) {
         statusMessageLabel.setText("Call in progress");
     }
-
-// mostRecentCallListing = listing;
+    // mostRecentCallListing = listing;
 }//GEN-LAST:event_callButtonActionPerformed
 
 private void simulationModeCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_simulationModeCheckBoxActionPerformed

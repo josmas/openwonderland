@@ -65,20 +65,20 @@ public class Orb implements ManagedObject, Serializable {
 
     private int useCount = 1;
 
-    public Orb(String id, String username, String externalCallID, Vector3f center, 
+    public Orb(String id, String username, String callID, Vector3f center, 
 	    double size, boolean simulateCalls) {
 
-	this(id, username, externalCallID, center, size, simulateCalls, null);
+	this(id, username, callID, center, size, simulateCalls, null);
     }    
 
-    public Orb(VirtualPlayer vp, Vector3f center, double size, String hostCallID) {
-	this(vp.getId(), vp.realPlayer.getCall().getSetup().cp.getName(), vp.player.getCall().getId(), 
+    public Orb(VirtualPlayer vp, Vector3f center, double size, String callID) {
+	this(vp.getId(), vp.realPlayer.getCall().getSetup().cp.getName(), callID,
 	center, .1, false, vp);
 
-	orbCellMORef.get().attach(hostCallID);
+	orbCellMORef.get().attach(vp.playerWithVirtualPlayer.getId());
     }
 
-    private Orb(String orbID, String username, String externalCallID, Vector3f center, 
+    private Orb(String orbID, String username, String callID, Vector3f center, 
 	    double size, boolean simulateCalls, VirtualPlayer vp) {
 
 	this.id = id;
@@ -94,10 +94,10 @@ public class Orb implements ManagedObject, Serializable {
 
 	if (vp != null) {
             orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
-	        center, (float) size, username, externalCallID, simulateCalls, vp);
+	        center, (float) size, username, callID, simulateCalls, vp);
 	} else {
             orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
-	        center, (float) size, username, externalCallID, simulateCalls);
+	        center, (float) size, username, callID, simulateCalls);
 	}
 
 	if (orbCellMO == null) {
