@@ -138,7 +138,9 @@ public class PhoneForm extends JDialog implements KeypadListener {
 
     private void setDialoutButtonState() {
         if (contactNameTextField.isEditable() == false) {
-            callButton.setEnabled(false);
+	    if (callButton.getText().equals("End Call") == false) {
+                callButton.setEnabled(false);
+	    }
             return;
         }
 
@@ -146,7 +148,9 @@ public class PhoneForm extends JDialog implements KeypadListener {
                 contactNumberTextField.getText().length() > 0) {
             callButton.setEnabled(true);
         } else {
-            callButton.setEnabled(false);
+	    if (callButton.getText().equals("End Call") == false) {
+                callButton.setEnabled(false);
+	    }
         }
     }
 
