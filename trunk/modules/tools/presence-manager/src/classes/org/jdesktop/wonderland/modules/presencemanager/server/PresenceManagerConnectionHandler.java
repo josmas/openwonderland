@@ -132,6 +132,11 @@ public class PresenceManagerConnectionHandler
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
 	ArrayList<PresenceInfo> presenceInfoArrayList = sessions.get(clientID.getID());
 
+	if (presenceInfoArrayList == null) {
+	    logger.warning("No presence info for session " + clientID.getID());
+	    return;
+	}
+
 	PresenceInfo[] presenceInfoArray = presenceInfoArrayList.toArray(new PresenceInfo[0]);
 
 	for (int i = 0; i < presenceInfoArray.length; i++) {

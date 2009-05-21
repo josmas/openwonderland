@@ -168,17 +168,15 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	WonderlandIdentity userID = 
 	    new WonderlandIdentity(username, username, null);
 
-	String callID = null;
+	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
 
-	if (orbCell.getPlayerWithVpCallID() == null) {
-	    callID = orbCell.getCallID();
+	if (playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID()) == false) {
+            presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, orbCell.getCallID());
+	} else {
+            presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, null);
 	}
 
-	if (orbCell.getPlayerWithVpCallID() == null) {
-            presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, callID);
-
-	    pm.addPresenceInfo(presenceInfo);
-	}
+	pm.addPresenceInfo(presenceInfo);
 
         NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
 	    orbCell.addComponent(comp);
@@ -252,9 +250,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	orbRootNode.detachChild(nameTag);
 	nameTag.done();
 
-	if (presenceInfo != null) {
-	    pm.removePresenceInfo(presenceInfo);
-	}
+	pm.removePresenceInfo(presenceInfo);
     }
 
     public void processMessage(final Message message) {
@@ -272,7 +268,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	if (message instanceof OrbSpeakingMessage) {
 	    OrbSpeakingMessage msg = (OrbSpeakingMessage) message;
 
-	    logger.info("Orb speaking " + msg.isSpeaking());
+	    logger.fine("Orb speaking " + msg.isSpeaking() + " cellID " + msg.getCellID()
+		+ " pi " + presenceInfo);
 
 	    pm.setSpeaking(presenceInfo, msg.isSpeaking());
 

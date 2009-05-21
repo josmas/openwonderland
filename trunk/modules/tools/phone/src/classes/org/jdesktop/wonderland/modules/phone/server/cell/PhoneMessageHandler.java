@@ -467,14 +467,14 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 		}
 
 		if (audioGroup != null) {
+	            vm.removeAudioGroup(audioGroup);
+
                     if (listing.isPrivate()) {
 	        	softphonePlayer.attenuateOtherGroups(audioGroup, 
 			    AudioGroup.DEFAULT_SPEAKING_ATTENUATION,
 		    	    AudioGroup.DEFAULT_LISTEN_ATTENUATION);
 	            }
-
-	            vm.removeAudioGroup(audioGroup);
-		}
+		} 
             } 
             
             //Send SUCCESS to phone cell

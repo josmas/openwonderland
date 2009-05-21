@@ -127,7 +127,7 @@ public class AudioManagerConnectionHandler
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	if (message instanceof GetVoiceBridgeMessage) {
-	    System.out.println("Got GetVoiceBridgeMessage");
+	    //System.out.println("Got GetVoiceBridgeMessage");
 
 	    BridgeInfo bridgeInfo;
 
@@ -146,7 +146,6 @@ public class AudioManagerConnectionHandler
 	    }
 
 	    System.out.println("Sending " + bridgeInfo.toString());
-
 	    sender.send(clientID, new GetVoiceBridgeResponseMessage(bridgeInfo.toString()));
 	    return;
 	}

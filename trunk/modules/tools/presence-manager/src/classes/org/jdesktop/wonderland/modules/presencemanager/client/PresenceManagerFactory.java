@@ -32,8 +32,6 @@ public class PresenceManagerFactory {
 	if (manager == null) {
 	    manager = new PresenceManagerImpl(session);
 	    managers.put(session, manager);
-
-	    manager.dump();
 	}
 
 	return manager;

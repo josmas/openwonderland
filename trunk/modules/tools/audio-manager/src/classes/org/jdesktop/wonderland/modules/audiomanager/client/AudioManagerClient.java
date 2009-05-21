@@ -171,7 +171,7 @@ public class AudioManagerClient extends BaseConnection implements
 	ArrayList<MemberChangeListener> listeners = memberChangeListeners.get(group);
 
 	if (listeners == null) {
-	    logger.warning("NO LISTENERS!");
+	    logger.fine("NO LISTENERS!");
 	    return;
 	}
 
@@ -184,13 +184,13 @@ public class AudioManagerClient extends BaseConnection implements
 	ArrayList<MemberChangeListener> listeners = memberChangeListeners.get(group);
 
 	if (listeners == null) {
-	    logger.warning("NO LISTENERS!");
+	    logger.fine("NO LISTENERS!");
 	    return;
 	}
 
-	for (int i = 0; i < members.length; i++) {
-	    //System.out.println("setMembers:  " + members[i]);
-	}
+	//for (int i = 0; i < members.length; i++) {
+	//    System.out.println("setMembers:  " + members[i]);
+	//}
 
 	for (MemberChangeListener listener : listeners) {
 	    listener.setMemberList(members);
@@ -244,7 +244,7 @@ public class AudioManagerClient extends BaseConnection implements
     public void disconnected() {
         super.disconnected();
 
-	pm.removePresenceInfo(presenceInfo);
+	//pm.removePresenceInfo(presenceInfo);
 
         // remove listeners
 
@@ -557,7 +557,7 @@ public class AudioManagerClient extends BaseConnection implements
                 return;
             }
 
-	    System.out.println("Speaking " + msg.isSpeaking() + " " + info);
+	    logger.fine("Speaking " + msg.isSpeaking() + " " + info);
 
             pm.setSpeaking(info, msg.isSpeaking());
 

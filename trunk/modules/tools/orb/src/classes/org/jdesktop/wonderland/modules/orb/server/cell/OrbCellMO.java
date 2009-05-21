@@ -147,13 +147,8 @@ public class OrbCellMO extends CellMO {
 	    WonderlandClientID clientID, ClientCapabilities capabilities) {
 
         if (cellClientState == null) {
-	    String id = "";
-
-	    if (vp != null) {
-		id = vp.playerWithVirtualPlayer.getId();
-	    }
-
-            cellClientState = new OrbCellClientState(username, username, callID, id);
+            cellClientState = new OrbCellClientState(username, username, callID, 
+		getPlayerWithVpCallID());
         }
 
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -176,13 +171,8 @@ public class OrbCellMO extends CellMO {
     public CellServerState getServerState(CellServerState cellServerState) {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
-	    String id = "";
-
-	    if (vp != null) {
-                id = vp.playerWithVirtualPlayer.getId();
-            }
-
-            cellServerState = new OrbCellServerState(username, username, callID, id);
+            cellServerState = new OrbCellServerState(username, username, callID, 
+		getPlayerWithVpCallID());
         }
 
         return super.getServerState(cellServerState);

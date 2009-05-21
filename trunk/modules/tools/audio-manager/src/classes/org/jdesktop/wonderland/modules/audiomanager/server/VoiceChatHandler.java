@@ -88,6 +88,7 @@ import com.sun.mpk20.voicelib.app.AudioGroupListener;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.Call;
+import com.sun.mpk20.voicelib.app.CallSetup;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
@@ -238,6 +239,18 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		endVoiceChat(vm, audioGroup);
 	    } 
 
+	    CallSetup callSetup = player.getCall().getSetup();
+
+	    if (callSetup.incomingCall || callSetup.externalOutgoingCall) {
+	        addPlayerToAudioGroup(
+		    vm.getVoiceManagerParameters().livePlayerAudioGroup, 
+		    player, msg.getCallee(), ChatType.PUBLIC);
+
+	        addPlayerToAudioGroup(
+		    vm.getVoiceManagerParameters().stationaryPlayerAudioGroup,
+		    player, msg.getCallee(), ChatType.PUBLIC);
+	    }
+	    
 	    sender.send(msg);
 	    vm.dump("all");
 	    return;
@@ -480,7 +493,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	        return true;
 	    }
 
-	//System.out.println("Adding player " + player + " type " + chatType);
+	logger.fine("Adding player " + player + " type " + chatType);
 
 	playerInfo = new AudioGroupPlayerInfo(true, getChatType(chatType));
 	playerInfo.speakingAttenuation = AudioGroup.DEFAULT_SPEAKING_ATTENUATION;
@@ -697,7 +710,15 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	Vector3f center = new Vector3f((float) -vp.playerWithVirtualPlayer.getX(), (float) 2.3, 
 	    (float) vp.playerWithVirtualPlayer.getZ());
 
-	Orb orb = new Orb(vp, center, .1, vp.playerWithVirtualPlayer.getId());
+	Orb orb;
+
+	//CallSetup callSetup = vp.realPlayer.getCall().getSetup();
+
+	//if (callSetup.incomingCall || callSetup.externalOutgoingCall) {
+	    orb = new Orb(vp, center, .1, vp.realPlayer.getId());
+	//} else {
+	//    orb = new Orb(vp, center, .1, vp.playerWithVirtualPlayer.getId());
+	//}
 
 	orb.addComponent(new AudioParticipantComponentMO(orb.getOrbCellMO()));
 

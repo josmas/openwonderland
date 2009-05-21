@@ -90,15 +90,18 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
 
         ArrayList<String> memberData = new ArrayList();
 
-	for (PresenceInfo info : members) {
-	    //System.out.println("Member:  " + info);
-	}
+	//pm.dump();
+
+	//for (PresenceInfo info : members) {
+	//    System.out.println("Member:  " + info);
+	//}
 
         for (int i = 0; i < presenceInfoList.length; i++) {
             PresenceInfo info = presenceInfoList[i];
 
             if (info.callID == null) {
                 // It's a virtual player, skip it.
+		//System.out.println("skipping virtual player " + info);
                 continue;
             }
 
