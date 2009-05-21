@@ -712,13 +712,16 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	Orb orb;
 
-	//CallSetup callSetup = vp.realPlayer.getCall().getSetup();
+	CallSetup callSetup = vp.playerWithVirtualPlayer.getCall().getSetup();
 
-	//if (callSetup.incomingCall || callSetup.externalOutgoingCall) {
-	    orb = new Orb(vp, center, .1, vp.realPlayer.getId());
-	//} else {
-	//    orb = new Orb(vp, center, .1, vp.playerWithVirtualPlayer.getId());
-	//}
+	if (callSetup.incomingCall || callSetup.externalOutgoingCall) {
+	    /*
+	     * Don't create orb's for outworlders
+	     */
+	    return;
+	}
+
+	orb = new Orb(vp, center, .1, vp.realPlayer.getId());
 
 	orb.addComponent(new AudioParticipantComponentMO(orb.getOrbCellMO()));
 
