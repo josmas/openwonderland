@@ -203,7 +203,7 @@ public class CellChannelConnection extends BaseConnection {
                 }
                 
                 // deliver the messages to the cell
-                logger.log(Level.WARNING, "Delivering delayed messages to " +
+                logger.log(Level.FINE, "Delivering delayed messages to " +
                            "cell " + cellID);
                 for (CellMessage message : queue.getMessages()) {
                     cc.messageReceived(message);
