@@ -394,8 +394,8 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	 	 * The InCallDialog can be used to change the privacy setting
 		 * and to remove the outworlder from the chat.
 		 */
-		logger.fine("Adding " + info + " chatType " + msg.getChatType());
 	        addPlayerToAudioGroup(audioGroup, player, info, msg.getChatType());
+	        sender.send(new VoiceChatJoinAcceptedMessage(group, info, msg.getChatType()));
 	    	continue;
 	    }
 
@@ -690,6 +690,11 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     }
 
     public void virtualPlayerAdded(AudioGroup audioGroup, VirtualPlayer vp) {
+	if (vp.realPlayer.getCall().getSetup().ended) {
+	    System.out.println("Call ended unexpectedly! " + vp);
+	    return;
+	}
+
         ManagedOrbMap orbMap = (ManagedOrbMap) AppContext.getDataManager().getBinding(ORB_MAP_NAME);
 
 	ConcurrentHashMap<String, ManagedReference<Orb>> orbs = 
@@ -716,7 +721,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	if (callSetup.incomingCall || callSetup.externalOutgoingCall) {
 	    /*
-	     * Don't create orb's for outworlders
+	     * Don't create virtual orb's for outworlders
 	     */
 	    return;
 	}
@@ -809,17 +814,6 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	System.out.println("Player in range " + isInRange + " " + player
 	    + " player in range " + playerInRange + " orbs size " + orbs.size());
 
-	Iterator<ManagedReference<Orb>> it = orbs.values().iterator();
-
-	while (it.hasNext()) {
-	    Orb orb = it.next().get();
-	    
-	    // Update Orb name tag with count of players in range	
-
-	    orb.setBystanderCount(playersInRange.size());
-	    //System.out.println("Setting bystander count to " + playersInRange.size());
-	}
-
 	if (isInRange) {
 	    if (playersInRange == null) {
 		playersInRange = new CopyOnWriteArrayList();
@@ -840,6 +834,17 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    if (playersInRange.size() == 0) {
 		playersInRangeMap.remove(player);
 	    }
+	}
+
+	Iterator<ManagedReference<Orb>> it = orbs.values().iterator();
+
+	while (it.hasNext()) {
+	    Orb orb = it.next().get();
+	    
+	    // Update Orb name tag with count of players in range	
+
+	    orb.setBystanderCount(playersInRange.size());
+	    //System.out.println("Setting bystander count to " + playersInRange.size());
 	}
 
 	WonderlandClientSender sender = 

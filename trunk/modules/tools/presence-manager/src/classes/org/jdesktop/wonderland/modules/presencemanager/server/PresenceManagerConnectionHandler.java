@@ -88,6 +88,10 @@ public class PresenceManagerConnectionHandler
     public void messageReceived(WonderlandClientSender sender, 
 	    WonderlandClientID clientID, Message message) {
 
+	if (sessions == null) {
+	    sessions = new ConcurrentHashMap();
+	}
+
 	if (message instanceof ClientConnectMessage) {
 	    ClientConnectMessage msg = (ClientConnectMessage) message;
 
@@ -133,7 +137,7 @@ public class PresenceManagerConnectionHandler
 	ArrayList<PresenceInfo> presenceInfoArrayList = sessions.get(clientID.getID());
 
 	if (presenceInfoArrayList == null) {
-	    logger.warning("No presence info for session " + clientID.getID());
+	    System.out.println("No presence info for session " + clientID.getID());
 	    return;
 	}
 
@@ -143,7 +147,7 @@ public class PresenceManagerConnectionHandler
 	    PresenceInfo info = presenceInfoArray[i];
 
 	    if (info.clientID != null && info.clientID.equals(clientID.getID())) {
-		logger.info("Client disconnected.  Removing presence info for " + info);
+		System.out.println("Client disconnected.  Removing presence info for " + info);
 	        presenceInfoArrayList.remove(info);
 		sender.send(new PresenceInfoRemovedMessage(info));
 	    }

@@ -104,10 +104,6 @@ public class PresenceManagerImpl implements PresenceManager {
 
 	info = userIDMap.get(presenceInfo.userID);
 
-	if (info != null && info.equals(presenceInfo) == false) {
-	    logger.warning("userIDMap already has entry for " + info);
-	}
-
 	userIDMap.put(presenceInfo.userID, presenceInfo);
 
 	if (presenceInfo.callID != null) {

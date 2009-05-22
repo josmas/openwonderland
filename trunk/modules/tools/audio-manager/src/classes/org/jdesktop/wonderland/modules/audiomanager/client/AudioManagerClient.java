@@ -300,7 +300,6 @@ public class AudioManagerClient extends BaseConnection implements
             logger.warning("Sending message to server to get voice bridge... session is "
 	        + session.getStatus());
 
-	    System.out.println("Sending message to connect softphone");
             session.send(this, new GetVoiceBridgeMessage());
         }
     }

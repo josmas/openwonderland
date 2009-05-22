@@ -92,20 +92,22 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
 
 	//pm.dump();
 
-	//for (PresenceInfo info : members) {
-	//    System.out.println("Member:  " + info);
-	//}
+	for (PresenceInfo info : members) {
+	    //System.out.println("AddUser:  Member:  " + info);
+	}
 
         for (int i = 0; i < presenceInfoList.length; i++) {
             PresenceInfo info = presenceInfoList[i];
 
+	    //System.out.println("AddUser:  PI: " + info);
+
             if (info.callID == null) {
                 // It's a virtual player, skip it.
-		//System.out.println("skipping virtual player " + info);
+		//System.out.println("AddUser:  skipping virtual player " + info);
                 continue;
             }
 
-            if (members.contains(info)) {
+            if (memberscontains(info)) {
 		//System.out.println("members already has " + info);
                 continue;
             }
@@ -149,7 +151,7 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
 
     public void memberChange(PresenceInfo info, boolean added) {
 	if (added) {
-	    if (members.contains(info)) {
+	    if (memberscontains(info)) {
 		logger.warning("AddMemberDialog:  already a member " + info);
 		return;
 	    }
@@ -169,6 +171,17 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
 	}
 
 	setMemberList();
+    }
+
+    private boolean memberscontains(PresenceInfo presenceInfo) {
+        for (PresenceInfo info : members) {
+            //if (info.usernameAlias.equals(presenceInfo.userNameAlias())
+            if (info.callID.equals(presenceInfo.callID)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** This method is called from within the constructor to
@@ -289,15 +302,15 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(joinButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 58, Short.MAX_VALUE)
                 .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 58, Short.MAX_VALUE)
+                .add(joinButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(6, 6, 6)
+                .add(12, 12, 12)
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -311,11 +324,11 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
                 .add(keypadButton)
                 .add(18, 18, 18)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 111, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(joinButton)
-                    .add(cancelButton))
-                .add(25, 25, 25))
+                    .add(cancelButton)
+                    .add(joinButton))
+                .add(41, 41, 41))
         );
 
         pack();

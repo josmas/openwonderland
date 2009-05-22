@@ -100,11 +100,13 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
     private ArrayList<PresenceInfo> members = new ArrayList();
 
     public void setMemberList(PresenceInfo[] memberList) {
+	//pm.dump();
+
         synchronized (members) {
             members.clear();
 
             for (int i = 0; i < memberList.length; i++) {
-		//System.out.println("InCall " + memberList[i]);
+		//System.out.println("InCall adding to members " + memberList[i]);
                 members.add(memberList[i]);
             }
         }
@@ -129,7 +131,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 	//System.out.println("InCall addMember " + member);
 
         synchronized (members) {
-            if (members.contains(member) == false) {
+            if (memberscontains(member) == false) {
                 members.add(member);
 	    }
         }
@@ -155,6 +157,17 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 	setMemberList();
     }
 
+    private boolean memberscontains(PresenceInfo presenceInfo) {
+	for (PresenceInfo info : members) {
+	    //if (info.usernameAlias.equals(presenceInfo.userNameAlias())
+	    if (info.callID.equals(presenceInfo.callID)) {
+		return true;
+	    }
+	}
+
+	return false;
+    }
+
     private int setMemberList() {
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
@@ -170,8 +183,11 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
                 continue;
             }
 
-	    if (members.contains(info) == false) {
+	    if (memberscontains(info) == false) {
 		//System.out.println("InCall:  Members doesn't contain member " + info);
+		for (PresenceInfo member : members) {
+		    //System.out.println("Member:  " + member);
+		}
 		continue;
 	    }
 
@@ -439,7 +455,7 @@ private void hold(boolean onHold) {
         holdDialog.setLocation(location);
     }
 
-    if (members.contains(presenceInfo) == false) {
+    if (memberscontains(presenceInfo) == false) {
 	return;
     }
 

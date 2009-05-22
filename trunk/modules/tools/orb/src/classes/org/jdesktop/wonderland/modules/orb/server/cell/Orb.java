@@ -72,10 +72,10 @@ public class Orb implements ManagedObject, Serializable {
     }    
 
     public Orb(VirtualPlayer vp, Vector3f center, double size, String callID) {
+	// XXX need to make user name unique
+	// But then InCallDialog will show the wrong name.
 	this(vp.getId(), vp.realPlayer.getCall().getSetup().cp.getName(), callID,
 	center, .1, false, vp);
-
-	orbCellMORef.get().attach(vp.playerWithVirtualPlayer.getId());
     }
 
     private Orb(String orbID, String username, String callID, Vector3f center, 
@@ -166,9 +166,13 @@ public class Orb implements ManagedObject, Serializable {
 	    return;
 	}
 
-	CellManagerMO.getCellManager().removeCellFromWorld(orbCellMORef.get());
+	OrbCellMO orbCellMO = orbCellMORef.get();
 
 	orbCellMORef = null;
+
+	CellManagerMO.getCellManager().removeCellFromWorld(orbCellMO);
+
+	orbCellMO.endCall();
     }
 
     public String toString() {
