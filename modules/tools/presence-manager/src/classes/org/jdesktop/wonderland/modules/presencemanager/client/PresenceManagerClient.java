@@ -86,6 +86,8 @@ public class PresenceManagerClient extends BaseConnection implements
 
         presenceManager = (PresenceManagerImpl) PresenceManagerFactory.getPresenceManager(session);
 
+	presenceManager.dump();
+
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
         avatar.addViewCellConfiguredListener(this);
         if (avatar.getViewCell() != null) {
@@ -101,7 +103,10 @@ public class PresenceManagerClient extends BaseConnection implements
         super.disconnect();
 	
         session.send(this, new ClientConnectMessage(presenceInfo, false));
-	presenceManager.removePresenceInfo(presenceInfo);
+
+	//presenceManager.removePresenceInfo(presenceInfo);
+
+	//presenceManager.dump();
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
@@ -131,6 +136,9 @@ public class PresenceManagerClient extends BaseConnection implements
 	    ArrayList<PresenceInfo> presenceInfoList = msg.getPresenceInfoList();
 
 	    for (PresenceInfo presenceInfo : presenceInfoList) {
+		System.out.println("Client connected:  " + msg.isConnected() 
+		    + " " + presenceInfo);
+
 		if (msg.isConnected()) {
 		    presenceManager.presenceInfoAdded(presenceInfo);
 		} else {

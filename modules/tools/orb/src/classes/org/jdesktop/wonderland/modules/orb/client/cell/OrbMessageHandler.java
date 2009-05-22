@@ -165,18 +165,19 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    username = "No user name!";
 	}
 
-	WonderlandIdentity userID = 
-	    new WonderlandIdentity(username, username, null);
-
 	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
 
-	if (playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID()) == false) {
-            presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, orbCell.getCallID());
-	} else {
-            presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, null);
-	}
+	WonderlandIdentity userID = new WonderlandIdentity(username, username, null);
 
-	pm.addPresenceInfo(presenceInfo);
+	presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, 
+	    orbCell.getCallID());
+
+	if (playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID())) {
+	    /*
+	     * It's a real call.  Use the actually callID and userID.
+	     */
+	    pm.addPresenceInfo(presenceInfo);
+	} 
 
         NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
 	    orbCell.addComponent(comp);
@@ -193,7 +194,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 		return;
 	    }
 
-	    logger.fine("Attach orb " + orbCell.getCellID() 
+	    logger.info("Attach orb " + orbCell.getCellID() 
 		+ " player with " + orbCell.getPlayerWithVpCallID() + " to " + info);
 
             channelComp.send(new OrbAttachMessage(orbCell.getCellID(), info.cellID, true));
@@ -250,7 +251,11 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	orbRootNode.detachChild(nameTag);
 	nameTag.done();
 
-	pm.removePresenceInfo(presenceInfo);
+	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
+
+	if (playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID())) {
+	    pm.removePresenceInfo(presenceInfo);
+	}
     }
 
     public void processMessage(final Message message) {
@@ -332,7 +337,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    PresenceInfo info = pm.getPresenceInfo(msg.getHostCallID());
 
 	    if (info == null) {
-		System.out.println("OrbAttachVirtualPlayerMessage, no presence info for callID " 
+		logger.warning("OrbAttachVirtualPlayerMessage, no presence info for callID " 
 		    + msg.getHostCallID());
 		return;
 	    }
