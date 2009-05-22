@@ -235,23 +235,6 @@ public class Gui2D {
      */
     protected Action determineIfMiscAction(MouseEvent me, MouseEvent3D me3d) {
 
-        /* TODO
-        // Is this move-camera-to-best-view?
-        if (EventController.isMoveCameraToBestViewEvent(me)) {
-        return new Action(ActionType.MOVE_CAMERA_TO_BEST_VIEW);
-        }
-
-        // Is this move-avatar-to-best-view?
-        if (EventController.isMoveAvatarToBestViewEvent(me)) {
-        return new Action(ActionType.MOVE_AVATAR_TO_BEST_VIEW);
-        }
-
-        // Is this move-window-to-best-view?
-        if (EventController.isMoveWindowToBestViewEvent(me)) {
-        return new Action(ActionType.MOVE_WINDOW_TO_BEST_VIEW);
-        }
-         */
-
         // Is this the Take Control or Release Control event?
         if (isChangeControlEvent(me)) {
 
@@ -347,8 +330,12 @@ public class Gui2D {
                 configDragType = ConfigDragType.MOVING_PLANAR;
 
                 // Remember: the move occurs in parent coords
-                Node viewNode = ((View2DEntity)view.getParent()).getNode();
-                dragStartLocal = viewNode.worldToLocal(dragStartWorld, new Vector3f());
+                View2DEntity parentView = (View2DEntity) view.getParent();
+                if (parentView == null) {
+                    // Note: we don't yet support dragging of primaries
+                    return null;
+                }
+                dragStartLocal = parentView.getNode().worldToLocal(dragStartWorld, new Vector3f());
             }
             return action;
 

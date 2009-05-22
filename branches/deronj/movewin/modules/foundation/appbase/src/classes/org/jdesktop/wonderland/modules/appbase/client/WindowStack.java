@@ -255,4 +255,15 @@ class WindowStack {
             }
         }
     }
+
+    // For debug
+    private void printStack() {
+        System.err.println("Window stack: ");
+        int i = 0;
+        for (Window2D window : stack) {
+            System.err.print(i++);
+            System.err.print(": " + window);
+            System.err.print("(" + window.isVisibleApp() + ")");
+        }
+    }
 }

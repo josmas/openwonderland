@@ -279,7 +279,7 @@ public class View2DCell extends View2DEntity {
     /** {@inheritDoc} */
     @Override
     protected void reattachFrame () {
-        logger.fine("Reattach new frame");
+        logger.fine("Reattach new frame, frame = " + frame);
         detachFrame();
         attachFrame();
     }
