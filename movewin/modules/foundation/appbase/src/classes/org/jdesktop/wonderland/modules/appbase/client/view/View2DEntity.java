@@ -1002,7 +1002,23 @@ public abstract class View2DEntity implements View2D {
                         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
                         RenderComponent rcParent = 
                             (RenderComponent) parentEntity.getComponent(RenderComponent.class);
-                        sgChangeAttachPointSet(rc, rcParent.getSceneRoot());
+                        Node attachNode = rcParent.getSceneRoot();
+
+                        // SPECIAL NOTE: Here is where special surgery is done on header windows so 
+                        // that they are parented to the *geometry node* of their parent view instead of 
+                        // the view node, as windows normally are. This way it picks up the offset
+                        // translation in the geometry node and stays in sync with the rest of the frame.
+                        // See also: SPECIAL NOTE in Frame2DCell.attachViewToEntity.
+                        if (window instanceof WindowSwingHeader) {
+                            WindowSwingHeader wsh = (WindowSwingHeader) window;
+                            if (wsh.getView().getType() == View2D.Type.SECONDARY) { 
+                                // TODO: do this cleaner. Convert attach node to a view and get the
+                                // geometry node for this view.
+                                attachNode = (Node) attachNode.getChild(0);
+                            }
+                        }
+
+                        sgChangeAttachPointSet(rc, attachNode);
                         attachState = AttachState.ATTACHED_TO_ENTITY;
                         entity.getComponent(RenderComponent.class).setOrtho(false);
                     }
