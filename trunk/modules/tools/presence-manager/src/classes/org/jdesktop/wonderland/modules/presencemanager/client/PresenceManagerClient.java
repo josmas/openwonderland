@@ -133,9 +133,8 @@ public class PresenceManagerClient extends BaseConnection implements
 
 	    ArrayList<PresenceInfo> presenceInfoList = msg.getPresenceInfoList();
 
-	    for logger.fine(PresenceInfo presenceInfo : presenceInfoList) {
-		("Client connected:  " + msg.isConnected() 
-		    + " " + presenceInfo);
+	    for (PresenceInfo presenceInfo : presenceInfoList) {
+		logger.fine("Client connected:  " + msg.isConnected() + " " + presenceInfo);
 
 		if (msg.isConnected()) {
 		    logger.fine("Got ClientConnectResponse:  adding pi " + presenceInfo);
