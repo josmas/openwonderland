@@ -18,9 +18,12 @@
 package org.jdesktop.wonderland.web.wfs;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,17 +43,32 @@ import org.jdesktop.wonderland.tools.wfs.WFS;
  */
 @XmlRootElement(name="wfs-recording")
 public class WFSRecording extends WFSRoot {
+    /* The logger for the WFSRecording */
+    private static final Logger logger = Logger.getLogger(WFSRecording.class.getName());
     /**
      * The name of the WFS recording description file relative to the
      * recording root directory.
      */
     private static final String RECORDING_DESC = "recording.xml";
 
+    /**
+     * The name of the WFS recording changes file relative to the
+     * recording root directory.
+     */
+    private static final String CHANGES_DESC = "changes.xml";
+
     /** The name of the WFS directory relative to the recording root directory */
     public static final String RECORDING_WFS = "world-wfs";
 
     /* The location (beneath the wfs root) of the wfs recording directories */
     public static final String RECORDINGS_DIR = "recordings";
+
+    /* the encoding for the changes xml file */
+    final private static String ENCODING = "ISO-8859-1";
+
+    /* the date formatter for writing the timestamp in the changes file */
+    final private static SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
+
 
     /* The JAXB context for later use */
     private static JAXBContext context = null;
@@ -61,8 +79,9 @@ public class WFSRecording extends WFSRoot {
     /** The description of this recording */
     private String description;
 
-    /** The decoded WFS associated with this recording */
-    private WFS wfs;
+    @XmlTransient
+    /* The writer on which the changes are written */
+    private PrintWriter changesWriter;
 
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
@@ -237,6 +256,47 @@ public class WFSRecording extends WFSRoot {
     }
 
     /**
+     * Create a new changes file.
+     * @param timestamp the starttime at which changes are written
+     * @throws IOException 
+     */
+    public void createChangesFile(long timestamp) throws IOException {
+        // read the description file if it exists
+        File cFile = new File(getDirectory(), CHANGES_DESC);
+        if (cFile.exists()) {
+            logger.warning("changes file for " + getName() + " already exists, deleting");
+            cFile.delete();
+        }
+
+        changesWriter = new PrintWriter(new FileOutputStream(cFile), true);
+        changesWriter.println("<?xml version=\"1.0\" encoding=\"" + ENCODING + "\"?>");
+        changesWriter.println("<Wonderland_Recorder date=\"" + DATE_FORMATTER.format(new Date()) + "\">");
+        changesWriter.println("<Wonderland_Changes timestamp=\"" + timestamp + "\">");
+    }
+
+    /**
+     * Append a change message to the changes file
+     * @param encodedMessage the messages to be written
+     * @param timestamp the timestamp for the message
+     */
+    public void appendChangeMessage(String encodedMessage, long timestamp) {
+        changesWriter.println("<Message timestamp=\"" + timestamp + "\">");
+        changesWriter.println(encodedMessage);
+        changesWriter.println("</Message>");
+    }
+
+    /**
+     * Write out the footer for the printWriter and then close the writer
+     * (and indirectly the underlying file)
+     */
+    public void closeChangesFile() {
+        changesWriter.println("</Wonderland_Changes>");
+        changesWriter.println("</Wonderland_Recorder>");
+        changesWriter.close();
+    }
+
+
+    /**
      * Gets an instance of WFSRecording for the given directory.  If there
      * is no WFS recording in the directory, it will be created.
      *
@@ -292,4 +352,6 @@ public class WFSRecording extends WFSRoot {
             throw ioe;
         }
     }
+
+    
 }
