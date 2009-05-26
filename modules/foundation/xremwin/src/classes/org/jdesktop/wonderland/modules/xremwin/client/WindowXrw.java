@@ -140,10 +140,10 @@ public class WindowXrw extends WindowConventional {
 
         WindowXrw parent = (WindowXrw) getParent();
         if (getType() == Type.PRIMARY || parent == null) {
-            setOffset(0, 0);
+            setPixelOffset(0, 0);
         } else {
             if (parent.scrPos != null) {
-                setOffset(scrPos.x - parent.scrPos.x, scrPos.y - parent.scrPos.y);
+                setPixelOffset(scrPos.x - parent.scrPos.x, scrPos.y - parent.scrPos.y);
             }
         }
     }

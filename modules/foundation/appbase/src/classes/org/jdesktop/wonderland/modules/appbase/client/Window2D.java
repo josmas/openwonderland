@@ -93,10 +93,15 @@ public abstract class Window2D {
         UNKNOWN, PRIMARY, SECONDARY, POPUP
     };
     /** 
-     * The offset in pixels from top left of parent. 
+     * The offset in local coords from the center of the parent to the center of the window.
      * Ignored by primary (initially primary is always centered in cell).
      */
-    private Point offset = new Point(0, 0);
+    private Vector2f offset = new Vector2f(0f, 0f);
+    /** 
+     * The additional offset in pixels from top left of parent to the top left of this window. 
+     * Ignored by primary (initially primary is always centered in cell).
+     */
+    private Point pixelOffset = new Point(0, 0);
     /** The size of the window specified by the application. */
     private Dimension size = new Dimension(1, 1);
     /** The initial size of the pixels of the window's views (specified by WFS). */
@@ -458,16 +463,17 @@ public abstract class Window2D {
        getAllChildren
     */
 
-    /**
-     * Sets the offset (in pixels) of this window relative to its parent. If the window has no parent
-     * the offset is ignored. The offset is the distance from the upper left corner of the parent to the
-     * upper left corner of this window. Any decoration is ignored in both cases.
+    /** 
+     * Specify the first part the window's offset translation in local coordinates from the center of the parent to the 
+     * center of this window. Note: setPixelOffset is the other part of the offset translation.The two offsets are 
+     * added to produce the effective offset. If the window has no parent the offset is ignored. Any decoration 
+     * is ignored.
      */
-    public synchronized void setOffset(int x, int y) {
-        if (offset.x == x && offset.y == y) {
+    public void setOffset(Vector2f offset) {
+        if (this.offset.x == offset.x && this.offset.y == offset.y) {
             return;
         }
-        this.offset = new Point(x, y);
+        this.offset = (Vector2f) offset.clone();
         changeMask |= CHANGED_OFFSET;
         updateViews();
     }
@@ -475,15 +481,45 @@ public abstract class Window2D {
     /**
      * Returns the X offset of the window with respect to its parent.
      */
-    public int getOffsetX() {
+    public float getOffsetX() {
         return offset.x;
     }
 
     /**
      * Returns the Y offset of the window with respect to its parent.
      */
-    public int getOffsetY() {
+    public float getOffsetY() {
         return offset.y;
+    }
+
+    /** 
+     * Specify the second part of window's offset translation as a pixel offset from the top left corner of 
+     * the parent to the top left corner of the window. Uses the window's pixel current 
+     * scale to convert this pixel offset into local coordinates. Note: setOffset is the other part of the 
+     * offset translation. The two offsets are added to produce the effective offset. If the window has no 
+     * parent the offset is ignored. Any decoration is ignored.
+     */
+    public synchronized void setPixelOffset(int x, int y) {
+        if (pixelOffset.x == x && pixelOffset.y == y) {
+            return;
+        }
+        this.pixelOffset = new Point(x, y);
+        changeMask |= CHANGED_OFFSET;
+        updateViews();
+    }
+
+    /**
+     * Returns the X pixel offset of the window with respect to its parent.
+     */
+    public int getPixelOffsetX() {
+        return pixelOffset.x;
+    }
+
+    /**
+     * Returns the Y pixel offset of the window with respect to its parent.
+     */
+    public int getPixelOffsetY() {
+        return pixelOffset.y;
     }
 
     /**
@@ -1319,6 +1355,7 @@ public abstract class Window2D {
             }
             if ((changeMask & CHANGED_OFFSET) != 0) {
                 view.setOffset(offset, false);
+                view.setPixelOffset(pixelOffset, false);
             }
             if ((changeMask & CHANGED_VISIBLE_APP) != 0) {
                 view.setVisibleApp(visibleApp, false);

@@ -152,8 +152,11 @@ public abstract class View2DEntity implements View2D {
     /** The interactive GUI object for this view. */
     private Gui2DInterior gui;
 
-    /** The pixel offset translation from the top left corner of the parent. */
-    private Point offset = new Point(0, 0);
+    /** The local offset translation from the center of the parent to the center of this view. */
+    private Vector2f offset = new Vector2f(0f, 0f);
+
+    /** The pixel offset translation from the top left corner of the parent to the top left corner of this view. */
+    private Point pixelOffset = new Point(0, 0);
 
     /** The previous drag vector during an interactive planar move. */
     private Vector2f userMovePlanarDragVectorPrev;
@@ -786,15 +789,15 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized void setOffset(Point offset) {
+    public synchronized void setOffset(Vector2f offset) {
         setOffset(offset, true);
     }
 
     /** {@inheritDoc} */
-    public synchronized void setOffset(Point offset, boolean update) {
+    public synchronized void setOffset(Vector2f offset, boolean update) {
         logger.info("view = " + this);
         logger.info("change offset = " + offset);
-        this.offset = (Point) offset.clone();
+        this.offset = (Vector2f) offset.clone();
         changeMask |= CHANGED_OFFSET;
         if (update) {
             update();
@@ -802,8 +805,29 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public Point getOffset () {
-        return (Point) offset.clone();
+    public Vector2f getOffset () {
+        return (Vector2f) offset.clone();
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void setPixelOffset(Point pixelOffset) {
+        setPixelOffset(pixelOffset, true);
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void setPixelOffset(Point pixelOffset, boolean update) {
+        logger.info("view = " + this);
+        logger.info("change pixelOffset = " + pixelOffset);
+        this.pixelOffset = (Point) pixelOffset.clone();
+        changeMask |= CHANGED_OFFSET;
+        if (update) {
+            update();
+        }
+    }
+
+    /** {@inheritDoc} */
+    public Point getPixelOffset () {
+        return (Point) pixelOffset.clone();
     }
 
     /** {@inheritDoc} */
@@ -1264,9 +1288,15 @@ public abstract class View2DEntity implements View2D {
                 translation.x = locationOrtho.x;
                 translation.y = locationOrtho.y;
             } else {
+
+                // Initialize to the first part of the offset (the local coordinate translation)
+                translation.x = offset.x;
+                translation.y = offset.y;
+
+                // Convert pixel offset to local coords and add it in
                 Dimension parentSize = parent.getSizeApp();
-                translation.x = -parentSize.width / 2f;
-                translation.y = parentSize.height / 2f;
+                translation.x += -parentSize.width / 2f;
+                translation.y += parentSize.height / 2f;
                 translation.x += sizeApp.width / 2f;
                 translation.y -= sizeApp.height / 2f;
                 translation.x += offset.x;
@@ -1275,19 +1305,26 @@ public abstract class View2DEntity implements View2D {
             logger.fine("Translation for view " + this);
             logger.fine("translation = " + translation);
         } else {    
+
+            // Initialize to the first part of the offset (the local coordinate translation)
+            translation.x = offset.x;
+            translation.y = offset.y;
+
+            // Convert pixel offset to local coords and add it in
             // TODO: does the width/height need to include the scroll bars?
             Vector2f pixelScale = getPixelScaleCurrent();
             Dimension parentSize = parent.getSizeApp();
-            translation.x = -parentSize.width * pixelScale.x / 2f;
-            translation.y = parentSize.height * pixelScale.y / 2f;
+            translation.x += -parentSize.width * pixelScale.x / 2f;
+            translation.y += parentSize.height * pixelScale.y / 2f;
             translation.x += sizeApp.width * pixelScale.x / 2f;
             translation.y -= sizeApp.height * pixelScale.y / 2f;
-            translation.x += offset.x * pixelScale.x;
-            translation.y -= offset.y * pixelScale.y;
+            translation.x += pixelOffset.x * pixelScale.x;
+            translation.y -= pixelOffset.y * pixelScale.y;
         }
 
         return translation;
     }
+
 
     protected Vector3f calcStackTranslation () {
         return new Vector3f(0f, 0f, 0f);

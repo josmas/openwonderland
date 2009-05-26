@@ -190,7 +190,7 @@ public class FrameHeaderSwing
         int x = (int) (-sideThickness / pixelScale.x);
         int y = -height;
 
-        headerWindow.setOffset(x, y);
+        headerWindow.setPixelOffset(x, y);
         headerWindow.setSize(width, height);
     }
 
