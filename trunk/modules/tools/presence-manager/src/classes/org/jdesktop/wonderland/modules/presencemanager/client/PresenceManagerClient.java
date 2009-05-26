@@ -104,9 +104,7 @@ public class PresenceManagerClient extends BaseConnection implements
 	
         session.send(this, new ClientConnectMessage(presenceInfo, false));
 
-	//presenceManager.removePresenceInfo(presenceInfo);
-
-	//presenceManager.dump();
+	PresenceManagerFactory.reset();
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
@@ -135,11 +133,12 @@ public class PresenceManagerClient extends BaseConnection implements
 
 	    ArrayList<PresenceInfo> presenceInfoList = msg.getPresenceInfoList();
 
-	    for (PresenceInfo presenceInfo : presenceInfoList) {
-		System.out.println("Client connected:  " + msg.isConnected() 
+	    for logger.fine(PresenceInfo presenceInfo : presenceInfoList) {
+		("Client connected:  " + msg.isConnected() 
 		    + " " + presenceInfo);
 
 		if (msg.isConnected()) {
+		    logger.fine("Got ClientConnectResponse:  adding pi " + presenceInfo);
 		    presenceManager.presenceInfoAdded(presenceInfo);
 		} else {
 		    presenceManager.presenceInfoRemoved(presenceInfo);

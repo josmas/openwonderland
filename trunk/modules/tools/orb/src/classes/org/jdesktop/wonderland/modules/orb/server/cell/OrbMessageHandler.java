@@ -166,6 +166,7 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 		orbStatusListenerRef.get().endCall(callID);
 	    }
 
+	    sender.send(message);
 	    return;
 	}
 
@@ -257,7 +258,8 @@ public class OrbMessageHandler extends AbstractComponentMessageReceiver
 		    return;
 		}
 
-	   	sender.send(clientID, new OrbAttachMessage(msg.getCellID(), hostCellID, true));
+	   	sender.send(clientID, new OrbAttachMessage(
+		    msg.getCellID(), hostCellID, true));
 		return;
 	    }
 

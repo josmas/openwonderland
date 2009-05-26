@@ -125,7 +125,6 @@ public class PresenceManagerConnectionHandler
 
 	    presenceInfoList.remove(presenceInfo);
 
-	    logger.fine("PRESENCEINFOREMOVEDMESSAGE:  " + presenceInfo);
 	    sender.send(message);
 	    return;
 	}
@@ -147,14 +146,15 @@ public class PresenceManagerConnectionHandler
 	    PresenceInfo info = presenceInfoArray[i];
 
 	    if (info.clientID != null && info.clientID.equals(clientID.getID())) {
-		System.out.println("Client disconnected.  Removing presence info for " + info);
 	        presenceInfoArrayList.remove(info);
 		sender.send(new PresenceInfoRemovedMessage(info));
 	    }
 	}
     }
 
-    private void sendPresenceInfo(WonderlandClientSender sender, WonderlandClientID clientID, boolean isConnected) {
+    private void sendPresenceInfo(WonderlandClientSender sender, WonderlandClientID clientID, 
+	boolean isConnected) {
+
 	/*
          * Send back all of the PresenceInfo data to the new client
          */
@@ -169,7 +169,8 @@ public class PresenceManagerConnectionHandler
 
             ArrayList<PresenceInfo> presenceInfoList = sessions.get(id);
 
-            sender.send(clientID, new ClientConnectResponseMessage(presenceInfoList, isConnected));
+            sender.send(clientID, new ClientConnectResponseMessage(presenceInfoList, 
+		isConnected));
         }
     }
 

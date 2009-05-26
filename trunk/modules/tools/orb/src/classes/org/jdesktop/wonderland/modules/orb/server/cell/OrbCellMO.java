@@ -223,7 +223,9 @@ public class OrbCellMO extends CellMO {
     }
 
     public void endCall() {
-	orbMessageHandlerRef.get().done();
+	if (orbMessageHandlerRef != null) {
+	    orbMessageHandlerRef.get().done();
+	}
     }
 
 }

@@ -244,9 +244,7 @@ public class AudioManagerClient extends BaseConnection implements
     public void disconnected() {
         super.disconnected();
 
-	//pm.removePresenceInfo(presenceInfo);
-
-        // remove listeners
+	PresenceManagerFactory.reset();
 
         // TODO: add methods to remove listeners!
 

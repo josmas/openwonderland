@@ -149,6 +149,10 @@ public class OrbCell extends Cell {
 	orbCellRenderer.removeMouseListener();
     }
 
+    public OrbMessageHandler getOrbMessageHandler() {
+	return orbMessageHandler;
+    }
+
     public void orbSelected() {
 	if (orbMessageHandler == null) {
 	    logger.warning("No phoneMessageHandler");
