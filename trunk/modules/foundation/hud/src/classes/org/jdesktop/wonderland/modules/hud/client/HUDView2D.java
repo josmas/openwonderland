@@ -72,19 +72,19 @@ public class HUDView2D extends View2DEntity {
         return null;
     }
 
-    @Override
-    /**
-     * From App2DCell.updatePrimaryTransform
-     */
-    protected void updatePrimaryTransform(CellTransform userDeltaTransform) {
-        Vector3f translation = getTranslationUserCurrent();
-
-        if (type == Type.PRIMARY && isOrtho()) {
-            Vector2f locOrtho = getLocationOrtho();
-            translation.addLocal(new Vector3f(locOrtho.x, locOrtho.y, 0f));
-        }
-        sgChangeTransformUserSet(viewNode, new CellTransform(null, translation, null));
-    }
+//    @Override
+//    /**
+//     * From App2DCell.updatePrimaryTransform
+//     */
+//    protected void updatePrimaryTransform(CellTransform userDeltaTransform) {
+//        Vector3f translation = getTranslationUserCurrent();
+//
+//        if (type == Type.PRIMARY && isOrtho()) {
+//            Vector2f locOrtho = getLocationOrtho();
+//            translation.addLocal(new Vector3f(locOrtho.x, locOrtho.y, 0f));
+//        }
+//        sgChangeTransformUserSet(viewNode, new CellTransform(null, translation, null));
+//    }
 
     /**
      * {@inheritDoc}
@@ -139,8 +139,7 @@ public class HUDView2D extends View2DEntity {
                 ", ortho: " + isOrtho();
 
         if (isOrtho()) {
-            string += ", ortho location: " + this.getLocationOrtho() +
-                    ", translation user ortho: " + this.getTranslationUserOrtho();
+            string += ", ortho location: " + this.getLocationOrtho();
         }
         return string;
     }

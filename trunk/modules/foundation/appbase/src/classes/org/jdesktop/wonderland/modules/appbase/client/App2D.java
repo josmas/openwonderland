@@ -144,10 +144,7 @@ public abstract class App2D {
             controlArb.cleanup();
             controlArb = null;
         }
-        if (stack != null) {
-            stack.cleanup();
-            stack = null;
-        }
+        stack.cleanup();
         LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
         for (Window2D window : toRemoveList) {
             window.cleanup();
@@ -253,10 +250,28 @@ public abstract class App2D {
      */
     public void updateSlaveWindows () {
         stack.restackFromDesiredZOrders();
+        changedStackAllWindows();
+    }
 
-        // Now update the stack of all windows. 
+    /**
+     * Tell all windows that their stack order may have changed.
+     */
+    private void changedStackAllWindows () {
         for (Window2D window : windows) {
             window.changedStack();
+        }
+    }
+
+    /**
+     * Tell all non-coplanar windows (except the argument window) that their stack order may have changed.
+     */
+    public void changedStackAllWindowsExcept (Window2D windowExcept) {
+        for (Window2D window : windows) {
+            if (window != windowExcept) {
+                if (!window.isCoplanar()) {
+                    window.changedStack();
+                }
+            }
         }
     }
 
