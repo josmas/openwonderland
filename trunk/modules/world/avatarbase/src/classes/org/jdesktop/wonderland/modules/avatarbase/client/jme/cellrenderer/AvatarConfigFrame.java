@@ -145,6 +145,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         randomizeB = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         importB = new javax.swing.JButton();
+        createCustomB = new javax.swing.JButton();
 
         jPanel2.setLayout(new java.awt.BorderLayout());
         jPanel2.add(scrollPane, java.awt.BorderLayout.CENTER);
@@ -292,13 +293,25 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             }
         });
 
+        createCustomB.setText("Customize...");
+        createCustomB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createCustomBActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout createAvatarPanelLayout = new org.jdesktop.layout.GroupLayout(createAvatarPanel);
         createAvatarPanel.setLayout(createAvatarPanelLayout);
         createAvatarPanelLayout.setHorizontalGroup(
             createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(createAvatarPanelLayout.createSequentialGroup()
-                .add(43, 43, 43)
-                .add(jLabel4)
+                .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(createAvatarPanelLayout.createSequentialGroup()
+                        .add(43, 43, 43)
+                        .add(jLabel4))
+                    .add(createAvatarPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(createCustomB)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(addB)
@@ -316,7 +329,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                     .add(17, 17, 17)
                     .add(jLabel1)
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(avatarNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
+                    .add(avatarNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
                     .add(8, 8, 8)))
         );
         createAvatarPanelLayout.setVerticalGroup(
@@ -330,7 +343,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(randomizeB)
-                    .add(importB))
+                    .add(importB)
+                    .add(createCustomB))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(addB)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -562,6 +576,23 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_importBActionPerformed
 
+    private void createCustomBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createCustomBActionPerformed
+        String name = avatarNameTF.getText();
+      
+        WonderlandAvatarAttributes attrs;
+        try {
+            if (maleRB.isSelected()) {
+                attrs = WonderlandAvatarAttributes.loadMale();
+            } else {
+                attrs = WonderlandAvatarAttributes.loadFemale();
+            }
+        } catch (IOException ioe) {
+            throw new IllegalStateException("Unable to load attributes", ioe);
+        }
+
+        JFrame editFrame = new AvatarDetailsFrame(avatarRenderer, name, attrs);
+        editFrame.setVisible(true);
+    }//GEN-LAST:event_createCustomBActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addB;
@@ -570,6 +601,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     private javax.swing.JTextField avatarNameTF;
     private javax.swing.JPanel chooseAvatarPanel;
     private javax.swing.JPanel createAvatarPanel;
+    private javax.swing.JButton createCustomB;
     private javax.swing.JButton customiseB;
     private javax.swing.JFrame customiseFrame;
     private javax.swing.JTextField defaultAvatarTF;

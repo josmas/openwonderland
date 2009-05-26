@@ -22,6 +22,9 @@
 	<copy todir="${build.classes.dir}/${module.src}/client/resources">
             <fileset dir="${current.dir}/src/classes/${module.src}/client/resources"/>
         </copy>
+        <copy todir="${build.classes.dir}/${module.src}/client/jme/cellrenderer/resources">
+            <fileset dir="${current.dir}/src/classes/${module.src}/client/jme/cellrenderer/resources"/>
+        </copy>
     </target>
     
     <target name="dist" depends="build">
