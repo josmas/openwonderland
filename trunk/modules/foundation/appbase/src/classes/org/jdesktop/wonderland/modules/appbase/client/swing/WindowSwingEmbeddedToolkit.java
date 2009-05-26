@@ -172,7 +172,7 @@ class WindowSwingEmbeddedToolkit
 
         final WindowSwing popup = winPopup;
 
-        winPopup.setOffset(x, y);
+        winPopup.setPixelOffset(x, y);
 
         return new Popup() {
 
