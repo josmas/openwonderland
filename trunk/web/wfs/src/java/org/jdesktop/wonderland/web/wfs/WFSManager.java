@@ -199,6 +199,11 @@ public class WFSManager {
      * with the given name
      */
     public WFSRecording getWFSRecording(String name) {
+        WFSRecording recording = wfsRecordings.get(name);
+        if (recording != null) {
+            return recording;
+        }
+        //If it's not already loaded, try loading all the recordings from scratch
         loadRecordings();
         return wfsRecordings.get(name);
     }
