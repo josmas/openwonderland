@@ -107,12 +107,15 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     private OrbDialog orbDialog;
 
     private String username;
+    private String usernameAlias;
 
     private NameTagNode nameTag;
 
     private PresenceManager pm;
 
     private PresenceInfo presenceInfo;
+
+    private boolean presenceInfoAdded;
 
     private FollowMe followMe;
 
@@ -165,6 +168,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    username = "No user name!";
 	}
 
+	usernameAlias = username;
+
 	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
 
 	WonderlandIdentity userID = new WonderlandIdentity(username, username, null);
@@ -172,11 +177,14 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, 
 	    orbCell.getCallID());
 
+	presenceInfo.usernameAlias = usernameAlias;
+
 	if (playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID())) {
 	    /*
 	     * It's a real call.  Use the actually callID and userID.
 	     */
 	    pm.addPresenceInfo(presenceInfo);
+	    presenceInfoAdded = true;
 	} 
 
         NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
@@ -186,22 +194,25 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	//nameTag.setFont(Font.decode("Sans-PLAIN-20"));
 
 	if (orbCell.getPlayerWithVpCallID() != null) {
-	    PresenceInfo info = pm.getPresenceInfo(orbCell.getPlayerWithVpCallID());
+	    PresenceInfo info = pm.getPresenceInfo(playerWithVpCallID);
 
-	    if (info == null) {
-		logger.warning("Can't find presence info for CallID " 
-		    + orbCell.getPlayerWithVpCallID());
-		return;
-	    }
+            if (info == null) {
+                logger.warning("Can't find presence info for CallID "
+		    + playerWithVpCallID);
+
+                return;
+            }
 
 	    logger.info("Attach orb " + orbCell.getCellID() 
-		+ " player with " + orbCell.getPlayerWithVpCallID() + " to " + info);
+		+ " player with " + playerWithVpCallID + " to " + info);
 
             channelComp.send(new OrbAttachMessage(orbCell.getCellID(), info.cellID, true));
 	} else {
 	    /*
 	     * Ask the server to tell us if the orb is attached.
 	     */
+	    logger.fine("Asking server if orb is attached " + orbCell.getCellID());
+
             channelComp.send(new OrbAttachMessage(orbCell.getCellID(), null, true));
 	}
     }
@@ -213,6 +224,10 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	orbRootNode.attachChild(nameTag);
     }
 	
+    public FollowMe getFollowMe() {
+	return followMe;
+    }
+
     private boolean done;
 
     public void done() {
@@ -232,9 +247,13 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 		if (attachedOrbList != null) {
 		    attachedOrbList.remove(orbCell);
 		}
-	    }
 
-	    reorderAttachedOrbs();
+		if (attachedOrbList.size() > 0) {
+	            positionAttachedOrbs(hostCell);
+		} else {
+		    attachedOrbMap.remove(hostCell);
+		}
+	    }
 	}
 
 	followMe.done();
@@ -253,7 +272,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
 
-	if (playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID())) {
+	if (presenceInfoAdded) {
 	    pm.removePresenceInfo(presenceInfo);
 	}
     }
@@ -276,14 +295,14 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    logger.fine("Orb speaking " + msg.isSpeaking() + " cellID " + msg.getCellID()
 		+ " pi " + presenceInfo);
 
-	    pm.setSpeaking(presenceInfo, msg.isSpeaking());
+	    if (presenceInfoAdded) {
+		pm.setSpeaking(presenceInfo, msg.isSpeaking());
+	    }
 
 	    if (msg.isSpeaking()) {
-	        nameTag.setNameTag(EventType.STARTED_SPEAKING, 
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	        nameTag.setNameTag(EventType.STARTED_SPEAKING, username, usernameAlias);
 	    } else {
-	        nameTag.setNameTag(EventType.STOPPED_SPEAKING, 
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	        nameTag.setNameTag(EventType.STOPPED_SPEAKING, username, usernameAlias);
 	    }
 
 	    return;
@@ -292,14 +311,14 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	if (message instanceof OrbMuteCallMessage) {
 	    OrbMuteCallMessage msg = (OrbMuteCallMessage) message;
 
-	    pm.setMute(presenceInfo, msg.isMuted());
+	    if (presenceInfoAdded) {
+		pm.setMute(presenceInfo, msg.isMuted());
+	    }
 
 	    if (msg.isMuted()) {
-                nameTag.setNameTag(EventType.MUTE, 
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+                nameTag.setNameTag(EventType.MUTE, username, usernameAlias);
 	    } else {
-                nameTag.setNameTag(EventType.UNMUTE, 
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+                nameTag.setNameTag(EventType.UNMUTE, username, usernameAlias);
 	    }
 
 	    return;
@@ -308,19 +327,21 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	if (message instanceof OrbSetBystanderCountMessage) {
 	    OrbSetBystanderCountMessage msg = (OrbSetBystanderCountMessage) message;
 
-	    nameTag.setNameTag(EventType.CHANGE_NAME, 
-		presenceInfo.userID.getUsername(), presenceInfo.usernameAlias
-		    + " (" + msg.getBystanderCount() + ")");
+	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias
+		+ " (" + msg.getBystanderCount() + ")");
 	    return;
 	}
 
 	if (message instanceof OrbChangeNameMessage) {
 	    OrbChangeNameMessage msg = (OrbChangeNameMessage) message;
 
-	    username = msg.getName();
-	    pm.changeUsername(presenceInfo, username);
-	    nameTag.setNameTag(EventType.CHANGE_NAME, 
-		presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	    usernameAlias = msg.getName();
+
+	    if (presenceInfoAdded) {
+	        pm.changeUsername(presenceInfo, usernameAlias);
+	    }
+
+	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 	    return;
 	}
 
@@ -347,7 +368,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
  	}
     }
 
-    private void attachOrb(CellID hostCellID, boolean isAttached) {
+    private void attachOrb(CellID hostCellID, boolean attach) {
 	Cell newHostCell = ClientContext.getCellCache(session).getCell(hostCellID);
 
 	if (newHostCell == null) {
@@ -362,16 +383,18 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	     	s = hostCell.getCellID().toString();
 	    }
 
-	    logger.fine("Attach " + isAttached + " avatarCellID " 
+	    logger.fine("Attach " + attach + " avatarCellID " 
 		+ avatarCell.getCellID() + " new host " + newHostCell.getCellID()
 		+ " current host " + s);
 	}
 
-	if (isAttached) {
+	if (attach) {
 	    if (hostCell != null) {
 		/*
 		 * Someone else has attached the Orb.
 		 */
+		logger.fine("Detaching " + orbCell.getCellID() + " from "
+		    + hostCell.getCellID());
 		detachOrb(false);
 	    }
 
@@ -394,23 +417,15 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 		
 	    hostCell = newHostCell;
 	    newHostCell.addTransformChangeListener(this);
-	    transformChanged(newHostCell, true);
+	    positionAttachedOrbs(newHostCell);
 	} else {
 	    detachOrb(true);
 	}
 	return;
     }
 
-    private void detachOrb(boolean setTransform) {
-	if (hostCell == null) {
-	    return;
-	}
-
+    private void detachOrb(boolean positionAttachedOrbs) {
         hostCell.removeTransformChangeListener(this);
-
-	if (setTransform) {
-	    transformChanged(hostCell, false);
-	}
 
 	ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
 
@@ -422,35 +437,22 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    detachedOrbList.add(orbCell);
 	}
 
+	if (positionAttachedOrbs) {
+	    positionAttachedOrbs(hostCell);
+	}
+
 	if (orbDialog != null) {
             orbDialog.orbDetached();
 	}
+
 	hostCell = null;
     }
 
     public void transformChanged(Cell cell, ChangeSource source) {
-	transformChanged(cell, true);
-    }
-
-    private void transformChanged(Cell cell, boolean isAttached) {
 	logger.finest("Cell " + cell.getName() + " moved to " 
 	    + cell.getLocalTransform());
 
-	CellTransform transform = cell.getLocalTransform();
-	Vector3f translation = transform.getTranslation(null);
-	
-	if (isAttached) {
-	    // Position ourself based on other orbs
-	    float orbHeight = getOrbHeight();
-
-	    translation.setY(orbHeight);  // Raise orb.
-	    followMe.setTargetPosition(translation);
-	} else {
-	    translation.setZ(translation.getZ() + (float) .2);
-	    translation.setY((float) .5);  // lower orb.
-	    followMe.setTargetPosition(translation,
-		transform.getRotation(null));
-	}
+ 	positionAttachedOrbs(cell);
     }
 
     public void positionChanged(Vector3f position) {
@@ -460,43 +462,24 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     public void targetReached(Vector3f position) {
     }
 
-    private float getOrbHeight() {
-	int i = detachedOrbList.indexOf(orbCell);
-
-	if (i >= 0) {
-	    return (float) (.1 + (.3 * i)); 
-	}
-
-	i = 0;
-
-	if (hostCell != null) {
-	    ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
-
-	    if (attachedOrbList != null) {
-	         i = attachedOrbList.indexOf(orbCell);
-
-	        if (i < 0) {
-	            i = 0;
-	        }
-	    } 
-	}
-
-	return (float) (2.2 + (.3 * i)); 
-    }
-
     private void reorderDetachedOrbs() {
 	synchronized (detachedOrbList) {
-	    for (int i = 0 ; i < detachedOrbList.size(); i++) {
-		transformChanged(detachedOrbList.get(i), true);
-	    }
+	    //for (int i = 0 ; i < detachedOrbList.size(); i++) {
+	    //    translation.setZ(translation.getZ() + (float) .2);
+	    //    translation.setY((float) .5);  // lower orb.
+	    //    followMe.setTargetPosition(translation,
+	    //	    transform.getRotation(null));
+	    //}
 	}
+
     }
 
-    private void reorderAttachedOrbs() {
+    private void positionAttachedOrbs(Cell hostCell) {
 	if (hostCell == null) {
 	    return;
 	}
-	
+
+	CellTransform transform = hostCell.getLocalTransform();
 	ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
 
 	if (attachedOrbList == null) {
@@ -505,7 +488,13 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	synchronized (attachedOrbList) {
 	    for (int i = 0; i < attachedOrbList.size(); i++) {
-		transformChanged(attachedOrbList.get(i), true);
+
+		Vector3f translation = new Vector3f();
+		transform.getTranslation(translation);
+
+		translation.setY((float) (2.2 + (.3 * i)));  // Raise orb.
+		attachedOrbList.get(i).getOrbMessageHandler().getFollowMe().setTargetPosition(
+		    translation);
 	    }
 	}
     }

@@ -117,7 +117,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	if (presenceInfo.cellID != null) {
 	    info = cellIDMap.get(presenceInfo.cellID);
 
-	    if (info != null && info.equals(presenceInfo)) {
+	    if (info != null && info.equals(presenceInfo) == false) {
 		logger.warning("Already in cellIDMap:  Existing PI " + info + " new PI " + presenceInfo);
 	        return true;
 	    }
@@ -126,7 +126,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	if (presenceInfo.clientID != null) {
 	    info = sessionIDMap.get(presenceInfo.clientID);
 
-	    if (info != null && info.equals(presenceInfo)) {
+	    if (info != null && info.equals(presenceInfo) == false) {
 		logger.warning("Already in clientIDMap:  Existing PI " + info + " new PI " + presenceInfo);
 	        return true;
 	    }
@@ -135,7 +135,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	if (presenceInfo.userID != null) {
 	    info = userIDMap.get(presenceInfo.userID);
 
-	    if (info != null && info.equals(presenceInfo)) {
+	    if (info != null && info.equals(presenceInfo) == false) {
 		logger.warning("Already in userIDMap:  Existing PI " + info + " new PI " + presenceInfo);
 	        return true;
 	    }
@@ -144,7 +144,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	if (presenceInfo.callID != null) {
 	    info = callIDMap.get(presenceInfo.callID);
 
-	    if (info != null && info.equals(presenceInfo)) {
+	    if (info != null && info.equals(presenceInfo) == false) {
 		logger.warning("Already in callIDMap:  Existing PI " + info + " new PI " + presenceInfo);
 	        return true;
 	    }
