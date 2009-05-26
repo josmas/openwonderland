@@ -496,7 +496,6 @@ public abstract class Window2D {
      * @param width The new width of the window.
      * @param height The new height of the window.
      */
-    // TODO: winconfig: delete
     public synchronized void setSize(int width, int height) {
         if (this.size.width == width && this.size.height == height) {
             return;
@@ -525,8 +524,7 @@ public abstract class Window2D {
     }
 
     /**
-     * Change both the window size and window stacking order in the same call. This
-     * is done for this window on the local client and all other clients.
+     * Change both the window size and window stacking order in the same call. 
      * <br><br>
      * This is like performing the following:
      * <br><br>
@@ -540,62 +538,19 @@ public abstract class Window2D {
      * @param height The new height of the window.
      * @param sibling The window which will be directly below this window after this call.
      */
-    /* TODO: winconfig: notyet
-    public synchronized void configure(int width, int height, Window2D sibling) {
-        configureLocal(width, height, sibling);
-
-        // TODO: winconfig: swing: resize
-        //if (app.isSwsShared(SwsClient.Attr.WINDOW_SIZE)) {
-        //  SwsClient swsClient = getApp().getSwsClient();
-        //  swsClient.setSize(swsWindowID, width, height);
-        //}
-
-        // TODO: winconfig: swing: stack
-        //if (app.isSwsShared(SwsClient.Op.WINDOW_RESTACK)) {
-        //    SwsClient swsClient = getApp().getSwsClient();
-        //    swsClient.restackAbove(swsWindowID, sibling.swsWindowID);
-        //}
-    }
-    */
-    // TODO: winconfig: delete
     public synchronized void configure(int width, int height, Window2D sibWin) {
         this.size = new Dimension(width, height);
         changeMask |= CHANGED_SIZE;
 
-        // TODO: stack
-
-        updateViews();
-    }
-
-    /**
-     * Change both the window size and window stacking order in the same call. This
-     * is done for this window on the local client only.
-     * <br><br>
-     * This is like performing the following:
-     * <br><br>
-     * setSizeLocal(width, height);
-     * <br>
-     * restackAboveLocal(sibling);
-     * <br><br>
-     * The visual representations of the window are updated accordingly.
-     * 
-     * @param width The new width of the window.
-     * @param height The new height of the window.
-     * @param sibling The window which will be directly below this window after this call.
-     */
-    /* TODO: winconfig: notyet
-    public synchronized void configureLocal (int width, int height, Window2D sibling) {
-        this.size = new Dimension(width, height);
-        changeMask |= CHANGED_SIZE;
- 
-        if (sibling != null) {
-            // This will call updateViews if necessary
-            app.getWindowStack().restackAbove(this, sibling);
+        if (sibWin != null) {
+            app.getWindowStack().restackAbove(this, sibWin);
             changeMask |= CHANGED_STACK;
+            updateViews();
+            app.changedStackAllWindowsExcept(this);
+        } else {
             updateViews();
         }
     }
-    */
 
     /**
      * Specify the initial pixel scale for the window's views when they are in cell mode.
@@ -640,12 +595,18 @@ public abstract class Window2D {
                 app.getWindowStack().add(this);
                 changeMask |= CHANGED_STACK;
                 updateViews();
+                app.changedStackAllWindowsExcept(this);
             }
         } else {
             // Remove newly invisible windows from the stack
-            app.getWindowStack().remove(this);
-            changeMask |= CHANGED_STACK;
-            updateViews();
+            if (app != null) {
+                if (!coplanar) {
+                    app.getWindowStack().remove(this);
+                    changeMask |= CHANGED_STACK;
+                    updateViews();
+                    app.changedStackAllWindowsExcept(this);
+                }
+            }
         }
     }
 
@@ -725,23 +686,20 @@ public abstract class Window2D {
      /**
       * Specify whether this window is in the same local Z plane as its parent.
       * Ignored by non-popups.
+      * <br><br>
+      * NOTE: You must set this attribute only when the window is not visible.
+      * Otherwise an exception is thrown.
       */
     public synchronized void setCoplanar (boolean coplanar) {
+        if (isVisibleApp()) {
+            throw new RuntimeException("Cannot call setCoplanar when the window is visible.");
+        }
         if (this.coplanar == coplanar) return;
         this.coplanar = coplanar;
-        if (coplanar) {
-            // Remove newly coplanar windows from the stack
-            app.getWindowStack().remove(this);
-            changeMask |= CHANGED_STACK;
-            updateViews();
-        } else {
-            // If a window has just become non-coplanar and it is visible, add it to the stack
-            if (isVisibleApp()) {
-                app.getWindowStack().add(this);
-                changeMask |= CHANGED_STACK;
-                updateViews();
-            }
-        }
+
+        // Mark stack changed but don't update views right away. The stack change will be 
+        // propagated to the views when the window is made visible.
+        changeMask |= CHANGED_STACK;
     }
 
     /** 
@@ -752,99 +710,47 @@ public abstract class Window2D {
     }
 
     /**
-     * Moves this window to the top of the app's window stack in the local client and all other clients.
+     * Moves this window to the top of the app's window stack.
      */
     public synchronized void restackToTop () {
-        restackToTopLocal();
-
-        /* TODO: winconfig: swing: stack
-        if (app.isSwsShared(Sws.Op.WINDOW_RESTACK)) {
-            SwsClient swsClient = getApp().getSwsClient();
-            swsClient.restackToTop(swsWindowID);
-        }
-        */
-    }
-
-    /**
-     * Moves this window to the top of the app's window stack in the local client only.
-     */
-    public synchronized void restackToTopLocal () {
         app.getWindowStack().restackToTop(this);
         changeMask |= CHANGED_STACK;
         updateViews();
+        app.changedStackAllWindowsExcept(this);
     }
 
     /**
-     * Moves this window to the bottom of the app's window stack in the local client and all other clients.
+     * Moves this window to the bottom of the app's window stack.
      */
     public synchronized void restackToBottom () {
-        restackToBottomLocal();
-
-        /* TODO: winconfig: swing: stack
-        if (app.isSwsShared(Sws.Op.WINDOW_RESTACK)) {
-            SwsClient swsClient = getApp().getSwsClient();
-            swsClient.restackToBottom(swsWindowID);
-        }
-        */
-    }
-
-    /**
-     * Moves this window to the bottom of the app's window stack in the local client only.
-     */
-    public synchronized void restackToBottomLocal () {
         app.getWindowStack().restackToBottom(this);
         changeMask |= CHANGED_STACK;
         updateViews();
+        app.changedStackAllWindowsExcept(this);
     }
 
     /**
-     * Moves this window so that it is above the given sibling window in the app's window stack
-     * in the local client and all other clients. If sibling is null, this window is moved to the 
-     * top of the stack.
+     * Moves this window so that it is above the given sibling window in the app's window stack.
+     * If sibling is null, this window is moved to the top of the stack.
      * @param sibling After this call, the sibling window will be below this window in the stack.
      */
-    /* TODO: winconfig: stack
     public synchronized void restackAbove (Window2D sibling) {
-        restackAboveLocal(sibling);
-
-        //TODO: winconfig: swing: stack
-        //if (app.isSwsShared(Sws.Op.WINDOW_RESTACK)) {
-        //    SwsClient swsClient = getApp().getSwsClient();
-        //    swsClient.restackAbove(swsWindowID, sibling.swsWindowID);
-        //}
-    }
-    */
-
-    /**
-     * Moves this window so that it is above the given sibling window in the app's window stack
-     * in the local client only. If sibling is null, this window is moved to the top of the stack.
-     * @param sibling After this call, the sibling window will be below this window in the stack.
-     */
-    public synchronized void restackAbove/*TODO:winconfig:restack:Local*/ (Window2D sibling) {
         app.getWindowStack().restackAbove(this, sibling);
         changeMask |= CHANGED_STACK;
         updateViews();
+        app.changedStackAllWindowsExcept(this);
     }
 
     /**
-     * Moves this window so that it is below the given sibling window in the app's window stack
-     * in the local client and all other clients. If sibling is null, this window is moved to the 
-     * bottom of the stack.
+     * Moves this window so that it is below the given sibling window in the app's window stack.
+     * If sibling is null, this window is moved to the bottom of the stack.
      * @param sibling After this call, the sibling window will be above this window in the stack.
      */
     public synchronized void restackBelow (Window2D sibling) {
-        restackBelow(sibling);
-    }
-
-    /**
-     * Moves this window so that it is below the given sibling window in the app's window stack
-     * in the local client only. If sibling is null, this window is moved to the bottom of the stack.
-     * @param sibling After this call, the sibling window will be above this window in the stack.
-     */
-    public synchronized void restackBelowLocal (Window2D sibling) {
         app.getWindowStack().restackBelow(this, sibling);
         changeMask |= CHANGED_STACK;
         updateViews();
+        app.changedStackAllWindowsExcept(this);
     }
 
     /**
@@ -1149,6 +1055,7 @@ public abstract class Window2D {
         // User must have control in order to close the window
         if (!app.getControlArb().hasControl()) {
             // TODO: bring up swing option window: "You cannot close this window because you do not have control"
+            // Danger: can't do this in SAS!
             logger.warning("You cannot close this window because you do not have control");
             return;
         }

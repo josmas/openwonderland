@@ -17,23 +17,23 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.view;
 
-import com.jme.math.Matrix4f;
+import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
+import com.jme.scene.Node;
 import java.awt.Point;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.jme.input.InputPicker3D;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import javax.swing.SwingUtilities;
 
 /**
  * Generic View2D event handler.
@@ -104,10 +104,12 @@ public class Gui2D {
     protected ConfigDragType configDragType;
     /** The intersection point on the entity over which the button was pressed, in world coordinates. */
     private Vector3f dragStartWorld;
+    /** The intersection point in parent local coordinates. */
+    private Vector3f dragStartLocal;
     /** The screen coordinates of the button press event. */
     private Point dragStartScreen;
-    /** The amount that the cursor has been dragged in eye coordinates. */
-    protected Vector3f dragVectorEye;
+    /** The amount that the cursor has been dragged in local coordinates. */
+    protected Vector3f dragVectorLocal;
 
     /** A listener for 3D mouse events */
     protected EventClassListener mouseListener;
@@ -233,23 +235,6 @@ public class Gui2D {
      */
     protected Action determineIfMiscAction(MouseEvent me, MouseEvent3D me3d) {
 
-        /* TODO
-        // Is this move-camera-to-best-view?
-        if (EventController.isMoveCameraToBestViewEvent(me)) {
-        return new Action(ActionType.MOVE_CAMERA_TO_BEST_VIEW);
-        }
-
-        // Is this move-avatar-to-best-view?
-        if (EventController.isMoveAvatarToBestViewEvent(me)) {
-        return new Action(ActionType.MOVE_AVATAR_TO_BEST_VIEW);
-        }
-
-        // Is this move-window-to-best-view?
-        if (EventController.isMoveWindowToBestViewEvent(me)) {
-        return new Action(ActionType.MOVE_WINDOW_TO_BEST_VIEW);
-        }
-         */
-
         // Is this the Take Control or Release Control event?
         if (isChangeControlEvent(me)) {
 
@@ -334,25 +319,23 @@ public class Gui2D {
 
         case MouseEvent.MOUSE_PRESSED:
             MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) me3d;
-            if (configState == ConfigState.IDLE && me.getButton() == MouseEvent.BUTTON1) {
+            if (configState == ConfigState.IDLE && 
+                me.getButton() == MouseEvent.BUTTON1 &&
+                me.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
 
                 configState = ConfigState.DRAG_ACTIVE;
                 action = new Action(ActionType.DRAG_START);
                 dragStartScreen = new Point(me.getX(), me.getY());
                 dragStartWorld = buttonEvent.getIntersectionPointWorld();
+                configDragType = ConfigDragType.MOVING_PLANAR;
 
-                if ((me.getModifiersEx() & InputEvent.SHIFT_DOWN_MASK) != 0) {
-                    if ((me.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0) {
-                        // TODO: temp: shift+control left press means rotate y
-                        //TODO: configDragType = ConfigDragType.ROTATING_Y;
-                    } else {
-                        // TODO: temp: shift left press means move z
-                        configDragType = ConfigDragType.MOVING_Z;
-                    }
-                } else {
-                    // Unmodified left press means move planar
-                    configDragType = ConfigDragType.MOVING_PLANAR;
+                // Remember: the move occurs in parent coords
+                View2DEntity parentView = (View2DEntity) view.getParent();
+                if (parentView == null) {
+                    // Note: we don't yet support dragging of primaries
+                    return null;
                 }
+                dragStartLocal = parentView.getNode().worldToLocal(dragStartWorld, new Vector3f());
             }
             return action;
 
@@ -366,12 +349,11 @@ public class Gui2D {
                 Vector3f dragVectorWorld = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen,
                                                                         new Vector3f());
 
-                // Convert world to eye coordinates
-                /* TODO: notyet
-                Matrix4f camInverse = InputPicker3D.getInputPicker().getCameraModelViewMatrixInverse(null);
-                dragVectorEye = new Vector3f();
-                camInverse.mult(dragVectorWorld, dragVectorEye);
-                */
+                // Convert from world to parent coordinates.
+                Node viewNode = ((View2DEntity)view.getParent()).getNode();
+                Vector3f curWorld = dragStartWorld.add(dragVectorWorld, new Vector3f());
+                Vector3f curLocal = viewNode.worldToLocal(curWorld, new Vector3f());
+                dragVectorLocal = curLocal.subtract(dragStartLocal);
             }
             return action;
 
@@ -417,57 +399,72 @@ public class Gui2D {
      * @param me3d The 3D mouse event.
      */
     protected void performConfigAction(Action action, MouseEvent me, MouseEvent3D me3d) {
-        return;
 
-        /*
         switch (action.type) {
 
         case DRAG_START:
             switch (configDragType) {
             case MOVING_PLANAR:
-                view.userMovePlanarStart(dragVectorEye.x, dragVectorEye.y);
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        view.userMovePlanarStart();
+                    }
+                });
                 break;
+            /*
             case MOVING_Z:
-                view.userMoveZStart(dragVectorEye.y);
+                view.userMoveZStart(dragVectorLocal.y);
                 break;
             case ROTATING_Y:
-                view.userRotateYStart(dragVectorEye.y);
+                view.userRotateYStart(dragVectorLocal.y);
                 break;
+            */
             }
             break;
 
         case DRAG_UPDATE:
             switch (configDragType) {
             case MOVING_PLANAR:
-                view.userMovePlanarUpdate(dragVectorEye.x, dragVectorEye.y);
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        view.userMovePlanarUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
+                    }
+                });
                 break;
+            /*
             case MOVING_Z:
-                view.userMoveZUpdate(dragVectorEye.y);
+                view.userMoveZUpdate(dragVectorLocal.y);
                 break;
             case ROTATING_Y:
-                view.userRotateYUpdate(dragVectorEye.y);
+                view.userRotateYUpdate(dragVectorLocal.y);
                 break;
+            */
             }
             break;
 
         case DRAG_FINISH:
             switch (configDragType) {
             case MOVING_PLANAR:
-                view.userMovePlanarFinish();
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        view.userMovePlanarFinish();
+                    }
+                });
                 break;
+            /*
             case MOVING_Z:
                 view.userMoveZFinish();
                 break;
             case ROTATING_Y:
                 view.userRotateYFinish();
                 break;
+            */
             }
             break;
 
         default:
             throw new RuntimeException("Unrecognized action");
         }
-        */
     }
 
     /**

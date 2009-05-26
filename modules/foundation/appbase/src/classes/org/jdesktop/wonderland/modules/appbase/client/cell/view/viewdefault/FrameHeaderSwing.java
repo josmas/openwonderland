@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
+import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
 
 /**
  * The frame header (top side) for Frame2DCellSwing. Uses a WindowSwing.
@@ -49,7 +50,7 @@ public class FrameHeaderSwing
     implements HeaderPanel.Container, MouseListener
 {
     // TODO: New UI: add zones: move planar, move z, rotate
-    private WindowSwing headerWindow;
+    private WindowSwingHeader headerWindow;
 
     /** The AWT background color of the header window. */
     private Color bkgdColor;
@@ -91,8 +92,8 @@ public class FrameHeaderSwing
         this.view = view;
         Window2D viewWindow = view.getWindow();
         app = viewWindow.getApp();
-        headerWindow = new WindowSwing(app, Window2D.Type.POPUP, viewWindow, 1, 1, false,
-                view.getPixelScale(), "Header Window for " + view.getName());
+        headerWindow = new WindowSwingHeader(app, viewWindow, 1, 1, view.getPixelScale(), 
+                                             "Header Window for " + view.getName(), view);
         headerWindow.setCoplanar(true);
 
         headerPanel = new HeaderPanel();

@@ -188,6 +188,10 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
         if (rcFrame != null) {
             // We need to attach secondary view frames to the GEOMETRY NODE of its views
             // so that they move with the offset of the view
+            //
+            // SPECIAL NOTE: 
+            // This provides special treatment for the left/right/bottom of a secondary frame
+            // but it doesn't handle the header. See also: SPECIAL NOTE in View2DEntity.processChanges.
             if (view.getType() == View2D.Type.SECONDARY) {
                 rcFrame.setAttachPoint(view.getGeometryNode());
             } else {

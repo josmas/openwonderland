@@ -80,7 +80,7 @@ public abstract class View2DEntity implements View2D {
     protected static final int CHANGED_SIZE_APP         = 0x0020;
     protected static final int CHANGED_PIXEL_SCALE      = 0x0040;
     protected static final int CHANGED_OFFSET           = 0x0080;
-    protected static final int CHANGED_USER_TRANSLATION = 0x0100;
+    protected static final int CHANGED_USER_TRANSFORM   = 0x0100;
     protected static final int CHANGED_TITLE            = 0x0200;
     protected static final int CHANGED_STACK            = 0x0400;
     protected static final int CHANGED_ORTHO            = 0x0800;
@@ -155,22 +155,17 @@ public abstract class View2DEntity implements View2D {
     /** The pixel offset translation from the top left corner of the parent. */
     private Point offset = new Point(0, 0);
 
-    /** The user translation used when in cell mode. */
-    // TODO: make private and add a getter for subclass to use. Do elsewhere as well.
-    protected Vector3f userTranslationCell = new Vector3f(0f, 0f, 0f);
+    /** The previous drag vector during an interactive planar move. */
+    private Vector2f userMovePlanarDragVectorPrev;
+    
+    /** The next delta translation to apply. */
+    private Vector3f deltaTranslationToApply;
 
-    /** The user translation used when in ortho mode. */
-    // TODO: make private and add a getter for subclass to use. Do elsewhere as well.
-    protected Vector3f userTranslationOrtho = new Vector3f(0f, 0f, 0f);
+    /** A copy of the current view node's user transformation in world (aka non-ortho) mode. */
+    private CellTransform userTransformCell = new CellTransform(null, null, null);
 
-    /** The previous cell mode user translation. */
-    private Vector3f userTranslationCellPrev = new Vector3f(0f, 0f, 0f);
-
-    /** The previous ortho mode user translation. */
-    private Vector3f userTranslationOrthoPrev = new Vector3f(0f, 0f, 0f);
-
-    /** A copy of the current user transformation (i.e. the view node's tranformation). */
-    private CellTransform userTransform = new CellTransform(null, null, null);
+    /** A copy of the current view node's user transformation in ortho mode. */
+    private CellTransform userTransformOrtho = new CellTransform(null, null, null);
 
     /** The event listeners which are attached to this view while the view is attached to its cell */
     private LinkedList<EventListener> eventListeners = new LinkedList<EventListener>();
@@ -751,8 +746,8 @@ public abstract class View2DEntity implements View2D {
 
     /**
      * Specify the location of a primary view used when the view is in ortho mode.
-     * The location is the offset of the view center relative to the origin of the displayer 
-     * and is in the coordinate system of the ortho plane. Update afterward.
+     * The location is an offset relative to the origin of the displayer and is in
+     * the coordinate system of the ortho plane. Update afterward.
      * This attribute is ignored for non-primary views.
      *
      * Note: there is no corresponding attribute for cell mode because the cell itself automatically
@@ -765,8 +760,8 @@ public abstract class View2DEntity implements View2D {
 
     /**
      * Specify the location of a primary view used when the view is in ortho mode.
-     * The location the offset of the view center relative to the origin of the displayer 
-     * and is in the coordinate system of the ortho plane. Update if specified.
+     * The location is an offset relative to the origin of the displayer and is in
+     * the coordinate system of the ortho plane. Update if specified.
      * This attribute is ignored for non-primary views.
      *
      * Note: there is no corresponding attribute for cell mode because the cell itself automatically
@@ -811,87 +806,55 @@ public abstract class View2DEntity implements View2D {
         return (Point) offset.clone();
     }
 
-    /** Specify the user-specified translation used when in cell mode. Update afterward. */
-    public synchronized void setTranslationUser (Vector3f translation) {
-        setTranslationUser(translation, true);
+    /** {@inheritDoc} */
+    public void applyDeltaTranslationUser (Vector3f deltaTranslation) {
+        applyDeltaTranslationUser(deltaTranslation, true);
     }
 
-    /** Specify the user-specified translation used when in cell mode. Update if specified. */
-    public synchronized void setTranslationUser (Vector3f translation, boolean update) {
-        logger.info("view = " + this);
-        logger.info("change translationUserCell = " + translation);
-        userTranslationCellPrev = userTranslationCell;
-        userTranslationCell = translation.clone();
-        changeMask |= CHANGED_USER_TRANSLATION;
+    /** {@inheritDoc} */
+    public void applyDeltaTranslationUser (Vector3f deltaTranslation, boolean update) {
+        deltaTranslationToApply = deltaTranslation.clone();
+        changeMask |= CHANGED_USER_TRANSFORM;
         if (update) {
             update();
         }
     }
 
-    /** Returns the user translation used when in cell mode. */
-    public Vector3f getTranslationUser () {
-        return userTranslationCell.clone();
+    /**
+     * Called by the UI to indicate the start of an interactive planar move. 
+     */
+    public synchronized void userMovePlanarStart () {
+        //System.err.println("****** Drag start");
+        userMovePlanarDragVectorPrev = new Vector2f();
     }
 
-    /** Specify the user-specified translation used when in ortho mode. Update afterward. */
-    public synchronized void setTranslationUserOrtho (Vector3f translation) {
-        setTranslationUserOrtho(translation, true);
-    }
+    /**
+     * Called by the UI to indicate a drag vector update during interactive planar move. 
+     * Vec
+     */
+    public synchronized void userMovePlanarUpdate (Vector2f dragVector) {
+        
+        // Calculate the delta of the movement since the last update
+        Vector2f deltaDragVector = dragVector.clone();
+        deltaDragVector.subtractLocal(userMovePlanarDragVectorPrev);
+        userMovePlanarDragVectorPrev = dragVector;
 
-    /** Specify the user-specified translation used when in ortho mode. Update if specified. */
-    public synchronized void setTranslationUserOrtho (Vector3f translation, boolean update) {
-        logger.info("view = " + this);
-        logger.info("change translationUserOrtho = " + translation);
-        userTranslationOrthoPrev = userTranslationOrtho;
-        userTranslationOrtho = translation.clone();
-        changeMask |= CHANGED_USER_TRANSLATION;
-        if (update) {
-            update();
-        }
-    }
-
-    /** Returns the user translation used when in ortho mode. */
-    public Vector3f getTranslationUserOrtho () {
-        return userTranslationOrtho.clone();
-    }
-
-    /** Returns the user translation for the current mode */
-    protected Vector3f getTranslationUserCurrent() {
-        if (ortho) {
-            return userTranslationOrtho.clone();
-        } else {
-            return userTranslationCell.clone();
-        }
-    }
-
-    /** Returns the previous user translation for the current mode */
-    protected Vector3f getTranslationUserPrevCurrent() {
-        if (ortho) {
-            return userTranslationOrthoPrev.clone();
-        } else {
-            return userTranslationCellPrev.clone();
-        }
-    }
-
-    /** TODO: these are now deltas! */
-
-    public synchronized void userMovePlanarStart (float dx, float dy) {
-    }
-
-    public synchronized void userMovePlanarUpdate (float x, float dy) {
+        applyDeltaTranslationUser(new Vector3f(deltaDragVector.x, deltaDragVector.y, 0f), true);
     }
 
     public synchronized void userMovePlanarFinish () {
     }
 
+    /** TODO: NOTYET
     public synchronized void userMoveZStart (float dy) {
     }
 
     public synchronized void userMoveZUpdate (float dy) {
-   }
+    }
 
     public synchronized void userMoveZFinish () {
     }
+    */
 
     /**
      * Specifies whether the view entity is to be displayed in ortho mode ("on the glass").
@@ -905,7 +868,7 @@ public abstract class View2DEntity implements View2D {
 
     /**
      * Specifies whether the view entity is to be displayed in ortho mode ("on the glass").
-     * Update if specified. Also changes the ortho attribute of all descendent views.
+     * Update if specified. This also changes the ortho attribute of all descendent views.
      */
     public synchronized void setOrtho (boolean ortho, boolean update) {
         if (this.ortho == ortho) return;
@@ -1039,7 +1002,23 @@ public abstract class View2DEntity implements View2D {
                         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
                         RenderComponent rcParent = 
                             (RenderComponent) parentEntity.getComponent(RenderComponent.class);
-                        sgChangeAttachPointSet(rc, rcParent.getSceneRoot());
+                        Node attachNode = rcParent.getSceneRoot();
+
+                        // SPECIAL NOTE: Here is where special surgery is done on header windows so 
+                        // that they are parented to the *geometry node* of their parent view instead of 
+                        // the view node, as windows normally are. This way it picks up the offset
+                        // translation in the geometry node and stays in sync with the rest of the frame.
+                        // See also: SPECIAL NOTE in Frame2DCell.attachViewToEntity.
+                        if (window instanceof WindowSwingHeader) {
+                            WindowSwingHeader wsh = (WindowSwingHeader) window;
+                            if (wsh.getView().getType() == View2D.Type.SECONDARY) { 
+                                // TODO: do this cleaner. Convert attach node to a view and get the
+                                // geometry node for this view.
+                                attachNode = (Node) attachNode.getChild(0);
+                            }
+                        }
+
+                        sgChangeAttachPointSet(rc, attachNode);
                         attachState = AttachState.ATTACHED_TO_ENTITY;
                         entity.getComponent(RenderComponent.class).setOrtho(false);
                     }
@@ -1138,16 +1117,23 @@ public abstract class View2DEntity implements View2D {
         }
 
         // React to transform related changes
-        // Uses: type, parent, pixelscale, size, offset, ortho, stack
+        // Uses: type, parent, pixelscale, size, offset, ortho, locationOrtho, stack
         if ((changeMask & (CHANGED_TYPE | CHANGED_PARENT | CHANGED_PIXEL_SCALE | CHANGED_SIZE_APP | 
-                           CHANGED_OFFSET | CHANGED_ORTHO | CHANGED_STACK)) != 0) {
+                           CHANGED_OFFSET | CHANGED_ORTHO | CHANGED_LOCATION_ORTHO | CHANGED_STACK)) != 0) {
             CellTransform transform = null;
 
             switch (type) {
             case UNKNOWN:
             case PRIMARY:
-                // Always set to identity
                 transform = new CellTransform(null, null, null);
+                if (ortho) { 
+                    Vector3f orthoLocTranslation = new Vector3f();
+                    orthoLocTranslation.x = locationOrtho.x;
+                    orthoLocTranslation.y = locationOrtho.y;
+                    transform.setTranslation(orthoLocTranslation);
+                } else {
+                    // Non ortho: Leave as identity
+                }
                 break;
             case SECONDARY:
             case POPUP:
@@ -1157,20 +1143,32 @@ public abstract class View2DEntity implements View2D {
             sgChangeGeometryTransformOffsetStackSet(geometryNode, transform);
         }
 
-        // Uses: type, userTranslation
-        if ((changeMask & (CHANGED_TYPE | CHANGED_USER_TRANSLATION | CHANGED_ORTHO | 
-                           CHANGED_LOCATION_ORTHO | CHANGED_TYPE)) != 0) {
-            CellTransform deltaTransform;
+        // Update the view node's user transform, if necessary
+        // Uses: type, deltaTranslationToApply
+        if ((changeMask & (CHANGED_TYPE | CHANGED_USER_TRANSFORM | CHANGED_ORTHO)) != 0) {
 
+            // Select the current user transform based on the ortho mode
+            CellTransform currentUserTransform;
+            if (ortho) {
+                currentUserTransform = userTransformOrtho;
+            } else {
+                currentUserTransform = userTransformCell;
+            }
+            logger.fine("currentUserTransform (before) = " + currentUserTransform);
+
+            // Apply any pending user transform deltas (by post-multiplying them
+            // into the current user transform
+            userTransformApplyDeltas(currentUserTransform);
+            logger.fine("currentUserTransform (after) = " + currentUserTransform);
+
+            // Now put the update user transformation into effect
             switch (type) {
             case UNKNOWN:
             case PRIMARY:
-                deltaTransform = calcUserDeltaTransform();
-                updatePrimaryTransform(deltaTransform);
+                updatePrimaryTransform(currentUserTransform);
                 break;
             case SECONDARY:
-                deltaTransform = calcUserDeltaTransform();
-                sgChangeTransformUserPostMultiply(viewNode, deltaTransform); 
+                sgChangeTransformUserSet(viewNode, currentUserTransform);
                 break;
             case POPUP:
                 // Always set to identity
@@ -1295,31 +1293,23 @@ public abstract class View2DEntity implements View2D {
         return new Vector3f(0f, 0f, 0f);
     }
 
-    // Uses: userTranslation
-    protected CellTransform calcUserDeltaTransform () {
-        return calcUserTranslationDeltaTransform();
+    // Apply the pending deltas to the given user transform
+    protected void userTransformApplyDeltas (CellTransform userTransform) {
+        userTransformApplyDeltaTranslation(userTransform);
     }
 
-    // Uses: userTranslation
-    protected CellTransform calcUserTranslationDeltaTransform () {
-        /* TODO: for now, don't have this be a delta transform 
-        Vector3f deltaTranslation = getUserTranslation().subtract(getUserTranslationPrev());
-        CellTransform transDeltaTransform = new CellTransform(null, null, null);
-        transDeltaTransform.setTranslation(deltaTranslation);
-        */
-        /**/
-        Vector3f translation = getTranslationUserCurrent();
-        if ((type == Type.PRIMARY || type == Type.UNKNOWN) && ortho) {
-            translation.addLocal(new Vector3f(locationOrtho.x, locationOrtho.y, 0f));
+    // Apply any pending translation delta to the given user transform.
+    protected void userTransformApplyDeltaTranslation (CellTransform userTransform) {
+        if (deltaTranslationToApply != null) {
+            CellTransform transform = new CellTransform(null, null, null);
+            transform.setTranslation(deltaTranslationToApply);
+            //System.err.println("******* delta translation transform = " + transform);
+            userTransform.mul(transform);
+            deltaTranslationToApply = null;
         }
-        CellTransform transDeltaTransform = new CellTransform(null, null, null);
-        transDeltaTransform.setTranslation(translation);
-        /**/
-
-        return transDeltaTransform;
     }
 
-    protected void updatePrimaryTransform (CellTransform userDeltaTransform) {
+    protected void updatePrimaryTransform (CellTransform transform) {
     }
 
     private enum SGChangeOp { 
@@ -1332,7 +1322,6 @@ public abstract class View2DEntity implements View2D {
         GEOMETRY_TRANSFORM_OFFSET_STACK_SET,
         GEOMETRY_CLEANUP,
         VIEW_NODE_ORTHO_SET,
-        TRANSFORM_USER_POST_MULT,
         TRANSFORM_USER_SET,
         ATTACH_POINT_SET
     };
@@ -1467,14 +1456,6 @@ public abstract class View2DEntity implements View2D {
        }
     }
 
-    private static class SGChangeTransformUserPostMultiply extends SGChangeTransform {
-        private Node viewNode;
-        private SGChangeTransformUserPostMultiply (Node viewNode, CellTransform transform) {
-            super(SGChangeOp.TRANSFORM_USER_POST_MULT, transform);
-            this.viewNode = viewNode;
-        }
-    }
-
     // The list of scene graph changes (to be applied at the end of update).
     private LinkedList<SGChange> sgChanges = new LinkedList<SGChange>();
 
@@ -1517,11 +1498,6 @@ public abstract class View2DEntity implements View2D {
         sgChanges.add(new SGChangeGeometryTransformOffsetStackSet(geometryNode,transform));
     }
 
-    private synchronized void sgChangeTransformUserPostMultiply (Node viewNode, 
-                                                                 CellTransform deltaTransform) {
-        sgChanges.add(new SGChangeTransformUserPostMultiply(viewNode, deltaTransform));
-    }
-
     protected synchronized void sgChangeTransformUserSet (Node viewNode, CellTransform transform) {
         sgChanges.add(new SGChangeTransformUserSet(viewNode, transform));
     }
@@ -1530,7 +1506,9 @@ public abstract class View2DEntity implements View2D {
         sgChanges.add(new SGChangeAttachPointSet(rc, node));
     }
 
-    private synchronized void sgProcessChanges () {
+    // Note: this method doesn't need to be synchronized because it does everything via a 
+    // synchronous render updater
+    private void sgProcessChanges () {
         if (sgChanges.size() <= 0) return;
 
          ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
@@ -1628,45 +1606,15 @@ public abstract class View2DEntity implements View2D {
                          break;
                      }
 
-                     case TRANSFORM_USER_POST_MULT: {
-                         SGChangeTransformUserPostMultiply chg = (SGChangeTransformUserPostMultiply) sgChange;
-                         // TODO
-                         if (ortho) {
-                             viewNode.setLocalRotation(new Quaternion());
-                             viewNode.setLocalScale(1.0f);
-                             //TODO:viewNode.setLocalTranslation(new Vector3f(300f, 300f, 0f));
-                             //TODO:viewNode.setLocalTranslation(new Vector3f(0f, 0f, 0f));
-                         } else {
-                         userTransform.mul(chg.transform);
-                         Quaternion r = userTransform.getRotation(null);
-                         chg.viewNode.setLocalRotation(r);
-                         logger.fine("View node set rotation = " + r);
-                         Vector3f t = userTransform.getTranslation(null);
-                         chg.viewNode.setLocalTranslation(t);
-                         logger.fine("View node set translation = " + t);
-                         // TODO
-                         }
-                         break;                         
-                     }
-
                      case TRANSFORM_USER_SET: {
                          SGChangeTransformUserSet chg = (SGChangeTransformUserSet) sgChange;
-                         // TODO
-                         if (ortho) {
-                             viewNode.setLocalRotation(new Quaternion());
-                             viewNode.setLocalScale(1.0f);
-                             Vector3f t = chg.transform.getTranslation(null);
-                             viewNode.setLocalTranslation(t);
-                         } else {
-                         userTransform = chg.transform.clone(null);
+                         CellTransform userTransform = chg.transform.clone(null);
                          Quaternion r = userTransform.getRotation(null);
                          chg.viewNode.setLocalRotation(r);
                          logger.fine("View node set rotation = " + r);
                          Vector3f t = userTransform.getTranslation(null);
                          chg.viewNode.setLocalTranslation(t);
                          logger.fine("View node set translation = " + t);
-                         // TODO
-                         }
                          break;
                      }
 

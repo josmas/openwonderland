@@ -70,11 +70,8 @@ public class View2DCell extends View2DEntity {
     /** The cell in which this view is displayed. */
     private App2DCell cell;
 
-    /** The user rotation. */
-    private Quaternion userRotation = new Quaternion();
-
-    /** The previous user rotation. */
-    private Quaternion userRotationPrev = new Quaternion();
+    /** The next delta rotation to apply. */
+    private Quaternion deltaRotationToApply;
 
     /** The frame of a decorated view. */
     private Frame2DCell frame;
@@ -131,28 +128,18 @@ public class View2DCell extends View2DEntity {
         return getCell();
     }
 
-    /** Specify the rotation (comes from the user). Update afterward. */
-    public synchronized void setRotationUser (Quaternion rotation) {
-        setRotationUser(rotation, true);
-    }
-
-    /** 
-     * Specify the rotation (comes from the user). Update afterward. 
-     * NOTE: Not yet implemented
-     */
-    public synchronized void setRotationUser (Quaternion rotation, boolean update) {
-        logger.info("change rotationUser = " + rotation);
-        userRotationPrev = userRotation;
-        userRotation = rotation.clone();
-        changeMask |= 0; // TODO: Add a subclass-specific flag for rotation;
-        if (update) {
-            update();
-        }
+    /** {@inheritDoc} */
+    public void applyDeltaRotationUser (Quaternion deltaRotation) {
+        applyDeltaRotationUser(deltaRotation, true);
     }
 
     /** {@inheritDoc} */
-    public Quaternion getRotation () {
-        return userRotation.clone();
+    public void applyDeltaRotationUser (Quaternion deltaRotation, boolean update) {
+        deltaRotationToApply = deltaRotation.clone();
+        changeMask |= CHANGED_USER_TRANSFORM;
+        if (update) {
+            update();
+        }
     }
         
     public synchronized void userRotateYStart (float dy) {
@@ -230,49 +217,28 @@ public class View2DCell extends View2DEntity {
         }
     }
 
-    // Uses: userRotation, userTranslation
-    protected CellTransform calcUserDeltaTransform () {
-
-        /* TODO: winconfig: secondary rotate: this is broken
-        // Apply the rotation first
-        CellTransform rotDeltaTransform = calcUserRotationDeltaTransform();
-        */
-
-        // Next, apply the translation
-        CellTransform transDeltaTransform = calcUserTranslationDeltaTransform();
-        // TODO: winconfig: secondary rotate: rotDeltaTransform.mul(transDeltaTransform);
-
-        // TODO: winconfig: secondary rotate: return rotDeltaTransform; 
-        return transDeltaTransform;
+    /** {@inheritDoc} */
+    // Uses: deltaRotationToApply, deltaTranslationToApply
+    protected void userTransformApplyDeltas (CellTransform userTransform) {
+        userTransformApplyDeltaRotation(userTransform);
+        userTransformApplyDeltaTranslation(userTransform);
     }
 
-    // Uses: userRotation
-    private CellTransform calcUserRotationDeltaTransform () {
-        Quaternion deltaRotation = userRotation.subtract(userRotationPrev);
-        CellTransform rotDeltaTransform = new CellTransform(null, null, null);
-        rotDeltaTransform.setRotation(deltaRotation);
-        return rotDeltaTransform;
-    }
-
-    @Override
-    protected void updatePrimaryTransform (CellTransform userDeltaTransform) {
-
-        // TODO: winconfig: primary rotate: HACK: until bug in userDeltaTransform w=0 is fixed
-        Vector3f translation = getTranslationUserCurrent();
-        if ((type == Type.PRIMARY || type == Type.UNKNOWN) && isOrtho()) {
-            Vector2f locOrtho = getLocationOrtho();
-            translation.addLocal(new Vector3f(locOrtho.x, locOrtho.y, 0f));
+    // Apply any pending rotation delta to the given user transform.
+    protected void userTransformApplyDeltaRotation (CellTransform userTransform) {
+        if (deltaRotationToApply != null) {
+            CellTransform transform = new CellTransform(null, null, null);
+            transform.setRotation(deltaRotationToApply);
+            userTransform.mul(transform);
+            deltaRotationToApply = null;
         }
-        sgChangeTransformUserSet(viewNode, new CellTransform(null, translation, null));
+    }
 
-        /*TODO: need to figure this out
-        if (isOrtho()) {
-            // TODO: temp: just something to prod sgProcessChanges
-        } else {
-        CellTransform cellTransform = cell.getLocalTransform();
-        cellTransform.mul(userDeltaTransform);
-
-        // User transformations on primary directly change the cell. Create and add
+    // TODO: eventually need to complete this
+    @Override
+    protected void updatePrimaryTransform (CellTransform newTransform) {
+        /* TODO
+        // To update a user transformations on a primary view we directly change the cell. Create and add
         // a movable component to the cell if it doesn't already have one.
         MovableComponent mc = (MovableComponent) cell.getComponent(MovableComponent.class);
         if (mc == null) {
@@ -280,8 +246,7 @@ public class View2DCell extends View2DEntity {
             cell.addComponent(mc);
             selfCreatedMovableComponent = true;
         }
-        ///TODO:        mc.localMoveRequest(cellTransform);
-        }
+        mc.localMoveRequest(newTransform);
         */
     }
 
@@ -314,7 +279,7 @@ public class View2DCell extends View2DEntity {
     /** {@inheritDoc} */
     @Override
     protected void reattachFrame () {
-        logger.fine("Reattach new frame");
+        logger.fine("Reattach new frame, frame = " + frame);
         detachFrame();
         attachFrame();
     }

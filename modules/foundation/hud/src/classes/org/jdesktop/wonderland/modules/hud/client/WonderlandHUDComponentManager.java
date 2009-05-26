@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.hud.client;
 
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
+import java.awt.Point;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -193,7 +194,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager, HUDCo
                 logger.fine("creating new in-world view");
                 worldView = worldDisplayer.createView(state.getWindow());
                 worldView.setPixelScale(new Vector2f(0.02f, 0.02f));
-                worldView.setTranslationUser(new Vector3f(0.0f, -5.9f, 0.05f));
+                worldView.applyDeltaTranslationUser(new Vector3f(0.0f, 0.0f, 0.05f));
                 //worldView.setOffset(new Point(400, 0));
                 state.setWorldView(worldView);
             }
@@ -253,7 +254,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager, HUDCo
             view.setOrtho(true);
         } else {
             // moving to world
-            view.setTranslationUser(component.getWorldLocation());
+            view.applyDeltaTranslationUser(component.getWorldLocation());
             view.setOrtho(false);
         }
     }
