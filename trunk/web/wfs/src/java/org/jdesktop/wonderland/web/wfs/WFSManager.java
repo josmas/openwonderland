@@ -238,8 +238,8 @@ public class WFSManager {
     }
 
     /**
-     * Create a new recording wfs given its name. This method assumes the recording
-     * does not already exist
+     * Create a new recording wfs given its name. This method removes the recording
+     * if it already exists
      * @param name the name of the recording
      */
     public WFSRecording createWFSRecording(String name) {
@@ -249,7 +249,11 @@ public class WFSManager {
             WFSRecording recording = WFSRecording.getInstance(recordingDir);
             if (recording.getTimestamp() != null) {
                 // uh-oh, recording already exists...
-                logger.log(Level.WARNING, "[WFS] Recording " + name + " exists");
+                logger.log(Level.WARNING, "[WFS] Recording " + name + " exists, removing");
+                // remove the recording
+                removeWFSRecording(name);
+                // recurse
+                return createWFSRecording(name);
             } else {
                 // set the timestamp to now
                 recording.setTimestamp(new Date());
@@ -263,6 +267,24 @@ public class WFSManager {
         } catch (java.lang.Exception excp) {
             logger.log(Level.WARNING, "[WFS] Unable to create recording", excp);
             return null;
+        }
+    }
+
+    /**
+     * Remove a recording from WFS
+     * @param name the name of the recording to remove
+     */
+    public void removeWFSRecording(String name) {
+        WFSRecording recording = wfsRecordings.remove(name);
+        if (recording == null) {
+            return;
+        }
+
+        wfsMap.remove(recording.getRootPath());
+
+        File recordingDir = new File(recordingFile, name);
+        if (recordingDir.exists()) {
+            RunUtil.deleteDir(recordingDir);
         }
     }
 
