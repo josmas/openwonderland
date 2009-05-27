@@ -1010,9 +1010,18 @@ public abstract class View2DEntity implements View2D {
                             RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
                             RenderComponent rcParent = 
                                 (RenderComponent) parentEntity.getComponent(RenderComponent.class);
-                            sgChangeAttachPointSet(rc, rcParent.getSceneRoot());
+                            Node attachNode = rcParent.getSceneRoot();
+
+                            // Note: we need to attach non-primaries to the parent geometry node in 
+                            // ortho mode, rather than the view node. This way it picks up the parent's
+                            // offset translation, which contains locationOrtho
+                            // TODO: do this cleaner. Convert attach node to a view and get the
+                            // geometry node for this view.
+                            attachNode = (Node) attachNode.getChild(0);
+
+                            sgChangeAttachPointSet(rc, attachNode);
                             attachState = AttachState.ATTACHED_TO_ENTITY;
-                            logger.fine("Attach ortho entity " + entity + " to parent entity " + parentEntity);
+                            logger.fine("Attach ortho entity " + entity + " to geometry node of parent entity " + parentEntity);
                         }
                     }
                 } else {
@@ -1095,10 +1104,12 @@ public abstract class View2DEntity implements View2D {
         if ((changeMask & (CHANGED_STACK | CHANGED_ORTHO)) != 0) {
             logger.fine("Update geometry ortho Z order for view " + this);
             if (ortho) {
-                int zOrder = window.getZOrder();
-                logger.fine("Z order = " + zOrder);
-                if (zOrder >= 0) {
-                    sgChangeGeometryOrthoZOrderSet(geometryNode, zOrder);
+                if (window != null) {
+                    int zOrder = window.getZOrder();
+                    logger.fine("Z order = " + zOrder);
+                    if (zOrder >= 0) {
+                        sgChangeGeometryOrthoZOrderSet(geometryNode, zOrder);
+                    }
                 }
             }
         }
@@ -1283,6 +1294,8 @@ public abstract class View2DEntity implements View2D {
         Vector3f translation = new Vector3f();
         if (parent == null) return translation;
 
+        logger.fine("Offset translation for " + this);
+
         if (ortho) {
             if (type == Type.PRIMARY || type == Type.UNKNOWN) {
                 translation.x = locationOrtho.x;
@@ -1290,8 +1303,8 @@ public abstract class View2DEntity implements View2D {
             } else {
 
                 // Initialize to the first part of the offset (the local coordinate translation)
-                translation.x = offset.x;
-                translation.y = offset.y;
+                translation.x = locationOrtho.x + offset.x;
+                translation.y = locationOrtho.y + offset.y;
 
                 // Convert pixel offset to local coords and add it in
                 Dimension parentSize = parent.getSizeApp();
@@ -1299,11 +1312,9 @@ public abstract class View2DEntity implements View2D {
                 translation.y += parentSize.height / 2f;
                 translation.x += sizeApp.width / 2f;
                 translation.y -= sizeApp.height / 2f;
-                translation.x += offset.x;
-                translation.y -= offset.y;
+                translation.x += pixelOffset.x;
+                translation.y -= pixelOffset.y;
             }
-            logger.fine("Translation for view " + this);
-            logger.fine("translation = " + translation);
         } else {    
 
             // Initialize to the first part of the offset (the local coordinate translation)
@@ -1321,6 +1332,8 @@ public abstract class View2DEntity implements View2D {
             translation.x += pixelOffset.x * pixelScale.x;
             translation.y -= pixelOffset.y * pixelScale.y;
         }
+
+        logger.fine("offset translation = " + translation);
 
         return translation;
     }
