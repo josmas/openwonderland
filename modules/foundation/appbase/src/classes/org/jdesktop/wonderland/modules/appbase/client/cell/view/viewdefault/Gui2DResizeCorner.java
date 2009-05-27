@@ -17,12 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
+import com.jme.math.Vector2f;
+import com.jme.math.Vector3f;
+import com.jme.scene.Node;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 
 /**
  * The GUI code for the frame resize corner.
@@ -112,7 +120,7 @@ class Gui2DResizeCorner extends Gui2DSide {
             return action;
         }
 
-        return super.determineIfConfigAction(me, me3d);
+        return determineIfResizeAction(me, me3d);
     }
 
     /**
@@ -129,6 +137,107 @@ class Gui2DResizeCorner extends Gui2DSide {
             return;
         }
 
-        super.performConfigAction(action, me, me3d);
+        performResizeAction(action, me, me3d);
+    }
+
+    /** 
+     * Determine if this is a resize drag action.
+     * @param me The AWT event for this 3D mouse event.
+     * @param me3d The 3D mouse event.
+     */
+    protected Action determineIfResizeAction(MouseEvent me, MouseEvent3D me3d) {
+        Action action = null;
+
+        switch (me.getID()) {
+
+        case MouseEvent.MOUSE_PRESSED:
+            MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) me3d;
+            if (configState == ConfigState.IDLE && 
+                me.getButton() == MouseEvent.BUTTON1 &&
+                me.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
+
+                configState = ConfigState.DRAG_ACTIVE;
+                action = new Action(ActionType.DRAG_START);
+                dragStartScreen = new Point(me.getX(), me.getY());
+                dragStartWorld = buttonEvent.getIntersectionPointWorld();
+                dragStartLocal = view.getNode().worldToLocal(dragStartWorld, new Vector3f());
+            }
+            return action;
+
+        case MouseEvent.MOUSE_DRAGGED:
+            if (configState == ConfigState.DRAG_ACTIVE ||
+                configState == ConfigState.DRAGGING) {
+                action = new Action(ActionType.DRAG_UPDATE);
+                configState = ConfigState.DRAGGING;
+
+                MouseDraggedEvent3D dragEvent = (MouseDraggedEvent3D) me3d;
+                Vector3f dragVectorWorld = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen,
+                                                                        new Vector3f());
+
+                // Convert from world to local coordinates.
+                Node viewNode = view.getNode();
+                Vector3f curWorld = dragStartWorld.add(dragVectorWorld, new Vector3f());
+                Vector3f curLocal = viewNode.worldToLocal(curWorld, new Vector3f());
+                dragVectorLocal = curLocal.subtract(dragStartLocal);
+            }
+            return action;
+
+        case MouseEvent.MOUSE_RELEASED:
+            if (me.getButton() == MouseEvent.BUTTON1) {
+                if (configState == ConfigState.DRAGGING) {
+                    // Note: the misc action ToggleControl may produce an mouse
+                    // press/release without a drag in between so only perform
+                    // a dragfinish if an actual drag occurred between the
+                    // mouse press and release
+                    action = new Action(ActionType.DRAG_FINISH);
+                }
+
+                configState = ConfigState.IDLE;
+                // Note: the coordinates for WL mouse release events are invalid.
+                // So we just use the coordinates from the last drag or press.
+            }
+            return action;
+        }
+
+        return null;
+    }
+
+    /** 
+     * Perform a resize action.
+     * @param action The configuration action the given event provokes.
+     * @param me The AWT event for this 3D mouse event.
+     * @param me3d The 3D mouse event.
+     */
+    protected void performResizeAction(Action action, MouseEvent me, MouseEvent3D me3d) {
+
+        switch (action.type) {
+
+        case DRAG_START:
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    ((View2DEntity)view).userResizeStart();
+                }
+            });
+            break;
+
+        case DRAG_UPDATE:
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    ((View2DEntity)view).userResizeUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
+                }
+            });
+            break;
+
+        case DRAG_FINISH:
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    ((View2DEntity)view).userResizeFinish();
+                }
+            });
+            break;
+
+        default:
+            throw new RuntimeException("Unrecognized action");
+        }
     }
 }

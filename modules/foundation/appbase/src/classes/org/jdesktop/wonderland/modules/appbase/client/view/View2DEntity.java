@@ -161,6 +161,9 @@ public abstract class View2DEntity implements View2D {
     /** The previous drag vector during an interactive planar move. */
     private Vector2f userMovePlanarDragVectorPrev;
     
+    /** The current value of the window size during an interactive resize. */
+    private Dimension userResizeNewSize;
+    
     /** The next delta translation to apply. */
     private Vector3f deltaTranslationToApply;
 
@@ -848,13 +851,11 @@ public abstract class View2DEntity implements View2D {
      * Called by the UI to indicate the start of an interactive planar move. 
      */
     public synchronized void userMovePlanarStart () {
-        //System.err.println("****** Drag start");
         userMovePlanarDragVectorPrev = new Vector2f();
     }
 
     /**
      * Called by the UI to indicate a drag vector update during interactive planar move. 
-     * Vec
      */
     public synchronized void userMovePlanarUpdate (Vector2f dragVector) {
         
@@ -867,6 +868,60 @@ public abstract class View2DEntity implements View2D {
     }
 
     public synchronized void userMovePlanarFinish () {
+    }
+
+    private Dimension userResizeCalcWindowNewSize (Vector2f dragVector) {
+        // Convert local coords drag vector to a pixel vector
+        Vector2f pixelScale = getPixelScaleCurrent();
+        //System.err.println("pixelScale = " + pixelScale);
+        int deltaWidth = (int)(dragVector.x / pixelScale.x);
+        int deltaHeight = (int)(dragVector.y / pixelScale.y);
+        if (deltaWidth == 0 && deltaHeight == 0) return null;
+        if (deltaWidth < 1) deltaWidth = 1;
+        if (deltaHeight < 1) deltaHeight = 1;
+
+        //System.err.println("deltaWH = " + deltaWidth + ", " + deltaHeight);
+
+        // TODO: for now, we only support the resize mode where resizing the view
+        // directly updates the window size.
+        int width = window.getWidth();
+        int height = window.getHeight();
+        //System.err.println("Old size, wh = " + width + ", " + height);
+        width += deltaWidth;
+        height -= deltaHeight;
+
+        return new Dimension(width, height);
+    }
+
+    /**
+     * Called by the UI to indicate the start of an interactive resize.
+     */
+    public synchronized void userResizeStart () {
+        //System.err.println("********* Resize start");
+    }
+
+    /**
+     * Called by the UI to indicate a drag vector update during interactive resize.
+     */
+    public synchronized void userResizeUpdate (Vector2f dragVector) {
+        //System.err.println("********* Resize update, dragVector = " + dragVector);
+        
+        // TODO: eventually support optional app-selected continuous window resize. For this 
+        // we call perform resize on each update. May look better for Swing windows.
+
+        userResizeNewSize = userResizeCalcWindowNewSize(dragVector);
+        if (userResizeNewSize == null) return;
+        //System.err.println("userResizeNewSize = " + userResizeNewSize);
+
+        // Resize only the view
+        setSizeApp(userResizeNewSize);
+    }
+
+    public synchronized void userResizeFinish () {
+        //System.err.println("********* Resize Finish");
+        // TODO: for now, only support non-continuous resize. That is, only perform
+        // the actual window resize at the end of the drag operation.
+        window.setSize(userResizeNewSize.width, userResizeNewSize.height);
     }
 
     /** TODO: NOTYET
