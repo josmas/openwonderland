@@ -208,7 +208,7 @@ public class FollowMe extends Thread {
 	}
 
         movableComp.localMoveRequest(
-            new CellTransform(rotation, currentPosition, null));
+            new CellTransform(rotation, currentPosition));
 
 	if (listener != null) {
 	    listener.positionChanged(currentPosition);

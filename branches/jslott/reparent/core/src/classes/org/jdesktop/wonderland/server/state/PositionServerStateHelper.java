@@ -84,7 +84,7 @@ public class PositionServerStateHelper {
         Vector3f scale3f = new Vector3f((float)scaling.x, (float)scaling.y, (float)scaling.z);
         
         /* Create an return a new CellTransform class */
-        return new CellTransform(quat, origin3f, scale3f);
+        return new CellTransform(quat, origin3f, scale3f.x);
     }
     
     /**

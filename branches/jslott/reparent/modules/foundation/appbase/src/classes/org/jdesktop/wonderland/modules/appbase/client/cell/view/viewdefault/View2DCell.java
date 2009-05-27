@@ -249,7 +249,7 @@ public class View2DCell extends View2DEntity {
     // Uses: userRotation
     private CellTransform calcUserRotationDeltaTransform () {
         Quaternion deltaRotation = userRotation.subtract(userRotationPrev);
-        CellTransform rotDeltaTransform = new CellTransform(null, null, null);
+        CellTransform rotDeltaTransform = new CellTransform(null, null);
         rotDeltaTransform.setRotation(deltaRotation);
         return rotDeltaTransform;
     }
@@ -263,7 +263,7 @@ public class View2DCell extends View2DEntity {
             Vector2f locOrtho = getLocationOrtho();
             translation.addLocal(new Vector3f(locOrtho.x, locOrtho.y, 0f));
         }
-        sgChangeTransformUserSet(viewNode, new CellTransform(null, translation, null));
+        sgChangeTransformUserSet(viewNode, new CellTransform(null, translation));
 
         /*TODO: need to figure this out
         if (isOrtho()) {

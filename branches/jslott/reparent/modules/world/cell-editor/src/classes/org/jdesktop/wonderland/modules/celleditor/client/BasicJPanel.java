@@ -89,6 +89,7 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
             originalCellName = cellServerState.getName();
             cellNameTextField.setText(originalCellName);
             cellIDLabel.setText(cell.getCellID().toString());
+            cellClassTF.setText(cell.getClass().getName());
         }
     }
 
@@ -140,12 +141,19 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
         jLabel2 = new javax.swing.JLabel();
         cellIDLabel = new javax.swing.JLabel();
         cellNameTextField = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        cellClassTF = new javax.swing.JTextField();
 
         jLabel1.setText("Cell ID:");
 
         jLabel2.setText("Cell Name:");
 
         cellIDLabel.setText("<none>");
+
+        jLabel3.setText("Cell Class:");
+
+        cellClassTF.setEditable(false);
+        cellClassTF.setHorizontalAlignment(javax.swing.JTextField.TRAILING);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -159,9 +167,13 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
                         .add(35, 35, 35)
                         .add(cellIDLabel))
                     .add(layout.createSequentialGroup()
-                        .add(jLabel2)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel3)
+                            .add(jLabel2))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cellNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(cellNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+                            .add(cellClassTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -175,15 +187,21 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(cellNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(398, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(cellClassTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(364, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField cellClassTF;
     private javax.swing.JLabel cellIDLabel;
     private javax.swing.JTextField cellNameTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     // End of variables declaration//GEN-END:variables
 }

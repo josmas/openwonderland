@@ -78,6 +78,12 @@
             <jvmarg value="-agentpath:/tmp/NBProfiler32476.link/deployed/jdk15/mac/libprofilerinterface.jnilib=/tmp/NBProfiler32476.link,5140"/>
 	    -->
             <!--end debug-->
+            <!-- YourKit profile -->
+            <!--
+            <jvmarg value="-agentlib:yjpagent"/>
+            -->
+            <!-- End Profiling -->
+
             
             <classpath>
                 <pathelement path="${core-client.classpath}"/>
