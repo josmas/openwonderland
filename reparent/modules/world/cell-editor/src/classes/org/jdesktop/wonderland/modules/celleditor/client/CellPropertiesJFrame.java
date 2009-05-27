@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.celleditor.client;
 
+import com.jme.math.Vector3f;
+import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
@@ -30,6 +33,7 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,8 +57,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.CellManager;
@@ -65,10 +72,14 @@ import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellReparentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentResponseMessage;
@@ -161,11 +172,15 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             public void valueChanged(TreeSelectionEvent e) {
                 DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)
                         cellHierarchyTree.getLastSelectedPathComponent();
-                Object userObject = selectedNode.getUserObject();
-                if (userObject instanceof Cell) {
-                    setSelectedCell((Cell)userObject);
-                }
-                else {
+                if (selectedNode!=null) {
+                    Object userObject = selectedNode.getUserObject();
+                    if (userObject instanceof Cell) {
+                        setSelectedCell((Cell)userObject);
+                    }
+                    else {
+                        setSelectedCell(null);
+                    }
+                } else {
                     setSelectedCell(null);
                 }
             }
@@ -267,6 +282,36 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         updatePanelSet();
         if (isVisible() == true) {
             updateGUI();
+        }
+
+        // Debug aid, prints out the graph for selected cells
+//        CellRendererJME rend = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+//        if (rend!=null) {
+//            Entity ent = rend.getEntity();
+//            Node root = ent.getComponent(RenderComponent.class).getSceneRoot();
+//            root.updateGeometricState(0, true);
+//            print(root, 0);
+//        }
+    }
+
+    private void print(Spatial n, int level) {
+        if (n==null)
+            return;
+
+        StringBuffer buf = new StringBuffer();
+        for(int i=0; i<level; i++)
+            buf.append(' ');
+
+        buf.append(n.getName()+" "+n.getLocalTranslation()+"  "+n.getLocalRotation()+"  world "+n.getWorldTranslation()+"  "+n.getWorldRotation());
+
+        System.err.println(buf);
+
+        if (n instanceof Node) {
+            java.util.List<Spatial> children = ((Node)n).getChildren();
+            if (children!=null) {
+                for(Spatial c : children)
+                    print(c, level+1);
+            }
         }
     }
 
@@ -986,7 +1031,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             Object userObject = treeNode.getUserObject();
             if (userObject instanceof Cell) {
                 Cell cell = (Cell) treeNode.getUserObject();
-                setText(cell.getName());
+                setText(cell.getName()+" id="+cell.getCellID());
             }
             return this;
         }
@@ -1075,7 +1120,6 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                         "from the drop target", excp);
                 return;
             }
-            System.out.println("CELL ID " + cellIDInt);
             CellID cellID = new CellID(cellIDInt);
 
             // Fetch the client-side Cell cache and find the Cell with the
@@ -1094,22 +1138,54 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
 
             // Find out what Cell ID this was dropped over. This will form the
             // new parent. If the Cell is dropped over the world root, then set
-            // the CellID to -1
-            CellID parentCellID = new CellID(-1);
+            // the CellID to InvalidCellID
+            CellID parentCellID = CellID.getInvalidCellID();
             DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)
                     path.getLastPathComponent();
             Object userObject = treeNode.getUserObject();
+            Cell newParent = null;
             if (userObject instanceof Cell) {
                 parentCellID = ((Cell)userObject).getCellID();
+                newParent = (Cell) userObject;
+                if (draggedCell.equals(newParent)) {
+                    // User dropped cell on itself, return !
+                    return;
+                }
             }
-            System.out.println("Parent CELL ID " + parentCellID.toString());
+
+            // Compute child transform change
+            Cell oldParent = draggedCell.getParent();
+            CellTransform oldParentWorld;
+            if (oldParent==null)
+                oldParentWorld = new CellTransform(null, null);
+            else
+                oldParentWorld = oldParent.getWorldTransform();
+
+            CellTransform newParentWorld;
+            if (newParent==null)
+                newParentWorld = new CellTransform(null, null);
+            else
+                newParentWorld = newParent.getWorldTransform();
+
+//            ArrayList<CellTransform> transformGraph = new ArrayList();
+            newParentWorld.invert();
+
+            newParentWorld.mul(oldParentWorld);
+            newParentWorld.mul(draggedCell.getLocalTransform());
+
+//            transformGraph.add(newParentWorld.clone(null)); // Inverted newParentWorld
+//            transformGraph.add(oldParentWorld);
+//            transformGraph.add(draggedCell.getLocalTransform());
+//            CellTransform tmp = CellTransform.computeGraph(transformGraph);
+//
+//            System.err.println("New Child Transform "+tmp);
 
             // Send a message to the server indicating the change in the
             // parent. We need to send this over the cell edit connection,
             // rather than the cell connection.
             CellEditChannelConnection connection = (CellEditChannelConnection)
                     session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-            connection.send(new CellReparentMessage(cellID, parentCellID));
+            connection.send(new CellReparentMessage(cellID, parentCellID, newParentWorld));
 
             // Turn off the selected node border and repaint the tree.
             dragOverTreeNode = null;

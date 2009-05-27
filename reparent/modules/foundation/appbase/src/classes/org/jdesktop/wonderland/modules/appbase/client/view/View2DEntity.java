@@ -170,7 +170,7 @@ public abstract class View2DEntity implements View2D {
     private Vector3f userTranslationOrthoPrev = new Vector3f(0f, 0f, 0f);
 
     /** A copy of the current user transformation (i.e. the view node's tranformation). */
-    private CellTransform userTransform = new CellTransform(null, null, null);
+    private CellTransform userTransform = new CellTransform(null, null);
 
     /** The event listeners which are attached to this view while the view is attached to its cell */
     private LinkedList<EventListener> eventListeners = new LinkedList<EventListener>();
@@ -1120,7 +1120,7 @@ public abstract class View2DEntity implements View2D {
             case UNKNOWN:
             case PRIMARY:
                 // Always set to identity
-                transform = new CellTransform(null, null, null);
+                transform = new CellTransform(null, null);
                 break;
             case SECONDARY:
             case POPUP:
@@ -1147,7 +1147,7 @@ public abstract class View2DEntity implements View2D {
                 break;
             case POPUP:
                 // Always set to identity
-                sgChangeTransformUserSet(viewNode, new CellTransform(null, null, null));
+                sgChangeTransformUserSet(viewNode, new CellTransform(null, null));
             }
         }
 
@@ -1204,7 +1204,7 @@ public abstract class View2DEntity implements View2D {
     // Uses: type, parent, pixelscale, size, offset
     // View2DCell subclass uses: type, ortho, parent, stack
     private CellTransform calcOffsetStackTransform () {
-        CellTransform transform = new CellTransform(null, null, null);
+        CellTransform transform = new CellTransform(null, null);
 
         // Uses: parent, pixelScale, size, offset
         Vector3f offsetTranslation = calcOffsetTranslation();
@@ -1258,7 +1258,7 @@ public abstract class View2DEntity implements View2D {
         if ((type == Type.PRIMARY || type == Type.UNKNOWN) && ortho) {
             translation.addLocal(new Vector3f(locationOrtho.x, locationOrtho.y, 0f));
         }
-        CellTransform transDeltaTransform = new CellTransform(null, null, null);
+        CellTransform transDeltaTransform = new CellTransform(null, null);
         transDeltaTransform.setTranslation(translation);
         /**/
 

@@ -379,8 +379,7 @@ public class ResizeAffordance extends Affordance {
             setLabelPosition(awtMouseEvent);
 
             // Rotate the object along the defined axis and angle.
-            Vector3f scaling = dragStartScaling.mult(scale);
-            transform.setScaling(scaling);
+            transform.setScaling(scale);
             movableComp.localMoveRequest(transform);
         }
 

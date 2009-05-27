@@ -56,8 +56,6 @@ public class UniverseImpl implements Universe {
         this.dataService = transactionProxy.getService(DataService.class);
         this.transactionScheduler = componentRegistry.getComponent(TransactionScheduler.class);
         universe = this;
-
-        logger.setLevel(Level.ALL);
     }
 
     public static UniverseImpl getUniverse() {

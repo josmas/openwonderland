@@ -112,8 +112,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         yScaleModel = new SpinnerNumberModel(value, min, max, step);
         zScaleModel = new SpinnerNumberModel(value, min, max, step);
         scaleXTF.setModel(xScaleModel);
-        scaleYTF.setModel(yScaleModel);
-        scaleZTF.setModel(zScaleModel);
 
         value = new Float(0);
         min = new Float(-360);
@@ -230,11 +228,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         scaleXTF = new javax.swing.JSpinner();
-        jLabel10 = new javax.swing.JLabel();
-        scaleYTF = new javax.swing.JSpinner();
-        jLabel11 = new javax.swing.JLabel();
-        scaleZTF = new javax.swing.JSpinner();
-        jLabel12 = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
@@ -301,25 +294,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         scaleXTF.setMinimumSize(new java.awt.Dimension(60, 30));
         scaleXTF.setPreferredSize(new java.awt.Dimension(60, 30));
         add(scaleXTF);
-
-        jLabel10.setText(",");
-        add(jLabel10);
-
-        scaleYTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 5));
-        scaleYTF.setMinimumSize(new java.awt.Dimension(60, 30));
-        scaleYTF.setPreferredSize(new java.awt.Dimension(60, 30));
-        add(scaleYTF);
-
-        jLabel11.setText(",");
-        add(jLabel11);
-
-        scaleZTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 5));
-        scaleZTF.setMinimumSize(new java.awt.Dimension(60, 30));
-        scaleZTF.setPreferredSize(new java.awt.Dimension(60, 30));
-        add(scaleZTF);
-
-        jLabel12.setText(")");
-        add(jLabel12);
     }// </editor-fold>//GEN-END:initComponents
 
     /**
@@ -334,9 +308,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         rotationYTF.setValue(0.0f);
         rotationZTF.setValue(0.0f);
 
-        scaleXTF.setValue(0.0f);
-        scaleYTF.setValue(0.0f);
-        scaleZTF.setValue(0.0f);
+        scaleXTF.setValue(1.0f);
     }
 
     /**
@@ -385,13 +357,10 @@ public class PositionHUDPanel extends javax.swing.JPanel {
      */
     private void updateScale() {
         float x = (Float) xScaleModel.getValue();
-        float y = (Float) yScaleModel.getValue();
-        float z = (Float) zScaleModel.getValue();
 
-        Vector3f scale = new Vector3f(x, y, z);
         if (movableComponent != null) {
             CellTransform cellTransform = selectedCell.getLocalTransform();
-            cellTransform.setScaling(scale);
+            cellTransform.setScaling(x);
             movableComponent.localMoveRequest(cellTransform);
         }
     }
@@ -442,8 +411,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
                     // Update the scale spinners only if they have changes
                     scaleXTF.setValue((float) scale.x);
-                    scaleYTF.setValue((float) scale.y);
-                    scaleZTF.setValue((float) scale.z);
                 } finally {
                     setLocalChanges(false);
                 }
@@ -464,8 +431,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         rotationYTF.setEnabled(enabled);
         rotationZTF.setEnabled(enabled);
         scaleXTF.setEnabled(enabled);
-        scaleYTF.setEnabled(enabled);
-        scaleZTF.setEnabled(enabled);
     }
 
     /**
@@ -576,9 +541,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -591,8 +553,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
     private javax.swing.JSpinner rotationYTF;
     private javax.swing.JSpinner rotationZTF;
     private javax.swing.JSpinner scaleXTF;
-    private javax.swing.JSpinner scaleYTF;
-    private javax.swing.JSpinner scaleZTF;
     private javax.swing.JSpinner translationXTF;
     private javax.swing.JSpinner translationYTF;
     private javax.swing.JSpinner translationZTF;

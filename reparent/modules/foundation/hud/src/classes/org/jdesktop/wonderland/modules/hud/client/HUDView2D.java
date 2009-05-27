@@ -83,7 +83,7 @@ public class HUDView2D extends View2DEntity {
             Vector2f locOrtho = getLocationOrtho();
             translation.addLocal(new Vector3f(locOrtho.x, locOrtho.y, 0f));
         }
-        sgChangeTransformUserSet(viewNode, new CellTransform(null, translation, null));
+        sgChangeTransformUserSet(viewNode, new CellTransform(null, translation));
     }
 
     /**
