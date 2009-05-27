@@ -67,7 +67,7 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
     }
 
     public void registered(WonderlandClientSender sender) {
-        logger./*TODO: info*/severe("Sas provider connection registered.");
+        logger.info("Sas provider connection registered.");
     }
 
     public void clientConnected(WonderlandClientSender sender, 
@@ -114,7 +114,7 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-        logger./*TODO: fine*/severe("SasProvider client disconnected.");
+        logger.fine("SasProvider client disconnected.");
         SasServer server = (SasServer) serverRef.get();
         server.providerDisconnected(sender, clientID);
         // TODO: remove any messages in flight for the given provider client
