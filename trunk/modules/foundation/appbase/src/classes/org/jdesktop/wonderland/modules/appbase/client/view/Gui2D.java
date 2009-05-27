@@ -103,11 +103,11 @@ public class Gui2D {
     /** The view configuration drag type (only valid when configState != IDLE */
     protected ConfigDragType configDragType;
     /** The intersection point on the entity over which the button was pressed, in world coordinates. */
-    private Vector3f dragStartWorld;
+    protected Vector3f dragStartWorld;
     /** The intersection point in parent local coordinates. */
-    private Vector3f dragStartLocal;
+    protected Vector3f dragStartLocal;
     /** The screen coordinates of the button press event. */
-    private Point dragStartScreen;
+    protected Point dragStartScreen;
     /** The amount that the cursor has been dragged in local coordinates. */
     protected Vector3f dragVectorLocal;
 
@@ -376,7 +376,7 @@ public class Gui2D {
                 }
 
                 configState = ConfigState.IDLE;
-                // Note: the coordinates for LG mouse release events are invalid.
+                // Note: the coordinates for WL mouse release events are invalid.
                 // So we just use the coordinates from the last drag or press.
             }
             return action;
