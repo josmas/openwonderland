@@ -67,7 +67,7 @@ public class ArchiveManifest {
      * @throw IOException Upon failure to open the JAR file
      */
     public ArchiveManifest(File file) throws IOException {
-        this.url = file.toURL();
+        this.url = file.toURI().toURL();
         System.out.println("file " + file.getAbsolutePath() + " " + file.exists());
         this.jarfile = new JarFile(file);
         this.createArchiveMap(jarfile);
