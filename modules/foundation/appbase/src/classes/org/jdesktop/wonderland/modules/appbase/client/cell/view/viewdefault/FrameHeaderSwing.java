@@ -270,8 +270,13 @@ public class FrameHeaderSwing
             return;
         } 
 
-        // Note: if you want to add click functionality, uncomment this and put it afterward
-        // if (!app.getControlArb().hasControl()) return;
+        if (!app.getControlArb().hasControl()) return;
+
+        if (e.getID() == MouseEvent.MOUSE_CLICKED &&
+            e.getButton() == MouseEvent.BUTTON1 &&
+            e.getModifiersEx() == 0) {
+            view.getWindow().restackToTop();
+        }
     }
 
     public void mouseEntered(MouseEvent e) {
