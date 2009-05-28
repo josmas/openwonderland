@@ -23,17 +23,18 @@ import java.util.LinkedList;
 import java.awt.Component;
 import java.awt.Color;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
-import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
@@ -47,7 +48,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
 @ExperimentalAPI
 public class FrameHeaderSwing
     extends FrameComponent
-    implements HeaderPanel.Container, MouseListener
+    implements HeaderPanel.Container, MouseListener, MouseMotionListener
 {
     // TODO: New UI: add zones: move planar, move z, rotate
     private WindowSwingHeader headerWindow;
@@ -102,6 +103,7 @@ public class FrameHeaderSwing
         headerWindow.setComponent(headerPanel);
 
         headerPanel.addMouseListener(this);
+        headerPanel.addMouseMotionListener(this);
 
         // Unless we do this the interior of the frame will deliver events 
         // to the control arb of the application and they will look like they
@@ -115,9 +117,32 @@ public class FrameHeaderSwing
     }
 
     private class ConsumeOnControlListener extends EventListenerBaseImpl {
+        @Override
         public boolean consumesEvent (Event event) {
-            return app.getControlArb().hasControl();
 
+            /* Note: I thought that I could shut off header events using this technique.
+               But it doesn't act as I would suspect. For example, it allows the control
+               change (click) event through to WindowSwingEmbeddedToolkit, but the event
+               disappears after that! Fortunately, there is an alternate technique that 
+               works: check for control in each FrameHeaderSwing mouse event handler.
+
+            if (app.getControlArb().hasControl()) {
+                System.err.println("COCL.consumesEvent, true because have control");
+                return true;
+            }
+
+            // Always let the control change event through, even if app doesn't have control
+            if (event instanceof MouseEvent3D) {
+                MouseEvent me = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
+                boolean result = Gui2D.isChangeControlEvent(me);
+                System.err.println("COCL.consumesEvent, result = " + result);
+                return result;
+            }
+
+            return false;
+            */
+
+            return true;
         }
         public boolean propagatesToParent (Event event) {
             return false;
@@ -139,6 +164,7 @@ public class FrameHeaderSwing
         }
 
         headerPanel.removeMouseListener(this);
+        headerPanel.removeMouseMotionListener(this);
 
         Entity viewEntity = getEntity();
         if (viewEntity != null) {
@@ -241,16 +267,43 @@ public class FrameHeaderSwing
             } else {
                 appControlArb.takeControl();
             }
+            return;
         } 
+
+        // Note: if you want to add click functionality, uncomment this and put it afterward
+        // if (!app.getControlArb().hasControl()) return;
     }
 
     public void mouseEntered(MouseEvent e) {
+        if (!app.getControlArb().hasControl()) return;
     }
+
     public void	mouseExited(MouseEvent e) {
+        if (!app.getControlArb().hasControl()) return;
     }
+
     public void	mousePressed(MouseEvent e) {
+
+        // Is this a Window menu event? Display menu even when we don't have control.
+        if (e.getID() == MouseEvent.MOUSE_PRESSED &&
+            e.getButton() == MouseEvent.BUTTON3 &&
+            e.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK) {
+            view.getWindow().displayWindowMenu(view.getEntity(), e);
+            return;
+        }
+
+        if (!app.getControlArb().hasControl()) return;
     }
     public void mouseReleased(MouseEvent e) {
+        if (!app.getControlArb().hasControl()) return;
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        if (!app.getControlArb().hasControl()) return;
+    }
+
+    public void mouseDragged(MouseEvent e) {
+        if (!app.getControlArb().hasControl()) return;
     }
 
     // For ortho subwindow debug: set to true to debug ortho subwindows with close button
