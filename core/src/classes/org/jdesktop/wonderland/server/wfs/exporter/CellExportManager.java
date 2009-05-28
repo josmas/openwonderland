@@ -47,8 +47,7 @@ public interface CellExportManager {
      * Create a new recording for writing cells to.  This method will contact
      * the remote web service to create a new recording, and then call the
      * given listener with the result of that call.
-     * @param name the name of the recording to create, or null to use the
-     * default name
+     * @param name the name of the recording to create
      * @param cells the set of cells to record
      * @param listener a recording creation listener that will be notified of
      * the result of this call
@@ -58,11 +57,11 @@ public interface CellExportManager {
 
 
     /**
-     * Write a set of cells to the given snapshot.  This method will fetch the
+     * Write a set of cells to the given snapshot/recording.  This method will fetch the
      * given set of cells, and write the contents of the cells and all their
      * children to the remote web service.  Finally, the listener will be
      * notified with the results of the call.
-     * @param worldRoot the snapshot to write to
+     * @param worldRoot the snapshot/recording to write to
      * @param cellIDs a set of cell IDs to write.  Each cellID will be used
      * as a root for writing, so the entire graph under the given set of
      * cell IDs will be written.  The cellIDs set will be accessed across
@@ -70,7 +69,7 @@ public interface CellExportManager {
      * for the set be serializable and work correctly in the face of concurrent
      * access.  Typically, a ScalableHashSet is the best choice for the set.
      * @param listener a listener that will be notified of the results
-     * @param recordCellID if true, record the cellID of the cells
+     * @param recordCellIDs if true, record the cellID of each cell
      */
     public void exportCells(WorldRoot worldRoot, Set<CellID> cellIDs,
                             CellExportListener listener, boolean recordCellIDs);
@@ -105,7 +104,7 @@ public interface CellExportManager {
         /**
          * Notification that a recording has been created successfully
          * @param worldRoot the world root that was created
-         * @param cells the cells to be created
+         * @param cells the cells to be recorded
          */
         public void recordingCreated(WorldRoot worldRoot, Set<CellID> cells);
 
