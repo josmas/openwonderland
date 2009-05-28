@@ -669,30 +669,6 @@ public abstract class ClientXrw implements Runnable {
      */
     private void configureWindow(WindowXrw win, ConfigureWindowMsgArgs msg) {
 
-        /* TODO: winconfig: x11: notyet
-        // Ignore messages from ourself
-        if (msg.clientId == clientId) {
-            return;
-        }
-
-        int wAndBorder = msg.wAndBorder;
-        int hAndBorder = msg.hAndBorder;
-
-        if (wAndBorder > WINDOW_MAX_WIDTH) {
-            wAndBorder = WINDOW_MAX_WIDTH;
-            AppXrw.logger.warning("createWindow: width " + wAndBorder + " was truncated to maximum width");
-        }
-        if (hAndBorder > WINDOW_MAX_HEIGHT) {
-            hAndBorder = WINDOW_MAX_HEIGHT;
-            AppXrw.logger.warning("createWindow: height " + hAndBorder + " was truncated to maximum height");
-        }
-
-        WindowXrw sibWin = lookupWindow(msg.sibid);
-        win.setScreenPositionLocal(msg.x, msg.y);
-        win.setSizeLocal(wAndBorder, hAndBorder);
-        win.restackAboveLocal(sibWin);
-        */
-
         // Is this a configure from ourselves or some other client?
         if (msg.clientId == clientId) {
 
@@ -706,6 +682,15 @@ public abstract class ClientXrw implements Runnable {
             } else {
                 // Not a resize. It's a move-or-restack-only from ourselves. Ignore it.
             }
+        }
+
+        if (msg.wAndBorder > WINDOW_MAX_WIDTH) {
+            msg.wAndBorder = WINDOW_MAX_WIDTH;
+            AppXrw.logger.warning("createWindow: width " + msg.wAndBorder + " was truncated to maximum width");
+        }
+        if (msg.hAndBorder > WINDOW_MAX_HEIGHT) {
+            msg.hAndBorder = WINDOW_MAX_HEIGHT;
+            AppXrw.logger.warning("createWindow: height " + msg.hAndBorder + " was truncated to maximum height");
         }
 
         WindowXrw sibWin = lookupWindow(msg.sibid);

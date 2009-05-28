@@ -13,6 +13,7 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import java.awt.Color;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 /**
  *
@@ -105,6 +106,7 @@ public class HeaderPanel extends javax.swing.JPanel {
         }
     }
 
+    @Override
     public void addMouseListener (MouseListener listener) {
         super.addMouseListener(listener);
         if (jLabel1 != null) {
@@ -118,6 +120,7 @@ public class HeaderPanel extends javax.swing.JPanel {
         }
     }
 
+    @Override
     public void removeMouseListener (MouseListener listener) {
         super.removeMouseListener(listener);
         if (jLabel1 != null) {
@@ -130,6 +133,34 @@ public class HeaderPanel extends javax.swing.JPanel {
             jButton1.removeMouseListener(listener);
         }
 
+    }
+
+    @Override
+    public void addMouseMotionListener (MouseMotionListener listener) {
+        super.addMouseMotionListener(listener);
+        if (jLabel1 != null) {
+            jLabel1.addMouseMotionListener(listener);
+        }
+        if (jLabel2 != null) {
+            jLabel2.addMouseMotionListener(listener);
+        }
+        if (jButton1 != null) {
+            jButton1.addMouseMotionListener(listener);
+        }
+    }
+
+    @Override
+    public void removeMouseMotionListener (MouseMotionListener listener) {
+        super.removeMouseMotionListener(listener);
+        if (jLabel1 != null) {
+            jLabel1.removeMouseMotionListener(listener);
+        }
+        if (jLabel2 != null) {
+            jLabel2.removeMouseMotionListener(listener);
+        }
+        if (jButton1 != null) {
+            jButton1.removeMouseMotionListener(listener);
+        }
     }
 
     public void setTitle (String title) {

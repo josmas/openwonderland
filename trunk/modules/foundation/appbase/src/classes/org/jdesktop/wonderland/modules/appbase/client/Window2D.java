@@ -1551,21 +1551,32 @@ public abstract class Window2D {
 
         case PRIMARY:
         case UNKNOWN:
-            return new ContextMenuItem[] {
-                new SimpleContextMenuItem("Release Control", new ContextMenuActionListener () {
-                    public void actionPerformed(ContextMenuItemEvent event) {
-                        app.getControlArb().releaseControl();
-                    }
-                })
-                /*
-                ,
-                new SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
-                    public void actionPerformed(ContextMenuItemEvent event) {
-                        System.err.println("Show in HUD Not yet implemented.");
-                    }
-                })
-                */
-            };
+            ContextMenuItem[] menuItems = new ContextMenuItem[1];
+            if (app.getControlArb().hasControl()) {
+                menuItems[0] = 
+                    new SimpleContextMenuItem("Release Control", new ContextMenuActionListener () {
+                            public void actionPerformed(ContextMenuItemEvent event) {
+                                app.getControlArb().releaseControl();
+                            }
+                    });
+            } else {
+                menuItems[0] = 
+                    new SimpleContextMenuItem("Take Control", new ContextMenuActionListener () {
+                            public void actionPerformed(ContextMenuItemEvent event) {
+                                app.getControlArb().takeControl();
+                            }
+                    });
+            }
+                    
+            /* TODO: eventually add:
+            menuItems[1] = SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
+                public void actionPerformed(ContextMenuItemEvent event) {
+                    System.err.println("Show in HUD Not yet implemented.");
+                }
+            })
+            */
+
+            return menuItems;
 
         case SECONDARY:
             // TODO: for now there are no extra items

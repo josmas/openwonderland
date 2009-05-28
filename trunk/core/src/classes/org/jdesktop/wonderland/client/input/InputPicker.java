@@ -333,9 +333,7 @@ public abstract class InputPicker {
 	    }
 
 	    logger.finest("isWindowSwingEntity(entity) = " + isWindowSwingEntity(entity));
-	    if (consumesEvent && isWindowSwingEntity(entity) &&
-                // TODO:HACK
-                !isChangeControlEvent(awtMouseEvent)) {
+	    if (consumesEvent && isWindowSwingEntity(entity)) {
 		// WindowSwing pick semantics: Stop at the first WindowSwing which has any listener which
 		// will consume the event. Note that because of single-threaded nature of the Embedded Swing 
 		// interface we cannot do any further propagation of the event to parents or unders.
@@ -382,13 +380,6 @@ public abstract class InputPicker {
 	// We know whether it is a WindowSwing entity by looking for the attached WindowSwingEntityComponent
 	EntityComponent comp = entity.getComponent(InputManager.WindowSwingViewMarker.class);
 	return comp != null;
-    }
-
-    // TODO:HACK
-    private static boolean isChangeControlEvent(MouseEvent me) {
-        return me.getID() == MouseEvent.MOUSE_CLICKED &&
-                me.getButton() == MouseEvent.BUTTON1 &&
-                (me.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0;
     }
 
     /**
