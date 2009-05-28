@@ -84,7 +84,7 @@ public class SampleCell extends Cell {
     public boolean setStatus(CellStatus status) {
         boolean ret = super.setStatus(status);
         if (status == CellStatus.ACTIVE) {
-            menuComponent.setShowStandardMenuItems(false);
+        //    menuComponent.setShowStandardMenuItems(false);
             menuComponent.addContextMenuFactory(new SampleContextMenuFactory());
         }
         else if (status == CellStatus.DISK) {
