@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.webdav.common;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.apache.commons.httpclient.HttpURL;
 import org.apache.commons.httpclient.URIException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
@@ -34,6 +35,9 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
 public class WebdavContentCollection extends WebdavContentNode
         implements ContentCollection
 {
+    private static final Logger logger =
+            Logger.getLogger(WebdavContentCollection.class.getName());
+
     public WebdavContentCollection(AuthenticatedWebdavResource resource,
                                    WebdavContentCollection parent)
     {
@@ -57,6 +61,10 @@ public class WebdavContentCollection extends WebdavContentNode
     public WebdavContentNode getChild(String path) throws ContentRepositoryException {
         try {
             HttpURL url = getChildURL(getResource().getHttpURL(), path);
+            
+            logger.fine("[WebdavContentCollection] Get child " + path +
+                        " returns " + url + " from " + this);
+
             AuthenticatedWebdavResource resource =
                     new AuthenticatedWebdavResource(url,
                                        getResource().getAuthCookieName(),
@@ -76,6 +84,10 @@ public class WebdavContentCollection extends WebdavContentNode
     {
         try {
             HttpURL newURL = getChildURL(getResource().getHttpURL(), name);
+
+            logger.fine("[WebdavContentCollection] Create child " + name +
+                        " returns " + newURL + " from " + this);
+
             AuthenticatedWebdavResource newResource =
                     new AuthenticatedWebdavResource(newURL,
                                               getResource().getAuthCookieName(),
@@ -118,11 +130,17 @@ public class WebdavContentCollection extends WebdavContentNode
     }
 
     protected WebdavContentNode getContentNode(AuthenticatedWebdavResource resource) {
+        WebdavContentNode out;
+
         if (resource.isCollection()) {
-            return new WebdavContentCollection(resource, this);
+            out = new WebdavContentCollection(resource, this);
         } else {
-            return new WebdavContentResource(resource, this);
+            out = new WebdavContentResource(resource, this);
         }
+
+        logger.fine("[WebdavContentCollection] Get node for resource " +
+                    resource + " returns " + out + " from " + this);
+        return out;
     }
 
     protected HttpURL getChildURL(HttpURL parent, String childPath)

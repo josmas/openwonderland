@@ -79,6 +79,9 @@ public class WebdavClientPlugin extends BaseClientPlugin {
             WebdavContentRepository repo =
                     new WebdavContentRepository(root, loginInfo.getUsername());
 
+            logger.fine("[WebdavClientPlugin] Register repository with root " +
+                        baseURL + " and resource " + wdr);
+
             ContentRepositoryRegistry.getInstance().registerRepository(loginInfo, repo);
         } catch (AuthenticationException ae) {
             logger.log(Level.WARNING, "Unable to get auth cookie name", ae);

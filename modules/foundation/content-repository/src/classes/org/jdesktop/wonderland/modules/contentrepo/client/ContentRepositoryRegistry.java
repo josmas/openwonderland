@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.contentrepo.client;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 
@@ -27,6 +28,9 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
  * @author jkaplan
  */
 public class ContentRepositoryRegistry {
+    private static final Logger logger =
+            Logger.getLogger(ContentRepositoryRegistry.class.getName());
+
     /** a map of remote repositories, mapped by session */
     private Map<ServerSessionManager, ContentRepository> repos =
             new HashMap<ServerSessionManager, ContentRepository>();
@@ -49,6 +53,8 @@ public class ContentRepositoryRegistry {
     public void registerRepository(ServerSessionManager session,
                                    ContentRepository repo)
     {
+        logger.fine("[ContentRepositoryRegistry] Register repository " + repo +
+                    " for session " + session + " on " + this);
         repos.put(session, repo);
     }
 
@@ -58,6 +64,8 @@ public class ContentRepositoryRegistry {
      */
     public void unregisterRepository(ServerSessionManager session)
     {
+        logger.fine("[ContentRepositoryRegistry] Unregister repository for " +
+                    "session " + session + " on " + this);
         repos.remove(session);
     }
 
@@ -68,6 +76,9 @@ public class ContentRepositoryRegistry {
      * or null if it can't be found
      */
     public ContentRepository getRepository(ServerSessionManager session) {
+        ContentRepository out = repos.get(session);
+        logger.fine("[ContentRepositoryRegistry] Get repository for " +
+                    session + " returns " + out + " on " + this);
         return repos.get(session);
     }
 
