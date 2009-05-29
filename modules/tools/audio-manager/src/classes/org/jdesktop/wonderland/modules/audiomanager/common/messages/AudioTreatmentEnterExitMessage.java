@@ -15,17 +15,36 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.client;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-/**
- * Listener for Volume Change
- * 
- * @author  jprovino
- */
-public interface VolumeChangeListener {
+import org.jdesktop.wonderland.common.messages.Message;
 
-    public void volumeChanged(PresenceInfo info, double volume);
+import org.jdesktop.wonderland.common.cell.CellID;
+
+import org.jdesktop.wonderland.common.messages.Message;
+
+/**
+ *
+ * @author jprovino
+ */
+public class AudioTreatmentEnterExitMessage extends Message {
+    
+    private String callID;
+    private boolean entered;
+
+    public AudioTreatmentEnterExitMessage(String callID, boolean entered) {
+	this.callID = callID;
+	this.entered = entered;
+    }
+    
+    public String getCallID() {
+	return callID;
+    }
+
+    public boolean entered() {
+	return entered;
+    }
 
 }

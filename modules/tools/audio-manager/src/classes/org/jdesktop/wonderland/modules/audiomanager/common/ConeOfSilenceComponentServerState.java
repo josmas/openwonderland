@@ -36,13 +36,15 @@ public class ConeOfSilenceComponentServerState extends CellComponentServerState 
     @XmlElement(name = "name")
     private String name = "ConeOfSilence";
     @XmlElement(name = "fullVolumeRadius")
-    private float fullVolumeRadius = 1.5f;
+    private double fullVolumeRadius = 1.5;
+    @XmlElement(name = "outsideAudioVolume")
+    private double outsideAudioVolume = 0;
 
     /** Default constructor */
     public ConeOfSilenceComponentServerState() {
     }
 
-    public ConeOfSilenceComponentServerState(String name, float fullVolumeRadius) {
+    public ConeOfSilenceComponentServerState(String name, double fullVolumeRadius) {
         this.name = name;
         this.fullVolumeRadius = fullVolumeRadius;
     }
@@ -60,13 +62,22 @@ public class ConeOfSilenceComponentServerState extends CellComponentServerState 
         return name;
     }
 
-    public void setFullVolumeRadius(float fullVolumeRadius) {
+    public void setFullVolumeRadius(double fullVolumeRadius) {
         this.fullVolumeRadius = fullVolumeRadius;
     }
 
     @XmlTransient
-    public float getFullVolumeRadius() {
+    public double getFullVolumeRadius() {
         return fullVolumeRadius;
+    }
+
+    public void setOutsideAudioVolume(double outsideAudioVolume) {
+        this.outsideAudioVolume = outsideAudioVolume;
+    }
+
+    @XmlTransient
+    public double getOutsideAudioVolume() {
+        return outsideAudioVolume;
     }
 
 }

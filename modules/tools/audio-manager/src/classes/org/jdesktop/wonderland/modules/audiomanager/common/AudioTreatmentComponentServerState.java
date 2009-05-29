@@ -30,26 +30,35 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
  */
 @XmlRootElement(name="audio-treatment-component")
 @ServerState
-public class AudioTreatmentComponentServerState extends CellComponentServerState {
+//public class AudioTreatmentComponentServerState extends CellComponentServerState {
+public class AudioTreatmentComponentServerState extends AudioParticipantComponentServerState {
 
     @XmlElements({
 	@XmlElement(name="treatment")
     })
-    public String[] treatments = null;
+    public String[] treatments = new String[0];
 
     @XmlElement(name="groupId")
     public String groupId = null;
 
     @XmlElement(name="fullVolumeRadius")
-    public double fullVolumeRadius;
+    public double fullVolumeRadius = 2;
 
     @XmlElement(name="zeroVolumeRadius")
-    public double zeroVolumeRadius;
+    public double zeroVolumeRadius = 10;
 
     @XmlElement(name="useFullVolumeSpatializer")
     public boolean useFullVolumeSpatializer;
 
+    @XmlElement(name="volume")
+    public double volume = 1;
+
     public AudioTreatmentComponentServerState() {
+	super(false, false);
+    }
+
+    public void setTreatments(String[] treatments) {
+	this.treatments = treatments;
     }
 
     @XmlTransient
@@ -93,6 +102,15 @@ public class AudioTreatmentComponentServerState extends CellComponentServerState
 	return useFullVolumeSpatializer;
     }
 
+    public void setVolume(double Volume) {
+	this.volume = volume;
+    }
+
+    @XmlTransient
+    public double getVolume() {
+	return volume;
+    }
+   
     public String getServerComponentClassName() {
 	return "org.jdesktop.wonderland.modules.audiomanager.server.AudioTreatmentComponentMO";
     }

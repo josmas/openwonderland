@@ -21,8 +21,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.cell.ProximityComponent;
-import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -38,7 +36,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
  * @author jprovino
  */
 @ExperimentalAPI
-public class ConeOfSilenceComponent extends CellComponent implements ProximityListener {
+public class ConeOfSilenceComponent extends CellComponent {
     
     private static Logger logger = Logger.getLogger(ConeOfSilenceComponent.class.getName());
 
@@ -47,16 +45,6 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
     
     public ConeOfSilenceComponent(Cell cell) {
         super(cell);
-
-	ProximityComponent comp = new ProximityComponent(cell);
-
-	BoundingVolume[] boundingVolume = new BoundingVolume[1];
-
-	boundingVolume[0] = cell.getLocalBounds();
-
-	comp.addProximityListener(this, boundingVolume);
-
-	cell.addComponent(comp);
     }
     
     @Override
@@ -86,13 +74,8 @@ public class ConeOfSilenceComponent extends CellComponent implements ProximityLi
     @Override
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
-    }
 
-    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
-            int proximityIndex) {
-
-        logger.info("COS cellID " + cell.getCellID() + " viewCellID " + viewCellID
- + " entered = " + entered);
+	logger.info("setClientState for cone! " + clientState);
     }
 
 }

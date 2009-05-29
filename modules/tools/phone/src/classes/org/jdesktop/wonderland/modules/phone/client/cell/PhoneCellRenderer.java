@@ -23,6 +23,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 
@@ -68,7 +69,7 @@ public class PhoneCellRenderer extends JmeColladaRenderer {
         public void commitEvent(Event event) {
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
-                if (buttonEvent.isPressed()) {
+                if (buttonEvent.isPressed() && buttonEvent.getButton() == ButtonId.BUTTON1) {
                     ((PhoneCell) cell).phoneSelected();
                 }
             }

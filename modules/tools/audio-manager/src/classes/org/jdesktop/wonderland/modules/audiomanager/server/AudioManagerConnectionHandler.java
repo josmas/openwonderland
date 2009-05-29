@@ -31,8 +31,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMes
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatDialOutMessage;
-
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;

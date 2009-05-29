@@ -13,7 +13,7 @@ package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterExitMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentEnterExitMessage;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupListener;
@@ -39,23 +39,19 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectio
 import java.io.Serializable;
 
 /**
- * A server cell that provides conference coneofsilence functionality
  * @author jprovino
  */
-public class ConeOfSilenceProximityListener implements ProximityListenerSrv, 
-	AudioGroupListener, Serializable {
+public class AudioTreatmentProximityListener implements ProximityListenerSrv, Serializable {
 
     private static final Logger logger =
-            Logger.getLogger(ConeOfSilenceProximityListener.class.getName());
+            Logger.getLogger(AudioTreatmentProximityListener.class.getName());
 
-    private CellID cellID;
-    private String name;
-    private double outsideAudioVolume;
+    CellID cellID;
+    String name;
 
-    public ConeOfSilenceProximityListener(CellMO cellMO, String name, double outsideAudioVolume) {
+    public AudioTreatmentProximityListener(CellMO cellMO) {
 	cellID = cellMO.getCellID();
-        this.name = name;
-	this.outsideAudioVolume = outsideAudioVolume;
+        name = cellMO.getName();
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,
@@ -78,7 +74,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
     public void cellEntered(String callId) {
         /*
-         * The avatar has entered the ConeOfSilence cell.
+         * The avatar has entered the audio treatment cell.
          * Set the public and incoming spatializers for the avatar to be
          * the zero volume spatializer.
          * Set a private spatializer for the given fullVolume radius
@@ -86,47 +82,9 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
          * For each avatar already in the cell, set a private spatializer
          * for this avatar.
          */
-        logger.info(callId + " entered cone " + name + " avatar cell ID " + callId);
+        logger.info(callId + " entered audio treatment " + name + " avatar cell ID " + callId);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        Player player = vm.getPlayer(callId);
-
-        if (player == null) {
-            logger.warning("Can't find player for " + callId);
-            return;
-        }
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-        if (audioGroup == null) {
-            AudioGroupSetup ags = new AudioGroupSetup();
-
-	    ags.audioGroupListener = this;
-
-            ags.spatializer = new FullVolumeSpatializer();
-
-            ags.spatializer.setAttenuator(
-                    DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
-
-            audioGroup = vm.createAudioGroup(name, ags);
-        }
-
-        audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
-       	    AudioGroupPlayerInfo.ChatType.SECRET));
-
-	//System.out.println("Attenuate other groups to " + outsideAudioVolume + " name " + name);
-
-	player.attenuateOtherGroups(audioGroup, 0, outsideAudioVolume);
-
-	WonderlandClientSender sender =
-            WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
-
-	sender.send(new ConeOfSilenceEnterExitMessage(callId, true));
-    }
-
-    public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-        player.attenuateOtherGroups(audioGroup, 0, 0);
     }
 
     private void cellExited(CellID softphoneCellID) {
@@ -134,36 +92,9 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     }
 
     public void cellExited(String callId) {
-        logger.info(callId + " exited cone " + name + " avatar cell ID " + callId);
+        logger.info(callId + " exited audio treatment " + name + " avatar cell ID " + callId);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-        if (audioGroup == null) {
-            logger.warning("Not a member of audio group " + name);
-            return;
-        }
-
-        Player player = vm.getPlayer(callId);
-
-        if (player == null) {
-            logger.warning("Can't find player for " + callId);
-            return;
-        }
-
-        audioGroup.removePlayer(player);
-
-	WonderlandClientSender sender =
-            WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
-
-	sender.send(new ConeOfSilenceEnterExitMessage(callId, false));
-    }
-
-    public void playerRemoved(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-        if (audioGroup.getNumberOfPlayers() == 0) {
-            AppContext.getManager(VoiceManager.class).removeAudioGroup(audioGroup);
-        }
     }
 
 }

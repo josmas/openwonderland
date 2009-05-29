@@ -17,47 +17,30 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
-
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
+import org.jdesktop.wonderland.common.messages.Message;
+
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  *
  * @author jprovino
  */
-public class VoiceChatDialOutMessage extends VoiceChatMessage {   
+public class ChangeUsernameAliasMessage extends CellMessage {
     
-    String group;
-    String softphoneCallID;
-    ChatType chatType;
     PresenceInfo presenceInfo;
-    String phoneNumber;
 
-    public VoiceChatDialOutMessage(String group, String softphoneCallID, ChatType chatType, 
-	    PresenceInfo presenceInfo, String phoneNumber) {
-
-	super(group);
-
-	this.softphoneCallID = softphoneCallID;
-	this.chatType = chatType;
+    public ChangeUsernameAliasMessage(CellID cellID, PresenceInfo presenceInfo) {
+	super(cellID);
+	
 	this.presenceInfo = presenceInfo;
-	this.phoneNumber = phoneNumber;	
     }
-
-    public ChatType getChatType() {
-	return chatType;
-    }
-
-    public String getSoftphoneCallID() {
-	return softphoneCallID;
-    }
-
+    
     public PresenceInfo getPresenceInfo() {
 	return presenceInfo;
-    }
-
-    public String getPhoneNumber() {
-	return phoneNumber;
     }
 
 }

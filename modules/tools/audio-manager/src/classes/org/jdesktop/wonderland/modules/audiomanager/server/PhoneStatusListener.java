@@ -101,7 +101,7 @@ public class PhoneStatusListener implements ManagedCallStatusListener, Serializa
 	    }
 
             sender.send(new CallEndedResponseMessage(group, presenceInfo, 
-		externalCallID, status.getOption("Reason")));
+		status.getOption("Reason")));
 	}
     }
 

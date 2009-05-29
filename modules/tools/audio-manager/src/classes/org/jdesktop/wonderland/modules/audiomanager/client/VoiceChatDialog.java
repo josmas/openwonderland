@@ -80,7 +80,7 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
         setBuddyList();
     }
 
-    public void aliasChanged(String previousAlias, PresenceInfo presenceInfo) {
+    public void usernameAliasChanged(PresenceInfo presenceInfo) {
         setBuddyList();
     }
 
@@ -365,15 +365,10 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     logger.info("Sent join message, about to enable leave button");
 
     if (phoneNumberTextField.getText().length() > 0 && name.length() > 0) {
-	PresenceInfo info = (PresenceInfo) caller.clone();
-
-	info.userID = new WonderlandIdentity(name, name, null);
+	PresenceInfo info = new PresenceInfo(null, null, new WonderlandIdentity(name, name, null), null);
 	info.usernameAlias = name;
 
-	pm.addPresenceInfo(info);
-
-	session.send(client, new VoiceChatDialOutMessage(group, info,
-	    chatType, nameTextField.getText(), phoneNumberTextField.getText()));
+	session.send(client, new VoiceChatDialOutMessage(group, caller.callID, chatType, info, phoneNumberTextField.getText()));
 
 	nameTextField.setText("");
 	phoneNumberTextField.setText("");

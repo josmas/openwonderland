@@ -39,25 +39,35 @@ import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponen
 public class ConeOfSilenceComponentProperties extends javax.swing.JPanel implements CellComponentPropertiesSPI {
     private CellPropertiesEditor editor = null;
     private String originalName = null;
-    private float originalFullVolumeRadius = 0.0f;
+    private double originalFullVolumeRadius = 0.0;
+    private double originalOutsideAudioVolume = 0.0;
     private SpinnerNumberModel fullVolumeRadiusModel = null;
+    private SpinnerNumberModel outsideAudioVolumeModel = null;
 
     /** Creates new form ConeOfSilenceComponentProperties */
     public ConeOfSilenceComponentProperties() {
         initComponents();
 
         // Set the maximum and minimum values for the volume radius spinner
-        Float value = new Float(1);
-        Float min = new Float(0);
-        Float max = new Float(100);
-        Float step = new Float(1);
+        Double value = new Double(1);
+        Double min = new Double(0);
+        Double max = new Double(100);
+        Double step = new Double(1);
         fullVolumeRadiusModel = new SpinnerNumberModel(value, min, max, step);
         fullVolumeRadiusSpinner.setModel(fullVolumeRadiusModel);
+
+        // Set the maximum and minimum values for the outside volume spinner
+        value = new Double(1);
+        min = new Double(0);
+        max = new Double(20);
+        step = new Double(1);
+        outsideAudioVolumeModel = new SpinnerNumberModel(value, min, max, step);
+        outsideAudioVolumeSpinner.setModel(outsideAudioVolumeModel);
 
         // Listen for changes to the text field and spinner
         nameTextField.getDocument().addDocumentListener(new NameTextFieldListener());
         fullVolumeRadiusModel.addChangeListener(new RadiusChangeListener());
-
+        outsideAudioVolumeModel.addChangeListener(new OutsideAudioVolumeChangeListener());
     }
 
     /**
@@ -86,12 +96,17 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
      * @{inheritDoc}
      */
     public <T extends CellServerState> void updateGUI(T cellServerState) {
-        CellComponentServerState state = cellServerState.getComponentServerState(ConeOfSilenceComponentServerState.class);
+        ConeOfSilenceComponentServerState state = (ConeOfSilenceComponentServerState)
+	    cellServerState.getComponentServerState(ConeOfSilenceComponentServerState.class);
+
         if (state != null) {
-            originalName = ((ConeOfSilenceComponentServerState)state).getName();
-            originalFullVolumeRadius = ((ConeOfSilenceComponentServerState)state).getFullVolumeRadius();
+            originalName = state.getName();
+            originalFullVolumeRadius = state.getFullVolumeRadius();
+	    originalOutsideAudioVolume = state.getOutsideAudioVolume();
+	    
             nameTextField.setText(originalName);
             fullVolumeRadiusSpinner.setValue(originalFullVolumeRadius);
+            outsideAudioVolumeSpinner.setValue(originalOutsideAudioVolume);
             return;
         }
     }
@@ -102,13 +117,16 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
     public <T extends CellServerState> void getCellServerState(T cellServerState) {
         // Figure out whether there already exists a server state for the
         // component.
-        CellComponentServerState state = cellServerState.getComponentServerState(ConeOfSilenceComponentServerState.class);
+        ConeOfSilenceComponentServerState state = (ConeOfSilenceComponentServerState)
+	    cellServerState.getComponentServerState(ConeOfSilenceComponentServerState.class);
+
         if (state == null) {
             state = new ConeOfSilenceComponentServerState();
         }
-        ((ConeOfSilenceComponentServerState)state).setName(nameTextField.getText());
-        Float value = (Float)fullVolumeRadiusModel.getValue();
-        ((ConeOfSilenceComponentServerState)state).setFullVolumeRadius(value);
+        state.setName(nameTextField.getText());
+        state.setFullVolumeRadius((Double) fullVolumeRadiusModel.getValue());
+        state.setOutsideAudioVolume((Double) outsideAudioVolumeModel.getValue());
+
         cellServerState.addComponentServerState(state);
     }
 
@@ -118,14 +136,31 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
      */
     class RadiusChangeListener implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
-            Float radius = (Float)fullVolumeRadiusModel.getValue();
-            if (editor != null && radius != originalFullVolumeRadius) {
-                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
+            Double radius = (Double) fullVolumeRadiusModel.getValue();
+            if (editor != null) { 
+		if (radius != originalFullVolumeRadius) {
+                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
+                } else {
+                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
+		}
             }
-            else if (editor != null) {
-                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
-            }
+        }
+    }
 
+    /**
+     * Inner class to listen for changes to the text field and fire off dirty
+     * or clean indications to the cell properties editor
+     */
+    class OutsideAudioVolumeChangeListener implements ChangeListener {
+        public void stateChanged(ChangeEvent e) {
+            Double volume = (Double) outsideAudioVolumeModel.getValue();
+            if (editor != null) { 
+		if (volume != originalOutsideAudioVolume) {
+                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
+                } else {
+                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
+		}
+            }
         }
     }
 
@@ -148,11 +183,12 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
 
         private void checkDirty() {
             String name = nameTextField.getText();
-            if (editor != null && name.equals(originalName) == false) {
-                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
-            }
-            else if (editor != null) {
-                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
+            if (editor != null) { 
+		if (name.equals(originalName) == false) {
+                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
+                } else {
+                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
+		}
             }
         }
     }
@@ -170,26 +206,31 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
         jLabel2 = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
         fullVolumeRadiusSpinner = new javax.swing.JSpinner();
+        outsideAudioVolumeSpinner = new javax.swing.JSpinner();
+        jLabel3 = new javax.swing.JLabel();
 
         jLabel1.setText("Name:");
 
         jLabel2.setText("Full Volume Radius:");
+
+        jLabel3.setText("Outside Audio Volume:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(30, 30, 30)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .add(99, 99, 99)
-                        .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .add(18, 18, 18)
-                        .add(fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(jLabel2)
+                    .add(jLabel1)
+                    .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 146, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, outsideAudioVolumeSpinner)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -197,13 +238,17 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
+                .add(27, 27, 27)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(278, Short.MAX_VALUE))
+                    .add(fullVolumeRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2))
+                .add(27, 27, 27)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(outsideAudioVolumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel3))
+                .addContainerGap(202, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -212,6 +257,8 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
     private javax.swing.JSpinner fullVolumeRadiusSpinner;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JTextField nameTextField;
+    private javax.swing.JSpinner outsideAudioVolumeSpinner;
     // End of variables declaration//GEN-END:variables
 }

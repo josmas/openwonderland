@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantCompo
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
 
 import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
 
@@ -112,12 +113,14 @@ public class AudioParticipantComponent extends CellComponent implements
         case DISK:
 	    channelComp.removeMessageReceiver(AudioParticipantSpeakingMessage.class);
 	    channelComp.removeMessageReceiver(AudioParticipantMuteCallMessage.class);
+	    channelComp.removeMessageReceiver(ChangeUsernameAliasMessage.class);
             break;
 
 	case BOUNDS:
             channelComp = cell.getComponent(ChannelComponent.class);
             channelComp.addMessageReceiver(AudioParticipantSpeakingMessage.class, this);
             channelComp.addMessageReceiver(AudioParticipantMuteCallMessage.class, this);
+            channelComp.addMessageReceiver(ChangeUsernameAliasMessage.class, this);
 
 	    if (cell instanceof OrbCell == false && menuItem == null) {
             menuItem = new String[]{"Volume"};
@@ -150,8 +153,10 @@ public class AudioParticipantComponent extends CellComponent implements
 	    setSpeakingIndicator(msg.getCellID(), msg.isSpeaking());
         } else if (message instanceof AudioParticipantMuteCallMessage) {
             AudioParticipantMuteCallMessage msg = (AudioParticipantMuteCallMessage) message;
-
 	    setMuteIndicator(msg.getCellID(), msg.isMuted());
+        } else if (message instanceof ChangeUsernameAliasMessage) {
+            ChangeUsernameAliasMessage msg = (ChangeUsernameAliasMessage) message;
+	    changeUsernameAlias(msg.getCellID(), msg.getPresenceInfo());
 	}
     }
 
@@ -201,6 +206,15 @@ public class AudioParticipantComponent extends CellComponent implements
         InputManager.inputManager().postEvent(avatarNameEvent);
     }
 
+    private void changeUsernameAlias(CellID cellID, PresenceInfo info) {
+        pm.changeUsernameAlias(info);
+
+	AvatarNameEvent avatarNameEvent = new AvatarNameEvent(EventType.CHANGE_NAME,
+	    info.userID.getUsername(), info.usernameAlias);
+
+        InputManager.inputManager().postEvent(avatarNameEvent);
+    }
+
     private VolumeControlJFrame volumeControlJFrame;
 
     private void adjustVolume(ContextMenuItemEvent event) {
@@ -216,7 +230,9 @@ public class AudioParticipantComponent extends CellComponent implements
 	String username = cell.getName();
 
 	if (volumeControlJFrame == null) {
-	    volumeControlJFrame = new VolumeControlJFrame(this, username);
+	    PresenceInfo presenceInfo = pm.getPresenceInfo(cell.getCellID());
+
+	    volumeControlJFrame = new VolumeControlJFrame(this, presenceInfo);
 	} 
 
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
@@ -230,10 +246,13 @@ public class AudioParticipantComponent extends CellComponent implements
 	volumeControlJFrame.setVisible(true);
     }
 
-    public void volumeChanged(String userName, double volume) {
+    public void volumeChanged(PresenceInfo presenceIno, double volume) {
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
 	channelComp.send(new AudioVolumeMessage(cell.getCellID(), sc.getCallID(), volume));
+    }
+
+    public void usernameChanged(String username) {
     }
 
 }

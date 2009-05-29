@@ -44,6 +44,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantCompo
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
 
@@ -101,8 +102,18 @@ public class AudioParticipantComponentMO extends CellComponentMO
         super(cellMO);
 
 	cellID = cellMO.getCellID();
+    }
 
-	//System.out.println("Adding AudioParticipantComponent to " + cellMO.getName());
+    @Override
+    public void setServerState(CellComponentServerState serverState) {
+        super.setServerState(serverState);
+
+        // Fetch the component-specific state and set member variables
+        AudioParticipantComponentServerState state = (AudioParticipantComponentServerState) serverState;
+
+        isSpeaking = state.isSpeaking();
+
+	isMuted = state.isMuted();
     }
 
     @Override
@@ -113,7 +124,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
             state = new AudioParticipantComponentServerState(isSpeaking, isMuted);
         }
 
-        return state;
+        return super.getServerState(state);
     }
 
     @Override
@@ -122,12 +133,17 @@ public class AudioParticipantComponentMO extends CellComponentMO
             WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
-	//System.out.println("Get client state for " + cellID + " " + isSpeaking + " " + isMuted);
-	return new AudioParticipantComponentClientState(isSpeaking, isMuted);
+	if (clientState == null) {
+	    clientState = new AudioParticipantComponentClientState(isSpeaking, isMuted);
+	}
+
+	return super.getClientState(clientState, clientID, capabilities);
     }
 
     @Override
     public void setLive(boolean live) {
+	super.setLive(live);
+
         ChannelComponentMO channelComponent = (ChannelComponentMO)
             cellRef.get().getComponent(ChannelComponentMO.class);
 
@@ -140,6 +156,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    AppContext.getManager(VoiceManager.class).removeCallStatusListener(this);
 
 	    channelComponent.removeMessageReceiver(AudioVolumeMessage.class);
+	    channelComponent.removeMessageReceiver(ChangeUsernameAliasMessage.class);
 	    return;
 	}
 
@@ -150,6 +167,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	cellMO.addTransformChangeListener(myTransformChangeListener);
 
 	channelComponent.addMessageReceiver(AudioVolumeMessage.class, 
+            new ComponentMessageReceiverImpl(cellRef, this));
+	channelComponent.addMessageReceiver(ChangeUsernameAliasMessage.class, 
             new ComponentMessageReceiverImpl(cellRef, this));
     }
 
@@ -171,6 +190,11 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
         public void messageReceived(WonderlandClientSender sender, 
 	        WonderlandClientID clientID, CellMessage message) {
+
+	    if (message instanceof ChangeUsernameAliasMessage) {
+		sender.send(message);
+		return;
+	    }
 
             if (message instanceof AudioVolumeMessage == false) {
 		logger.warning("Unknown message:  " + message);

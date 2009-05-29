@@ -121,7 +121,10 @@ public class PhoneMessageHandler implements Serializable {
 	PresenceInfo presenceInfo = message.getPresenceInfo();
 
 	String externalCallID = group + "-" + callNumber++;
-	String softphoneCallID = presenceInfo.callID;
+
+	presenceInfo.callID = externalCallID;
+
+	String softphoneCallID = message.getSoftphoneCallID();
 
 	Call softphoneCall = vm.getCall(softphoneCallID);
 
@@ -134,7 +137,7 @@ public class PhoneMessageHandler implements Serializable {
  	if (softphonePlayer == null) {
 	    logger.warning("Softphone player is not connected!");
             sender.send(clientID, new CallEndedResponseMessage(
-	        group, presenceInfo, externalCallID, "Softphone is not connected!"));
+	        group, presenceInfo, "Softphone is not connected!"));
 	    return;
 	}
 
@@ -165,7 +168,7 @@ public class PhoneMessageHandler implements Serializable {
 	    logger.warning("Unable to get voice bridge for call " + cp + ":  "
 		+ e.getMessage());
             sender.send(clientID, new CallEndedResponseMessage(
-	        group, presenceInfo, externalCallID, "No voice bridge available!"));
+	        group, presenceInfo, "No voice bridge available!"));
 	    return;
 	}
 
@@ -174,12 +177,12 @@ public class PhoneMessageHandler implements Serializable {
 	if (audioGroup == null) {
 	    logger.warning("No audio group " + group);
             sender.send(clientID, new CallEndedResponseMessage(
-	        group, presenceInfo, externalCallID, "Audio group not found!"));
+	        group, presenceInfo, "Audio group not found!"));
 	    return;
 	}
 
 	cp.setPhoneNumber(message.getPhoneNumber());
-	cp.setName(message.getName());
+	cp.setName(presenceInfo.usernameAlias);
 	cp.setCallId(externalCallID);
 	cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
 	cp.setVoiceDetection(true);
@@ -197,7 +200,7 @@ public class PhoneMessageHandler implements Serializable {
 	    logger.warning("Unable to create call " + cp + ":  "
 		+ e.getMessage());
             sender.send(clientID, new CallEndedResponseMessage(
-	        group, presenceInfo, externalCallID, "Can't create call!"));
+	        group, presenceInfo, "Can't create call!"));
 	    return;
 	}
 
