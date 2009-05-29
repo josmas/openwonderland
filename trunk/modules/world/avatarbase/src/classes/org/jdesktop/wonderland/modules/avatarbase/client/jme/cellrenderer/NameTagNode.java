@@ -129,6 +129,7 @@ public class NameTagNode extends Node {
     }
 
     private boolean inConeOfSilence;
+    private boolean isSpeaking;
     private boolean isMuted;
 
     public void setNameTag(EventType eventType, String username, String usernameAlias) {
@@ -153,11 +154,13 @@ public class NameTagNode extends Node {
 
 	switch (eventType) {
 	case STARTED_SPEAKING:
+	    isSpeaking = true;
  	    displayName = getDisplayName(usernameAlias, true, false);
 	    setForegroundColor(SPEAKING_COLOR);
 	    break;
 	
 	case STOPPED_SPEAKING:
+	    isSpeaking = false;
  	    displayName = getDisplayName(usernameAlias, false, false);
 	    setForegroundColor(NOT_SPEAKING_COLOR);
 	    break;
@@ -175,6 +178,8 @@ public class NameTagNode extends Node {
 	    break;
 
         case CHANGE_NAME:
+	    this.usernameAlias = usernameAlias;
+	    displayName = getDisplayName(usernameAlias, isSpeaking, isMuted);
             break;
         }
 
@@ -184,7 +189,9 @@ public class NameTagNode extends Node {
 
         if (name.equals(usernameAlias) == false) {
             setFont(ALIAS_NAME_FONT);
-        }
+        } else {
+            setFont(REAL_NAME_FONT);
+	}
 
         if (foregroundColor != null) {
             setForegroundColor(foregroundColor);

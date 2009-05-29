@@ -100,8 +100,6 @@ public class PhoneMessageHandler {
         ChannelComponent.ComponentMessageReceiver msgReceiver =
 	    new ChannelComponent.ComponentMessageReceiver() {
                 public void messageReceived(CellMessage message) {
-                    PhoneResponseMessage msg = (PhoneResponseMessage)message;
-
 		    processMessage((PhoneResponseMessage) message);
                 }
             };

@@ -241,6 +241,8 @@ private void audioQualityMenuActionPerformed(java.awt.event.ActionEvent evt) {//
     }
 
     private void setAudioQuality(AudioQuality quality) {
+	System.out.println("Set audio Quality: " + quality + " listener " + audioMenuListener);
+
         if (audioMenuListener != null) {
             audioMenuListener.setAudioQuality(quality);
         }

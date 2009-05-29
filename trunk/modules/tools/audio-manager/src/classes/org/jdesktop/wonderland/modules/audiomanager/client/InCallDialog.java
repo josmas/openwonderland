@@ -153,7 +153,7 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 	setMemberList();
     }
 
-    public void aliasChanged(String previousAlias, PresenceInfo info) {
+    public void usernameAliasChanged(PresenceInfo info) {
 	setMemberList();
     }
 
@@ -169,6 +169,10 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
     }
 
     private int setMemberList() {
+	//System.out.println("-----------InCallDialog------------");
+	//pm.dump();
+	//System.out.println("-----------InCallDialog------------");
+
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
         ArrayList<String> memberData = new ArrayList();

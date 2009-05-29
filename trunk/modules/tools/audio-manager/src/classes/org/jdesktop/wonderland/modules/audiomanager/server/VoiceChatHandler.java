@@ -811,7 +811,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    orbs = new ConcurrentHashMap();
 	}
 
-	System.out.println("Player in range " + isInRange + " " + player
+	logger.fine("Player in range " + isInRange + " " + player
 	    + " player in range " + playerInRange + " orbs size " + orbs.size());
 
 	if (isInRange) {

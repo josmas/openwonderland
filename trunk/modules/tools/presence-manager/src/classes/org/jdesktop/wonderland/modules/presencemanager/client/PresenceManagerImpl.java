@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoUsernameAliasChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
@@ -168,9 +169,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	}
     }
 
-    private void notifyListenersAliasChanged(String previousAlias, 
-	    PresenceInfo presenceInfo) {
-
+    private void notifyListenersAliasChanged(PresenceInfo presenceInfo) {
 	/*
 	 * Notify listeners
 	 */
@@ -181,7 +180,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	}
 
 	for (int i = 0; i < listenerArray.length; i++) {
-	    listenerArray[i].aliasChanged(previousAlias, presenceInfo);
+	    listenerArray[i].usernameAliasChanged(presenceInfo);
 	}
     }
 
@@ -378,15 +377,16 @@ public class PresenceManagerImpl implements PresenceManager {
     }
 
     /**
-     * Change username in PresenceInfo.
+     * Change usernameAlias in PresenceInfo.
      * @param String user name
      */
-    public void changeUsername(PresenceInfo info, String username) {
-	String usernameAlias = info.usernameAlias;
+    public void changeUsernameAlias(PresenceInfo info) {
+	session.send(PresenceManagerClient.getInstance(), 
+	    new PresenceInfoUsernameAliasChangeMessage(info));
+    }
 
-	info.usernameAlias = username;
-
-	notifyListenersAliasChanged(usernameAlias, info);
+    public void usernameAliasChanged(PresenceInfo info) {
+	notifyListenersAliasChanged(info);
     }
 
     /**

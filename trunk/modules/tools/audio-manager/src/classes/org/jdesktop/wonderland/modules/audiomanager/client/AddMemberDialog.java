@@ -86,6 +86,10 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
     private ArrayList<PresenceInfo> members = new ArrayList();
 
     public void setMemberList() {
+	//System.out.println("---------AddMemberDialog----------");
+	//pm.dump();
+	//System.out.println("---------AddMemberDialog----------");
+
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
         ArrayList<String> memberData = new ArrayList();
@@ -145,7 +149,7 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
         setMemberList();
     }
 
-    public void aliasChanged(String previousAlias, PresenceInfo info) {
+    public void usernameAliasChanged(PresenceInfo info) {
         setMemberList();
     }
 
@@ -349,15 +353,11 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     String name = nameTextField.getText();
 
     if (phoneNumberTextField.getText().length() > 0 && name.length() > 0) {
-        PresenceInfo pi = (PresenceInfo) presenceInfo.clone();
-
-        pi.userID = new WonderlandIdentity(name, name, null);
+        PresenceInfo pi =  new PresenceInfo(null, null, new WonderlandIdentity(name, name, null), null);
         pi.usernameAlias = name;
 
-	pm.addPresenceInfo(pi);
-
-        session.send(client, new VoiceChatDialOutMessage(group, pi, ChatType.PRIVATE, 
-	    name, phoneNumberTextField.getText()));
+        session.send(client, new VoiceChatDialOutMessage(group, presenceInfo.callID, 
+	    ChatType.PRIVATE, pi, phoneNumberTextField.getText()));
 
         nameTextField.setText("");
         phoneNumberTextField.setText("");

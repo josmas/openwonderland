@@ -456,6 +456,8 @@ public class SoftphoneControlImpl {
 
     public void sendCommandToSoftphone(String cmd) {
         if (softphoneOutputStream == null) {
+	    System.out.println("Unable to send command to softphone, output stream is null "
+		+ cmd);
             return;
         }
         synchronized(softphoneOutputStream) {
@@ -468,6 +470,8 @@ public class SoftphoneControlImpl {
             } catch (IOException e) {
                 //e.printStackTrace();
                 softphoneOutputStream = null;
+
+		System.out.println("SoftphoneControl exception:  " + e.getMessage());
 
 		close(
                     "There was an error trying to use the software phone.  "
@@ -684,7 +688,6 @@ public class SoftphoneControlImpl {
         
     }
 
-    // mw todo:  make the dialog go away.
     private void close(final String failureMessage) {
 	connected = false;
         

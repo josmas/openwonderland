@@ -309,6 +309,8 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void setAudioQuality(AudioQuality audioQuality) {
         SoftphoneControlImpl.getInstance().setAudioQuality(audioQuality);
+
+	System.out.println("Set audio quality, now reconnect softphone");
         reconnectSoftphone();
     }
 
@@ -513,7 +515,7 @@ public class AudioManagerClient extends BaseConnection implements
 		new CallStatusJFrame(reason);
 	    }
 
-	    pm.removePresenceInfo(info);
+	    //pm.removePresenceInfo(info);
 
 	    notifyMemberChangeListeners(msg.getGroup(), info, false);
         } else if (message instanceof ConeOfSilenceEnterExitMessage) {

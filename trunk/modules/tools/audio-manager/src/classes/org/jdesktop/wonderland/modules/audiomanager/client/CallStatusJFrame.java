@@ -20,7 +20,11 @@ public class CallStatusJFrame extends javax.swing.JFrame {
     public CallStatusJFrame(String text) {
         initComponents();
 
-	phoneStatusTextField.setText(text);
+	if (text.indexOf("No voip Gateway!") >= 0) {
+	    phoneStatusTextField.setText("No phone system connection!");
+	} else {
+	    phoneStatusTextField.setText(text);
+ 	}
 
 	setVisible(true);
     }
@@ -38,8 +42,6 @@ public class CallStatusJFrame extends javax.swing.JFrame {
         okButton = new javax.swing.JButton();
         phoneStatusTextField = new javax.swing.JTextField();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
         jLabel1.setText("Phone Call Ended Unexpectedly");
 
         okButton.setText("ok");
@@ -48,8 +50,6 @@ public class CallStatusJFrame extends javax.swing.JFrame {
                 okButtonActionPerformed(evt);
             }
         });
-
-        phoneStatusTextField.setText("jTextField1");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

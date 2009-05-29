@@ -6,6 +6,7 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
@@ -13,12 +14,10 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerLis
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,13 +33,13 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTa
  * @author  jp
  */
 public class UserListJFrame extends javax.swing.JFrame implements PresenceManagerListener,
-        VolumeChangeListener {
+        VolumeChangeListener, UsernameAliasChangeListener {
 
     private static final Logger logger =
             Logger.getLogger(UserListJFrame.class.getName());
     private ChannelComponent channelComp;
     private PresenceManager pm;
-    private String username;
+    private PresenceInfo presenceInfo;
 
     /** Creates new form UserListJFrame */
     public UserListJFrame(PresenceManager pm, Cell cell) {
@@ -54,14 +53,15 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 
         pm.addPresenceManagerListener(this);
 
-        PresenceInfo info = pm.getPresenceInfo(cell.getCellID());
+        presenceInfo = pm.getPresenceInfo(cell.getCellID());
 
-        if (info == null) {
+        if (presenceInfo == null) {
             logger.warning("No Presence info for cell " + cell.getCellID());
             return;
         }
 
-        username = info.usernameAlias;
+	volumeButton.setEnabled(false);
+	editButton.setEnabled(false);
     }
 
     /** This method is called from within the constructor to
@@ -75,6 +75,9 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
 
         jScrollPane1 = new javax.swing.JScrollPane();
         userList = new javax.swing.JList();
+        volumeButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
+        propertiesButton = new javax.swing.JButton();
 
         userList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -88,43 +91,112 @@ public class UserListJFrame extends javax.swing.JFrame implements PresenceManage
         });
         jScrollPane1.setViewportView(userList);
 
+        volumeButton.setText("Volume");
+        volumeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                volumeButtonActionPerformed(evt);
+            }
+        });
+
+        editButton.setText("Edit");
+        editButton.setEnabled(false);
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
+
+        propertiesButton.setText("Properties");
+        propertiesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                propertiesButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 260, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(volumeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
+                .add(12, 12, 12)
+                .add(propertiesButton))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(propertiesButton)
+                    .add(volumeButton)
+                    .add(editButton))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    private HashMap<String, VolumeControlJFrame> userMap = new HashMap();
 
-    public Object[] getSelectedValues() {
-        return userList.getSelectedValues();
-    }
+    private HashMap<PresenceInfo, VolumeControlJFrame> volumeControlMap = new HashMap();
+    private HashMap<PresenceInfo, ChangeNameJFrame> changeNameMap = new HashMap();
 
 private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
+    Object[] selectedValues = userList.getSelectedValues();
+
+    if (selectedValues.length == 1) {
+        editButton.setEnabled(false);
+
+        String username = NameTagNode.getUsername((String) selectedValues[0]);
+
+	PresenceInfo[] info = pm.getAliasPresenceInfo(username);
+
+	if (info == null) {
+	    System.out.println("No PresenceInfo for " + username);
+	    editButton.setEnabled(false);
+	    return;
+	}
+
+	if (presenceInfo.equals(info[0])) {
+	    editButton.setEnabled(true);
+	}
+    } else {
+	editButton.setEnabled(false);
+    }
+
+    if (selectedValues.length >= 1) {
+	volumeButton.setEnabled(true);
+    }
+
+}//GEN-LAST:event_userListValueChanged
+
+private void volumeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volumeButtonActionPerformed
     Object[] selectedValues = userList.getSelectedValues();
 
     for (int i = 0; i < selectedValues.length; i++) {
         String username = NameTagNode.getUsername((String) selectedValues[i]);
 
-        VolumeControlJFrame volumeControl = userMap.get(username);
+	PresenceInfo[] info = pm.getAliasPresenceInfo(username);
+
+	if (info == null) {
+	    System.out.println("No PresenceInfo for " + username);
+	    continue;
+	}
+
+	PresenceInfo pi = info[0];
+
+        VolumeControlJFrame volumeControl = volumeControlMap.get(pi);
 
         if (volumeControl == null) {
-            volumeControl = new VolumeControlJFrame(this, username);
+            volumeControl = new VolumeControlJFrame(this, pi);
             volumeControl.setLocation(new Point((int) (getLocation().getX() + getWidth()),
                     (int) getLocation().getY()));
-            userMap.put(username, volumeControl);
+            volumeControlMap.put(pi, volumeControl);
 
-            if (username.equals(this.username)) {
-                volumeControl.setTitle("Master Volume");
+            if (presenceInfo.equals(pi)) {
+                volumeControl.setTitle("Master Volume for " + username);
             } else {
                 volumeControl.setTitle("Private Volume for " + username);
             }
@@ -134,19 +206,43 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
     }
 
     userList.clearSelection();
-    }//GEN-LAST:event_userListValueChanged
+}//GEN-LAST:event_volumeButtonActionPerformed
 
-    public void volumeChanged(String username, double volume) {
-        PresenceInfo[] info = pm.getAliasPresenceInfo(username);
+private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+    System.out.println("FOOOOOO:  " + presenceInfo);
 
-        if (info == null) {
-            logger.warning("volumeChanged unable to get presence info for " + username);
-            return;
-        }
+    ChangeNameJFrame changeNameJFrame = changeNameMap.get(presenceInfo);
 
+    if (changeNameJFrame == null) {
+	changeNameJFrame = new ChangeNameJFrame(this, presenceInfo);
+	changeNameJFrame.setLocation(new Point((int) (getLocation().getX() + getWidth()),
+            (int) getLocation().getY()));
+	changeNameMap.put(presenceInfo, changeNameJFrame);
+    }
+
+    changeNameJFrame.setVisible(true);
+}//GEN-LAST:event_editButtonActionPerformed
+
+private NamePropertiesJFrame namePropertiesJFrame;
+
+private void propertiesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_propertiesButtonActionPerformed
+    if (namePropertiesJFrame == null) {
+	namePropertiesJFrame = new NamePropertiesJFrame(presenceInfo);
+	namePropertiesJFrame.setLocation(new Point((int) (getLocation().getX() + getWidth()),
+            (int) getLocation().getY()));
+    }
+
+    namePropertiesJFrame.setVisible(true);
+}//GEN-LAST:event_propertiesButtonActionPerformed
+
+    public void changeUsernameAlias(PresenceInfo info) {
+        channelComp.send(new ChangeUsernameAliasMessage(info.cellID, info));
+    }
+
+    public void volumeChanged(PresenceInfo info, double volume) {
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-        channelComp.send(new AudioVolumeMessage(info[0].cellID, sc.getCallID(), volume));
+        channelComp.send(new AudioVolumeMessage(info.cellID, sc.getCallID(), volume));
     }
 
     public void done() {
@@ -188,18 +284,15 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
         setUserList();
     }
 
-    public void aliasChanged(String previousAlias, PresenceInfo info) {
-        VolumeControlJFrame volumeControl = userMap.remove(previousAlias);
-
-        if (volumeControl != null) {
-            userMap.put(info.usernameAlias, volumeControl);
-        }
-
+    public void usernameAliasChanged(PresenceInfo info) {
         setUserList();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton editButton;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton propertiesButton;
     private javax.swing.JList userList;
+    private javax.swing.JButton volumeButton;
     // End of variables declaration//GEN-END:variables
 }

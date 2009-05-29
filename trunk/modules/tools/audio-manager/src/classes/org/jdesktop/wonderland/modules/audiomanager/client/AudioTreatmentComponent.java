@@ -20,12 +20,14 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
 
@@ -63,6 +65,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
 	case DISK:
             if (msgReceiver != null) {
                 channelComp.removeMessageReceiver(AudioTreatmentMessage.class);
+                //channelComp.removeMessageReceiver(CellServerComponentMessage.class);
                 msgReceiver = null;
             }
             break;
@@ -71,12 +74,12 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
             if (msgReceiver == null) {
                 msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
                     public void messageReceived(CellMessage message) {
-                        AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
                     }
                 };
 
                 channelComp = cell.getComponent(ChannelComponent.class);
                 channelComp.addMessageReceiver(AudioTreatmentMessage.class, msgReceiver);
+		//channelComp.addMessageReceiver(CellServerComponentMessage.class, msgReceiver);
             }
             break;
         }
@@ -100,7 +103,6 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
 
     @Override
     public void setClientState(CellComponentClientState clientState) {
-        // TODO: set own client state?
         super.setClientState(clientState);
     }
 

@@ -20,12 +20,12 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
- * Listener for Volume Change
+ * Listener for Username alias Change
  * 
  * @author  jprovino
  */
-public interface VolumeChangeListener {
+public interface UsernameAliasChangeListener {
 
-    public void volumeChanged(PresenceInfo info, double volume);
+    public void changeUsernameAlias(PresenceInfo info);
 
 }

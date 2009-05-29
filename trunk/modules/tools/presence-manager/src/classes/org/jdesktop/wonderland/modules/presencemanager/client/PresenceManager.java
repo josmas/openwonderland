@@ -108,11 +108,11 @@ public interface PresenceManager {
     public PresenceInfo[] getAliasPresenceInfo(String usernameAlias);
 
     /**
-     * Change username in PresenceInfo.
+     * Change usernameAlias in PresenceInfo.
      * @param PresenceInfo
      * @param String user name
      */
-    public void changeUsername(PresenceInfo info, String username);
+    public void changeUsernameAlias(PresenceInfo info);
 
     /** 
      * Set speaking flag

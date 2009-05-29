@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerCon
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoUsernameAliasChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellManager;
@@ -161,6 +162,15 @@ public class PresenceManagerClient extends BaseConnection implements
 
             logger.fine("GOT PresenceInfoRemovedMessage for " + m.getPresenceInfo());
             presenceManager.presenceInfoRemoved(m.getPresenceInfo());
+            return;
+        }
+
+        if (message instanceof PresenceInfoUsernameAliasChangeMessage) {
+            PresenceInfoUsernameAliasChangeMessage m = (PresenceInfoUsernameAliasChangeMessage) message;
+
+            logger.fine("GOT PresenceInfoUsernameAliasChangeMessage for " + m.getPresenceInfo());
+
+            presenceManager.usernameAliasChanged(m.getPresenceInfo());
             return;
         }
 
