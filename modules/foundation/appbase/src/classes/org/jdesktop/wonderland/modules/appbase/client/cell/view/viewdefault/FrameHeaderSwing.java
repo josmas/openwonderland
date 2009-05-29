@@ -29,13 +29,13 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
@@ -80,6 +80,12 @@ public class FrameHeaderSwing
      * There is special code in InputPicker to make this happen.
      */
      private EventListenerBaseImpl consumingListener = new ConsumeOnControlListener();
+
+    /** True if a drag is active. */
+    private boolean dragging;
+
+    /** The mouse press point in local coordinates. */
+    private Vector2f dragStartLocal;
 
     /**
      * Create a new instance of FrameHeaderSwing.
@@ -298,16 +304,66 @@ public class FrameHeaderSwing
         }
 
         if (!app.getControlArb().hasControl()) return;
-    }
-    public void mouseReleased(MouseEvent e) {
-        if (!app.getControlArb().hasControl()) return;
-    }
 
-    public void mouseMoved(MouseEvent e) {
-        if (!app.getControlArb().hasControl()) return;
+        // TODO: the following drag code only works for secondary windows. Eventually 
+        // upgrade it to work with primary windows also.
+        if (view.getType() != View2D.Type.SECONDARY) return;
+
+        //System.err.println("******* Press event " + e);
+
+        if (!dragging && 
+            e.getButton() == MouseEvent.BUTTON1 &&
+            e.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
+
+            dragging = true;
+
+            Vector2f pixelScale = view.getPixelScale();
+            dragStartLocal = new Vector2f();
+            dragStartLocal.x = e.getX() * pixelScale.x;
+            dragStartLocal.y = -e.getY() * pixelScale.y;
+
+            view.userMovePlanarStart();
+        }
     }
 
     public void mouseDragged(MouseEvent e) {
+        if (!app.getControlArb().hasControl()) return;
+
+        // TODO: the following drag code only works for secondary windows. Eventually 
+        // upgrade it to work with primary windows also.
+        if (view.getType() != View2D.Type.SECONDARY) return;
+
+        //System.err.println("******* Drag event " + e);
+        if (dragging) {
+
+            Vector2f pixelScale = view.getPixelScale();
+            Vector2f dragCurrentLocal = new Vector2f();
+            dragCurrentLocal.x = e.getX() * pixelScale.x;
+            dragCurrentLocal.y = -e.getY() * pixelScale.y;
+
+            Vector2f dragVectorLocal = dragCurrentLocal.subtractLocal(dragStartLocal);
+
+            System.err.println("dragVectorLocal = " + dragVectorLocal);
+            view.userMovePlanarUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
+        }
+    }
+
+    public void mouseReleased(MouseEvent e) {
+        if (!app.getControlArb().hasControl()) return;
+
+        // TODO: the following drag code only works for secondary windows. Eventually 
+        // upgrade it to work with primary windows also.
+        if (view.getType() != View2D.Type.SECONDARY) return;
+
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            if (dragging) {
+                dragging = false;
+                view.userMovePlanarFinish();
+            }
+        }
+    }
+
+    public void mouseMoved(MouseEvent e) {
         if (!app.getControlArb().hasControl()) return;
     }
 
