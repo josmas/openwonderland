@@ -52,6 +52,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
@@ -1546,42 +1547,80 @@ public abstract class Window2D {
     /**
      * Return the window menu items for this window based on its current state.
      */
-    public ContextMenuItem[] windowMenuItems () {
+    public ContextMenuItem[] windowMenuItems (ContextMenuComponent contextMenuComp) {
+        ArrayList<ContextMenuItem> menuItems = new ArrayList<ContextMenuItem>();
         switch (type) {
 
         case PRIMARY:
         case UNKNOWN:
-            ContextMenuItem[] menuItems = new ContextMenuItem[1];
+            contextMenuComp.setShowStandardMenuItems(true);
+
+            // ITEM 1: Take/release control
             if (app.getControlArb().hasControl()) {
-                menuItems[0] = 
+                menuItems.add(
                     new SimpleContextMenuItem("Release Control", new ContextMenuActionListener () {
-                            public void actionPerformed(ContextMenuItemEvent event) {
-                                app.getControlArb().releaseControl();
-                            }
-                    });
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            app.getControlArb().releaseControl();
+                        }
+                    }));
             } else {
-                menuItems[0] = 
+                menuItems.add(
                     new SimpleContextMenuItem("Take Control", new ContextMenuActionListener () {
-                            public void actionPerformed(ContextMenuItemEvent event) {
-                                app.getControlArb().takeControl();
-                            }
-                    });
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            app.getControlArb().takeControl();
+                        }
+                        }));
             }
                     
-            /* TODO: eventually add:
-            menuItems[1] = SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
-                public void actionPerformed(ContextMenuItemEvent event) {
-                    System.err.println("Show in HUD Not yet implemented.");
-                }
-            })
-            */
+            if (app.getControlArb().hasControl()) {
 
-            return menuItems;
+                // ITEMS 2 & 3: Restacking items
+                menuItems.add(
+                    new SimpleContextMenuItem("To Front", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            Window2D.this.restackToTop();
+                        }
+                    }));
+                menuItems.add(
+                    new SimpleContextMenuItem("To Back", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            Window2D.this.restackToBottom();
+                        }
+                    }));
+
+                /* TODO: eventually add:
+                 menuItems[1] = SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
+                 public void actionPerformed(ContextMenuItemEvent event) {
+                 System.err.println("Show in HUD Not yet implemented.");
+                 }
+                 })
+                */
+            }
+
+            return menuItems.toArray(new ContextMenuItem[1]);
 
         case SECONDARY:
-            // TODO: for now there are no extra items
-            // TODO: don't show std items
-            return new ContextMenuItem[] {};
+            // TODO: bug workaround for 231
+            //contextMenuComp.setShowStandardMenuItems(false);
+            contextMenuComp.setShowStandardMenuItems(true);
+
+            if (app.getControlArb().hasControl()) {
+                // ITEMS 1 & 2: Restacking items
+                menuItems.add(
+                    new SimpleContextMenuItem("To Front", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            Window2D.this.restackToTop();
+                        }
+                    }));
+                menuItems.add(
+                    new SimpleContextMenuItem("To Back", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            Window2D.this.restackToBottom();
+                        }
+                    }));
+            }
+
+            return menuItems.toArray(new ContextMenuItem[1]);
 
         case POPUP:
         default:

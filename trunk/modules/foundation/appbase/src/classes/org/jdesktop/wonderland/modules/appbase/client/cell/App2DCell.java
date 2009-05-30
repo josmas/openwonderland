@@ -77,7 +77,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     protected App2D app;
 
     // For the Window Menu
-    @UsesCellComponent private ContextMenuComponent contextComp = null;
+    @UsesCellComponent private ContextMenuComponent contextMenuComp = null;
     private ContextMenuFactorySPI menuFactory = null;
 
     /** 
@@ -173,10 +173,10 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                 if (menuFactory == null) {
                     menuFactory = new ContextMenuFactorySPI() {
                         public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                            return windowMenuItemsForEvent(event);
+                            return windowMenuItemsForEvent(event, contextMenuComp);
                         }
                     };
-                    contextComp.addContextMenuFactory(menuFactory);
+                    contextMenuComp.addContextMenuFactory(menuFactory);
                 }
 
                 break;
@@ -184,7 +184,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
             // The cell is no longer visible
             case DISK:
                 if (menuFactory != null) {
-                    contextComp.removeContextMenuFactory(menuFactory);
+                    contextMenuComp.removeContextMenuFactory(menuFactory);
                     menuFactory = null;
                 }
                 break;
@@ -196,19 +196,22 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     /**
      * Returns the window menu items that are appropriate for the given context event.
      */
-    private ContextMenuItem[] windowMenuItemsForEvent (ContextEvent event) {
+    private ContextMenuItem[] windowMenuItemsForEvent (ContextEvent event, 
+                                                       ContextMenuComponent contextMenuComp) {
         if (event instanceof Window2D.WindowContextMenuEvent) {
             Window2D.WindowContextMenuEvent windowMenuEvent = (Window2D.WindowContextMenuEvent) event;
-            return windowMenuEvent.getWindow().windowMenuItems();
+            return windowMenuEvent.getWindow().windowMenuItems(contextMenuComp);
         } else {
-            return windowMenuItemsForNoControl();
+            return windowMenuItemsForNoControl(contextMenuComp);
         }
     }
 
     /**
      * Return the app-specific window menu items for the case where the app doesn't have control.
      */
-    private ContextMenuItem[] windowMenuItemsForNoControl () {
+    private ContextMenuItem[] windowMenuItemsForNoControl (ContextMenuComponent contextMenuComp) {
+        contextMenuComp.setShowStandardMenuItems(true);
+
         return new ContextMenuItem[] {
             new SimpleContextMenuItem("Take Control", new ContextMenuActionListener () {
                 public void actionPerformed(ContextMenuItemEvent event) {

@@ -266,6 +266,8 @@ public class FrameHeaderSwing
 
 
     public void	mouseClicked(MouseEvent e) {
+        if (view == null) return;
+
         if  (Gui2D.isChangeControlEvent(e)) {
             ControlArb appControlArb = app.getControlArb();
             if (appControlArb.hasControl()) {
@@ -286,14 +288,17 @@ public class FrameHeaderSwing
     }
 
     public void mouseEntered(MouseEvent e) {
+        if (view == null) return;
         if (!app.getControlArb().hasControl()) return;
     }
 
     public void	mouseExited(MouseEvent e) {
+        if (view == null) return;
         if (!app.getControlArb().hasControl()) return;
     }
 
     public void	mousePressed(MouseEvent e) {
+        if (view == null) return;
 
         // Is this a Window menu event? Display menu even when we don't have control.
         if (e.getID() == MouseEvent.MOUSE_PRESSED &&
@@ -327,6 +332,7 @@ public class FrameHeaderSwing
     }
 
     public void mouseDragged(MouseEvent e) {
+        if (view == null) return;
         if (!app.getControlArb().hasControl()) return;
 
         // TODO: the following drag code only works for secondary windows. Eventually 
@@ -343,12 +349,13 @@ public class FrameHeaderSwing
 
             Vector2f dragVectorLocal = dragCurrentLocal.subtractLocal(dragStartLocal);
 
-            System.err.println("dragVectorLocal = " + dragVectorLocal);
+            //System.err.println("dragVectorLocal = " + dragVectorLocal);
             view.userMovePlanarUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
         }
     }
 
     public void mouseReleased(MouseEvent e) {
+        if (view == null) return;
         if (!app.getControlArb().hasControl()) return;
 
         // TODO: the following drag code only works for secondary windows. Eventually 
