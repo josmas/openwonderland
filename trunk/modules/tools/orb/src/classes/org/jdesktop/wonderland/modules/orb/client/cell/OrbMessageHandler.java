@@ -338,7 +338,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    usernameAlias = msg.getName();
 
 	    if (presenceInfoAdded) {
-	        pm.changeUsername(presenceInfo, usernameAlias);
+		presenceInfo.usernameAlias = usernameAlias;
+	        pm.changeUsernameAlias(presenceInfo);
 	    }
 
 	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
