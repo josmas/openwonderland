@@ -132,18 +132,12 @@ public class AudioManagerConnectionHandler
 	    try {
 		bridgeInfo = vm.getVoiceBridge();
 
-		if (bridgeInfo == null) {
-		    logger.warning("There are no voice bridges online");
-		    return;
-		}
-
-	        logger.info("Got voice bridge '" + bridgeInfo + "'");
+	        System.out.println("Senging voice bridge info '" + bridgeInfo + "'");
 	    } catch (IOException e) {
-		logger.warning("unable to get voice bridge:  " + e.getMessage());
+		System.out.println("unable to get voice bridge:  " + e.getMessage());
 		return;
 	    }
 
-	    System.out.println("Sending " + bridgeInfo.toString());
 	    sender.send(clientID, new GetVoiceBridgeResponseMessage(bridgeInfo.toString()));
 	    return;
 	}
