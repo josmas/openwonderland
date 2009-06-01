@@ -6,7 +6,7 @@
 
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  *
@@ -14,21 +14,24 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  */
 public class VolumeControlJFrame extends javax.swing.JFrame {
 
+    private CellID cellID;
     private VolumeChangeListener listener;
-    private PresenceInfo presenceInfo;
+    private String name;
+    private String otherCallID;
 
     /** Creates new form VolumeControlJFrame */
     public VolumeControlJFrame() {
         initComponents();
     }
 
-    public VolumeControlJFrame(VolumeChangeListener listener, PresenceInfo presenceInfo) {
+    public VolumeControlJFrame(CellID cellID, VolumeChangeListener listener, String name, String otherCallID) {
+	this.cellID = cellID;
 	this.listener = listener;
-	this.presenceInfo = presenceInfo;
+	this.otherCallID = otherCallID;
 
         initComponents();
 
-	setTitle(presenceInfo.usernameAlias);
+	setTitle(name);
     }
 
     /** This method is called from within the constructor to
@@ -80,7 +83,15 @@ public class VolumeControlJFrame extends javax.swing.JFrame {
 private void volumeControlSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeControlSliderStateChanged
     javax.swing.JSlider source = (javax.swing.JSlider) evt.getSource();
 
-    listener.volumeChanged(presenceInfo, source.getValue() / 5.0);
+    double volume = source.getValue();
+
+    if (volume > 5) {
+	volume = 1 + ((volume - 5) * .6);
+    } else {
+	volume /= 5.;
+    }
+
+    listener.volumeChanged(cellID, otherCallID, volume);
 }//GEN-LAST:event_volumeControlSliderStateChanged
 
     /**
