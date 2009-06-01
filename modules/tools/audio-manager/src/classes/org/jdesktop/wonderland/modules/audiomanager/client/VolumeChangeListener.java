@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  * Listener for Volume Change
@@ -26,6 +26,6 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  */
 public interface VolumeChangeListener {
 
-    public void volumeChanged(PresenceInfo info, double volume);
+    public void volumeChanged(CellID cellID, String otherCallID, double volume);
 
 }

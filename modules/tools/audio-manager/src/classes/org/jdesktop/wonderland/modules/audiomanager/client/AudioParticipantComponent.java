@@ -83,7 +83,7 @@ public class AudioParticipantComponent extends CellComponent implements
     @UsesCellComponent
     private ContextMenuComponent contextMenu;
 
-    private static String[] menuItem;
+    private String[] menuItem;
 
     PresenceManager pm;
 
@@ -123,24 +123,25 @@ public class AudioParticipantComponent extends CellComponent implements
             channelComp.addMessageReceiver(ChangeUsernameAliasMessage.class, this);
 
 	    if (cell instanceof OrbCell == false && menuItem == null) {
-            menuItem = new String[]{"Volume"};
+                menuItem = new String[]{"Volume"};
 
-            // An event to handle the context menu item action
-            final ContextMenuActionListener l = new ContextMenuActionListener() {
-                public void actionPerformed(ContextMenuItemEvent event) {
-                    adjustVolume(event);
-                }
-            };
+                // An event to handle the context menu item action
+                final ContextMenuActionListener l = new ContextMenuActionListener() {
+                    public void actionPerformed(ContextMenuItemEvent event) {
+                        adjustVolume(event);
+                    }
+                };
 
-            // Create a new ContextMenuFactory for the Volume... control
-            ContextMenuFactorySPI factory = new ContextMenuFactorySPI() {
-                public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                    return new ContextMenuItem[] {
-                        new SimpleContextMenuItem("Volume", l)
-                    };
-                }
-            };
-            contextMenu.addContextMenuFactory(factory);
+                // Create a new ContextMenuFactory for the Volume... control
+                ContextMenuFactorySPI factory = new ContextMenuFactorySPI() {
+                    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                        return new ContextMenuItem[] {
+                            new SimpleContextMenuItem("Volume", l)
+                        };
+                    }
+                };
+
+                contextMenu.addContextMenuFactory(factory);
 	    }
 
 	    break;
@@ -227,29 +228,27 @@ public class AudioParticipantComponent extends CellComponent implements
 	}
 
 	String callID = CallID.getCallID(cell.getCellID());
-	String username = cell.getName();
+	String name = cell.getName();
 
 	if (volumeControlJFrame == null) {
-	    PresenceInfo presenceInfo = pm.getPresenceInfo(cell.getCellID());
-
-	    volumeControlJFrame = new VolumeControlJFrame(this, presenceInfo);
+	    volumeControlJFrame = new VolumeControlJFrame(cell.getCellID(), this, name, callID);
 	} 
 
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
 	if (callID.equals(sc.getCallID())) {
-	    volumeControlJFrame.setTitle("Master Volume for " + username);
+	    volumeControlJFrame.setTitle("Master Volume for " + name);
 	} else {
-	    volumeControlJFrame.setTitle("Volume Control for " + username);
+	    volumeControlJFrame.setTitle("Volume Control for " + name);
 	}
 
 	volumeControlJFrame.setVisible(true);
     }
 
-    public void volumeChanged(PresenceInfo presenceIno, double volume) {
+    public void volumeChanged(CellID cellID, String otherCallID, double volume) {
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-	channelComp.send(new AudioVolumeMessage(cell.getCellID(), sc.getCallID(), volume));
+	channelComp.send(new AudioVolumeMessage(cellID, sc.getCallID(), otherCallID, volume));
     }
 
     public void usernameChanged(String username) {

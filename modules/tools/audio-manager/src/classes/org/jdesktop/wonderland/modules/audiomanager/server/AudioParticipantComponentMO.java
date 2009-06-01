@@ -62,9 +62,9 @@ import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo.ChatType;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerSetup;
+import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
 
@@ -203,13 +203,14 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
 	    AudioVolumeMessage msg = (AudioVolumeMessage) message;
 
-            CellID cellID = msg.getCellID();
             String softphoneCallID = msg.getSoftphoneCallID();
+
+	    String otherCallID = msg.getOtherCallID();
 
             double volume = msg.getVolume();
 
-            //System.out.println("GOT Volume message:  call " + softphoneCallID + " cell " + cellID 
-	    //	+ " volume " + volume);
+            logger.fine("GOT Volume message:  call " + softphoneCallID
+	    	+ " volume " + volume);
 
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -220,17 +221,10 @@ public class AudioParticipantComponentMO extends CellComponentMO
                 return;
             }
 
-	    String otherCallID = CallID.getCallID(cellID);
-
             if (softphoneCallID.equals(otherCallID)) {
-                //System.out.println("Setting master volume for " + getCell().getName());
                 softphonePlayer.setMasterVolume(volume);
                 return;
             }
-
-            DefaultSpatializer spatializer = new DefaultSpatializer();
-
-            spatializer.setAttenuator(volume);
 
             Player player = vm.getPlayer(otherCallID);
 
@@ -239,8 +233,28 @@ public class AudioParticipantComponentMO extends CellComponentMO
 		return;
             } 
 
-	    //System.out.println(softphonePlayer + " has private spatializer for " + player
-	    //	+ " spatializer " + spatializer);
+	    if (volume == 1.0) {
+		softphonePlayer.removePrivateSpatializer(player);
+		return;
+	    }
+
+	    VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
+
+            Spatializer spatializer;
+
+	    spatializer = player.getPublicSpatializer();
+
+	    if (spatializer != null) {
+		spatializer = (Spatializer) spatializer.clone();
+	    } else {
+	        if (player.getSetup().isLivePlayer) {
+		    spatializer = (Spatializer) parameters.livePlayerSpatializer.clone();
+	        } else {
+		    spatializer = (Spatializer) parameters.stationarySpatializer.clone();
+	        }
+	    }
+
+            spatializer.setAttenuator(volume);
 
             softphonePlayer.setPrivateSpatializer(player, spatializer);
             return;

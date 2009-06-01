@@ -19,6 +19,8 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -190,7 +192,7 @@ private void volumeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         VolumeControlJFrame volumeControl = volumeControlMap.get(pi);
 
         if (volumeControl == null) {
-            volumeControl = new VolumeControlJFrame(this, pi);
+            volumeControl = new VolumeControlJFrame(pi.cellID, this, username, pi.callID);
             volumeControl.setLocation(new Point((int) (getLocation().getX() + getWidth()),
                     (int) getLocation().getY()));
             volumeControlMap.put(pi, volumeControl);
@@ -209,8 +211,6 @@ private void volumeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_volumeButtonActionPerformed
 
 private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-    System.out.println("FOOOOOO:  " + presenceInfo);
-
     ChangeNameJFrame changeNameJFrame = changeNameMap.get(presenceInfo);
 
     if (changeNameJFrame == null) {
@@ -239,10 +239,10 @@ private void propertiesButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         channelComp.send(new ChangeUsernameAliasMessage(info.cellID, info));
     }
 
-    public void volumeChanged(PresenceInfo info, double volume) {
+    public void volumeChanged(CellID cellID, String otherCallID, double volume) {
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-        channelComp.send(new AudioVolumeMessage(info.cellID, sc.getCallID(), volume));
+        channelComp.send(new AudioVolumeMessage(cellID, sc.getCallID(), otherCallID, volume));
     }
 
     public void done() {
