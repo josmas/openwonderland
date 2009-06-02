@@ -346,7 +346,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
             if (message instanceof AudioTreatmentMessage) {
                 AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
-                logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
+                logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.restartTreatment());
 
             	String treatmentId = CallID.getCallID(cellID);
 
@@ -362,12 +362,12 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 		    return;
 		}
 
-		if (msg.startTreatment()) {
-		    treatment.pause(false);		    
-		    System.out.println("resume treatment");
+		System.out.println("restart " + msg.restartTreatment() + " pause " + msg.isPaused());
+
+		if (msg.restartTreatment()) {
+		    treatment.restart(msg.isPaused());
 		} else {
-		    treatment.restart(true);
-		    System.out.println("pause treatment");
+		    treatment.pause(msg.isPaused());
 		}
                 return;
             }
