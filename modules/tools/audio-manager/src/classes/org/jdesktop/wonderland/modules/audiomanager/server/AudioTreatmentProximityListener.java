@@ -22,6 +22,7 @@ import com.sun.mpk20.voicelib.app.AudioGroupSetup;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.Treatment;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import java.util.logging.Logger;
@@ -46,55 +47,52 @@ public class AudioTreatmentProximityListener implements ProximityListenerSrv, Se
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentProximityListener.class.getName());
 
-    CellID cellID;
-    String name;
+    private CellID cellID;
+    private String name;
+    private Treatment treatment;
 
-    public AudioTreatmentProximityListener(CellMO cellMO) {
+    private int numberInRange;
+
+    public AudioTreatmentProximityListener(CellMO cellMO, Treatment treatment) {
 	cellID = cellMO.getCellID();
         name = cellMO.getName();
+	this.treatment = treatment;
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,
             CellID viewCellID, BoundingVolume proximityVolume,
             int proximityIndex) {
 
-	logger.info("viewEnterExit:  " + entered + " cellID " + cellID
+	logger.fine("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
 
 	if (entered) {
-	    cellEntered(viewCellID);
+	    cellEntered();
 	} else {
-	    cellExited(viewCellID);
+	    cellExited();
 	}
     }
 
-    private void cellEntered(CellID softphoneCellID) {
-        cellEntered(CallID.getCallID(softphoneCellID));
+    public void cellEntered() {
+	numberInRange++;
+
+	if (numberInRange > 1) {
+	    return;
+	}
+
+	logger.fine("Restarting treatment...");
+	treatment.restart(false);
     }
 
-    public void cellEntered(String callId) {
-        /*
-         * The avatar has entered the audio treatment cell.
-         * Set the public and incoming spatializers for the avatar to be
-         * the zero volume spatializer.
-         * Set a private spatializer for the given fullVolume radius
-         * for all the other avatars in the cell.
-         * For each avatar already in the cell, set a private spatializer
-         * for this avatar.
-         */
-        logger.info(callId + " entered audio treatment " + name + " avatar cell ID " + callId);
+    public void cellExited() {
+	numberInRange--;
 
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
-    }
+	if (numberInRange != 0) {
+	    return;
+	}
 
-    private void cellExited(CellID softphoneCellID) {
-        cellExited(CallID.getCallID(softphoneCellID));
-    }
-
-    public void cellExited(String callId) {
-        logger.info(callId + " exited audio treatment " + name + " avatar cell ID " + callId);
-
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+	logger.fine("Pausing treatment...");
+	treatment.restart(true);
     }
 
 }

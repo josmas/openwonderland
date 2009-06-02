@@ -44,6 +44,8 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
 
     public boolean startImmediately = true;
 
+    public boolean restartWhenFirstInRange = true;
+
     public AudioTreatmentComponentClientState() {
 	super(false, false);
     }
@@ -81,6 +83,11 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
     @XmlElement
     public boolean getStartImmediately() {
 	return startImmediately;
+    }
+
+    @XmlElement
+    public boolean getRestartWhenFirstInRange() {
+	return restartWhenFirstInRange;
     }
 
 }
