@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.web.wfs.WFSRecording;
  * The WFSRecordingsResource class is a Jersey RESTful resource that allows clients
  * to query for the WFS recording names by using a URI.
  * <p>
- * The format of the URI is: http://<machine>:<port>/wonderland-web-wfs/wfs/recordings.
+ * The format of the URI is: http://<machine>:<port>/wonderland-web-wfs/wfs/listrecordings.
  * <p>
  * The recordings information returned is the JAXB serialization of the recording name
  * information (the WFSRecordingList class). The getRecordings() method handles the
@@ -40,14 +40,14 @@ import org.jdesktop.wonderland.web.wfs.WFSRecording;
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Bernard Horan
  */
-@Path(value = "/recordings")
+@Path(value = "/listrecordings")
 public class WFSRecordingsResource {
 
     /**
      * Returns the JAXB XML serialization of the WFS recording names. Returns
      * the XML via an HTTP GET request. The format of the URI is:
      * <p>
-     * /wfs/recordings
+     * /wfs/listrecordings
      * <p>
      * Returns BAD_REQUEST to the HTTP connection upon error
      *
