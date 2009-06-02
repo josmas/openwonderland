@@ -26,10 +26,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.wfs.CellDescriptor;
 import org.jdesktop.wonderland.common.wfs.CellPath;
+import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.server.cell.CellMO;
 
@@ -39,6 +41,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
  * WFS information from the WFS web service.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Bernard Horan
  */
 public class CellExporterUtils {
     private static final Logger logger =
@@ -150,6 +153,25 @@ public class CellExporterUtils {
             // Do nothing
         }
         r.close();
+    }
+
+    /**
+     * Returns all of the WFS recording names or null upon error
+     */
+    static WFSRecordingList getWFSRecordings() {
+        System.out.println("In CellExporterUtils.getWFSRecordings");
+        /*
+         * Try to open up a connection the Jersey RESTful resource and parse
+         * the stream. Upon error return null.
+         */
+        try {
+            URL url = new URL(getWebServerURL(), WFS_PREFIX + "recordings");
+            CellExporter.logger.info("WFS: Loading recordings at " + url.toExternalForm());
+            return WFSRecordingList.decode(url.openStream());
+        } catch (java.lang.Exception excp) {
+            CellExporter.logger.log(Level.SEVERE, "WFS: Error loading recordings", excp);
+            return null;
+        }
     }
     
     /**

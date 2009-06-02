@@ -20,9 +20,11 @@ package org.jdesktop.wonderland.server.wfs.exporter;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.util.ManagedSerializable;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
 import com.sun.sgs.impl.util.AbstractService;
@@ -47,18 +49,23 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.wfs.CellDescriptor;
 import org.jdesktop.wonderland.common.wfs.CellPath;
+import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportResult;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.ListRecordingsListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.RecordingCreationListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.SnapshotCreationListener;
 
 /**
  *
  * @author kaplanj
+ * @author Bernard Horan
  */
-public class CellExportService extends AbstractService {
+public class CellExportService extends AbstractService implements CellExportManager {
 
     /** The name of this class. */
     private static final String NAME = CellExportService.class.getName();
@@ -247,6 +254,34 @@ public class CellExportService extends AbstractService {
         ctxFactory.joinTransaction().add(ec);
     }
 
+    public void listRecordings(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, ListRecordingsListener listener) {
+        if (!(listener instanceof ManagedObject)) {
+            listener = new ManagedRecordingsListenerWrapper(listener);
+        }
+
+        // create a reference to the listener
+        ManagedReference<ListRecordingsListener> scl =
+                dataService.createReference(listener);
+
+        //We have to hang on to the wonderlandClientID to call the listener when we're done.
+        //We can't pass it as an argument because of darkstar transactions
+        //So create put it in the dataservice and keep a reference to it
+        //Create a wrapper for the clientID, as it's not a managed object
+        ManagedSerializable<WonderlandClientID> managedClientID = new ManagedSerializable(clientID);
+
+        //create a refereence to the wrapped clientID
+        ManagedReference<ManagedSerializable<WonderlandClientID>> wci = dataService.createReference(managedClientID);
+
+
+        // now add the list recordings request to the transaction.  On commit
+        // this request will be passed on to the executor for long-running
+        // tasks
+        ListRecordings lr = new ListRecordings(messageID, sender, wci.getId(), scl.getId());
+        ctxFactory.joinTransaction().add(lr);
+    }
+
+    
+
 
     /**
      * A task that creates a new snapshot, and then notifies the snapshot
@@ -408,6 +443,45 @@ public class CellExportService extends AbstractService {
                 transactionScheduler.runTask(notify, taskOwner);
             } catch (Exception ex) {
                 logger.logThrow(Level.WARNING, ex, "Error calling listener");
+            }
+        }
+    }
+
+    /**
+     * A task that requests the list of recordings, and then notifies the
+     * notify list recordings listener identified by managed reference id.
+     */
+    private class ListRecordings implements Runnable {
+
+        MessageID messageID;
+        WonderlandClientSender sender;
+        private BigInteger clientIDWrapperID;
+        private BigInteger listenerID;
+
+        private ListRecordings(MessageID messageID, WonderlandClientSender sender, BigInteger clientIDWrapperID, BigInteger id) {
+            this.messageID = messageID;
+            this.sender = sender;
+            this.clientIDWrapperID = clientIDWrapperID;
+            this.listenerID = id;
+        }
+
+        public void run() {
+            WFSRecordingList recordings = null;
+            Exception ex = null;
+
+            try {
+                recordings = CellExporterUtils.getWFSRecordings();
+            } catch (Exception ex2) {
+                ex = ex2;
+            }
+
+            // notify the listener
+            NotifyListRecordingsListener notify =
+                    new NotifyListRecordingsListener(listenerID, messageID, sender, clientIDWrapperID, recordings, ex);
+            try {
+                transactionScheduler.runTask(notify, taskOwner);
+            } catch (Exception ex2) {
+                logger.logThrow(Level.WARNING, ex2, "Error calling listener");
             }
         }
     }
@@ -634,6 +708,61 @@ public class CellExportService extends AbstractService {
     }
 
     /**
+     * A task to notify a ListRecordingsListener
+     */
+    private class NotifyListRecordingsListener implements KernelRunnable {
+        private BigInteger listenerID;
+        private WFSRecordingList recordings;
+        private MessageID messageID;
+        private WonderlandClientSender sender;
+        private BigInteger clientIDWrapperID;
+        private Exception ex;
+
+        public NotifyListRecordingsListener(BigInteger listenerID, MessageID messageID, WonderlandClientSender sender, BigInteger clientIDWrapperID, WFSRecordingList recordings, Exception ex) {
+            this.listenerID = listenerID;
+            this.recordings = recordings;
+            this.messageID = messageID;
+            this.sender = sender;
+            this.clientIDWrapperID = clientIDWrapperID;
+            this.ex = ex;
+        }
+
+
+
+        public String getBaseTaskType() {
+            return NAME + ".LIST_RECORDINGS_LISTENER";
+        }
+
+        public void run() throws Exception {
+            //Get the listener
+            ManagedReference<?> lr =
+                    dataService.createReferenceForId(listenerID);
+            ListRecordingsListener l =
+                    (ListRecordingsListener) lr.get();
+
+            //Get the wonderlandClientID
+            ManagedReference<?> cr =
+                    dataService.createReferenceForId(clientIDWrapperID);
+            ManagedSerializable<WonderlandClientID> managedClientID =
+                    (ManagedSerializable<WonderlandClientID>) cr.get();
+            WonderlandClientID clientID = managedClientID.get();
+
+            try {
+                if (ex == null) {
+                    l.listRecordingsResult(messageID, sender, clientID, recordings);
+                } else {
+                    l.listRecordingsFailed(messageID, sender, clientID, ex.getMessage(), ex);
+                }
+            } finally {
+                // clean up
+                if (l instanceof ManagedRecordingsListenerWrapper) {
+                    dataService.removeObject(l);
+                }
+            }
+        }
+    }
+
+    /**
      * A wrapper around the SnapshotCreationListener as a managed object.
      * This assumes a serializable SnapshotCreationListener
      */
@@ -697,6 +826,32 @@ public class CellExportService extends AbstractService {
             wrapped.exportResult(results);
         }
     }
+
+    /**
+     * A wrapper around the ListRecordingsListener as a managed object.
+     * This assumes a serializable ListRecordingsListener
+     */
+    private static class ManagedRecordingsListenerWrapper
+            implements ListRecordingsListener, ManagedObject, Serializable
+    {
+        private ListRecordingsListener wrapped;
+
+        public ManagedRecordingsListenerWrapper(ListRecordingsListener listener)
+        {
+            wrapped = listener;
+        }
+
+        public void listRecordingsResult(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, WFSRecordingList recordings) {
+            wrapped.listRecordingsResult(messageID, sender, clientID, recordings);
+        }
+
+        public void listRecordingsFailed(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, String message, Exception ex) {
+            wrapped.listRecordingsFailed(messageID, sender, clientID, message, ex);
+        }
+
+
+    }
+
 
     /**
      * Transaction state
