@@ -68,14 +68,14 @@ public class ArtToolsPlugin extends javax.swing.JPanel
     public void register() {
         // activate
         JmeClientMain.getFrame().addToToolsMenu(cellViewerMI, 7);
-        JmeClientMain.getFrame().addToFileMenu(importModelMI, 0);
+        JmeClientMain.getFrame().addToInsertMenu(importModelMI, 1);
         JmeClientMain.getFrame().addToFileMenu(createModuleMI, 1);
     }
 
     public void unregister() {
         // deactivate
         JmeClientMain.getFrame().removeFromToolsMenu(cellViewerMI);
-        JmeClientMain.getFrame().removeFromFileMenu(importModelMI);
+        JmeClientMain.getFrame().removeFromInsertMenu(importModelMI);
         JmeClientMain.getFrame().removeFromFileMenu(createModuleMI);
     }
 

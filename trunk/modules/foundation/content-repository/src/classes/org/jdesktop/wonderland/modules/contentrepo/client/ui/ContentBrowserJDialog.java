@@ -333,6 +333,8 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         previewInfoPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         previewPanel = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
         infoPanel = new javax.swing.JPanel();
         modifiedLabel = new javax.swing.JLabel();
         sizeLabel = new javax.swing.JLabel();
@@ -478,6 +480,10 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
         previewInfoPanel.add(jLabel1, gridBagConstraints);
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane1.setViewportView(jTextArea1);
 
         org.jdesktop.layout.GroupLayout previewPanelLayout = new org.jdesktop.layout.GroupLayout(previewPanel);
         previewPanel.setLayout(previewPanelLayout);
@@ -792,6 +798,8 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JSplitPane listSplitPane;
     private javax.swing.JLabel modifiedLabel;
     private javax.swing.JButton newCollectionButton;

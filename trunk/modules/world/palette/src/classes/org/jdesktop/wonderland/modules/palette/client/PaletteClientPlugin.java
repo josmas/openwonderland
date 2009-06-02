@@ -84,7 +84,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // Create the Palette menu and the Cell submenu and dialog that lets
         // users create new cells.  The menu will be added when our server
         // becomes primary.
-        paletteMI = new JMenuItem("Cell Palette");
+        paletteMI = new JMenuItem("Component...");
         paletteMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 CellPalette cellPaletteFrame;
@@ -104,7 +104,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        paletteHUDMI = new JMenuItem("Cell Palette HUD");
+        paletteHUDMI = new JMenuItem("Shortcuts");
         paletteHUDMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 HUDCellPalette hudCellPaletteFrame;
@@ -151,8 +151,8 @@ public class PaletteClientPlugin extends BaseClientPlugin
     @Override
     protected void activate() {
         // activate
-        JmeClientMain.getFrame().addToToolsMenu(paletteMI, 2);
-        JmeClientMain.getFrame().addToToolsMenu(paletteHUDMI, 3);
+        JmeClientMain.getFrame().addToInsertMenu(paletteMI, 0);
+        JmeClientMain.getFrame().addToWindowMenu(paletteHUDMI, 6);
         JmeClientMain.getFrame().addToToolsMenu(moduleMI, 4);
 
         // Register the handler for CellServerState flavors with the system-wide
@@ -165,8 +165,8 @@ public class PaletteClientPlugin extends BaseClientPlugin
     @Override
     protected void deactivate() {
         // deactivate
-        JmeClientMain.getFrame().removeFromToolsMenu(paletteMI);
-        JmeClientMain.getFrame().removeFromToolsMenu(paletteHUDMI);
+        JmeClientMain.getFrame().removeFromInsertMenu(paletteMI);
+        JmeClientMain.getFrame().removeFromWindowMenu(paletteHUDMI);
         JmeClientMain.getFrame().removeFromToolsMenu(moduleMI);
 
         DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
