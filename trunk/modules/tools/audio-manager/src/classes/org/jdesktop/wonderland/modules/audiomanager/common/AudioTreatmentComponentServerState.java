@@ -53,6 +53,9 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
     @XmlElement(name="volume")
     public double volume = 1;
 
+    @XmlElement(name="startImmediately")
+    public boolean startImmediately = true;
+
     public AudioTreatmentComponentServerState() {
 	super(false, false);
     }
@@ -111,6 +114,15 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
 	return volume;
     }
    
+    public void setStartImmediately(boolean startImmediately) {
+	this.startImmediately = startImmediately;
+    }
+
+    @XmlTransient
+    public boolean getStartImmediately() {
+	return startImmediately;
+    }
+
     public String getServerComponentClassName() {
 	return "org.jdesktop.wonderland.modules.audiomanager.server.AudioTreatmentComponentMO";
     }

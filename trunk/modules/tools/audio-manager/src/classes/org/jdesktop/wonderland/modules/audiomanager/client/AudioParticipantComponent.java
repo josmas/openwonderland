@@ -83,9 +83,9 @@ public class AudioParticipantComponent extends CellComponent implements
     @UsesCellComponent
     private ContextMenuComponent contextMenu;
 
-    private String[] menuItem;
-
     PresenceManager pm;
+
+    private boolean menuItemAdded;
 
     public AudioParticipantComponent(Cell cell) {
         super(cell);
@@ -122,9 +122,7 @@ public class AudioParticipantComponent extends CellComponent implements
             channelComp.addMessageReceiver(AudioParticipantMuteCallMessage.class, this);
             channelComp.addMessageReceiver(ChangeUsernameAliasMessage.class, this);
 
-	    if (cell instanceof OrbCell == false && menuItem == null) {
-                menuItem = new String[]{"Volume"};
-
+	    if (cell instanceof OrbCell == false && menuItemAdded == false) {
                 // An event to handle the context menu item action
                 final ContextMenuActionListener l = new ContextMenuActionListener() {
                     public void actionPerformed(ContextMenuItemEvent event) {
@@ -142,6 +140,7 @@ public class AudioParticipantComponent extends CellComponent implements
                 };
 
                 contextMenu.addContextMenuFactory(factory);
+		menuItemAdded = true;
 	    }
 
 	    break;
@@ -219,7 +218,7 @@ public class AudioParticipantComponent extends CellComponent implements
     private VolumeControlJFrame volumeControlJFrame;
 
     private void adjustVolume(ContextMenuItemEvent event) {
-	if (event.getContextMenuItem().getLabel().equals(menuItem[0]) == false) {
+	if (event.getContextMenuItem().getLabel().equals("Volume") == false) {
 	    return;
 	}
 

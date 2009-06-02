@@ -48,7 +48,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentClientState;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
@@ -95,7 +95,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     private double z;
     private double fullVolumeRadius;
     private double zeroVolumeRadius;
+    private double volume;
     private boolean useFullVolumeSpatializer = false;
+    private boolean startImmediately = true;
+
     private static String serverURL;
 
     static {
@@ -130,6 +133,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         fullVolumeRadius = state.getFullVolumeRadius();
         zeroVolumeRadius = state.getZeroVolumeRadius();
         useFullVolumeSpatializer = state.getUseFullVolumeSpatializer();
+	volume = state.getVolume();
+	startImmediately = state.getStartImmediately();
 
 	addProximityListener(isLive());
 
@@ -150,6 +155,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             state.setFullVolumeRadius(fullVolumeRadius);
             state.setZeroVolumeRadius(zeroVolumeRadius);
             state.setUseFullVolumeSpatializer(useFullVolumeSpatializer);
+	    state.setStartImmediately(startImmediately);
         }
 
         return super.getServerState(state);
@@ -161,8 +167,21 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
-	//AudioTreatmentComponentClientState state = new AudioTreatmentComponentClientState();
-        return super.getClientState(clientState, clientID, capabilities);
+	AudioTreatmentComponentClientState state = (AudioTreatmentComponentClientState) clientState;
+
+	if (state == null) {
+	    state = new AudioTreatmentComponentClientState();
+
+	    state.treatments = treatments;
+	    state.groupId = groupId;
+	    state.fullVolumeRadius = fullVolumeRadius;
+	    state.zeroVolumeRadius = zeroVolumeRadius;
+	    state.useFullVolumeSpatializer = useFullVolumeSpatializer;
+	    state.volume = volume;
+	    state.startImmediately = startImmediately;
+	}
+
+        return super.getClientState(state, clientID, capabilities);
     }
 
     @Override
@@ -275,6 +294,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             try {
 		Treatment t = vm.createTreatment(treatmentId, setup);
                 group.addTreatment(t);
+
+		if (startImmediately == false) {
+		    t.pause(true);
+		}
             } catch (IOException e) {
                 logger.warning("Unable to create treatment " + setup.treatment + e.getMessage());
                 return;
@@ -306,10 +329,14 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
         private ManagedReference<AudioTreatmentComponentMO> compRef;
 
+        private CellID cellID;
+
         public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellRef,
                 AudioTreatmentComponentMO comp) {
 
             super(cellRef.get());
+
+	    cellID = cellRef.get().getCellID();
 
             compRef = AppContext.getDataManager().createReference(comp);
         }
@@ -320,6 +347,28 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             if (message instanceof AudioTreatmentMessage) {
                 AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
                 logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
+
+            	String treatmentId = CallID.getCallID(cellID);
+
+        	Treatment treatment = null;
+
+		try {
+		    treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
+		} catch (IOException e) {
+		}
+
+		if (treatment == null) {
+		    System.out.println("Can't find treatment " + treatmentId);
+		    return;
+		}
+
+		if (msg.startTreatment()) {
+		    treatment.pause(false);		    
+		    System.out.println("resume treatment");
+		} else {
+		    treatment.restart(true);
+		    System.out.println("pause treatment");
+		}
                 return;
             }
 
