@@ -98,16 +98,16 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
 		menuItemAdded = true;
 
 		if (startImmediately) {
-	            addMenuItem("Stop");
+	            addMenuItems("Stop", "Pause");
 		} else {
-	            addMenuItem("Play");
+	            addMenuItems("Play", null);
 		}
 	    }
             break;
         }
     }
 
-    private void addMenuItem(final String s) {
+    private void addMenuItems(final String s1, final String s2) {
         // An event to handle the context menu item action
         final ContextMenuActionListener l = new ContextMenuActionListener() {
             public void actionPerformed(ContextMenuItemEvent event) {
@@ -115,12 +115,25 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
             }
         };
 
+	if (factory != null) {
+	    contextMenu.removeContextMenuFactory(factory);
+	}
+
         // Create a new ContextMenuFactory for the Volume... control
         factory = new ContextMenuFactorySPI() {
             public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                return new ContextMenuItem[] {
-                    new SimpleContextMenuItem(s, l)
-                };
+		SimpleContextMenuItem[] menuItems;
+
+		if (s2 == null) {
+		    menuItems = new SimpleContextMenuItem[1];
+		} else {
+		    menuItems = new SimpleContextMenuItem[2];
+		    menuItems[1] =  new SimpleContextMenuItem(s2, l);
+		}
+
+	        menuItems[0] =  new SimpleContextMenuItem(s1, l);
+
+                return menuItems;
             }
         };
 
@@ -128,30 +141,26 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
     }
 
     public void menuItemSelected(ContextMenuItemEvent event) {
-        if (event.getContextMenuItem().getLabel().equals("Play")) {
-	    contextMenu.removeContextMenuFactory(factory);
+        if (event.getContextMenuItem().getLabel().equals("Play") ||
+		event.getContextMenuItem().getLabel().equals("Resume")) {
 
-	    addMenuItem("Stop");
-	    play();
+	    addMenuItems("Stop", "Pause");
+	    channelComp.send(new AudioTreatmentMessage(cell.getCellID(), false, false));
 	    return;
         }
+
+        if (event.getContextMenuItem().getLabel().equals("Pause")) {
+	    addMenuItems("Stop", "Resume");
+	    channelComp.send(new AudioTreatmentMessage(cell.getCellID(), false, true));
+	    return;
+	}
 
         if (event.getContextMenuItem().getLabel().equals("Stop") == false) {
 	    return;
 	}
 
-	contextMenu.removeContextMenuFactory(factory);
-
-	addMenuItem("Play");
-	stop();
-    }
-
-    private void play() {
-	channelComp.send(new AudioTreatmentMessage(cell.getCellID(), true));
-    }
-
-    private void stop() {
-	channelComp.send(new AudioTreatmentMessage(cell.getCellID(), false));
+	addMenuItems("Play", null);
+	channelComp.send(new AudioTreatmentMessage(cell.getCellID(), true, true));
     }
 
     /**

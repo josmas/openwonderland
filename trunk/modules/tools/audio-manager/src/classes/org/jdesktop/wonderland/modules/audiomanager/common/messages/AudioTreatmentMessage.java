@@ -29,16 +29,22 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class AudioTreatmentMessage extends CellMessage {
     
-    private boolean startTreatment;
+    private boolean restartTreatment;
+    private boolean isPaused;
 
-    public AudioTreatmentMessage(CellID cellID, boolean startTreatment) {
+    public AudioTreatmentMessage(CellID cellID, boolean restartTreatment, boolean isPaused) {
 	super(cellID);
 	
-	this.startTreatment = startTreatment;
+	this.restartTreatment = restartTreatment;
+	this.isPaused = isPaused;
     }
     
-    public boolean startTreatment() {
-	return startTreatment;
+    public boolean restartTreatment() {
+	return restartTreatment;
+    }
+
+    public boolean isPaused() {
+	return isPaused;
     }
 
 }
