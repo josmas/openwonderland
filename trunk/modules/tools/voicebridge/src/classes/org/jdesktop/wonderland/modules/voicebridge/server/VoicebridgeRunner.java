@@ -22,9 +22,11 @@ import java.util.Properties;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.runner.BaseRunner;
 import org.jdesktop.wonderland.runner.RunnerConfigurationException;
+import org.jdesktop.wonderland.runner.RunManager;
 
 import org.jdesktop.wonderland.common.NetworkAddress;
 
+import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
 import org.jdesktop.wonderland.utils.Constants;
 
 /**
@@ -78,18 +80,40 @@ public class VoicebridgeRunner extends BaseRunner {
      */
     @Override
     public Properties getDefaultProperties() {
+        Properties props = getDefaultProps();
+        props.setProperty("voicebridge.local.hostAddress",
+                          System.getProperty(Constants.WEBSERVER_HOST_PROP));
+        return props;
+    }
+
+    /**
+     * Static method used by both local and remote runner to get default
+     * properties
+     * @return te default properties
+     */
+    static Properties getDefaultProps() {
+        // find the address of the Darkstar server
+        String darkstarHostname = "localhost";
+
+        // XXX support multiple Darkstar servers XXX
+        Collection<DarkstarRunner> ds =
+                RunManager.getInstance().getAll(DarkstarRunner.class);
+        if (ds.size() > 0) {
+            DarkstarRunner d = ds.iterator().next();
+            if (d.getStatus() != Status.NOT_CONNECTED) {
+                darkstarHostname = d.getHostname();
+            }
+        }
+
         Properties props = new Properties();
         props.setProperty("voicebridge.sip.port", "5060");
         props.setProperty("voicebridge.control.port", "6666");
-        props.setProperty("voicebridge.status.listeners", "localhost");
+        props.setProperty("voicebridge.status.listeners", darkstarHostname);
         props.setProperty("voicebridge.sip.gateways", "");
         props.setProperty("voicebridge.sip.proxy", "");
         props.setProperty("voicebridge.outside.line.prefix", "9");
         props.setProperty("voicebridge.long.distance.prefix", "1");
         props.setProperty("voicebridge.international.prefix", "011");
-
-        props.setProperty("voicebridge.local.hostAddress", 
-                          System.getProperty(Constants.WEBSERVER_HOST_PROP));
 
         return props;
     }

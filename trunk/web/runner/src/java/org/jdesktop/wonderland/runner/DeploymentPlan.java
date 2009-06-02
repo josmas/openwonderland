@@ -147,4 +147,16 @@ public class DeploymentPlan implements Cloneable {
     public DeploymentPlan clone() {
         return new DeploymentPlan(entries);
     }
+
+    @Override
+    public String toString() {
+        String out = super.toString() + " {\n";
+
+        for (DeploymentEntry de : getEntries()) {
+            out += de.toString() + "\n";
+        }
+
+        out += "}";
+        return out;
+    }
 }
