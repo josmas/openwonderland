@@ -88,6 +88,14 @@ public class WebServerLauncher {
             System.exit(-1);
         }
 
+        // read in the arguments, including the properties file (if any), before
+        // we set up logging, so the logging takes the system properties int
+        // account
+        if (!parseArguments(args)) {
+            usage();
+            System.exit(-1);
+        }
+
         // create the log directory
         File logDir = new File(SystemPropertyUtil.getProperty("wonderland.log.dir"));
         if (!logDir.mkdirs()) { 
@@ -122,11 +130,6 @@ public class WebServerLauncher {
             } catch (IOException ioe) {
                 logger.log(Level.WARNING, "Error setting up log config", ioe);
             }
-        }
-        
-        if (!parseArguments(args)) {
-            usage();
-            System.exit(-1);
         }
 
         // If the web server port property has not been set at this point, then

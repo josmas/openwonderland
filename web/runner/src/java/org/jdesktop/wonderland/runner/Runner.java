@@ -38,7 +38,9 @@ import java.util.Properties;
  */
 public interface Runner {
     /** Status of a running process */
-    public enum Status { NOT_RUNNING, STARTING_UP, RUNNING, SHUTTING_DOWN, ERROR };
+    public enum Status { NOT_CONNECTED, NOT_RUNNING, STARTING_UP, RUNNING,
+                         SHUTTING_DOWN, ERROR
+                       };
     
     /**
      * Get the name of this runner.  Runners must have unique names
@@ -97,7 +99,14 @@ public interface Runner {
      * @return the status of this runner.
      */
     public Status getStatus();
-    
+
+    /**
+     * Get information about this runner in a form that can be sent to
+     * web services.
+     * @return the information about this runner
+     */
+    public RunnerInfo getRunnerInfo();
+
     /**
      * Get the log file from this runner.  The log file will contain all
      * the relevant output from the runner.  It is up to each runner whether

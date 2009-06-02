@@ -19,7 +19,10 @@ package org.jdesktop.wonderland.modules.sas.provider;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import org.jdesktop.wonderland.client.comms.ServerUnavailableException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -41,6 +44,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 @ExperimentalAPI
 public class SasProvider {
+    private static final Logger logger =
+            Logger.getLogger(SasProvider.class.getName());
 
     /** The user name with which the provider will log in. */
     private String userName;
@@ -84,12 +89,40 @@ public class SasProvider {
         }
 
         // create a new session
-        SasProviderSession curSession;
+        SasProviderSession curSession = null;
         try {
-            curSession = lm.createSession(loginUI);
+            
+            // keep trying to log in until we succeed.  Pause 5 seconds between
+            // login attempts
+            boolean loggedIn = false;
+            boolean notified = false;
+            do {
+                try {
+                    curSession = lm.createSession(loginUI);
+                    loggedIn = true;
+                } catch (ServerUnavailableException sue) {
+                    if (!notified) {
+                        logger.log(Level.WARNING, "[SasProvider] Darkstar " +
+                                   "server not available.  Retrying every 5 " +
+                                   "seconds.");
+                        notified = true;
+                    }
+                    Thread.sleep(5000);
+                }
+            } while (!loggedIn);
+
+            if (notified) {
+                logger.log(Level.WARNING, "[SasProvider] connected to " +
+                           "Darkstar server.");
+            }
         } catch (LoginFailureException lfe) {
             RuntimeException re = new RuntimeException("Error connecting to server.");
             re.initCause(lfe);
+            throw re;
+        } catch (InterruptedException ie) {
+            // thread interrupted
+            RuntimeException re = new RuntimeException("Error connecting to server.");
+            re.initCause(ie);
             throw re;
         }
 

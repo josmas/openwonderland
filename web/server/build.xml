@@ -135,7 +135,13 @@
             <checksumfileset dir="${top.dir}/web/runner/dist" prefix="deploy">
                 <include name="**/*.war"/>
             </checksumfileset>
-            
+
+            <!-- special case - add the remote deployment war for the runner
+                 for deployment in the deployRemote directory -->
+            <checksumfileset dir="${top.dir}/web/runner/build/lib/remote" prefix="deployRemote">
+                <include name="*.war"/>
+            </checksumfileset>
+
             <!-- modules -->
             <checksumfileset dir="${top.dir}/modules/dist" prefix="modules">
                 <include name="*.jar"/>

@@ -92,6 +92,7 @@ public abstract class BaseRunner implements Runner {
 
     /** the base URL to connect to */
     private String serverURL;
+    private String localURL;
 
     /** the current status */
     private Status status = Status.NOT_RUNNING;
@@ -165,6 +166,13 @@ public abstract class BaseRunner implements Runner {
         
         // the server URL should always be set in the system properties
         serverURL = System.getProperty(Constants.WEBSERVER_URL_PROP);
+
+        // XXX find a better way to get the local URL XXX
+        // in some cases, like a remote runner, the local URL may be
+        // different than the serverURL.  In that case, make sure we know
+        // the localURL as well
+        localURL = "http://" + System.getProperty(Constants.WEBSERVER_HOST_PROP).trim() +
+                   ":" + System.getProperty(Constants.WEBSERVER_PORT_PROP).trim() + "/";
     }
 
     /**
@@ -587,6 +595,14 @@ public abstract class BaseRunner implements Runner {
             statusUpdater.setName(getName() + " status update notifier");
             statusUpdater.start();
         }
+    }
+
+    /**
+     * Get status information on this runner
+     * @return the status info
+     */
+    public RunnerInfo getRunnerInfo() {
+        return new RunnerInfo(localURL, this);
     }
     
     /**

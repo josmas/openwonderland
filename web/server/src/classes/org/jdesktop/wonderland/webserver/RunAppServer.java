@@ -116,10 +116,15 @@ public class RunAppServer {
     protected void setupProperties() {
 
         String host = System.getProperty(Constants.WEBSERVER_HOST_PROP);
+        
+        logger.fine("[RunAppServer] host property: " + host);
+
         if (host != null) {
             // a host was specified -- resolve it
             host = resolveAddress(host);
         }
+
+        logger.fine("[RunAppServer] resolved host: " + host);
         
         // if the host does not exist or does not resolve, try glassfish's
         // guess
@@ -130,11 +135,15 @@ public class RunAppServer {
                 // ignore
             }
         }
+
+        logger.fine("[RunAppServer] glassfish host: " + host);
         
         // still no luck -- use our best guess
         if (host == null) {
             host = resolveAddress(null);
         }
+
+        logger.fine("[RunAppServer] wonderland host: " + host);
         
         // set the system property
         System.setProperty(Constants.WEBSERVER_HOST_PROP, host);
@@ -204,7 +213,7 @@ public class RunAppServer {
         WonderlandAppServer as = getAppServer();
 
         // deploy all webapps
-        File deployDir = new File(RunUtil.getRunDir(), "deploy");
+        File deployDir = new File(RunUtil.getRunDir(), getWebappDir());
         for (File war : deployDir.listFiles(WAR_FILTER)) {
             try {
                 as.deploy(war);
@@ -245,13 +254,13 @@ public class RunAppServer {
 
     protected void writeWebApps() throws IOException {
         // write to a subdirectory of the default temp directory
-        File deployDir = new File(RunUtil.getRunDir(), "deploy");
+        File deployDir = new File(RunUtil.getRunDir(), getWebappDir());
         deployDir.mkdirs();
 
         // figure out the set of files to add or remove
         List<String> addFiles = new ArrayList<String>();
         List<String> removeFiles = new ArrayList<String>();
-        FileListUtil.compareDirs("META-INF/deploy", deployDir,
+        FileListUtil.compareDirs("META-INF/" + getWebappDir(), deployDir,
                                  addFiles, removeFiles);
 
         // remove the files to remove
@@ -265,12 +274,21 @@ public class RunAppServer {
         }
 
         for (String addFile : addFiles) {
-            String fullPath = "/deploy/" + addFile;
+            String fullPath = "/" + getWebappDir() + "/" + addFile;
             RunUtil.extractJar(getClass(), fullPath, deployDir);
         }
 
         // write the updated checksum list
-        RunUtil.extract(getClass(), "/META-INF/deploy/files.list", deployDir);
+        RunUtil.extract(getClass(), "/META-INF/" + getWebappDir() +
+                                    "/files.list", deployDir);
+    }
+
+    /**
+     * Get the directory where webapps are stored and deployed
+     * @return the name of the webapp directory
+     */
+    protected String getWebappDir() {
+        return "deploy";
     }
 
     /**

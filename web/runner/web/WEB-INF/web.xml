@@ -5,6 +5,10 @@
         <description>Notify of initialization and shutdown</description>
         <listener-class>org.jdesktop.wonderland.runner.servlet.RunnerContextListener</listener-class>
     </listener>
+    <listener>
+        <description>Timer to notice when remote runners go away</description>
+        <listener-class>org.jdesktop.wonderland.runner.resources.RemoteStatusResource</listener-class>
+    </listener>
     <servlet>
         <servlet-name>RunServlet</servlet-name>
         <servlet-class>org.jdesktop.wonderland.runner.servlet.RunnerServlet</servlet-class>
@@ -15,7 +19,7 @@
         <servlet-class>com.sun.jersey.impl.container.servlet.ServletAdaptor</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
-    
+
     <servlet-mapping>
         <servlet-name>RunServlet</servlet-name>
         <url-pattern>/run</url-pattern>
@@ -24,18 +28,17 @@
         <servlet-name>ServletAdaptor</servlet-name>
         <url-pattern>/services/*</url-pattern>
     </servlet-mapping>
-    
+
     <session-config>
         <session-timeout>
             30
         </session-timeout>
     </session-config>
-    <welcome-file-list>     
+    <welcome-file-list>
         <welcome-file>run</welcome-file>
         <welcome-file>RunServlet</welcome-file>
     </welcome-file-list>
     <taglib>
         <taglib-uri>http://java.sun.com/jsp/jstl/core</taglib-uri>
         <taglib-location>/WEB-INF/tlds/c.tld</taglib-location>
-    </taglib>
-</web-app>
+    </taglib></web-app>

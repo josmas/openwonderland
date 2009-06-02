@@ -13,6 +13,20 @@
 <html>
     <head>
         <link href="runner.css" rel="stylesheet" type="text/css" media="screen" />
+        <script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            function selectLocal() {
+                var locationTF = $('locationField');
+                locationTF.disable();
+                locationTF.value = "localhost";
+            }
+
+            function selectRemote() {
+                var locationTF = $('locationField');
+                locationTF.enable();
+                locationTF.value = "remote";
+            }
+        </script>
     </head>
     <body>
         <h3>Add Component</h3>
@@ -26,11 +40,21 @@
             <table>
                 <tr>
                     <td>Component Name:</td>
-                    <td><input type="text" name="name" value="${requestScope['entry'].runnerName}"/></td>
+                    <td><input type="text" name="name" size="50" value="${requestScope['entry'].runnerName}"/></td>
                 </tr>
                 <tr>
                     <td>Component Class:</td>
-                    <td><input type="text" name="class" vakye="${requestScope['entry'].runnerClass}"/></td>
+                    <td><input type="text" name="class" size="50" value="${requestScope['entry'].runnerClass}"/></td>
+                </tr>
+                <tr>
+                    <td>Location:</td>
+                    <td><input type="radio" name="Location" value="Local" checked="true" onclick="javascript:selectLocal()">Local
+                        <input type="radio" name="Location" value="Remote" onclick="javascript:selectRemote()">Remote</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input id="locationField" disabled="true" type="text"
+                               name="location" size="50" value="${requestScope['entry'].location}"/></td>
                 </tr>
                 <tr>
                     <td><input type="submit" name="button" value="OK"/>

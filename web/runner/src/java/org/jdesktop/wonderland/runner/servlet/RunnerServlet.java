@@ -397,7 +397,9 @@ public class RunnerServlet extends HttpServlet {
         }
         
         DeploymentEntry de = new DeploymentEntry(name, clazz);
-        de.setLocation(location);
+        if (location != null) {
+            de.setLocation(location);
+        }
         de.setRunProps(props);
         
         return de;

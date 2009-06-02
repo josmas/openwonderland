@@ -12,8 +12,9 @@
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
     <pathconvert property="module-server.classpath">
-        <path location="${top.dir}/web/runner/dist/wonderland-runner-api.jar"/>
+        <path location="${top.dir}/web/runner/dist/wonderland-runner-core.jar"/>
         <path location="${top.dir}/web/utils/dist/wonderland-web-utils.jar"/>
+        <path location="${current.dir}/../darkstar/build/weblib/darkstar-runner.jar"/>
     </pathconvert>   
        
     <target name="build" depends="-module-init,  -module-compile-server"/>

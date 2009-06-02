@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.runner.resources;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import org.jdesktop.wonderland.runner.StatusWaiter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,6 +92,21 @@ public class RunnerActionResource {
 
                 // restart the runner
                 waiter = rm.start(r, wait);
+            } else if (action.equalsIgnoreCase("log")) {
+                // read the log file
+                if (r.getLogFile() != null) {
+                    BufferedReader reader = new BufferedReader(
+                                                new FileReader(r.getLogFile()));
+                    StringBuffer sb = new StringBuffer();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                        sb.append("\n");
+                    }
+
+                    ResponseBuilder rb = Response.ok(sb.toString());
+                    return rb.build();
+                }
             } else {
                 throw new RunnerException("Unkown action " + action);      
             } 
@@ -106,6 +124,10 @@ public class RunnerActionResource {
             return rb.build();
         } catch (InterruptedException ie) {
             logger.log(Level.WARNING, ie.getMessage(), ie);
+            ResponseBuilder rb = Response.status(Status.INTERNAL_SERVER_ERROR);
+            return rb.build();
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, ioe.getMessage(), ioe);
             ResponseBuilder rb = Response.status(Status.INTERNAL_SERVER_ERROR);
             return rb.build();
         }

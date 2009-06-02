@@ -52,7 +52,11 @@ public class WebDeployer implements ModuleDeployerSPI {
             new ArrayList<DeployRecord>();
 
     /** property for disabling the deployer */
-    static final String WEBDEPLOY_DISABLE_PROP = "web.deployer.disable";
+    static final String WEBDEPLOY_PARTNAME_PROP = "web.deployer.part";
+    private static final String WEBDEPLOY_PARTNAME_DEFAULT = "web";
+
+    private static String partName = System.getProperty(WEBDEPLOY_PARTNAME_PROP,
+                                                        WEBDEPLOY_PARTNAME_DEFAULT);
 
     /**
      * Get the name of this deployer
@@ -67,7 +71,7 @@ public class WebDeployer implements ModuleDeployerSPI {
      * @return the types
      */
     public String[] getTypes() {
-        return new String[] { "web" };
+        return new String[] { partName };
     }
 
     /**
@@ -182,11 +186,6 @@ public class WebDeployer implements ModuleDeployerSPI {
     }
 
     protected void doDeploy(DeployRecord record) throws IOException {
-        // see if web deployment is disabled
-        if (System.getProperty(WEBDEPLOY_DISABLE_PROP) != null) {
-            return;
-        }
-
         // create a context root for this app.  The context root is
         // <module-name>/<war-name>, where <war-name> is the name of
         // the .war file with ".war" taken off.

@@ -677,7 +677,7 @@ public class Cell {
                 }
 
                 Class componentClazz = f.getType();
-                CellComponent comp = getComponent(componentClazz);
+                CellComponent comp = getComponent(CellComponent.getLookupClass(componentClazz));
                 if (comp == null) {
                     try {
                         comp = (CellComponent) componentClazz.getConstructor(Cell.class).newInstance(this);
