@@ -165,7 +165,7 @@ public class CellExporterUtils {
          * the stream. Upon error return null.
          */
         try {
-            URL url = new URL(getWebServerURL(), WFS_PREFIX + "recordings");
+            URL url = new URL(getWebServerURL(), WFS_PREFIX + "listrecordings");
             CellExporter.logger.info("WFS: Loading recordings at " + url.toExternalForm());
             return WFSRecordingList.decode(url.openStream());
         } catch (java.lang.Exception excp) {
