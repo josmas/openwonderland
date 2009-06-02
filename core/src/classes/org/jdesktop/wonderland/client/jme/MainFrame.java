@@ -73,7 +73,7 @@ public interface MainFrame {
     public void addToFileMenu(JMenuItem menuItem, int index);
 
     /**
-     * Remove the specified menu item from the file menu.
+     * Remove the specified menu item from the File menu.
      *
      * @param menuItem
      */
@@ -96,7 +96,7 @@ public interface MainFrame {
     public void addToEditMenu(JMenuItem menuItem, int index);
 
     /**
-     * Remove the specified menu item from the edit menu.
+     * Remove the specified menu item from the Edit menu.
      *
      * @param menuItem
      */
@@ -118,11 +118,33 @@ public interface MainFrame {
     public void addToViewMenu(JMenuItem menuItem, int index);
 
     /**
-     * Remove the specified menu item from the view menu.
+     * Remove the specified menu item from the View menu.
      *
      * @param menuItem
      */
     public void removeFromViewMenu(JMenuItem menuItem);
+
+    /**
+     * Add the specified menu item to the end of the Insert menu
+     *
+     * @param menuItem
+     */
+    public void addToInsertMenu(JMenuItem menuItem);
+
+    /**
+     * Add a menu item to the Insert menu at the specified index, where -1 adds
+     * the menu item to the end of the menu
+     *
+     * @param menuItem
+     */
+    public void addToInsertMenu(JMenuItem menuItem, int index);
+
+    /**
+     * Remove the specified menu item from the Insert menu.
+     *
+     * @param menuItem
+     */
+    public void removeFromInsertMenu(JMenuItem menuItem);
 
     /**
      * Add the specified menu item to the end of the Tools menu
@@ -140,7 +162,7 @@ public interface MainFrame {
     public void addToToolsMenu(JMenuItem menuItem, int index);
 
     /**
-     * Remove the specified menu item from the tools menu.
+     * Remove the specified menu item from the Tools menu.
      *
      * @param menuItem
      */
@@ -163,7 +185,7 @@ public interface MainFrame {
     public void addToPlacemarksMenu(JMenuItem menuItem, int index);
 
     /**
-     * Remove the specified menu item from the placemarks menu.
+     * Remove the specified menu item from the Placemarks menu.
      *
      * @param menuItem
      */
@@ -186,7 +208,7 @@ public interface MainFrame {
     public void addToWindowMenu(JMenuItem menuItem, int index);
 
     /**
-     * Remove the specified menu item from the window menu.
+     * Remove the specified menu item from the Window menu.
      *
      * @param menuItem
      */

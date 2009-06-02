@@ -447,6 +447,27 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /**
      * {@inheritDoc}
      */
+    public void addToInsertMenu(JMenuItem menuItem) {
+        addToMenu(insertMenu, menuItem, -1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToInsertMenu(JMenuItem menuItem, int index) {
+        addToMenu(insertMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeFromInsertMenu(JMenuItem menuItem) {
+        removeFromMenu(insertMenu, menuItem);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void addToToolsMenu(JMenuItem menuItem) {
         addToMenu(toolsMenu, menuItem, -1);
     }
@@ -540,14 +561,13 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         goButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
         messageLabel = new javax.swing.JTextField();
-        jPanel3 = new javax.swing.JPanel();
         fpsLabel = new javax.swing.JLabel();
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         editMenu = new javax.swing.JMenu();
         viewMenu = new javax.swing.JMenu();
+        insertMenu = new javax.swing.JMenu();
         placemarksMenu = new javax.swing.JMenu();
         toolsMenu = new javax.swing.JMenu();
         windowMenu = new javax.swing.JMenu();
@@ -557,18 +577,16 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         serverPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        serverPanel.setLayout(new java.awt.BorderLayout());
+        serverPanel.setPreferredSize(new java.awt.Dimension(692, 35));
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle"); // NOI18N
         serverLabel.setText(bundle.getString("Location:")); // NOI18N
-        serverPanel.add(serverLabel, java.awt.BorderLayout.WEST);
 
         serverField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverFieldActionPerformed(evt);
             }
         });
-        serverPanel.add(serverField, java.awt.BorderLayout.CENTER);
 
         goButton.setText(bundle.getString("Go!")); // NOI18N
         goButton.addActionListener(new java.awt.event.ActionListener() {
@@ -576,12 +594,33 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 goButtonActionPerformed(evt);
             }
         });
-        serverPanel.add(goButton, java.awt.BorderLayout.EAST);
+
+        org.jdesktop.layout.GroupLayout serverPanelLayout = new org.jdesktop.layout.GroupLayout(serverPanel);
+        serverPanel.setLayout(serverPanelLayout);
+        serverPanelLayout.setHorizontalGroup(
+            serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(serverPanelLayout.createSequentialGroup()
+                .add(serverLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(serverField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(goButton))
+        );
+        serverPanelLayout.setVerticalGroup(
+            serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(serverPanelLayout.createSequentialGroup()
+                .add(serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(serverLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(serverField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(goButton)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         getContentPane().add(serverPanel, java.awt.BorderLayout.NORTH);
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
-        jPanel1.setLayout(new java.awt.BorderLayout());
+        jPanel1.setPreferredSize(new java.awt.Dimension(704, 35));
 
         messageLabel.setColumns(20);
         messageLabel.setEditable(false);
@@ -591,44 +630,27 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             }
         });
 
-        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(12, Short.MAX_VALUE)
-                .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-        );
-
-        jPanel1.add(jPanel2, java.awt.BorderLayout.WEST);
-
         fpsLabel.setText(bundle.getString("FPS_:")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(341, Short.MAX_VALUE)
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 353, Short.MAX_VALUE)
                 .add(fpsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(18, Short.MAX_VALUE)
-                .add(fpsLabel)
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(fpsLabel))
                 .addContainerGap())
         );
-
-        jPanel1.add(jPanel3, java.awt.BorderLayout.CENTER);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
@@ -638,8 +660,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         editMenu.setText(bundle.getString("Edit")); // NOI18N
         mainMenuBar.add(editMenu);
 
-        viewMenu.setText(bundle.getString("View")); // NOI18N
+        viewMenu.setText("View");
         mainMenuBar.add(viewMenu);
+
+        insertMenu.setText("Insert");
+        mainMenuBar.add(insertMenu);
 
         placemarksMenu.setText("Placemarks");
         mainMenuBar.add(placemarksMenu);
@@ -680,10 +705,9 @@ private void messageLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JMenu fileMenu;
     private javax.swing.JLabel fpsLabel;
     private javax.swing.JButton goButton;
+    private javax.swing.JMenu insertMenu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JTextField messageLabel;
     private javax.swing.JMenu placemarksMenu;
