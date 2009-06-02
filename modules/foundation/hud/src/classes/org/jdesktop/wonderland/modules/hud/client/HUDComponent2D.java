@@ -79,6 +79,10 @@ public class HUDComponent2D implements HUDComponent {
         this.cell = cell;
     }
 
+    public void setComponent(JComponent component) {
+        this.component = component;
+    }
+    
     public JComponent getComponent() {
         return component;
     }

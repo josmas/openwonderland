@@ -99,7 +99,6 @@ public class WonderlandHUD implements HUD {
 
         if (componentManager != null) {
             componentManager.addComponent(component);
-            component.setVisible(true);
         }
     }
 
