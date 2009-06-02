@@ -42,8 +42,8 @@ public class HUDView2DDisplayer implements View2DDisplayer {
     public HUDView2D createView(Window2D window) {
         HUDView2D view = new HUDView2D(this, window);
 
-        // visible by default
-        view.setVisibleUser(true);
+        // invisible by default
+        view.setVisibleUser(false);
 
         if (view != null) {
             views.add(view);

@@ -23,15 +23,91 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Logger;
+import javax.swing.JFrame;
+
 /**
  *
  * @author nsimpson
  */
 public class HUDFrame2DImpl extends javax.swing.JPanel {
 
-    /** Creates new form HUDFrame2DImpl */
+    private static final Logger logger = Logger.getLogger(HUDFrame2DImpl.class.getName());
+    private Color gradientStartColor = new Color(2, 28, 109);
+    private Color gradientEndColor = new Color(134, 169, 254);
+    private List<ActionListener> listeners;
+
     public HUDFrame2DImpl() {
         initComponents();
+
+        minimizeButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                logger.info("minimize action performed");
+                if (listeners != null) {
+                    ActionEvent event = new ActionEvent(HUDFrame2DImpl.this, e.getID(), "minimize");
+                    for (ActionListener listener:listeners) {
+                        listener.actionPerformed(event);
+                    }
+                }
+            }
+        });
+        
+        closeButton.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                logger.info("close action performed");
+                if (listeners != null) {
+                    ActionEvent event = new ActionEvent(HUDFrame2DImpl.this, e.getID(), "close");
+                    for (ActionListener listener:listeners) {
+                        listener.actionPerformed(event);
+                    }
+                }
+            }
+        });
+    }
+
+    public void setGradientStartColor(Color gradientStartColor) {
+        this.gradientStartColor = gradientStartColor;
+    }
+
+    public Color getGradientStartColor() {
+        return gradientStartColor;
+    }
+
+    public void setGradientEndColor(Color gradientEndColor) {
+        this.gradientEndColor = gradientEndColor;
+    }
+
+    public Color getGradientEndColor() {
+        return gradientEndColor;
+    }
+
+    public void addActionListener(ActionListener listener) {
+        if (listeners == null) {
+            listeners = Collections.synchronizedList(new ArrayList());
+        }
+        listeners.add(listener);
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+
+        GradientPaint paint = new GradientPaint(0, 0, gradientStartColor,
+                0, getHeight(), gradientEndColor);
+        g2.setPaint(paint);
+        g2.fill(g2.getClip());
+        this.paintChildren(g);
     }
 
     /** This method is called from within the constructor to
@@ -43,21 +119,8 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        controlsPanel = new javax.swing.JPanel();
-        closeButton = new javax.swing.JButton();
         minimizeButton = new javax.swing.JButton();
-        contentPanel = new javax.swing.JPanel();
-        grabPanel = new javax.swing.JPanel();
-        grabButton = new javax.swing.JButton();
-
-        controlsPanel.setMinimumSize(new java.awt.Dimension(100, 70));
-
-        closeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/close16x16.png"))); // NOI18N
-        closeButton.setBorderPainted(false);
-        closeButton.setIconTextGap(0);
-        closeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        closeButton.setMaximumSize(new java.awt.Dimension(16, 16));
-        closeButton.setMinimumSize(new java.awt.Dimension(2, 2));
+        closeButton = new javax.swing.JButton();
 
         minimizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/minimize16x16.png"))); // NOI18N
         minimizeButton.setBorderPainted(false);
@@ -66,90 +129,54 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
         minimizeButton.setMaximumSize(new java.awt.Dimension(16, 16));
         minimizeButton.setMinimumSize(new java.awt.Dimension(2, 2));
 
-        org.jdesktop.layout.GroupLayout controlsPanelLayout = new org.jdesktop.layout.GroupLayout(controlsPanel);
-        controlsPanel.setLayout(controlsPanelLayout);
-        controlsPanelLayout.setHorizontalGroup(
-            controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(controlsPanelLayout.createSequentialGroup()
-                .add(controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
-        controlsPanelLayout.setVerticalGroup(
-            controlsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(controlsPanelLayout.createSequentialGroup()
-                .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(0, 0, 0)
-                .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(11, 11, 11))
-        );
-
-        contentPanel.setBackground(new java.awt.Color(255, 255, 255));
-        contentPanel.setMinimumSize(new java.awt.Dimension(100, 70));
-
-        org.jdesktop.layout.GroupLayout contentPanelLayout = new org.jdesktop.layout.GroupLayout(contentPanel);
-        contentPanel.setLayout(contentPanelLayout);
-        contentPanelLayout.setHorizontalGroup(
-            contentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 373, Short.MAX_VALUE)
-        );
-        contentPanelLayout.setVerticalGroup(
-            contentPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 51, Short.MAX_VALUE)
-        );
-
-        grabButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/grab19x500.png"))); // NOI18N
-        grabButton.setBorderPainted(false);
-        grabButton.setIconTextGap(0);
-        grabButton.setMaximumSize(new java.awt.Dimension(30, 512));
-        grabButton.setMinimumSize(new java.awt.Dimension(30, 30));
-        grabButton.setPreferredSize(new java.awt.Dimension(30, 35));
-        grabButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                grabButtonActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout grabPanelLayout = new org.jdesktop.layout.GroupLayout(grabPanel);
-        grabPanel.setLayout(grabPanelLayout);
-        grabPanelLayout.setHorizontalGroup(
-            grabPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(grabButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, Short.MAX_VALUE)
-        );
-        grabPanelLayout.setVerticalGroup(
-            grabPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(grabButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-        );
+        closeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/close16x16.png"))); // NOI18N
+        closeButton.setBorderPainted(false);
+        closeButton.setIconTextGap(0);
+        closeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        closeButton.setMaximumSize(new java.awt.Dimension(16, 16));
+        closeButton.setMinimumSize(new java.awt.Dimension(2, 2));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(grabPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(384, Short.MAX_VALUE)
+                .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0)
-                .add(contentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(0, 0, 0)
-                .add(controlsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(grabPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(contentPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, Short.MAX_VALUE)
-            .add(controlsPanel, 0, 51, Short.MAX_VALUE)
+            .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void grabButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_grabButtonActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_grabButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
-    private javax.swing.JPanel contentPanel;
-    private javax.swing.JPanel controlsPanel;
-    private javax.swing.JButton grabButton;
-    private javax.swing.JPanel grabPanel;
     private javax.swing.JButton minimizeButton;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                JFrame frame = new JFrame("HUD Frame test");
+                frame.addWindowListener(new java.awt.event.WindowAdapter() {
+
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                    }
+                });
+                frame.add(new HUDFrame2DImpl());
+                frame.pack();
+                frame.setVisible(true);
+            }
+        });
+    }
 }

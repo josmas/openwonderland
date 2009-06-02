@@ -18,10 +18,7 @@
 package org.jdesktop.wonderland.modules.hud.client;
 
 import org.jdesktop.mtgame.Entity;
-import com.jme.math.Vector2f;
-import com.jme.math.Vector3f;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
@@ -68,23 +65,8 @@ public class HUDView2D extends View2DEntity {
      * {@inheritDoc}
      */
     protected Entity getParentEntity() {
-        logger.warning("HUDView2D.getParentEntity returning null");
         return null;
     }
-
-//    @Override
-//    /**
-//     * From App2DCell.updatePrimaryTransform
-//     */
-//    protected void updatePrimaryTransform(CellTransform userDeltaTransform) {
-//        Vector3f translation = getTranslationUserCurrent();
-//
-//        if (type == Type.PRIMARY && isOrtho()) {
-//            Vector2f locOrtho = getLocationOrtho();
-//            translation.addLocal(new Vector3f(locOrtho.x, locOrtho.y, 0f));
-//        }
-//        sgChangeTransformUserSet(viewNode, new CellTransform(null, translation, null));
-//    }
 
     /**
      * {@inheritDoc}
