@@ -40,8 +40,8 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.SnapshotCre
 public class CellExporter implements Serializable, SnapshotCreationListener,
                                      CellExportListener
 {
-    /* The logger for the wfs loader */
-    private static final Logger logger = Logger.getLogger(CellExporter.class.getName());
+    /* The logger for the wfs exporter */
+    static final Logger logger = Logger.getLogger(CellExporter.class.getName());
     
     /** Default Constructor */
     public CellExporter() {

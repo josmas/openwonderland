@@ -19,12 +19,16 @@ package org.jdesktop.wonderland.server.wfs.exporter;
 
 import java.util.Set;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * Implementation of CellExportManager.  This just forwards everything to
  * the service.
  * @author jkaplan
+ * @author Bernard Horan
  */
 public class CellExportManagerImpl implements CellExportManager {
     private CellExportService service;
@@ -45,5 +49,9 @@ public class CellExportManagerImpl implements CellExportManager {
 
     public void createRecording(String name, Set<CellID> cells, RecordingCreationListener listener) {
         service.createRecording(name, cells, listener);
+    }
+
+    public void listRecordings(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, ListRecordingsListener listener) {
+        service.listRecordings(messageID, sender, clientID, listener);
     }
 }
