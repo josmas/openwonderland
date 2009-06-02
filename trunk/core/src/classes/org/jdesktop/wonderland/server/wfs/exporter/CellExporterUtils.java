@@ -157,8 +157,9 @@ public class CellExporterUtils {
 
     /**
      * Returns all of the WFS recording names or null upon error
+     * @return a list of names of recordings
      */
-    static WFSRecordingList getWFSRecordings() {
+    public static WFSRecordingList getWFSRecordings() {
         System.out.println("In CellExporterUtils.getWFSRecordings");
         /*
          * Try to open up a connection the Jersey RESTful resource and parse
