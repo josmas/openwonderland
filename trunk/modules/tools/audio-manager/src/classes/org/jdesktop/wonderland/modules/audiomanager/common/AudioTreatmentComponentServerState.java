@@ -56,6 +56,9 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
     @XmlElement(name="startImmediately")
     public boolean startImmediately = true;
 
+    @XmlElement(name="restartWhenFirstInRange")
+    public boolean restartWhenFirstInRange = false;
+
     public AudioTreatmentComponentServerState() {
 	super(false, false);
     }
@@ -121,6 +124,15 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
     @XmlTransient
     public boolean getStartImmediately() {
 	return startImmediately;
+    }
+
+    public void setRestartWhenFirstInRange(boolean restartWhenFirstInRange) {
+	this.restartWhenFirstInRange = restartWhenFirstInRange;
+    }
+
+    @XmlTransient
+    public boolean getRestartWhenFirstInRange() {
+	return restartWhenFirstInRange;
     }
 
     public String getServerComponentClassName() {

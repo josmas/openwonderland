@@ -96,8 +96,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     private double fullVolumeRadius;
     private double zeroVolumeRadius;
     private double volume;
-    private boolean useFullVolumeSpatializer = false;
-    private boolean startImmediately = true;
+    private boolean useFullVolumeSpatializer;
+    private boolean startImmediately;
+    private boolean restartWhenFirstInRange;
 
     private static String serverURL;
 
@@ -135,8 +136,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         useFullVolumeSpatializer = state.getUseFullVolumeSpatializer();
 	volume = state.getVolume();
 	startImmediately = state.getStartImmediately();
-
-	addProximityListener(isLive());
+	restartWhenFirstInRange = state.getRestartWhenFirstInRange();
 
 	if (isLive()) {
 	    initialize();
@@ -156,6 +156,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             state.setZeroVolumeRadius(zeroVolumeRadius);
             state.setUseFullVolumeSpatializer(useFullVolumeSpatializer);
 	    state.setStartImmediately(startImmediately);
+	    state.setRestartWhenFirstInRange(restartWhenFirstInRange);
         }
 
         return super.getServerState(state);
@@ -179,6 +180,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	    state.useFullVolumeSpatializer = useFullVolumeSpatializer;
 	    state.volume = volume;
 	    state.startImmediately = startImmediately;
+	    state.restartWhenFirstInRange = restartWhenFirstInRange;
 	}
 
         return super.getClientState(state, clientID, capabilities);
@@ -298,6 +300,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 		if (startImmediately == false) {
 		    t.pause(true);
 		}
+
+	        if (restartWhenFirstInRange) {
+	            addProximityListener(t);
+	        }
             } catch (IOException e) {
                 logger.warning("Unable to create treatment " + setup.treatment + e.getMessage());
                 return;
@@ -362,7 +368,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 		    return;
 		}
 
-		System.out.println("restart " + msg.restartTreatment() + " pause " + msg.isPaused());
+		logger.fine("restart " + msg.restartTreatment() + " pause " + msg.isPaused());
 
 		if (msg.restartTreatment()) {
 		    treatment.restart(msg.isPaused());
@@ -388,11 +394,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         }
     }
 
-    private void addProximityListener(boolean live) {
-        if (live == false) {
-	    return;
-	}
-
+    private void addProximityListener(Treatment treatment) {
         // Fetch the proximity component, we will need this below. If it does
         // not exist (it should), then log an error
         ProximityComponentMO component = cellRef.get().getComponent(ProximityComponentMO.class);
@@ -408,7 +410,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         bounds[0] = new BoundingSphere((float) zeroVolumeRadius, new Vector3f());
 
         AudioTreatmentProximityListener proximityListener = 
-	    new AudioTreatmentProximityListener(cellRef.get());
+	    new AudioTreatmentProximityListener(cellRef.get(), treatment);
 
         component.addProximityListener(proximityListener, bounds);
     }
