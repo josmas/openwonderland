@@ -42,6 +42,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -68,6 +70,54 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
     private boolean enableCustomisation = false;
 
+    private String[] defaultMaleConfigs = new String[] {
+        "MaleD_CA_00_bin.xml",
+        "MaleD_CA_01_bin.xml",
+        "MaleFG_AA_00_bin.xml",
+        "MaleFG_AA_01_bin.xml",
+        "MaleFG_AA_02_bin.xml",
+        "MaleFG_AA_03_bin.xml",
+        "MaleFG_AA_04_bin.xml",
+        "MaleFG_CA_01_bin.xml",
+        "MaleFG_CA_03_bin.xml",
+        "MaleFG_CA_04_bin.xml",
+        "MaleFG_CA_05_bin.xml",
+        "MaleFG_CA_06_bin.xml",
+        "MaleMeso_00.xml",
+        "MaleMeso_01.xml",
+        "Male_Medium_Heavy.xml",
+        "Male_Medium_Normal.xml",
+        "Male_Short_Heavy.xml",
+        "Male_Short_Normal.xml",
+        "Male_Tall_Heavy.xml",
+        "Male_Tall_Normal.xml",
+    };
+
+    private String[] defaultFemaleConfigs = new String[] {
+        "FemaleD_AZ_00_bin.xml",
+        "FemaleD_CA_00_bin.xml",
+        "FemaleFG_AA_01_bin.xml",
+        "FemaleFG_AA_02_bin.xml",
+        "FemaleFG_AA_03_bin.xml",
+        "FemaleFG_AA_04_bin.xml",
+        "FemaleFG_AA_05_bin.xml",
+        "FemaleFG_AA_06_bin.xml",
+        "FemaleFG_CA_00_bin.xml",
+        "FemaleFG_CA_01_bin.xml",
+        "FemaleFG_CA_02_bin.xml",
+        "FemaleFG_CA_03_bin.xml",
+        "FemaleFG_CA_04_bin.xml",
+        "FemaleFG_CA_05_bin.xml",
+        "FemaleFG_CA_06_bin.xml",
+        "FemaleFG_CA_07_bin.xml",
+        "Female_Medium_Heavy.xml",
+        "Female_Medium_Normal.xml",
+        "Female_Short_Heavy.xml",
+        "Female_Short_Normal.xml",
+        "Female_Tall_Heavy.xml",
+        "Female_Tall_Normal.xml",
+
+    };
     /** Creates new form AvatarConfigFrame */
     public AvatarConfigFrame(AvatarImiJME avatarRenderer) {
         this.avatarRenderer = avatarRenderer;
@@ -403,24 +453,43 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
 
-                WlAvatarCharacter avatarCharacter;
+                WlAvatarCharacter avatarCharacter=null;
                 CharacterAttributes attributes;
                 String name = avatarNameTF.getText();
-
-                if (femaleRB.isSelected())
-                    attributes = new FemaleAvatarAttributes(name, true);
-                else
-                    attributes = new MaleAvatarAttributes(name, true);
 
                 WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
                 ServerSessionManager manager = session.getSessionManager();
                 String serverHostAndPort = manager.getServerNameAndPort();
-                attributes.setBaseURL("wla://avatarbaseart@"+serverHostAndPort+"/");
-
-                LoadingInfo.startedLoading(avatarRenderer.getCell().getCellID(), name);
+                
                 try {
-                    WorldManager wm = ClientContextJME.getWorldManager();
-                    avatarCharacter = new WlAvatarCharacter(attributes, wm);
+                    LoadingInfo.startedLoading(avatarRenderer.getCell().getCellID(), name);
+                    // Choose a random config from the default configs
+                    String configName = null;
+                    if (femaleRB.isSelected()) {
+                        int i = (int) Math.round(Math.random()*defaultFemaleConfigs.length-1);
+                        configName = "assets/configurations/"+defaultFemaleConfigs[i];
+                    } else {
+                        int i = (int) Math.round(Math.random()*defaultMaleConfigs.length-1);
+                        configName = "assets/configurations/"+defaultMaleConfigs[i];
+                    }
+                    System.err.println("Selected "+configName);
+                    try {
+                        String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
+                        URL avatarConfigURL = AssetUtils.getAssetURL(baseURL + configName, avatarRenderer.getCell());
+                        avatarCharacter = new WlAvatarCharacter(avatarConfigURL, ClientContextJME.getWorldManager(), baseURL);
+                    } catch (MalformedURLException ex) {
+                        Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                // Choose random components
+//                if (femaleRB.isSelected())
+//                    attributes = new FemaleAvatarAttributes(name, true);
+//                else
+//                    attributes = new MaleAvatarAttributes(name, true);
+//
+//                attributes.setBaseURL("wla://avatarbaseart@"+serverHostAndPort+"/");
+
+//                    avatarCharacter = new WlAvatarCharacter(attributes, ClientContextJME.getWorldManager());
                 } finally {
                     LoadingInfo.finishedLoading(avatarRenderer.getCell().getCellID(), name);
                 }
