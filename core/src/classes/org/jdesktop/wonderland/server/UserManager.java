@@ -18,12 +18,10 @@
 package org.jdesktop.wonderland.server;
 
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
-import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -50,7 +48,7 @@ public class UserManager implements ManagedObject, Serializable {
      * Name used in binding this object in DataManager
      **/
     private static final String BINDING_NAME="USER_MANAGER";
-    
+
     private int userLimit = Integer.MAX_VALUE;
 
     /**
@@ -152,6 +150,7 @@ public class UserManager implements ManagedObject, Serializable {
         
         // add this session to our map
         clientToUser.put(clientID, user.getReference());
+        notifyUserListenersLogin(clientID);
     }
     
     /**
@@ -167,16 +166,26 @@ public class UserManager implements ManagedObject, Serializable {
         }
         
         clientToUser.remove(clientID);
-        notifyUserListeners(clientID);
+        notifyUserListenersLogout(clientID);
     }
 
     /**
      * Notify listeners that client is logging out
      * @param clientID
      */
-    private void notifyUserListeners(WonderlandClientID clientID) {
+    private void notifyUserListenersLogout(WonderlandClientID clientID) {
         for(ManagedReference<UserListener> listener : userListeners) {
-            AppContext.getTaskManager().scheduleTask(new UserListenerNotifier(listener, clientID));
+            AppContext.getTaskManager().scheduleTask(new UserListenerNotifier(listener, clientID, UserListenerNotifier.LOGOUT));
+        }
+    }
+
+    /**
+     * Notify listeners that a client is logging in.
+     * @param clientID
+     */
+    private void notifyUserListenersLogin(WonderlandClientID clientID) {
+        for(ManagedReference<UserListener> listener : userListeners) {
+            AppContext.getTaskManager().scheduleTask(new UserListenerNotifier(listener, clientID, UserListenerNotifier.LOGIN));
         }
     }
 
