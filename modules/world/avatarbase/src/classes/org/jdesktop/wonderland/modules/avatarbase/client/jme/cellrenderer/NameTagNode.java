@@ -67,7 +67,11 @@ public class NameTagNode extends Node {
         UNMUTE,
         CHANGE_NAME,
 	ENTERED_CONE_OF_SILENCE,
-	EXITED_CONE_OF_SILENCE
+	EXITED_CONE_OF_SILENCE,
+	HIDE,
+	SMALL_FONT,
+	REGULAR_FONT,
+	LARGE_FONT
     }
     private final float height;
     private String name;
@@ -178,8 +182,30 @@ public class NameTagNode extends Node {
     public void setNameTag(EventType eventType, String username, String usernameAlias,
             Color foregroundColor, Font font) {
 
+	System.out.println("setNameTag event " + eventType);
+
         this.usernameAlias = usernameAlias;
 
+	switch (eventType) {
+	case HIDE:
+	    System.out.println("Hide nametag for " + usernameAlias);
+	    setVisible(false);
+	    return;
+
+	case SMALL_FONT:
+	    System.out.println("SMALL_FONT not implemented");
+	    return;
+	
+	case REGULAR_FONT:
+	    System.out.println("Set REGULAR_FONT for " + usernameAlias);
+	    setVisible(true);
+	    return;
+	
+	case LARGE_FONT:
+	    System.out.println("LARGE_FONT not implemented");
+	    return;
+	}
+	
 	if (eventType == EventType.ENTERED_CONE_OF_SILENCE) {
 	    inConeOfSilence = true;
 	    return;
