@@ -3403,7 +3403,7 @@
     </Materials>
     <Materials TargetMeshName="TShirt1Shape" AlphaState="0" Name="MysteryNode!">
         <Textures>
-            <RelativePath>assets/models/collada/Clothing/FemaleClothing/blouse_tshirt_00.png</RelativePath>
+            <RelativePath>assets/models/collada/Clothing/FemaleClothing/blouse_koi02.png</RelativePath>
             <TextureUnit>0</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>
