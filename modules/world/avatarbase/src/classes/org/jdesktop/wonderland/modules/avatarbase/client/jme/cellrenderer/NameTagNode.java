@@ -41,8 +41,14 @@ public class NameTagNode extends Node {
     public static final Color SPEAKING_COLOR = Color.RED;
     public static final Color NOT_SPEAKING_COLOR = new Color(1f, 1f, 1f);
     public static final Color CONE_OF_SILENCE_COLOR = Color.BLACK;
-    public static final Font REAL_NAME_FONT = Font.decode("Sans PLAIN 40");
-    public static final Font ALIAS_NAME_FONT = Font.decode("Sans ITALIC 40");
+    public static final String DEFAULT_FONT_NAME = "Sans";
+    public static final String DEFAULT_FONT_NAME_TYPE = "PLAIN";
+    public static final String DEFAULT_FONT_ALIAS_TYPE = "ITALIC";
+    public static final int DEFAULT_FONT_SIZE = 40;
+    public static final Font REAL_NAME_FONT = 
+        fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_NAME_TYPE, DEFAULT_FONT_SIZE);
+    public static final Font ALIAS_NAME_FONT = 
+        fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_ALIAS_TYPE, DEFAULT_FONT_SIZE);
     private Color foregroundColor = NOT_SPEAKING_COLOR;
     
     private Color backgroundColor = new Color(0f, 0f, 0f);
@@ -67,10 +73,17 @@ public class NameTagNode extends Node {
     private String name;
     private Spatial q;
     private String usernameAlias;
+    private boolean visible;
+    private int fontSize;
+
+    private static Font fontDecode (String fontName, String fontType, int fontSize) {
+        return Font.decode(fontName + " " + fontType + " " + fontSize);
+    }
 
     public NameTagNode(String name, float height) {
         this.name = name;
         this.height = height;
+        visible = true;
         setNameTag(name);
     }
 
@@ -122,10 +135,36 @@ public class NameTagNode extends Node {
 
     public void setFont(Font font) {
         this.font = font;
+        updateFont();
+    }
 
-	if (label != null) {
-	    label.setFont(font);
+    /**
+     * Sets the font to a font of the default name but with the given size.
+     */
+    public void setSizedDefaultFont(int fontSize) {
+        this.fontSize = fontSize;
+        Font newFont;
+        if (name.equals(usernameAlias) == false) {
+            newFont = fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_ALIAS_TYPE, fontSize);
+        } else {
+            newFont = fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_NAME_TYPE, fontSize);
 	}
+        setFont(newFont);
+    }
+
+    /**
+     * Controls whether the name tag is actually visible.
+     */
+    public void setVisible (boolean visible) {
+        this.visible = visible;
+        setNameTag(name);
+    }
+
+    /**
+     * Returns whether the name tag is visible. 
+     */
+    public boolean isVisible () {
+        return visible;
     }
 
     private boolean inConeOfSilence;
@@ -215,17 +254,35 @@ public class NameTagNode extends Node {
     }
 
     private void setNameTagImpl(String name) {
-        if (label==null) {
-            label = new TextLabel2D(name, foregroundColor, backgroundColor, 0.3f, true, font);
-            label.setLocalTranslation(0, height, 0);
+        if (visible && name != null) {
+            if (label==null) {
+                label = new TextLabel2D(name, foregroundColor, backgroundColor, 0.3f, true, font);
+                label.setLocalTranslation(0, height, 0);
 
-            Matrix3f rot = new Matrix3f();
-            rot.fromAngleAxis((float) Math.PI, new Vector3f(0f, 1f, 0f));
-            label.setLocalRotation(rot);
+                Matrix3f rot = new Matrix3f();
+                rot.fromAngleAxis((float) Math.PI, new Vector3f(0f, 1f, 0f));
+                label.setLocalRotation(rot);
 
-            attachChild(label);
+                attachChild(label);
+            } else {
+                label.setText(name, foregroundColor, backgroundColor);
+            }
         } else {
-            label.setText(name, foregroundColor, backgroundColor);
+            if (label != null) {
+                detachChild(label);
+                label = null;
+            }
         }
+    }
+
+    private void updateFont () {
+        if (label != null && font != null) {
+            ClientContextJME.getSceneWorker().addWorker(new WorkCommit() {
+                public void commit() {
+                    label.setFont(font);
+                    ClientContextJME.getWorldManager().addToUpdateList(NameTagNode.this);
+                }
+            });
+        }        
     }
 }
