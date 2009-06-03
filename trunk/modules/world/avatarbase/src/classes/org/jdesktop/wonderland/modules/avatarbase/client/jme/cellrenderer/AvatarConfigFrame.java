@@ -454,7 +454,6 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             public void run() {
 
                 WlAvatarCharacter avatarCharacter=null;
-                CharacterAttributes attributes;
                 String name = avatarNameTF.getText();
 
                 WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
@@ -472,7 +471,6 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                         int i = (int) Math.round(Math.random()*defaultMaleConfigs.length-1);
                         configName = "assets/configurations/"+defaultMaleConfigs[i];
                     }
-                    System.err.println("Selected "+configName);
                     try {
                         String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
                         URL avatarConfigURL = AssetUtils.getAssetURL(baseURL + configName, avatarRenderer.getCell());
@@ -482,6 +480,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                     }
 
                 // Choose random components
+//                CharacterAttributes attributes;
 //                if (femaleRB.isSelected())
 //                    attributes = new FemaleAvatarAttributes(name, true);
 //                else
