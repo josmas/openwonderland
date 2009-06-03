@@ -30,7 +30,13 @@ public interface UserListener extends Serializable, ManagedObject {
 
     /**
      * Notification that a client has logged out.
-     * @param clientID the client that has logged out
+     * @param clientID of the client that has logged out
      */
     public void userLoggedOut(WonderlandClientID clientID);
+
+    /**
+     * Notification that a client has logged in.
+     * @param clientID of the client that has logged in
+     */
+    public void userLoggedIn(WonderlandClientID clientID);
 }
