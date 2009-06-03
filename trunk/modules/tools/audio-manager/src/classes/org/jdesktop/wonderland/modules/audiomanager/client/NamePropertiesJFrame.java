@@ -8,6 +8,13 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
+
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
+
+import org.jdesktop.wonderland.client.input.InputManager;
+
 /**
  *
  * @author  jp
@@ -18,14 +25,14 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
 
     private enum NameTagAttribute {
 	HIDE,
-	SMALL,
-	REGULAR,
-	LARGE
+	SMALL_FONT,
+	REGULAR_FONT,
+	LARGE_FONT
     };
 
-    NameTagAttribute myNameTagAttribute = NameTagAttribute.REGULAR;
+    NameTagAttribute myNameTagAttribute = NameTagAttribute.REGULAR_FONT;
 
-    NameTagAttribute otherNameTagAttributes = NameTagAttribute.REGULAR;
+    NameTagAttribute otherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
 
     /** Creates new form NamePropertiesJFrame */
     public NamePropertiesJFrame() {
@@ -61,11 +68,17 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
         cancelButton = new javax.swing.JButton();
         otherNamesSmallRadioButton = new javax.swing.JRadioButton();
         myNameTagSmallRadioButton = new javax.swing.JRadioButton();
+        applyButton = new javax.swing.JButton();
 
         jLabel1.setText("My Name:");
 
         buttonGroup1.add(myNameHideRadioButton);
         myNameHideRadioButton.setText("Hide");
+        myNameHideRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                myNameHideRadioButtonActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(myNameRegularRadioButton);
         myNameRegularRadioButton.setSelected(true);
@@ -125,6 +138,7 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
             }
         });
 
+        buttonGroup2.add(otherNamesSmallRadioButton);
         otherNamesSmallRadioButton.setText("small");
         otherNamesSmallRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -132,10 +146,18 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
             }
         });
 
+        buttonGroup1.add(myNameTagSmallRadioButton);
         myNameTagSmallRadioButton.setText("small");
         myNameTagSmallRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 myNameTagSmallRadioButtonActionPerformed(evt);
+            }
+        });
+
+        applyButton.setText("Apply");
+        applyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyButtonActionPerformed(evt);
             }
         });
 
@@ -144,16 +166,12 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap(218, Short.MAX_VALUE)
-                        .add(cancelButton)
-                        .add(53, 53, 53)
-                        .add(OKButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 68, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jLabel2))
+                            .add(jLabel2)
+                            .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(layout.createSequentialGroup()
@@ -164,28 +182,38 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
                                 .add(otherNamesHideRadioButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(otherNamesSmallRadioButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(cancelButton)
+                        .add(55, 55, 55)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(applyButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE)
                         .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(layout.createSequentialGroup()
-                                .add(myNameRegularRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(18, 18, 18)
-                                .add(myNameLargeRadioButton))
-                            .add(layout.createSequentialGroup()
-                                .add(otherNamesRegularRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(otherNamesLargeRadioButton)))))
-                .addContainerGap(30, Short.MAX_VALUE))
+                        .add(OKButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 68, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(6, 6, 6))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(myNameRegularRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(myNameLargeRadioButton))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(otherNamesRegularRadioButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(otherNamesLargeRadioButton)))
+                .add(21, 21, 21))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(23, 23, 23)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
                     .add(myNameHideRadioButton)
                     .add(myNameTagSmallRadioButton)
                     .add(myNameRegularRadioButton)
-                    .add(myNameLargeRadioButton))
+                    .add(myNameLargeRadioButton)
+                    .add(jLabel1))
                 .add(29, 29, 29)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
@@ -196,7 +224,8 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
                 .add(28, 28, 28)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cancelButton)
-                    .add(OKButton))
+                    .add(OKButton)
+                    .add(applyButton))
                 .addContainerGap(25, Short.MAX_VALUE))
         );
 
@@ -208,38 +237,7 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 }//GEN-LAST:event_cancelButtonActionPerformed
 
 private void OKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OKButtonActionPerformed
-    switch (myNameTagAttribute) {
-    case HIDE:
-	break;
-
-    case SMALL:
-	System.out.println("SMALL name tag not implmented");
-	break;
-
-    case REGULAR:
-	break;
-
-    case LARGE:
-	System.out.println("LARGE name tag not implmented");
-	break;
-    }
-
-    switch (otherNameTagAttributes) {
-    case HIDE:
-	break;
-
-    case SMALL:
-	System.out.println("SMALL name tag not implmented");
-	break;
-
-    case REGULAR:
-	break;
-
-    case LARGE:
-	System.out.println("LARGE name tag not implmented");
-	break;
-    }
-
+    applyChanges();
     setVisible(false);
 }//GEN-LAST:event_OKButtonActionPerformed
 
@@ -248,15 +246,15 @@ private void myNameHideRadioButtonActionPerformed(java.awt.event.ActionEvent evt
 }//GEN-LAST:event_myNameHideRadioButtonActionPerformed
 
 private void myNameTagSmallRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameTagSmallRadioButtonActionPerformed
-    myNameTagAttribute = NameTagAttribute.SMALL;
+    myNameTagAttribute = NameTagAttribute.SMALL_FONT;
 }//GEN-LAST:event_myNameTagSmallRadioButtonActionPerformed
 
 private void myNameRegularRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameRegularRadioButtonActionPerformed
-    myNameTagAttribute = NameTagAttribute.REGULAR;
+    myNameTagAttribute = NameTagAttribute.REGULAR_FONT;
 }//GEN-LAST:event_myNameRegularRadioButtonActionPerformed
 
 private void myNameLargeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameLargeRadioButtonActionPerformed
-    myNameTagAttribute = NameTagAttribute.LARGE;
+    myNameTagAttribute = NameTagAttribute.LARGE_FONT;
 }//GEN-LAST:event_myNameLargeRadioButtonActionPerformed
 
 private void otherNamesHideRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesHideRadioButtonActionPerformed
@@ -264,16 +262,67 @@ private void otherNamesHideRadioButtonActionPerformed(java.awt.event.ActionEvent
 }//GEN-LAST:event_otherNamesHideRadioButtonActionPerformed
 
 private void otherNamesSmallRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesSmallRadioButtonActionPerformed
-    otherNameTagAttributes = NameTagAttribute.SMALL;
+    otherNameTagAttributes = NameTagAttribute.SMALL_FONT;
 }//GEN-LAST:event_otherNamesSmallRadioButtonActionPerformed
 
 private void otherNamesRegularRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesRegularRadioButtonActionPerformed
-    otherNameTagAttributes = NameTagAttribute.REGULAR;
+    otherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
 }//GEN-LAST:event_otherNamesRegularRadioButtonActionPerformed
 
 private void otherNamesLargeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesLargeRadioButtonActionPerformed
-    otherNameTagAttributes = NameTagAttribute.LARGE;
+    otherNameTagAttributes = NameTagAttribute.LARGE_FONT;
 }//GEN-LAST:event_otherNamesLargeRadioButtonActionPerformed
+
+private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
+    applyChanges();
+}//GEN-LAST:event_applyButtonActionPerformed
+
+private void applyChanges() {
+    AvatarNameEvent avatarNameEvent;
+
+    switch (myNameTagAttribute) {
+    case HIDE:
+        avatarNameEvent = new AvatarNameEvent(EventType.HIDE,
+            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+
+        InputManager.inputManager().postEvent(avatarNameEvent);
+	break;
+
+    case SMALL_FONT:
+        avatarNameEvent = new AvatarNameEvent(EventType.SMALL_FONT,
+            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+        InputManager.inputManager().postEvent(avatarNameEvent);
+	break;
+
+    case REGULAR_FONT:
+        avatarNameEvent = new AvatarNameEvent(EventType.REGULAR_FONT,
+            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+        InputManager.inputManager().postEvent(avatarNameEvent);
+	break;
+
+    case LARGE_FONT:
+        avatarNameEvent = new AvatarNameEvent(EventType.LARGE_FONT,
+            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+        InputManager.inputManager().postEvent(avatarNameEvent);
+	break;
+    }
+
+    switch (otherNameTagAttributes) {
+    case HIDE:
+	break;
+
+    case SMALL_FONT:
+	System.out.println("SMALL name tag not implemented");
+	break;
+
+    case REGULAR_FONT:
+	break;
+
+    case LARGE_FONT:
+	System.out.println("LARGE name tag not implemented");
+	break;
+    }
+}
 
     /**
     * @param args the command line arguments
@@ -288,6 +337,7 @@ private void otherNamesLargeRadioButtonActionPerformed(java.awt.event.ActionEven
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton OKButton;
+    private javax.swing.JButton applyButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.JButton cancelButton;
