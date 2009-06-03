@@ -3695,7 +3695,7 @@
     </Materials>
     <Materials TargetMeshName="PoloShape" AlphaState="0" Name="MysteryNode!">
         <Textures>
-            <RelativePath>assets/models/collada/Clothing/MaleClothing/sun_polo.png</RelativePath>
+            <RelativePath>assets/models/collada/Clothing/MaleClothing/polo_asian01.png</RelativePath>
             <TextureUnit>0</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>
