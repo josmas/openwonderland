@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -30,29 +32,24 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
  */
 public class AudioTreatmentComponentClientState extends AudioParticipantComponentClientState {
 
-    public String[] treatments;
-
     public String groupId = null;
 
-    public double fullVolumeRadius = 2;
+    public String[] treatments;
 
-    public double zeroVolumeRadius = 10;
+    public double volume;
 
-    public boolean useFullVolumeSpatializer;
+    public PlayWhen playWhen;
 
-    public double volume = 1;
+    public double extent;
 
-    public boolean startImmediately = true;
+    public double fullVolumeAreaPercent;
 
-    public boolean restartWhenFirstInRange = true;
+    public boolean distanceAttenuated;
+
+    public double falloff;
 
     public AudioTreatmentComponentClientState() {
 	super(false, false);
-    }
-
-    @XmlElement
-    public String[] getTreatments() {
-	return treatments;
     }
 
     @XmlElement
@@ -61,33 +58,38 @@ public class AudioTreatmentComponentClientState extends AudioParticipantComponen
     }
 
     @XmlElement
-    public double getFullVolumeRadius() {
-	return fullVolumeRadius;
-    }
-
-    @XmlElement
-    public double getZeroVolumeRadius() {
-	return zeroVolumeRadius;
-    }
-
-    @XmlElement
-    public boolean getUseFullVolumeSpatializer() {
-	return useFullVolumeSpatializer;
+    public String[] getTreatments() {
+	return treatments;
     }
 
     @XmlElement
     public double getVolume() {
-	return volume;
-    }
-   
-    @XmlElement
-    public boolean getStartImmediately() {
-	return startImmediately;
+        return volume;
     }
 
     @XmlElement
-    public boolean getRestartWhenFirstInRange() {
-	return restartWhenFirstInRange;
+    public PlayWhen getPlayWhen() {
+        return playWhen;
+    }
+
+    @XmlElement
+    public double getExtent() {
+        return extent;
+    }
+
+    @XmlElement
+    public double getFullVolumeAreaPercent() {
+        return fullVolumeAreaPercent;
+    }
+
+    @XmlElement
+    public boolean getDistanceAttenuated() {
+        return distanceAttenuated;
+    }
+
+    @XmlElement
+    public double getFalloff() {
+	return falloff;
     }
 
 }

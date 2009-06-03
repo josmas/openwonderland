@@ -33,43 +33,40 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 //public class AudioTreatmentComponentServerState extends CellComponentServerState {
 public class AudioTreatmentComponentServerState extends AudioParticipantComponentServerState {
 
+    public enum PlayWhen {
+	ALWAYS,
+	FIRST_IN_RANGE,
+	MANUAL
+    }
+
+    @XmlElement(name="groupId")
+    private String groupId = "";
+
     @XmlElements({
 	@XmlElement(name="treatment")
     })
-    public String[] treatments = new String[0];
-
-    @XmlElement(name="groupId")
-    public String groupId = null;
-
-    @XmlElement(name="fullVolumeRadius")
-    public double fullVolumeRadius = 2;
-
-    @XmlElement(name="zeroVolumeRadius")
-    public double zeroVolumeRadius = 10;
-
-    @XmlElement(name="useFullVolumeSpatializer")
-    public boolean useFullVolumeSpatializer;
+    private String[] treatments = new String[0];
 
     @XmlElement(name="volume")
-    public double volume = 1;
+    private double volume = 1;
 
-    @XmlElement(name="startImmediately")
-    public boolean startImmediately = true;
+    @XmlElement(name="playWhen")
+    private PlayWhen playWhen = PlayWhen.ALWAYS;
 
-    @XmlElement(name="restartWhenFirstInRange")
-    public boolean restartWhenFirstInRange = false;
+    @XmlElement(name="extent")
+    private double extent = 10;
+
+    @XmlElement(name="fullVolumeAreaPercent")
+    private double fullVolumeAreaPercent = 25;
+
+    @XmlElement(name="distanceAttenuated")
+    private boolean distanceAttenuated = true;
+
+    @XmlElement(name="falloff")
+    private double falloff = 50;
 
     public AudioTreatmentComponentServerState() {
 	super(false, false);
-    }
-
-    public void setTreatments(String[] treatments) {
-	this.treatments = treatments;
-    }
-
-    @XmlTransient
-    public String[] getTreatments() {
-	return treatments;
     }
 
     public void setGroupId(String groupId) {
@@ -81,34 +78,16 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
 	return groupId;
     }
 
-    public void setFullVolumeRadius(double fullVolumeRadius) {
-	this.fullVolumeRadius = fullVolumeRadius;
+    public void setTreatments(String[] treatments) {
+	this.treatments = treatments;
     }
 
     @XmlTransient
-    public double getFullVolumeRadius() {
-	return fullVolumeRadius;
+    public String[] getTreatments() {
+	return treatments;
     }
 
-    public void setZeroVolumeRadius(double zeroVolumeRadius) {
-	this.zeroVolumeRadius = zeroVolumeRadius;
-    }
-
-    @XmlTransient
-    public double getZeroVolumeRadius() {
-	return zeroVolumeRadius;
-    }
-
-    public void setUseFullVolumeSpatializer(boolean userFullVolumeSpatializer) {
-	this.useFullVolumeSpatializer = userFullVolumeSpatializer;
-    }
-
-    @XmlTransient
-    public boolean getUseFullVolumeSpatializer() {
-	return useFullVolumeSpatializer;
-    }
-
-    public void setVolume(double Volume) {
+    public void setVolume(double volume) {
 	this.volume = volume;
     }
 
@@ -117,22 +96,49 @@ public class AudioTreatmentComponentServerState extends AudioParticipantComponen
 	return volume;
     }
    
-    public void setStartImmediately(boolean startImmediately) {
-	this.startImmediately = startImmediately;
+    public void setPlayWhen(PlayWhen playWhen) {
+	this.playWhen = playWhen;
     }
 
     @XmlTransient
-    public boolean getStartImmediately() {
-	return startImmediately;
+    public PlayWhen getPlayWhen() {
+	return playWhen;
     }
 
-    public void setRestartWhenFirstInRange(boolean restartWhenFirstInRange) {
-	this.restartWhenFirstInRange = restartWhenFirstInRange;
+    public void setExtent(double extent) {
+	this.extent = extent;
     }
 
     @XmlTransient
-    public boolean getRestartWhenFirstInRange() {
-	return restartWhenFirstInRange;
+    public double getExtent() {
+	return extent;
+    }
+
+    public void setFullVolumeAreaPercent(double fullVolumeAreaPercent) {
+	this.fullVolumeAreaPercent = fullVolumeAreaPercent;
+    }
+
+    @XmlTransient
+    public double getFullVolumeAreaPercent() {
+	return fullVolumeAreaPercent;
+    }
+    
+    public void setDistanceAttenuated(boolean distanceAttenuated) {
+	this.distanceAttenuated = distanceAttenuated;
+    }
+
+    @XmlTransient
+    public boolean getDistanceAttenuated() {
+	return distanceAttenuated;
+    }
+
+    public void setFalloff(double falloff) {
+	this.falloff = falloff;
+    }
+
+    @XmlTransient
+    public double getFalloff() {
+	return falloff;
     }
 
     public String getServerComponentClassName() {

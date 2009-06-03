@@ -100,7 +100,7 @@ public class AudioParticipantComponent extends CellComponent implements
 	AudioParticipantComponentClientState state = (AudioParticipantComponentClientState) 
 	    clientState;
 
-	logger.warning("setClientState for " + cell.getCellID() 
+	logger.fine("setClientState for " + cell.getCellID() 
 	    + " " + state.isSpeaking() + " " + state.isMuted());
 
 	setSpeakingIndicator(cell.getCellID(), state.isSpeaking());
@@ -164,7 +164,7 @@ public class AudioParticipantComponent extends CellComponent implements
 	PresenceInfo info = pm.getPresenceInfo(cellID);
 
         if (info == null) {
-            logger.warning("No presence info for " + cellID);
+            logger.fine("No presence info for " + cellID);
             return;
         }
 
@@ -187,7 +187,7 @@ public class AudioParticipantComponent extends CellComponent implements
 	PresenceInfo info = pm.getPresenceInfo(cellID);
 
         if (info == null) {
-            logger.warning("No presence info for " + cellID);
+            logger.fine("No presence info for " + cellID);
             return;
         }
 

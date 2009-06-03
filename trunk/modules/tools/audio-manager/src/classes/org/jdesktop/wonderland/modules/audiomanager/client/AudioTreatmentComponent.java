@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
 
 
@@ -65,7 +66,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
 
     private ArrayList<AudioTreatmentDoneListener> listeners = new ArrayList();
 
-    private boolean startImmediately;
+    private PlayWhen playWhen = PlayWhen.ALWAYS;
 
     public AudioTreatmentComponent(Cell cell) {
         super(cell);
@@ -97,7 +98,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
 	    if (menuItemAdded == false) {
 		menuItemAdded = true;
 
-		if (startImmediately) {
+		if (playWhen.equals(PlayWhen.ALWAYS)) {
 	            addMenuItems("Stop", "Pause");
 		} else {
 	            addMenuItems("Play", null);
@@ -186,7 +187,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
 	AudioTreatmentComponentClientState state = (AudioTreatmentComponentClientState)
             clientState;
 
-	startImmediately = state.startImmediately;
+	playWhen = state.getPlayWhen();
     }
 
     /**
