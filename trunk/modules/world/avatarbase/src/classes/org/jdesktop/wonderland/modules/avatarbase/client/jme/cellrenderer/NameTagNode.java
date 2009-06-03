@@ -194,6 +194,7 @@ public class NameTagNode extends Node {
 
 	case SMALL_FONT:
 	    System.out.println("SMALL_FONT not implemented");
+	    setVisible(true);
 	    return;
 	
 	case REGULAR_FONT:
@@ -203,6 +204,7 @@ public class NameTagNode extends Node {
 	
 	case LARGE_FONT:
 	    System.out.println("LARGE_FONT not implemented");
+	    setVisible(true);
 	    return;
 	}
 	
