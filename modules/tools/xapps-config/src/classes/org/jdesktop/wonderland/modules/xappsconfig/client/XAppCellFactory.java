@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.xremwin.client.registry;
+package org.jdesktop.wonderland.modules.xappsconfig.client;
 
 import java.awt.Image;
 import java.util.Properties;
@@ -26,6 +26,8 @@ import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwServerState
 /**
  * A generic cell factory which launches a specific X11 App. Takes the name of
  * the X11 app and the command to launch the app.
+ * <p>
+ * Two XAppCellFactory objects are equal if their app name's are equal.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
@@ -82,6 +84,9 @@ public class XAppCellFactory implements CellFactorySPI {
         return null;
     }
 
+    /**
+     * The equals() method only depends upon the app name, not the command.
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -94,17 +99,16 @@ public class XAppCellFactory implements CellFactorySPI {
         if ((this.appName == null) ? (other.appName != null) : !this.appName.equals(other.appName)) {
             return false;
         }
-        if ((this.command == null) ? (other.command != null) : !this.command.equals(other.command)) {
-            return false;
-        }
         return true;
     }
 
+    /**
+     * The hashCode() method only depends upon the app name, not the command.
+     */
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 83 * hash + (this.appName != null ? this.appName.hashCode() : 0);
-        hash = 83 * hash + (this.command != null ? this.command.hashCode() : 0);
         return hash;
     }
 }

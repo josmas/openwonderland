@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.xremwin.web.servlet;
+package org.jdesktop.wonderland.modules.xappsconfig.web.servlet;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,6 +37,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
+import org.jdesktop.wonderland.client.comms.LoginFailureException;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.front.admin.AdminRegistration;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
@@ -45,16 +49,27 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.contentrepo.web.spi.WebContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.web.spi.WebContentRepositoryRegistry;
-import org.jdesktop.wonderland.modules.xremwin.common.registry.XAppRegistryItem;
+import org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner;
+import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin;
+import org.jdesktop.wonderland.modules.darkstar.server.DarkstarWebLogin.DarkstarServerListener;
+import org.jdesktop.wonderland.modules.xappsconfig.common.XAppRegistryItem;
+import org.jdesktop.wonderland.modules.xappsconfig.web.XAppsWebConfigConnection;
 
 /**
  *
- * @author jkaplan
+ * @author Jordan Slott <jslott@dev.java.net>
  */
-public class XAppsServlet extends HttpServlet implements ServletContextListener {
+public class XAppsServlet extends HttpServlet implements ServletContextListener, DarkstarServerListener {
 
     private static final Logger logger = Logger.getLogger(XAppsServlet.class.getName());
-    private AdminRegistration ar;
+    private AdminRegistration ar = null;
+    private ServletContext context = null;
+
+    /** the key to identify the connection in the servlet context */
+    public static final String XAPPS_CONN_ATTR = "__xappsConfigConnection";
+
+    /** the key to identify the darkstar session in the servlet context */
+    public static final String SESSION_ATTR = "__xappsConfigSession";
 
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -66,9 +81,8 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException
     {
-        ServletContext sc = getServletContext();
-
         // Get the repository
+        ServletContext sc = getServletContext();
         WebContentRepositoryRegistry reg = WebContentRepositoryRegistry.getInstance();
         WebContentRepository wcr = reg.getRepository(sc);
         if (wcr == null) {
@@ -129,7 +143,12 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener 
             HttpServletResponse response, ContentCollection xAppsCollection)
         throws ServletException, IOException, ContentRepositoryException
     {
+        // Fetch the path of the file being deleted, which holds the info about
+        // the X11 App being deleted.
         String path = request.getParameter("path");
+        String appName = request.getParameter("appName");
+
+        // Find the file in the WebDav repository and delete it
         ContentResource resource = getXAppResource(xAppsCollection, path);
         if (resource == null) {
             error(request, response, "Path " + request.getPathInfo() +
@@ -137,6 +156,14 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener 
             return;
         }
         xAppsCollection.removeChild(resource.getName());
+
+        // Tell the config connection that we have removed an X11 App, if the
+        // config connection exists (it should)
+        Object obj = getServletContext().getAttribute(XAPPS_CONN_ATTR);
+        if (obj != null) {
+            XAppsWebConfigConnection connection = (XAppsWebConfigConnection)obj;
+            connection.removeX11App(appName);
+        }
     }
 
     /**
@@ -147,14 +174,19 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener 
         throws ServletException, IOException, ContentRepositoryException,
             JAXBException
     {
+        // Fetch the desired app name and command of the new X11 App
         String appName = request.getParameter("appName");
         String command = request.getParameter("command");
 
+        // Create a file, basd upon the app name for the new X11 app, creating
+        // it if necessary
         String nodeName = appName + ".xml";
         ContentNode appNode = xAppsCollection.getChild(nodeName);
         if (appNode == null) {
             appNode = xAppsCollection.createChild(nodeName, Type.RESOURCE);
         }
+
+        // Write the XAppRegistryItem object as an XML stream to this new file
         ContentResource resource = (ContentResource)appNode;
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         Writer w = new OutputStreamWriter(os);
@@ -162,6 +194,14 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener 
         item.encode(w);
         byte b[] = os.toByteArray();
         resource.put(b);
+
+        // Tell the config connection that we have added a new X11 App, if
+        // the config connection exists (it should)
+        Object obj = getServletContext().getAttribute(XAPPS_CONN_ATTR);
+        if (obj != null) {
+            XAppsWebConfigConnection connection = (XAppsWebConfigConnection)obj;
+            connection.addX11App(appName, command);
+        }
     }
 
     /**
@@ -190,7 +230,7 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener 
                 String command = item.getCommand();
                 
                 X11AppEntry entry = new X11AppEntry(appName, command, path);
-                String url = "delete&path=" + path;
+                String url = "delete&path=" + path + "&appName=" + appName;
                 entry.addAction(new X11AppAction("delete", url));
                 entries.add(entry);
             }
@@ -254,18 +294,59 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener 
 
     public void contextInitialized(ServletContextEvent sce) {
         // register with the admininstration page
-        ServletContext sc = sce.getServletContext();
+        context = sce.getServletContext();
         ar = new AdminRegistration("X Apps",
-                                   "/xremwin/wonderland-xremwin/browse");
-        AdminRegistration.register(ar, sc);
+                                   "/xapps-config/wonderland-xapps-config/browse");
+        AdminRegistration.register(ar, context);
+
+        // add ourselves as a listener for when the Darkstar server changes
+        DarkstarWebLogin.getInstance().addDarkstarServerListener(this);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
+        // remove the Darkstar server listener
+        DarkstarWebLogin.getInstance().removeDarkstarServerListener(this);
+        
         // register with the admininstration page
-        ServletContext sc = sce.getServletContext();
-        AdminRegistration.unregister(ar, sc);
+        AdminRegistration.unregister(ar, context);
+
+        // log out of any connected sessions
+        WonderlandSession session = (WonderlandSession)context.getAttribute(SESSION_ATTR);
+        if (session != null) {
+            session.logout();
+        }
     }
 
+    public void serverStarted(DarkstarRunner runner, ServerSessionManager mgr) {
+        // When a darkstar server starts up, open a connection to it, and
+        // start a specific connection that sends messages when the configuration
+        // of xapps has changed.
+        try {
+            WonderlandSession session = mgr.createSession();
+            context.setAttribute(SESSION_ATTR, session);
+
+            XAppsWebConfigConnection conn = new XAppsWebConfigConnection();
+            session.connect(conn);
+            context.setAttribute(XAPPS_CONN_ATTR, conn);
+        } catch (ConnectionFailureException ex) {
+            logger.log(Level.SEVERE, "Connection failed", ex);
+        } catch (LoginFailureException ex) {
+            logger.log(Level.WARNING, "Login failed", ex);
+        }
+    }
+
+    public void serverStopped(DarkstarRunner arg0) {
+        // When the darkstar server stops, remove the keys from the servlet
+        // context
+        context.removeAttribute(SESSION_ATTR);
+        context.removeAttribute(XAPPS_CONN_ATTR);
+    }
+
+
+    /**
+     * Represents a single X11 App entry: consists of the name of the app, the
+     * command to launch the app, etc.
+     */
     public static class X11AppEntry {
 
         private String appName;

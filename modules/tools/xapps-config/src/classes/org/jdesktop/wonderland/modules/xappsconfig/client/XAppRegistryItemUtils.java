@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.xremwin.client.registry;
+package org.jdesktop.wonderland.modules.xappsconfig.client;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
-import org.jdesktop.wonderland.modules.xremwin.common.registry.XAppRegistryItem;
+import org.jdesktop.wonderland.modules.xappsconfig.common.XAppRegistryItem;
 
 /**
  * A utility class to load and save X App registry item information. This is

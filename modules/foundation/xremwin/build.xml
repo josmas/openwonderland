@@ -11,9 +11,6 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
-    <!-- import web build file -->
-    <import file="${web.dir}/build-tools/build-scripts/web-build.xml"/>
-
     <pathconvert property="module-common.classpath">
       <path location="${current.dir}/../appbase/build/client/appbase-client.jar"/>
       <path location="${current.dir}/../appbase/build/client/appbase-client-cell.jar"/>
@@ -23,32 +20,22 @@
       <path location="${current.dir}/../appbase/build/client/appbase-client.jar"/>
       <path location="${current.dir}/../appbase/build/client/appbase-client-cell.jar"/>
       <path location="${current.dir}/lib/escher-0.2.2.lg.jar"/>
-      <path location="${current.dir}/../content-repository/build/client/contentrepo-client.jar"/>
     </pathconvert>
 
     <property name="module-server.classpath" value="${current.dir}/../appbase/build/server/appbase-server.jar"/>
-
-    <pathconvert property="module-web.classpath">
-        <path location="${current.dir}/../content-repository/build/lib/contentrepo-spi.jar"/>
-        <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
-    </pathconvert>
        
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client,
-						-xremwin-compile-web"/>
+                                                -module-jar-common"/>
 
-    <target name="-xremwin-compile-web" depends="-module-init, -module-compile-common">
-        <wl-compile>
-            <compile-classes>
-                <include name="${module.src}/web/**"/>
-            </compile-classes>
-
-            <compile-classpath>
-                <pathelement path="${web.classpath}"/>
-                <pathelement path="${module-web.classpath}"/>
-            </compile-classpath>
-        </wl-compile>
+    <target name="-module-jar-common" depends="-module-compile-common">
+      <mkdir dir="${current.dir}/build/lib"/>
+      <jar destfile="${current.dir}/build/lib/xremwin-common.jar">
+        <fileset dir="${build.classes.dir}">
+          <include name="${module.src}/common/**"/>
+        </fileset>
+      </jar>
     </target>
 
     <target name="dist" depends="build">
@@ -80,23 +67,11 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
-
-            <part name="web">
-                <jar name="wonderland-xremwin.war">
-                    <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
-                        <include name="${module.src}/web/**"/>
-                        <include name="${module.src}/common/**"/>
-                    </zipfileset>
-
-                    <fileset dir="${current.dir}/web"/>
-                </jar>
-            </part>
             
             <art dir="${current.dir}/art"/>
         </module>
     </target>                                                       
                                            
     <target name="deploy" depends="dist, -module-deploy"/>
-
     <target name="clean" depends="-module-clean"/>
 </project>

@@ -15,8 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.xremwin.common.registry;
-
+package org.jdesktop.wonderland.modules.xappsconfig.common;
 
 import java.io.Reader;
 import java.io.Serializable;
