@@ -30,8 +30,10 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
 	LARGE_FONT
     };
 
+    NameTagAttribute originalMyNameTagAttribute = NameTagAttribute.REGULAR_FONT;
     NameTagAttribute myNameTagAttribute = NameTagAttribute.REGULAR_FONT;
 
+    NameTagAttribute originalOtherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
     NameTagAttribute otherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
 
     /** Creates new form NamePropertiesJFrame */
@@ -43,6 +45,9 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
 	this.presenceInfo = presenceInfo;
 
         initComponents();
+
+	applyButton.setEnabled(false);
+	OKButton.setEnabled(false);
     }
 
     /** This method is called from within the constructor to
@@ -243,35 +248,63 @@ private void OKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 
 private void myNameHideRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameHideRadioButtonActionPerformed
     myNameTagAttribute = NameTagAttribute.HIDE;
+
+    enableButtons();
 }//GEN-LAST:event_myNameHideRadioButtonActionPerformed
 
 private void myNameTagSmallRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameTagSmallRadioButtonActionPerformed
     myNameTagAttribute = NameTagAttribute.SMALL_FONT;
+
+    enableButtons();
 }//GEN-LAST:event_myNameTagSmallRadioButtonActionPerformed
 
 private void myNameRegularRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameRegularRadioButtonActionPerformed
     myNameTagAttribute = NameTagAttribute.REGULAR_FONT;
+
+    enableButtons();
 }//GEN-LAST:event_myNameRegularRadioButtonActionPerformed
 
 private void myNameLargeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameLargeRadioButtonActionPerformed
     myNameTagAttribute = NameTagAttribute.LARGE_FONT;
+
+    enableButtons();
 }//GEN-LAST:event_myNameLargeRadioButtonActionPerformed
 
 private void otherNamesHideRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesHideRadioButtonActionPerformed
     otherNameTagAttributes = NameTagAttribute.HIDE;
+
+    enableButtons();
 }//GEN-LAST:event_otherNamesHideRadioButtonActionPerformed
 
 private void otherNamesSmallRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesSmallRadioButtonActionPerformed
     otherNameTagAttributes = NameTagAttribute.SMALL_FONT;
+
+    enableButtons();
 }//GEN-LAST:event_otherNamesSmallRadioButtonActionPerformed
 
 private void otherNamesRegularRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesRegularRadioButtonActionPerformed
     otherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
+
+    enableButtons();
 }//GEN-LAST:event_otherNamesRegularRadioButtonActionPerformed
 
 private void otherNamesLargeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesLargeRadioButtonActionPerformed
     otherNameTagAttributes = NameTagAttribute.LARGE_FONT;
+
+    enableButtons();
 }//GEN-LAST:event_otherNamesLargeRadioButtonActionPerformed
+
+private void enableButtons() {
+    if (myNameTagAttribute != originalMyNameTagAttribute ||
+	otherNameTagAttributes != originalOtherNameTagAttributes) {
+
+	applyButton.setEnabled(true);
+	OKButton.setEnabled(true);
+    } else {
+	applyButton.setEnabled(false);
+	OKButton.setEnabled(false);
+    }
+}
 
 private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
     applyChanges();
@@ -280,46 +313,65 @@ private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 private void applyChanges() {
     AvatarNameEvent avatarNameEvent;
 
-    switch (myNameTagAttribute) {
-    case HIDE:
-        avatarNameEvent = new AvatarNameEvent(EventType.HIDE,
-            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+    if (myNameTagAttribute != originalMyNameTagAttribute) {
+	originalMyNameTagAttribute = myNameTagAttribute;
 
-        InputManager.inputManager().postEvent(avatarNameEvent);
-	break;
+        switch (myNameTagAttribute) {
+        case HIDE:
+            avatarNameEvent = new AvatarNameEvent(EventType.HIDE,
+                presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
 
-    case SMALL_FONT:
-        avatarNameEvent = new AvatarNameEvent(EventType.SMALL_FONT,
-            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
-        InputManager.inputManager().postEvent(avatarNameEvent);
-	break;
+            InputManager.inputManager().postEvent(avatarNameEvent);
+	    break;
 
-    case REGULAR_FONT:
-        avatarNameEvent = new AvatarNameEvent(EventType.REGULAR_FONT,
-            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
-        InputManager.inputManager().postEvent(avatarNameEvent);
-	break;
+        case SMALL_FONT:
+            avatarNameEvent = new AvatarNameEvent(EventType.SMALL_FONT,
+                presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+            InputManager.inputManager().postEvent(avatarNameEvent);
+	    break;
 
-    case LARGE_FONT:
-        avatarNameEvent = new AvatarNameEvent(EventType.LARGE_FONT,
-            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
-        InputManager.inputManager().postEvent(avatarNameEvent);
-	break;
+        case REGULAR_FONT:
+            avatarNameEvent = new AvatarNameEvent(EventType.REGULAR_FONT,
+                presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+            InputManager.inputManager().postEvent(avatarNameEvent);
+	    break;
+
+        case LARGE_FONT:
+            avatarNameEvent = new AvatarNameEvent(EventType.LARGE_FONT,
+                presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+            InputManager.inputManager().postEvent(avatarNameEvent);
+	    break;
+        }
     }
+
+    if (otherNameTagAttributes == originalOtherNameTagAttributes) {
+	enableButtons();
+	return;
+    }
+
+    originalOtherNameTagAttributes = otherNameTagAttributes;
+
+    enableButtons();
 
     switch (otherNameTagAttributes) {
     case HIDE:
+	NameTagNode.setOtherNameTags(EventType.HIDE, 
+            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
 	break;
 
     case SMALL_FONT:
-	System.out.println("SMALL name tag not implemented");
+	NameTagNode.setOtherNameTags(EventType.SMALL_FONT, 
+            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
 	break;
 
     case REGULAR_FONT:
+	NameTagNode.setOtherNameTags(EventType.REGULAR_FONT, 
+            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
 	break;
 
     case LARGE_FONT:
-	System.out.println("LARGE name tag not implemented");
+	NameTagNode.setOtherNameTags(EventType.LARGE_FONT, 
+            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
 	break;
     }
 }
