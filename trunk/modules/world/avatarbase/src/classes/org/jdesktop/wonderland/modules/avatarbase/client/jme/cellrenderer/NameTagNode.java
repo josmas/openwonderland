@@ -31,6 +31,8 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import java.awt.Color;
 import java.awt.Font;
 
+import java.util.HashMap;
+
 /**
  * TODO make this a component
  *
@@ -80,6 +82,8 @@ public class NameTagNode extends Node {
     private boolean visible;
     private int fontSize;
 
+    private static HashMap<String, NameTagNode> nameTagMap = new HashMap();
+
     private static Font fontDecode (String fontName, String fontType, int fontSize) {
         return Font.decode(fontName + " " + fontType + " " + fontSize);
     }
@@ -88,6 +92,9 @@ public class NameTagNode extends Node {
         this.name = name;
         this.height = height;
         visible = true;
+
+	nameTagMap.put(name, this);
+
         setNameTag(name);
     }
 
@@ -98,6 +105,8 @@ public class NameTagNode extends Node {
 
         done = true;
 
+	nameTagMap.remove(name);
+    
         detachChild(q);
     }
 
@@ -169,6 +178,19 @@ public class NameTagNode extends Node {
      */
     public boolean isVisible () {
         return visible;
+    }
+
+    public static void setOtherNameTags(EventType eventType, String username, String usernameAlias) {
+	String[] keys = nameTagMap.keySet().toArray(new String[0]);
+
+	for (int i = 0; i < keys.length; i++) {
+	    if (keys[i].equals(username)) {
+		continue;
+	    }
+
+	    NameTagNode nameTag = nameTagMap.get(keys[i]);
+	    nameTag.setNameTag(eventType, username, usernameAlias);
+	}
     }
 
     private boolean inConeOfSilence;
