@@ -110,7 +110,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         state.setName(name);
         state.setOutsideAudioVolume(outsideAudioVolume);
 
-        return super.getServerState(serverState);
+        return super.getServerState(state);
     }
 
     /**
@@ -162,7 +162,8 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 	    //    component.removeProximityListener(proximityListener);
 	    //}
 
-            ConeOfSilenceProximityListener proximityListener = new ConeOfSilenceProximityListener(cellRef.get(), name, outsideAudioVolume);
+            ConeOfSilenceProximityListener proximityListener = 
+		new ConeOfSilenceProximityListener(cellRef.get(), name, outsideAudioVolume);
 
             component.addProximityListener(proximityListener, bounds);
         }

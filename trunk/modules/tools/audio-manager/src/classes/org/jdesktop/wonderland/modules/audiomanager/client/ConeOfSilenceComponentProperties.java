@@ -122,10 +122,11 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
 
         if (state == null) {
             state = new ConeOfSilenceComponentServerState();
+
+            state.setName(nameTextField.getText());
+            state.setFullVolumeRadius((Double) fullVolumeRadiusModel.getValue());
+            state.setOutsideAudioVolume((Double) outsideAudioVolumeModel.getValue());
         }
-        state.setName(nameTextField.getText());
-        state.setFullVolumeRadius((Double) fullVolumeRadiusModel.getValue());
-        state.setOutsideAudioVolume((Double) outsideAudioVolumeModel.getValue());
 
         cellServerState.addComponentServerState(state);
     }
@@ -136,13 +137,16 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
      */
     class RadiusChangeListener implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
+            if (editor == null) { 
+		return;
+	    }
+
             Double radius = (Double) fullVolumeRadiusModel.getValue();
-            if (editor != null) { 
-		if (radius != originalFullVolumeRadius) {
-                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
-                } else {
-                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
-		}
+
+	    if (radius != originalFullVolumeRadius) {
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
+            } else {
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
             }
         }
     }
@@ -153,13 +157,16 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
      */
     class OutsideAudioVolumeChangeListener implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
+            if (editor == null) { 
+		return;
+	    }
+
             Double volume = (Double) outsideAudioVolumeModel.getValue();
-            if (editor != null) { 
-		if (volume != originalOutsideAudioVolume) {
-                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
-                } else {
-                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
-		}
+
+	    if (volume != originalOutsideAudioVolume) {
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
+            } else {
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
             }
         }
     }

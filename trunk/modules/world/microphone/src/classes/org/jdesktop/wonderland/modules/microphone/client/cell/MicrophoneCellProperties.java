@@ -7,6 +7,10 @@
 package org.jdesktop.wonderland.modules.microphone.client.cell;
 
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.FullVolumeArea;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.ActiveArea;
+
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
 
@@ -17,6 +21,7 @@ import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 import javax.swing.JPanel;
+import javax.swing.SpinnerNumberModel;
 
 /**
  *
@@ -27,10 +32,96 @@ public class MicrophoneCellProperties extends JPanel implements CellPropertiesSP
 
     private CellPropertiesEditor editor;
 
+    private double originalFullVolumeX;
+    private double originalFullVolumeY;
+    private double originalFullVolumeZ;
+
+    private double originalActiveOriginX;
+    private double originalActiveOriginY;
+    private double originalActiveOriginZ;
+
+    private double originalActiveExtentX;
+    private double originalActiveExtentY;
+    private double originalActiveExtentZ;
+
+    private SpinnerNumberModel fullVolumeXModel;
+    private SpinnerNumberModel fullVolumeYModel;
+    private SpinnerNumberModel fullVolumeZModel;
+
+    private SpinnerNumberModel activeOriginXModel;
+    private SpinnerNumberModel activeOriginYModel;
+    private SpinnerNumberModel activeOriginZModel;
+
+    private SpinnerNumberModel activeExtentXModel;
+    private SpinnerNumberModel activeExtentYModel;
+    private SpinnerNumberModel activeExtentZModel;
+
     /** Creates new form MicrophoneCellProperties */
     public MicrophoneCellProperties() {
         initComponents();
 
+        Double value = new Double(1);
+        Double min = new Double(0);
+        Double max = new Double(100);
+        Double step = new Double(1);
+        fullVolumeXModel = new SpinnerNumberModel(value, min, max, step);
+        fullVolumeXSpinner.setModel(fullVolumeXModel);
+
+        value = new Double(1);
+        min = new Double(0);
+        max = new Double(100);
+        step = new Double(1);
+        fullVolumeYModel = new SpinnerNumberModel(value, min, max, step);
+        fullVolumeYSpinner.setModel(fullVolumeYModel);
+
+        value = new Double(1);
+        min = new Double(0);
+        max = new Double(100);
+        step = new Double(1);
+        fullVolumeZModel = new SpinnerNumberModel(value, min, max, step);
+        fullVolumeZSpinner.setModel(fullVolumeZModel);
+
+        value = new Double(1);
+        min = new Double(0);
+        max = new Double(100);
+        step = new Double(1);
+        activeOriginXModel = new SpinnerNumberModel(value, min, max, step);
+        activeOriginXSpinner.setModel(activeOriginXModel);
+
+        value = new Double(1);
+        min = new Double(0);
+        max = new Double(100);
+        step = new Double(1);
+        activeOriginYModel = new SpinnerNumberModel(value, min, max, step);
+        activeOriginYSpinner.setModel(activeOriginYModel);
+
+        value = new Double(1);
+        min = new Double(0);
+        max = new Double(100);
+        step = new Double(1);
+        activeOriginZModel = new SpinnerNumberModel(value, min, max, step);
+        activeOriginZSpinner.setModel(activeOriginZModel);
+
+        value = new Double(1);
+        min = new Double(0);
+        max = new Double(100);
+        step = new Double(1);
+        activeExtentXModel = new SpinnerNumberModel(value, min, max, step);
+        activeExtentXSpinner.setModel(activeExtentXModel);
+
+        value = new Double(1);
+        min = new Double(0);
+        max = new Double(100);
+        step = new Double(1);
+        activeExtentYModel = new SpinnerNumberModel(value, min, max, step);
+        activeExtentYSpinner.setModel(activeExtentYModel);
+
+        value = new Double(1);
+        min = new Double(0);
+        max = new Double(100);
+        step = new Double(1);
+        activeExtentZModel = new SpinnerNumberModel(value, min, max, step);
+        activeExtentZSpinner.setModel(activeExtentZModel);
 
     }
 
@@ -49,9 +140,62 @@ public class MicrophoneCellProperties extends JPanel implements CellPropertiesSP
 
     public <T extends CellServerState> void updateGUI(T cellServerState) {
         MicrophoneCellServerState state = (MicrophoneCellServerState)cellServerState;
+
+	if (state == null) {
+	    return;
+	}
+
+	System.out.println("UPDATE GUI");
+
+	FullVolumeArea fullVolumeArea = state.getFullVolumeArea();
+	ActiveArea activeArea = state.getActiveArea();
+
+	originalFullVolumeX = fullVolumeArea.xExtent;
+	originalFullVolumeY = fullVolumeArea.yExtent;
+	originalFullVolumeZ = fullVolumeArea.zExtent;
+
+	fullVolumeXModel.setValue((Double) originalFullVolumeX);
+	fullVolumeYModel.setValue((Double) originalFullVolumeY);
+	fullVolumeZModel.setValue((Double) originalFullVolumeZ);
+
+	Origin activeOrigin = activeArea.origin;
+
+	originalActiveOriginX = activeOrigin.x;
+	originalActiveOriginY = activeOrigin.y;
+	originalActiveOriginZ = activeOrigin.z;
+
+	activeOriginXModel.setValue((Double) originalActiveOriginX);
+	activeOriginYModel.setValue((Double) originalActiveOriginY);
+	activeOriginZModel.setValue((Double) originalActiveOriginZ);
+
+	originalActiveExtentX = activeArea.xExtent;
+	originalActiveExtentY = activeArea.yExtent;
+	originalActiveExtentZ = activeArea.zExtent;
+
+	activeExtentXModel.setValue((Double) originalActiveExtentX);
+	activeExtentYModel.setValue((Double) originalActiveExtentY);
+	activeExtentZModel.setValue((Double) originalActiveExtentZ);
     }
 
-    public <T extends CellServerState> void getCellServerState(T state) {
+    public <T extends CellServerState> void getCellServerState(T cellServerState) {
+	MicrophoneCellServerState state = (MicrophoneCellServerState) cellServerState;
+
+	if (state == null) {
+	    FullVolumeArea fullVolumeArea = new FullVolumeArea("BOX", 
+		(Double) fullVolumeXModel.getValue(),
+		(Double) fullVolumeYModel.getValue(),
+		(Double) fullVolumeZModel.getValue());
+
+	    Origin activeOrigin = new Origin();
+	    activeOrigin.x = (Double) activeOriginXModel.getValue();
+	    activeOrigin.y = (Double) activeOriginYModel.getValue();
+	    activeOrigin.z = (Double) activeOriginZModel.getValue();
+	    
+	    ActiveArea activeArea = new ActiveArea(activeOrigin, "BOX", (Double) activeExtentXModel.getValue(),
+		(Double) activeExtentYModel.getValue(), (Double) activeExtentZModel.getValue());
+
+	    state = new MicrophoneCellServerState("Microphone", fullVolumeArea, activeArea);
+	}
     }
 
     /** This method is called from within the constructor to
@@ -75,15 +219,15 @@ public class MicrophoneCellProperties extends JPanel implements CellPropertiesSP
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
-        fullVolumeX = new javax.swing.JTextField();
-        fullVolumeY = new javax.swing.JTextField();
-        fullVolumeZ = new javax.swing.JTextField();
-        originX = new javax.swing.JTextField();
-        originY = new javax.swing.JTextField();
-        oroginZ = new javax.swing.JTextField();
-        activeX = new javax.swing.JTextField();
-        activeY = new javax.swing.JTextField();
-        activeZ = new javax.swing.JTextField();
+        fullVolumeXSpinner = new javax.swing.JSpinner();
+        fullVolumeYSpinner = new javax.swing.JSpinner();
+        fullVolumeZSpinner = new javax.swing.JSpinner();
+        activeOriginXSpinner = new javax.swing.JSpinner();
+        activeOriginYSpinner = new javax.swing.JSpinner();
+        activeOriginZSpinner = new javax.swing.JSpinner();
+        activeExtentXSpinner = new javax.swing.JSpinner();
+        activeExtentYSpinner = new javax.swing.JSpinner();
+        activeExtentZSpinner = new javax.swing.JSpinner();
 
         jLabel1.setText("x:");
 
@@ -109,114 +253,298 @@ public class MicrophoneCellProperties extends JPanel implements CellPropertiesSP
 
         jLabel12.setText("z:");
 
+        fullVolumeXSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                fullVolumeXSpinnerStateChanged(evt);
+            }
+        });
+
+        fullVolumeYSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                fullVolumeYSpinnerStateChanged(evt);
+            }
+        });
+
+        fullVolumeZSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                fullVolumeZSpinnerStateChanged(evt);
+            }
+        });
+
+        activeOriginXSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                activeOriginXSpinnerStateChanged(evt);
+            }
+        });
+
+        activeOriginYSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                activeOriginYSpinnerStateChanged(evt);
+            }
+        });
+
+        activeOriginZSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                activeOriginZSpinnerStateChanged(evt);
+            }
+        });
+
+        activeExtentXSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                activeExtentXSpinnerStateChanged(evt);
+            }
+        });
+
+        activeExtentYSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                activeExtentYSpinnerStateChanged(evt);
+            }
+        });
+
+        activeExtentZSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                activeExtentZSpinnerStateChanged(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                        .add(layout.createSequentialGroup()
-                            .addContainerGap()
-                            .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(layout.createSequentialGroup()
-                            .add(58, 58, 58)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE))
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(fullVolumeY)
-                                .add(fullVolumeX)
-                                .add(fullVolumeZ, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)))
-                        .add(layout.createSequentialGroup()
-                            .addContainerGap()
-                            .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE))
-                        .add(layout.createSequentialGroup()
-                            .add(57, 57, 57)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel8, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .add(18, 18, 18)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(oroginZ, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE)
-                                .add(originY, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE)
-                                .add(originX, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE)))
-                        .add(layout.createSequentialGroup()
-                            .addContainerGap()
-                            .add(jLabel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
-                        .add(57, 57, 57)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel11, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel10, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 29, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel12, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(activeX, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
-                            .add(activeY, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
-                            .add(activeZ, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE))))
-                .add(69, 69, 69))
+                        .add(jLabel4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(layout.createSequentialGroup()
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 32, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(jLabel3)
+                                .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 31, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(22, 22, 22)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(fullVolumeZSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, fullVolumeYSpinner)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, fullVolumeXSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)))
+                            .add(157, 157, 157))
+                        .add(layout.createSequentialGroup()
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                                .add(layout.createSequentialGroup()
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(jLabel8, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 21, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(jLabel7)
+                                        .add(jLabel6))
+                                    .add(31, 31, 31)
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                        .add(activeOriginYSpinner)
+                                        .add(activeOriginZSpinner)
+                                        .add(activeOriginXSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE))
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 158, Short.MAX_VALUE))
+                                .add(jLabel9, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 274, Short.MAX_VALUE)
+                                .add(layout.createSequentialGroup()
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(jLabel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(jLabel11)
+                                        .add(jLabel12))
+                                    .add(30, 30, 30)
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                        .add(activeExtentZSpinner)
+                                        .add(activeExtentYSpinner)
+                                        .add(activeExtentXSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .addContainerGap()))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(19, 19, 19)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
                 .add(jLabel4)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(fullVolumeX, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(fullVolumeXSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
-                    .add(fullVolumeY, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(fullVolumeYSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
-                    .add(fullVolumeZ, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(fullVolumeZSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(28, 28, 28)
+                .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
-                .add(jLabel5)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel6)
-                    .add(originX, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(activeOriginXSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(11, 11, 11)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel7)
-                    .add(originY, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                    .add(activeOriginYSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel8)
-                    .add(oroginZ, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                    .add(activeOriginZSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(17, 17, 17)
                 .add(jLabel9)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel10)
-                    .add(activeX, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                    .add(activeExtentXSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel11)
-                    .add(activeY, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                    .add(activeExtentYSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel12)
-                    .add(activeZ, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(activeExtentZSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(57, 57, 57))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+private void fullVolumeXSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_fullVolumeXSpinnerStateChanged
+    if (editor == null) {
+        return;
+    }
+
+    Double fullVolumeX = (Double) fullVolumeXModel.getValue();
+
+    System.out.println("original " + originalFullVolumeX + " x " + fullVolumeX);
+
+    if (fullVolumeX != originalFullVolumeX) {
+        editor.setPanelDirty(MicrophoneCellProperties.class, true);
+    } else {
+        editor.setPanelDirty(MicrophoneCellProperties.class, false);
+    }
+}//GEN-LAST:event_fullVolumeXSpinnerStateChanged
+
+private void fullVolumeYSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_fullVolumeYSpinnerStateChanged
+    if (editor == null) {
+        return;
+    }
+
+    Double fullVolumeY = (Double) fullVolumeYModel.getValue();
+
+    if (fullVolumeY != originalFullVolumeY) {
+        editor.setPanelDirty(MicrophoneCellProperties.class, true);
+    } else {
+        editor.setPanelDirty(MicrophoneCellProperties.class, false);
+    }
+}//GEN-LAST:event_fullVolumeYSpinnerStateChanged
+
+private void fullVolumeZSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_fullVolumeZSpinnerStateChanged
+    if (editor == null) {
+        return;
+    }
+
+    Double fullVolumeZ = (Double) fullVolumeZModel.getValue();
+
+    if (fullVolumeZ != originalFullVolumeZ) {
+        editor.setPanelDirty(MicrophoneCellProperties.class, true);
+    } else {
+        editor.setPanelDirty(MicrophoneCellProperties.class, false);
+    }
+}//GEN-LAST:event_fullVolumeZSpinnerStateChanged
+
+private void activeOriginXSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_activeOriginXSpinnerStateChanged
+    if (editor == null) {
+        return;
+    }
+
+    Double activeOriginX = (Double) activeOriginXModel.getValue();
+
+    if (activeOriginX != originalActiveOriginX) {
+        editor.setPanelDirty(MicrophoneCellProperties.class, true);
+    } else {
+        editor.setPanelDirty(MicrophoneCellProperties.class, false);
+    }
+}//GEN-LAST:event_activeOriginXSpinnerStateChanged
+
+private void activeOriginYSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_activeOriginYSpinnerStateChanged
+    if (editor == null) {
+        return;
+    }
+
+    Double activeOriginY = (Double) activeOriginYModel.getValue();
+
+    if (activeOriginY != originalActiveOriginY) {
+        editor.setPanelDirty(MicrophoneCellProperties.class, true);
+    } else {
+        editor.setPanelDirty(MicrophoneCellProperties.class, false);
+    }
+}//GEN-LAST:event_activeOriginYSpinnerStateChanged
+
+private void activeExtentXSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_activeExtentXSpinnerStateChanged
+    if (editor == null) {
+        return;
+    }
+
+    Double activeOriginZ = (Double) activeOriginZModel.getValue();
+
+    if (activeOriginZ != originalActiveOriginZ) {
+        editor.setPanelDirty(MicrophoneCellProperties.class, true);
+    } else {
+        editor.setPanelDirty(MicrophoneCellProperties.class, false);
+    }
+}//GEN-LAST:event_activeExtentXSpinnerStateChanged
+
+private void activeExtentYSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_activeExtentYSpinnerStateChanged
+    if (editor == null) {
+        return;
+    }
+
+    Double activeExtentX = (Double) activeExtentXModel.getValue();
+
+    if (activeExtentX != originalActiveExtentX) {
+        editor.setPanelDirty(MicrophoneCellProperties.class, true);
+    } else {
+        editor.setPanelDirty(MicrophoneCellProperties.class, false);
+    }
+}//GEN-LAST:event_activeExtentYSpinnerStateChanged
+
+private void activeExtentZSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_activeExtentZSpinnerStateChanged
+    if (editor == null) {
+        return;
+    }
+
+    Double activeExtentY = (Double) activeExtentYModel.getValue();
+
+    if (activeExtentY != originalActiveExtentY) {
+        editor.setPanelDirty(MicrophoneCellProperties.class, true);
+    } else {
+        editor.setPanelDirty(MicrophoneCellProperties.class, false);
+    }
+}//GEN-LAST:event_activeExtentZSpinnerStateChanged
+
+private void activeOriginZSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_activeOriginZSpinnerStateChanged
+    if (editor == null) {
+        return;
+    }
+
+    Double activeExtentZ = (Double) activeExtentZModel.getValue();
+
+    if (activeExtentZ != originalActiveExtentZ) {
+        editor.setPanelDirty(MicrophoneCellProperties.class, true);
+    } else {
+        editor.setPanelDirty(MicrophoneCellProperties.class, false);
+    }
+}//GEN-LAST:event_activeOriginZSpinnerStateChanged
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField activeX;
-    private javax.swing.JTextField activeY;
-    private javax.swing.JTextField activeZ;
-    private javax.swing.JTextField fullVolumeX;
-    private javax.swing.JTextField fullVolumeY;
-    private javax.swing.JTextField fullVolumeZ;
+    private javax.swing.JSpinner activeExtentXSpinner;
+    private javax.swing.JSpinner activeExtentYSpinner;
+    private javax.swing.JSpinner activeExtentZSpinner;
+    private javax.swing.JSpinner activeOriginXSpinner;
+    private javax.swing.JSpinner activeOriginYSpinner;
+    private javax.swing.JSpinner activeOriginZSpinner;
+    private javax.swing.JSpinner fullVolumeXSpinner;
+    private javax.swing.JSpinner fullVolumeYSpinner;
+    private javax.swing.JSpinner fullVolumeZSpinner;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -229,9 +557,6 @@ public class MicrophoneCellProperties extends JPanel implements CellPropertiesSP
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JTextField originX;
-    private javax.swing.JTextField originY;
-    private javax.swing.JTextField oroginZ;
     // End of variables declaration//GEN-END:variables
 
 }

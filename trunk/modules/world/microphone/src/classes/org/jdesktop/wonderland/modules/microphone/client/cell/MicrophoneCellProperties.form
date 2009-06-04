@@ -15,124 +15,124 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Group type="102" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jLabel4" min="-2" pref="131" max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="jLabel3" alignment="0" max="32767" attributes="1"/>
-                              <Component id="jLabel2" alignment="0" max="32767" attributes="1"/>
-                              <Component id="jLabel1" alignment="0" pref="29" max="32767" attributes="1"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="fullVolumeY" alignment="0" max="32767" attributes="1"/>
-                              <Component id="fullVolumeX" alignment="0" max="32767" attributes="1"/>
-                              <Component id="fullVolumeZ" alignment="0" pref="79" max="32767" attributes="1"/>
-                          </Group>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jLabel5" pref="139" max="32767" attributes="1"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" pref="57" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="jLabel7" alignment="0" max="32767" attributes="1"/>
-                              <Component id="jLabel6" alignment="0" pref="26" max="32767" attributes="1"/>
-                              <Component id="jLabel8" alignment="0" max="32767" attributes="1"/>
-                          </Group>
-                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="oroginZ" alignment="0" pref="77" max="32767" attributes="0"/>
-                              <Component id="originY" alignment="0" pref="77" max="32767" attributes="0"/>
-                              <Component id="originX" alignment="0" pref="77" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="1">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jLabel9" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="57" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="jLabel11" alignment="0" max="32767" attributes="1"/>
-                          <Component id="jLabel10" alignment="0" pref="29" max="32767" attributes="1"/>
-                          <Component id="jLabel12" alignment="0" max="32767" attributes="1"/>
-                      </Group>
+                      <Component id="jLabel4" min="-2" pref="131" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="activeX" alignment="0" pref="80" max="32767" attributes="0"/>
-                          <Component id="activeY" alignment="0" pref="80" max="32767" attributes="0"/>
-                          <Component id="activeZ" alignment="0" pref="80" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="103" alignment="0" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jLabel1" alignment="0" min="-2" pref="32" max="-2" attributes="1"/>
+                              <Component id="jLabel3" alignment="0" min="-2" max="-2" attributes="1"/>
+                              <Component id="jLabel2" min="-2" pref="31" max="-2" attributes="1"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="fullVolumeZSpinner" alignment="0" min="-2" pref="63" max="-2" attributes="1"/>
+                              <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="fullVolumeYSpinner" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="fullVolumeXSpinner" alignment="0" pref="63" max="32767" attributes="1"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace min="-2" pref="157" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jLabel5" alignment="0" pref="274" max="32767" attributes="1"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="jLabel8" min="-2" pref="21" max="-2" attributes="1"/>
+                                      <Component id="jLabel7" alignment="0" min="-2" max="-2" attributes="1"/>
+                                      <Component id="jLabel6" min="-2" max="-2" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="activeOriginYSpinner" max="32767" attributes="1"/>
+                                      <Component id="activeOriginZSpinner" max="32767" attributes="1"/>
+                                      <Component id="activeOriginXSpinner" alignment="0" pref="64" max="32767" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace pref="158" max="32767" attributes="0"/>
+                              </Group>
+                              <Component id="jLabel9" alignment="0" pref="274" max="32767" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="jLabel10" alignment="0" min="-2" pref="22" max="-2" attributes="1"/>
+                                      <Component id="jLabel11" alignment="0" min="-2" max="-2" attributes="1"/>
+                                      <Component id="jLabel12" alignment="0" min="-2" max="-2" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="activeExtentZSpinner" max="32767" attributes="1"/>
+                                      <Component id="activeExtentYSpinner" max="32767" attributes="1"/>
+                                      <Component id="activeExtentXSpinner" alignment="0" min="-2" pref="63" max="-2" attributes="1"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace min="-2" pref="69" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel1" alignment="3" min="-2" pref="17" max="-2" attributes="0"/>
-                  <Component id="fullVolumeX" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="fullVolumeXSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="fullVolumeY" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="fullVolumeYSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="fullVolumeZ" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="fullVolumeZSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
+              <Component id="jLabel5" min="-2" pref="17" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel6" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="originX" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="activeOriginXSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel7" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="originY" alignment="3" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="11" pref="11" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                  <Component id="activeOriginYSpinner" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel8" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="oroginZ" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="activeOriginZSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
               <Component id="jLabel9" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel10" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeX" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="activeExtentXSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel11" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeY" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="activeExtentYSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel12" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="activeZ" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="activeExtentZSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="57" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -198,23 +198,50 @@
         <Property name="text" type="java.lang.String" value="z:"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="fullVolumeX">
+    <Component class="javax.swing.JSpinner" name="fullVolumeXSpinner">
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="fullVolumeXSpinnerStateChanged"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JTextField" name="fullVolumeY">
+    <Component class="javax.swing.JSpinner" name="fullVolumeYSpinner">
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="fullVolumeYSpinnerStateChanged"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JTextField" name="fullVolumeZ">
+    <Component class="javax.swing.JSpinner" name="fullVolumeZSpinner">
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="fullVolumeZSpinnerStateChanged"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JTextField" name="originX">
+    <Component class="javax.swing.JSpinner" name="activeOriginXSpinner">
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="activeOriginXSpinnerStateChanged"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JTextField" name="originY">
+    <Component class="javax.swing.JSpinner" name="activeOriginYSpinner">
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="activeOriginYSpinnerStateChanged"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JTextField" name="oroginZ">
+    <Component class="javax.swing.JSpinner" name="activeOriginZSpinner">
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="activeOriginZSpinnerStateChanged"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JTextField" name="activeX">
+    <Component class="javax.swing.JSpinner" name="activeExtentXSpinner">
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="activeExtentXSpinnerStateChanged"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JTextField" name="activeY">
+    <Component class="javax.swing.JSpinner" name="activeExtentYSpinner">
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="activeExtentYSpinnerStateChanged"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JTextField" name="activeZ">
+    <Component class="javax.swing.JSpinner" name="activeExtentZSpinner">
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="activeExtentZSpinnerStateChanged"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
