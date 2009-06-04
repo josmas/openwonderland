@@ -182,7 +182,7 @@ public class NameTagNode extends Node {
     public void setNameTag(EventType eventType, String username, String usernameAlias,
             Color foregroundColor, Font font) {
 
-	System.out.println("setNameTag event " + eventType);
+	//System.out.println("setNameTag event " + eventType);
 
         this.usernameAlias = usernameAlias;
 
