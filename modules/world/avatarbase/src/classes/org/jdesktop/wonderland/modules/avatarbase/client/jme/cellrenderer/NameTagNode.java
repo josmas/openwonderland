@@ -46,7 +46,9 @@ public class NameTagNode extends Node {
     public static final String DEFAULT_FONT_NAME = "Sans";
     public static final String DEFAULT_FONT_NAME_TYPE = "PLAIN";
     public static final String DEFAULT_FONT_ALIAS_TYPE = "ITALIC";
+    public static final int SMALL_FONT_SIZE = 10;
     public static final int DEFAULT_FONT_SIZE = 40;
+    public static final int LARGE_FONT_SIZE = 50;
     public static final Font REAL_NAME_FONT = 
         fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_NAME_TYPE, DEFAULT_FONT_SIZE);
     public static final Font ALIAS_NAME_FONT = 
@@ -204,28 +206,25 @@ public class NameTagNode extends Node {
     public void setNameTag(EventType eventType, String username, String usernameAlias,
             Color foregroundColor, Font font) {
 
-	//System.out.println("setNameTag event " + eventType);
-
         this.usernameAlias = usernameAlias;
 
 	switch (eventType) {
 	case HIDE:
-	    System.out.println("Hide nametag for " + usernameAlias);
 	    setVisible(false);
 	    return;
 
 	case SMALL_FONT:
-	    System.out.println("SMALL_FONT not implemented");
+	    setSizedDefaultFont(SMALL_FONT_SIZE);
 	    setVisible(true);
 	    return;
 	
 	case REGULAR_FONT:
-	    System.out.println("Set REGULAR_FONT for " + usernameAlias);
+	    setSizedDefaultFont(DEFAULT_FONT_SIZE);
 	    setVisible(true);
 	    return;
 	
 	case LARGE_FONT:
-	    System.out.println("LARGE_FONT not implemented");
+	    setSizedDefaultFont(LARGE_FONT_SIZE);
 	    setVisible(true);
 	    return;
 	}
