@@ -37,7 +37,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
     private CellPropertiesEditor editor;
 
     private String originalGroupId;
-    private String originalTreatments;
+    private String originalFileTreatments;
+    private String originalUrlTreatments;
     private double originalVolume;
     private PlayWhen originalPlayWhen;
     private double originalExtentRadius;
@@ -84,8 +85,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
 
         // Listen for changes to the text fields and spinners
 	audioGroupIdTextField.getDocument().addDocumentListener(new AudioGroupTextFieldListener());
-	fileTextField.getDocument().addDocumentListener(new AudioTreatmentsTextFieldListener());
-	urlTextField.getDocument().addDocumentListener(new AudioTreatmentsTextFieldListener());
+	fileTextField.getDocument().addDocumentListener(new AudioFileTreatmentsTextFieldListener());
+	urlTextField.getDocument().addDocumentListener(new AudioUrlTreatmentsTextFieldListener());
         fullVolumeAreaPercentModel.addChangeListener(new FullVolumeAreaPercentChangeListener());
         extentRadiusModel.addChangeListener(new ExtentRadiusChangeListener());
         volumeModel.addChangeListener(new VolumeChangeListener());
@@ -126,14 +127,26 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
 	    
             String[] treatmentList = state.getTreatments();
 
-	    originalTreatments = "";
+	    originalFileTreatments = "";
+	    originalUrlTreatments = "";
 
 	    for (int i = 0; i < treatmentList.length; i++) {
-		originalTreatments += treatmentList[i] + " ";		
+		String treatment = treatmentList[i];
+
+		if (treatment.indexOf("://") > 0) {
+		    originalUrlTreatments += treatment + " ";
+		} else {
+		    originalFileTreatments += treatment + " ";
+		}
 	    }
 
-	    originalTreatments = originalTreatments.trim();
-	    fileTextField.setText(originalTreatments);
+	    originalFileTreatments = originalFileTreatments.trim();
+	    
+	    fileTextField.setText(originalFileTreatments);
+
+	    originalUrlTreatments = originalUrlTreatments.trim();
+	    
+	    urlTextField.setText(originalUrlTreatments);
 	    
 	    originalVolume = state.getVolume();
 	    volumeSpinner.setValue(originalVolume);
@@ -271,7 +284,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
      * Inner class to listen for changes to the text field and fire off dirty
      * or clean indications to the cell properties editor.
      */
-    class AudioTreatmentsTextFieldListener implements DocumentListener {
+    class AudioFileTreatmentsTextFieldListener implements DocumentListener {
         public void insertUpdate(DocumentEvent e) {
             checkDirty();
         }
@@ -287,10 +300,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
         private void checkDirty() {
             String treatments = fileTextField.getText();
 
-	    //System.out.println("treatments " + treatments + " original " + originalTreatments);
-
             if (editor != null) { 
-		if (treatments.equals(originalTreatments) == false) {
+		if (treatments.equals(originalFileTreatments) == false) {
                     editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
                 } else {
                     editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
@@ -299,6 +310,35 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
         }
     }
 
+    /**
+     * Inner class to listen for changes to the text field and fire off dirty
+     * or clean indications to the cell properties editor.
+     */
+    class AudioUrlTreatmentsTextFieldListener implements DocumentListener {
+        public void insertUpdate(DocumentEvent e) {
+            checkDirty();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            checkDirty();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            checkDirty();
+        }
+
+        private void checkDirty() {
+            String treatments = urlTextField.getText();
+
+            if (editor != null) { 
+		if (treatments.equals(originalUrlTreatments) == false) {
+                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
+                } else {
+                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+		}
+            }
+        }
+    }
     class FullVolumeAreaPercentChangeListener implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
             Double fullVolumeAreaPercent = (Double) fullVolumeAreaPercentModel.getValue();
@@ -558,18 +598,16 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 47, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(267, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(audioGroupIdTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                                    .add(urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                                    .add(layout.createSequentialGroup()
-                                        .add(fileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(fileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, audioGroupIdTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, urlTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
                                 .add(12, 12, 12)
                                 .add(browseButton)
-                                .add(49, 49, 49))))))
+                                .add(49, 49, 49))
+                            .add(layout.createSequentialGroup()
+                                .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 47, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap())))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -578,20 +616,21 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel7)
                     .add(audioGroupIdTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(jLabel8)
-                    .add(browseButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(jLabel1)
+                        .add(jLabel8)
+                        .add(browseButton))
                     .add(fileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel9))
-                .add(18, 18, 18)
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(alwaysRadioButton)
@@ -625,7 +664,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
                         .add(jLabel4))
                     .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel5))
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap(26, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
