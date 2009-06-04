@@ -43,23 +43,32 @@ public class NameTagNode extends Node {
     public static final Color SPEAKING_COLOR = Color.RED;
     public static final Color NOT_SPEAKING_COLOR = new Color(1f, 1f, 1f);
     public static final Color CONE_OF_SILENCE_COLOR = Color.BLACK;
+
     public static final String DEFAULT_FONT_NAME = "Sans";
     public static final String DEFAULT_FONT_NAME_TYPE = "PLAIN";
     public static final String DEFAULT_FONT_ALIAS_TYPE = "ITALIC";
+
     public static final int SMALL_FONT_SIZE = 10;
     public static final int DEFAULT_FONT_SIZE = 40;
     public static final int LARGE_FONT_SIZE = 50;
+
     public static final Font REAL_NAME_FONT = 
         fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_NAME_TYPE, DEFAULT_FONT_SIZE);
+
     public static final Font ALIAS_NAME_FONT = 
         fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_ALIAS_TYPE, DEFAULT_FONT_SIZE);
+
     private Color foregroundColor = NOT_SPEAKING_COLOR;
     
     private Color backgroundColor = new Color(0f, 0f, 0f);
+
     private Font font = REAL_NAME_FONT;
+
     public static final String LEFT_MUTE = "[";
     public static final String RIGHT_MUTE = "]";
+
     public static final String SPEAKING = "...";
+
     private boolean done;
 
     private TextLabel2D label=null;
