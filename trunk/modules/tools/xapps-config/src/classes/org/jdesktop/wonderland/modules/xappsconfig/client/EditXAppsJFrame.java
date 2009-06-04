@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.xremwin.client.registry;
+package org.jdesktop.wonderland.modules.xappsconfig.client;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -26,7 +26,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
-import org.jdesktop.wonderland.modules.xremwin.common.registry.XAppRegistryItem;
+import org.jdesktop.wonderland.modules.xappsconfig.common.XAppRegistryItem;
 
 /**
  * A JFrame to allow editing of the list of X Apps registered to appear in the

@@ -25,6 +25,7 @@
         <file name="snapshot-manager/build.xml"/>
         <file name="asset-meter/build.xml"/>
         <file name="text-chat/build.xml"/>
+        <file name="xapps-config/build.xml"/>
     </filelist>
     
     <target name="dist">

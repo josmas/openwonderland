@@ -14,20 +14,20 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=MacRoman">
         <script src="/wonderland-web-front/javascript/prototype-1.6.0.3.js" type="text/javascript"></script>
-        <link href="xremwin.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="xapps-config.css" rel="stylesheet" type="text/css" media="screen" />
         <title>Add new X11 App</title>
     </head>
     <body>
         <h1>Add new X11 App</h1>
 
-        <form id="nameForm" action="/xremwin/wonderland-xremwin/browse">
+        <form id="nameForm" action="/xapps-config/wonderland-xapps-config/browse">
             <input type="hidden" name="action" value="add"/>
 
             App Name: <input type="text" name="appName"/><br>
             Command: <input text="text" name="command"/>
             <br><br>
             <a href="javascript:void(0)" onclick="$('nameForm').submit()">Ok</a>
-            <a href="/xremwin/wonderland-xremwin/browse?action=view">Cancel</a>
+            <a href="/xapps-config/wonderland-xapps-config/browse?action=view">Cancel</a>
         </form>
     </body>
 </html>

@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.xremwin.client.registry;
+package org.jdesktop.wonderland.modules.xappsconfig.client;
 
 import javax.swing.JFrame;
 import javax.swing.event.DocumentEvent;
