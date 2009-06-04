@@ -9,6 +9,7 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
 
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
 
@@ -205,6 +206,19 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
 
 	treatments = treatments.replaceAll(",", " ");
 	treatments = treatments.replaceAll("  ", " ");
+
+	String urls = urlTextField.getText();
+
+	urls = urls.replaceAll(",", " ");
+	urls = urls.replaceAll("  ", " ");
+
+	if (urls.length() > 0) {
+	    if (treatments.length() > 0) {
+		treatments += " " + urls.split(" ");
+	    } else {
+		treatments = urls;
+	    }
+	}
 
 	state.setTreatments(treatments.split(" "));
 
@@ -632,7 +646,13 @@ private void extentRadiusRadioButtonActionPerformed(java.awt.event.ActionEvent e
 }//GEN-LAST:event_extentRadiusRadioButtonActionPerformed
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-// TODO add your handling code here:
+    JFileChooser chooser = new JFileChooser(fileTextField.getText());
+
+     int returnVal = chooser.showOpenDialog(this);
+
+    if (returnVal == JFileChooser.APPROVE_OPTION) {
+	fileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
+    }
 }//GEN-LAST:event_browseButtonActionPerformed
 
 private void volumeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSpinnerStateChanged
