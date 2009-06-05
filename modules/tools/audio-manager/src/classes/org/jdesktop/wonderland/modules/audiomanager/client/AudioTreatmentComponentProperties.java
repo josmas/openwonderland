@@ -439,7 +439,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
 
         jLabel2.setText("Volume:");
 
-        jLabel7.setText("Audio Group Id:");
+        jLabel7.setText("Audio Group:");
 
         volumeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -544,7 +544,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
             }
         });
 
-        jLabel3.setText("Falloff:");
+        jLabel3.setText("Fall-off:");
 
         jLabel4.setText("Slow");
 
@@ -613,7 +613,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
                 .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel5)
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel14)
