@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.cell.properties;
 
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -40,4 +41,11 @@ public interface CellPropertiesEditor {
      * false if clean.
      */
     public void setPanelDirty(Class clazz, boolean isDirty);
+
+    /**
+     * Returns the Cell currently being edited.
+     *
+     * @return The currently edited Cell
+     */
+    public Cell getCell();
 }
