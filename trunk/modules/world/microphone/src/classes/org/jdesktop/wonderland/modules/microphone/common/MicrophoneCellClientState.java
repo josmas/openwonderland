@@ -34,6 +34,8 @@ public class MicrophoneCellClientState extends CellClientState {
 
     private String name;
 
+    private double volume;
+
     private FullVolumeArea fullVolumeArea;
 
     private ActiveArea activeArea;
@@ -42,10 +44,11 @@ public class MicrophoneCellClientState extends CellClientState {
     public MicrophoneCellClientState() {
     }
     
-    public MicrophoneCellClientState(String name, FullVolumeArea fullVolumeArea,
+    public MicrophoneCellClientState(String name, double volume, FullVolumeArea fullVolumeArea,
 	    ActiveArea activeArea) {
 
 	this.name = name;
+	this.volume = volume;
 	this.fullVolumeArea = fullVolumeArea;
 	this.activeArea = activeArea;
     }
@@ -56,6 +59,14 @@ public class MicrophoneCellClientState extends CellClientState {
 
     public String getName() {
         return name;
+    }
+
+    public void setVolume(double volume) {
+	this.volume = volume;
+    }
+
+    public double getVolume() {
+	return volume;
     }
 
     public void setFullVolumeArea(FullVolumeArea fullVolumeArea) {
