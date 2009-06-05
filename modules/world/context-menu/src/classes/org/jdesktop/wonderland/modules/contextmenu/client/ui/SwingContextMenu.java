@@ -83,11 +83,10 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         contextMenu.setResizable(false);
         contextMenu.setUndecorated(true);
         contextMenu.getContentPane().setLayout(new GridLayout(1, 1));
+
         contextPanel = new JPanel();
-        contextPanel.setBackground(WL_LIGHT_BLUE);
-        contextPanel.setOpaque(true);
         contextMenu.getContentPane().add(contextPanel);
-        contextPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        contextPanel.setBorder(BorderFactory.createLineBorder(WL_LIGHT_BLUE, 2));
         contextPanel.setLayout(new BoxLayout(contextPanel, BoxLayout.Y_AXIS));
     }
 
@@ -294,6 +293,7 @@ public class SwingContextMenu implements MenuItemRepaintListener {
 
             // Otherwise, highlight the menu item and hide the menu
             item.setBackground(WL_GREEN);
+            item.repaint();
             hideContextMenu();
 
             // Find the listener to dispatch the action to
@@ -314,7 +314,10 @@ public class SwingContextMenu implements MenuItemRepaintListener {
             // Highlight the menu item with a color, but only if it is enabled
             JMenuItem item = (JMenuItem)e.getSource();
             if (item.isEnabled() == true) {
+                System.out.println("MOUSE ENTERED");
                 item.setBackground(WL_LIGHT_GREEN);
+                item.setOpaque(true);
+                item.repaint();
                 contextMenu.pack();
             }
         }
@@ -322,6 +325,7 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         @Override
         public void mouseExited(MouseEvent e) {
             // De-highlight the menu item with a color, but only if it is enabled
+            System.out.println("MOUSE EXITED");
             JMenuItem item = (JMenuItem) e.getSource();
             if (item.isEnabled() == true) {
                 item.setBackground(Color.white);
