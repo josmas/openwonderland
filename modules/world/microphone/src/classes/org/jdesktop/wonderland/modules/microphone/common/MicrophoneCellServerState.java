@@ -40,6 +40,9 @@ public class MicrophoneCellServerState extends CellServerState {
     @XmlElement(name="name")
     private String name;
 
+    @XmlElement(name="volume")
+    private double volume = 1;
+
     @XmlElement(name="fullVolumeArea")
     private FullVolumeArea fullVolumeArea;
 
@@ -50,10 +53,11 @@ public class MicrophoneCellServerState extends CellServerState {
     public MicrophoneCellServerState() {
     }
     
-    public MicrophoneCellServerState(String name, FullVolumeArea fullVolumeArea,
-	    ActiveArea activeArea) {
+    public MicrophoneCellServerState(String name, double volume, 
+	    FullVolumeArea fullVolumeArea, ActiveArea activeArea) {
 
 	this.name = name;
+	this.volume = volume;
 	this.fullVolumeArea = fullVolumeArea;
 	this.activeArea = activeArea;
 
@@ -79,6 +83,15 @@ public class MicrophoneCellServerState extends CellServerState {
     @XmlTransient
     public String getName() {
         return name;
+    }
+
+    public void setVolume(double volume) {
+	this.volume = volume;
+    }
+
+    @XmlTransient
+    public double getVolume() {
+	return volume;
     }
 
     public void setFullVolumeArea(FullVolumeArea fullVolumeArea) {

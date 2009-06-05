@@ -52,11 +52,13 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
     private static final Logger logger =
             Logger.getLogger(MicrophoneProximityListener.class.getName());
 
-    String name;
-    BoundingVolume[] bounds;
+    private String name;
+    private double volume;
+    private BoundingVolume[] bounds;
 
-    public MicrophoneProximityListener(String name, BoundingVolume[] bounds) {
+    public MicrophoneProximityListener(String name, double volume, BoundingVolume[] bounds) {
         this.name = name;
+	this.volume = volume;
         this.bounds = bounds;
     }
 
@@ -178,6 +180,8 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
 	} else {
 	    audioGroup.setSpeaking(player, true);
 	}
+
+	audioGroup.setSpeakingAttenuation(player, volume);
     }
 
     private void activeAreaExited(String callId) {
@@ -200,6 +204,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
 	}
 
 	audioGroup.setSpeaking(player, false);
+	audioGroup.setSpeakingAttenuation(player, volume);
     }
 
 }
