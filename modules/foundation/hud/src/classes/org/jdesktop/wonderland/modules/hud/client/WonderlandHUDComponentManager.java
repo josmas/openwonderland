@@ -19,6 +19,9 @@ package org.jdesktop.wonderland.modules.hud.client;
 
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
+import com.jme.scene.Node;
+import com.jme.scene.state.BlendState;
+import com.jme.scene.state.RenderState;
 import java.awt.Point;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +29,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponent.DisplayMode;
@@ -33,6 +39,7 @@ import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
 import org.jdesktop.wonderland.client.hud.HUDComponentListener;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
@@ -226,6 +233,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         // display/hide the frame view
         frameView.setVisibleApp(visible);
         frameView.setVisibleUser(visible);
+        setTransparent(frameView);
     }
 
     private void componentVisible(HUDComponent2D component) {
@@ -250,12 +258,31 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         logger.fine("displaying HUD view");
         view.setOrtho(true, false);
-        view.setLocationOrtho(new Vector2f(component.getX(), component.getY()), false);
+
+        Point location = (layout != null) ? layout.getLocation(component) :
+            component.getLocation();
+
+        view.setLocationOrtho(new Vector2f((int)location.getX(), (int)location.getY()), false);
         view.setPixelScaleOrtho(hudPixelScale, false);
         view.setVisibleApp(true, false);
         view.setVisibleUser(true);
 
         showFrame(component, true);
+    }
+
+    public void setTransparent(HUDView2D view) {
+        Node node = view.getNode();
+        Entity entity = view.getEntity();
+        WorldManager wm = ClientContextJME.getWorldManager();
+        BlendState as = (BlendState) wm.getRenderManager().createRendererState(RenderState.RS_BLEND);
+        as.setEnabled(true);
+        as.setBlendEnabled(true);
+        as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
+        as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
+        node.setRenderState(as);
+        RenderComponent rc = entity.getComponent(RenderComponent.class);
+    //AlphaProcessor proc = new AlphaProcessor("", wm, view.getGeometryNode(), 0.01f);
+    //entity.addComponent(AlphaProcessor.class, proc);
     }
 
     private void componentInvisible(HUDComponent2D component) {

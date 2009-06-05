@@ -230,6 +230,12 @@ public interface MainFrame {
     public void setMessageLabel(String msg);
 
     /**
+     * Notify when a connection is established or disconnected
+     * @param connected true if a connection has been established, false otherwise
+     */
+    public void connected(boolean connected);
+
+    /**
      * Set the desired frame rate
      * @param desiredFrameRate the desired frame rate in frames per second
      */

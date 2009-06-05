@@ -90,18 +90,6 @@ public interface HUD {
     public HUDComponentManager getComponentManager();
 
     /**
-     * Set the layout of the HUD
-     * @param layout the layout
-     */
-    public void setLayoutManager(HUDLayoutManager layout);
-
-    /**
-     * Get the layout of the HUD
-     * @return the layout
-     */
-    public HUDLayoutManager getLayoutManager();
-
-    /**
      * Assigns a name to this HUD
      * @param name the name to assign to this HUD
      */
