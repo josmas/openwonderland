@@ -25,7 +25,9 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.textchat.common.TextChatMessage;
 import org.jdesktop.wonderland.modules.textchat.common.TextChatConnectionType;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
+import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -34,7 +36,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-class TextChatConnectionHandler implements ClientConnectionHandler, Serializable {
+public class TextChatConnectionHandler implements ClientConnectionHandler, Serializable {
 
     private static Logger logger = Logger.getLogger(TextChatConnectionHandler.class.getName());
 
@@ -83,5 +85,43 @@ class TextChatConnectionHandler implements ClientConnectionHandler, Serializable
                 return;
             }
         }
+    }
+
+    /**
+     * Convenience method for the two paramter version that sends the message from
+     * a fake "Server" user.
+     *
+     * @param msg The body of the text chat message.
+     */
+    public void sendGlobalMessage(String msg) {
+        this.sendGlobalMessage("Server", msg);
+    }
+
+    /**
+     * Sends a global text message to all users. You can decide who the message should
+     * appear to be from; it doesn't need to map to a known user.
+     *
+     * @param from The name the message should be displayed as being from.
+     * @param msg The body of the text chat message.
+     */
+    public void sendGlobalMessage(String from, String msg) {
+        logger.info("Sending global message from " + from + ": " + msg);
+        // Originally included for the XMPP plugin, so people chatting with the XMPP bot
+        // can have their messages replicated in-world with appropriate names.
+        //
+        // Of course, there are some obvious dangerous with this: it's not that hard
+        // to fake an xmpp name to look like someone it's not. In an otherwise
+        // authenticated world, this might be a way to make it look like
+        // people are saying things they're not.
+
+        CommsManager cm = WonderlandContext.getCommsManager();
+        WonderlandClientSender sender = cm.getSender(TextChatConnectionType.CLIENT_TYPE);
+
+        // Send to all clients, because the message is originating from a non-client source.
+        Set<WonderlandClientID> clientIDs = sender.getClients();
+
+        // Construct a new message with appropriate fields.
+        TextChatMessage textMessage = new TextChatMessage(msg, from, "");
+        sender.send(clientIDs, textMessage);
     }
 }
