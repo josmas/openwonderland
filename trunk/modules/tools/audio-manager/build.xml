@@ -47,6 +47,9 @@
                 <clientjar name="audiomanager-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**/*.png"/>
+                    </fileset>
                 </clientjar>
 
                 <include name="stun.jar"/>
