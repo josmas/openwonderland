@@ -208,7 +208,8 @@ public class AvatarPlugin extends BaseClientPlugin
             JmeClientMain.getFrame().removeFromWindowMenu(avatarControlsMI);
             JmeClientMain.getFrame().removeFromWindowMenu(gestureMI);
             JmeClientMain.getFrame().removeFromEditMenu(avatarMI);
-            JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
+            if (avatarSettingsMI!=null)
+                JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
             JmeClientMain.getFrame().removeFromPlacemarksMenu(startingLocationMI);
 
             menusAdded = false;
@@ -245,7 +246,8 @@ public class AvatarPlugin extends BaseClientPlugin
             JmeClientMain.getFrame().addToWindowMenu(avatarControlsMI, 0);
             JmeClientMain.getFrame().addToWindowMenu(gestureMI, 0);
             JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
-            JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
+            if (avatarSettingsMI!=null)
+                JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
             JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
 
             menusAdded = true;
