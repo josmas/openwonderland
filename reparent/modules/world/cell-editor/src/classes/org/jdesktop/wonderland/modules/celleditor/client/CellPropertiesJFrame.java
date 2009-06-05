@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.celleditor.client;
 
-import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import java.awt.Color;
@@ -33,7 +32,6 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,11 +55,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.CellManager;
@@ -72,9 +67,6 @@ import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
-import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
-import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -95,7 +87,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * A frame to allow the editing of properties for the cell.
- * * 
+ *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class CellPropertiesJFrame extends javax.swing.JFrame implements CellPropertiesEditor {
@@ -760,8 +752,10 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         // too.
         int size = factoryList.size();
         for (int i = 2; i < size; i++) {
-            listModel.remove(i);
-            factoryList.remove(i);
+            // We always want to remove the 2nd element, because as we remove
+            // elements the next element to remove is in the 2nd position.
+            listModel.remove(2);
+            factoryList.remove(2);
         }
     }
 
