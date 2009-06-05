@@ -46,8 +46,7 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
 
         initComponents();
 
-	applyButton.setEnabled(false);
-	OKButton.setEnabled(false);
+	OKButton.setEnabled(true);
     }
 
     /** This method is called from within the constructor to
@@ -70,10 +69,11 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
         otherNamesRegularRadioButton = new javax.swing.JRadioButton();
         otherNamesLargeRadioButton = new javax.swing.JRadioButton();
         OKButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
         otherNamesSmallRadioButton = new javax.swing.JRadioButton();
         myNameTagSmallRadioButton = new javax.swing.JRadioButton();
-        applyButton = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+
+        setTitle("User Properties");
 
         jLabel1.setText("My Name:");
 
@@ -136,13 +136,6 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
             }
         });
 
-        cancelButton.setText("Cancel");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
-
         buttonGroup2.add(otherNamesSmallRadioButton);
         otherNamesSmallRadioButton.setText("small");
         otherNamesSmallRadioButton.addActionListener(new java.awt.event.ActionListener() {
@@ -159,156 +152,115 @@ public class NamePropertiesJFrame extends javax.swing.JFrame {
             }
         });
 
-        applyButton.setText("Apply");
-        applyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                applyButtonActionPerformed(evt);
-            }
-        });
+        jLabel3.setText("Avatar Names");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel3)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
+                        .add(40, 40, 40)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(layout.createSequentialGroup()
-                                .add(myNameHideRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(myNameTagSmallRadioButton))
-                            .add(layout.createSequentialGroup()
-                                .add(otherNamesHideRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(otherNamesSmallRadioButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(cancelButton)
-                        .add(55, 55, 55)))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(applyButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 65, Short.MAX_VALUE)
+                            .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 74, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(otherNamesHideRadioButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(otherNamesSmallRadioButton))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(myNameHideRadioButton)
                         .add(18, 18, 18)
-                        .add(OKButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 68, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(6, 6, 6))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(myNameRegularRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(myNameLargeRadioButton))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(otherNamesRegularRadioButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(otherNamesLargeRadioButton)))
-                .add(21, 21, 21))
+                        .add(myNameTagSmallRadioButton)))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(otherNamesRegularRadioButton)
+                    .add(myNameRegularRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(otherNamesLargeRadioButton)
+                    .add(myNameLargeRadioButton))
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(366, Short.MAX_VALUE)
+                .add(OKButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 68, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(23, 23, 23)
+                .add(31, 31, 31)
+                .add(jLabel3)
+                .add(10, 10, 10)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
                     .add(myNameHideRadioButton)
                     .add(myNameTagSmallRadioButton)
-                    .add(myNameRegularRadioButton)
                     .add(myNameLargeRadioButton)
-                    .add(jLabel1))
-                .add(29, 29, 29)
+                    .add(myNameRegularRadioButton))
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(otherNamesHideRadioButton)
+                    .add(otherNamesLargeRadioButton)
                     .add(otherNamesSmallRadioButton)
-                    .add(otherNamesRegularRadioButton)
-                    .add(otherNamesLargeRadioButton))
-                .add(28, 28, 28)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(cancelButton)
-                    .add(OKButton)
-                    .add(applyButton))
-                .addContainerGap(25, Short.MAX_VALUE))
+                    .add(otherNamesRegularRadioButton))
+                .add(34, 34, 34)
+                .add(OKButton)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-    setVisible(false);
-}//GEN-LAST:event_cancelButtonActionPerformed
-
 private void OKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OKButtonActionPerformed
-    applyChanges();
     setVisible(false);
 }//GEN-LAST:event_OKButtonActionPerformed
 
 private void myNameHideRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameHideRadioButtonActionPerformed
     myNameTagAttribute = NameTagAttribute.HIDE;
 
-    enableButtons();
+    applyChanges();
 }//GEN-LAST:event_myNameHideRadioButtonActionPerformed
 
 private void myNameTagSmallRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameTagSmallRadioButtonActionPerformed
     myNameTagAttribute = NameTagAttribute.SMALL_FONT;
-
-    enableButtons();
+    applyChanges();
 }//GEN-LAST:event_myNameTagSmallRadioButtonActionPerformed
 
 private void myNameRegularRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameRegularRadioButtonActionPerformed
     myNameTagAttribute = NameTagAttribute.REGULAR_FONT;
-
-    enableButtons();
+    applyChanges();
 }//GEN-LAST:event_myNameRegularRadioButtonActionPerformed
 
 private void myNameLargeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameLargeRadioButtonActionPerformed
     myNameTagAttribute = NameTagAttribute.LARGE_FONT;
-
-    enableButtons();
+    applyChanges();
 }//GEN-LAST:event_myNameLargeRadioButtonActionPerformed
 
 private void otherNamesHideRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesHideRadioButtonActionPerformed
     otherNameTagAttributes = NameTagAttribute.HIDE;
-
-    enableButtons();
+    applyChanges();
 }//GEN-LAST:event_otherNamesHideRadioButtonActionPerformed
 
 private void otherNamesSmallRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesSmallRadioButtonActionPerformed
     otherNameTagAttributes = NameTagAttribute.SMALL_FONT;
-
-    enableButtons();
+    applyChanges();
 }//GEN-LAST:event_otherNamesSmallRadioButtonActionPerformed
 
 private void otherNamesRegularRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesRegularRadioButtonActionPerformed
     otherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
-
-    enableButtons();
+    applyChanges();
 }//GEN-LAST:event_otherNamesRegularRadioButtonActionPerformed
 
 private void otherNamesLargeRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherNamesLargeRadioButtonActionPerformed
     otherNameTagAttributes = NameTagAttribute.LARGE_FONT;
-
-    enableButtons();
-}//GEN-LAST:event_otherNamesLargeRadioButtonActionPerformed
-
-private void enableButtons() {
-    if (myNameTagAttribute != originalMyNameTagAttribute ||
-	otherNameTagAttributes != originalOtherNameTagAttributes) {
-
-	applyButton.setEnabled(true);
-	OKButton.setEnabled(true);
-    } else {
-	applyButton.setEnabled(false);
-	OKButton.setEnabled(false);
-    }
-}
-
-private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
     applyChanges();
-}//GEN-LAST:event_applyButtonActionPerformed
+}//GEN-LAST:event_otherNamesLargeRadioButtonActionPerformed
 
 private void applyChanges() {
     AvatarNameEvent avatarNameEvent;
@@ -318,40 +270,32 @@ private void applyChanges() {
 
         switch (myNameTagAttribute) {
         case HIDE:
-            avatarNameEvent = new AvatarNameEvent(EventType.HIDE,
+	    NameTagNode.setMyNameTag(EventType.HIDE, 
                 presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
-
-            InputManager.inputManager().postEvent(avatarNameEvent);
 	    break;
 
         case SMALL_FONT:
-            avatarNameEvent = new AvatarNameEvent(EventType.SMALL_FONT,
+	    NameTagNode.setMyNameTag(EventType.SMALL_FONT,
                 presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
-            InputManager.inputManager().postEvent(avatarNameEvent);
 	    break;
 
         case REGULAR_FONT:
-            avatarNameEvent = new AvatarNameEvent(EventType.REGULAR_FONT,
+	    NameTagNode.setMyNameTag(EventType.REGULAR_FONT,
                 presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
-            InputManager.inputManager().postEvent(avatarNameEvent);
 	    break;
 
         case LARGE_FONT:
-            avatarNameEvent = new AvatarNameEvent(EventType.LARGE_FONT,
+	    NameTagNode.setMyNameTag(EventType.LARGE_FONT,
                 presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
-            InputManager.inputManager().postEvent(avatarNameEvent);
 	    break;
         }
     }
 
     if (otherNameTagAttributes == originalOtherNameTagAttributes) {
-	enableButtons();
 	return;
     }
 
     originalOtherNameTagAttributes = otherNameTagAttributes;
-
-    enableButtons();
 
     switch (otherNameTagAttributes) {
     case HIDE:
@@ -389,12 +333,11 @@ private void applyChanges() {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton OKButton;
-    private javax.swing.JButton applyButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
-    private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JRadioButton myNameHideRadioButton;
     private javax.swing.JRadioButton myNameLargeRadioButton;
     private javax.swing.JRadioButton myNameRegularRadioButton;

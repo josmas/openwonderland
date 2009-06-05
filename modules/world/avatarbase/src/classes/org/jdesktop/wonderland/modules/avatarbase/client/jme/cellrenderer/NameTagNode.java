@@ -48,7 +48,7 @@ public class NameTagNode extends Node {
     public static final String DEFAULT_FONT_NAME_TYPE = "PLAIN";
     public static final String DEFAULT_FONT_ALIAS_TYPE = "ITALIC";
 
-    public static final int SMALL_FONT_SIZE = 10;
+    public static final int SMALL_FONT_SIZE = 20;
     public static final int DEFAULT_FONT_SIZE = 40;
     public static final int LARGE_FONT_SIZE = 50;
 
@@ -176,9 +176,6 @@ public class NameTagNode extends Node {
         setFont(newFont);
     }
 
-    /**
-     * Controls whether the name tag is actually visible.
-     */
     public void setVisible (boolean visible) {
         this.visible = visible;
         setNameTag(name);
@@ -189,6 +186,19 @@ public class NameTagNode extends Node {
      */
     public boolean isVisible () {
         return visible;
+    }
+
+    public static void setMyNameTag(EventType eventType, String username,
+	    String usernameAlias) {
+
+	NameTagNode nameTag = nameTagMap.get(username);
+
+	if (nameTag == null) {
+	    System.out.println("Can't find name tag for " + username);
+	    return;
+	}
+
+	nameTag.setNameTag(eventType, username, usernameAlias);
     }
 
     public static void setOtherNameTags(EventType eventType, String username, String usernameAlias) {
@@ -223,16 +233,19 @@ public class NameTagNode extends Node {
 	    return;
 
 	case SMALL_FONT:
+	    setVisible(false);
 	    setSizedDefaultFont(SMALL_FONT_SIZE);
 	    setVisible(true);
 	    return;
 	
 	case REGULAR_FONT:
+	    setVisible(false);
 	    setSizedDefaultFont(DEFAULT_FONT_SIZE);
 	    setVisible(true);
 	    return;
 	
 	case LARGE_FONT:
+	    setVisible(false);
 	    setSizedDefaultFont(LARGE_FONT_SIZE);
 	    setVisible(true);
 	    return;
