@@ -422,7 +422,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
         distanceAttenuatedRadioButton = new javax.swing.JRadioButton();
         falloffSlider = new javax.swing.JSlider();
         jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
         AudioCapabilitiesLabel = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
 
@@ -485,7 +484,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
             }
         });
 
-        jLabel12.setText("Full volume:");
+        jLabel12.setText("Full Volume Area:");
 
         fullVolumeAreaPercentSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -493,7 +492,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
             }
         });
 
-        jLabel13.setText("% area from center");
+        jLabel13.setText("% from center");
 
         jLabel14.setText("Characteristics:");
 
@@ -521,13 +520,11 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
             }
         });
 
-        jLabel3.setText("Fall-off:");
-
-        jLabel4.setText("Slow");
+        jLabel3.setText("Fall-off:  Slow");
 
         AudioCapabilitiesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/AudioCapabilitiesDiagram.png"))); // NOI18N
 
-        jLabel6.setText("Circular area radius");
+        jLabel6.setText("Circle with radius");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -536,65 +533,58 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
+                        .add(25, 25, 25)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jLabel8)
+                            .add(jLabel11)
+                            .add(jLabel10)
+                            .add(jLabel2)
                             .add(jLabel9)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(jLabel1)
-                                .add(jLabel7)))
+                            .add(jLabel8)
+                            .add(jLabel1)
+                            .add(jLabel7)
+                            .add(jLabel14)
+                            .add(jLabel3)))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jLabel12)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(alwaysRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(proximityRadioButton)
+                            .add(ambientRadioButton)
+                            .add(distanceAttenuatedRadioButton)
+                            .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel5))
+                    .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(urlTextField)
                             .add(fileTextField)
-                            .add(audioGroupIdTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 249, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(audioGroupIdTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 224, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
                     .add(layout.createSequentialGroup()
-                        .add(6, 6, 6)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jLabel12)
-                            .add(jLabel11)
-                            .add(jLabel14)
-                            .add(jLabel10)
-                            .add(jLabel3)
-                            .add(jLabel2))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(distanceAttenuatedRadioButton)
-                                .add(layout.createSequentialGroup()
-                                    .add(jLabel4)
-                                    .add(0, 0, 0)
-                                    .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(0, 0, 0)
-                                    .add(jLabel5))
-                                .add(ambientRadioButton)
-                                .add(layout.createSequentialGroup()
-                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                        .add(proximityRadioButton)
-                                        .add(alwaysRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(layout.createSequentialGroup()
-                                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                                .add(layout.createSequentialGroup()
-                                                    .add(manualRadioButton)
-                                                    .add(112, 112, 112))
-                                                .add(layout.createSequentialGroup()
-                                                    .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                    .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 42, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                    .add(14, 14, 14))
-                                                .add(layout.createSequentialGroup()
-                                                    .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                    .add(18, 18, 18)
-                                                    .add(jLabel13)
-                                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                            .add(AudioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 155, Short.MAX_VALUE)
-                                            .add(20, 20, 20)))
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))))))
-                .add(52, 52, 52))
+                            .add(layout.createSequentialGroup()
+                                .add(manualRadioButton)
+                                .add(79, 79, 79))
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                        .add(jLabel6)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 42, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                        .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(jLabel13)))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(AudioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(66, 66, 66))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -607,51 +597,54 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel8)
                     .add(fileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel8)
                     .add(browseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel9)
-                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 17, Short.MAX_VALUE)
+                    .add(urlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel9))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 12, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(volumeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel2))
                 .add(25, 25, 25)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(alwaysRadioButton)
                     .add(jLabel10))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(proximityRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(manualRadioButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(40, 40, 40)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel11)
                             .add(jLabel6)
+                            .add(jLabel11)
                             .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(18, 18, 18)
+                        .add(15, 15, 15)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel12)
-                            .add(jLabel13)
-                            .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(27, 27, 27)
+                            .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jLabel13))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(jLabel14)
-                            .add(ambientRadioButton))
-                        .add(5, 5, 5)
-                        .add(distanceAttenuatedRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(AudioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(ambientRadioButton)))
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(manualRadioButton)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                .add(distanceAttenuatedRadioButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel3)
                     .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel5)
-                    .add(jLabel4)
-                    .add(jLabel3))
-                .addContainerGap(18, Short.MAX_VALUE))
+                    .add(jLabel5))
+                .addContainerGap(21, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(263, 263, 263)
+                .add(AudioCapabilitiesLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(131, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -812,7 +805,6 @@ private void ambientRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
