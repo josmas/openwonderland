@@ -1222,7 +1222,9 @@ public abstract class View2DEntity implements View2D {
                     orthoLocTranslation.y = locationOrtho.y;
                     transform.setTranslation(orthoLocTranslation);
                 } else {
-                    // Non ortho: Leave as identity
+                    // Note: primaries now also honor the offset.
+                    // Uses: type, parent, pixelScale, size, offset, ortho
+                    transform = calcOffsetStackTransform();
                 }
                 break;
             case SECONDARY:
@@ -1347,15 +1349,14 @@ public abstract class View2DEntity implements View2D {
     // Convert the pixel-offset-from-upper-left of parent to a distance vector from the center of parent
     private Vector3f calcOffsetTranslation () {
         Vector3f translation = new Vector3f();
-        if (parent == null) return translation;
-
-        logger.fine("Offset translation for " + this);
 
         if (ortho) {
             if (type == Type.PRIMARY || type == Type.UNKNOWN) {
                 translation.x = locationOrtho.x;
                 translation.y = locationOrtho.y;
             } else {
+
+                if (parent == null) return translation;
 
                 // Initialize to the first part of the offset (the local coordinate translation)
                 translation.x = locationOrtho.x + offset.x;
@@ -1376,18 +1377,22 @@ public abstract class View2DEntity implements View2D {
             translation.x = offset.x;
             translation.y = offset.y;
 
-            // Convert pixel offset to local coords and add it in
-            // TODO: does the width/height need to include the scroll bars?
-            Vector2f pixelScale = getPixelScaleCurrent();
-            Dimension parentSize = parent.getSizeApp();
-            translation.x += -parentSize.width * pixelScale.x / 2f;
-            translation.y += parentSize.height * pixelScale.y / 2f;
-            translation.x += sizeApp.width * pixelScale.x / 2f;
-            translation.y -= sizeApp.height * pixelScale.y / 2f;
-            translation.x += pixelOffset.x * pixelScale.x;
-            translation.y -= pixelOffset.y * pixelScale.y;
+            if (type != Type.PRIMARY && type != Type.UNKNOWN && parent != null) {
+
+                // Convert pixel offset to local coords and add it in
+                // TODO: does the width/height need to include the scroll bars?
+                Vector2f pixelScale = getPixelScaleCurrent();
+                Dimension parentSize = parent.getSizeApp();
+                translation.x += -parentSize.width * pixelScale.x / 2f;
+                translation.y += parentSize.height * pixelScale.y / 2f;
+                translation.x += sizeApp.width * pixelScale.x / 2f;
+                translation.y -= sizeApp.height * pixelScale.y / 2f;
+                translation.x += pixelOffset.x * pixelScale.x;
+                translation.y -= pixelOffset.y * pixelScale.y;
+            }
         }
 
+        logger.fine("view = " + this);
         logger.fine("offset translation = " + translation);
 
         return translation;
