@@ -151,13 +151,14 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
-        avatarSettingsMI = new JMenuItem(bundle.getString("Avatar_Settings..."));
-        avatarSettingsMI.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                AvatarInstrumentation in = new AvatarInstrumentation(instrumentation);
-                in.setVisible(true);
-            }
-        });
+        // Avatar Instrumentation is a dev tool
+//        avatarSettingsMI = new JMenuItem(bundle.getString("Avatar_Settings..."));
+//        avatarSettingsMI.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                AvatarInstrumentation in = new AvatarInstrumentation(instrumentation);
+//                in.setVisible(true);
+//            }
+//        });
 
         startingLocationMI = new JMenuItem(bundle.getString("Starting_Location"));
         startingLocationMI.addActionListener(new ActionListener() {
