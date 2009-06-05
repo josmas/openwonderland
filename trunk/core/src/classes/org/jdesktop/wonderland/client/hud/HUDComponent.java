@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 
 /**
  * A HUDComponent is an abstraction for an underlying visual element (2D or 3D)
@@ -68,6 +69,18 @@ public interface HUDComponent {
      * @param p the new position of the component
      */
     public void setLocation(Point p);
+
+    /**
+     * Sets the preferred location as a compass point
+     * @param compassPoint the compass point location
+     */
+    public void setPreferredLocation(Layout compassPoint);
+
+    /**
+     * Gets the preferred compass point location
+     * @return the preferred location as a compass point
+     */
+    public Layout getPreferredLocation();
 
     /**
      * Gets the location of this component in the form of a point specifying

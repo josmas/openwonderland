@@ -55,7 +55,6 @@ public class WonderlandHUD implements HUD {
     protected Rectangle bounds;
     protected boolean visible = false;
     protected float transparency = 1.0f;
-    protected HUDLayoutManager layout;
     private static final int HUD_DEFAULT_X = 0;
     private static final int HUD_DEFAULT_Y = 0;
     private static final int HUD_DEFAULT_WIDTH = 800;
@@ -65,7 +64,6 @@ public class WonderlandHUD implements HUD {
         components = Collections.synchronizedList(new ArrayList());
         bounds = new Rectangle(HUD_DEFAULT_X, HUD_DEFAULT_Y,
                 HUD_DEFAULT_WIDTH, HUD_DEFAULT_HEIGHT);
-        layout = new HUDAbsoluteLayoutManager();
     }
 
     public WonderlandHUD(Rectangle bounds) {
@@ -156,20 +154,6 @@ public class WonderlandHUD implements HUD {
      */
     public HUDComponentManager getComponentManager() {
         return componentManager;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setLayoutManager(HUDLayoutManager layout) {
-        this.layout = layout;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public HUDLayoutManager getLayoutManager() {
-        return layout;
     }
 
     /**

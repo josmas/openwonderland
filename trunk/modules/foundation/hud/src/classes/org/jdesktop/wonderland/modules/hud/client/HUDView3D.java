@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
  */
 public class HUDView3D extends View2DEntity {
 
-    private static final Logger logger = Logger.getLogger(HUDView2D.class.getName());
+    private static final Logger logger = Logger.getLogger(HUDView3D.class.getName());
     private View2DDisplayer displayer;
     private Cell cell;
 

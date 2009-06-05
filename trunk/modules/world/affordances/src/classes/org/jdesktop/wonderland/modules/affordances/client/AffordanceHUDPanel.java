@@ -75,15 +75,12 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         translateToggleButton = new javax.swing.JToggleButton();
         rotateToggleButton = new javax.swing.JToggleButton();
         resizeToggleButton = new javax.swing.JToggleButton();
-        slidePanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         sizeSlider = new javax.swing.JSlider();
-        jLabel4 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
-        setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
 
         translateToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/WorldEditorTranslate32x32.png"))); // NOI18N
         translateToggleButton.setToolTipText("Move");
@@ -92,16 +89,13 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         translateToggleButton.setFocusPainted(false);
         translateToggleButton.setIconTextGap(0);
         translateToggleButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        translateToggleButton.setMaximumSize(new java.awt.Dimension(36, 44));
-        translateToggleButton.setMinimumSize(new java.awt.Dimension(36, 44));
-        translateToggleButton.setPreferredSize(new java.awt.Dimension(36, 44));
+        translateToggleButton.setPreferredSize(new java.awt.Dimension(32, 32));
         translateToggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/WorldEditorTranslateOn32x32.png"))); // NOI18N
         translateToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 translateToggleButtonActionPerformed(evt);
             }
         });
-        add(translateToggleButton);
 
         rotateToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/WorldEditorRotate32x32.png"))); // NOI18N
         rotateToggleButton.setToolTipText("Rotate");
@@ -109,16 +103,13 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         rotateToggleButton.setContentAreaFilled(false);
         rotateToggleButton.setFocusPainted(false);
         rotateToggleButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        rotateToggleButton.setMaximumSize(new java.awt.Dimension(36, 44));
-        rotateToggleButton.setMinimumSize(new java.awt.Dimension(36, 44));
-        rotateToggleButton.setPreferredSize(new java.awt.Dimension(36, 44));
+        rotateToggleButton.setPreferredSize(new java.awt.Dimension(32, 32));
         rotateToggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/WorldEditorRotateOn32x32.png"))); // NOI18N
         rotateToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rotateToggleButtonActionPerformed(evt);
             }
         });
-        add(rotateToggleButton);
 
         resizeToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/WorldEditorScale32x32.png"))); // NOI18N
         resizeToggleButton.setToolTipText("Resize");
@@ -126,49 +117,76 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         resizeToggleButton.setContentAreaFilled(false);
         resizeToggleButton.setFocusPainted(false);
         resizeToggleButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        resizeToggleButton.setMaximumSize(new java.awt.Dimension(36, 44));
-        resizeToggleButton.setMinimumSize(new java.awt.Dimension(36, 44));
-        resizeToggleButton.setPreferredSize(new java.awt.Dimension(36, 44));
+        resizeToggleButton.setOpaque(true);
+        resizeToggleButton.setPreferredSize(new java.awt.Dimension(32, 32));
         resizeToggleButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/affordances/client/resources/WorldEditorScaleOn32x32.png"))); // NOI18N
         resizeToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resizeToggleButtonActionPerformed(evt);
             }
         });
-        add(resizeToggleButton);
-
-        slidePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 0));
-        slidePanel.setLayout(new javax.swing.BoxLayout(slidePanel, javax.swing.BoxLayout.Y_AXIS));
-
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 12));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Affordance Size");
-        jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        slidePanel.add(jLabel1);
-
-        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel3.setText("1x");
         jLabel3.setIconTextGap(0);
-        jPanel1.add(jLabel3);
 
         sizeSlider.setMajorTickSpacing(100);
         sizeSlider.setMaximum(400);
-        sizeSlider.setPaintTicks(true);
         sizeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 sizeSliderStateChanged(evt);
             }
         });
-        jPanel1.add(sizeSlider);
 
-        jLabel4.setText("5x");
-        jPanel1.add(jLabel4);
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setText("Affordance Size");
+        jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-        slidePanel.add(jPanel1);
+        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel5.setText("5x");
+        jLabel5.setIconTextGap(0);
 
-        add(slidePanel);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(0, 0, 0)
+                .add(translateToggleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(rotateToggleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(resizeToggleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel3)
+                        .add(0, 0, 0)
+                        .add(sizeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 184, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(0, 0, 0)
+                        .add(jLabel5))
+                    .add(layout.createSequentialGroup()
+                        .add(75, 75, 75)
+                        .add(jLabel1)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(translateToggleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(rotateToggleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                .add(layout.createSequentialGroup()
+                    .add(0, 0, 0)
+                    .add(jLabel1)
+                    .add(0, 0, 0)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                        .add(jLabel3)
+                        .add(sizeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(jLabel5))
+                    .add(0, 0, 0))
+                .add(org.jdesktop.layout.GroupLayout.LEADING, resizeToggleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     /**
@@ -179,7 +197,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         // Fetch the currently selected Cell. If none, then do nothing
         Cell cell = getSelectedCell();
         if (cell == null) {
-            frame.setTitle("Edit Cell: <none selected>");
+            //frame.setTitle("Edit Cell: <none selected>");
             translateToggleButton.setSelected(false);
             translateToggleButton.setEnabled(false);
             rotateToggleButton.setSelected(false);
@@ -192,7 +210,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         }
 
         // Set the name of the Cell label
-        frame.setTitle("Edit Cell: " + cell.getName());
+        //frame.setTitle("Edit Cell: " + cell.getName());
         translateToggleButton.setEnabled(true);
         rotateToggleButton.setEnabled(true);
         resizeToggleButton.setEnabled(true);
@@ -442,12 +460,10 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JToggleButton resizeToggleButton;
     private javax.swing.JToggleButton rotateToggleButton;
     private javax.swing.JSlider sizeSlider;
-    private javax.swing.JPanel slidePanel;
     private javax.swing.JToggleButton translateToggleButton;
     // End of variables declaration//GEN-END:variables
 }

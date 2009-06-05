@@ -22,6 +22,7 @@ import com.jme.math.Vector3f;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Interpolators;
 import com.sun.scenario.animation.TimingTarget;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.login.JmeLoginUI;
@@ -40,6 +41,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.CameraComponent;
+import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PhysicsSystem;
@@ -49,6 +51,9 @@ import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -300,6 +305,8 @@ public class JmeClientMain {
             return;
         }
 
+        frame.connected(true);
+
         // Listen for session disconnected and remove session physics and collision systems
         curSession.addSessionStatusListener(new SessionStatusListener() {
 
@@ -366,6 +373,7 @@ public class JmeClientMain {
 
             curSession.logout();
             curSession = null;
+            frame.connected(false);
 
             // notify listeners that there is no longer a primary server
             LoginManager.setPrimary(null);

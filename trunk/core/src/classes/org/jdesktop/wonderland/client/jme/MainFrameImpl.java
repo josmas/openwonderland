@@ -21,7 +21,6 @@ import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -33,7 +32,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.common.LogControl;
@@ -43,7 +41,12 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
+import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 
 /**
@@ -61,10 +64,10 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private JRadioButtonMenuItem firstPersonRB;
     private JRadioButtonMenuItem thirdPersonRB;
     private JRadioButtonMenuItem frontPersonRB;
-    private DecimalFormat floatFormat = new DecimalFormat("###.0");
-    private final Map<JMenuItem, Integer> menuWeights =
-            new HashMap<JMenuItem, Integer>();
+    private final Map<JMenuItem, Integer> menuWeights = new HashMap<JMenuItem, Integer>();
     private JMenu frameRateMenu;
+    private Meter meter;
+    private HUDComponent fpsComponent;
     private WorldManager wm;
 
 
@@ -113,13 +116,6 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
         initComponents();
         initMenus();
-
-        wm.getRenderManager().setFrameRateListener(new FrameRateListener() {
-
-            public void currentFramerate(float framerate) {
-                fpsLabel.setText("FPS: " + floatFormat.format(framerate));
-            }
-        }, 100);
 
         setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
         centerPanel.setMinimumSize(new Dimension(width, height));
@@ -300,6 +296,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             }
         }
         wm.getRenderManager().setDesiredFrameRate(desiredFrameRate);
+        if (meter != null) {
+            meter.setMaxValue(desiredFrameRate);
+        }
     }
 
     public void updateGoButton() {
@@ -537,6 +536,37 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         serverField.setText(serverURL);
     }
 
+    public void connected(boolean connected) {
+        showFPSMeter(connected);
+    }
+
+    public void showFPSMeter(boolean visible) {
+        if (meter == null) {
+            // display FPS meter
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+            // create fps Swing control
+            meter = new Meter("fps:");
+            meter.setPreferredSize(new Dimension(200, 30));
+            meter.setMaxValue(30);
+
+            // create HUD control panel
+            fpsComponent = mainHUD.createComponent(meter);
+            fpsComponent.setPreferredLocation(Layout.SOUTHEAST);
+
+            // add HUD control panel to HUD
+            mainHUD.addComponent(fpsComponent);
+
+            ClientContextJME.getWorldManager().getRenderManager().setFrameRateListener(new FrameRateListener() {
+
+                public void currentFramerate(float framerate) {
+                    meter.setValue(framerate);
+                }
+            }, 100);
+        }
+        fpsComponent.setVisible(visible);
+    }
+
     public void addServerURLListener(ServerURLListener listener) {
         serverListener = listener;
     }
@@ -562,7 +592,6 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         centerPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         messageLabel = new javax.swing.JTextField();
-        fpsLabel = new javax.swing.JLabel();
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         editMenu = new javax.swing.JMenu();
@@ -630,25 +659,19 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             }
         });
 
-        fpsLabel.setText(bundle.getString("FPS_:")); // NOI18N
-
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 353, Short.MAX_VALUE)
-                .add(fpsLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addContainerGap(438, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(fpsLabel))
+                .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -703,7 +726,6 @@ private void messageLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JLabel fpsLabel;
     private javax.swing.JButton goButton;
     private javax.swing.JMenu insertMenu;
     private javax.swing.JLabel jLabel1;

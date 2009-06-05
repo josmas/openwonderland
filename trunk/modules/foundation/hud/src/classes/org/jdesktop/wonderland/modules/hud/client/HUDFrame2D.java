@@ -63,21 +63,6 @@ public class HUDFrame2D extends HUDComponent2D
         }
     }
 
-    public void setTransparent() {
-//        Node node = frameView.getNode();
-//        Entity entity = frameView.getEntity();
-//        WorldManager wm = ClientContextJME.getWorldManager();
-//        BlendState as = (BlendState) wm.getRenderManager().createRendererState(RenderState.RS_BLEND);
-//        as.setEnabled(true);
-//        as.setBlendEnabled(true);
-//        as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
-//        as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
-//        node.setRenderState(as);
-//        RenderComponent rc = entity.getComponent(RenderComponent.class);
-//        AlphaProcessor proc = new AlphaProcessor("", wm, rc, 0.01f);
-//        entity.addComponent(AlphaProcessor.class, proc);
-    }
-
     public void actionPerformed(ActionEvent e) {
         logger.info("action performed: " + e);
 

@@ -17,11 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.affordances.client;
 
-
-import java.awt.GridLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import javax.swing.JFrame;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -29,6 +24,13 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
+import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
+import org.jdesktop.wonderland.client.hud.HUDComponentListener;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.security.MoveAction;
@@ -44,20 +46,38 @@ import org.jdesktop.wonderland.modules.security.client.SecurityComponent;
 public class AffordancesClientPlugin implements ContextMenuFactorySPI {
 
     /* The single instance of the Affordance HUD Panel */
-    private static JFrame affordanceHUDFrame = null;
     private static AffordanceHUDPanel affordanceHUDPanel = null;
+    private static HUDComponent affordanceHUD = null;
 
     /**
      * Creates the affordance HUD frame
      */
-    private void createHUDFrame() {
-        affordanceHUDFrame = new JFrame();
-        affordanceHUDFrame.getContentPane().setLayout(new GridLayout(1, 1));
-        affordanceHUDFrame.getContentPane().add(affordanceHUDPanel = new AffordanceHUDPanel(affordanceHUDFrame));
-        affordanceHUDFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        affordanceHUDFrame.addWindowListener(new FrameCloseListener());
-        affordanceHUDFrame.setTitle("Edit Cell");
-        affordanceHUDFrame.pack();
+    private void createHUD() {
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+        // create affordances Swing control
+        affordanceHUDPanel = new AffordanceHUDPanel(null);
+
+        // create HUD control
+        affordanceHUD = mainHUD.createComponent(affordanceHUDPanel);
+        affordanceHUD.setPreferredLocation(Layout.SOUTH);
+
+        affordanceHUD.addComponentListener(new HUDComponentListener() {
+
+            public void HUDComponentChanged(HUDComponentEvent event) {
+                /**
+                 * Handles when the affordance frame is closed
+                 */
+                if (event.getEventType() == ComponentEventType.DISAPPEARED) {
+                    // Tell all of the affordances to remove themselves by posting
+                    // an event to the input system as such.
+                    InputManager.inputManager().postEvent(new AffordanceRemoveEvent());
+                }
+            }
+        });
+
+        // add affordances HUD panel to main HUD
+        mainHUD.addComponent(affordanceHUD);
     }
 
     /**
@@ -66,7 +86,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
         final SimpleContextMenuItem editItem =
                 new SimpleContextMenuItem("Edit...", new EditContextListener());
-        
+
         // if there is security on this cell, do some calculation to
         // figure out if the user has access to this cell
         Cell cell = event.getPrimaryCell();
@@ -80,6 +100,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
                 editItem.setLabel("Edit (checking) ...");
                 editItem.setEnabled(false);
                 new Thread(new Runnable() {
+
                     public void run() {
                         editItem.setLabel("Edit...");
                         editItem.setEnabled(canMove(sc));
@@ -88,11 +109,11 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
                 }, "Security check wait thread").start();
             }
         }
-        
+
         // return the edit item
-        return new ContextMenuItem[] {
-            editItem
-        };
+        return new ContextMenuItem[]{
+                    editItem
+                };
     }
 
     private boolean canMove(SecurityComponent sc) {
@@ -106,31 +127,17 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     }
 
     /**
-     * Handles when the affordance frame is closed
-     */
-    class FrameCloseListener extends WindowAdapter {
-
-        @Override
-        public void windowClosing(WindowEvent e) {
-            // Tell all of the affordances to remove themselves by posting
-            // an event to the input system as such.
-            InputManager.inputManager().postEvent(new AffordanceRemoveEvent());
-        }
-    }
-
-    /**
      * Handles when the "Edit" context menu item has been selected
      */
     class EditContextListener implements ContextMenuActionListener {
-        
+
         public void actionPerformed(ContextMenuItemEvent event) {
-            
             // Display the affordance HUD Panel
-            if (affordanceHUDFrame == null) {
-                createHUDFrame();
+            if (affordanceHUD == null) {
+                createHUD();
             }
+            affordanceHUD.setVisible(true);
             affordanceHUDPanel.setTranslationVisible(true);
-            affordanceHUDFrame.setVisible(true);
             affordanceHUDPanel.updateGUI();
         }
     }
