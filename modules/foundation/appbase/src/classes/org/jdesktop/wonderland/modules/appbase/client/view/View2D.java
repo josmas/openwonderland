@@ -204,16 +204,19 @@ public interface View2D {
     public Vector2f getPixelScale ();
 
     /** 
-     * Specify the first part the view's offset translation in local coordinates from the center of the parent to the 
-     * center of this view. Update immediately. Note: setPixelOffset is the other part of the offset translation.
-     * The two offsets are added to produce the effective offset.
+     * Specify the first part the view's offset translation in local coordinates from the center of the 
+     * parent to the center of this view. Update immediately. Note: setPixelOffset is the other part of 
+     * the offset translation. The two offsets are added to produce the effective offset.
+     *
+     * NOTE: this part of the offset also applies to primary views. In this case the offset is from
+     * the center of the cell to the center of the view.
      */
     public void setOffset(Vector2f offset);
 
     /** 
-     * Specify the first part view's offset translation in local coordinates from the center of the parent to the 
-     * center of this view. Update if specified. Note: setPixelOffset is the other part of the offset translation.
-     * The two offsets are added to produce the effective offset.
+     * Specify the first part view's offset translation in local coordinates from the center of the parent 
+     * to the center of this view. Update if specified. Note: setPixelOffset is the other part of the 
+     * offset translation. The two offsets are added to produce the effective offset.
      */
     public void setOffset(Vector2f offset, boolean update);
 
@@ -225,6 +228,8 @@ public interface View2D {
      * the parent to the top left corner of the view. Update immediately. Uses the view's pixel current 
      * scale to convert this pixel offset into local coordinates. Note: setOffset is the other part of the 
      * offset translation. The two offsets are added to produce the effective offset.
+     *
+     * NOTE: the pixel offset is ignored by primary views.
      */
     public void setPixelOffset(Point pixelOffset);
 
@@ -233,6 +238,8 @@ public interface View2D {
      * the parent to the top left corner of the view. Update if specified. Uses the view's pixel current 
      * scale to convert this pixel offset into local coordinates. Note: setOffset is the other part of the 
      * offset translation. The two offsets are added to produce the effective offset.
+     *
+     * NOTE: the pixel offset is ignored by primary views.
      */
     public void setPixelOffset(Point pixelOffset, boolean update);
 
