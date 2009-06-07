@@ -694,7 +694,7 @@ private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-
         return clientVolume;
     }
 
-    private int double getServerVolume(double clientVolume) {
+    private int getServerVolume(double clientVolume) {
         double serverVolume;
 
         if (clientVolume > 5) {
