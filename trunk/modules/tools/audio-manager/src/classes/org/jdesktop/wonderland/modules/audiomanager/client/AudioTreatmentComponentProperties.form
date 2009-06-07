@@ -166,7 +166,7 @@
                   <Component id="falloffSlider" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel5" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="26" max="32767" attributes="0"/>
+              <EmptySpace pref="29" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -308,7 +308,7 @@
     </Component>
     <Component class="javax.swing.JSlider" name="falloffSlider">
       <Properties>
-        <Property name="majorTickSpacing" type="int" value="10"/>
+        <Property name="minorTickSpacing" type="int" value="10"/>
         <Property name="paintTicks" type="boolean" value="true"/>
       </Properties>
       <Events>
@@ -341,9 +341,13 @@
       <Properties>
         <Property name="majorTickSpacing" type="int" value="1"/>
         <Property name="maximum" type="int" value="10"/>
+        <Property name="paintLabels" type="boolean" value="true"/>
         <Property name="paintTicks" type="boolean" value="true"/>
         <Property name="value" type="int" value="5"/>
       </Properties>
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="volumeSliderStateChanged"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

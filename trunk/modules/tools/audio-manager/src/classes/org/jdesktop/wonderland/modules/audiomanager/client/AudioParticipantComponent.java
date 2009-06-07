@@ -47,6 +47,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentClientState;
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
@@ -244,10 +245,11 @@ public class AudioParticipantComponent extends CellComponent implements
 	volumeControlJFrame.setVisible(true);
     }
 
-    public void volumeChanged(CellID cellID, String otherCallID, double volume) {
+    public void volumeChanged(CellID cellID, String otherCallID, int volume) {
 	SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-	channelComp.send(new AudioVolumeMessage(cellID, sc.getCallID(), otherCallID, volume));
+	channelComp.send(new AudioVolumeMessage(cellID, sc.getCallID(), otherCallID, 
+	    VolumeUtil.getServerVolume(volume)));
     }
 
     public void usernameChanged(String username) {

@@ -26,6 +26,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public interface VolumeChangeListener {
 
-    public void volumeChanged(CellID cellID, String otherCallID, double volume);
+    public void volumeChanged(CellID cellID, String otherCallID, int volume);
 
 }

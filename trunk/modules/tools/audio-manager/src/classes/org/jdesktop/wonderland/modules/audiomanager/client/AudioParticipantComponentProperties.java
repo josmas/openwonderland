@@ -60,13 +60,14 @@ public class AudioParticipantComponentProperties extends javax.swing.JPanel impl
      */
     public <T extends CellServerState> void updateGUI(T cellServerState) {
         CellComponentServerState state = cellServerState.getComponentServerState(AudioParticipantComponentServerState.class);
-        if (state != null) {
-            //originalName = ((AudioParticipantComponentServerState)state).getName();
-            //originalFullVolumeRadius = ((AudioParticipantComponentServerState)state).getFullVolumeRadius();
-            //nameTextField.setText(originalName);
-            //fullVolumeRadiusSpinner.setValue(originalFullVolumeRadius);
-            return;
-        }
+        if (state == null) {
+	    return;
+	}
+
+        //originalName = ((AudioParticipantComponentServerState)state).getName();
+        //originalFullVolumeRadius = ((AudioParticipantComponentServerState)state).getFullVolumeRadius();
+        //nameTextField.setText(originalName);
+        //fullVolumeRadiusSpinner.setValue(originalFullVolumeRadius);
     }
 
     /**

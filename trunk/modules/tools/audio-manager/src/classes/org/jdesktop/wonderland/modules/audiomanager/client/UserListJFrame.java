@@ -5,6 +5,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
 
@@ -239,10 +241,11 @@ private void propertiesButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         channelComp.send(new ChangeUsernameAliasMessage(info.cellID, info));
     }
 
-    public void volumeChanged(CellID cellID, String otherCallID, double volume) {
+    public void volumeChanged(CellID cellID, String otherCallID, int volume) {
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-        channelComp.send(new AudioVolumeMessage(cellID, sc.getCallID(), otherCallID, volume));
+        channelComp.send(new AudioVolumeMessage(cellID, sc.getCallID(), otherCallID, 
+	    VolumeUtil.getServerVolume(volume)));
     }
 
     public void done() {
