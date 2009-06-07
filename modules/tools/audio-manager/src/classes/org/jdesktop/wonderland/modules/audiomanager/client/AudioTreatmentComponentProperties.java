@@ -8,6 +8,7 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -45,7 +46,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
     private String originalGroupId;
     private String originalFileTreatments;
     private String originalUrlTreatments;
-    private double originalVolume;
+    private int originalVolume;
     private PlayWhen originalPlayWhen;
     private double originalExtentRadius;
     private double originalFullVolumeAreaPercent;
@@ -125,77 +126,78 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
         AudioTreatmentComponentServerState state = (AudioTreatmentComponentServerState)
 	    cellServerState.getComponentServerState(AudioTreatmentComponentServerState.class);
 
-        if (state != null) {
-            originalGroupId = state.getGroupId();
-	    audioGroupIdTextField.setText(originalGroupId);
+        if (state == null) {
+	    return;
+	}
+
+	originalGroupId = state.getGroupId();
+	audioGroupIdTextField.setText(originalGroupId);
 	    
-            String[] treatmentList = state.getTreatments();
+        String[] treatmentList = state.getTreatments();
 
-	    originalFileTreatments = "";
-	    originalUrlTreatments = "";
+	originalFileTreatments = "";
+	originalUrlTreatments = "";
 
-	    for (int i = 0; i < treatmentList.length; i++) {
-		String treatment = treatmentList[i];
+	for (int i = 0; i < treatmentList.length; i++) {
+	    String treatment = treatmentList[i];
 
-		if (treatment.indexOf("://") > 0) {
-		    originalUrlTreatments += treatment + " ";
-		} else {
-		    originalFileTreatments += treatment + " ";
-		}
-	    }
-
-	    originalFileTreatments = originalFileTreatments.trim();
-	    
-	    fileTextField.setText(originalFileTreatments);
-
-	    originalUrlTreatments = originalUrlTreatments.trim();
-	    
-	    urlTextField.setText(originalUrlTreatments);
-	    
-	    originalVolume = volumeToSlider(state.getVolume());
-	    volumeSlider.setValue((int) originalVolume);
-
-	    originalPlayWhen = state.getPlayWhen();
-	    playWhen = originalPlayWhen;
-	    
-	    switch (originalPlayWhen) { 
-	    case ALWAYS:
-		alwaysRadioButton.setSelected(true);
-		break;
-
-	    case FIRST_IN_RANGE:
-		proximityRadioButton.setSelected(true);	
-		break;
-
-	    case MANUAL:
-		manualRadioButton.setSelected(true);
-		break;
-	    }
-
-	    originalExtentRadius = state.getExtent();
-	    extentRadius = originalExtentRadius;
-            extentRadiusSpinner.setValue(originalExtentRadius);
-
-            extentRadiusSpinner.setEnabled(true);
-	    extentRadiusSpinner.setValue((Double) extentRadius);
-
-	    originalFullVolumeAreaPercent = state.getFullVolumeAreaPercent();
-            fullVolumeAreaPercentSpinner.setValue(originalFullVolumeAreaPercent);
-
-	    originalDistanceAttenuated = state.getDistanceAttenuated();
-	    distanceAttenuated = originalDistanceAttenuated;
-	    distanceAttenuatedRadioButton.setSelected(originalDistanceAttenuated);
-
-	    originalFalloff = (int) state.getFalloff();
-	    falloffSlider.setValue(originalFalloff);
-
-	    if (originalDistanceAttenuated == true) {
-		falloffSlider.setEnabled(true);
+	    if (treatment.indexOf("://") > 0) {
+		originalUrlTreatments += treatment + " ";
 	    } else {
-		falloffSlider.setEnabled(false);
+		originalFileTreatments += treatment + " ";
 	    }
-            return;
-        }
+	}
+
+	originalFileTreatments = originalFileTreatments.trim();
+	    
+	fileTextField.setText(originalFileTreatments);
+
+	originalUrlTreatments = originalUrlTreatments.trim();
+	    
+	urlTextField.setText(originalUrlTreatments);
+	    
+	originalVolume = VolumeUtil.getClientVolume(state.getVolume());
+	volumeSlider.setValue(originalVolume);
+
+	originalPlayWhen = state.getPlayWhen();
+	playWhen = originalPlayWhen;
+	    
+	switch (originalPlayWhen) { 
+	case ALWAYS:
+	    alwaysRadioButton.setSelected(true);
+	    break;
+
+	case FIRST_IN_RANGE:
+	    proximityRadioButton.setSelected(true);	
+	    break;
+
+	case MANUAL:
+	    manualRadioButton.setSelected(true);
+	    break;
+	}
+
+	originalExtentRadius = state.getExtent();
+	extentRadius = originalExtentRadius;
+        extentRadiusSpinner.setValue(originalExtentRadius);
+
+        extentRadiusSpinner.setEnabled(true);
+	extentRadiusSpinner.setValue((Double) extentRadius);
+
+	originalFullVolumeAreaPercent = state.getFullVolumeAreaPercent();
+        fullVolumeAreaPercentSpinner.setValue(originalFullVolumeAreaPercent);
+
+	originalDistanceAttenuated = state.getDistanceAttenuated();
+	distanceAttenuated = originalDistanceAttenuated;
+	distanceAttenuatedRadioButton.setSelected(originalDistanceAttenuated);
+
+	originalFalloff = (int) state.getFalloff();
+	falloffSlider.setValue(originalFalloff);
+
+	if (originalDistanceAttenuated == true) {
+	    falloffSlider.setEnabled(true);
+	} else {
+	    falloffSlider.setEnabled(false);
+	}
     }
 
     /**
@@ -208,7 +210,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
 	    cellServerState.getComponentServerState(AudioTreatmentComponentServerState.class);
 
         if (state == null) {
-            state = new AudioTreatmentComponentServerState();
+	    return;
         }
 
 	state.setGroupId(audioGroupIdTextField.getText());
@@ -233,7 +235,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
 
 	state.setTreatments(treatments.split(" "));
 
-        state.setVolume(sliderToVolume(volumeSlider.getValue()));
+        state.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
 
 	state.setPlayWhen(playWhen);
 
@@ -363,22 +365,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
         }
     }
 
-    private double sliderToVolume(int sliderValue) {
-        double volume = volumeSlider.getValue();
-
-        if (volume > 5) {
-            volume = 1 + ((volume - 5) * .6);
-        } else {
-            volume /= 5.;
-        }
-
-	return volume;
-    }
-
-    private int volumeToSlider(double volume) {
-	return (int) (volume * 5);
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -501,7 +487,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
             }
         });
 
-        falloffSlider.setMajorTickSpacing(10);
+        falloffSlider.setMinorTickSpacing(10);
         falloffSlider.setPaintTicks(true);
         falloffSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -519,8 +505,14 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
 
         volumeSlider.setMajorTickSpacing(1);
         volumeSlider.setMaximum(10);
+        volumeSlider.setPaintLabels(true);
         volumeSlider.setPaintTicks(true);
         volumeSlider.setValue(5);
+        volumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                volumeSliderStateChanged(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -640,7 +632,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel implem
                     .add(jLabel15)
                     .add(falloffSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel5))
-                .addContainerGap(26, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -767,6 +759,17 @@ private void ambientRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
 }//GEN-LAST:event_ambientRadioButtonActionPerformed
 
 private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
+    if (editor == null) {
+        return;
+    }
+
+    int volume = volumeSlider.getValue();
+
+    if (volume != originalVolume) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
+    } else {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+    }
 }//GEN-LAST:event_volumeSliderStateChanged
 
 

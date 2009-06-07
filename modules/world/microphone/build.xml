@@ -17,7 +17,10 @@
     </pathconvert>
 
     <!-- microphone is dependent on the jmecolladaloader -->
-    <property name="module-client.classpath" value="${current.dir}/../jmecolladaloader/build/classes"/>
+    <pathconvert property="module-client.classpath">
+        <path location="${current.dir}/../jmecolladaloader/build/classes"/>
+        <path location="${current.dir}/../../tools/audio-manager/build/lib/client/audiomanager-client.jar"/>
+    </pathconvert>
 
 
     <!-- import common build file -->

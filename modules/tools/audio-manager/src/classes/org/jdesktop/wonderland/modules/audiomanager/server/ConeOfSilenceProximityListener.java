@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.jme.bounding.BoundingVolume;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import java.io.Serializable;
 

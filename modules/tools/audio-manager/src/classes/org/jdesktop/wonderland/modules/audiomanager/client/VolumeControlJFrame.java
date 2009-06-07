@@ -83,13 +83,7 @@ public class VolumeControlJFrame extends javax.swing.JFrame {
 private void volumeControlSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeControlSliderStateChanged
     javax.swing.JSlider source = (javax.swing.JSlider) evt.getSource();
 
-    double volume = source.getValue();
-
-    if (volume > 5) {
-	volume = 1 + ((volume - 5) * .6);
-    } else {
-	volume /= 5.;
-    }
+    int volume = source.getValue();
 
     listener.volumeChanged(cellID, otherCallID, volume);
 }//GEN-LAST:event_volumeControlSliderStateChanged
