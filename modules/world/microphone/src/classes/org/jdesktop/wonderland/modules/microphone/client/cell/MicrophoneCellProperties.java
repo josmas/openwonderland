@@ -26,7 +26,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
+//import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 /**
  *
@@ -168,7 +168,8 @@ public class MicrophoneCellProperties extends JPanel implements CellPropertiesSP
 
 	nameTextField.setText(originalName);
 
-	originalVolume = VolumeUtil.getClientVolume(state.getVolume());
+	//originalVolume = VolumeUtil.getClientVolume(state.getVolume());
+	originalVolume = getClientVolume(state.getVolume());
 
 	volumeSlider.setValue(originalVolume);
 
@@ -211,7 +212,8 @@ public class MicrophoneCellProperties extends JPanel implements CellPropertiesSP
 
 	state.setName(nameTextField.getText());
 
-	state.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
+	//state.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
+	state.setVolume(getServerVolume(volumeSlider.getValue()));
 
 	FullVolumeArea fullVolumeArea = new FullVolumeArea("BOX", 
 	    (Double) fullVolumeXModel.getValue(),
@@ -678,5 +680,31 @@ private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-
     private javax.swing.JTextField nameTextField;
     private javax.swing.JSlider volumeSlider;
     // End of variables declaration//GEN-END:variables
+
+    private int getClientVolume(double serverVolume) {
+        int clientVolume;
+
+        if (serverVolume <= 1) {
+            clientVolume = (int) (Math.round(serverVolume * 5 * 10) / 10.);
+        } else {
+            clientVolume = (int) (Math.round((((serverVolume - 1) / .6) + 5) * 10) / 10.);
+        }
+
+        //System.out.println(" Server Volume " + serverVolume + " Client Volume " + clientVolume);
+        return clientVolume;
+    }
+
+    private int double getServerVolume(double clientVolume) {
+        double serverVolume;
+
+        if (clientVolume > 5) {
+            serverVolume = (double) (1 + ((clientVolume - 5) * .6));
+        } else {
+            serverVolume = (double) (clientVolume / 5.);
+        }
+
+        //System.out.println("Client Volume " + clientVolume + " Server Volume " + serverVolume);
+        return serverVolume;
+    }
 
 }
