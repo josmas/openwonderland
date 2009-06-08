@@ -70,7 +70,7 @@ public class AvatarDetailsFrame extends javax.swing.JFrame {
         int index = attributes.getElementIndex(type);
         index--;
         if (index < 0) {
-            index = attributes.getElementCount(type);
+            index = attributes.getElementCount(type) - 1;
         }
 
         System.out.println("[AvatarDetailsFrame] " + type + ": " + index +
