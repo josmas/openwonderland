@@ -141,7 +141,6 @@ public class MicrophoneCellProperties extends JPanel implements CellPropertiesSP
         step = new Double(1);
         activeExtentZModel = new SpinnerNumberModel(value, min, max, step);
         activeExtentZSpinner.setModel(activeExtentZModel);
-
     }
 
     public Class getServerCellStateClass() {
@@ -158,13 +157,13 @@ public class MicrophoneCellProperties extends JPanel implements CellPropertiesSP
     }
 
     public <T extends CellServerState> void updateGUI(T cellServerState) {
-        MicrophoneCellServerState state = (MicrophoneCellServerState)cellServerState;
+        MicrophoneCellServerState state = (MicrophoneCellServerState) cellServerState;
 
 	if (state == null) {
 	    return;
 	}
 
-	originalName = state.getName();
+	originalName = state.getMicrophoneName();
 
 	nameTextField.setText(originalName);
 
@@ -210,7 +209,7 @@ public class MicrophoneCellProperties extends JPanel implements CellPropertiesSP
 	    return;
 	}
 
-	state.setName(nameTextField.getText());
+	state.setMicrophoneName(nameTextField.getText());
 
 	//state.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
 	state.setVolume(getServerVolume(volumeSlider.getValue()));

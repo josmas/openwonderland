@@ -47,6 +47,7 @@ public class MicrophoneCellFactory implements CellFactorySPI {
         // Create a setup with some default values
         MicrophoneCellServerState cellServerState = new MicrophoneCellServerState();
         cellServerState.setName("MICROPHONE");
+        cellServerState.setMicrophoneName("MICROPHONE");
         cellServerState.setFullVolumeArea(new FullVolumeArea("BOX", 11.0, 11.0, 11.0));
 	
         Origin origin = new Origin(new Vector3f(0F, 0F, 0F));

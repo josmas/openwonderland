@@ -162,14 +162,19 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
         }
 
         private void checkDirty() {
+            if (editor == null) { 
+		return;
+	    }
+
             String name = nameTextField.getText();
-            if (editor != null) { 
-		if (name.equals(originalName) == false) {
-                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
-                } else {
-                    editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
-		}
-            }
+
+	    System.out.println("COS name " + name + " orig " + originalName);
+
+	    if (name.equals(originalName) == false) {
+		editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);
+            } else {
+                editor.setPanelDirty(ConeOfSilenceComponentProperties.class, false);
+	    }
         }
     }
 
