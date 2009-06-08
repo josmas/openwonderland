@@ -50,12 +50,12 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
     private static final Logger logger =
             Logger.getLogger(MicrophoneProximityListener.class.getName());
 
-    private String name;
+    private String microphoneName;
     private double volume;
     private BoundingVolume[] bounds;
 
-    public MicrophoneProximityListener(String name, double volume, BoundingVolume[] bounds) {
-        this.name = name;
+    public MicrophoneProximityListener(String microphoneName, double volume, BoundingVolume[] bounds) {
+        this.microphoneName = microphoneName;
 	this.volume = volume;
         this.bounds = bounds;
     }
@@ -94,7 +94,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
          * For each avatar already in the cell, set a private spatializer
          * for this avatar.
          */
-        logger.info(callId + " entered microphone " + name);
+        logger.info(callId + " entered microphone " + microphoneName);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -105,7 +105,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
             return;
         }
 
-        AudioGroup audioGroup = vm.getAudioGroup(name);
+        AudioGroup audioGroup = vm.getAudioGroup(microphoneName);
 
         if (audioGroup == null) {
             AudioGroupSetup ags = new AudioGroupSetup();
@@ -115,7 +115,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
             ags.spatializer.setAttenuator(
                     DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
 
-            audioGroup = vm.createAudioGroup(name, ags);
+            audioGroup = vm.createAudioGroup(microphoneName, ags);
         }
 
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(false,
@@ -125,14 +125,14 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
     }
 
     private void cellExited(String callId) {
-        logger.info(callId + " exited microphone " + name);
+        logger.info(callId + " exited microphone " + microphoneName);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        AudioGroup audioGroup = vm.getAudioGroup(name);
+        AudioGroup audioGroup = vm.getAudioGroup(microphoneName);
 
         if (audioGroup == null) {
-            logger.warning("Not a member of audio group " + name);
+            logger.warning("Not a member of audio group " + microphoneName);
             return;
         }
 
@@ -154,7 +154,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
     }
 
     private void activeAreaEntered(String callId) {
-	logger.info(callId + " entered active area " + name);
+	logger.info(callId + " entered active area " + microphoneName);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -165,10 +165,10 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
             return;
         }
 
-        AudioGroup audioGroup = vm.getAudioGroup(name);
+        AudioGroup audioGroup = vm.getAudioGroup(microphoneName);
 
         if (audioGroup == null) {
-	    logger.warning("Can't find audio group " + name);
+	    logger.warning("Can't find audio group " + microphoneName);
 	    return;
 	}
 
@@ -183,7 +183,7 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
     }
 
     private void activeAreaExited(String callId) {
-	logger.info(callId + " exited active area " + name);
+	logger.info(callId + " exited active area " + microphoneName);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -194,15 +194,48 @@ public class MicrophoneProximityListener implements ProximityListenerSrv, Serial
             return;
         }
 
-        AudioGroup audioGroup = vm.getAudioGroup(name);
+        AudioGroup audioGroup = vm.getAudioGroup(microphoneName);
 
         if (audioGroup == null) {
-	    logger.warning("Can't find audio group " + name);
+	    logger.warning("Can't find audio group " + microphoneName);
 	    return;
 	}
 
 	audioGroup.setSpeaking(player, false);
 	audioGroup.setSpeakingAttenuation(player, volume);
+    }
+
+    public void changeMicrophoneName(String microphoneName) {
+	if (this.microphoneName.equals(microphoneName)) {
+	    return;
+	}
+
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        AudioGroup audioGroup = vm.getAudioGroup(microphoneName);
+
+	this.microphoneName = microphoneName;
+
+	AudioGroupSetup ags = new AudioGroupSetup();
+
+        ags.spatializer = new FullVolumeSpatializer();
+
+        ags.spatializer.setAttenuator(
+            DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
+
+        AudioGroup newAudioGroup = vm.createAudioGroup(microphoneName, ags);
+
+        if (audioGroup != null) {
+	    Player[] players = audioGroup.getPlayers();
+
+	    for (int i = 0; i < players.length; i++) {
+		AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(players[i]);
+
+		audioGroup.removePlayer(players[i]);
+		newAudioGroup.addPlayer(players[i], info);
+	    }
+	}
+
     }
 
 }

@@ -17,23 +17,13 @@
  */
 package org.jdesktop.wonderland.modules.microphone.server.cell;
 
-
-
-
-
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import java.io.Serializable;
 
 import java.util.logging.Logger;
-
-
-
-
-
 
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 
@@ -51,16 +41,12 @@ public class MicrophoneMessageHandler extends AbstractComponentMessageReceiver
     private static final Logger logger =
         Logger.getLogger(MicrophoneMessageHandler.class.getName());
      
-    private String name;
-
-    public MicrophoneMessageHandler(MicrophoneCellMO microphoneCellMO, String name) {
+    public MicrophoneMessageHandler(MicrophoneCellMO microphoneCellMO) {
         super(microphoneCellMO);
-
-        this.name = name;
     }
 
     public void messageReceived(final WonderlandClientSender sender, 
-	    final WonderlandClientID clientID, final CellMessage message)
-    {
+	    final WonderlandClientID clientID, final CellMessage message) {
+
     }
 }

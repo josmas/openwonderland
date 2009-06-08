@@ -37,8 +37,8 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Or
 @ServerState
 public class MicrophoneCellServerState extends CellServerState {
 
-    @XmlElement(name="name")
-    private String name;
+    @XmlElement(name="microphoneName")
+    private String microphoneName;
 
     @XmlElement(name="volume")
     private double volume = 1;
@@ -53,10 +53,10 @@ public class MicrophoneCellServerState extends CellServerState {
     public MicrophoneCellServerState() {
     }
     
-    public MicrophoneCellServerState(String name, double volume, 
+    public MicrophoneCellServerState(String microphoneName, double volume, 
 	    FullVolumeArea fullVolumeArea, ActiveArea activeArea) {
 
-	this.name = name;
+	this.microphoneName = microphoneName;
 	this.volume = volume;
 	this.fullVolumeArea = fullVolumeArea;
 	this.activeArea = activeArea;
@@ -76,13 +76,13 @@ public class MicrophoneCellServerState extends CellServerState {
         return "org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneCellMO";
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setMicrophoneName(String microphoneName) {
+        this.microphoneName = microphoneName;
     }
 
     @XmlTransient
-    public String getName() {
-        return name;
+    public String getMicrophoneName() {
+        return microphoneName;
     }
 
     public void setVolume(double volume) {

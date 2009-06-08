@@ -23,7 +23,6 @@ public class VolumeUtil {
     }
 
     public static int getClientVolume(double serverVolume) {
-
 	int clientVolume;
 
 	if (serverVolume <= 1) {
