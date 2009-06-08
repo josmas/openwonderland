@@ -17,8 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingCapsule;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
+import com.jme.bounding.OrientedBoundingBox;
 
 import com.jme.math.Vector3f;
 
@@ -231,7 +234,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
         TreatmentGroup group = vm.createTreatmentGroup(groupId);
 
-	float cellRadius = ((BoundingSphere)cellRef.get().getLocalBounds()).getRadius();
+	
+	float cellRadius = getCellRadius();
 
 	double fullVolumeRadius = fullVolumeAreaPercent / 100. * cellRadius;
 
@@ -465,7 +469,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
         // We are making this component live, add a listener to the proximity component.
 	BoundingVolume[] bounds = new BoundingVolume[1];
-	float cellRadius = ((BoundingSphere)cellRef.get().getLocalBounds()).getRadius();
+
+	float cellRadius = getCellRadius();
+
         bounds[0] = new BoundingSphere(cellRadius, new Vector3f());
 
         AudioTreatmentProximityListener proximityListener = 
@@ -479,6 +485,29 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             ProximityComponentMO component = cellRef.get().getComponent(ProximityComponentMO.class);
 	    component.removeProximityListener(proximityListener);
 	}
+    }
+
+    private float getCellRadius() {
+	BoundingVolume bounds = cellRef.get().getLocalBounds();
+
+	float cellRadius;
+
+	if (bounds instanceof BoundingSphere) {
+	    cellRadius = ((BoundingSphere) bounds).getRadius();
+	} else if (bounds instanceof BoundingBox) {
+	    Vector3f extent = new Vector3f();
+	    extent = ((BoundingBox) bounds).getExtent(extent);
+	    cellRadius = extent.getZ();
+	} else if (bounds instanceof BoundingCapsule) {
+	    cellRadius = ((BoundingCapsule) bounds).getRadius();
+	} else if (bounds instanceof OrientedBoundingBox) {
+	    Vector3f extent = ((OrientedBoundingBox) bounds).getExtent();
+	    cellRadius = extent.getZ();
+	} else {
+	    cellRadius = 5;
+	}
+
+	return cellRadius;
     }
 
     /**
