@@ -93,7 +93,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         return cell;
     }
 
-    public void setStatus(CellStatus status) {
+    public void setStatus(CellStatus status,boolean increasing) {
         switch(status) {
             case ACTIVE :
                 if (cell!=null && !isRendering) {
@@ -127,7 +127,7 @@ public abstract class BasicRenderer implements CellRendererJME {
                     logger.info("No Entity for Cell "+cell.getClass().getName());
                 }
             break;
-            case BOUNDS :
+            case INACTIVE :
                 if (isRendering) {
                     try {
                         Entity parent = getEntity().getParent();
@@ -246,7 +246,7 @@ public abstract class BasicRenderer implements CellRendererJME {
 
             CollisionComponent cc=null;
 //            if (rootNode.getWorldBound()==null) {
-//                logger.warning("No BOUNDS FOR "+this.getClass().getName());
+//                logger.warning("No INACTIVE FOR "+this.getClass().getName());
 //            } else {
                 cc = setupCollision(collisionSystem, rootNode);
                 if (cc!=null)

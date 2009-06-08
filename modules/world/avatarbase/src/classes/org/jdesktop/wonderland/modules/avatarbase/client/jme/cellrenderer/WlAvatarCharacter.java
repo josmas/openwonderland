@@ -95,23 +95,25 @@ public class WlAvatarCharacter extends Avatar {
         m_keyBindings.put(KeyEvent.VK_S,            TriggerNames.Move_Back.ordinal());
         m_keyBindings.put(KeyEvent.VK_DOWN,         TriggerNames.Move_Back.ordinal());
         //        m_keyBindings.put(KeyEvent.VK_CONTROL,      TriggerNames.MiscAction.ordinal());
-        m_keyBindings.put(KeyEvent.VK_ENTER,        TriggerNames.ToggleSteering.ordinal());
-        m_keyBindings.put(KeyEvent.VK_HOME,         TriggerNames.GoSit.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_ENTER,        TriggerNames.ToggleSteering.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_HOME,         TriggerNames.GoSit.ordinal());
         m_keyBindings.put(KeyEvent.VK_ADD,          TriggerNames.Move_Down.ordinal());
         m_keyBindings.put(KeyEvent.VK_PAGE_UP,      TriggerNames.Move_Down.ordinal());
         m_keyBindings.put(KeyEvent.VK_SUBTRACT,     TriggerNames.Move_Up.ordinal());
         m_keyBindings.put(KeyEvent.VK_PAGE_DOWN,    TriggerNames.Move_Up.ordinal());
-        m_keyBindings.put(KeyEvent.VK_COMMA,        TriggerNames.Reverse.ordinal());
-        m_keyBindings.put(KeyEvent.VK_PERIOD,       TriggerNames.NextAction.ordinal());
-        m_keyBindings.put(KeyEvent.VK_1,            TriggerNames.GoTo1.ordinal());
-        m_keyBindings.put(KeyEvent.VK_2,            TriggerNames.GoTo2.ordinal());
-        m_keyBindings.put(KeyEvent.VK_3,            TriggerNames.GoTo3.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_COMMA,        TriggerNames.Reverse.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_PERIOD,       TriggerNames.NextAction.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_1,            TriggerNames.GoTo1.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_2,            TriggerNames.GoTo2.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_3,            TriggerNames.GoTo3.ordinal());
         m_keyBindings.put(KeyEvent.VK_G,            TriggerNames.SitOnGround.ordinal());
         m_keyBindings.put(KeyEvent.VK_0,            TriggerNames.Smile.ordinal());
         m_keyBindings.put(KeyEvent.VK_9,            TriggerNames.Frown.ordinal());
         m_keyBindings.put(KeyEvent.VK_8,            TriggerNames.Scorn.ordinal());
-        m_keyBindings.put(KeyEvent.VK_Q,            TriggerNames.ToggleLeftArm.ordinal());
-        m_keyBindings.put(KeyEvent.VK_E,            TriggerNames.ToggleRightArm.ordinal());
+        m_keyBindings.put(KeyEvent.VK_Q,            TriggerNames.Move_Strafe_Left.ordinal());
+        m_keyBindings.put(KeyEvent.VK_E,            TriggerNames.Move_Strafe_Right.ordinal());
         m_keyBindings.put(KeyEvent.VK_P,            TriggerNames.Point.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_Q,            TriggerNames.ToggleLeftArm.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_E,            TriggerNames.ToggleRightArm.ordinal());
     }
 }

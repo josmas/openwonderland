@@ -71,7 +71,7 @@ public class SwingWhiteboardComponent extends CellComponent {
     public void setStatus (CellStatus status) {
          switch(status) {
 
-             case BOUNDS: {
+             case INACTIVE: {
 
 		 channelComp = cell.getComponent(ChannelComponent.class);
 		 if (channelComp == null) {

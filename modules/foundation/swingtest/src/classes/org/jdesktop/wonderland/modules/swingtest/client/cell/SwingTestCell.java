@@ -68,40 +68,41 @@ public class SwingTestCell extends App2DCell {
      * This is called when the status of the cell changes.
      */
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
 
             // The cell is now visible
             case ACTIVE:
+                if (increasing) {
+                    SwingTestApp stApp = new SwingTestApp("Swing Test", clientState.getPixelScale());
+                    setApp(stApp);
 
-                SwingTestApp stApp = new SwingTestApp("Swing Test", clientState.getPixelScale());
-                setApp(stApp);
+                    // Tell the app to be displayed in this cell.
+                    stApp.addDisplayer(this);
 
-                // Tell the app to be displayed in this cell.
-                stApp.addDisplayer(this);
+                    // This app has only one window, so it is always top-level
+                    try {
+                        window = new SwingTestWindow(this, stApp, clientState.getPreferredWidth(),
+                                                     clientState.getPreferredHeight(), true, pixelScale);
+                    } catch (InstantiationException ex) {
+                        throw new RuntimeException(ex);
+                    }
 
-                // This app has only one window, so it is always top-level
-                try {
-                    window = new SwingTestWindow(this, stApp, clientState.getPreferredWidth(), 
-                                                 clientState.getPreferredHeight(), true, pixelScale);
-                } catch (InstantiationException ex) {
-                    throw new RuntimeException(ex);
+                    // Both the app and the user want this window to be visible
+                    window.setVisibleApp(true);
+                    window.setVisibleUser(this, true);
                 }
-
-                // Both the app and the user want this window to be visible
-                window.setVisibleApp(true);
-                window.setVisibleUser(this, true);
                 break;
 
             // The cell is no longer visible
             case DISK:
-                window.setVisibleApp(false);
-                window = null;
+                if (!increasing) {
+                    window.setVisibleApp(false);
+                    window = null;
+                }
                 break;
         }
-
-        return ret;
     }
 }

@@ -65,7 +65,7 @@ public class MicrophoneCell extends Cell implements CellStatusChangeListener {
             return;
         }
 
-        if (status.equals(CellStatus.BOUNDS) && microphoneMessageHandler == null) {
+        if (status.equals(CellStatus.INACTIVE) && microphoneMessageHandler == null) {
             microphoneMessageHandler = new MicrophoneMessageHandler(this);
         } else if (status.equals(CellStatus.DISK) && microphoneMessageHandler != null) {
             microphoneMessageHandler.done();

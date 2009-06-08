@@ -117,7 +117,7 @@ public class AudioParticipantComponent extends CellComponent implements
 	    channelComp.removeMessageReceiver(ChangeUsernameAliasMessage.class);
             break;
 
-	case BOUNDS:
+	case INACTIVE:
             channelComp = cell.getComponent(ChannelComponent.class);
             channelComp.addMessageReceiver(AudioParticipantSpeakingMessage.class, this);
             channelComp.addMessageReceiver(AudioParticipantMuteCallMessage.class, this);

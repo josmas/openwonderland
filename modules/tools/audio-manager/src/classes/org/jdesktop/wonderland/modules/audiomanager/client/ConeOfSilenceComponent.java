@@ -57,7 +57,7 @@ public class ConeOfSilenceComponent extends CellComponent {
             }
             break;
 
-	case BOUNDS:
+	case INACTIVE:
 	    if (msgReceiver == null) {
                 msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
                     public void messageReceived(CellMessage message) {

@@ -60,12 +60,12 @@ public abstract class AffordanceCellComponent extends CellComponent {
     }
 
     @Override
-    public void setStatus(CellStatus status) {
+    protected void setStatus(CellStatus status, boolean increasing) {
 
         // If we are making this component active, then create the affordance,
         // if the first time through.
-        super.setStatus(status);
-        if (status == CellStatus.ACTIVE) {
+        super.setStatus(status, increasing);
+        if (increasing && status == CellStatus.ACTIVE) {
             // Add a cell ref component to the entity. This will let us associated
             // the entity with the cell and make it easy to detect when we click
             // off of the cell
@@ -90,7 +90,7 @@ public abstract class AffordanceCellComponent extends CellComponent {
                 }
             }.start();
         }
-        else if (status == CellStatus.DISK) {
+        else if (!increasing && status == CellStatus.DISK) {
             // Remove the affordance and clean it up. Set it to null, because
             // it must be created again when the Cell becomes visible.
             affordance.dispose();

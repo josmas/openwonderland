@@ -93,7 +93,7 @@ public class AvatarConfigComponent extends CellComponent {
                     msgReceiver = null;
                 }
                 break;
-            case BOUNDS: {
+            case INACTIVE: {
                 if (msgReceiver == null) {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 

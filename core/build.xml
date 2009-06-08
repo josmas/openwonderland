@@ -70,21 +70,32 @@
             <jvmarg value="-Dorg.jdesktop.wonderland.client.softphone.jar=${softphone.jar.location}"/>
             <jvmarg value="-Dwonderland.version=${wonderland.version}"/>
             <jvmarg value="-Drun.properties.file=file:${run-client.properties.file}"/>
+            <jvmarg value="-Djme.trackDirect=true"/>
 
             <!--start debug-->
             <!--
+            -->
             <jvmarg value="-Xdebug"/>
-            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=y"/>
-            <jvmarg value="-agentpath:/tmp/NBProfiler32476.link/deployed/jdk15/mac/libprofilerinterface.jnilib=/tmp/NBProfiler32476.link,5140"/>
-	    -->
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
             <!--end debug-->
+
+	    <!-- Start Profiling -->
+            <!--
+            <jvmarg value="-agentpath:/tmp/NBProfiler17608.link/deployed/jdk16/mac/libprofilerinterface.jnilib=/tmp/NBProfiler17608.link,5140"/>
+	    -->
+
+	    <!-- YourKit profile -->
+	    <!--
+	    <jvmarg value="-agentlib:yjpagent"/>
+-->
+	    <!-- End Profiling -->
             
             <classpath>
                 <pathelement path="${core-client.classpath}"/>
             </classpath>
         </java>
     </target>
-    
+
     <target name="avatargui" depends="jar">
         <!--<java classname="imi.tests.GUITest" fork="true">-->
         <java classname="imi.tests.GUITest" fork="true" dir="../modules/world/avatarbase/art">

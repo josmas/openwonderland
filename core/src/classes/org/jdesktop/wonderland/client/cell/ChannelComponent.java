@@ -67,7 +67,7 @@ public class ChannelComponent extends CellComponent {
                 logger.warning("[ChannelComponent] status of cell " + 
                                cell.getCellID() + " is " + status);
 
-                if (status == CellStatus.BOUNDS) {
+                if (status == CellStatus.INACTIVE) {
                     deliverDelayedMessages();
                 }
             }

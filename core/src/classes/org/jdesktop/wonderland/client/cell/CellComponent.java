@@ -52,7 +52,7 @@ public class CellComponent {
      *
      * @param status The new status of the component
      */
-    public void setStatus(CellStatus status) {
+    protected void setStatus(CellStatus status, boolean increasing) {
         this.status = status;
     }
 
@@ -63,7 +63,7 @@ public class CellComponent {
      *
      * @param status The new status of the component
      */
-    final void setComponentStatus(CellStatus status) {
+    final void setComponentStatus(CellStatus status, boolean increasing) {
         int currentStatus = this.status.ordinal();
         int requiredStatus = status.ordinal();
 
@@ -74,7 +74,7 @@ public class CellComponent {
 
         while (currentStatus != requiredStatus) {
             currentStatus += dir;
-            setStatus(CellStatus.values()[currentStatus]);
+            setStatus(CellStatus.values()[currentStatus], increasing);
         }
     }
 

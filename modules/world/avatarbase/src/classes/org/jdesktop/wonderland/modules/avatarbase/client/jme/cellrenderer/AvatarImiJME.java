@@ -199,8 +199,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
      * @param status
      */
     @Override
-    public void setStatus(CellStatus status) {
-        super.setStatus(status);
+    public void setStatus(CellStatus status,boolean increasing) {
+        super.setStatus(status,increasing);
         this.status = status;
         switch(status) {
             case DISK :
@@ -208,40 +208,42 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             case INACTIVE :
                 break;
             case ACTIVE :
-                if (cellMoveListener!=null) {
-                    cell.getComponent(MovableComponent.class).removeServerCellMoveListener(cellMoveListener);
-                    cellMoveListener = null;
-                }
-                if (avatarCharacter==null) {
-                    AvatarConfigComponent configComp = cell.getComponent(AvatarConfigComponent.class);
-                    URL configURL = null;
-                    if (configComp!=null)
-                        configURL = configComp.getAvatarConfigURL();
-                    pendingAvatar = (WlAvatarCharacter) loadAvatar(configURL);
-                } else {
-                    ClientContextJME.getWorldManager().removeEntity(avatarCharacter);
-                    pendingAvatar = null;
-                }
-                
-                changeAvatar(pendingAvatar);
-                if (cellMoveListener==null) {
-                    cellMoveListener = new CellMoveListener() {
-                        public void cellMoved(CellTransform transform, CellMoveSource source) {
-                            if (source==CellMoveSource.REMOTE) {
-    //                            System.err.println("REMOTE MOVE "+transform.getTranslation(null));
-                                if (avatarCharacter!=null) {
-                                    if (avatarCharacter.getModelInst()==null) {  // Extra debug check
-                                        logger.severe("MODEL INST IS NULL !");
-                                        Thread.dumpStack();
-                                        return;
+                if (increasing) {
+                    if (cellMoveListener!=null) {
+                        cell.getComponent(MovableComponent.class).removeServerCellMoveListener(cellMoveListener);
+                        cellMoveListener = null;
+                    }
+                    if (avatarCharacter==null) {
+                        AvatarConfigComponent configComp = cell.getComponent(AvatarConfigComponent.class);
+                        URL configURL = null;
+                        if (configComp!=null)
+                            configURL = configComp.getAvatarConfigURL();
+                        pendingAvatar = (WlAvatarCharacter) loadAvatar(configURL);
+                    } else {
+                        ClientContextJME.getWorldManager().removeEntity(avatarCharacter);
+                        pendingAvatar = null;
+                    }
+
+                    changeAvatar(pendingAvatar);
+                    if (cellMoveListener==null) {
+                        cellMoveListener = new CellMoveListener() {
+                            public void cellMoved(CellTransform transform, CellMoveSource source) {
+                                if (source==CellMoveSource.REMOTE) {
+        //                            System.err.println("REMOTE MOVE "+transform.getTranslation(null));
+                                    if (avatarCharacter!=null) {
+                                        if (avatarCharacter.getModelInst()==null) {  // Extra debug check
+                                            logger.severe("MODEL INST IS NULL !");
+                                            Thread.dumpStack();
+                                            return;
+                                        }
+                                        avatarCharacter.getModelInst().setTransform(new PTransform(transform.getRotation(null), transform.getTranslation(null), new Vector3f(1,1,1)));
                                     }
-                                    avatarCharacter.getModelInst().setTransform(new PTransform(transform.getRotation(null), transform.getTranslation(null), new Vector3f(1,1,1)));
                                 }
                             }
-                        }
-                    };
+                        };
+                    }
+                    cell.getComponent(MovableComponent.class).addServerCellMoveListener(cellMoveListener);
                 }
-                cell.getComponent(MovableComponent.class).addServerCellMoveListener(cellMoveListener);
                 break;
         }
     }
