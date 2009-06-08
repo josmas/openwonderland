@@ -18,32 +18,29 @@
 
 package org.jdesktop.wonderland.modules.contentrepo.client.ui;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractListModel;
-import javax.swing.DefaultListCellRenderer;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileFilter;
 import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
+import org.jdesktop.wonderland.modules.contentrepo.client.ui.AsynchronousJTable.AsyncTableSelectionListener;
+import org.jdesktop.wonderland.modules.contentrepo.client.ui.AsynchronousJTree.AsyncTreeSelectionListener;
+import org.jdesktop.wonderland.modules.contentrepo.client.ui.modules.ModuleRootContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
@@ -54,49 +51,109 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
  * ContentBrowserSPI interface so that it can be plugged into the browser
  * registry mechanism.
  * 
- * @author jkaplan
+ * @author Jordan Slott <jslott@dev.java.net>
  */
-public class ContentBrowserJDialog extends javax.swing.JDialog
-        implements ContentBrowserSPI {
+public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI {
 
-    private static final Logger logger =
-            Logger.getLogger(ContentBrowserJDialog.class.getName());
-
+    private static final Logger logger = Logger.getLogger(ContentBrowserJDialog.class.getName());
     private ServerSessionManager session = null;
-    private ContentRepository repo = null;
-    private ContentCollection directory = null;
+    private AsynchronousJTree jtree = null;
+    private AsynchronousJTable jtable = null;
+    private ContentNode treeSelectedNode = null;
+    private ContentNode tableSelectedNode = null;
+    private String homePath = null;
+    private Map<ContentCollection, NodeURIFactory> factoryMap = null;
+    private Set<ContentBrowserListener> listenerSet = null;
 
     /** Creates new form BrowserFrame */
     public ContentBrowserJDialog(ServerSessionManager session) {
         this.session = session;
+        factoryMap = new HashMap();
+        listenerSet = Collections.synchronizedSet(new HashSet());
         initComponents();
 
-        fileList.setCellRenderer(new ContentRenderer());
+        // Create a new tree to display the hierarchy of repositories in a
+        // scroll pane. We use AsynchronousJTree so that tree nodes are loaded
+        // asynchronously in case a network call is required to load the node's
+        // children.
+        jtree = new AsynchronousJTree();
+        JScrollPane treeScrollPane = new JScrollPane();
+        treeScrollPane.setViewportView(jtree);
+        treePanel.add(treeScrollPane);
 
-        // Listen for when a new directory/file is selected in the list of
-        // files in a content repository. Update the state of the buttons
-        fileList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                changeListSelection();
-            }
-        });
+        // Add roots in the JTree for the System area and Users area in the
+        // default content repository.
+        ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
+        ContentRepository repo = registry.getRepository(session);
+        try {
+            ContentCollection sysCollection = repo.getSystemRoot();
+            ContentCollection userCollection = (ContentCollection)repo.getRoot().getChild("users");
+            jtree.addTreeRoot("System", sysCollection);
+            jtree.addTreeRoot("Users", userCollection);
+            factoryMap.put(sysCollection, new ContentRepoNodeURIFactory());
+            factoryMap.put(userCollection, new ContentRepoNodeURIFactory());
+        } catch (ContentRepositoryException excp) {
+            logger.log(Level.WARNING, "Unable to create roots", excp);
+        }
 
-        // Listen for when there is a double-click on the file list to change
-        // to that directory.
-        fileList.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    changeDirectory();
+        // Formulate the "home" path as /Users/<login name>
+        try {
+            homePath = "/Users/" + repo.getUserRoot().getName();
+        } catch (ContentRepositoryException excp) {
+            logger.log(Level.WARNING, "Unable to find user's home", excp);
+        }
+
+        // Add the Module tree root, using a wrapper for the content repo to
+        // present the modules properly
+        try {
+            ContentCollection moduleCollection = new ModuleRootContentCollection(repo);
+            jtree.addTreeRoot("Modules", moduleCollection);
+            factoryMap.put(moduleCollection, new ModuleNodeURIFactory());
+        } catch (ContentRepositoryException excp) {
+            logger.log(Level.WARNING, "Unable to create module root", excp);
+        }
+
+        // Create a new table to display a particular directory. We use an
+        // AsynchronousJTable so that the entries are loaded asychronously in
+        // case a network call is required to load the children.
+        jtable = new AsynchronousJTable();
+        JScrollPane tableScrollPane = new JScrollPane();
+        tableScrollPane.setViewportView(jtable);
+        tablePanel.add(tableScrollPane);
+
+        // Listen for selections on the tree and update the right-hand table
+        // with the children for the currently selected node.
+        jtree.addAsyncTreeSelectionListener(new AsyncTreeSelectionListener() {
+            public void treeSelectionChanged(ContentNode node) {
+                treeSelectedNode = node;
+                if (node == null) {
+                    jtable.setContentCollection(null);
+                }
+                else if (node instanceof ContentCollection) {
+                    jtable.setContentCollection((ContentCollection) node);
                 }
             }
         });
 
-        // Listen for when a new category is selected in the category list.
-        // Update the state of the GUI
-        categoryList.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                changeCategorySelection();
+        // Listen for when a new directory/file is selected in the list of
+        // files in a content repository. Update the state of the buttons
+        jtable.addAsyncTableSelectionListener(new AsyncTableSelectionListener() {
+            public void tableSelectionChanged(ContentNode node, boolean changeTo) {
+                // If we select a node that isn't been selected then update
+                // the table with the new selection.
+                if (tableSelectedNode != node) {
+                    tableSelectedNode = node;
+                    changeTableSelection(node);
+                }
+
+                // If this selection was really a double-click to open a
+                // directory, then update the tree selection too. We know that
+                // the parent of the selected node in the table is the currently
+                // selected node in the tree. We use this to form the path to
+                // the newly selected node to expand
+                if (changeTo == true) {
+                    jtree.expandAndSelectChild(node.getName());
+                }
             }
         });
 
@@ -105,10 +162,9 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
                 dispose();
-                for (ContentBrowserListener l : listeners) {
+                for (ContentBrowserListener l : listenerSet) {
                     l.cancelAction();
                 }
-                listeners.clear();
             }
         });
 
@@ -118,21 +174,27 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
                 dispose();
-                for (ContentBrowserListener l : listeners) {
-                    // We need to get the URI of the selection. Start from
-                    // the currently selected item, if there is one, otherwise
-                    // use the selected directory we are in
-                    ContentNode node = getListSelection();
-                    String assetPath = (node != null) ? node.getPath() : directory.getPath();
 
-                    // The value returned from getPath() starts with a beginning
-                    // slash, so strip it if so
-                    if (assetPath.startsWith("/") == true) {
-                        assetPath = assetPath.substring(1);
+                for (ContentBrowserListener l : listenerSet) {
+                    // We need to get the URI of the selection. We first need a
+                    // factory to generate the URI for us, based upon the root
+                    // of the selected node. We ask the JTree for this.
+                    ContentCollection c = jtree.getSelectedRootCollection();
+                    if (c == null) {
+                        logger.warning("Unable to find selected root");
+                        l.cancelAction();
                     }
-                    l.okAction("wlcontent://" + assetPath);
+
+                    NodeURIFactory factory = factoryMap.get(c);
+                    if (factory == null) {
+                        logger.warning("Unable to find factory for root");
+                        l.cancelAction();
+                    }
+
+                    String uri = factory.getURI(tableSelectedNode);
+                    System.out.println("URI " + uri);
+                    l.okAction(uri);
                 }
-                listeners.clear();
             }
         });
     }
@@ -144,22 +206,13 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
     public void setVisible(boolean visible) {
         // Set the dialog visible, but also set the current directory to the
         // user root
+        setSize(600, 500);
         super.setVisible(visible);
-        if (visible == true) {
-            // Set the user root when the content browser is made visible.
-            ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
-            repo = registry.getRepository(session);
-            try {
-                setCollection(repo.getUserRoot());
-            } catch (ContentRepositoryException cce) {
-                logger.log(Level.WARNING, "Error getting user root", cce);
-            }
 
-            // Update the state of the GUI to represent the initially selected
-            // directory
-            categoryList.setSelectedValue("Users", true);
-            changeListSelection();
-        }
+//        if (visible == true) {
+//            // Set the user root when the content browser is made visible
+//            jtree.expandAndSelectPath(homePath);
+//        }
     }
 
     /**
@@ -177,128 +230,46 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         }
     }
 
-    private Set<ContentBrowserListener> listeners =
-            Collections.synchronizedSet(new HashSet());
-
     /**
      * @inheritDoc()
      */
     public void addContentBrowserListener(ContentBrowserListener listener) {
-        listeners.add(listener);
+        listenerSet.add(listener);
     }
 
     /**
      * @inheritDoc()
      */
     public void removeContentBrowserListener(ContentBrowserListener listener) {
-        listeners.remove(listener);
+        listenerSet.remove(listener);
     }
 
     /**
-     * Returns the currently selected item in the list of files as a ContentNode
-     * object, or null if nothing is selected.
+     * Handles when a new selection is made in the table, update the state
+     * of buttons and labels, given the currently selected item.
      */
-    private ContentNode getListSelection() {
-        ContentNode selected = null;
-
-        Object selectedObj = fileList.getSelectedValue();
-        if (selectedObj instanceof ParentHolder) {
-            selected = ((ParentHolder) selectedObj).getParent();
-        } else if (selectedObj != null) {
-            selected = (ContentNode) selectedObj;
+    private void changeTableSelection(ContentNode node) {
+        // If the selection is cleared ('entry' is null) then disable the
+        // proper buttons and return.
+        if (node == null) {
+            downloadButton.setEnabled(false);
+            deleteCollectionButton.setEnabled(false);
+            okButton.setEnabled(false);
+            return;
         }
 
-        return selected;
-    }
-
-    /**
-     * Handles when a new category selection is made in the category list,
-     * update the state of the GUI
-     */
-    private void changeCategorySelection() {
-        String category = (String)categoryList.getSelectedValue();
-        if (category.equals("System") == true) {
-            try {
-                setCollection(repo.getSystemRoot());
-            } catch (ContentRepositoryException cce) {
-                logger.log(Level.WARNING, "Error getting user root", cce);
-            }
+        // If the selection is a directory then enable the delete, but not the
+        // download.
+        if (node instanceof ContentCollection) {
+            downloadButton.setEnabled(false);
+            deleteCollectionButton.setEnabled(true);
+            okButton.setEnabled(false);
         }
-        else if (category.equals("Users") == true) {
-            try {
-                setCollection(repo.getUserRoot());
-            } catch (ContentRepositoryException cce) {
-                logger.log(Level.WARNING, "Error getting user root", cce);
-            }
+        else {
+            downloadButton.setEnabled(true);
+            deleteCollectionButton.setEnabled(true);
+            okButton.setEnabled(true);
         }
-
-        changeListSelection();
-    }
-
-    /**
-     * Handles when a new selection is made in the file list, update the state
-     * of buttons and labels.
-     */
-    private void changeListSelection() {
-        ContentNode selected = getListSelection();
-        
-        boolean enableDownload = false;
-        boolean enableDelete = false;
-
-        if (selected == null) {
-            typeLabel.setText("");
-            sizeLabel.setText("");
-            modifiedLabel.setText("");
-            urlLabel.setText("");
-        } else if (selected instanceof ContentCollection) {
-            typeLabel.setText("Directory");
-            sizeLabel.setText("");
-            modifiedLabel.setText("");
-            urlLabel.setText("");
-
-            enableDelete = true;
-        } else if (selected instanceof ContentResource) {
-            ContentResource r = (ContentResource) selected;
-
-            typeLabel.setText("File");
-            sizeLabel.setText(String.valueOf(r.getSize()));
-            
-            DateFormat df = DateFormat.getDateInstance();
-            modifiedLabel.setText(df.format(r.getLastModified()));
-
-            try {
-                urlLabel.setText(r.getURL().toExternalForm());
-            } catch (ContentRepositoryException cre) {
-                logger.log(Level.WARNING, "Unable to get URL for " + r, cre);
-                urlLabel.setText("Error: " + cre.getMessage());
-            }
-
-            enableDownload = true;
-            enableDelete = true;
-        }
-
-        downloadButton.setEnabled(enableDownload);
-        deleteCollectionButton.setEnabled(enableDelete);
-    }
-
-    /**
-     * When a new directory is selected, change to that directory in the GUI
-     */
-    private void changeDirectory() {
-        ContentNode selected = getListSelection();
-        if (selected instanceof ContentCollection) {
-            setCollection((ContentCollection) selected);
-        }
-    }
-
-    /**
-     * Sets the current directory (represented by a ContentCollection object)
-     * to display in the GUI.
-     */
-    private void setCollection(ContentCollection collection) {
-        directory = collection;
-        dirNameLabel.setText(collection.getPath());
-        fileList.setModel(new ContentListModel(collection));
     }
 
     /** This method is called from within the constructor to
@@ -313,41 +284,32 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
 
         topPanel = new javax.swing.JPanel();
         topButtonPanel = new javax.swing.JPanel();
+        homeButton = new javax.swing.JButton();
         newCollectionButton = new javax.swing.JButton();
         deleteCollectionButton = new javax.swing.JButton();
         uploadButton = new javax.swing.JButton();
         downloadButton = new javax.swing.JButton();
-        directoryNamePanel = new javax.swing.JPanel();
-        jLabel6 = new javax.swing.JLabel();
-        dirNameLabel = new javax.swing.JLabel();
         bottomPanel = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
-        listSplitPane = new javax.swing.JSplitPane();
-        categoryScrollPane = new javax.swing.JScrollPane();
-        categoryList = new javax.swing.JList();
-        subSplitPane = new javax.swing.JSplitPane();
-        fileScrollPane = new javax.swing.JScrollPane();
-        fileList = new javax.swing.JList();
-        previewInfoPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        previewPanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        infoPanel = new javax.swing.JPanel();
-        modifiedLabel = new javax.swing.JLabel();
-        sizeLabel = new javax.swing.JLabel();
-        typeLabel = new javax.swing.JLabel();
-        urlLabel = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        mainSplitPane = new javax.swing.JSplitPane();
+        treePanel = new javax.swing.JPanel();
+        tablePanel = new javax.swing.JPanel();
 
         setTitle("Content Repository Browser");
 
         topPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        homeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserHome20x20.png"))); // NOI18N
+        homeButton.setToolTipText("New Directory");
+        homeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        homeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                homeButtonActionPerformed(evt);
+            }
+        });
+        topButtonPanel.add(homeButton);
 
         newCollectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserNewDirectory32x32.png"))); // NOI18N
         newCollectionButton.setToolTipText("New Directory");
@@ -364,6 +326,7 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
 
         deleteCollectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserDeleteFile32x32.png"))); // NOI18N
         deleteCollectionButton.setToolTipText("Delete");
+        deleteCollectionButton.setEnabled(false);
         deleteCollectionButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         deleteCollectionButton.setMaximumSize(new java.awt.Dimension(32, 32));
         deleteCollectionButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -390,6 +353,7 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
 
         downloadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserDownloadFile32x32.png"))); // NOI18N
         downloadButton.setToolTipText("Download File");
+        downloadButton.setEnabled(false);
         downloadButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         downloadButton.setMaximumSize(new java.awt.Dimension(32, 32));
         downloadButton.setMinimumSize(new java.awt.Dimension(32, 32));
@@ -403,21 +367,12 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
 
         topPanel.add(topButtonPanel);
 
-        jLabel6.setText("Directory:");
-        jLabel6.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
-        directoryNamePanel.add(jLabel6);
-
-        dirNameLabel.setText("<directory>");
-        dirNameLabel.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
-        directoryNamePanel.add(dirNameLabel);
-
-        topPanel.add(directoryNamePanel);
-
         getContentPane().add(topPanel, java.awt.BorderLayout.NORTH);
 
         bottomPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 3, 5));
 
         okButton.setText("OK");
+        okButton.setEnabled(false);
         bottomPanel.add(okButton);
 
         cancelButton.setText("Cancel");
@@ -426,160 +381,28 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         getContentPane().add(bottomPanel, java.awt.BorderLayout.SOUTH);
 
         centerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 10));
-        centerPanel.setLayout(new javax.swing.BoxLayout(centerPanel, javax.swing.BoxLayout.X_AXIS));
+        centerPanel.setLayout(new java.awt.GridBagLayout());
 
-        listSplitPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        listSplitPane.setDividerLocation(200);
-        listSplitPane.setDividerSize(7);
+        mainSplitPane.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        mainSplitPane.setDividerLocation(200);
+        mainSplitPane.setDividerSize(7);
 
-        categoryScrollPane.setBackground(new java.awt.Color(204, 204, 204));
-        categoryScrollPane.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        categoryScrollPane.setMaximumSize(new java.awt.Dimension(114, 32767));
-        categoryScrollPane.setMinimumSize(new java.awt.Dimension(114, 23));
+        treePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        treePanel.setLayout(new java.awt.GridLayout(1, 0));
+        mainSplitPane.setLeftComponent(treePanel);
 
-        categoryList.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        categoryList.setFont(new java.awt.Font("Lucida Grande", 1, 12));
-        categoryList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "System", "Users" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        categoryList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        categoryList.setFixedCellWidth(100);
-        categoryList.setMinimumSize(new java.awt.Dimension(100, 44));
-        categoryScrollPane.setViewportView(categoryList);
+        tablePanel.setLayout(new java.awt.GridLayout(1, 0));
+        mainSplitPane.setRightComponent(tablePanel);
 
-        listSplitPane.setLeftComponent(categoryScrollPane);
-
-        subSplitPane.setBorder(null);
-        subSplitPane.setDividerLocation(300);
-        subSplitPane.setDividerSize(7);
-        subSplitPane.setResizeWeight(1.0);
-        subSplitPane.setMaximumSize(new java.awt.Dimension(105, 2147483647));
-
-        fileScrollPane.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-
-        fileList.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        fileList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        fileScrollPane.setViewportView(fileList);
-
-        subSplitPane.setLeftComponent(fileScrollPane);
-
-        previewInfoPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        previewInfoPanel.setLayout(new java.awt.GridBagLayout());
-
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel1.setText("Preview:");
-        jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        jLabel1.setAlignmentX(0.5F);
-        jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(10, 10, 10, 10);
-        previewInfoPanel.add(jLabel1, gridBagConstraints);
-
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
-
-        org.jdesktop.layout.GroupLayout previewPanelLayout = new org.jdesktop.layout.GroupLayout(previewPanel);
-        previewPanel.setLayout(previewPanelLayout);
-        previewPanelLayout.setHorizontalGroup(
-            previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 270, Short.MAX_VALUE)
-        );
-        previewPanelLayout.setVerticalGroup(
-            previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 212, Short.MAX_VALUE)
-        );
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.ipadx = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 10);
-        previewInfoPanel.add(previewPanel, gridBagConstraints);
-
-        modifiedLabel.setText("modified");
-
-        sizeLabel.setText("size");
-
-        typeLabel.setText("type");
-
-        urlLabel.setText("url");
-
-        jLabel2.setText("Type:");
-
-        jLabel3.setText("Size:");
-
-        jLabel4.setText("Modified:");
-
-        jLabel5.setText("URL:");
-
-        org.jdesktop.layout.GroupLayout infoPanelLayout = new org.jdesktop.layout.GroupLayout(infoPanel);
-        infoPanel.setLayout(infoPanelLayout);
-        infoPanelLayout.setHorizontalGroup(
-            infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(infoPanelLayout.createSequentialGroup()
-                .add(infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2)
-                    .add(jLabel3)
-                    .add(jLabel4)
-                    .add(jLabel5))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(urlLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 199, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(sizeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
-                    .add(typeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, modifiedLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        infoPanelLayout.setVerticalGroup(
-            infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(infoPanelLayout.createSequentialGroup()
-                .add(infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(typeLabel)
-                    .add(jLabel2))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(sizeLabel)
-                    .add(jLabel3))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(modifiedLabel)
-                    .add(jLabel4))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(infoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(urlLabel)
-                    .add(jLabel5))
-                .addContainerGap(9, Short.MAX_VALUE))
-        );
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 3;
-        gridBagConstraints.ipady = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 10);
-        previewInfoPanel.add(infoPanel, gridBagConstraints);
-
-        subSplitPane.setRightComponent(previewInfoPanel);
-
-        listSplitPane.setRightComponent(subSplitPane);
-
-        centerPanel.add(listSplitPane);
+        centerPanel.add(mainSplitPane, gridBagConstraints);
 
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
@@ -587,7 +410,6 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
     }// </editor-fold>//GEN-END:initComponents
 
     private void downloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadButtonActionPerformed
-        ContentResource selected = (ContentResource) getListSelection();
 
         // Display a file choose and select a directory in which to save the
         // content
@@ -609,29 +431,28 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
         // Download the actual file
         int returnVal = chooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File out = new File(chooser.getSelectedFile(), selected.getName());
+            String fileName = tableSelectedNode.getName();
+            File out = new File(chooser.getSelectedFile(), fileName);
             try {
-                selected.get(out);
-            } catch (ContentRepositoryException cre) {
+                ContentResource r = (ContentResource)tableSelectedNode;
+                r.get(out);
+            } catch (java.lang.Exception cre) {
                 logger.log(Level.WARNING, "Unable to download " + out, cre);
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Unable to write " + out, ioe);
             }
         }
     }//GEN-LAST:event_downloadButtonActionPerformed
 
     private void deleteCollectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteCollectionButtonActionPerformed
 
-        // Fetch the currently selected item in the file list and remove it
-        ContentNode selected = getListSelection();
         try {
-            directory.removeChild(selected.getName());
-        } catch (ContentRepositoryException cre) {
-            logger.log(Level.WARNING, "Error removing " + selected.getPath(),
-                       cre);
+            ContentCollection parent = tableSelectedNode.getParent();
+            parent.removeChild(tableSelectedNode.getName());
+            jtable.setContentCollection(parent);
+            jtree.refresh();
+        } catch (java.lang.Exception excp) {
+            logger.log(Level.WARNING, "Unable to delete " +
+                    tableSelectedNode.getName(), excp);
         }
-
-        setCollection(directory);
     }//GEN-LAST:event_deleteCollectionButtonActionPerformed
 
     private void uploadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uploadButtonActionPerformed
@@ -644,15 +465,14 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
 
         // Fetch the file that was selected, make sure it exists, create an
         // entry in the content repository and upload the file.
-        String path = chooser.getSelectedFile().getPath();
-        File file = new File(path);
+        File file = chooser.getSelectedFile();
+        String name = file.getName();
         if (file.exists() == true) {
             try {
-                ContentResource r = (ContentResource)
-                        directory.createChild(file.getName(), ContentNode.Type.RESOURCE);
+                ContentCollection c = (ContentCollection)treeSelectedNode;
+                ContentResource r = (ContentResource)c.createChild(name, ContentNode.Type.RESOURCE);
                 r.put(file);
-
-                setCollection(directory);
+                jtable.setContentCollection(c);
             } catch (ContentRepositoryException cre) {
                 logger.log(Level.WARNING, "Unable to upload " + file, cre);
             } catch (IOException ioe) {
@@ -676,142 +496,85 @@ public class ContentBrowserJDialog extends javax.swing.JDialog
 
         // Go ahead and create the new directory in the content repository
         String name = s.trim();
-        try {
-            directory.createChild(name, ContentNode.Type.COLLECTION);
-            setCollection(directory);
+           try {
+               ContentCollection collection = (ContentCollection)treeSelectedNode;
+               collection.createChild(name, ContentNode.Type.COLLECTION);
+               jtree.refresh();
+               jtable.setContentCollection(collection);
         } catch (ContentRepositoryException ex) {
             logger.log(Level.WARNING, "Unable to create directory", ex);
         }
     }//GEN-LAST:event_newCollectionButtonActionPerformed
 
+    private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_homeButtonActionPerformed
+        jtree.expandAndSelectPath(homePath);
+}//GEN-LAST:event_homeButtonActionPerformed
+
     /**
-     * Renders the directories and files in the list. Inserts a ".." for the
-     * parent directory
+     * An interface to represent a factory that generates URIs given the
+     * ContentNode
      */
-    class ContentRenderer extends DefaultListCellRenderer {
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object obj,
-                int index, boolean selected, boolean hasFocus)
-        {
-            String desc;
-            if (obj instanceof ParentHolder) {
-                desc = "..";
-            } else if (obj instanceof ContentNode) {
-                desc = ((ContentNode) obj).getName();
-            } else {
-                desc = obj.toString();
-            }
-
-            return super.getListCellRendererComponent(list, desc, index,
-                                                      selected, hasFocus);
-        }
-
+    public interface NodeURIFactory {
+        /**
+         * Returns a String URI given a content node
+         */
+        public String getURI(ContentNode node);
     }
 
     /**
-     * List model for list of files and directories
+     * An implementation of the NodeURIFactory for the system and user's
+     * content repository
      */
-    class ContentListModel extends AbstractListModel {
-        private ContentCollection dir;
-        private ContentCollection parent;
-        private List<ContentNode> children;
-        private boolean hasParent;
-        private int size = 0;
+    private class ContentRepoNodeURIFactory implements NodeURIFactory {
+        public String getURI(ContentNode node) {
+            String assetPath = node.getPath();
 
-        public ContentListModel(ContentCollection dir) {
-            this.dir = dir;
-
-            hasParent = (dir.getParent() != null);
-            try {
-                size = dir.getChildren().size();
-                size = (hasParent == true) ? size + 1 : size;
-            } catch (ContentRepositoryException cce) {
-                logger.log(Level.WARNING, "Error getting size of " +
-                           dir.getName(), cce);
-                size = 0;
+            // The value returned from getPath() starts with a beginning
+            // slash, so strip it if so
+            if (assetPath.startsWith("/") == true) {
+                assetPath = assetPath.substring(1);
             }
-            parent = dir.getParent();
-
-            try {
-                children = dir.getChildren();
-            } catch (ContentRepositoryException cce) {
-                logger.log(Level.WARNING, "Error reading child from " +
-                           dir.getName(), cce);
-                children = null;
-            }
-        }
-        
-        public int getSize() {
-            return size;
-        }
-
-        public Object getElementAt(int index) {
-            // See if there is a ".." parent node. Adjust the index if so, or
-            // return the parent depending upon the index.
-            if (index == 0 && hasParent) {
-                return new ParentHolder(parent);
-            } else if (hasParent) {
-                index -= 1;
-            }
-
-            // If there are no children, then just return null. Otherwise,
-            // return the child.
-            if (children == null) {
-                return null;
-            }
-            return children.get(index);
+            return "wlcontent://" + assetPath;
         }
     }
 
     /**
-     * Holds a reference to the parent directory
+     * An implementation of the NodeURIFactory for the module content
+     * repository
      */
-    class ParentHolder {
-        private ContentCollection parent;
+    private class ModuleNodeURIFactory implements NodeURIFactory {
+        public String getURI(ContentNode node) {
+            String assetPath = node.getPath();
 
-        public ParentHolder(ContentCollection parent) {
-            this.parent = parent;
-        }
+            // The value returned from getPath() starts with a beginning
+            // slash, so strip it if so
+            if (assetPath.startsWith("/") == true) {
+                assetPath = assetPath.substring(1);
+            }
 
-        public ContentCollection getParent() {
-            return parent;
+            // If the value returned from getPath() also has a "modules" then
+            // strip it out too.
+            if (assetPath.startsWith("modules/") == true) {
+                assetPath = assetPath.substring("modules/".length());
+            }
+            return "wla://" + assetPath;
         }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanel;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JList categoryList;
-    private javax.swing.JScrollPane categoryScrollPane;
     private javax.swing.JPanel centerPanel;
     private javax.swing.JButton deleteCollectionButton;
-    private javax.swing.JLabel dirNameLabel;
-    private javax.swing.JPanel directoryNamePanel;
     private javax.swing.JButton downloadButton;
-    private javax.swing.JList fileList;
-    private javax.swing.JScrollPane fileScrollPane;
-    private javax.swing.JPanel infoPanel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JSplitPane listSplitPane;
-    private javax.swing.JLabel modifiedLabel;
+    private javax.swing.JButton homeButton;
+    private javax.swing.JSplitPane mainSplitPane;
     private javax.swing.JButton newCollectionButton;
     private javax.swing.JButton okButton;
-    private javax.swing.JPanel previewInfoPanel;
-    private javax.swing.JPanel previewPanel;
-    private javax.swing.JLabel sizeLabel;
-    private javax.swing.JSplitPane subSplitPane;
+    private javax.swing.JPanel tablePanel;
     private javax.swing.JPanel topButtonPanel;
     private javax.swing.JPanel topPanel;
-    private javax.swing.JLabel typeLabel;
+    private javax.swing.JPanel treePanel;
     private javax.swing.JButton uploadButton;
-    private javax.swing.JLabel urlLabel;
     // End of variables declaration//GEN-END:variables
 }
