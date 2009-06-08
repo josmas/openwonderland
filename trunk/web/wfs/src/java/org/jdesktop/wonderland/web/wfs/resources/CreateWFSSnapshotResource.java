@@ -51,7 +51,7 @@ public class CreateWFSSnapshotResource {
      * new WFS object and creates the entry on disk. Returns a WorldRoot object
      * that represents the new snapshot
      * 
-     * @return A Snapshot object
+     * @return A WorldRoot object
      */
     @GET
     @Produces({"text/plain", "application/xml", "application/json"})
