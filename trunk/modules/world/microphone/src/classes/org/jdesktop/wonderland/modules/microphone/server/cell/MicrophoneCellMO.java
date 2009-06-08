@@ -148,6 +148,7 @@ public class MicrophoneCellMO extends CellMO {
         MicrophoneCellServerState microphoneCellServerState = (MicrophoneCellServerState) cellServerState;
 
         name = microphoneCellServerState.getName();
+
 	volume = microphoneCellServerState.getVolume();
         fullVolumeArea = microphoneCellServerState.getFullVolumeArea();
         activeArea = microphoneCellServerState.getActiveArea();
