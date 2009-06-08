@@ -261,8 +261,8 @@ public class WFSRecording extends WFSRoot {
      * @throws IOException 
      */
     public void createChangesFile(long timestamp) throws IOException {
-        // read the description file if it exists
-        File cFile = new File(getDirectory(), CHANGES_DESC);
+        // read the changes file if it exists
+        File cFile = getChangesFile();
         if (cFile.exists()) {
             logger.warning("changes file for " + getName() + " already exists, deleting");
             cFile.delete();
@@ -293,6 +293,10 @@ public class WFSRecording extends WFSRoot {
         changesWriter.println("</Wonderland_Changes>");
         changesWriter.println("</Wonderland_Recorder>");
         changesWriter.close();
+    }
+
+    public File getChangesFile() {
+        return new File(getDirectory(), CHANGES_DESC);
     }
 
 
