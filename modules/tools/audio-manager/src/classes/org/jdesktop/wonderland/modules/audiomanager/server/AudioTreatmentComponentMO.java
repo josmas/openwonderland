@@ -235,7 +235,11 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
 	double fullVolumeRadius = fullVolumeAreaPercent / 100. * cellRadius;
 
-	double falloff = .92 + ((this.falloff - 50) * ((1 - .92) / 50));
+	double falloff = .92 + ((50 - this.falloff) * ((1 - .92) / 50));
+
+	if (falloff >= 1) {
+	    falloff = .999;
+	}
 
 	System.out.println("cellRadius " + cellRadius + " extent " + extent 
 	    + " fvr " + fullVolumeRadius + " falloff " + falloff + " volume " + volume);
