@@ -17,8 +17,8 @@
     <!-- import web build file -->
     <import file="${web.dir}/build-tools/build-scripts/web-build.xml"/>
 
-    <!--pathconvert property="module-client.classpath">
-    </pathconvert-->
+    <!-- pathconvert property="module-client.classpath">
+    </pathconvert -->
 
     <pathconvert property="module-web.classpath">
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
