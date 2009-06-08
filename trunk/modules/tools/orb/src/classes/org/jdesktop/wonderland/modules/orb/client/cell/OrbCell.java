@@ -72,11 +72,11 @@ public class OrbCell extends Cell {
     }
 
     @Override
-    public boolean setStatus(CellStatus status) {
-	boolean changed = super.setStatus(status);
+    protected void setStatus(CellStatus status,boolean increasing) {
+	super.setStatus(status,increasing);
 
 	switch (status) {
-	case BOUNDS:
+	case INACTIVE:
             if (orbMessageHandler == null) {
 	        logger.fine("Creating orb Message handler for " + getCellID());
                 orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession());
@@ -89,8 +89,6 @@ public class OrbCell extends Cell {
 	    }
 	    break;
 	}
-
-	return changed;
     }
 
     public void setOrbRootNode(Node orbRootNode) {

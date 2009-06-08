@@ -71,26 +71,24 @@ public class PhoneCell extends Cell {
         logger.fine("CREATED NEW PHONE CELL " + cellID);
     }
 
-    public boolean setStatus(CellStatus status) {
-        boolean changed = super.setStatus(status);
-
-        if (!changed) {
-            return changed;
-        }
+    public void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
-        case BOUNDS:
-	    if (phoneMessageHandler == null) {
-                phoneMessageHandler = new PhoneMessageHandler(this);
-	    }
+        case INACTIVE:
+            if (increasing) {
+                if (phoneMessageHandler == null) {
+                        phoneMessageHandler = new PhoneMessageHandler(this);
+                }
+            }
             break;
         case DISK:
-            phoneMessageHandler.done();
-            phoneMessageHandler = null;
+            if (!increasing) {
+                phoneMessageHandler.done();
+                phoneMessageHandler = null;
+            }
             break;
         }
-
-        return changed;
     }
 
     /**

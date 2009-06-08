@@ -45,5 +45,5 @@ public interface CellRenderer {
      * Notify the renderer of a cell status change
      * @param status
      */
-    public void setStatus(CellStatus status);
+    public void setStatus(CellStatus status,boolean increasing);
 }

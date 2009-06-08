@@ -70,24 +70,25 @@ public class DragTest extends SimpleShapeCell {
     }
 
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
-
             case ACTIVE:
-                if (cellRenderer != null) { // May be null if this is a 2D renderer
-                    dragListener.addToEntity(cellRenderer.getEntity());
+                if (increasing) {
+                    if (cellRenderer != null) { // May be null if this is a 2D renderer
+                        dragListener.addToEntity(cellRenderer.getEntity());
+                    }
                 }
                 break;
 
             case DISK:
-                if (cellRenderer != null) { // May be null if this is a 2D renderer
-                    dragListener.removeFromEntity(cellRenderer.getEntity());
+                if (!increasing) {
+                    if (cellRenderer != null) { // May be null if this is a 2D renderer
+                        dragListener.removeFromEntity(cellRenderer.getEntity());
+                    }
                 }
         }
-
-        return ret;
     }
 
     private class MyDragListener extends EventClassListener {

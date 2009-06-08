@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
+import com.acarter.scenemonitor.SceneMonitor;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import java.awt.Component;
@@ -102,7 +103,7 @@ public class CellViewerFrame extends javax.swing.JFrame {
                         if (node!=null)
                             ((DefaultTreeModel)cellTree.getModel()).removeNodeFromParent(node);
                         break;
-                    case BOUNDS :
+                    case INACTIVE :
                         if (node==null) {
                             node = createJTreeNode(cell);
                         }
@@ -150,6 +151,10 @@ public class CellViewerFrame extends javax.swing.JFrame {
                     root = root.getParent();
                 }
 
+                // Register any root nodes you want to view
+                SceneMonitor.getMonitor().registerNode(root, "TheRoot");
+                // display the viewer
+                SceneMonitor.getMonitor().showViewer(true);
                 jmeTree.setModel(new JmeTreeModel(root));
              }
         }

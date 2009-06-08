@@ -77,45 +77,46 @@ public class SwingWhiteboardCell extends App2DCell {
      * This is called when the status of the cell changes.
      */
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
 
             // The cell is now visible
             case ACTIVE:
+                if (increasing) {
+                    SwingWhiteboardApp swaApp = new SwingWhiteboardApp("Swing Whiteboard",
+                                                                       clientState.getPixelScale(),
+                                                                       commComponent);
+                    setApp(swaApp);
 
-                SwingWhiteboardApp swaApp = new SwingWhiteboardApp("Swing Whiteboard",
-                                                                   clientState.getPixelScale(), 
-                                                                   commComponent);
-                setApp(swaApp);
+                    // Tell the app to be displayed in this cell.
+                    swaApp.addDisplayer(this);
 
-                // Tell the app to be displayed in this cell.
-                swaApp.addDisplayer(this);
+                    // This app has only one window, so it is always top-level
+                    try {
+                        whiteboardWin = new SwingWhiteboardWindow(this, swaApp, clientState.getPreferredWidth(),
+                                                                  clientState.getPreferredHeight(), true,
+                                                                  pixelScale, commComponent);
+                    } catch (InstantiationException ex) {
+                        throw new RuntimeException(ex);
+                    }
 
-                // This app has only one window, so it is always top-level 
-                try {
-                    whiteboardWin = new SwingWhiteboardWindow(this, swaApp, clientState.getPreferredWidth(), 
-                                                              clientState.getPreferredHeight(), true, 
-                                                              pixelScale, commComponent);
-                } catch (InstantiationException ex) {
-                    throw new RuntimeException(ex);
+                    // Both the app and the user want this window to be visible
+                    whiteboardWin.setVisibleApp(true);
+                    whiteboardWin.setVisibleUser(this, true);
                 }
-
-                // Both the app and the user want this window to be visible
-                whiteboardWin.setVisibleApp(true);
-                whiteboardWin.setVisibleUser(this, true);
                 break;
 
             // The cell is no longer visible
             case DISK:
-                whiteboardWin.setVisibleApp(false);
-                removeComponent(SwingWhiteboardComponent.class);
-                commComponent = null;
+                if (!increasing) {
+                    whiteboardWin.setVisibleApp(false);
+                    removeComponent(SwingWhiteboardComponent.class);
+                    commComponent = null;
+                }
                 break;
         }
-
-        return ret;
     }
 
     /**

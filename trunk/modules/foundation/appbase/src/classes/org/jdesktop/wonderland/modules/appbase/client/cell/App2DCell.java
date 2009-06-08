@@ -163,34 +163,35 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * This is called when the status of the cell changes.
      */
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
 
             // The cell is now visible
             case ACTIVE:
-                if (menuFactory == null) {
-                    menuFactory = new ContextMenuFactorySPI() {
-                        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                            return windowMenuItemsForEvent(event, contextMenuComp);
-                        }
-                    };
-                    contextMenuComp.addContextMenuFactory(menuFactory);
+                if (increasing) {
+                    if (menuFactory == null) {
+                        menuFactory = new ContextMenuFactorySPI() {
+                            public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                                return windowMenuItemsForEvent(event, contextMenuComp);
+                            }
+                        };
+                        contextMenuComp.addContextMenuFactory(menuFactory);
+                    }
                 }
-
                 break;
 
             // The cell is no longer visible
             case DISK:
-                if (menuFactory != null) {
-                    contextMenuComp.removeContextMenuFactory(menuFactory);
-                    menuFactory = null;
+                if (!increasing) {
+                    if (menuFactory != null) {
+                        contextMenuComp.removeContextMenuFactory(menuFactory);
+                        menuFactory = null;
+                    }
                 }
                 break;
         }
-
-        return ret;
     }
 
     /**

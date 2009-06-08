@@ -42,21 +42,22 @@ public class RotateAffordanceCellComponent extends AffordanceCellComponent {
      * @inheritDoc()
      */
     @Override
-    public void setStatus(CellStatus status) {
+    protected void setStatus(CellStatus status, boolean increasing) {
         // If we are making the affordance ACTIVE, we want to create the
         // visual affordance Entity. We must do this *before* we call the
         // super.setStatus() method which relies upon a valid affordance
         if (status == CellStatus.ACTIVE) {
-            affordance = new RotateAffordance(getSceneGraphRoot());
-            ((RotateAffordance)affordance).addRotationListener(listener);
-        }
-        else if (status == CellStatus.DISK) {
-            ((RotateAffordance)affordance).removeRotationListener(listener);
+            if (increasing) {
+                affordance = new RotateAffordance(getSceneGraphRoot());
+                ((RotateAffordance)affordance).addRotationListener(listener);
+            } else {
+                ((RotateAffordance)affordance).removeRotationListener(listener);
+            }
         }
 
         // Now call the super setStatus() method after we've created the
         // affordance
-        super.setStatus(status);
+        super.setStatus(status, increasing);
     }
 
     /**

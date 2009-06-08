@@ -46,8 +46,8 @@ public class SampleCellComponent extends CellComponent {
     }
 
     @Override
-    public void setStatus(CellStatus status) {
-        super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
         logger.warning("Setting status on SampleCellComponent to " + status);
     }
 }

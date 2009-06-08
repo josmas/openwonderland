@@ -81,16 +81,20 @@ public class SampleCell extends Cell {
     }
 
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
-        if (status == CellStatus.ACTIVE) {
-        //    menuComponent.setShowStandardMenuItems(false);
-            menuComponent.addContextMenuFactory(new SampleContextMenuFactory());
+    protected void setStatus(CellStatus status,boolean increasing) {
+        super.setStatus(status,increasing);
+        switch(status) {
+            case ACTIVE :
+                if (increasing) {
+    //                menuComponent.setShowStandardMenuItems(false);
+                    menuComponent.addContextMenuFactory(new SampleContextMenuFactory());
+                }
+                break;
+            case DISK :
+                // TODO cleanup
+                break;
         }
-        else if (status == CellStatus.DISK) {
-            // XXX remove menu item, but really don't have to....
-        }
-        return ret;
+
     }
 
     /**

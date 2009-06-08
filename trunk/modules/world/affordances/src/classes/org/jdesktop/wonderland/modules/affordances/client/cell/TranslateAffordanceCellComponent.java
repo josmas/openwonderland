@@ -42,24 +42,24 @@ public class TranslateAffordanceCellComponent extends AffordanceCellComponent {
      * @inheritDoc()
      */
     @Override
-    public void setStatus(CellStatus status) {
+    public void setStatus(CellStatus status, boolean increasing) {
         // If we are making the affordance ACTIVE, we want to create the
         // visual affordance Entity. We must do this *before* we call the
         // super.setStatus() method which relies upon a valid affordance
-        if (status == CellStatus.ACTIVE) {
+        if (increasing && status == CellStatus.ACTIVE) {
             // Create the affordance. Register a listener for all translation
             // events for the affordance and update the translation of the
             // movable component
             affordance = new TranslateAffordance(getSceneGraphRoot());
             ((TranslateAffordance)affordance).addTranslationListener(listener);
         }
-        else if (status == CellStatus.DISK) {
+        else if (!increasing && status == CellStatus.DISK) {
             ((TranslateAffordance)affordance).removeTranslationListener(listener);
         }
 
         // Now call the super setStatus() method after we've created the
         // affordance
-        super.setStatus(status);
+        super.setStatus(status, increasing);
     }
 
     /**

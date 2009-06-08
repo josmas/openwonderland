@@ -78,19 +78,18 @@ public class SharedStateComponent extends CellComponent {
     }
 
     @Override
-    public void setStatus(CellStatus status) {
+    protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status);
 
         switch (status) {
-            case BOUNDS:
-                if (receiver == null) {
+            case ACTIVE:
+                if (increasing) {
                     receiver = new SharedStateMessageReceiver();
                     channel.addMessageReceiver(ChangeValueMessage.class, receiver);
+                } else {
+                    channel.removeMessageReceiver(ChangeValueMessage.class);
+                    receiver = null;
                 }
-                break;
-            case DISK:
-                channel.removeMessageReceiver(ChangeValueMessage.class);
-                receiver = null;
                 break;
         }
     }

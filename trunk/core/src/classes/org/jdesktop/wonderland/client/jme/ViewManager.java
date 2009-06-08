@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.concurrent.Semaphore;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.BufferUpdater;
+import org.jdesktop.mtgame.OnscreenRenderBuffer;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderBuffer;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -137,7 +138,7 @@ public class ViewManager {
     void attachViewCanvas(JPanel panel) {
         rb = ClientContextJME.getWorldManager().getRenderManager().createRenderBuffer(RenderBuffer.Target.ONSCREEN, width, height);
         ClientContextJME.getWorldManager().getRenderManager().addRenderBuffer(rb);
-        Canvas canvas = rb.getCanvas();
+        Canvas canvas = ((OnscreenRenderBuffer)rb).getCanvas();
 
         canvas.setVisible(true);
         canvas.setBounds(0, 0, width, height);
@@ -184,7 +185,7 @@ public class ViewManager {
     }
 
     Canvas getCanvas() {
-        return rb.getCanvas();
+        return ((OnscreenRenderBuffer)rb).getCanvas();
     }
     
     /**
