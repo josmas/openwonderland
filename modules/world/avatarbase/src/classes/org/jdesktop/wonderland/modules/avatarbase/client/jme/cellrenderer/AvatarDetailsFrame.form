@@ -415,7 +415,6 @@
     <Component class="javax.swing.JButton" name="eyeColorB">
       <Properties>
         <Property name="text" type="java.lang.String" value="Eye Color..."/>
-        <Property name="actionCommand" type="java.lang.String" value="Eye Color..."/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
