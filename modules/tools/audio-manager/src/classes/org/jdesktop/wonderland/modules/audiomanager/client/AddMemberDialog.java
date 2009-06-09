@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatDialOutMessage;
@@ -48,6 +49,8 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
     private PresenceInfo presenceInfo;
     private String group;
     private InCallDialog inCallDialog;
+
+    private PresenceInfo mostRecentDialout;
 
     /** Creates new form AddMemberDialog */
     public AddMemberDialog() {
@@ -155,6 +158,12 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
 
     public void memberChange(PresenceInfo info, boolean added) {
 	if (added) {
+	    if (mostRecentDialout != null &&
+                    mostRecentDialout.userID.getUsername().equals(info.userID.getUsername())) {
+
+                mostRecentDialout = info;
+            }
+
 	    if (memberscontains(info)) {
 		logger.warning("AddMemberDialog:  already a member " + info);
 		return;
@@ -353,11 +362,11 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     String name = nameTextField.getText();
 
     if (phoneNumberTextField.getText().length() > 0 && name.length() > 0) {
-        PresenceInfo pi =  new PresenceInfo(null, null, new WonderlandIdentity(name, name, null), null);
-        pi.usernameAlias = name;
+        mostRecentDialout = new PresenceInfo(null, null, new WonderlandIdentity(name, name, null), null);
+        mostRecentDialout.usernameAlias = name;
 
         session.send(client, new VoiceChatDialOutMessage(group, presenceInfo.callID, 
-	    ChatType.PRIVATE, pi, phoneNumberTextField.getText()));
+	    ChatType.PRIVATE, mostRecentDialout, phoneNumberTextField.getText()));
 
         nameTextField.setText("");
         phoneNumberTextField.setText("");
@@ -418,6 +427,12 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
 
 public void keypadPressed(char key) {
     System.out.println("Got key " + key);
+
+    if (mostRecentDialout == null) {
+        return;
+    }
+
+    session.send(client, new PlayTreatmentMessage(mostRecentDialout.callID, "dtmf:" + key));
 }
 
     /**

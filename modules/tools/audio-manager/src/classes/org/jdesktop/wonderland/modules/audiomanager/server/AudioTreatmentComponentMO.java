@@ -233,7 +233,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         TreatmentGroup group = vm.createTreatmentGroup(groupId);
-
 	
 	float cellRadius = getCellRadius();
 
@@ -245,7 +244,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	    falloff = .999;
 	}
 
-	System.out.println("cellRadius " + cellRadius + " extent " + extent 
+	System.out.println("id " + groupId + " cellRadius " + cellRadius + " extent " + extent 
 	    + " fvr " + fullVolumeRadius + " falloff " + falloff + " volume " + volume);
 
         for (int i = 0; i < treatments.length; i++) {
