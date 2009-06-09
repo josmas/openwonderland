@@ -17,7 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.textchat.server;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -40,6 +43,17 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
     private static Logger logger = Logger.getLogger(TextChatConnectionHandler.class.getName());
 
+    /**
+     * Stores the classes that have registered as listening for new chat messages.
+     */
+    private Set<ManagedReference> listeners = new HashSet<ManagedReference>();
+
+//    public TextChatConnectionHandler() {
+//        logger.info("DEFAULT CONSTRUCTOR called!");
+//
+//        listeners = new HashSet<ManagedReference>();
+//    }
+
     public ConnectionType getConnectionType() {
         return TextChatConnectionType.CLIENT_TYPE;
     }
@@ -61,10 +75,21 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
     public void messageReceived(WonderlandClientSender sender,
             WonderlandClientID clientID, Message message) {
 
+        TextChatMessage tcm = (TextChatMessage)message;
+
+        // First, notify listeners of a new message. On the server side,
+        // all listeners get all messages, even if they're sent to
+        // specific people. It's up to listeners to decide what to do
+        // with them.
+        for(ManagedReference listenerRef : this.listeners) {
+            TextChatMessageListener listener = (TextChatMessageListener)listenerRef.get();
+            logger.info("Sending to listener: " + listener);
+            listener.handleMessage(tcm);
+        }
+
         // Check to see if the message is a meant for everyone by looking at
         // the "to" field. If so, then echo the message back to all clients
         // except the one that sent the message.
-        TextChatMessage tcm = (TextChatMessage)message;
         String toUser = tcm.getToUserName();
         Set<WonderlandClientID> clientIDs = sender.getClients();
 
@@ -105,7 +130,7 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
      * @param msg The body of the text chat message.
      */
     public void sendGlobalMessage(String from, String msg) {
-        logger.info("Sending global message from " + from + ": " + msg);
+        logger.finer("Sending global message from " + from + ": " + msg);
         // Originally included for the XMPP plugin, so people chatting with the XMPP bot
         // can have their messages replicated in-world with appropriate names.
         //
@@ -123,5 +148,25 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
         // Construct a new message with appropriate fields.
         TextChatMessage textMessage = new TextChatMessage(msg, from, "");
         sender.send(clientIDs, textMessage);
+    }
+
+    /**
+     * Adds a listener object that will be called whenever a text chat message is sent.
+     * Global messages sent from sendGlobalMessage are not included in these notifications.
+     *
+     * @param listener The listener object.
+     */
+    public void addTextChatMessageListener(TextChatMessageListener listener) {
+        
+        this.listeners.add(AppContext.getDataManager().createReference(listener));
+    }
+
+    /**
+     * Removes the listener object from the list of listeners.
+     * 
+     * @param listener The listener object.
+     */
+    public void removeTextChatMessageListener(TextChatMessageListener listener) {
+        this.listeners.remove(AppContext.getDataManager().createReference(listener));
     }
 }
