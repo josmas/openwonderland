@@ -42,12 +42,15 @@ import javax.swing.JFrame;
 public class HUDFrame2DImpl extends javax.swing.JPanel {
 
     private static final Logger logger = Logger.getLogger(HUDFrame2DImpl.class.getName());
-    private Color gradientStartColor = new Color(2, 28, 109);
-    private Color gradientEndColor = new Color(134, 169, 254);
+    private Color gradientStartColor = new Color(137, 137, 137); // blue: new Color(2, 28, 109);
+    private Color gradientEndColor = new Color(180, 180, 180);   // blue: new Color(134, 169, 254);
     private List<ActionListener> listeners;
+    private GradientPaint paint;
 
     public HUDFrame2DImpl() {
         initComponents();
+        paint = new GradientPaint(0, 0, gradientStartColor,
+                0, getHeight(), gradientEndColor);
 
         minimizeButton.addActionListener(new ActionListener() {
 
@@ -55,20 +58,20 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
                 logger.info("minimize action performed");
                 if (listeners != null) {
                     ActionEvent event = new ActionEvent(HUDFrame2DImpl.this, e.getID(), "minimize");
-                    for (ActionListener listener:listeners) {
+                    for (ActionListener listener : listeners) {
                         listener.actionPerformed(event);
                     }
                 }
             }
         });
-        
+
         closeButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 logger.info("close action performed");
                 if (listeners != null) {
                     ActionEvent event = new ActionEvent(HUDFrame2DImpl.this, e.getID(), "close");
-                    for (ActionListener listener:listeners) {
+                    for (ActionListener listener : listeners) {
                         listener.actionPerformed(event);
                     }
                 }
@@ -103,8 +106,6 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
 
-        GradientPaint paint = new GradientPaint(0, 0, gradientStartColor,
-                0, getHeight(), gradientEndColor);
         g2.setPaint(paint);
         g2.fill(g2.getClip());
         this.paintChildren(g);

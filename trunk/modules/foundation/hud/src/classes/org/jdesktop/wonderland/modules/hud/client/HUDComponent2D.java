@@ -58,6 +58,7 @@ public class HUDComponent2D implements HUDComponent {
     private boolean visible = false;
     private boolean worldVisible = false;
     private boolean enabled = false;
+    private boolean decoratable = true;
     private Layout compassPoint = Layout.NONE;
     private DisplayMode mode = DisplayMode.HUD;
 
@@ -325,6 +326,20 @@ public class HUDComponent2D implements HUDComponent {
      */
     public boolean isEnabled() {
         return enabled;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setDecoratable(boolean decoratable) {
+        this.decoratable = decoratable;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean getDecoratable() {
+        return decoratable;
     }
 
     /**

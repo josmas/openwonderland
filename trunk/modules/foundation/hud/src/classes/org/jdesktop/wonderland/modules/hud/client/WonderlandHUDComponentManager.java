@@ -39,6 +39,8 @@ import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
 import org.jdesktop.wonderland.client.hud.HUDComponentListener;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.Type;
@@ -67,7 +69,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     // displays HUD components in-world, associated with some cell
     protected HUDView3DDisplayer worldDisplayer;
     protected Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
-    protected Vector2f worldPixelScale = new Vector2f(0.015f, 0.015f);
+    protected Vector2f worldPixelScale = new Vector2f(0.013f, 0.013f);
     protected Point dragStartPoint;
     protected Point dragOffset;
     protected Point lastPoint;
@@ -86,7 +88,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         try {
             // REMIND: pixel scale doesn't match
             window = hudApp.createWindow(component.getWidth(), component.getHeight(), Type.PRIMARY,
-                    false, new Vector2f(0.1f, 0.1f), "HUD component");
+                    false, hudPixelScale, "HUD component");
 
             JComponent comp = ((HUDComponent2D) component).getComponent();
             ((WindowSwing) window).setComponent(comp);
@@ -233,7 +235,8 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         // display/hide the frame view
         frameView.setVisibleApp(visible);
         frameView.setVisibleUser(visible);
-        setTransparent(frameView);
+
+    //setTransparent(frameView);
     }
 
     private void componentVisible(HUDComponent2D component) {
@@ -259,15 +262,16 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         logger.fine("displaying HUD view");
         view.setOrtho(true, false);
 
-        Point location = (layout != null) ? layout.getLocation(component) :
-            component.getLocation();
+        Point location = (layout != null) ? layout.getLocation(component) : component.getLocation();
 
-        view.setLocationOrtho(new Vector2f((int)location.getX(), (int)location.getY()), false);
+        view.setLocationOrtho(new Vector2f((int) location.getX(), (int) location.getY()), false);
         view.setPixelScaleOrtho(hudPixelScale, false);
         view.setVisibleApp(true, false);
         view.setVisibleUser(true);
 
-        showFrame(component, true);
+        if (component.getDecoratable()) {
+            showFrame(component, true);
+        }
     }
 
     public void setTransparent(HUDView2D view) {
@@ -382,12 +386,8 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         HUDView3D view = state.getWorldView();
         if (view != null) {
             Vector3f worldOffset = component.getWorldLocation();
-            logger.info("--- world position: " + worldOffset);
             // position HUD in x, y
             view.setOffset(new Vector2f(worldOffset.x, worldOffset.y));
-            view.setPixelOffset(new Point(0, 0));
-            // adjust HUD position in z
-            view.applyDeltaTranslationUser(new Vector3f(0.0f, 0.0f, worldOffset.z));
         }
     }
 

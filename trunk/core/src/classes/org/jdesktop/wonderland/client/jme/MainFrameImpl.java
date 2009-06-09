@@ -571,10 +571,6 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         serverListener = listener;
     }
 
-    public void setMessageLabel(String msg) {
-        messageLabel.setText(msg);
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -590,8 +586,6 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         serverField = new javax.swing.JTextField();
         goButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        messageLabel = new javax.swing.JTextField();
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         editMenu = new javax.swing.JMenu();
@@ -649,34 +643,6 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         getContentPane().add(serverPanel, java.awt.BorderLayout.NORTH);
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
-        jPanel1.setPreferredSize(new java.awt.Dimension(704, 35));
-
-        messageLabel.setColumns(20);
-        messageLabel.setEditable(false);
-        messageLabel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                messageLabelActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(438, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-
-        getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
-
         fileMenu.setText(bundle.getString("File")); // NOI18N
         mainMenuBar.add(fileMenu);
 
@@ -718,10 +684,6 @@ private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     }
 }//GEN-LAST:event_goButtonActionPerformed
 
-private void messageLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_messageLabelActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_messageLabelActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu editMenu;
@@ -729,9 +691,7 @@ private void messageLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JButton goButton;
     private javax.swing.JMenu insertMenu;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JMenuBar mainMenuBar;
-    private javax.swing.JTextField messageLabel;
     private javax.swing.JMenu placemarksMenu;
     private javax.swing.JTextField serverField;
     private javax.swing.JLabel serverLabel;
