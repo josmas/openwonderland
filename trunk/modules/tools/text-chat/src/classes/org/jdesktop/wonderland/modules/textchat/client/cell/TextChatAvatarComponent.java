@@ -38,8 +38,8 @@ public class TextChatAvatarComponent extends CellComponent {
      * @inheritDoc()
      */
     @Override
-    public void setStatus(CellStatus status) {
-        super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
 //        if (status == CellStatus.ACTIVE) {
 //            contextComp.addMenuItem(new SimpleContextMenuItem("Text Chat...", null, null));

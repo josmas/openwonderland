@@ -109,7 +109,7 @@ public class AudioParticipantComponent extends CellComponent implements
     }
 
     @Override
-    public void setStatus(CellStatus status) {
+    protected void setStatus(CellStatus status, boolean increasing) {
 	switch(status) {
         case DISK:
 	    channelComp.removeMessageReceiver(AudioParticipantSpeakingMessage.class);
@@ -117,33 +117,34 @@ public class AudioParticipantComponent extends CellComponent implements
 	    channelComp.removeMessageReceiver(ChangeUsernameAliasMessage.class);
             break;
 
-	case INACTIVE:
+	case ACTIVE:
+        if (increasing) {
             channelComp = cell.getComponent(ChannelComponent.class);
             channelComp.addMessageReceiver(AudioParticipantSpeakingMessage.class, this);
             channelComp.addMessageReceiver(AudioParticipantMuteCallMessage.class, this);
             channelComp.addMessageReceiver(ChangeUsernameAliasMessage.class, this);
 
-	    if (cell instanceof OrbCell == false && menuItemAdded == false) {
-                // An event to handle the context menu item action
-                final ContextMenuActionListener l = new ContextMenuActionListener() {
-                    public void actionPerformed(ContextMenuItemEvent event) {
-                        adjustVolume(event);
-                    }
-                };
+            if (cell instanceof OrbCell == false && menuItemAdded == false) {
+                    // An event to handle the context menu item action
+                    final ContextMenuActionListener l = new ContextMenuActionListener() {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            adjustVolume(event);
+                        }
+                    };
 
-                // Create a new ContextMenuFactory for the Volume... control
-                ContextMenuFactorySPI factory = new ContextMenuFactorySPI() {
-                    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                        return new ContextMenuItem[] {
-                            new SimpleContextMenuItem("Volume", l)
-                        };
-                    }
-                };
+                    // Create a new ContextMenuFactory for the Volume... control
+                    ContextMenuFactorySPI factory = new ContextMenuFactorySPI() {
+                        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                            return new ContextMenuItem[] {
+                                new SimpleContextMenuItem("Volume", l)
+                            };
+                        }
+                    };
 
-                contextMenu.addContextMenuFactory(factory);
-		menuItemAdded = true;
-	    }
-
+                    contextMenu.addContextMenuFactory(factory);
+            menuItemAdded = true;
+            }
+        }
 	    break;
         }
     }

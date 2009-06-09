@@ -37,37 +37,37 @@ import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
  */
 @ExperimentalAPI
 public class ConeOfSilenceComponent extends CellComponent {
-    
-    private static Logger logger = Logger.getLogger(ConeOfSilenceComponent.class.getName());
 
+    private static Logger logger = Logger.getLogger(ConeOfSilenceComponent.class.getName());
     private ChannelComponent channelComp;
     private ChannelComponent.ComponentMessageReceiver msgReceiver;
-    
+
     public ConeOfSilenceComponent(Cell cell) {
         super(cell);
     }
-    
+
     @Override
-    public void setStatus(CellStatus status) {
-        switch(status) {
-	case DISK:
-	    if (msgReceiver != null) {
-                channelComp.removeMessageReceiver(CellServerComponentMessage.class);
-                msgReceiver = null;
-            }
-            break;
+    protected void setStatus(CellStatus status, boolean increasing) {
+        switch (status) {
+            case DISK:
+                if (msgReceiver != null) {
+                    channelComp.removeMessageReceiver(CellServerComponentMessage.class);
+                    msgReceiver = null;
+                }
+                break;
 
-	case INACTIVE:
-	    if (msgReceiver == null) {
-                msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-                    public void messageReceived(CellMessage message) {
-                    }
-                };
+            case ACTIVE:
+                if (increasing && msgReceiver == null) {
+                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
-                channelComp = cell.getComponent(ChannelComponent.class);
-		channelComp.addMessageReceiver(CellServerComponentMessage.class, msgReceiver);
-	    }
-            break;
+                        public void messageReceived(CellMessage message) {
+                        }
+                    };
+
+                    channelComp = cell.getComponent(ChannelComponent.class);
+                    channelComp.addMessageReceiver(CellServerComponentMessage.class, msgReceiver);
+                }
+                break;
         }
     }
 
@@ -75,7 +75,6 @@ public class ConeOfSilenceComponent extends CellComponent {
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
 
-	logger.info("setClientState for cone! " + clientState);
+        logger.info("setClientState for cone! " + clientState);
     }
-
 }
