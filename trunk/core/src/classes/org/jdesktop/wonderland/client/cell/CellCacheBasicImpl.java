@@ -155,14 +155,16 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                 rootCells.add(cell);
             }
 
+            // TODO this will change, the state will applied when the cell
+            // becomes ACTIVE
             if (setup!=null)
                 cell.setClientState(setup);
             else
                 logger.warning("Cell has null setup "+className+"  "+cell);
 
             // Force the cell to create the JME renderer entity
-            // Current assumption is that the cell is about to be ACTIVE, so we want the renderer asap
-            createCellRenderer(cell);  
+            // Current assumption is that the cell is about to be VISIBLE, so we want the renderer asap
+//            createCellRenderer(cell);
 
             // notify listeners
             fireCellLoaded(cell);
@@ -306,8 +308,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         // Activate all current cells
         synchronized(cells) {
             for(Cell cell : cells.values()) {
-                if (cell.getStatus().ordinal()<CellStatus.ACTIVE.ordinal())
-                    changeCellStatus(cell, CellStatus.ACTIVE);
+                if (cell.getStatus().ordinal()<CellStatus.VISIBLE.ordinal())
+                    changeCellStatus(cell, CellStatus.VISIBLE);
             }
         }
     }
