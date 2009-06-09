@@ -46,4 +46,10 @@ public interface CellRenderer {
      * @param status
      */
     public void setStatus(CellStatus status,boolean increasing);
+
+    /**
+     * Return the current status of the CellRenderer
+     * @return
+     */
+    public CellStatus getStatus();
 }

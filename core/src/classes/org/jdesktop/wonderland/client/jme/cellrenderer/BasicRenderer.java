@@ -45,6 +45,7 @@ import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -73,7 +74,7 @@ public abstract class BasicRenderer implements CellRendererJME {
     
     private static ZBufferState zbuf = null;
 
-    private boolean isRendering = false;
+    private CellStatus status = CellStatus.DISK;
     
     static {
         zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
@@ -93,10 +94,16 @@ public abstract class BasicRenderer implements CellRendererJME {
         return cell;
     }
 
+    public CellStatus getStatus() {
+        return status;
+    }
+
     public void setStatus(CellStatus status,boolean increasing) {
+        System.err.println("*** BASIC REND "+status+"  "+this);
+        this.status = status;
         switch(status) {
             case ACTIVE :
-                if (cell!=null && !isRendering) {
+                if (increasing && cell!=null) {
                     Entity parentEntity= findParentEntity(cell.getParent());
                     Entity thisEntity = getEntity();
 
@@ -121,14 +128,13 @@ public abstract class BasicRenderer implements CellRendererJME {
                             thisRendComp.setAttachPoint(parentRendComp.getSceneRoot());
                         }
                     }
-                    isRendering = true;
 
                 } else {
                     logger.info("No Entity for Cell "+cell.getClass().getName());
                 }
             break;
             case INACTIVE :
-                if (isRendering) {
+                if (!increasing) {
                     try {
                         Entity parent = getEntity().getParent();
                         if (parent!=null)
@@ -139,7 +145,6 @@ public abstract class BasicRenderer implements CellRendererJME {
                         System.err.println("NPE in "+this);
                         e.printStackTrace();
                     }
-                    isRendering = false;
                 }
                 break;
         }

@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.ComponentChangeListener.ChangeType;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -536,6 +537,26 @@ public class Cell {
         }
     }
 
+    private void setRendererStatus(CellRenderer rend, CellStatus status) {
+        int currentRendStatus = rend.getStatus().ordinal();
+        int requiredRendStatus = status.ordinal();
+
+        if (currentRendStatus == requiredRendStatus)
+            return;
+
+        boolean increasing;
+        int dir = (requiredRendStatus > currentRendStatus ? 1 : -1);
+        if (dir==1)
+            increasing = true;
+        else
+            increasing = false;
+
+        while (currentRendStatus != requiredRendStatus) {
+            currentRendStatus += dir;
+            rend.setStatus(CellStatus.values()[currentRendStatus], increasing);
+        }
+    }
+
     /**
      * Set the status of this cell
      *
@@ -561,7 +582,6 @@ public class Cell {
      * @param increasing indicates if the status is increasing
      */
     protected void setStatus(CellStatus status, boolean increasing) {
-        System.err.println("SetStatus "+status+"  "+increasing);
         synchronized (statusLock) {
             if (status == CellStatus.INACTIVE && increasing) {
                 resolveAutoComponentAnnotationsForCell();
@@ -578,7 +598,7 @@ public class Cell {
             }
 
             for (CellRenderer renderer : cellRenderers.values()) {
-                renderer.setStatus(status,increasing);
+                setRendererStatus(renderer, status);
             }
 
             switch (status) {
@@ -607,7 +627,7 @@ public class Cell {
                     }
                     break;
 
-                case INACTIVE:
+                case ACTIVE:
                     if (increasing && clientStateReceiver == null) {
                         // Add the message receiver for all messages meant to
                         // update the state cell on the client-side
@@ -623,6 +643,16 @@ public class Cell {
                         }
                     }
                     break;
+                case RENDERING :
+                    if (increasing) {
+                        logger.warning("STATE ENTER "+this);
+                        try {
+                            getCellRenderer(ClientContext.getRendererType());
+                        } catch(Exception e) {
+                            logger.log(Level.SEVERE, "Failed to get Cell Renderer for cell "+getClass().getName(), e);
+                        }
+                    }
+                 break;
             }
         }
 
@@ -833,7 +863,7 @@ public class Cell {
             ret = createCellRenderer(rendererType);
             if (ret != null) {
                 cellRenderers.put(rendererType, ret);
-                ret.setStatus(currentStatus,true);
+                setRendererStatus(ret, currentStatus);
             }
         }
 
