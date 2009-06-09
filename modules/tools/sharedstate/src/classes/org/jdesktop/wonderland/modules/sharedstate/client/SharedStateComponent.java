@@ -79,7 +79,7 @@ public class SharedStateComponent extends CellComponent {
 
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
-        super.setStatus(status);
+        super.setStatus(status, increasing);
 
         switch (status) {
             case ACTIVE:

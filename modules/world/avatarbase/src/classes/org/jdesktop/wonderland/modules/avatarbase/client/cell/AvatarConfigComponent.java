@@ -84,8 +84,8 @@ public class AvatarConfigComponent extends CellComponent {
     }
 
     @Override
-    public void setStatus(CellStatus status) {
-        super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
         switch (status) {
             case DISK:
                 if (msgReceiver != null && channelComp != null) {
@@ -93,7 +93,7 @@ public class AvatarConfigComponent extends CellComponent {
                     msgReceiver = null;
                 }
                 break;
-            case INACTIVE: {
+            case ACTIVE: {
                 if (msgReceiver == null) {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 

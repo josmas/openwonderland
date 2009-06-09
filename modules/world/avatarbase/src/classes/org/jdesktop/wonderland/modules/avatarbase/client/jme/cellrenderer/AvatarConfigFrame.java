@@ -450,7 +450,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         final JFrame f = this;
         f.setCursor(waitCursor);
 
-        EventQueue.invokeLater(new Runnable() {
+        Runnable r = new Runnable() {
             public void run() {
 
                 WlAvatarCharacter avatarCharacter=null;
@@ -496,7 +496,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 avatarRenderer.changeAvatar(avatarCharacter);
                 f.setCursor(normalCursor);
            }
-        });
+        };
+        new Thread(r).start();
 
     }//GEN-LAST:event_randomizeBActionPerformed
 
