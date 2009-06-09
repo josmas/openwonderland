@@ -41,7 +41,7 @@ public abstract class AppXrw extends AppConventional {
     /** The logger for app.modules.xremwin */
     static final Logger logger = Logger.getLogger(AppXrw.class.getName());
     /** A mapping of wids to the corresponding windows */
-    static final HashMap<Integer, WindowXrw> widToWindow = new HashMap<Integer, WindowXrw>();
+    final HashMap<Integer, WindowXrw> widToWindow = new HashMap<Integer, WindowXrw>();
     /** The Xremwin protocol interpreter -- Set it subclass constructor */
     protected ClientXrw client;
 
@@ -102,11 +102,6 @@ public abstract class AppXrw extends AppConventional {
             }
         }
         widToWindow.clear();
-
-        if (client != null) {
-            client.cleanup();
-            client = null;
-        }
 
         windowVisibleOrder.clear();
     }

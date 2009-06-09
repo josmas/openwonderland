@@ -171,7 +171,7 @@ public class WindowSystemXrw
 
     /** For internal use only */
     public void windowManagerExitted() {
-        AppXrw.logger.info("Window manager exitted for " + appInstanceName);
+        AppXrw.logger.severe("Window manager exitted for " + appInstanceName);
         wm.removeExitListener(this);
         cleanup();
     }

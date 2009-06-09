@@ -140,18 +140,23 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
     // the server or be a hello from a connecting slave.
     private final LinkedList<SlaveHelloMessage> slaveHellos = new LinkedList<SlaveHelloMessage>();
 
+    /** The client to which this proxy belongs. */
+    private ClientXrwMaster client;
+
     /** 
      * Create a new instance of ServerXrwMaster.
      * @param session This app's Wonderland session.
      * @param masterHost The master host name (this host).
      * @param wsDisplayNum The X11 display number used by the window system for this app.
      * @param serverSocket The server socket to which slaves should connect.
+     * @param client The client to which this proxy belongs.
      */
     public ServerProxyMaster(WonderlandSession session, String masterHost, int wsDisplayMaster,
-            ServerSocket serverSocket) {
+                             ServerSocket serverSocket, ClientXrwMaster client) {
         super(masterHost, wsDisplayMaster);
         this.session = session;
         this.serverSocket = serverSocket;
+        this.client = client;
     }
 
     public void connect() throws IOException {
@@ -173,6 +178,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+        AppXrw.logger.severe("ServerProxyMaster disconnected");
     }
 
     public void cleanup() {
@@ -186,6 +192,15 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
 
         curBuf = null;
+
+        AppXrw.logger.severe("ServerProxyMaster cleaned up");
+    }
+
+    /**
+     * Return the app of this proxy.
+     */
+    public AppXrw getApp () {
+        return client.getApp();
     }
 
     /**
@@ -213,14 +228,12 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
             }
 
             // After servicing connectin slaves, try read a message from the server.
-            //System.err.println("Service server messages");
             try {
                 ServerMessageType type = socketReadMessageType();
                 return type;
             } catch (IOException e) {
                 if (e instanceof SocketTimeoutException) {
                     // No message yet from server. Keep looping.
-                    //System.err.println("Nothing from server yet")
                 } else {
                     throw new RuntimeException(e);
                 }
@@ -250,7 +263,6 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         try {
             lastMsgCode = (byte) in.readUnsignedByte();
             int msgCode = (int) lastMsgCode;
-            //System.err.println("msgCode = " + msgCode);
             return ServerMessageType.values()[msgCode];
         } catch (SocketException e) {
             // TODO: for now, ignore socket close errors. They occur
@@ -600,11 +612,9 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
 
             curBuf.setBuffer(setWindowTitleBuf, 4);
             msgArgs.wid = curBuf.nextInt();
-            //System.err.println("msgArgs.wid = " + msgArgs.wid);
 
             curBuf.setBuffer(setWindowTitleBuf, 8);
             int strLen = curBuf.nextInt();
-            //System.err.println("strlen = " + strLen);
 
             byte[] title = new byte[strLen];
             in.readFully(title);
@@ -749,7 +759,9 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
     }
 
     public void writeSlaveSyncPixels(BigInteger slaveID, byte[] pixelBytes) {
-        sf.unicastSend(slaveID, pixelBytes);
+        // NOTE: right now this is only used during syncing a slave.
+        // So we must force the send to occur.
+        sf.unicastSend(slaveID, pixelBytes, true);
     }
 
     /* For Debug

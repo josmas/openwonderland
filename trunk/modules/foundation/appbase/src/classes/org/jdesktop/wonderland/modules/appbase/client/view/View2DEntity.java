@@ -974,6 +974,113 @@ public abstract class View2DEntity implements View2D {
         return ortho;
     }
 
+    private void logChangeMask (int mask) {
+        logger.info("changeMask " + Integer.toHexString(mask));
+        int bit = 0x1;
+        for (int i = 0; i < 32; i++, bit <<= 1) {
+            int thisBit = mask & bit;
+            if (thisBit != 0) {
+                String str;
+                switch (thisBit) {
+                case CHANGED_TYPE:
+                    str = "CHANGED_TYPE";
+                    break;
+                case CHANGED_PARENT:
+                    str = "CHANGED_PARENT";
+                    break;
+                case CHANGED_VISIBLE:
+                    str = "CHANGED_VISIBLE";
+                    break;
+                case CHANGED_DECORATED:
+                    str = "CHANGED_DECORATED";
+                    break;
+                case CHANGED_GEOMETRY:
+                    str = "CHANGED_GEOMETRY";
+                    break;
+                case CHANGED_SIZE_APP:
+                    str = "CHANGED_SIZE_APP";
+                    break;
+                case CHANGED_PIXEL_SCALE:
+                    str = "CHANGED_PIXEL_SCALE";
+                    break;
+                case CHANGED_OFFSET:
+                    str = "CHANGED_OFFSET";
+                    break;
+                case CHANGED_USER_TRANSFORM:
+                    str = "CHANGED_USER_TRANSFORM";
+                    break;
+                case CHANGED_TITLE:
+                    str = "CHANGED_TITLE";
+                    break;
+                case CHANGED_STACK:
+                    str = "CHANGED_STACK";
+                    break;
+                case CHANGED_ORTHO:
+                    str = "CHANGED_ORTHO";
+                    break;
+                case CHANGED_LOCATION_ORTHO:
+                    str = "CHANGED_LOCATION_ORTHO";
+                    break;
+                case CHANGED_TEX_COORDS:
+                    str = "CHANGED_TEX_COORDS";
+                    break;
+                default:
+                    continue;
+                }
+
+                // Printed selected values
+                String str2 = null;
+                switch (thisBit) {
+                case CHANGED_TYPE:
+                    str2 = ": type = " + type;
+                    break;
+                case CHANGED_PARENT:
+                    str2 = ": parent = " + parent;
+                    break;
+                case CHANGED_VISIBLE:
+                    str2 = ": visibleApp = " + visibleApp + ", visibleUser = " + visibleUser;
+                    break;
+                case CHANGED_DECORATED:
+                    str2 = ": decorated = " + decorated;
+                    break;
+                case CHANGED_GEOMETRY:
+                    break;
+                case CHANGED_SIZE_APP:
+                    str2 = ": sizeApp = " + sizeApp;
+                    break;
+                case CHANGED_PIXEL_SCALE:
+                    str2 = ": pixelScaleCell = " + pixelScaleCell + ", pixelScaleOrtho = " + pixelScaleOrtho;
+                    break;
+                case CHANGED_OFFSET:
+                    str2 = ": offset = " + offset + ", pixelOffset = " + pixelOffset;
+                    break;
+                case CHANGED_USER_TRANSFORM:
+                    str2 = ": deltaTranslationToApply = " + deltaTranslationToApply;
+                    break;
+                case CHANGED_TITLE:
+                    str2 = ": title = " + title;
+                    break;
+                case CHANGED_STACK:
+                    break;
+                case CHANGED_ORTHO:
+                    str2 = ": ortho = " + ortho;
+                    break;
+                case CHANGED_LOCATION_ORTHO:
+                    str2 = ": locationOrtho = " + locationOrtho;
+                    break;
+                case CHANGED_TEX_COORDS:
+                    break;
+                }
+
+                str += "(" + Integer.toHexString(thisBit) + ")";
+                if (str2 != null) {
+                    str += str2;
+                }
+                logger.info(str);
+            }
+        }
+    }
+
     /** Processes attribute changes. Should be called within a synchronized block. */
     protected void processChanges () {
 
@@ -982,7 +1089,7 @@ public abstract class View2DEntity implements View2D {
 
         logger.fine("------------------ Processing changes for view " + this);
         logger.fine("type " + type);
-        logger.fine("changeMask " + Integer.toHexString(changeMask));
+        logChangeMask(changeMask);
 
         // React to topology related changes
         if ((changeMask & (CHANGED_GEOMETRY | CHANGED_SIZE_APP | CHANGED_TYPE | CHANGED_PARENT | 

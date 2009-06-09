@@ -21,9 +21,13 @@ import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporterFactory;
 import org.jdesktop.wonderland.modules.sas.provider.SasProvider;
+import org.jdesktop.wonderland.modules.sas.provider.SasProviderConnection;
 import org.jdesktop.wonderland.modules.sas.provider.SasProviderConnectionListener;
 import org.jdesktop.wonderland.modules.sas.provider.SasProviderSession;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwMaster;
+import org.jdesktop.wonderland.common.messages.MessageID;
+import java.util.logging.Logger;
+import java.util.HashMap;
 
 /**
  * The main logic for the SAS Xremwin provider client.
@@ -31,10 +35,26 @@ import org.jdesktop.wonderland.modules.xremwin.client.AppXrwMaster;
  * @author deronj
  */
 @ExperimentalAPI
-public class SasXrwProviderMain implements SasProviderConnectionListener {
+public class SasXrwProviderMain 
+    implements SasProviderConnectionListener, AppXrwMaster.ExitListener {
+
+    static final Logger logger = Logger.getLogger(SasXrwProviderMain.class.getName());
 
     /** The session associated with this provider. */
     private SasProviderSession session;
+
+    /** An entry which holds information needed to notify the SasServer of app exit. */
+    private class AppInfo {
+        private SasProviderConnection connection;
+        private MessageID launchMessageID;
+        private AppInfo (SasProviderConnection connection, MessageID launchMessageID) {
+            this.connection = connection;
+            this.launchMessageID = launchMessageID;
+        }
+    }
+
+    /** Information about the apps which are running in this provider. */
+    private HashMap<AppXrwMaster,AppInfo> runningAppInfos = new HashMap<AppXrwMaster,AppInfo>();
 
     /**
      * @param args the command line arguments
@@ -92,7 +112,8 @@ public class SasXrwProviderMain implements SasProviderConnectionListener {
     /**
      * {@inheritDoc}
      */
-    public String launch (String appName, String command, Vector2f pixelScale) {
+    public String launch (String appName, String command, Vector2f pixelScale, 
+                          SasProviderConnection connection, MessageID launchMessageID) {
         AppXrwMaster app = null;
         try {
             app = new AppXrwMaster(appName, command, pixelScale, 
@@ -101,10 +122,31 @@ public class SasXrwProviderMain implements SasProviderConnectionListener {
             return null;
         }
 
+        app.setExitListener(this);
+
+        synchronized (runningAppInfos) {
+            runningAppInfos.put(app, new AppInfo(connection, launchMessageID));
+        }
+
         // Now it is time to enable the master client loop
         app.getClient().enable();
 
         return app.getConnectionInfo().toString();
+    }
+
+
+    /**
+     * Called when an app exits.
+     */
+    public void appExitted (AppXrwMaster app) {
+        logger.warning("App Exitted: " + app.getName());
+        synchronized (runningAppInfos) {
+            AppInfo appInfo = runningAppInfos.get(app);
+            if (appInfo != null) {
+                runningAppInfos.remove(app);
+                appInfo.connection.appExitted(appInfo.launchMessageID, app.getExitValue());
+            }
+        }
     }
 }
 

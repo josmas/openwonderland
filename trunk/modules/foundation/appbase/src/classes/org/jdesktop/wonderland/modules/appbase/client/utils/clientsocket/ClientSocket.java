@@ -87,7 +87,13 @@ public class ClientSocket {
     private boolean closed = false;
 
     // Master Only: Don't write anything until this socket is enabled
+    // The master will enable this when it has finished enqueueing the
+    // welcome messages.
     protected boolean enable = false;
+
+    // For debug
+    // TODO: low why do the printed packet numbers for the sends start at 1 and not 0?
+    //private int packetNumber = 0;
 
     protected ClientSocket(BigInteger clientID, Socket socket, ClientSocketListener listener) {
         myClientID = clientID;
@@ -229,7 +235,11 @@ public class ClientSocket {
             statReporter.stop();
         }
 
+        stopReading = true;
+        stopWriting = true;
         closed = true;
+
+        logger.info("ClientSocket closed");
     }
 
     protected byte[] readMessage() throws IOException, EOFException {
@@ -238,13 +248,16 @@ public class ClientSocket {
             logger.fine("Received message " + msgCountReceived);
         }
 
+        //For Debug: int pktNum = dis.readInt();
         int len = dis.readInt();
         byte[] buf = new byte[len];
 
         dis.readFully(buf, 0, len);
 
         if (DEBUG_IO) {
-            logger.fine("RECVD: " + len + " bytes");
+            logger.severe("clientSocket = " + this);
+            //logger.severe("RECVD (" + pktNum + "): " + len + " bytes");
+            logger.severe("RECVD: " + len + " bytes");
             print10bytes(buf);
         }
 
@@ -277,7 +290,18 @@ public class ClientSocket {
      * @param buf The byte array to send.
      */
     public void send(byte[] buf) throws IOException {
-        send(buf, buf.length);
+        send(buf, buf.length, false);
+    }
+
+    /**
+     * Send the entire contents of the given byte array to the client on the other side. 
+     * Do not block; just enqueue buffer to be written out later by write loop.
+     * @param buf The byte array to send.
+     * @param force If true, ignore the enable condition and send the message anyway.
+     * (Used by the master to send welcome messages). Only used by master.
+     */
+    public void send(byte[] buf, boolean force) throws IOException {
+        send(buf, buf.length, force);
     }
 
     /**
@@ -285,11 +309,15 @@ public class ClientSocket {
      * Do not block; just enqueue buffer to be written out later by write loop.
      * @param buf The byte array to send.
      * @param len The number of bytes to send.
+     * @param force If true, ignore the enable condition and send the message anyway.
+     * (Used by the master to send welcome messages). Only used by master.
      */
-    public void send(byte[] buf, int len) throws IOException {
+    public void send(byte[] buf, int len, boolean force) throws IOException {
 
         // On the master only, don't write anything until enabled
-        if (master && !enable) {
+        // NOTE: it is okay to drop these messages on the floor because the state they
+        // contain will be sent to the slave during the upcoming sync message.
+        if (master && !enable && !force) {
             return;
         }
 
@@ -416,13 +444,15 @@ public class ClientSocket {
                 }
             }
 
-            if (!writeMessageBuf(msg.buf, msg.len)) {
-                return;
+            if (DEBUG_IO) {
+                logger.severe("clientSocket = " + this);
+                //logger.severe("SENT (" + packetNumber + "): " + msg.len + " bytes");
+                logger.severe("SENT: " + msg.len + " bytes");
+                print10bytes(msg.buf);
             }
 
-            if (DEBUG_IO) {
-                logger.info("SENT: " + msg.len + " bytes");
-                print10bytes(msg.buf);
+            if (!writeMessageBuf(msg.buf, msg.len)) {
+                return;
             }
         }
 
@@ -432,6 +462,7 @@ public class ClientSocket {
 
     private final boolean writeMessageBuf(byte[] buf, int len) {
         try {
+            // For debug: dos.writeInt(packetNumber++);
             dos.writeInt(len);
             dos.write(buf, 0, len);
         } catch (EOFException e) {

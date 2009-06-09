@@ -72,9 +72,9 @@ public class WindowXrw extends WindowConventional {
 
         // Determine whether this window is transient for another
         // TODO: not yet implemented
-        int transientForWid = ((AppXrw) app).getTransientForWid(wid);
+        int transientForWid = ((AppXrw)app).getTransientForWid(wid);
         if (transientForWid != 0) {
-            winTransientFor = AppXrw.widToWindow.get(transientForWid);
+            winTransientFor = ((AppXrw)app).widToWindow.get(transientForWid);
         }
 
         setScreenPosition/*TODO:winconfig:resize:Local*/(x, y);

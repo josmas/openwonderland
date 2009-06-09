@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import java.util.logging.Logger;
 
 /**
@@ -249,20 +250,20 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         } else {
             if (connectionInfo != null) {
                 appServerLauncher.appStop(cellID);
-                connectionInfo = null;
+                destroy();
             }
         }
     }
 
     public void appLaunchResult (AppServerLauncher.LaunchStatus status, String connInfo) {
 
-        logger.severe("############### AppConventionalCellMO: Launch result received");
-        logger.severe("status = " + status);
-        logger.severe("connInfo = " + connInfo);
+        logger.info("AppConventionalCellMO: Launch result received");
+        logger.info("status = " + status);
+        logger.info("connInfo = " + connInfo);
 
         if (status == AppServerLauncher.LaunchStatus.FAIL) {
             logger.warning("Could not launch app " + serverState.getAppName());
-            // TODO: probably want to destroy the cell
+            destroy();
             return;
         }
 
@@ -273,7 +274,6 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         AppConventionalCellSetConnectionInfoMessage msg = 
             new AppConventionalCellSetConnectionInfoMessage(cellID, connInfo);
         AppConventionalConnectionHandler.getSender().send(msg);
-        System.err.println("!!!!!!!!!!! Slaves notified of connection info " + connInfo);
     }
 
     public void setConnectionInfo (String connInfo) {
@@ -282,5 +282,35 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         if (clientState != null) {
             clientState.setConnectionInfo(connectionInfo);
         }
+    }
+
+    /**
+     * Destroy this cell.
+     */
+    public void destroy () {
+        CellManagerMO.getCellManager().removeCellFromWorld(this);
+        serverState = null;
+        clientState = null;
+        connectionInfo = null;
+    }
+
+    /**
+     * App has exitted (or SAS provider has terminated).
+     * @param exitValue If >= 0, this is the exit value of the app.
+     * If < 0, the SAS provider has terminated and the app exit value is unknown.
+     */
+    public void appExitted (int exitValue) {
+        setConnectionInfo(null);
+        if (exitValue >= 0) {
+            logger.warning("App cell terminated because app exitted with exit value = " + exitValue);
+        } else {
+            logger.warning("App cell terminated because SAS provider exitted.");
+        }
+        logger.warning("App name of cell = " + serverState.getAppName());
+        logger.warning("Launch command of app = " + serverState.getCommand());
+
+        // TODO: notify clients of exit value
+
+        destroy();
     }
 }

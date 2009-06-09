@@ -94,6 +94,8 @@ public class MasterSocketSet implements Runnable {
         } catch (Exception e) {
             logger.warning("Cannot close server socket");
         }
+
+        logger.severe("MasterSocketSet closed");
     }
 
     /**
@@ -160,6 +162,14 @@ public class MasterSocketSet implements Runnable {
      * Send the given number of bytes of the given byte array to the given slave. Don't block.
      */
     public void send(BigInteger slaveID, byte[] buf, int len) throws IOException {
+        send(slaveID, buf, len, false);
+    }
+
+    /**
+     * Send the given number of bytes of the given byte array to the given slave. Don't block.
+     * @param force Ignore the enable status and force the message to be sent.
+     */
+    public void send(BigInteger slaveID, byte[] buf, int len, boolean force) throws IOException {
         if (len <= 0) {
             return;
         }
@@ -168,7 +178,7 @@ public class MasterSocketSet implements Runnable {
 	    mcs = clientSocketMap.get(slaveID);
 	}
         if (mcs != null) {
-            mcs.send(buf, len);
+            mcs.send(buf, len, force);
         }
     }
 
@@ -190,7 +200,7 @@ public class MasterSocketSet implements Runnable {
             for (BigInteger slave : clientSocketMap.keySet()) {
                 MasterClientSocket mcs = clientSocketMap.get(slave);
                 if (mcs != null) {
-                    mcs.send(buf, len);
+                    mcs.send(buf, len, false);
                 }
             }
         }

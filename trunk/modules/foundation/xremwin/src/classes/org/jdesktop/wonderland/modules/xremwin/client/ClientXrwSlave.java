@@ -177,6 +177,7 @@ public class ClientXrwSlave extends ClientXrw implements ServerProxySlave.Discon
      * Called when the slave disconnects from the master.
      */
     public void disconnected() {
+        AppXrw.logger.severe("ClientXrwSlave disconnected");
         // We no longer control the remote app group
         if (controlArb != null && controlArb.hasControl()) {
             ((ControlArbXrw)controlArb).controlLost();

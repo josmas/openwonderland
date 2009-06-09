@@ -43,6 +43,14 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 @ExperimentalAPI
 public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener {
 
+    /** Defines a listener which is called when the client exits. */
+    public interface ExitListener {
+        public void clientExitted(ClientXrwMaster client);
+    }
+
+    /** A listener which is called when the app exits. */
+    private ExitListener exitListener;
+
     private SlaveCloseWindowMsgArgs slaveCloseWindowMsgArgs = new SlaveCloseWindowMsgArgs();
     private SetWindowTitleMsgArgs setWindowTitleMsgArgs = new SetWindowTitleMsgArgs();
     protected WindowSystemXrw winSys;
@@ -69,7 +77,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
         // Connect to the Xremwin server
 
         int wsDisplayMaster = winSys.getDisplayNum();
-        serverProxy = new ServerProxyMaster(session, masterHost, wsDisplayMaster, serverSocket);
+        serverProxy = new ServerProxyMaster(session, masterHost, wsDisplayMaster, serverSocket, this);
         try {
             serverProxy.connect();
         } catch (IOException ex) {
@@ -92,6 +100,25 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
     public void cleanup() {
         super.cleanup();
         winSys = null;
+        AppXrw.logger.severe("ClientXrwMaster cleaned up");
+
+        if (exitListener != null) {
+            exitListener.clientExitted(this);
+        }
+    }
+
+    /**
+     * Specify a listener which is called when the client exits. 
+     */
+    public void setExitListener (ExitListener exitListener) {
+        this.exitListener = exitListener;
+    }
+
+    /**
+     * Return the app of this client.
+     */
+    public AppXrw getApp () {
+        return (AppXrw) app;
     }
 
     /**
@@ -235,9 +262,11 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
 
     // Called by window system exit listener 
     public void windowSystemExitted() {
+        AppXrw.logger.severe("Window system exitted");
         if (controlArb != null) {
             controlArb.releaseControl();
         }
+        cleanup();
     }
 
     public void writeSyncSlavePixels(BigInteger slaveID, byte[] pixelBytes) {
