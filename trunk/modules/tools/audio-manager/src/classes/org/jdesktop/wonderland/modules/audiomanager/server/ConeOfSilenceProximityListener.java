@@ -118,8 +118,6 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
 	//System.out.println("Attenuate other groups to " + outsideAudioVolume + " name " + name);
 
-	player.attenuateOtherGroups(audioGroup, 0, outsideAudioVolume);
-
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
@@ -127,7 +125,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-        player.attenuateOtherGroups(audioGroup, 0, 0);
+	player.attenuateOtherGroups(audioGroup, 0, outsideAudioVolume);
     }
 
     private void cellExited(CellID softphoneCellID) {
@@ -165,6 +163,8 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         if (audioGroup.getNumberOfPlayers() == 0) {
             AppContext.getManager(VoiceManager.class).removeAudioGroup(audioGroup);
         }
+
+	VoiceChatHandler.updateAttenuation(player);
     }
 
 }

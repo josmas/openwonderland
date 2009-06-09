@@ -437,7 +437,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	return;
     }
 
-    private void updateAttenuation(Player player) {
+    public static void updateAttenuation(Player player) {
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	AudioGroup livePlayerAudioGroup = vm.getVoiceManagerParameters().livePlayerAudioGroup;

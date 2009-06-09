@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBrid
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
@@ -269,6 +270,25 @@ public class AudioManagerConnectionHandler
 	if (message instanceof VoiceChatMessage) {
 	    VoiceChatHandler.getInstance().processVoiceChatMessage(sender, clientID, 
 		(VoiceChatMessage) message);
+	    return;
+	}
+
+	if (message instanceof PlayTreatmentMessage) {
+	    PlayTreatmentMessage msg = (PlayTreatmentMessage) message;
+
+	    Call call = vm.getCall(msg.getCallID());
+
+	    if (call == null) {
+		logger.warning("No call for " + msg.getCallID());
+		return;
+	    }
+
+	    try {
+		call.playTreatment(msg.getTreatment());
+	    } catch (IOException e) {
+		logger.warning("Unable to play treatment " + msg.getTreatment() 
+		    + " to call " + call + ": " + e.getMessage());
+	    }
 	    return;
 	}
 

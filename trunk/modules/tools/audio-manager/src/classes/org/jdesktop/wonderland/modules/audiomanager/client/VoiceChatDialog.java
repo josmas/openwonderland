@@ -9,6 +9,7 @@ import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
 
@@ -38,7 +39,7 @@ import java.awt.Point;
  * @author  jp
  */
 public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManagerListener,
-	KeypadListener, DisconnectListener {
+	KeypadListener, DisconnectListener, MemberChangeListener {
 
     private static final Logger logger =
             Logger.getLogger(VoiceChatDialog.class.getName());
@@ -47,9 +48,11 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
     private WonderlandSession session;
     private CellID cellID;
     private PresenceInfo caller;
-    private static PresenceManager pm;
+    private PresenceManager pm;
     private int groupNumber;
 
+    private PresenceInfo mostRecentDialout;
+    
     /** Creates new form VoiceChatDialog */
     public VoiceChatDialog() {
         initComponents();
@@ -134,6 +137,21 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
 
     public void disconnected() {
 	setVisible(false);
+    }
+
+    public void memberChange(PresenceInfo member, boolean added) {
+	if (added == false) {
+	    return;
+	}
+
+	if (mostRecentDialout != null && 
+		mostRecentDialout.userID.getUsername().equals(member.userID.getUsername())) {
+
+	    mostRecentDialout = member;
+	}
+    }
+
+    public void setMemberList(PresenceInfo[] memberList) {
     }
 
     /** This method is called from within the constructor to
@@ -365,10 +383,13 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     logger.info("Sent join message, about to enable leave button");
 
     if (phoneNumberTextField.getText().length() > 0 && name.length() > 0) {
-	PresenceInfo info = new PresenceInfo(null, null, new WonderlandIdentity(name, name, null), null);
-	info.usernameAlias = name;
+	mostRecentDialout = new PresenceInfo(null, null, new WonderlandIdentity(name, name, null), null);
+	mostRecentDialout.usernameAlias = name;
 
-	session.send(client, new VoiceChatDialOutMessage(group, caller.callID, chatType, info, phoneNumberTextField.getText()));
+	client.addMemberChangeListener(group, this);
+
+	session.send(client, new VoiceChatDialOutMessage(group, caller.callID, chatType, mostRecentDialout, 
+	    phoneNumberTextField.getText()));
 
 	nameTextField.setText("");
 	phoneNumberTextField.setText("");
@@ -428,6 +449,12 @@ private void phoneNumberTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN
 
 public void keypadPressed(char key) {
     System.out.println("Got key " + key);
+
+    if (mostRecentDialout == null) {
+	return;
+    }
+
+    session.send(client, new PlayTreatmentMessage(mostRecentDialout.callID, "dtmf:" + key));
 }
 
 public static PresenceInfo[] getPresenceInfo(PresenceManager pm, String users) {
