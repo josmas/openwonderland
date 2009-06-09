@@ -122,10 +122,14 @@ class ServerProxySlave implements ServerProxy {
     }
 
     public void disconnect() {
-        slaveSocket.close(false);
+        if (slaveSocket != null) {
+            slaveSocket.close(false);
+        }
         if (disconnectListener != null) {
             disconnectListener.disconnected();
+            disconnectListener = null;
         }
+        AppXrw.logger.severe("ServerProxySlave disconnected");
     }
 
     private void establishConnection() throws IOException {
@@ -148,6 +152,7 @@ class ServerProxySlave implements ServerProxy {
         client = null;
         scanLineBuf = null;
         bufQueue = null;
+        AppXrw.logger.severe("ServerProxySlave cleaned up");
     }
 
     private class MyListener implements ClientSocketListener {
@@ -217,16 +222,14 @@ class ServerProxySlave implements ServerProxy {
         bufQueue.nextShort();
 
         clientId = bufQueue.nextInt();
-        //System.err.println("My clientId = " + clientId);
         client.setClientId(clientId);
 
         windowParents.clear();
 
         // Read the initial window state synchronization
         // part of the welcome message
-        //System.err.println("Waiting to get numWins");
         int numWins = bufQueue.nextInt();
-        //System.err.println("numWins = " + numWins);
+        AppXrw.logger.warning("numWins = " + numWins);
         for (int i = 0; i < numWins; i++) {
             syncWindowStateNext();
         }
@@ -245,7 +248,7 @@ class ServerProxySlave implements ServerProxy {
     }
 
     private void syncWindowStateNext() {
-        System.err.println("Enter syncWindowStateNext");
+        AppXrw.logger.warning("Enter syncWindowStateNext");
 
         CreateWindowMsgArgs crtMsgArgs = new CreateWindowMsgArgs();
         WindowXrw win;
@@ -263,27 +266,27 @@ class ServerProxySlave implements ServerProxy {
         controllingUserLen = bufQueue.nextInt();
         desiredZOrder= bufQueue.nextInt();
         rotY = bufQueue.nextFloat();
-        System.err.println("rotY = " + rotY);
+        AppXrw.logger.warning("rotY = " + rotY);
         userDispl.x = bufQueue.nextFloat();
         userDispl.y = bufQueue.nextFloat();
         userDispl.z = bufQueue.nextFloat();
-        System.err.println("userDispl = " + userDispl);
+        AppXrw.logger.warning("userDispl = " + userDispl);
         /* TODO: 0.4 protocol:
         int transientFor = bufQueue.nextInt();
-        System.err.println("transientFor = " + transientFor);
+        AppXrw.logger.warning("transientFor = " + transientFor);
          */
         // TODO: 0.4 protocol: skip isTransient
         int transientFor = bufQueue.nextInt();
         int typeOrdinal = bufQueue.nextInt();
         Window2D.Type type = Window2D.Type.values()[typeOrdinal];
-        System.err.println("type = " + type);
+        AppXrw.logger.warning("type = " + type);
         int parentWid = bufQueue.nextInt();
-        System.err.println("parentWid = " + parentWid);
+        AppXrw.logger.warning("parentWid = " + parentWid);
         
         crtMsgArgs.decorated = (bufQueue.nextByte() == 1) ? true : false;
-        System.err.println("client = " + client);
-        System.err.println("crtMsgArgs = " + crtMsgArgs);
-        System.err.println("desiredZOrder= " + desiredZOrder);
+        AppXrw.logger.warning("client = " + client);
+        AppXrw.logger.warning("crtMsgArgs = " + crtMsgArgs);
+        AppXrw.logger.warning("desiredZOrder= " + desiredZOrder);
 
         // Make sure window is ready to receive data on creation
         win = client.createWindow(crtMsgArgs);
@@ -309,12 +312,12 @@ class ServerProxySlave implements ServerProxy {
          */
 
         boolean show = (bufQueue.nextByte() == 1) ? true : false;
-        System.err.println("show = " + show);
+        AppXrw.logger.warning("show = " + show);
 
         if (controllingUserLen > 0) {
             byte[] controllingUserBuf = bufQueue.nextBuffer();
             String controllingUser = new String(controllingUserBuf);
-            System.err.println("controlling user = " + controllingUser);
+            AppXrw.logger.warning("controlling user = " + controllingUser);
             win.setControllingUser(controllingUser);
         }
 
@@ -358,15 +361,12 @@ class ServerProxySlave implements ServerProxy {
 
     public Proto.ServerMessageType getMessageType() {
         int msgCode = (int) bufQueue.nextByte();
+        AppXrw.logger.info("msgCode = " + msgCode);
         Proto.ServerMessageType msgType = Proto.ServerMessageType.values()[msgCode];
         return msgType;
     }
 
     public void getData(CreateWindowMsgArgs msgArgs) {
-        //System.err.println("In viewer createwin getData");
-        //System.err.print("curBuf = ");
-        //bufQueue.printCurBufNumeric();
-
         msgArgs.decorated = bufQueue.nextByte() != 0;
         bufQueue.nextShort(); // Skip 2 bytes of pad
         msgArgs.wid = bufQueue.nextInt();
@@ -624,7 +624,7 @@ class ServerProxySlave implements ServerProxy {
         lastPointerX = x;
         lastPointerY = y;
 
-        //System.err.println("Send ptr: xy = " + x + ", " + y +
+        //AppXrw.logger.info("Send ptr: xy = " + x + ", " + y +
         //		   ", mask = 0x" + Integer.toHexString(mask));
 
         pointerEventBuf[n++] = (byte) Proto.ClientMessageType.EVENT_POINTER.ordinal();
@@ -652,7 +652,7 @@ class ServerProxySlave implements ServerProxy {
         int mask = (wheelRotation == -1) ? BUTTON4_MASK : BUTTON5_MASK;
         int n;
 
-        //System.err.println("send MouseWheelEvent = " + event);
+        //AppXrw.logger.info("send MouseWheelEvent = " + event);
 
         /* First send button pressevent */
         n = 0;
@@ -729,7 +729,7 @@ class ServerProxySlave implements ServerProxy {
             return;
         }
 
-        //System.err.println("Send keySym = " + keySym);
+        //AppXrw.logger.info("Send keySym = " + keySym);
 
         keyEventBuf[n++] = (byte) Proto.ClientMessageType.EVENT_KEY.ordinal();
         keyEventBuf[n++] = (byte) ((event.getID() == KeyEvent.KEY_PRESSED) ? 1 : 0);
@@ -750,7 +750,7 @@ class ServerProxySlave implements ServerProxy {
     public void writeTakeControl(boolean steal) throws IOException {
         int n = 0;
 
-        System.err.println("ServerProxySlave: clientId = " + clientId);
+        AppXrw.logger.info("ServerProxySlave: clientId = " + clientId);
         takeControlBuf[n++] = (byte) Proto.ClientMessageType.TAKE_CONTROL.ordinal();
         takeControlBuf[n++] = (byte) (steal ? 1 : 0);
         takeControlBuf[n++] = (byte) 0;
@@ -765,7 +765,7 @@ class ServerProxySlave implements ServerProxy {
     public void writeReleaseControl() throws IOException {
         int n = 0;
 
-        System.err.println("ServerProxySlave: clientId = " + clientId);
+        AppXrw.logger.info("ServerProxySlave: clientId = " + clientId);
         releaseControlBuf[n++] = (byte) Proto.ClientMessageType.RELEASE_CONTROL.ordinal();
         releaseControlBuf[n++] = (byte) 0;
         releaseControlBuf[n++] = (byte) 0;

@@ -54,6 +54,7 @@ class SlaveForwarder {
     public void cleanup() {
         disconnect();
         serverProxy = null;
+        AppXrw.logger.severe("SlaveForwarder cleaned up");
     }
 
     void disconnect() {
@@ -61,15 +62,20 @@ class SlaveForwarder {
             socketSet.close();
             socketSet = null;
         }
+        AppXrw.logger.severe("SlaveForwarder disconnected");
     }
 
     public void unicastSend(BigInteger slaveID, byte[] buf) {
-        unicastSend(slaveID, buf, buf.length);
+        unicastSend(slaveID, buf, buf.length, false);
     }
 
-    public void unicastSend(BigInteger slaveID, byte[] buf, int len) {
+    public void unicastSend(BigInteger slaveID, byte[] buf, boolean force) {
+        unicastSend(slaveID, buf, buf.length, force);
+    }
+
+    public void unicastSend(BigInteger slaveID, byte[] buf, int len, boolean force) {
         try {
-            socketSet.send(slaveID, buf, len);
+            socketSet.send(slaveID, buf, len, force);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -136,7 +142,7 @@ class SlaveForwarder {
             welcomeBuf[n++] = (byte) ((clientId >> 8) & 0xff);
             welcomeBuf[n++] = (byte) (clientId & 0xff);
 
-            unicastSend(slaveID, welcomeBuf);
+            unicastSend(slaveID, welcomeBuf, true);
 
             syncSlaveWindowStateAll(slaveID);
 
@@ -153,12 +159,13 @@ class SlaveForwarder {
 
         // Send all known client window state to a slave
         private void syncSlaveWindowStateAll(BigInteger slaveID) {
-            synchronized (AppXrw.widToWindow) {
+            AppXrw appx = serverProxy.getApp();
+            synchronized (appx.widToWindow) {
                 Iterator it;
 
                 //  First count the number of windows
                 int numWins = 0;
-                it = AppXrw.widToWindow.values().iterator();
+                it = appx.widToWindow.values().iterator();
                 while (it.hasNext()) {
                     WindowXrw win = (WindowXrw) it.next();
                     numWins++;
@@ -167,47 +174,53 @@ class SlaveForwarder {
                 // Send the window count to the slave
                 byte[] buf = new byte[4];
                 encode(buf, 0, numWins);
-                unicastSend(slaveID, buf);
-                System.err.println("numWins = " + numWins);
+                unicastSend(slaveID, buf, true);
+                AppXrw.logger.warning("numWins = " + numWins);
 
                 // Then send the individual window states
-                it = AppXrw.widToWindow.values().iterator();
+                it = appx.widToWindow.values().iterator();
                 while (it.hasNext()) {
                     WindowXrw win = (WindowXrw) it.next();
                     syncSlaveWindowState(slaveID, win);
                 }
+
+                // It is safe to write to a slave socket only when the master has enqueued 
+                // all welcome message buffers. Note: this was a bug in 0.4: it was 
+                // enabling the socket to accept other messages after the first window.
+                // (Found my inspection, not testing).
+                socketSet.setEnable(slaveID, true);
             }
         }
 
         private void syncSlaveWindowState(BigInteger slaveID, WindowXrw win) {
-            System.err.println("Enter syncSlaveWindowState: win = " + win.getWid());
+            AppXrw.logger.warning("Enter syncSlaveWindowState: win = " + win.getWid());
 
             String controllingUser = win.getControllingUser();
             int controllingUserLen = (controllingUser != null)
                     ? controllingUser.length() : 0;
 
-            System.err.println("wid = " + win.getWid());
-            System.err.println("xy = " + win.getOffsetX() + " " + win.getOffsetY());
-            System.err.println("wh = " + win.getWidth() + " " + win.getHeight());
-            System.err.println("bw = " + win.getBorderWidth());
-            System.err.println("decorated = " + win.isDecorated());
-            System.err.println("showing = " + win.isVisibleApp());
-            System.err.println("controlling user = " + controllingUser);
-            System.err.println("zOrder = " + win.getZOrder());
+            AppXrw.logger.warning("wid = " + win.getWid());
+            AppXrw.logger.warning("xy = " + win.getOffsetX() + " " + win.getOffsetY());
+            AppXrw.logger.warning("wh = " + win.getWidth() + " " + win.getHeight());
+            AppXrw.logger.warning("bw = " + win.getBorderWidth());
+            AppXrw.logger.warning("decorated = " + win.isDecorated());
+            AppXrw.logger.warning("showing = " + win.isVisibleApp());
+            AppXrw.logger.warning("controlling user = " + controllingUser);
+            AppXrw.logger.warning("zOrder = " + win.getZOrder());
 
             /*TODO:
-            System.err.println("rotY = " + win.getRotateY());
-            System.err.println("userTranslation = " + win.getUserTranslation());
+            AppXrw.logger.warning("rotY = " + win.getRotateY());
+            AppXrw.logger.warning("userTranslation = " + win.getUserTranslation());
              */
             
             WindowXrw.Type type = win.getType();
-            System.err.println("type = " + type);
+            AppXrw.logger.warning("type = " + type);
             WindowXrw parentWindow = (WindowXrw) win.getParent();
             int parentWid = WindowXrw.INVALID_WID; 
             if (parentWindow != null) {
                 parentWid = parentWindow.getWid();
             }
-            System.err.println("parent wid = " + parentWid);
+            AppXrw.logger.warning("parent wid = " + parentWid);
 
             // Send basic window attributes
             encode(syncBuf, 0, win.getWid());
@@ -234,21 +247,17 @@ class SlaveForwarder {
             syncBuf[60] = (byte) (win.isDecorated() ? 1 : 0);
             syncBuf[61] = (byte) (win.isVisibleApp() ? 1 : 0);
 
-            unicastSend(slaveID, syncBuf);
-            //System.err.println("Call unicastMessage with " + syncBuf.length + " bytes");
+            unicastSend(slaveID, syncBuf, true);
+            //AppXrw.logger.warning("Call unicastMessage with " + syncBuf.length + " bytes");
             //print10bytes(syncBuf);
 
             if (controllingUserLen > 0) {
-                unicastSend(slaveID, controllingUser.getBytes());
+                unicastSend(slaveID, controllingUser.getBytes(), true);
             }
 
             // Send window contents. Note that if there are pending writes to
             // the window this may block until the next frame tick.
             win.syncSlavePixels(slaveID);
-
-            // It is safe to write to a slave socket only when the master has enqueued 
-            // all welcome message buffers.
-            socketSet.setEnable(slaveID, true);
         }
     }
 

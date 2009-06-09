@@ -205,6 +205,11 @@ public abstract class Window2D {
      */
     public Window2D(App2D app, int width, int height, boolean decorated, Vector2f pixelScale, String name,
                     DrawingSurface surface) {
+
+        if (width <= 0 || height <= 0) {
+            throw new RuntimeException("Invalid window size");
+        }
+
         this.app = app;
         this.size = new Dimension(width, height);
         this.decorated = decorated;
@@ -291,6 +296,11 @@ public abstract class Window2D {
      */
     public Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated,
             Vector2f pixelScale, String name, DrawingSurface surface) {
+
+        if (width <= 0 || height <= 0) {
+            throw new RuntimeException("Invalid window size");
+        }
+
         this.app = app;
         this.size = new Dimension(width, height);
         this.decorated = decorated;
@@ -534,6 +544,11 @@ public abstract class Window2D {
      * @param height The new height of the window.
      */
     public synchronized void setSize(int width, int height) {
+
+        if (width <= 0 || height <= 0) {
+            throw new RuntimeException("Invalid window size");
+        }
+
         if (this.size.width == width && this.size.height == height) {
             return;
         }
@@ -576,6 +591,11 @@ public abstract class Window2D {
      * @param sibling The window which will be directly below this window after this call.
      */
     public synchronized void configure(int width, int height, Window2D sibWin) {
+
+        if (width <= 0 || height <= 0) {
+            throw new RuntimeException("Invalid window size");
+        }
+
         this.size = new Dimension(width, height);
         changeMask |= CHANGED_SIZE;
 

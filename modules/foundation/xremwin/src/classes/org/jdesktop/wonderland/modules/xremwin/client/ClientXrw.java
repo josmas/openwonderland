@@ -223,6 +223,7 @@ public abstract class ClientXrw implements Runnable {
         }
 
         enable = false;
+        AppXrw.logger.severe("ClientXrw cleaned up");
     }
 
     /** 
@@ -606,8 +607,8 @@ public abstract class ClientXrw implements Runnable {
      * @param wid The X11 window ID.
      */
     protected WindowXrw lookupWindow(int wid) {
-        synchronized (AppXrw.widToWindow) {
-            return AppXrw.widToWindow.get(wid);
+        synchronized (((AppXrw)app).widToWindow) {
+            return ((AppXrw)app).widToWindow.get(wid);
         }
     }
 
@@ -618,8 +619,8 @@ public abstract class ClientXrw implements Runnable {
      * @param window The window to associate with the wid.
      */
     protected void addWindow(int wid, WindowXrw window) {
-        synchronized (AppXrw.widToWindow) {
-            AppXrw.widToWindow.put(wid, window);
+        synchronized (((AppXrw)app).widToWindow) {
+            ((AppXrw)app).widToWindow.put(wid, window);
         }
     }
 
@@ -629,8 +630,8 @@ public abstract class ClientXrw implements Runnable {
      * @param window The window to disassociate from the wid.
      */
     protected void removeWindow(WindowXrw win) {
-        synchronized (AppXrw.widToWindow) {
-            AppXrw.widToWindow.remove(win.getWid());
+        synchronized (((AppXrw)app).widToWindow) {
+            ((AppXrw)app).widToWindow.remove(win.getWid());
         }
     }
 
