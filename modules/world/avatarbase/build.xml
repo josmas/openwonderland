@@ -13,13 +13,14 @@
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${current.dir}/lib/avatars.jar"/>
+        <path location="${modules.dir}/foundation/hud/build/client/hud-client.jar"/>
     </pathconvert>
        
-    <target name="build" depends="-module-init, -module-compile-common, 
+    <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
                                                 -module-compile-client">
         <!-- copy resource bundles -->
-	<copy todir="${build.classes.dir}/${module.src}/client/resources">
+        <copy todir="${build.classes.dir}/${module.src}/client/resources">
             <fileset dir="${current.dir}/src/classes/${module.src}/client/resources"/>
         </copy>
         <copy todir="${build.classes.dir}/${module.src}/client/jme/cellrenderer/resources">
@@ -36,11 +37,11 @@
             <requires name="content-repository" version="1"/>
 
             <client dir="${current.dir}/lib">
-		<include name="avatars.jar"/>
+                <include name="avatars.jar"/>
                 <clientjar name="avatarbase-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
-                </clientjar> 
+                </clientjar>
             </client>
 
             <server>

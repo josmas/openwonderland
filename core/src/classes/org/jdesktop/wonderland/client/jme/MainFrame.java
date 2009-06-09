@@ -227,8 +227,6 @@ public interface MainFrame {
      */
     public void addServerURLListener(ServerURLListener listener);
 
-    public void setMessageLabel(String msg);
-
     /**
      * Notify when a connection is established or disconnected
      * @param connected true if a connection has been established, false otherwise

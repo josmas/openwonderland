@@ -201,6 +201,20 @@ public interface HUDComponent {
     public void setEnabled(boolean enabled);
 
     /**
+     * Sets whether this component should be decorated
+     * @param decoratable true if the component should be decorated (default),
+     * false otherwise
+     */
+    public void setDecoratable(boolean decoratable);
+
+    /**
+     * Gets whether the component should be decorated
+     * @return true if the component should be decorated (default), false
+     * otherwise
+     */
+    public boolean getDecoratable();
+
+    /**
      * Gets whether the component is enabled
      * @return true if the component is enabled, false otherwise
      */

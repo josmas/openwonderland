@@ -29,7 +29,6 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
-import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
 
 /**
  * A WonderlandHUD is a 2D region of the Wonderland client window on which HUDComponents
@@ -89,6 +88,10 @@ public class WonderlandHUD implements HUD {
         return new HUDComponent2D(component, cell);
     }
 
+    public HUDComponent createMessage(String message) {
+        return new HUDMessageDialog(message);
+    }
+    
     /**
      * {@inheritDoc}
      */

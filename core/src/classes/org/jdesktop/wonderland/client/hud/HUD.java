@@ -53,6 +53,8 @@ public interface HUD {
      */
     public HUDComponent createComponent(JComponent component, Cell cell);
 
+    public HUDComponent createMessage(String message);
+
     /**
      * Adds a HUD component to the HUD
      * @param component the component to add
