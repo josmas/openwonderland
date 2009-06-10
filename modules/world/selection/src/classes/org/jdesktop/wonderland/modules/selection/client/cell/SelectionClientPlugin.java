@@ -82,12 +82,12 @@ public class SelectionClientPlugin extends BaseClientPlugin {
             final EnterExitEvent eeEvent = (EnterExitEvent)event;
             List<Entity> entityList = eeEvent.getEntityList();
             if (entityList == null || entityList.isEmpty() == true) {
-                logger.warning("No entity for event");
+                //logger.warning("No entity for event");
                 return;
             }
             Entity entity = entityList.get(0);
             if (entity == null) {
-                logger.warning("No entity for event " + entity);
+                //logger.warning("No entity for event " + entity);
                 return;
             }
 
@@ -97,7 +97,7 @@ public class SelectionClientPlugin extends BaseClientPlugin {
             // first and always. XXX
             final Node rootNode = getSceneGraphRoot(entity);
             if (rootNode == null) {
-                logger.warning("No root node for entity " + entity);
+                //logger.warning("No root node for entity " + entity);
                 return;
             }
 
