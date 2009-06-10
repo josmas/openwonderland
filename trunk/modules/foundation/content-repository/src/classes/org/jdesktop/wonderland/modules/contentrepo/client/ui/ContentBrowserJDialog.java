@@ -290,14 +290,14 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         uploadButton = new javax.swing.JButton();
         downloadButton = new javax.swing.JButton();
         bottomPanel = new javax.swing.JPanel();
-        okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        okButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
         mainSplitPane = new javax.swing.JSplitPane();
         treePanel = new javax.swing.JPanel();
         tablePanel = new javax.swing.JPanel();
 
-        setTitle("Content Repository Browser");
+        setTitle("Content Browser");
 
         topPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
@@ -371,12 +371,12 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
 
         bottomPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 3, 5));
 
+        cancelButton.setText("Cancel");
+        bottomPanel.add(cancelButton);
+
         okButton.setText("OK");
         okButton.setEnabled(false);
         bottomPanel.add(okButton);
-
-        cancelButton.setText("Cancel");
-        bottomPanel.add(cancelButton);
 
         getContentPane().add(bottomPanel, java.awt.BorderLayout.SOUTH);
 
