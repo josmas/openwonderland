@@ -259,21 +259,23 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * @param status
      */
     private void setCellStatus(Cell cell, CellStatus status) {
-        logger.warning("Set status of cell " + cell.getCellID() +
+        logger.fine("Set status of cell " + cell.getCellID() +
                        " to " + status);
 
-        int currentStatus = cell.getStatus().ordinal();
-        int requiredStatus = status.ordinal();
+        synchronized(cell) {
+            int currentStatus = cell.getStatus().ordinal();
+            int requiredStatus = status.ordinal();
 
-        if (currentStatus==requiredStatus)
-            return;
+            if (currentStatus==requiredStatus)
+                return;
 
-        int dir = (requiredStatus>currentStatus ? 1 : -1);
-        boolean increasing = (dir==1);
+            int dir = (requiredStatus>currentStatus ? 1 : -1);
+            boolean increasing = (dir==1);
 
-        while(currentStatus!=requiredStatus) {
-            currentStatus += dir;
-            cell.setStatus(CellStatus.values()[currentStatus], increasing);
+            while(currentStatus!=requiredStatus) {
+                currentStatus += dir;
+                cell.setStatus(CellStatus.values()[currentStatus], increasing);
+            }
         }
     }
 
