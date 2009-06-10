@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.contentrepo.client.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -197,8 +199,18 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
                 }
             }
         });
-    }
 
+        // When the window becomes visible, then display the Home directory
+        // by default
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                homeButton.doClick();
+            }
+
+        });
+    }
+            
     /**
      * @inheritDoc()
      */
@@ -208,11 +220,6 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         // user root
         setSize(600, 500);
         super.setVisible(visible);
-
-//        if (visible == true) {
-//            // Set the user root when the content browser is made visible
-//            jtree.expandAndSelectPath(homePath);
-//        }
     }
 
     /**

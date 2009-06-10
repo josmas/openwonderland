@@ -545,7 +545,7 @@ public class AsynchronousJTree extends javax.swing.JTree {
 
                 // Check to see if the child matches what we wish to selected
                 if (selectChild != null && name.equals(selectChild) == true) {
-                    selectNode = present;
+                    selectNode = newNode;
                 }
             }
 

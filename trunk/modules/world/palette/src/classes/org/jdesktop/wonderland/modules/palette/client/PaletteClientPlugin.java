@@ -124,23 +124,23 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        moduleMI = new JMenuItem("Module Art Palette");
-        moduleMI.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                ModulePalette modulePaletteFrame;
-                if (modulePaletteFrameRef == null || modulePaletteFrameRef.get() == null) {
-                    modulePaletteFrame = new ModulePalette();
-                    modulePaletteFrameRef = new WeakReference(modulePaletteFrame);
-                }
-                else {
-                    modulePaletteFrame = modulePaletteFrameRef.get();
-                }
-
-                if (modulePaletteFrame.isVisible() == false) {
-                    modulePaletteFrame.setVisible(true);
-                }
-            }
-        });
+//        moduleMI = new JMenuItem("Module Art Palette");
+//        moduleMI.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                ModulePalette modulePaletteFrame;
+//                if (modulePaletteFrameRef == null || modulePaletteFrameRef.get() == null) {
+//                    modulePaletteFrame = new ModulePalette();
+//                    modulePaletteFrameRef = new WeakReference(modulePaletteFrame);
+//                }
+//                else {
+//                    modulePaletteFrame = modulePaletteFrameRef.get();
+//                }
+//
+//                if (modulePaletteFrame.isVisible() == false) {
+//                    modulePaletteFrame.setVisible(true);
+//                }
+//            }
+//        });
 
         super.initialize(loginInfo);
     }
@@ -153,7 +153,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // activate
         JmeClientMain.getFrame().addToInsertMenu(paletteMI, 0);
         JmeClientMain.getFrame().addToWindowMenu(paletteHUDMI, 6);
-        JmeClientMain.getFrame().addToToolsMenu(moduleMI, 4);
+//        JmeClientMain.getFrame().addToToolsMenu(moduleMI, 4);
 
         // Register the handler for CellServerState flavors with the system-wide
         // drag and drop manager. When the preview icon is dragged from the Cell
@@ -167,7 +167,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // deactivate
         JmeClientMain.getFrame().removeFromInsertMenu(paletteMI);
         JmeClientMain.getFrame().removeFromWindowMenu(paletteHUDMI);
-        JmeClientMain.getFrame().removeFromToolsMenu(moduleMI);
+//        JmeClientMain.getFrame().removeFromToolsMenu(moduleMI);
 
         DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
         dndManager.unregisterDataFlavorHandler(dndHandler);
