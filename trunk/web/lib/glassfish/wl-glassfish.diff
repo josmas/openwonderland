@@ -1,0 +1,229 @@
+Index: connectors/connectors-runtime/src/main/java/com/sun/enterprise/connectors/ConnectorRuntime.java
+===================================================================
+--- connectors/connectors-runtime/src/main/java/com/sun/enterprise/connectors/ConnectorRuntime.java	(revision 24888)
++++ connectors/connectors-runtime/src/main/java/com/sun/enterprise/connectors/ConnectorRuntime.java	(working copy)
+@@ -78,6 +78,7 @@
+ import javax.transaction.SystemException;
+ import javax.transaction.Transaction;
+ import java.io.PrintWriter;
++import java.lang.reflect.Constructor;
+ import java.util.*;
+ import java.util.logging.Logger;
+ 
+@@ -396,7 +397,7 @@
+     public ThreadPool getThreadPool(String threadPoolId) throws NoSuchThreadPoolException {
+         int env = getEnviron();
+         if (env == ConnectorRuntime.SERVER) {
+-            ThreadPoolManager tpm = new ThreadPoolManagerImpl(null);
++            ThreadPoolManager tpm = getThreadPoolManager();
+             if (threadPoolId != null) {
+                 return tpm.getThreadPool(threadPoolId);
+             } else {
+@@ -408,6 +409,47 @@
+     }
+ 
+     /**
++     * -- FIX PORTED FROM GLASSFISH TRUNK, FILE:
++     * v3/connectors/connectors-internal-api/src/main/java/com/sun/appserv/connectors/internal/api/ConnectorsUtil.java
++     * Rev 27571 --
++     *
++     * JDK 1.6.0_12 & JDK 1.6.0_14 has changes in SE thread pool api.
++     * Later we will be using appserver's thread pool.
++     * Using the workaround to check the constructor availability and act accordingly.
++     * @return thread pool manager
++     * @throws ConnectorRuntimeException when unable to provide thread pool manager
++     */
++    private static ThreadPoolManager getThreadPoolManager() throws NoSuchThreadPoolException {
++        System.out.println("XXXX getThreadPoolManager() XXXX");
++
++        Constructor defaultConstructor;
++        Constructor threadGroupParamConstructor;
++        try {
++            defaultConstructor = ThreadPoolManagerImpl.class.getConstructor();
++            defaultConstructor.setAccessible(true);
++
++            return (ThreadPoolManager)defaultConstructor.newInstance();
++
++        } catch(NoSuchMethodException e) {
++            //do nothing. Second trial with a ThreadGroup parameter constructor will be done.
++        } catch(Exception e){
++            //do nothing.  Second trial with a ThreadGroup parameter constructor will be done.
++        }
++
++        try {
++            threadGroupParamConstructor = ThreadPoolManagerImpl.class.getConstructor(ThreadGroup.class);
++            threadGroupParamConstructor.setAccessible(true);
++
++            ThreadGroup tg = null;
++            return (ThreadPoolManager)threadGroupParamConstructor.newInstance(tg);
++
++        } catch(Exception e){
++            throw new NoSuchThreadPoolException();
++        }
++    }
++
++
++    /**
+      * Causes pool to switch on the matching of connections.
+      * It can be either directly on the pool or on the ConnectorConnectionPool
+      * object that is bound in JNDI.
+Index: embedded/api/src/main/java/org/glassfish/embed/Server.java
+===================================================================
+--- embedded/api/src/main/java/org/glassfish/embed/Server.java	(revision 24888)
++++ embedded/api/src/main/java/org/glassfish/embed/Server.java	(working copy)
+@@ -304,11 +304,13 @@
+             // So we need to send in a fake directory.
+ 
+             StartupContext startupContext = new StartupContext(efs.getModulesDirectory(), new String[0]);
+-            Main main       = new EmbeddedBootstrap(this);
++            Main main       = createBootstrap();
+             habitat         = main.launch(reg, startupContext);
+             appLife         = habitat.getComponent(ApplicationLifecycle.class);
+             wc              = habitat.getComponent(WebContainer.class);
+             ewc             = habitat.getComponent(EmbeddedWebContainer.class);
++
++            deployer = new EmbeddedDeployer(this);
+         }
+         catch (Exception e) {
+             throw new EmbeddedException(e);
+@@ -406,7 +408,7 @@
+      * @see EmbeddedDeployer
+      */
+     public EmbeddedDeployer getDeployer() throws EmbeddedException {
+-        return new EmbeddedDeployer(this);
++        return deployer;
+     }
+ 
+ 
+@@ -438,7 +440,20 @@
+         }
+     }
+ 
++    /******************************************************************
++     *************    protected methods   ********************************
++     ******************************************************************
++     */
+ 
++    /**
++     * Create the embedded bootstrap class.  This method is included so
++     * that subclasses can override this process.
++     * @return the EmbeddedBootstrap to use when starting this server
++     */
++    protected EmbeddedBootstrap createBootstrap() {
++        return new EmbeddedBootstrap(this);
++    }
++
+     /******************************************************************
+      *************    private   ********************************
+      ******************************************************************
+@@ -747,6 +762,7 @@
+     private WebContainer                wc;
+     private EmbeddedWebContainer        ewc;
+     private Document                    domainXmlDocument;
++    private EmbeddedDeployer            deployer;
+     private EmbeddedFileSystem          efs;
+     private EmbeddedInfo                info;
+     private CommandExecutor             ce;
+Index: embedded/api/src/main/java/org/glassfish/embed/EmbeddedBootstrap.java
+===================================================================
+--- embedded/api/src/main/java/org/glassfish/embed/EmbeddedBootstrap.java	(revision 24888)
++++ embedded/api/src/main/java/org/glassfish/embed/EmbeddedBootstrap.java	(working copy)
+@@ -30,8 +30,11 @@
+  * @author bnevins
+  */
+ 
+-class EmbeddedBootstrap extends Main{
+-    EmbeddedBootstrap(Server server) {
++public class EmbeddedBootstrap extends Main{
++    private static final String INCLUDE_ALL_LIBS_PROP =
++            "org.glassfish.embed.Server.IncludeAllLibs";
++
++    protected EmbeddedBootstrap(Server server) {
+         this.server = server;
+     }
+ 
+@@ -94,7 +97,9 @@
+ 
+         parser.replace(ServerEnvironmentImpl.class, EmbeddedServerEnvironment.class);
+ 
+-        {// adjustment for webtier only bundle
++        System.out.println("XXXXXX Using Wonderland custom Glassfish build XXXXXX");
++        if (!Boolean.parseBoolean(System.getProperty(INCLUDE_ALL_LIBS_PROP))) {
++            // adjustment for webtier only bundle
+             parser.drop(DecoratorForJ2EEInstanceListener.class);
+ 
+             // in the webtier-only bundle, these components don't exist to begin with.
+Index: embedded/api/src/main/java/org/glassfish/embed/EmbeddedDeployer.java
+===================================================================
+--- embedded/api/src/main/java/org/glassfish/embed/EmbeddedDeployer.java	(revision 24888)
++++ embedded/api/src/main/java/org/glassfish/embed/EmbeddedDeployer.java	(working copy)
+@@ -47,10 +47,11 @@
+      * Deploys a WAR to <code>Server</code>.
+      *
+      * @param archive pathname of WAR file or directory
++     * @return the name of the application that was deployed
+      * @throws EmbeddedException
+      */
+ 
+-    public void deploy(File archive) throws EmbeddedException {
++    public String deploy(File archive) throws EmbeddedException {
+         try {
+             mustBeStarted("deploy(File)");
+             ReadableArchive a = archiveFactory.openArchive(archive);
+@@ -68,7 +69,7 @@
+                 a.close();
+                 a = archiveFactory.openArchive(appDir);
+             }
+-            deploy(a, new Properties());
++            return deploy(a, new Properties());
+         }
+         catch (EmbeddedException ex) {
+             throw ex;
+@@ -87,9 +88,10 @@
+      *
+      * @param a WAR as a <code>ReadableArchive</code>
+      * @param params parameters of the deploy command
++     * @return the name of the application that was deployed
+      * @throws EmbeddedException
+      */
+-    public void deploy(ReadableArchive a, Properties params) throws EmbeddedException {
++    public String deploy(ReadableArchive a, Properties params) throws EmbeddedException {
+         try {
+             mustBeStarted("deploy(ReadableArchive, Properties)");
+             ArchiveHandler h = appLife.getArchiveHandler(a);
+@@ -114,6 +116,7 @@
+             r.check();
+             addApp(new Application(appInfo, deploymentContext));
+             //return new Application(this, appInfo, deploymentContext);
++            return appInfo.getName();
+         }
+         catch (EmbeddedException ex) {
+             throw ex;
+@@ -129,9 +132,10 @@
+      * @param war           the scattered war
+      * @param contextRoot   the context root to use
+      * @param virtualServer the virtual server ID
++     * @return the name of the application that was deployed
+      * @throws EmbeddedException
+      */
+-    public void deployScattered(ScatteredWar war, String contextRoot, String virtualServer) throws EmbeddedException {
++    public String deployScattered(ScatteredWar war, String contextRoot, String virtualServer) throws EmbeddedException {
+         Properties params = new Properties();
+         if (virtualServer == null) {
+             virtualServer = "server";
+@@ -140,7 +144,7 @@
+         if (contextRoot != null) {
+             params.put(ParameterNames.CONTEXT_ROOT, contextRoot);
+         }
+-        deploy(war, params);
++        return deploy(war, params);
+     }
+      /*
+       * undeploy the app that was deployed by this deployer with the given name.
+@@ -244,4 +248,4 @@
+  *
+  *
+ 
+- */
+\ No newline at end of file
++ */
