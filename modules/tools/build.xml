@@ -26,6 +26,7 @@
         <file name="asset-meter/build.xml"/>
         <file name="text-chat/build.xml"/>
         <file name="xapps-config/build.xml"/>
+        <file name="placemarks/build.xml"/>
     </filelist>
     
     <target name="dist">
