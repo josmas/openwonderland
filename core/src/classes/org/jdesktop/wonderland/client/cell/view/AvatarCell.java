@@ -63,6 +63,7 @@ public class AvatarCell extends ViewCell {
 
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
+        System.err.println("AVATAR CELL createRenderer "+this);
         CellRenderer ret = null;
         switch(rendererType) {
             case RENDERER_2D :
