@@ -21,6 +21,9 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import java.util.logging.Logger;
+import java.awt.Canvas;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**
  * A control arb which maintains app input focus. When an control is taken for an app,
@@ -32,6 +35,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 @ExperimentalAPI
 public abstract class ControlArbAppFocus extends ControlArb {
+
+    private static final Logger logger = Logger.getLogger(ControlArbAppFocus.class.getName());
 
     /** The input manager. */
     private InputManager inputManager;
@@ -88,6 +93,12 @@ public abstract class ControlArbAppFocus extends ControlArb {
         if (numControlledApps <= 0) {
             // No more apps have control. Reenable global (world) listeners.
             inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());            
+
+            // Also need to make sure that the main canvas has keyboard focus
+            Canvas canvas = JmeClientMain.getFrame().getCanvas();
+            if (!canvas.requestFocusInWindow()) {
+                logger.warning("Focus request for main canvas rejected.");
+            }
         }
     }
 }

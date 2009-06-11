@@ -271,7 +271,7 @@ public class WindowSwing extends Window2D {
             String typeStr = "SWING " + (seeEvent.isEntered() ? "ENTER" : "EXIT");
             sb.append(typeStr + ", entity = " + seeEvent.getEntity());
             System.err.println(sb.toString());
-             */
+            */
 
             if (seeEvent.isEntered()) {
                 Entity entity = seeEvent.getEntity();
@@ -280,7 +280,13 @@ public class WindowSwing extends Window2D {
                 View2D view = ((WindowSwing.WindowSwingViewReference) comp).getView();
                 WindowSwing windowSwing = (WindowSwing) view.getWindow();
                 assert windowSwing != null;
-                windowSwing.requestFocusInWindow();
+
+                if (windowSwing.getApp().getControlArb().hasControl()) {
+                    // Only request keyboard focus for the WindowSwing if it has control
+                    windowSwing.requestFocusInWindow();
+                } else {
+                    requestFocusInWindowForCanvas();
+                }
             } else {
                 requestFocusInWindowForCanvas();
             }
