@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.hud.client;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
-import javax.swing.JTextArea;
 import org.jdesktop.wonderland.client.hud.HUDMessage;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
@@ -28,25 +27,25 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
  * A dialog for displaying a message on the HUD
  * @author nsimpson
  */
-public class HUDMessageDialog extends HUDComponent2D implements HUDMessage {
+public class HUDMessageComponent extends HUDComponent2D implements HUDMessage {
 
-    private static final Logger logger = Logger.getLogger(HUDMessageDialog.class.getName());
-    private HUDMessageDialogImpl dialogImpl;
+    private static final Logger logger = Logger.getLogger(HUDMessageComponent.class.getName());
+    private HUDDialogImpl dialogImpl;
     protected String message;
     protected int rows = 1;
 
-    public HUDMessageDialog() {
+    public HUDMessageComponent() {
         super();
         setDecoratable(false);
         initializeDialog();
     }
 
-    public HUDMessageDialog(String message) {
+    public HUDMessageComponent(String message) {
         this();
         setMessage(message);
     }
 
-    public HUDMessageDialog(String message, int rows) {
+    public HUDMessageComponent(String message, int rows) {
         this(message);
         setRows(rows);
     }
@@ -56,7 +55,7 @@ public class HUDMessageDialog extends HUDComponent2D implements HUDMessage {
      */
     private void initializeDialog() {
         if (dialogImpl == null) {
-            component = dialogImpl = new HUDMessageDialogImpl();
+            component = dialogImpl = new HUDDialogImpl();
             Dimension size = dialogImpl.getPreferredSize();
             setBounds(0, 0, size.width, size.height);
             JmeClientMain.getFrame().getCanvas3DPanel().add(component);

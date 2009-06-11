@@ -21,8 +21,8 @@ import java.awt.EventQueue;
 import java.util.HashMap;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.hud.HUDMessage;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
@@ -33,7 +33,7 @@ public class LoadingInfo extends javax.swing.JFrame {
 
     private static LoadingInfo loadingInfo = new LoadingInfo();
     private final HashMap<CellID, String> currentlyLoading = new HashMap();
-    private HUDComponent loadingMessage;
+    private HUDMessage loadingMessage;
 
     /** Creates new form LoadingInfo */
     private LoadingInfo() {

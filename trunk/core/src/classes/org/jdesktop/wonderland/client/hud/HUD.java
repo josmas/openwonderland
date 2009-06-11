@@ -41,19 +41,41 @@ import org.jdesktop.wonderland.client.cell.Cell;
 public interface HUD {
 
     /**
-     * Creates a new HUD component
+     * Creates a new HUD component bound to a Swing component
      * @param component a Swing component to display in this HUD component
+     * @return a new HUD component
      */
     public HUDComponent createComponent(JComponent component);
 
     /**
-     * Creates a new HUD component with a Cell association
+     * Creates a new HUD component bound to a Swing component and associated
+     * with a Cell
      * @param component a Swing component to display in this HUD component
      * @param cell the cell associated with this HUD component
+     * @return a new HUD component
      */
     public HUDComponent createComponent(JComponent component, Cell cell);
 
-    public HUDComponent createMessage(String message);
+    /**
+     * Creates a new HUD dialog
+     * @param text the text to display in the dialog
+     * @return a new HUD dialog component
+     */
+    public HUDDialog createDialog(String text);
+
+    /**
+     * Creates a new HUD message
+     * @param message the message to display
+     * @return a new HUD message component
+     */
+    public HUDMessage createMessage(String message);
+
+    /**
+     * Creates a new HUD button
+     * @param label the label to display on the button
+     * @return a new HUD button component
+     */
+    public HUDButton createButton(String label);
 
     /**
      * Adds a HUD component to the HUD

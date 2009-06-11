@@ -39,9 +39,8 @@ import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
 import org.jdesktop.wonderland.client.hud.HUDComponentListener;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.input.test.EnterExitEvent3DLogger;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
@@ -107,7 +106,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         HUDComponentState state = new HUDComponentState(component);
         Window2D window = createWindow(component);
+        window.addEventListener(new EnterExitEvent3DLogger() {
 
+        });
         state.setWindow(window);
 
         component.addComponentListener(this);
