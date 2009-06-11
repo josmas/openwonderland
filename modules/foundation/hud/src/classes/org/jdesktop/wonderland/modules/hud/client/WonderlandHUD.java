@@ -27,8 +27,11 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDButton;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
+import org.jdesktop.wonderland.client.hud.HUDDialog;
+import org.jdesktop.wonderland.client.hud.HUDMessage;
 
 /**
  * A WonderlandHUD is a 2D region of the Wonderland client window on which HUDComponents
@@ -88,10 +91,27 @@ public class WonderlandHUD implements HUD {
         return new HUDComponent2D(component, cell);
     }
 
-    public HUDComponent createMessage(String message) {
-        return new HUDMessageDialog(message);
+    /**
+     * {@inheritDoc}
+     */
+    public HUDMessage createMessage(String message) {
+        return new HUDMessageComponent(message);
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
+    public HUDDialog createDialog(String text) {
+        return new HUDDialogComponent(text);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HUDButton createButton(String label) {
+        return new HUDButtonComponent(label);
+    }
+
     /**
      * {@inheritDoc}
      */

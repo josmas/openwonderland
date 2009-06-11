@@ -27,9 +27,9 @@ package org.jdesktop.wonderland.modules.hud.client;
  *
  * @author nsimpson
  */
-public class HUDMessageDialogImpl extends javax.swing.JPanel {
+public class HUDDialogImpl extends javax.swing.JPanel {
 
-    public HUDMessageDialogImpl() {
+    public HUDDialogImpl() {
         initComponents();
     }
 
@@ -65,9 +65,6 @@ public class HUDMessageDialogImpl extends javax.swing.JPanel {
         setBackground(new java.awt.Color(208, 208, 208));
 
         iconLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/info24x24.png"))); // NOI18N
-        iconLabel.setMaximumSize(new java.awt.Dimension(24, 24));
-        iconLabel.setMinimumSize(new java.awt.Dimension(24, 24));
-        iconLabel.setPreferredSize(new java.awt.Dimension(24, 24));
 
         scrollPane.setBorder(null);
         scrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -76,7 +73,7 @@ public class HUDMessageDialogImpl extends javax.swing.JPanel {
         messageTextArea.setBackground(new java.awt.Color(208, 208, 208));
         messageTextArea.setColumns(20);
         messageTextArea.setEditable(false);
-        messageTextArea.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
+        messageTextArea.setFont(new java.awt.Font("Arial", 1, 18));
         messageTextArea.setForeground(new java.awt.Color(255, 255, 255));
         messageTextArea.setRows(1);
         messageTextArea.setText("Your message here");
@@ -89,7 +86,7 @@ public class HUDMessageDialogImpl extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(iconLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(iconLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
                 .addContainerGap())
