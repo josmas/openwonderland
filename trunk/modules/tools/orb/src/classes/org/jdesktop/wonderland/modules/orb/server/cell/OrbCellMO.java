@@ -75,6 +75,7 @@ public class OrbCellMO extends CellMO {
     private String callID;
     private boolean simulateCalls;
     private VirtualPlayer vp;
+    private int bystanderCount;
 
 //    @UsesCellComponentMO(AudioParticipantComponentMO.class)
 //    private ManagedReference<AudioParticipantComponentMO> compRef;
@@ -97,11 +98,12 @@ public class OrbCellMO extends CellMO {
     public OrbCellMO(Vector3f center, float size, String username, 
 	    String callID, boolean simulateCalls) {
 
-	this(center, size, username, callID, simulateCalls, null);
+	this(center, size, username, callID, simulateCalls, null, 0);
     }
 
     public OrbCellMO(Vector3f center, float size, String username, 
-	    String callID, boolean simulateCalls, VirtualPlayer vp) {
+	    String callID, boolean simulateCalls, VirtualPlayer vp,
+	    int bystanderCount) {
 
 	super(new BoundingSphere(size, center), new CellTransform(null, center));
 
@@ -109,6 +111,7 @@ public class OrbCellMO extends CellMO {
         this.callID = callID;
         this.simulateCalls = simulateCalls;
 	this.vp = vp;
+	this.bystanderCount = bystanderCount;
 
         addComponent(new MovableComponentMO(this));
     }
@@ -148,7 +151,7 @@ public class OrbCellMO extends CellMO {
 
         if (cellClientState == null) {
             cellClientState = new OrbCellClientState(username, username, callID, 
-		getPlayerWithVpCallID());
+		getPlayerWithVpCallID(), bystanderCount);
         }
 
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -172,7 +175,7 @@ public class OrbCellMO extends CellMO {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
             cellServerState = new OrbCellServerState(username, username, callID, 
-		getPlayerWithVpCallID());
+		getPlayerWithVpCallID(), bystanderCount);
         }
 
         return super.getServerState(cellServerState);

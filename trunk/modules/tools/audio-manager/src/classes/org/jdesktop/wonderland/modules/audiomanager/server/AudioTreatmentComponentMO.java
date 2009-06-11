@@ -244,8 +244,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	    falloff = .999;
 	}
 
-	System.out.println("id " + groupId + " cellRadius " + cellRadius + " extent " + extent 
-	    + " fvr " + fullVolumeRadius + " falloff " + falloff + " volume " + volume);
+	//System.out.println("id " + groupId + " cellRadius " + cellRadius 
+	//    + " extent " + extent + " fvr " + fullVolumeRadius + " falloff " 
+	//    + falloff + " volume " + volume);
 
         for (int i = 0; i < treatments.length; i++) {
             TreatmentSetup setup = new TreatmentSetup();
