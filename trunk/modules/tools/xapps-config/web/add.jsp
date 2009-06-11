@@ -23,8 +23,16 @@
         <form id="nameForm" action="/xapps-config/wonderland-xapps-config/browse">
             <input type="hidden" name="action" value="add"/>
 
-            App Name: <input type="text" name="appName"/><br>
-            Command: <input text="text" name="command"/>
+            <table>
+                <tr>
+                    <td>App Name:</td>
+                    <td><input type="text" name="appName"/></td>
+                </tr>
+                <tr>
+                    <td>Command:</td>
+                    <td><input type="text" name="command"/></td>
+                </tr>
+            </table>
             <br><br>
             <a href="javascript:void(0)" onclick="$('nameForm').submit()">Ok</a>
             <a href="/xapps-config/wonderland-xapps-config/browse?action=view">Cancel</a>
