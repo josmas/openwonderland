@@ -34,6 +34,6 @@ public interface PresenceManagerListener {
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type);
 
-    public void aliasChanged(String previousAlias, PresenceInfo presenceInfo);
+    public void usernameAliasChanged(PresenceInfo presenceInfo);
 
 }

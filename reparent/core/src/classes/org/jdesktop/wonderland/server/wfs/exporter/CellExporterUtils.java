@@ -26,10 +26,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.wfs.CellDescriptor;
 import org.jdesktop.wonderland.common.wfs.CellPath;
+import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.server.cell.CellMO;
 
@@ -39,6 +41,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
  * WFS information from the WFS web service.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Bernard Horan
  */
 public class CellExporterUtils {
     private static final Logger logger =
@@ -82,9 +85,10 @@ public class CellExporterUtils {
      * @param worldRoot the root this cell will be written to
      * @param parentPath the path of the parent cell
      * @param cellMO the cell to get a descriptor for
+     * @param recordCellIDs if true, record the cellID of the cell
      */
     public static CellDescriptor getCellDescriptor(WorldRoot worldRoot,
-            CellPath parentPath, CellMO cellMO)
+            CellPath parentPath, CellMO cellMO, boolean recordCellIDs)
         throws IOException, JAXBException
     {
         // Create the cell on the server, fetch the setup information from the
@@ -94,6 +98,12 @@ public class CellExporterUtils {
         CellServerState setup = cellMO.getServerState(null);
         if (setup == null) {
             return null;
+        }
+        // If required, put the cellID of the cell in its metadata
+        // Required by event recorder
+        if (recordCellIDs) {
+            String cellID = cellMO.getCellID().toString();
+            setup.getMetaData().put("CellID", cellID);
         }
 
         // Write the setup information as an XML string. If we have trouble
@@ -143,6 +153,22 @@ public class CellExporterUtils {
             // Do nothing
         }
         r.close();
+    }
+
+    /**
+     * Returns all of the WFS recording names or null upon error
+     * @return a list of names of recordings
+     */
+    public static WFSRecordingList getWFSRecordings() throws IOException, JAXBException {
+        System.out.println("In CellExporterUtils.getWFSRecordings");
+        /*
+         * Try to open up a connection the Jersey RESTful resource and parse
+         * the stream. Upon error return null.
+         */
+        URL url = new URL(getWebServerURL(), WFS_PREFIX + "listrecordings");
+        CellExporter.logger.info("WFS: Loading recordings at " + url.toExternalForm());
+        return WFSRecordingList.decode(url.openStream());
+        
     }
     
     /**

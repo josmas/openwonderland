@@ -17,12 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
-import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.*;
 import imi.scene.JScene;
 import imi.utils.input.InputScheme;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
-import org.jdesktop.mtgame.ProcessorComponent;
 import imi.scene.processors.JSceneEventProcessor;
 import imi.utils.input.DefaultScheme;
 import java.awt.event.KeyEvent;
@@ -30,7 +28,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import javolution.util.FastList;
-import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -55,18 +52,18 @@ public class AvatarControls extends ViewControls implements JSceneEventProcessor
     private final LinkedList<Event> events = new LinkedList();
 
     private HashSet<Integer> pressedKeys = new HashSet();
-    private long postId = ClientContextJME.getWorldManager().allocateEvent();
 
     private final AvatarEventListener eventListener = new AvatarEventListener();
 
     private Cell viewCell = null;
+
+    private boolean enable = false;
 
     public AvatarControls() {
     }
 
     @Override
     public void compute(ProcessorArmingCollection arg0) {
-        synchronized(events) {
             LinkedList eventAwt = new LinkedList();
 
             for (Event evt : events) {
@@ -92,11 +89,13 @@ public class AvatarControls extends ViewControls implements JSceneEventProcessor
 //            System.err.println("Sending events "+m_scheme+" "+eventAwt.size());
             m_scheme.processEvents(eventAwt.toArray());
             events.clear();
-        }
     }
 
     @Override
     public void setEnabled(boolean enable) {
+        if (this.enable==enable)
+            return;
+
         super.setEnabled(enable);
 
         logger.fine("[AvatarControls] " + this + " enabled: " + enable);
@@ -112,7 +111,7 @@ public class AvatarControls extends ViewControls implements JSceneEventProcessor
             ClientContextJME.getWorldManager().removeUserData(JSceneEventProcessor.class);
         }
 
-
+        this.enable = enable;
     }
 
     /**
@@ -121,36 +120,36 @@ public class AvatarControls extends ViewControls implements JSceneEventProcessor
      * @param ke
      */
     private void processKeyEvent(KeyEvent ke) {
-        int index = 0;
-        
-        if (ke.getID() == KeyEvent.KEY_PRESSED) 
-        {
-            // Smooth normals toggle
-            if (ke.getKeyCode() == KeyEvent.VK_ADD) 
-            {
-                index = m_schemeList.indexOf(m_scheme);
-                index++;
-                if (index > m_schemeList.size()-1)
-                    m_scheme = m_schemeList.get(0);
-                else
-                    m_scheme = m_schemeList.get(index);
-                
-                m_scheme.setJScene(m_jscene);
-            }
-            
-            // Toggle PRenderer mesh display
-            if (ke.getKeyCode() == KeyEvent.VK_SUBTRACT)
-            {
-                index = m_schemeList.indexOf(m_scheme);
-                index--;
-                if (index < 0)
-                    m_scheme = m_schemeList.get(m_schemeList.size()-1);
-                else
-                    m_scheme = m_schemeList.get(index);   
-                
-                m_scheme.setJScene(m_jscene);
-            }
-        }
+//        int index = 0;
+//
+//        if (ke.getID() == KeyEvent.KEY_PRESSED)
+//        {
+//            // Smooth normals toggle
+//            if (ke.getKeyCode() == KeyEvent.VK_ADD)
+//            {
+//                index = m_schemeList.indexOf(m_scheme);
+//                index++;
+//                if (index > m_schemeList.size()-1)
+//                    m_scheme = m_schemeList.get(0);
+//                else
+//                    m_scheme = m_schemeList.get(index);
+//
+//                m_scheme.setJScene(m_jscene);
+//            }
+//
+//            // Toggle PRenderer mesh display
+//            if (ke.getKeyCode() == KeyEvent.VK_SUBTRACT)
+//            {
+//                index = m_schemeList.indexOf(m_scheme);
+//                index--;
+//                if (index < 0)
+//                    m_scheme = m_schemeList.get(m_schemeList.size()-1);
+//                else
+//                    m_scheme = m_schemeList.get(index);
+//
+//                m_scheme.setJScene(m_jscene);
+//            }
+//        }
     }
     
     @Override
@@ -160,13 +159,8 @@ public class AvatarControls extends ViewControls implements JSceneEventProcessor
 
     @Override
     public void initialize() {
-        logger.fine("******** AvatarControls init");
-//        setArmingCondition(new PostEventCondition(this, new long[]{postId}));
-        setArmingCondition(new NewFrameCondition(this));
-
-        // Run in the renderer to guarantee that the avatar move and camera
-        // are updated together
-        setRunInRenderer(true);
+        // Chain with the eventListener so we exectue after, but in the same frame
+        eventListener.addToChain(this);
     }
 
     public void clearSchemes()
@@ -225,12 +219,12 @@ public class AvatarControls extends ViewControls implements JSceneEventProcessor
         }
 
         @Override
-        public void commitEvent (Event event) {
+        public void computeEvent (Event event) {
 //            System.out.println("evt " +event);
-            synchronized(events) {
-                events.add(event);
-            }
-//            ClientContextJME.getWorldManager().postEvent(postId);
+            // Access to events does not need to be synchronised as the commit
+            // is guaranteed to happen after this computeEvent becuase the processors
+            // are chained
+            events.add(event);
         }
         
     }

@@ -171,15 +171,17 @@ public class WindowSystemXrw
 
     /** For internal use only */
     public void windowManagerExitted() {
-        AppXrw.logger.info("Window manager exitted for " + appInstanceName);
+        AppXrw.logger.severe("Window manager exitted for " + appInstanceName);
         wm.removeExitListener(this);
         cleanup();
     }
 
     /** 
-     * Clean up resources. This kill the server process and stops the window manager thread.
+     * Clean up resources. This kills the server process and stops the window manager thread.
      */
     public void cleanup() {
+        AppXrw.logger.warning("Shutting down X11 window system for display " + displayNum);
+
         if (displayNum != 0) {
             deallocDisplayNum(displayNum);
         }

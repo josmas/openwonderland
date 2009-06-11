@@ -46,6 +46,13 @@ public abstract class ControlArbAppFocus extends ControlArb {
         inputManager = InputManager3D.getInputManager();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        numControlledApps = 0;
+    }
+
     /**
      * {@inheritDoc}
      */

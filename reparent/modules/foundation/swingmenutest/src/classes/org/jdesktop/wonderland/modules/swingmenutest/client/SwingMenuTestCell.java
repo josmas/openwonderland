@@ -31,79 +31,77 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
  *
  * @author deronj
  */
-
 @ExperimentalAPI
 public class SwingMenuTestCell extends App2DCell {
-    
+
     /** The logger used by this class */
     private static final Logger logger = Logger.getLogger(SwingMenuTestCell.class.getName());
-    
     /** The (singleton) window created by the Swing test app */
     private SwingMenuTestWindow window;
-
     /** The cell client state message received from the server cell */
     private SwingMenuTestCellClientState clientState;
-    
+
     /**
      * Create an instance of SwingMenuTestCell.
      *
      * @param cellID The ID of the cell.
      * @param cellCache the cell cache which instantiated, and owns, this cell.
      */
-    public SwingMenuTestCell (CellID cellID, CellCache cellCache) {
+    public SwingMenuTestCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
-    
+
     /**
      * Initialize the cell with parameters from the server.
      *
      * @param state the client state data to initialize the cell with
      */
-    public void setClientState (CellClientState state) {
-	super.setClientState(state);
-        clientState = (SwingMenuTestCellClientState)state;
+    public void setClientState(CellClientState state) {
+        super.setClientState(state);
+        clientState = (SwingMenuTestCellClientState) state;
     }
 
     /**
      * This is called when the status of the cell changes.
      */
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
 
-	    // The cell is now visible
+            // The cell is now visible
             case ACTIVE:
-		
-                SwingMenuTestApp smtApp = new SwingMenuTestApp("Swing Menu Test", 
-                                                               clientState.getPixelScale());
-	        setApp(smtApp);
+                if (increasing) {
+                    SwingMenuTestApp smtApp = new SwingMenuTestApp("Swing Menu Test",
+                            clientState.getPixelScale());
+                    setApp(smtApp);
 
-                // Tell the app to be displayed in this cell.
-                smtApp.addDisplayer(this);
+                    // Tell the app to be displayed in this cell.
+                    smtApp.addDisplayer(this);
 
-                // This app has only one window, so it is always top-level 
-                try {
-                    window = new SwingMenuTestWindow(smtApp, clientState.getPreferredWidth(), 
-                                                     clientState.getPreferredHeight(), 
-                                                     true, clientState.getPixelScale());
-                } catch (InstantiationException ex) {
-                    throw new RuntimeException(ex);
+                    // This app has only one window, so it is always top-level
+                    try {
+                        window = new SwingMenuTestWindow(smtApp, clientState.getPreferredWidth(),
+                                clientState.getPreferredHeight(),
+                                true, clientState.getPixelScale());
+                    } catch (InstantiationException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+                    // Both the app and the user want this window to be visible
+                    window.setVisibleApp(true);
+                    window.setVisibleUser(this, true);
                 }
+                break;
 
-                // Both the app and the user want this window to be visible
-                window.setVisibleApp(true);
-                window.setVisibleUser(this, true);
-		break;
-
-	    // The cell is no longer visible
+            // The cell is no longer visible
             case DISK:
-                window.setVisibleApp(false);
-		window = null;
-		break;
-	} 
-
-        return ret;
+                if (!increasing) {
+                    window.setVisibleApp(false);
+                    window = null;
+                }
+                break;
+        }
     }
 }

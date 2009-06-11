@@ -10,7 +10,7 @@
         <runnerName>Web Administration Server</runnerName>
     </entry>
     <entry>
-        <runnerClass>org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunner</runnerClass>
+        <runnerClass>org.jdesktop.wonderland.modules.darkstar.server.DarkstarRunnerImpl</runnerClass>
         <runnerName>Darkstar Server</runnerName>
     </entry>
     <entry>
@@ -18,7 +18,7 @@
         <runnerName>Voice Bridge</runnerName>
     </entry>
     <entry>
-        <runnerClass>org.jdesktop.wonderland.modules.sasxremwin.weblib.SasProviderRunner</runnerClass>
+        <runnerClass>org.jdesktop.wonderland.modules.sasxremwin.weblib.SasProviderRunnerImpl</runnerClass>
         <runnerName>Shared Application Server</runnerName>
     </entry>
 </DeploymentPlan>

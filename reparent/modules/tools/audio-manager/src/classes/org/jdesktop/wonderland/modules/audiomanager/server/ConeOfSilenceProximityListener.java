@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.jme.bounding.BoundingVolume;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import java.io.Serializable;
 
@@ -48,12 +49,14 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     private static final Logger logger =
             Logger.getLogger(ConeOfSilenceProximityListener.class.getName());
 
-    CellID cellID;
-    String name;
+    private CellID cellID;
+    private String name;
+    private double outsideAudioVolume;
 
-    public ConeOfSilenceProximityListener(CellMO cellMO) {
+    public ConeOfSilenceProximityListener(CellMO cellMO, String name, double outsideAudioVolume) {
 	cellID = cellMO.getCellID();
-        name = cellMO.getName();
+        this.name = name;
+	this.outsideAudioVolume = outsideAudioVolume;
     }
 
     public void viewEnterExit(boolean entered, CellID cellID,
@@ -111,7 +114,9 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         }
 
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
-       	    AudioGroupPlayerInfo.ChatType.EXCLUSIVE));
+       	    AudioGroupPlayerInfo.ChatType.SECRET));
+
+	//System.out.println("Attenuate other groups to " + outsideAudioVolume + " name " + name);
 
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
@@ -120,7 +125,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
     }
 
     public void playerAdded(AudioGroup audioGroup, Player player, AudioGroupPlayerInfo info) {
-        player.attenuateOtherGroups(audioGroup, 0, 0);
+	player.attenuateOtherGroups(audioGroup, 0, outsideAudioVolume);
     }
 
     private void cellExited(CellID softphoneCellID) {
@@ -158,6 +163,8 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         if (audioGroup.getNumberOfPlayers() == 0) {
             AppContext.getManager(VoiceManager.class).removeAudioGroup(audioGroup);
         }
+
+	VoiceChatHandler.updateAttenuation(player);
     }
 
 }

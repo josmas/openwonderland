@@ -35,9 +35,11 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.mtgame.PickDetails;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.PickInfo;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+
 /**
  * A singleton container for all of the processor objects in the Wonderland input subsystem.
  * <br><br>
@@ -579,5 +581,17 @@ public abstract class InputManager
 	    return null;
 	}
 	return inputPicker.calcPickRayWorld(x, y);
+    }
+
+    /**
+     * Perform a pick using a ray which extends from the eye position through the given 
+     * screen point.
+     * point in screen coordinates.
+     */
+    public PickInfo pick (int x, int y) {
+	if (inputPicker == null) {
+	    return null;
+	}
+	return inputPicker.pickEventScreenPos(x, y);
     }
 }

@@ -30,14 +30,32 @@ public class UserListenerNotifier implements Task, Serializable {
 
     private ManagedReference<UserListener> listenerRef;
     private WonderlandClientID clientID;
+    private int notificationType;
 
-    public UserListenerNotifier(ManagedReference<UserListener> listenerRef, WonderlandClientID clientID) {
+    /**
+     * Constant indicating that the notification should be of a logout event.
+     */
+    public static final int LOGOUT = 0;
+
+    /**
+     * Constant indicating that the notification should be of a logout event.
+     */
+    public static final int LOGIN = 1;
+
+    public UserListenerNotifier(ManagedReference<UserListener> listenerRef, WonderlandClientID clientID, int notificationType) {
         this.listenerRef = listenerRef;
         this.clientID = clientID;
+        this.notificationType = notificationType;
     }
 
     public void run() throws Exception {
-        listenerRef.get().userLoggedOut(clientID);
+
+        if(notificationType==LOGOUT)
+            listenerRef.get().userLoggedOut(clientID);
+        else if(notificationType==LOGIN)
+            listenerRef.get().userLoggedIn(clientID);
+        else
+            throw new Exception("Invalid notification type: " + notificationType + ". Expecting LOGIN(1) or LOGOUT(0).");
     }
 
 }

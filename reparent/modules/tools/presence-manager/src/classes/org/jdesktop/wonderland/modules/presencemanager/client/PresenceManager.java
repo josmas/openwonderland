@@ -36,20 +36,20 @@ import com.jme.bounding.BoundingVolume;
 public interface PresenceManager {
 
     /**
-     * Tell the PresenceManager about a new session.
+     * Tell the PresenceManager about new PresenceInfo.
      * @param CellID the cell ID of the ViewCell.
      * @param BigInteger the Wonderland session ID
      * @param WonderlandIdentity the user ID
      */
-    public void addSession(PresenceInfo presenceInfo);
+    public void addPresenceInfo(PresenceInfo presenceInfo);
 
     /**
-     * Tell the PresenceManager that a session has been removed.
+     * Tell the PresenceManager that PresenceInfo has been removed.
      * @param CellID the cell ID of the ViewCell.
      * @param BigInteger the Wonderland session ID
      * @param WonderlandIdentity the user ID
      */
-    public void removeSession(PresenceInfo presenceInfo);
+    public void removePresenceInfo(PresenceInfo presenceInfo);
 
     /**
      * Get PresenceInfo from a cellID.  The cellID must be for a ViewCell.
@@ -108,11 +108,11 @@ public interface PresenceManager {
     public PresenceInfo[] getAliasPresenceInfo(String usernameAlias);
 
     /**
-     * Change username in PresenceInfo.
+     * Change usernameAlias in PresenceInfo.
      * @param PresenceInfo
      * @param String user name
      */
-    public void changeUsername(PresenceInfo info, String username);
+    public void changeUsernameAlias(PresenceInfo info);
 
     /** 
      * Set speaking flag
@@ -154,5 +154,10 @@ public interface PresenceManager {
      */
     public void removePresenceManagerListener(PresenceManagerListener listener);
  
+    /**
+     * Display all presenceInfo
+     */
+    public void dump();
+
  }
  

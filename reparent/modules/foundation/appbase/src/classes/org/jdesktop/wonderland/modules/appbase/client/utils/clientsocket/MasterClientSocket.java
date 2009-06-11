@@ -29,7 +29,6 @@ class MasterClientSocket extends ClientSocket {
     public MasterClientSocket(BigInteger masterClientID, Socket s, ClientSocketListener listener) {
         super(masterClientID, s, listener);
         master = true;
-        enable = true;
 
         if (ENABLE_STATS) {
             statReporter = new StatisticsReporter(10, /* secs */

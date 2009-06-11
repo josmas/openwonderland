@@ -80,7 +80,7 @@ public abstract class View2DEntity implements View2D {
     protected static final int CHANGED_SIZE_APP         = 0x0020;
     protected static final int CHANGED_PIXEL_SCALE      = 0x0040;
     protected static final int CHANGED_OFFSET           = 0x0080;
-    protected static final int CHANGED_USER_TRANSLATION = 0x0100;
+    protected static final int CHANGED_USER_TRANSFORM   = 0x0100;
     protected static final int CHANGED_TITLE            = 0x0200;
     protected static final int CHANGED_STACK            = 0x0400;
     protected static final int CHANGED_ORTHO            = 0x0800;
@@ -152,25 +152,26 @@ public abstract class View2DEntity implements View2D {
     /** The interactive GUI object for this view. */
     private Gui2DInterior gui;
 
-    /** The pixel offset translation from the top left corner of the parent. */
-    private Point offset = new Point(0, 0);
+    /** The local offset translation from the center of the parent to the center of this view. */
+    private Vector2f offset = new Vector2f(0f, 0f);
 
-    /** The user translation used when in cell mode. */
-    // TODO: make private and add a getter for subclass to use. Do elsewhere as well.
-    protected Vector3f userTranslationCell = new Vector3f(0f, 0f, 0f);
+    /** The pixel offset translation from the top left corner of the parent to the top left corner of this view. */
+    private Point pixelOffset = new Point(0, 0);
 
-    /** The user translation used when in ortho mode. */
-    // TODO: make private and add a getter for subclass to use. Do elsewhere as well.
-    protected Vector3f userTranslationOrtho = new Vector3f(0f, 0f, 0f);
+    /** The previous drag vector during an interactive planar move. */
+    private Vector2f userMovePlanarDragVectorPrev;
+    
+    /** The current value of the window size during an interactive resize. */
+    private Dimension userResizeNewSize;
+    
+    /** The next delta translation to apply. */
+    private Vector3f deltaTranslationToApply;
 
-    /** The previous cell mode user translation. */
-    private Vector3f userTranslationCellPrev = new Vector3f(0f, 0f, 0f);
+    /** A copy of the current view node's user transformation in world (aka non-ortho) mode. */
+    private CellTransform userTransformCell = new CellTransform(null, null, null);
 
-    /** The previous ortho mode user translation. */
-    private Vector3f userTranslationOrthoPrev = new Vector3f(0f, 0f, 0f);
-
-    /** A copy of the current user transformation (i.e. the view node's tranformation). */
-    private CellTransform userTransform = new CellTransform(null, null);
+    /** A copy of the current view node's user transformation in ortho mode. */
+    private CellTransform userTransformOrtho = new CellTransform(null, null, null);
 
     /** The event listeners which are attached to this view while the view is attached to its cell */
     private LinkedList<EventListener> eventListeners = new LinkedList<EventListener>();
@@ -525,8 +526,6 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setTitle (String title, boolean update) {
-        //System.err.println("$$$$$$$$$$$$ view = " + this);
-        //System.err.println("$$$$$$$$$$$$ change title = " + title);
         this.title = title;
         changeMask |= CHANGED_TITLE;
         if (update) {
@@ -793,15 +792,15 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized void setOffset(Point offset) {
+    public synchronized void setOffset(Vector2f offset) {
         setOffset(offset, true);
     }
 
     /** {@inheritDoc} */
-    public synchronized void setOffset(Point offset, boolean update) {
+    public synchronized void setOffset(Vector2f offset, boolean update) {
         logger.info("view = " + this);
         logger.info("change offset = " + offset);
-        this.offset = (Point) offset.clone();
+        this.offset = (Vector2f) offset.clone();
         changeMask |= CHANGED_OFFSET;
         if (update) {
             update();
@@ -809,91 +808,132 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public Point getOffset () {
-        return (Point) offset.clone();
+    public Vector2f getOffset () {
+        return (Vector2f) offset.clone();
     }
 
-    /** Specify the user-specified translation used when in cell mode. Update afterward. */
-    public synchronized void setTranslationUser (Vector3f translation) {
-        setTranslationUser(translation, true);
+    /** {@inheritDoc} */
+    public synchronized void setPixelOffset(Point pixelOffset) {
+        setPixelOffset(pixelOffset, true);
     }
 
-    /** Specify the user-specified translation used when in cell mode. Update if specified. */
-    public synchronized void setTranslationUser (Vector3f translation, boolean update) {
+    /** {@inheritDoc} */
+    public synchronized void setPixelOffset(Point pixelOffset, boolean update) {
         logger.info("view = " + this);
-        logger.info("change translationUserCell = " + translation);
-        userTranslationCellPrev = userTranslationCell;
-        userTranslationCell = translation.clone();
-        changeMask |= CHANGED_USER_TRANSLATION;
+        logger.info("change pixelOffset = " + pixelOffset);
+        this.pixelOffset = (Point) pixelOffset.clone();
+        changeMask |= CHANGED_OFFSET;
         if (update) {
             update();
         }
     }
 
-    /** Returns the user translation used when in cell mode. */
-    public Vector3f getTranslationUser () {
-        return userTranslationCell.clone();
+    /** {@inheritDoc} */
+    public Point getPixelOffset () {
+        return (Point) pixelOffset.clone();
     }
 
-    /** Specify the user-specified translation used when in ortho mode. Update afterward. */
-    public synchronized void setTranslationUserOrtho (Vector3f translation) {
-        setTranslationUserOrtho(translation, true);
+    /** {@inheritDoc} */
+    public void applyDeltaTranslationUser (Vector3f deltaTranslation) {
+        applyDeltaTranslationUser(deltaTranslation, true);
     }
 
-    /** Specify the user-specified translation used when in ortho mode. Update if specified. */
-    public synchronized void setTranslationUserOrtho (Vector3f translation, boolean update) {
-        logger.info("view = " + this);
-        logger.info("change translationUserOrtho = " + translation);
-        userTranslationOrthoPrev = userTranslationOrtho;
-        userTranslationOrtho = translation.clone();
-        changeMask |= CHANGED_USER_TRANSLATION;
+    /** {@inheritDoc} */
+    public void applyDeltaTranslationUser (Vector3f deltaTranslation, boolean update) {
+        deltaTranslationToApply = deltaTranslation.clone();
+        changeMask |= CHANGED_USER_TRANSFORM;
         if (update) {
             update();
         }
     }
 
-    /** Returns the user translation used when in ortho mode. */
-    public Vector3f getTranslationUserOrtho () {
-        return userTranslationOrtho.clone();
+    /**
+     * Called by the UI to indicate the start of an interactive planar move. 
+     */
+    public synchronized void userMovePlanarStart () {
+        userMovePlanarDragVectorPrev = new Vector2f();
     }
 
-    /** Returns the user translation for the current mode */
-    protected Vector3f getTranslationUserCurrent() {
-        if (ortho) {
-            return userTranslationOrtho.clone();
-        } else {
-            return userTranslationCell.clone();
-        }
-    }
+    /**
+     * Called by the UI to indicate a drag vector update during interactive planar move. 
+     */
+    public synchronized void userMovePlanarUpdate (Vector2f dragVector) {
+        
+        // Calculate the delta of the movement since the last update
+        Vector2f deltaDragVector = dragVector.clone();
+        deltaDragVector.subtractLocal(userMovePlanarDragVectorPrev);
+        userMovePlanarDragVectorPrev = dragVector;
 
-    /** Returns the previous user translation for the current mode */
-    protected Vector3f getTranslationUserPrevCurrent() {
-        if (ortho) {
-            return userTranslationOrthoPrev.clone();
-        } else {
-            return userTranslationCellPrev.clone();
-        }
-    }
-
-    /** TODO: these are now deltas! */
-
-    public synchronized void userMovePlanarStart (float dx, float dy) {
-    }
-
-    public synchronized void userMovePlanarUpdate (float x, float dy) {
+        applyDeltaTranslationUser(new Vector3f(deltaDragVector.x, deltaDragVector.y, 0f), true);
     }
 
     public synchronized void userMovePlanarFinish () {
     }
 
+    private Dimension userResizeCalcWindowNewSize (Vector2f dragVector) {
+        // Convert local coords drag vector to a pixel vector
+        Vector2f pixelScale = getPixelScaleCurrent();
+        //System.err.println("pixelScale = " + pixelScale);
+        int deltaWidth = (int)(dragVector.x / pixelScale.x);
+        int deltaHeight = (int)(dragVector.y / pixelScale.y);
+        if (deltaWidth == 0 && deltaHeight == 0) return null;
+        if (deltaWidth < 1) deltaWidth = 1;
+        if (deltaHeight < 1) deltaHeight = 1;
+
+        //System.err.println("deltaWH = " + deltaWidth + ", " + deltaHeight);
+
+        // TODO: for now, we only support the resize mode where resizing the view
+        // directly updates the window size.
+        int width = window.getWidth();
+        int height = window.getHeight();
+        //System.err.println("Old size, wh = " + width + ", " + height);
+        width += deltaWidth;
+        height -= deltaHeight;
+
+        return new Dimension(width, height);
+    }
+
+    /**
+     * Called by the UI to indicate the start of an interactive resize.
+     */
+    public synchronized void userResizeStart () {
+        //System.err.println("********* Resize start");
+    }
+
+    /**
+     * Called by the UI to indicate a drag vector update during interactive resize.
+     */
+    public synchronized void userResizeUpdate (Vector2f dragVector) {
+        //System.err.println("********* Resize update, dragVector = " + dragVector);
+        
+        // TODO: eventually support optional app-selected continuous window resize. For this 
+        // we call perform resize on each update. May look better for Swing windows.
+
+        userResizeNewSize = userResizeCalcWindowNewSize(dragVector);
+        if (userResizeNewSize == null) return;
+        //System.err.println("userResizeNewSize = " + userResizeNewSize);
+
+        // Resize only the view
+        setSizeApp(userResizeNewSize);
+    }
+
+    public synchronized void userResizeFinish () {
+        //System.err.println("********* Resize Finish");
+        // TODO: for now, only support non-continuous resize. That is, only perform
+        // the actual window resize at the end of the drag operation.
+        window.setSize(userResizeNewSize.width, userResizeNewSize.height);
+    }
+
+    /** TODO: NOTYET
     public synchronized void userMoveZStart (float dy) {
     }
 
     public synchronized void userMoveZUpdate (float dy) {
-   }
+    }
 
     public synchronized void userMoveZFinish () {
     }
+    */
 
     /**
      * Specifies whether the view entity is to be displayed in ortho mode ("on the glass").
@@ -907,7 +947,7 @@ public abstract class View2DEntity implements View2D {
 
     /**
      * Specifies whether the view entity is to be displayed in ortho mode ("on the glass").
-     * Update if specified.
+     * Update if specified. This also changes the ortho attribute of all descendent views.
      */
     public synchronized void setOrtho (boolean ortho, boolean update) {
         if (this.ortho == ortho) return;
@@ -915,6 +955,13 @@ public abstract class View2DEntity implements View2D {
         logger.info("change ortho = " + ortho);
         this.ortho = ortho;
         changeMask |= CHANGED_ORTHO;
+
+        logger.info("Make corresponding ortho changes to descendents");
+        logger.info("Num children = " + children.size());
+        for (View2DEntity child : children) {
+            child.setOrtho(ortho, false);
+        }
+
         if (update) {
             update();
         }
@@ -927,6 +974,113 @@ public abstract class View2DEntity implements View2D {
         return ortho;
     }
 
+    private void logChangeMask (int mask) {
+        logger.info("changeMask " + Integer.toHexString(mask));
+        int bit = 0x1;
+        for (int i = 0; i < 32; i++, bit <<= 1) {
+            int thisBit = mask & bit;
+            if (thisBit != 0) {
+                String str;
+                switch (thisBit) {
+                case CHANGED_TYPE:
+                    str = "CHANGED_TYPE";
+                    break;
+                case CHANGED_PARENT:
+                    str = "CHANGED_PARENT";
+                    break;
+                case CHANGED_VISIBLE:
+                    str = "CHANGED_VISIBLE";
+                    break;
+                case CHANGED_DECORATED:
+                    str = "CHANGED_DECORATED";
+                    break;
+                case CHANGED_GEOMETRY:
+                    str = "CHANGED_GEOMETRY";
+                    break;
+                case CHANGED_SIZE_APP:
+                    str = "CHANGED_SIZE_APP";
+                    break;
+                case CHANGED_PIXEL_SCALE:
+                    str = "CHANGED_PIXEL_SCALE";
+                    break;
+                case CHANGED_OFFSET:
+                    str = "CHANGED_OFFSET";
+                    break;
+                case CHANGED_USER_TRANSFORM:
+                    str = "CHANGED_USER_TRANSFORM";
+                    break;
+                case CHANGED_TITLE:
+                    str = "CHANGED_TITLE";
+                    break;
+                case CHANGED_STACK:
+                    str = "CHANGED_STACK";
+                    break;
+                case CHANGED_ORTHO:
+                    str = "CHANGED_ORTHO";
+                    break;
+                case CHANGED_LOCATION_ORTHO:
+                    str = "CHANGED_LOCATION_ORTHO";
+                    break;
+                case CHANGED_TEX_COORDS:
+                    str = "CHANGED_TEX_COORDS";
+                    break;
+                default:
+                    continue;
+                }
+
+                // Printed selected values
+                String str2 = null;
+                switch (thisBit) {
+                case CHANGED_TYPE:
+                    str2 = ": type = " + type;
+                    break;
+                case CHANGED_PARENT:
+                    str2 = ": parent = " + parent;
+                    break;
+                case CHANGED_VISIBLE:
+                    str2 = ": visibleApp = " + visibleApp + ", visibleUser = " + visibleUser;
+                    break;
+                case CHANGED_DECORATED:
+                    str2 = ": decorated = " + decorated;
+                    break;
+                case CHANGED_GEOMETRY:
+                    break;
+                case CHANGED_SIZE_APP:
+                    str2 = ": sizeApp = " + sizeApp;
+                    break;
+                case CHANGED_PIXEL_SCALE:
+                    str2 = ": pixelScaleCell = " + pixelScaleCell + ", pixelScaleOrtho = " + pixelScaleOrtho;
+                    break;
+                case CHANGED_OFFSET:
+                    str2 = ": offset = " + offset + ", pixelOffset = " + pixelOffset;
+                    break;
+                case CHANGED_USER_TRANSFORM:
+                    str2 = ": deltaTranslationToApply = " + deltaTranslationToApply;
+                    break;
+                case CHANGED_TITLE:
+                    str2 = ": title = " + title;
+                    break;
+                case CHANGED_STACK:
+                    break;
+                case CHANGED_ORTHO:
+                    str2 = ": ortho = " + ortho;
+                    break;
+                case CHANGED_LOCATION_ORTHO:
+                    str2 = ": locationOrtho = " + locationOrtho;
+                    break;
+                case CHANGED_TEX_COORDS:
+                    break;
+                }
+
+                str += "(" + Integer.toHexString(thisBit) + ")";
+                if (str2 != null) {
+                    str += str2;
+                }
+                logger.info(str);
+            }
+        }
+    }
+
     /** Processes attribute changes. Should be called within a synchronized block. */
     protected void processChanges () {
 
@@ -935,7 +1089,7 @@ public abstract class View2DEntity implements View2D {
 
         logger.fine("------------------ Processing changes for view " + this);
         logger.fine("type " + type);
-        logger.fine("changeMask " + Integer.toHexString(changeMask));
+        logChangeMask(changeMask);
 
         // React to topology related changes
         if ((changeMask & (CHANGED_GEOMETRY | CHANGED_SIZE_APP | CHANGED_TYPE | CHANGED_PARENT | 
@@ -999,10 +1153,39 @@ public abstract class View2DEntity implements View2D {
             if (isActuallyVisible()) {
                 if (ortho) {
                     logger.fine("View is ortho for view " + this);
-                    logger.fine("Attach entity " + entity + " to world manager.");
-                    ClientContextJME.getWorldManager().addEntity(entity);
-                    attachState = AttachState.ATTACHED_TO_WORLD;
                     entity.getComponent(RenderComponent.class).setOrtho(true);
+
+                    if (type == Type.PRIMARY  || type == Type.UNKNOWN) {
+                        // Attach top level ortho views directly to world
+                        ClientContextJME.getWorldManager().addEntity(entity);
+                        attachState = AttachState.ATTACHED_TO_WORLD;
+                        logger.fine("Attached entity " + entity + " to world manager.");
+                    } else {
+                        parentEntity = getParentEntity();
+                        if (parentEntity == null) {
+                            // Has no Parent; attach directly to world
+                            ClientContextJME.getWorldManager().addEntity(entity);
+                            attachState = AttachState.ATTACHED_TO_WORLD;
+                            logger.fine("Attached parentless entity " + entity + " to world manager.");
+                        } else {
+                            parentEntity.addEntity(entity);
+                            RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
+                            RenderComponent rcParent = 
+                                (RenderComponent) parentEntity.getComponent(RenderComponent.class);
+                            Node attachNode = rcParent.getSceneRoot();
+
+                            // Note: we need to attach non-primaries to the parent geometry node in 
+                            // ortho mode, rather than the view node. This way it picks up the parent's
+                            // offset translation, which contains locationOrtho
+                            // TODO: do this cleaner. Convert attach node to a view and get the
+                            // geometry node for this view.
+                            attachNode = (Node) attachNode.getChild(0);
+
+                            sgChangeAttachPointSet(rc, attachNode);
+                            attachState = AttachState.ATTACHED_TO_ENTITY;
+                            logger.fine("Attach ortho entity " + entity + " to geometry node of parent entity " + parentEntity);
+                        }
+                    }
                 } else {
                     logger.fine("View is not ortho for view " + this);
                     parentEntity = getParentEntity();
@@ -1014,18 +1197,26 @@ public abstract class View2DEntity implements View2D {
                         RenderComponent rc = (RenderComponent) entity.getComponent(RenderComponent.class);
                         RenderComponent rcParent = 
                             (RenderComponent) parentEntity.getComponent(RenderComponent.class);
-                        sgChangeAttachPointSet(rc, rcParent.getSceneRoot());
+                        Node attachNode = rcParent.getSceneRoot();
+
+                        // SPECIAL NOTE: Here is where special surgery is done on header windows so 
+                        // that they are parented to the *geometry node* of their parent view instead of 
+                        // the view node, as windows normally are. This way it picks up the offset
+                        // translation in the geometry node and stays in sync with the rest of the frame.
+                        // See also: SPECIAL NOTE in Frame2DCell.attachViewToEntity.
+                        if (window instanceof WindowSwingHeader) {
+                            WindowSwingHeader wsh = (WindowSwingHeader) window;
+                            if (wsh.getView().getType() == View2D.Type.SECONDARY) { 
+                                // TODO: do this cleaner. Convert attach node to a view and get the
+                                // geometry node for this view.
+                                attachNode = (Node) attachNode.getChild(0);
+                            }
+                        }
+
+                        sgChangeAttachPointSet(rc, attachNode);
                         attachState = AttachState.ATTACHED_TO_ENTITY;
                         entity.getComponent(RenderComponent.class).setOrtho(false);
                     }
-                }
-            }
-
-            if ((changeMask & CHANGED_ORTHO) != 0) {
-                // Propagate our ortho setting to our children
-                logger.fine("Force children ortho to " + ortho + " for view " + this);
-                for (View2DEntity child : children) {
-                    child.setOrtho(ortho);
                 }
             }
 
@@ -1058,18 +1249,30 @@ public abstract class View2DEntity implements View2D {
                 }
             }
             
+            if ((changeMask & CHANGED_TITLE) != 0) {
+                if (decorated && !ortho && hasFrame()) {
+                    frameUpdateTitle();
+                }
+            }
+
             if ((changeMask & (CHANGED_TYPE | CHANGED_ORTHO)) != 0) {
                 if (decorated && !ortho) {
                     reattachFrame();
                 }
             }
+
         }            
 
         if ((changeMask & (CHANGED_STACK | CHANGED_ORTHO)) != 0) {
             logger.fine("Update geometry ortho Z order for view " + this);
             if (ortho) {
-                int zOrder = window.getZOrder();
-                sgChangeGeometryOrthoZOrderSet(geometryNode, zOrder);
+                if (window != null) {
+                    int zOrder = window.getZOrder();
+                    logger.fine("Z order = " + zOrder);
+                    if (zOrder >= 0) {
+                        sgChangeGeometryOrthoZOrderSet(geometryNode, zOrder);
+                    }
+                }
             }
         }
 
@@ -1111,43 +1314,64 @@ public abstract class View2DEntity implements View2D {
         }
 
         // React to transform related changes
-        // Uses: type, parent, pixelscale, size, offset, ortho, stack
+        // Uses: type, parent, pixelscale, size, offset, ortho, locationOrtho, stack
         if ((changeMask & (CHANGED_TYPE | CHANGED_PARENT | CHANGED_PIXEL_SCALE | CHANGED_SIZE_APP | 
-                           CHANGED_OFFSET | CHANGED_ORTHO | CHANGED_STACK)) != 0) {
+                           CHANGED_OFFSET | CHANGED_ORTHO | CHANGED_LOCATION_ORTHO | CHANGED_STACK)) != 0) {
             CellTransform transform = null;
 
             switch (type) {
             case UNKNOWN:
             case PRIMARY:
-                // Always set to identity
-                transform = new CellTransform(null, null);
+                transform = new CellTransform(null, null, null);
+                if (ortho) { 
+                    Vector3f orthoLocTranslation = new Vector3f();
+                    orthoLocTranslation.x = locationOrtho.x;
+                    orthoLocTranslation.y = locationOrtho.y;
+                    transform.setTranslation(orthoLocTranslation);
+                } else {
+                    // Note: primaries now also honor the offset.
+                    // Uses: type, parent, pixelScale, size, offset, ortho
+                    transform = calcOffsetStackTransform();
+                }
                 break;
             case SECONDARY:
             case POPUP:
-                // Uses: type, parent, pixelScale, size, offset
+                // Uses: type, parent, pixelScale, size, offset, ortho
                 transform = calcOffsetStackTransform();
             }
             sgChangeGeometryTransformOffsetStackSet(geometryNode, transform);
         }
 
-        // Uses: type, userTranslation
-        if ((changeMask & (CHANGED_TYPE | CHANGED_USER_TRANSLATION | CHANGED_ORTHO | 
-                           CHANGED_LOCATION_ORTHO | CHANGED_TYPE)) != 0) {
-            CellTransform deltaTransform;
+        // Update the view node's user transform, if necessary
+        // Uses: type, deltaTranslationToApply
+        if ((changeMask & (CHANGED_TYPE | CHANGED_USER_TRANSFORM | CHANGED_ORTHO)) != 0) {
 
+            // Select the current user transform based on the ortho mode
+            CellTransform currentUserTransform;
+            if (ortho) {
+                currentUserTransform = userTransformOrtho;
+            } else {
+                currentUserTransform = userTransformCell;
+            }
+            logger.fine("currentUserTransform (before) = " + currentUserTransform);
+
+            // Apply any pending user transform deltas (by post-multiplying them
+            // into the current user transform
+            userTransformApplyDeltas(currentUserTransform);
+            logger.fine("currentUserTransform (after) = " + currentUserTransform);
+
+            // Now put the update user transformation into effect
             switch (type) {
             case UNKNOWN:
             case PRIMARY:
-                deltaTransform = calcUserDeltaTransform();
-                updatePrimaryTransform(deltaTransform);
+                updatePrimaryTransform(currentUserTransform);
                 break;
             case SECONDARY:
-                deltaTransform = calcUserDeltaTransform();
-                sgChangeTransformUserPostMultiply(viewNode, deltaTransform); 
+                sgChangeTransformUserSet(viewNode, currentUserTransform);
                 break;
             case POPUP:
                 // Always set to identity
-                sgChangeTransformUserSet(viewNode, new CellTransform(null, null));
+                sgChangeTransformUserSet(viewNode, new CellTransform(null, null, null));
             }
         }
 
@@ -1181,10 +1405,20 @@ public abstract class View2DEntity implements View2D {
             }
         }
 
-        // Lastly, inform the window's surface of the view visibility.
-        DrawingSurface surface = window.getSurface();
-        if (surface != null) {
-            surface.setViewIsVisible(this, isActuallyVisible());
+        // Inform the window's surface of the view visibility.
+        if (window != null) {
+            DrawingSurface surface = window.getSurface();
+            if (surface != null) {
+                surface.setViewIsVisible(this, isActuallyVisible());
+            }
+        }
+
+        // Make sure that all descendent views are up-to-date
+        logger.fine("Update children for view " + this);
+        for (View2DEntity child : children) {
+            if (child.changeMask != 0) {
+                child.update();
+            }
         }
     }
 
@@ -1204,9 +1438,9 @@ public abstract class View2DEntity implements View2D {
     // Uses: type, parent, pixelscale, size, offset
     // View2DCell subclass uses: type, ortho, parent, stack
     private CellTransform calcOffsetStackTransform () {
-        CellTransform transform = new CellTransform(null, null);
+        CellTransform transform = new CellTransform(null, null, null);
 
-        // Uses: parent, pixelScale, size, offset
+        // Uses: parent, pixelScale, size, offset, ortho
         Vector3f offsetTranslation = calcOffsetTranslation();
 
         // Uses: type
@@ -1222,50 +1456,77 @@ public abstract class View2DEntity implements View2D {
     // Convert the pixel-offset-from-upper-left of parent to a distance vector from the center of parent
     private Vector3f calcOffsetTranslation () {
         Vector3f translation = new Vector3f();
-        if (parent == null) return translation;
 
-        // TODO: does the width/height need to include the scroll bars?
-        Vector2f pixelScale = getPixelScaleCurrent();
-        Dimension parentSize = parent.getSizeApp();
-        translation.x = -parentSize.width * pixelScale.x / 2f;
-        translation.y = parentSize.height * pixelScale.y / 2f;
-        translation.x += sizeApp.width * pixelScale.x / 2f;
-        translation.y -= sizeApp.height * pixelScale.y / 2f;
-        translation.x += offset.x * pixelScale.x;
-        translation.y -= offset.y * pixelScale.y;
+        if (ortho) {
+            if (type == Type.PRIMARY || type == Type.UNKNOWN) {
+                translation.x = locationOrtho.x;
+                translation.y = locationOrtho.y;
+            } else {
+
+                if (parent == null) return translation;
+
+                // Initialize to the first part of the offset (the local coordinate translation)
+                translation.x = locationOrtho.x + offset.x;
+                translation.y = locationOrtho.y + offset.y;
+
+                // Convert pixel offset to local coords and add it in
+                Dimension parentSize = parent.getSizeApp();
+                translation.x += -parentSize.width / 2f;
+                translation.y += parentSize.height / 2f;
+                translation.x += sizeApp.width / 2f;
+                translation.y -= sizeApp.height / 2f;
+                translation.x += pixelOffset.x;
+                translation.y -= pixelOffset.y;
+            }
+        } else {    
+
+            // Initialize to the first part of the offset (the local coordinate translation)
+            translation.x = offset.x;
+            translation.y = offset.y;
+
+            if (type != Type.PRIMARY && type != Type.UNKNOWN && parent != null) {
+
+                // Convert pixel offset to local coords and add it in
+                // TODO: does the width/height need to include the scroll bars?
+                Vector2f pixelScale = getPixelScaleCurrent();
+                Dimension parentSize = parent.getSizeApp();
+                translation.x += -parentSize.width * pixelScale.x / 2f;
+                translation.y += parentSize.height * pixelScale.y / 2f;
+                translation.x += sizeApp.width * pixelScale.x / 2f;
+                translation.y -= sizeApp.height * pixelScale.y / 2f;
+                translation.x += pixelOffset.x * pixelScale.x;
+                translation.y -= pixelOffset.y * pixelScale.y;
+            }
+        }
+
+        logger.fine("view = " + this);
+        logger.fine("offset translation = " + translation);
 
         return translation;
     }
+
 
     protected Vector3f calcStackTranslation () {
         return new Vector3f(0f, 0f, 0f);
     }
 
-    // Uses: userTranslation
-    protected CellTransform calcUserDeltaTransform () {
-        return calcUserTranslationDeltaTransform();
+    // Apply the pending deltas to the given user transform
+    protected void userTransformApplyDeltas (CellTransform userTransform) {
+        userTransformApplyDeltaTranslation(userTransform);
     }
 
-    // Uses: userTranslation
-    protected CellTransform calcUserTranslationDeltaTransform () {
-        /* TODO: for now, don't have this be a delta transform 
-        Vector3f deltaTranslation = getUserTranslation().subtract(getUserTranslationPrev());
-        CellTransform transDeltaTransform = new CellTransform(null, null, null);
-        transDeltaTransform.setTranslation(deltaTranslation);
-        */
-        /**/
-        Vector3f translation = getTranslationUserCurrent();
-        if ((type == Type.PRIMARY || type == Type.UNKNOWN) && ortho) {
-            translation.addLocal(new Vector3f(locationOrtho.x, locationOrtho.y, 0f));
+    // Apply any pending translation delta to the given user transform.
+    protected void userTransformApplyDeltaTranslation (CellTransform userTransform) {
+        if (deltaTranslationToApply != null) {
+            CellTransform transform = new CellTransform(null, null, null);
+            transform.setTranslation(deltaTranslationToApply);
+            //System.err.println("******* delta translation transform = " + transform);
+            userTransform.mul(transform);
+            deltaTranslationToApply = null;
         }
-        CellTransform transDeltaTransform = new CellTransform(null, null);
-        transDeltaTransform.setTranslation(translation);
-        /**/
-
-        return transDeltaTransform;
     }
 
-    protected void updatePrimaryTransform (CellTransform userDeltaTransform) {
+    protected void updatePrimaryTransform (CellTransform transform) {
     }
 
     private enum SGChangeOp { 
@@ -1278,7 +1539,6 @@ public abstract class View2DEntity implements View2D {
         GEOMETRY_TRANSFORM_OFFSET_STACK_SET,
         GEOMETRY_CLEANUP,
         VIEW_NODE_ORTHO_SET,
-        TRANSFORM_USER_POST_MULT,
         TRANSFORM_USER_SET,
         ATTACH_POINT_SET
     };
@@ -1413,14 +1673,6 @@ public abstract class View2DEntity implements View2D {
        }
     }
 
-    private static class SGChangeTransformUserPostMultiply extends SGChangeTransform {
-        private Node viewNode;
-        private SGChangeTransformUserPostMultiply (Node viewNode, CellTransform transform) {
-            super(SGChangeOp.TRANSFORM_USER_POST_MULT, transform);
-            this.viewNode = viewNode;
-        }
-    }
-
     // The list of scene graph changes (to be applied at the end of update).
     private LinkedList<SGChange> sgChanges = new LinkedList<SGChange>();
 
@@ -1463,11 +1715,6 @@ public abstract class View2DEntity implements View2D {
         sgChanges.add(new SGChangeGeometryTransformOffsetStackSet(geometryNode,transform));
     }
 
-    private synchronized void sgChangeTransformUserPostMultiply (Node viewNode, 
-                                                                 CellTransform deltaTransform) {
-        sgChanges.add(new SGChangeTransformUserPostMultiply(viewNode, deltaTransform));
-    }
-
     protected synchronized void sgChangeTransformUserSet (Node viewNode, CellTransform transform) {
         sgChanges.add(new SGChangeTransformUserSet(viewNode, transform));
     }
@@ -1476,7 +1723,9 @@ public abstract class View2DEntity implements View2D {
         sgChanges.add(new SGChangeAttachPointSet(rc, node));
     }
 
-    private synchronized void sgProcessChanges () {
+    // Note: this method doesn't need to be synchronized because it does everything via a 
+    // synchronous render updater
+    private void sgProcessChanges () {
         if (sgChanges.size() <= 0) return;
 
          ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
@@ -1574,45 +1823,15 @@ public abstract class View2DEntity implements View2D {
                          break;
                      }
 
-                     case TRANSFORM_USER_POST_MULT: {
-                         SGChangeTransformUserPostMultiply chg = (SGChangeTransformUserPostMultiply) sgChange;
-                         // TODO
-                         if (ortho) {
-                             viewNode.setLocalRotation(new Quaternion());
-                             viewNode.setLocalScale(1.0f);
-                             //TODO:viewNode.setLocalTranslation(new Vector3f(300f, 300f, 0f));
-                             //TODO:viewNode.setLocalTranslation(new Vector3f(0f, 0f, 0f));
-                         } else {
-                         userTransform.mul(chg.transform);
-                         Quaternion r = userTransform.getRotation(null);
-                         chg.viewNode.setLocalRotation(r);
-                         logger.fine("View node set rotation = " + r);
-                         Vector3f t = userTransform.getTranslation(null);
-                         chg.viewNode.setLocalTranslation(t);
-                         logger.fine("View node set translation = " + t);
-                         // TODO
-                         }
-                         break;                         
-                     }
-
                      case TRANSFORM_USER_SET: {
                          SGChangeTransformUserSet chg = (SGChangeTransformUserSet) sgChange;
-                         // TODO
-                         if (ortho) {
-                             viewNode.setLocalRotation(new Quaternion());
-                             viewNode.setLocalScale(1.0f);
-                             Vector3f t = chg.transform.getTranslation(null);
-                             viewNode.setLocalTranslation(t);
-                         } else {
-                         userTransform = chg.transform.clone(null);
+                         CellTransform userTransform = chg.transform.clone(null);
                          Quaternion r = userTransform.getRotation(null);
                          chg.viewNode.setLocalRotation(r);
                          logger.fine("View node set rotation = " + r);
                          Vector3f t = userTransform.getTranslation(null);
                          chg.viewNode.setLocalTranslation(t);
                          logger.fine("View node set translation = " + t);
-                         // TODO
-                         }
                          break;
                      }
 
@@ -1631,18 +1850,9 @@ public abstract class View2DEntity implements View2D {
 
 
                  sgChanges.clear();
-                 synchronized (sgChanges) {
-                     sgChanges.notifyAll();
-                 }
              }
-         }, null);
-
-         // Wait until all changes are performed
-         synchronized (sgChanges) {
-             while (sgChanges.size() > 0) {
-                 try { sgChanges.wait(); } catch (InterruptedException ex) {}
-             }
-         }
+         }, null, true);
+         // NOTE: it is critical that this render updater runs to completion before anything else happens
     }
 
     /** {@inheritDoc} */
@@ -1725,7 +1935,11 @@ public abstract class View2DEntity implements View2D {
         if (geometryNode == null) {
             return null;
         }
-        return geometryNode.calcIntersectionPixelOfEyeRay(x, y);
+        if (isOrtho()) {
+            return geometryNode.calcIntersectionPixelOfEyeRayOrtho(x, y);
+        } else {
+            return geometryNode.calcIntersectionPixelOfEyeRay(x, y);
+        }
     }
 
     /** 

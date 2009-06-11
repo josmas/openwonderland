@@ -67,6 +67,19 @@ public class AppXrwSlave extends AppXrw {
     }
 
     /**
+     * Clean up resources.
+     */
+    @Override
+    public void cleanup() {
+        super.cleanup();
+
+        if (client != null) {
+            client.cleanup();
+            client = null;
+        }
+    }
+
+    /**
      * {inheritDoc}
      */
     @Override

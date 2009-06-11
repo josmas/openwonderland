@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
 import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
@@ -48,16 +49,18 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 public class HUDComponent2D implements HUDComponent {
 
     private static final Logger logger = Logger.getLogger(HUDComponent2D.class.getName());
-    protected List<HUDComponentListener> listeners;
-    protected Cell cell;
+    private List<HUDComponentListener> listeners;
+    private Cell cell;
     protected JComponent component;
-    protected HUDComponentEvent event;
-    protected Rectangle2D bounds;     // on-HUD location
-    protected Vector3f worldLocation; // in-world location
-    protected boolean visible = false;
-    protected boolean worldVisible = false;
-    protected boolean enabled = false;
-    protected DisplayMode mode = DisplayMode.HUD;
+    private HUDComponentEvent event;
+    private Rectangle2D bounds;     // on-HUD location
+    private Vector3f worldLocation; // in-world location
+    private boolean visible = false;
+    private boolean worldVisible = false;
+    private boolean enabled = false;
+    private boolean decoratable = true;
+    private Layout compassPoint = Layout.NONE;
+    private DisplayMode mode = DisplayMode.HUD;
 
     public HUDComponent2D() {
         listeners = Collections.synchronizedList(new ArrayList());
@@ -79,6 +82,10 @@ public class HUDComponent2D implements HUDComponent {
         this.cell = cell;
     }
 
+    public void setComponent(JComponent component) {
+        this.component = component;
+    }
+
     public JComponent getComponent() {
         return component;
     }
@@ -98,7 +105,7 @@ public class HUDComponent2D implements HUDComponent {
     public Cell getCell() {
         return cell;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -136,6 +143,22 @@ public class HUDComponent2D implements HUDComponent {
      */
     public Point getLocation() {
         return new Point((int) bounds.getX(), (int) bounds.getY());
+    }
+
+    /**
+     * Sets the preferred location as a compass point
+     * @param compassPoint the compass point location
+     */
+    public void setPreferredLocation(Layout compassPoint) {
+        this.compassPoint = compassPoint;
+    }
+
+    /**
+     * Gets the preferred compass point location
+     * @return the preferred location as a compass point
+     */
+    public Layout getPreferredLocation() {
+        return compassPoint;
     }
 
     /**
@@ -303,6 +326,20 @@ public class HUDComponent2D implements HUDComponent {
      */
     public boolean isEnabled() {
         return enabled;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setDecoratable(boolean decoratable) {
+        this.decoratable = decoratable;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean getDecoratable() {
+        return decoratable;
     }
 
     /**

@@ -1,3 +1,81 @@
+Index: clientlib/src/java/org/apache/webdav/lib/WebdavResource.java
+===================================================================
+--- clientlib/src/java/org/apache/webdav/lib/WebdavResource.java	(revision 74)
++++ clientlib/src/java/org/apache/webdav/lib/WebdavResource.java	(working copy)
+@@ -35,6 +35,8 @@
+ import java.text.SimpleDateFormat;
+ import java.util.*;
+ 
++import java.util.logging.Level;
++import java.util.logging.Logger;
+ import org.apache.commons.httpclient.Credentials;
+ import org.apache.commons.httpclient.HostConfiguration;
+ import org.apache.commons.httpclient.HttpClient;
+@@ -636,6 +638,11 @@
+      */
+     protected final static TimeZone gmtZone = TimeZone.getTimeZone("GMT");
+ 
++    /**
++     * A logger for output
++     */
++    private static final Logger logger =
++            Logger.getLogger(WebdavResource.class.getName());
+ 
+     static {
+         for (int i = 0; i < formats.length; i++) {
+@@ -1010,13 +1017,16 @@
+     
+             ResponseEntity response =
+                 (ResponseEntity) responses.nextElement();
+-    
++
+             boolean itself = false;
+             String href = response.getHref();
+             if (!href.startsWith("/"))
+                 href = URIUtil.getPath(href);
+             href = decodeMarks(href);
+ 
++            logger.fine("[WebdavResource] setWebdavProperties response " +
++                        "href: " + href);
++
+             /*
+              * Decode URIs to common (unescaped) format for comparison 
+              * as HttpClient.URI.setPath() doesn't escape $ and : chars.
+@@ -1313,10 +1323,13 @@
+         // make its existence false
+         setExistence(false);
+ 
++        logger.fine("[WebdavResource] Set properties for " + httpURL);
++
+         try {
+             setProperties(action, depth);
+         } catch (Exception e) {
+-            // Ignore the exception if default properties cannot be loaded 
++            // Ignore the exception if default properties cannot be loaded
++            logger.log(Level.FINE, "Error setting properties for " + httpURL, e);
+         }
+     }
+ 
+@@ -3513,6 +3526,9 @@
+                                       Vector properties)
+         throws HttpException, IOException {
+ 
++        logger.fine("[WebdavResource] propFindMethod path: " + path +
++                    " depth: " + depth + " properties: " + properties.size());
++
+         setClient();
+         // Change the depth for prop
+         PropFindMethod method = new PropFindMethod(URIUtil.encodePath(path),
+@@ -3525,6 +3541,9 @@
+         generateAdditionalHeaders(method);
+         int status = client.executeMethod(method);
+ 
++        logger.fine("[WebdavResource] propFindMethod path: " + path +
++                    " status: " + status);
++
+         // Set status code for this resource.
+         if (thisResource == true) {
+             // Set the status code.
 Index: clientlib/src/java/org/apache/webdav/lib/methods/XMLResponseMethodBase.java
 ===================================================================
 --- clientlib/src/java/org/apache/webdav/lib/methods/XMLResponseMethodBase.java	(revision 74)

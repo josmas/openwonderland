@@ -32,7 +32,9 @@ import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerSta
  */
 public class MicrophoneCellClientState extends CellClientState {
 
-    private String name;
+    private String microphoneName;
+
+    private double volume;
 
     private FullVolumeArea fullVolumeArea;
 
@@ -42,20 +44,29 @@ public class MicrophoneCellClientState extends CellClientState {
     public MicrophoneCellClientState() {
     }
     
-    public MicrophoneCellClientState(String name, FullVolumeArea fullVolumeArea,
+    public MicrophoneCellClientState(String microphoneName, double volume, FullVolumeArea fullVolumeArea,
 	    ActiveArea activeArea) {
 
-	this.name = name;
+	this.microphoneName = microphoneName;
+	this.volume = volume;
 	this.fullVolumeArea = fullVolumeArea;
 	this.activeArea = activeArea;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setMicrophoneName(String microphoneName) {
+        this.microphoneName = microphoneName;
     }
 
-    public String getName() {
-        return name;
+    public String getMicrophoneName() {
+        return microphoneName;
+    }
+
+    public void setVolume(double volume) {
+	this.volume = volume;
+    }
+
+    public double getVolume() {
+	return volume;
     }
 
     public void setFullVolumeArea(FullVolumeArea fullVolumeArea) {

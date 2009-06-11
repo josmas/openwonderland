@@ -64,6 +64,7 @@ public class OrbCell extends Cell {
     private String username;
     private String callID;
     private String playerWithVpCallID;
+    private int bystanderCount;
 
     public OrbCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -72,14 +73,15 @@ public class OrbCell extends Cell {
     }
 
     @Override
-    public boolean setStatus(CellStatus status) {
-	boolean changed = super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+	super.setStatus(status, increasing);
 
 	switch (status) {
-	case BOUNDS:
+	case INACTIVE:
             if (orbMessageHandler == null) {
 	        logger.fine("Creating orb Message handler for " + getCellID());
-                orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession());
+                orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession(),
+		    bystanderCount);
 	    }
 	    break;
         case DISK:
@@ -89,8 +91,6 @@ public class OrbCell extends Cell {
 	    }
 	    break;
 	}
-
-	return changed;
     }
 
     public void setOrbRootNode(Node orbRootNode) {
@@ -114,6 +114,12 @@ public class OrbCell extends Cell {
 	username = orbCellClientState.getUsername();
 	callID = orbCellClientState.getCallID();
 	playerWithVpCallID = orbCellClientState.getPlayerWithVpCallID();
+
+	if (playerWithVpCallID != null && playerWithVpCallID.length() == 0) {
+	    playerWithVpCallID = null;
+	}
+
+	bystanderCount = orbCellClientState.getBystanderCount();
     }
 
     @Override
@@ -143,6 +149,10 @@ public class OrbCell extends Cell {
 
     public void removeMouseListener() {
 	orbCellRenderer.removeMouseListener();
+    }
+
+    public OrbMessageHandler getOrbMessageHandler() {
+	return orbMessageHandler;
     }
 
     public void orbSelected() {

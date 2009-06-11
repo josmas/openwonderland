@@ -13,6 +13,10 @@
     <pathconvert property="module-client.classpath">
         <path location="${current.dir}/lib/ant.jar"/>
         <path location="${current.dir}/lib/ant-launcher.jar"/>
+        <path location="${current.dir}/lib/jmejtree_jme2.jar"/>
+        <path location="${current.dir}/lib/propertytable.jar"/>
+        <path location="${current.dir}/lib/scenemonitor_jme2.jar"/>
+        <path location="${current.dir}/lib/sm_properties_jme2.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common, 
@@ -39,6 +43,11 @@
 
                 <include name="ant.jar"/>
                 <include name="ant-launcher.jar"/>
+                <include name="jmejtree_jme2.jar"/>
+                <include name="propertytable.jar"/>
+                <include name="scenemonitor_jme2.jar"/>
+                <include name="sm_properties_jme2.jar"/>
+
             </client>
 
              <!--

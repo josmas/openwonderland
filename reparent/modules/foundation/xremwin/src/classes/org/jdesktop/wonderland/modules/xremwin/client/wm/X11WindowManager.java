@@ -249,6 +249,7 @@ final public class X11WindowManager extends Application
     public void disconnected () {
 	active = false;
 	disconnect();
+	logger.severe("X11WindowManager exitted.");
 
         // We must clone the list because the exit listener may remove
         // itself as a listener
@@ -257,8 +258,6 @@ final public class X11WindowManager extends Application
 	for (ExitListener exitListener : listenersToNotify) {
 	    exitListener.windowManagerExitted();
 	}
-
-	System.err.println("Window manager exitted.");
     }
 
     private void compositeTopLevelWindows () {

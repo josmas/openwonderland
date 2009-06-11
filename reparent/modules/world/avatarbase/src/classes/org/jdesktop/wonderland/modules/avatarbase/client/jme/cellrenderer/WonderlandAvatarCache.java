@@ -78,7 +78,7 @@ public class WonderlandAvatarCache implements CacheBehavior {
         File cacheFile = urlToCacheFile(location);
         InputStream result = null;
         if (cacheFile != null && cacheFile.exists()) {
-            System.err.println("WonderlandAvatarCache using cached file " + location.toExternalForm());
+//            System.err.println("WonderlandAvatarCache using cached file " + location.toExternalForm());
             try {
                 result = new FileInputStream(cacheFile);
             } catch (FileNotFoundException ex) {
@@ -148,7 +148,7 @@ public class WonderlandAvatarCache implements CacheBehavior {
             }
         }
 
-        System.err.println("***** CACHE " + location.toExternalForm() + "  " + result);
+//        System.err.println("***** CACHE " + location.toExternalForm() + "  " + result);
 
         return result;
     }

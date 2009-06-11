@@ -3,7 +3,7 @@
     <Attributes>
         <Name>AvatarJaneDoe</Name>
         <Gender>2</Gender>
-        <HeadAttachment>assets/models/collada/Heads/FemaleHead/FemaleHi2.bhf</HeadAttachment>
+        <HeadAttachment>assets/models/collada/Heads/FemaleHead/FG_FemaleLowPoly_01.bhf</HeadAttachment>
         <LoadingInstructions>
             <item>assets/models/collada/Clothing/FemaleClothing/Female_ConverseShoes.dae</item>
             <item>Feet</item>
@@ -3400,7 +3400,7 @@
     </Materials>
     <Materials TargetMeshName="TShirt1Shape" AlphaState="0" Name="MysteryNode!">
         <Textures>
-            <RelativePath>assets/models/collada/Clothing/FemaleClothing/blouse_tshirt_01.png</RelativePath>
+            <RelativePath>assets/models/collada/Clothing/FemaleClothing/blouse_koi03.png</RelativePath>
             <TextureUnit>0</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>

@@ -50,7 +50,14 @@ public class WebDeployer implements ModuleDeployerSPI {
     /** list of deployed wars to avoid duplicate deploys */
     private static final List<DeployRecord> deployed =
             new ArrayList<DeployRecord>();
-    
+
+    /** property for disabling the deployer */
+    static final String WEBDEPLOY_PARTNAME_PROP = "web.deployer.part";
+    private static final String WEBDEPLOY_PARTNAME_DEFAULT = "web";
+
+    private static String partName = System.getProperty(WEBDEPLOY_PARTNAME_PROP,
+                                                        WEBDEPLOY_PARTNAME_DEFAULT);
+
     /**
      * Get the name of this deployer
      * @return the deployer
@@ -64,7 +71,7 @@ public class WebDeployer implements ModuleDeployerSPI {
      * @return the types
      */
     public String[] getTypes() {
-        return new String[] { "web" };
+        return new String[] { partName };
     }
 
     /**

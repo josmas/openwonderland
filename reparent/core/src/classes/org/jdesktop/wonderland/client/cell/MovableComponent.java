@@ -61,8 +61,8 @@ public class MovableComponent extends CellComponent {
     
     
     @Override
-    public void setStatus(CellStatus status) {
-        super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
         switch (status) {
             case DISK:
                 if (msgReceiver != null && channelComp != null) {
@@ -70,8 +70,8 @@ public class MovableComponent extends CellComponent {
                     msgReceiver = null;
                 }
                 break;
-            case BOUNDS: {
-                if (msgReceiver == null) {
+            case ACTIVE: {
+                if (increasing && msgReceiver == null) {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
                         public void messageReceived(CellMessage message) {

@@ -217,6 +217,9 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
             // want to acquire the lock on the dirty rectangle so they can draw (e.g Embedded Swing threads)
             // we need to temporarily release the AWT lock before we lock the dirty rectangle and then reacquire
             // the AWT lock afterward.
+            // NOTE: we need to do this manually, rather than using a swingsafe processor, because
+            // we need to be holding the AWT lock when we return from this method. 
+            // TODO: low: MTgame probably provides a cleaner way to reacquire the lock.
             GLContext glContext = null;
             if (isAWTLockHeldByCurrentThreadMethod != null) {
                 try {

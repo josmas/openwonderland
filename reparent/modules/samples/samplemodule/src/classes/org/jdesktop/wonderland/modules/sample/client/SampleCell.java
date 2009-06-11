@@ -22,8 +22,13 @@ import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -76,14 +81,41 @@ public class SampleCell extends Cell {
     }
 
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
-        if (status == CellStatus.ACTIVE) {
-            menuComponent.addMenuItem(new SimpleContextMenuItem("Sample", null, null));
+    protected void setStatus(CellStatus status,boolean increasing) {
+        super.setStatus(status,increasing);
+        switch(status) {
+            case ACTIVE :
+                if (increasing) {
+    //                menuComponent.setShowStandardMenuItems(false);
+                    menuComponent.addContextMenuFactory(new SampleContextMenuFactory());
+                }
+                break;
+            case DISK :
+                // TODO cleanup
+                break;
         }
-        else if (status == CellStatus.DISK) {
-            // XXX remove menu item, but really don't have to....
+
+    }
+
+    /**
+     * Context menu factory for the Sample menu item
+     */
+    class SampleContextMenuFactory implements ContextMenuFactorySPI {
+        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+            return new ContextMenuItem[] {
+                        new SimpleContextMenuItem("Sample", null,
+                                new SampleContextMenuListener())
+            };
         }
-        return ret;
+    }
+
+    /**
+     * Listener for event when the Sample context menu item is selected
+     */
+    class SampleContextMenuListener implements ContextMenuActionListener {
+
+        public void actionPerformed(ContextMenuItemEvent event) {
+            logger.warning("Sample context menu action performed!");
+        }
     }
 }

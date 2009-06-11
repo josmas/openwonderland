@@ -25,6 +25,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.LinkedList;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.utils.SmallIntegerAllocator;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -42,9 +43,9 @@ import org.jdesktop.wonderland.modules.xremwin.client.wm.X11WindowManager;
 @InternalAPI
 public class AppXrwMaster
         extends AppXrw
-        implements X11WindowManager.WindowTitleListener, WindowSystemXrw.ExitListener {
-    /* An allocator for instance numbers */
+        implements X11WindowManager.WindowTitleListener, ClientXrwMaster.ExitListener {
 
+    /* An allocator for instance numbers */
     private static HashMap<String, SmallIntegerAllocator> instanceAllocators =
             new HashMap<String, SmallIntegerAllocator>();
     /**  The app instance number (this distinguishes between multiple apps with the same name */
@@ -59,6 +60,23 @@ public class AppXrwMaster
     private ServerSocket serverSocket;
     /** The information that slaves use to connect to the server socket */
     private AppXrwConnectionInfo connectionInfo;
+    /** List of master apps created by this client. */
+    private static LinkedList<AppXrwMaster> masterApps = new LinkedList<AppXrwMaster>();
+
+    /** Defines a listener which is called when the app exits. */
+    public interface ExitListener {
+        public void appExitted(AppXrwMaster app);
+    }
+
+    /** A listener which is called when the app exits. */
+    private ExitListener exitListener;
+
+    // Register the X11 appbase shutdown hook
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread("X11 App Base Master Shutdown Hook") {
+            public void run() { AppXrwMaster.shutdownAllApps(); }
+        });
+    }
 
     /**
      * Create a new instance of AppXrwMaster in a user client.
@@ -111,7 +129,6 @@ public class AppXrwMaster
             cleanup();
             throw new InstantiationException();
         }
-        winSys.setExitListener(this);
 
         // Create the peer-to-peer server socket
         // TODO: change name of this property?
@@ -132,6 +149,7 @@ public class AppXrwMaster
         try {
             client = new ClientXrwMaster(this, controlArb, session, masterHost, serverSocket,
                     winSys, reporter);
+            ((ClientXrwMaster)client).setExitListener(this);
         } catch (InstantiationException ex) {
             ex.printStackTrace();
             reportLaunchError("Cannot launch " + appInstanceName + ": Cannot create Xremwin protocol client");
@@ -151,6 +169,17 @@ public class AppXrwMaster
             cleanup();
             throw new InstantiationException();
         }
+
+        synchronized (masterApps) {
+            masterApps.add(this);
+        }
+    }
+
+    /**
+     * Specify a listener which is called when the app exits. 
+     */
+    public void setExitListener (ExitListener exitListener) {
+        this.exitListener = exitListener;
     }
 
     /**
@@ -212,10 +241,8 @@ public class AppXrwMaster
     public void cleanup() {
         super.cleanup();
 
-        if (winSys != null) {
-            winSys.cleanup();
-            winSys = null;
-        }
+        client = null;
+        winSys = null;
 
         if (appProcess != null) {
             appProcess.cleanup();
@@ -223,6 +250,16 @@ public class AppXrwMaster
         }
 
         deallocAppInstance(getName(), appInstance);
+
+        synchronized (masterApps) {
+            masterApps.remove(this);
+        }
+
+        logger.severe("AppXrwMaster cleaned up");
+
+        if (exitListener != null) {
+            exitListener.appExitted(this);
+        }
     }
 
     /**
@@ -233,10 +270,11 @@ public class AppXrwMaster
     }
 
     /** 
-     * This method is called when the window system has exitted.
+     * This method is called when the master client has exitted.
      */
     @Override
-    public void windowSystemExitted() {
+    public void clientExitted(ClientXrwMaster client) {
+        logger.severe("Master client exitted");
         cleanup();
     }
 
@@ -299,5 +337,26 @@ public class AppXrwMaster
      */
     public void setPopupParentForSlaves (WindowXrw popup, WindowXrw parent) {
         ((ClientXrwMaster)client).setPopupParent(popup, parent);
+    }
+
+    /** Executed by the JVM shutdown process. */
+    private static void shutdownAllApps () {
+        if (masterApps.size() > 0) {
+            logger.warning("Shutting down X11 app base master apps...");
+
+            // TODO: low: workaround for bug 205. This is draconian. Is there something else better? 
+            try {
+                Runtime.getRuntime().exec("pkill -9 Xvfb");
+            } catch (Exception e) {}
+        }
+    }
+
+    /**
+     * Returns the exit value of the app process. Returns -1 if no exit value is available
+     * (for example, if the app is still running.)
+     */
+    public int getExitValue () {
+        // TODO
+        return 0;
     }
 }

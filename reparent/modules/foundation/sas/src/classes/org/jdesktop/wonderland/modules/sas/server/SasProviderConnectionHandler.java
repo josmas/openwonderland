@@ -31,6 +31,7 @@ import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchStatusMessage;
+import org.jdesktop.wonderland.modules.sas.common.SasProviderAppExittedMessage;
 import com.sun.sgs.app.AppContext;
 
 /**
@@ -46,6 +47,10 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
     private static String PROVIDER_MESSAGES_IN_FLIGHT_BINDING_NAME = 
         "org.jdesktop.wonderland.modules.sas.server.ProviderMessagesInFlight";
 
+    /** The name of the Darkstar binding we use to store the reference to the running app list. */
+    private static String RUNNING_APPS_BINDING_NAME = 
+        "org.jdesktop.wonderland.modules.sas.server.RunningAppInfo";
+
     /** The SAS server which lives in the Wonderland server. */
     private ManagedReference<SasServer> serverRef;
 
@@ -55,6 +60,9 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
 
         ProviderMessagesInFlight messagesInFlight = new ProviderMessagesInFlight();
         AppContext.getDataManager().setBinding(PROVIDER_MESSAGES_IN_FLIGHT_BINDING_NAME, messagesInFlight);
+
+        RunningAppInfo runningApps = new RunningAppInfo();
+        AppContext.getDataManager().setBinding(RUNNING_APPS_BINDING_NAME, runningApps);
     }
 
     public static ProviderMessagesInFlight getProviderMessagesInFlight () {
@@ -62,12 +70,17 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
             AppContext.getDataManager().getBinding(PROVIDER_MESSAGES_IN_FLIGHT_BINDING_NAME);
     }
 
+    public static RunningAppInfo getRunningApps () {
+        return (RunningAppInfo) 
+            AppContext.getDataManager().getBinding(RUNNING_APPS_BINDING_NAME);
+    }
+
     public ConnectionType getConnectionType() {
         return SasProviderConnectionType.CLIENT_TYPE;
     }
 
     public void registered(WonderlandClientSender sender) {
-        logger./*TODO: info*/severe("Sas provider connection registered.");
+        logger.info("Sas provider connection registered.");
     }
 
     public void clientConnected(WonderlandClientSender sender, 
@@ -107,17 +120,36 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
             }
             messagesInFlight.removeMessageInfo(launchMsgID);
 
+            // Transition the app to the running apps list. It will stay there until the app exits
+            // or the provider quits
+            getRunningApps().addAppInfo(launchMsgID, msgInfo.provider, msgInfo.cellID);
+            
             msgInfo.provider.appLaunchResult(status, msgInfo.cellID, connInfo);
+
+        } else if (message instanceof SasProviderAppExittedMessage) {
+            SasProviderAppExittedMessage msg = (SasProviderAppExittedMessage) message;
+            MessageID launchMsgID = msg.getLaunchMessageID();
+            int exitValue = msg.getExitValue();
+
+            RunningAppInfo.AppInfo appInfo = getRunningApps().getAppInfo(launchMsgID);
+            if (appInfo != null) {
+                getRunningApps().removeAppInfo(launchMsgID);
+                appInfo.provider.appExitted(appInfo.cellID, exitValue);
+            } else {
+                logger.warning("Cannot find provider to notify that the app launched with this message ID has exitted." + launchMsgID);
+            }
+
         } else {
             logger.warning("Invalid message received, message = " + message);
         }
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-        logger./*TODO: fine*/severe("SasProvider client disconnected.");
+        logger.fine("SasProvider client disconnected.");
         SasServer server = (SasServer) serverRef.get();
         server.providerDisconnected(sender, clientID);
         // TODO: remove any messages in flight for the given provider client
+        // TODO: remove any running app info for the given provider client
         // Probably need to iterate through list of in flight message info looking at for all
         // messages which have this client ID as their provider clientn
     }

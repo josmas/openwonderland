@@ -21,12 +21,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.runner.Runner.Status;
 import org.jdesktop.wonderland.utils.AppServerMonitor;
 import org.jdesktop.wonderland.utils.SystemPropertyUtil;
 
@@ -63,7 +65,13 @@ public class RunManager {
     
     /** the path of the deploy information in this archive */
     public static final String DEPLOY_DIR = "runner";
-    
+
+    /** the default location */
+    private static final String DEFAULT_LOCATION = "localhost";
+
+    /** the name of the location we are starting runners for */
+    private String location = DEFAULT_LOCATION;
+
     /** the set of runners we manage, index by name */
     private Map<String, Runner> runners = new LinkedHashMap<String, Runner>();
 
@@ -87,7 +95,23 @@ public class RunManager {
      */
     private RunManager() {
     }
-    
+
+    /**
+     * Get the location this RunManager will start entries for
+     * @return the location for this run manager
+     */
+    public String getLocation() {
+        return location;
+    }
+
+    /**
+     * Set the location this RunManager will start entries for
+     * @param location the location for this run manager
+     */
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
     /**
      * Initialize this manager by loading all runners from the
      * default deployment plan, and starting them if they are set
@@ -139,22 +163,38 @@ public class RunManager {
         boolean start =
             Boolean.parseBoolean(SystemPropertyUtil.getProperty(START_PROP));
 
+        // create a list of runners to start after all runners have been
+        // created
+        List<Runner> startList = new ArrayList<Runner>();
+
         DeploymentPlan dp = DeploymentManager.getInstance().getPlan();
         for (DeploymentEntry de : dp.getEntries()) {
             // copy System properties to pass into this runner
             Properties props = new Properties(System.getProperties());
             props.setProperty("runner.name", de.getRunnerName());
+            props.setProperty("runner.location", de.getLocation());
 
             try {
-                Runner r = RunnerFactory.create(de.getRunnerClass(), props);
+                Runner r = create(de.getRunnerClass(), props);
                 r = add(r);
-                if (start) {
-                    r.start(getStartProperties(r));
+
+                // only start runners if they have the same location
+                // specified as this manager
+                if (start && r.getLocation().equals(getLocation()) &&
+                        r.getStatus() == Status.NOT_RUNNING)
+                {
+                    startList.add(r);
                 }
             } catch (IOException ioe) {
                 throw new RunnerException("Error adding runner " +
                                           de.getRunnerName(), ioe);
             }
+        }
+
+        // now that all runners are created, go ahead and start the ones from
+        // the start list
+        for (Runner r : startList) {
+            r.start(getStartProperties(r));
         }
     }
 
@@ -164,13 +204,21 @@ public class RunManager {
     public void shutdown() {
         System.out.println("[RunManager] Stopping all apps");
 
+        // copy the list of runners into a new list, so we don't get
+        // concurrent modification issues
+        Collection<Runner> all = new ArrayList(getAll());
+
         // stop all active applications
-        for (Runner runner : getAll()) {
+        for (Runner runner : all) {
             if (runner.getStatus() == Runner.Status.RUNNING ||
                     runner.getStatus() == Runner.Status.STARTING_UP)
             {
                 runner.stop();
             }
+
+            // remove runners and notify listeners.  A new call to
+            // initialize() will recreate all appropriate runners.
+            remove(runner.getName());
         }
     }
 
@@ -329,6 +377,10 @@ public class RunManager {
         Properties props = runner.getDefaultProperties();
         if (de != null) {
             props.putAll(de.getRunProps());
+
+            // add in the name and location (since these might have changed)
+            props.setProperty("runner.name", de.getRunnerName());
+            props.setProperty("runner.location", de.getLocation());
         }
 
         return props;
@@ -348,6 +400,40 @@ public class RunManager {
      */
     public void removeRunnerListener(RunnerListener rl) {
         listeners.remove(rl);
+    }
+
+    /**
+     * Create a new runner of the given type
+     * @param className the runner type, a fully-qualified class name
+     * @param props the properties to configure the runner with
+     * @throws RunnerException if there is an error creating the runner
+     */
+    public Runner create(String className, Properties props)
+            throws RunnerException
+    {
+        try {
+            Class<Runner> clazz = (Class<Runner>) Class.forName(className);
+            Runner r = clazz.newInstance();
+
+            // if the location is set to anything other than the default,
+            // then we are a remote runner, so we should translate the
+            // class of any remote runners we find into local runners.
+            if (!getLocation().equals(DEFAULT_LOCATION) &&
+                    r instanceof RemoteRunner)
+            {
+                Class<Runner> localClass = ((RemoteRunner) r).getRunnerClass();
+                r = localClass.newInstance();
+            }
+
+            r.configure(props);
+            return r;
+        } catch (ClassNotFoundException cnfe) {
+            throw new RunnerCreationException(cnfe);
+        } catch (InstantiationException ie) {
+            throw new RunnerCreationException(ie);
+        } catch (IllegalAccessException iae) {
+            throw new RunnerCreationException(iae);
+        }
     }
 
     /**

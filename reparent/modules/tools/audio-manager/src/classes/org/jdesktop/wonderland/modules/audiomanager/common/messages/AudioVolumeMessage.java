@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.common.messages.Message;
-
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -30,17 +28,23 @@ import org.jdesktop.wonderland.common.cell.CellID;
 public class AudioVolumeMessage extends CellMessage {
     
     private String softphoneCallID;
+    private String otherCallID;
     private double volume;
 
-    public AudioVolumeMessage(CellID cellID, String softphoneCallID, double volume) {
+    public AudioVolumeMessage(CellID cellID, String softphoneCallID, String otherCallID, double volume) {
 	super(cellID);
-	
+
 	this.softphoneCallID = softphoneCallID;
+	this.otherCallID = otherCallID;
 	this.volume = volume;
     }
     
     public String getSoftphoneCallID() {
 	return softphoneCallID;
+    }
+
+    public String getOtherCallID() {
+	return otherCallID;
     }
 
     public double getVolume() {

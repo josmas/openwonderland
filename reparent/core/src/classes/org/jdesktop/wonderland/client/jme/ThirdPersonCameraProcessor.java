@@ -19,10 +19,10 @@ package org.jdesktop.wonderland.client.jme;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.scene.CameraNode;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * 
  * @author paulby
  */
-public class ThirdPersonCameraProcessor extends CameraProcessor {
+public class ThirdPersonCameraProcessor implements CameraController {
 
     private Quaternion rotation = new Quaternion();
     private Vector3f translation = new Vector3f();
@@ -51,81 +51,85 @@ public class ThirdPersonCameraProcessor extends CameraProcessor {
     private Vector3f tmp=new Vector3f();
 
     private WorldManager wm;
+
+    private CameraNode cameraNode;
+
+    private EventClassFocusListener listener = null;
+
+    private boolean enabled = false;
     
     public ThirdPersonCameraProcessor() {
         wm = ClientContextJME.getWorldManager();
-
-        // TODO this should be done in setEnabled
-        ClientContextJME.getInputManager().addGlobalEventListener(new EventClassFocusListener() {
-            @Override
-            public Class[] eventClassesToConsume () {
-                return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
-            }
-
-            @Override
-            public void commitEvent (Event event) {
-                if (event instanceof KeyEvent3D) {
-                    KeyEvent key = (KeyEvent) ((KeyEvent3D)event).getAwtEvent();
-                    if (key.getKeyCode()==KeyEvent.VK_EQUALS) {
-                        offset.z += cameraZoom;
-                        viewMoved(new CellTransform(viewRot, viewTranslation));
-                    } else if (key.getKeyCode()==KeyEvent.VK_MINUS) {
-                        offset.z -= cameraZoom;
-                        viewMoved(new CellTransform(viewRot, viewTranslation));
-                    }
-                } else if (event instanceof MouseEvent3D) {
-                    MouseEvent mouse = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
-                    if (mouse instanceof MouseWheelEvent) {
-                        int clicks = ((MouseWheelEvent)mouse).getWheelRotation();
-                        offset.z -= cameraZoom*clicks;
-                        viewMoved(new CellTransform(viewRot, viewTranslation));
-                    }
-                }
-            }
-        });
     }
     
-    @Override
-    public void compute(ProcessorArmingCollection arg0) {
+    public void compute() {
     }
 
-    @Override
-    public void commit(ProcessorArmingCollection arg0) {
-        synchronized(this) {
-            if (commitRequired) {
-                cameraNode.setLocalRotation(rotation);
-                cameraNode.setLocalTranslation(translation);
-                wm.addToUpdateList(cameraNode);
-                commitRequired = false;
-            }
-
+    public void commit() {
+        if (commitRequired) {
+            cameraNode.setLocalRotation(rotation);
+            cameraNode.setLocalTranslation(translation);
+            wm.addToUpdateList(cameraNode);
+            commitRequired = false;
         }
-    }
-
-    @Override
-    public void initialize() {
-        // Camera is chained so does not need it's own ArmingCondition
     }
 
     @Override
     public void viewMoved(CellTransform worldTransform) {
-        synchronized(this) {
-            translation = worldTransform.getTranslation(translation);
-            tmp = translation.clone();
-            rotation = worldTransform.getRotation(rotation);
-            viewRot.set(rotation);
-            viewTranslation.set(translation);
+        translation = worldTransform.getTranslation(translation);
+        tmp = translation.clone();
+        rotation = worldTransform.getRotation(rotation);
+        viewRot.set(rotation);
+        viewTranslation.set(translation);
 
-
-            Vector3f cameraTrans = rotation.mult(offset);
+        Vector3f cameraTrans = rotation.mult(offset);
 //            System.out.println("Camera trans "+cameraTrans );
-            translation.addLocal(cameraTrans);
-            commitRequired=true;
+        translation.addLocal(cameraTrans);
+        commitRequired=true;
 
-            rotation.lookAt(rotation.mult(cameraLook), yUp);
-        }
+        rotation.lookAt(rotation.mult(cameraLook), yUp);
     }
 
+    public void setEnabled(boolean enabled, CameraNode cameraNode) {
+        if (this.enabled==enabled)
+            return;
+        this.enabled = enabled;
 
+        // Called on the compute thread, therefore does not need to be synchronized
+        this.cameraNode = cameraNode;
+        if (enabled) {
+            if (listener==null) {
+                listener = new EventClassFocusListener() {
+                    @Override
+                    public Class[] eventClassesToConsume () {
+                        return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
+                    }
 
+                    @Override
+                    public void commitEvent (Event event) {
+                        if (event instanceof KeyEvent3D) {
+                            KeyEvent key = (KeyEvent) ((KeyEvent3D)event).getAwtEvent();
+                            if (key.getKeyCode()==KeyEvent.VK_EQUALS) {
+                                offset.z += cameraZoom;
+                                viewMoved(new CellTransform(viewRot, viewTranslation));
+                            } else if (key.getKeyCode()==KeyEvent.VK_MINUS) {
+                                offset.z -= cameraZoom;
+                                viewMoved(new CellTransform(viewRot, viewTranslation));
+                            }
+                        } else if (event instanceof MouseEvent3D) {
+                            MouseEvent mouse = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
+                            if (mouse instanceof MouseWheelEvent) {
+                                int clicks = ((MouseWheelEvent)mouse).getWheelRotation();
+                                offset.z -= cameraZoom*clicks;
+                                viewMoved(new CellTransform(viewRot, viewTranslation));
+                            }
+                        }
+                    }
+                };
+            }
+            ClientContextJME.getInputManager().addGlobalEventListener(listener);
+        } else {
+            ClientContextJME.getInputManager().removeGlobalEventListener(listener);
+        }
+    }
 }

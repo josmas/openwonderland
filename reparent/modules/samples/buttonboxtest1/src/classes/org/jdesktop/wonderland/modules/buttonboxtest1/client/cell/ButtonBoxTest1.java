@@ -62,25 +62,27 @@ public class ButtonBoxTest1 extends SimpleShapeCell {
      * This is called when the status of the cell changes.
      */
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
+    public void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
 
-	    // The cell is now visible
+            // The cell is now visible
             case ACTIVE:
-		// Make the button box mouse input sensitive when it becomes visible
-                cellRenderer.addEventListener(new MyMouseListener());
+                if (increasing) {
+                    // Make the button box mouse input sensitive when it becomes visible
+                    cellRenderer.addEventListener(new MyMouseListener());
+                }
                 break;
 
-	    // The cell is no longer visible
+            // The cell is no longer visible
             case DISK:
-		// The button box no longer needs to be input sensitive because it is no longer visible
-                cellRenderer.removeEventListener();
+                if (!increasing) {
+                    // The button box no longer needs to be input sensitive because it is no longer visible
+                    cellRenderer.removeEventListener();
+                }
                 break;
         }
-
-        return ret;
     }
 
     /**
@@ -88,28 +90,28 @@ public class ButtonBoxTest1 extends SimpleShapeCell {
      */
     private class MyMouseListener extends EventClassListener {
 
-	/**
-	 * This returns the classes of the Wonderland input events we are interested in receiving.
-	 */
-	public Class[] eventClassesToConsume () {
-	    // Only respond to mouse button events
-	    return new Class[] { MouseButtonEvent3D.class };
-	}
+        /**
+         * This returns the classes of the Wonderland input events we are interested in receiving.
+         */
+        public Class[] eventClassesToConsume() {
+            // Only respond to mouse button events
+            return new Class[]{MouseButtonEvent3D.class};
+        }
 
-	/**
-	 * This will be called when a mouse event occurs over one of the components of the button box.
-	 */
-	public void computeEvent (Event event) {
+        /**
+         * This will be called when a mouse event occurs over one of the components of the button box.
+         */
+        public void computeEvent(Event event) {
 
-	    // Only respond to mouse button click events
-	    MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
-	    if (buttonEvent.isClicked() && 
-		buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
-		    
-		// For now, just print name of the clicked node
-		System.out.println("Left mouse button click on " + 
-				   ((MouseEvent3D)event).getNode().getName());
-	    }
-	}
+            // Only respond to mouse button click events
+            MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
+            if (buttonEvent.isClicked() &&
+                    buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+
+                // For now, just print name of the clicked node
+                System.out.println("Left mouse button click on " +
+                        ((MouseEvent3D) event).getNode().getName());
+            }
+        }
     }
 }

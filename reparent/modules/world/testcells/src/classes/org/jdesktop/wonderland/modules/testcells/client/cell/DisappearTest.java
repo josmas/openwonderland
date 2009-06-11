@@ -71,25 +71,28 @@ public class DisappearTest extends SimpleShapeCell {
     }
     
     @Override
-    public boolean setStatus (CellStatus status) {
-	boolean ret = super.setStatus(status);
+    public void setStatus (CellStatus status, boolean increasing) {
+	super.setStatus(status, increasing);
 
 	switch(status) {
 
 	case ACTIVE:
-        movableComp = getComponent(MovableComponent.class);
-	    dragListener.addToEntity(cellRenderer.getEntity());
-	    disappearListener.addToEntity(cellRenderer.getEntity());
-	    disappearListener.addToEntity(cellRenderer.getSecondaryEntity());
+        if (increasing) {
+            movableComp = getComponent(MovableComponent.class);
+            dragListener.addToEntity(cellRenderer.getEntity());
+            disappearListener.addToEntity(cellRenderer.getEntity());
+            disappearListener.addToEntity(cellRenderer.getSecondaryEntity());
+        }
 	    break;
 
         case DISK:
-	    dragListener.removeFromEntity(cellRenderer.getEntity());
-	    disappearListener.removeFromEntity(cellRenderer.getEntity());
-	    disappearListener.removeFromEntity(cellRenderer.getSecondaryEntity());
+            if (!increasing) {
+                dragListener.removeFromEntity(cellRenderer.getEntity());
+                disappearListener.removeFromEntity(cellRenderer.getEntity());
+                disappearListener.removeFromEntity(cellRenderer.getSecondaryEntity());
+            }
 	}
 
-	return ret;
     }
 
     private class MyDragListener extends EventClassListener {

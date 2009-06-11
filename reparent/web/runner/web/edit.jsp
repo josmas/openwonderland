@@ -20,7 +20,8 @@
             <input type="hidden" name="action" value="editForm"/>
             <input type="hidden" name="name" value="${requestScope['entry'].runnerName}"/>
             <input type="hidden" name="class" value="${requestScope['entry'].runnerClass}">
-            
+            <input type="hidden" name="location" value="${requestScope['entry'].location}">
+
             <table>
                 <tr>
                     <td><b>Name:</b></td>
@@ -29,6 +30,10 @@
                 <tr>
                     <td>Class:</td>
                     <td>${requestScope['entry'].runnerClass}</td>
+                </tr>
+                <tr>
+                    <td>Location:</td>
+                    <td>${requestScope['entry'].location}</td>
                 </tr>
                 <tr><td colspan="2" style="height:2em;"></td></tr>
                 

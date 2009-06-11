@@ -39,7 +39,7 @@
     function updateService(service, index) {
         processStatus(service);
         
-        var row = $('runnerTable').down('tr', index + 2);
+        var row = $('runnerTable').down('tr', index + 3);
         if (row == null) {
             row = new Element('tr');
             row.insert(new Element('td', { 'class': 'installed' }));
@@ -145,7 +145,15 @@
 
 <table class="installed" id="runnerTable">
     <tr>
-        <td colspan="3"><h3>Server Components</h3></td>
+        <td colspan="3">
+            <table>
+                <tr><td>
+                    <h3>Server Components</h3>
+                </td><td>
+                     (<a href="/wonderland-web-front/admin?pageURL=/wonderland-web-runner/run%3faction=editRunners" target="_top">edit</a>)
+                </td></tr>
+            </table>
+        </td>
         <td class="refresh" id="periods"></td>
     </tr>
     <tr class="header">

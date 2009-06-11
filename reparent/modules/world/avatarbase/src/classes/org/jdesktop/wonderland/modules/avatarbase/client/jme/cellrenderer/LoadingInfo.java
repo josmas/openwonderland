@@ -19,7 +19,10 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import java.awt.EventQueue;
 import java.util.HashMap;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
@@ -30,19 +33,33 @@ public class LoadingInfo extends javax.swing.JFrame {
 
     private static LoadingInfo loadingInfo = new LoadingInfo();
     private final HashMap<CellID, String> currentlyLoading = new HashMap();
+    private HUDComponent loadingMessage;
 
     /** Creates new form LoadingInfo */
     private LoadingInfo() {
         initComponents();
+        initHUD();
+    }
+
+    private void initHUD() {
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+        if (loadingMessage == null) {
+            loadingMessage = mainHUD.createMessage(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle").getString("Loading_Avatar..."));
+            loadingMessage.setPreferredLocation(Layout.CENTER);
+            // add HUD control panel to HUD
+            mainHUD.addComponent(loadingMessage);
+        }
     }
 
     private void startedLoadingImpl(CellID cellID, String avatarname) {
-        synchronized(currentlyLoading) {
+        synchronized (currentlyLoading) {
             currentlyLoading.put(cellID, avatarname);
             if (!isVisible()) {
                 EventQueue.invokeLater(new Runnable() {
+
                     public void run() {
-                        JmeClientMain.getFrame().setMessageLabel(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle").getString("Loading_Avatar..."));
+                        loadingMessage.setVisible(true);
                     }
                 });
             }
@@ -50,14 +67,16 @@ public class LoadingInfo extends javax.swing.JFrame {
     }
 
     private void finishedLoadingImpl(CellID cellID, String avatarname) {
-        synchronized(currentlyLoading) {
+        synchronized (currentlyLoading) {
             currentlyLoading.remove(cellID);
-            if (currentlyLoading.size()==0)
+            if (currentlyLoading.size() == 0) {
                 EventQueue.invokeLater(new Runnable() {
+
                     public void run() {
-                        JmeClientMain.getFrame().setMessageLabel("");
+                        loadingMessage.setVisible(false);
                     }
                 });
+            }
         }
 
     }
@@ -121,11 +140,8 @@ public class LoadingInfo extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
-
 }

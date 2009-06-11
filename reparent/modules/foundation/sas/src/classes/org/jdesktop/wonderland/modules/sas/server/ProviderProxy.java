@@ -147,6 +147,22 @@ class ProviderProxy implements Serializable {
     }
 
     /**
+     * Called when an app exits on this provider.
+     * @param cellID The cell which launched the app.
+     * @param exitValue The exit value of the app.
+     */
+    public void appExitted (CellID cellID, int exitValue) {
+        getProviderCellsLaunched().remove(cellID);
+        CellMO cell = CellManagerMO.getCell(cellID);
+        if (cell != null) {
+            if (!(cell instanceof AppConventionalCellMO)) {
+                logger.warning("Cell to whom we are reporting app exit is not an AppConventionalMO");
+            }
+            ((AppConventionalCellMO)cell).appExitted(exitValue);
+        }
+    }
+    
+    /**
      * Clean up resources.
      */
     public void cleanup () {
@@ -160,7 +176,7 @@ class ProviderProxy implements Serializable {
                 if (!(cell instanceof AppConventionalCellMO)) {
                     logger.warning("Cell being cleaned up is not an AppConventionalMO");
                 }
-                ((AppConventionalCellMO)cell).setConnectionInfo(null);
+                ((AppConventionalCellMO)cell).appExitted(-1);
             }
         }
         getProviderCellsLaunched().clear();

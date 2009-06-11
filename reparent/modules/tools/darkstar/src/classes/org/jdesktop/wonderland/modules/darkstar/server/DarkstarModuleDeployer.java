@@ -58,7 +58,7 @@ public class DarkstarModuleDeployer extends AssetDeployer {
         // NOT_RUNNING state
         boolean running = false;
         
-        for (Runner r : RunManager.getInstance().getAll(DarkstarRunner.class)) {
+        for (Runner r : RunManager.getInstance().getAll(DarkstarRunnerImpl.class)) {
             if (r.getStatus() != Runner.Status.NOT_RUNNING) {
                 running = true;
                 break;
@@ -81,7 +81,7 @@ public class DarkstarModuleDeployer extends AssetDeployer {
         // NOT_RUNNING state
         boolean running = false;
         
-        for (Runner r : RunManager.getInstance().getAll(DarkstarRunner.class)) {
+        for (Runner r : RunManager.getInstance().getAll(DarkstarRunnerImpl.class)) {
             if (r.getStatus() != Runner.Status.NOT_RUNNING) {
                 running = true;
                 break;

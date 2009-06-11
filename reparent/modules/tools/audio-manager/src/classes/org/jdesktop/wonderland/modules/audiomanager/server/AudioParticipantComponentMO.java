@@ -40,10 +40,12 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentServerState;
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
 
@@ -61,9 +63,9 @@ import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo.ChatType;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerSetup;
+import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
 
@@ -101,8 +103,18 @@ public class AudioParticipantComponentMO extends CellComponentMO
         super(cellMO);
 
 	cellID = cellMO.getCellID();
+    }
 
-	//System.out.println("Adding AudioParticipantComponent to " + cellMO.getName());
+    @Override
+    public void setServerState(CellComponentServerState serverState) {
+        super.setServerState(serverState);
+
+        // Fetch the component-specific state and set member variables
+        AudioParticipantComponentServerState state = (AudioParticipantComponentServerState) serverState;
+
+        isSpeaking = state.isSpeaking();
+
+	isMuted = state.isMuted();
     }
 
     @Override
@@ -113,7 +125,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
             state = new AudioParticipantComponentServerState(isSpeaking, isMuted);
         }
 
-        return state;
+        return super.getServerState(state);
     }
 
     @Override
@@ -122,12 +134,17 @@ public class AudioParticipantComponentMO extends CellComponentMO
             WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
-	System.out.println("Get client state for " + cellID + " " + isSpeaking + " " + isMuted);
-	return new AudioParticipantComponentClientState(isSpeaking, isMuted);
+	if (clientState == null) {
+	    clientState = new AudioParticipantComponentClientState(isSpeaking, isMuted);
+	}
+
+	return super.getClientState(clientState, clientID, capabilities);
     }
 
     @Override
     public void setLive(boolean live) {
+	super.setLive(live);
+
         ChannelComponentMO channelComponent = (ChannelComponentMO)
             cellRef.get().getComponent(ChannelComponentMO.class);
 
@@ -140,6 +157,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    AppContext.getManager(VoiceManager.class).removeCallStatusListener(this);
 
 	    channelComponent.removeMessageReceiver(AudioVolumeMessage.class);
+	    channelComponent.removeMessageReceiver(ChangeUsernameAliasMessage.class);
 	    return;
 	}
 
@@ -150,6 +168,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	cellMO.addTransformChangeListener(myTransformChangeListener);
 
 	channelComponent.addMessageReceiver(AudioVolumeMessage.class, 
+            new ComponentMessageReceiverImpl(cellRef, this));
+	channelComponent.addMessageReceiver(ChangeUsernameAliasMessage.class, 
             new ComponentMessageReceiverImpl(cellRef, this));
     }
 
@@ -172,6 +192,11 @@ public class AudioParticipantComponentMO extends CellComponentMO
         public void messageReceived(WonderlandClientSender sender, 
 	        WonderlandClientID clientID, CellMessage message) {
 
+	    if (message instanceof ChangeUsernameAliasMessage) {
+		sender.send(message);
+		return;
+	    }
+
             if (message instanceof AudioVolumeMessage == false) {
 		logger.warning("Unknown message:  " + message);
 		return;
@@ -179,13 +204,14 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
 	    AudioVolumeMessage msg = (AudioVolumeMessage) message;
 
-            CellID cellID = msg.getCellID();
             String softphoneCallID = msg.getSoftphoneCallID();
+
+	    String otherCallID = msg.getOtherCallID();
 
             double volume = msg.getVolume();
 
-            //System.out.println("GOT Volume message:  call " + softphoneCallID + " cell " + cellID 
-	    //	+ " volume " + volume);
+            logger.fine("GOT Volume message:  call " + softphoneCallID
+	    	+ " volume " + volume);
 
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -196,27 +222,40 @@ public class AudioParticipantComponentMO extends CellComponentMO
                 return;
             }
 
-	    String otherCallID = CallID.getCallID(cellID);
-
             if (softphoneCallID.equals(otherCallID)) {
-                System.out.println("Setting master volume for " + getCell().getName());
                 softphonePlayer.setMasterVolume(volume);
                 return;
             }
 
-            DefaultSpatializer spatializer = new DefaultSpatializer();
-
-            spatializer.setAttenuator(volume);
-
             Player player = vm.getPlayer(otherCallID);
 
  	    if (player == null) {
-                System.out.println("Can't find player for callID " + otherCallID);
+                logger.warning("Can't find player for callID " + otherCallID);
 		return;
             } 
 
-	    //System.out.println(softphonePlayer + " has private spatializer for " + player
-	    //	+ " spatializer " + spatializer);
+	    if (volume == 1.0) {
+		softphonePlayer.removePrivateSpatializer(player);
+		return;
+	    }
+
+	    VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
+
+            Spatializer spatializer;
+
+	    spatializer = player.getPublicSpatializer();
+
+	    if (spatializer != null) {
+		spatializer = (Spatializer) spatializer.clone();
+	    } else {
+	        if (player.getSetup().isLivePlayer) {
+		    spatializer = (Spatializer) parameters.livePlayerSpatializer.clone();
+	        } else {
+		    spatializer = (Spatializer) parameters.stationarySpatializer.clone();
+	        }
+	    }
+
+            spatializer.setAttenuator(volume);
 
             softphonePlayer.setPrivateSpatializer(player, spatializer);
             return;
@@ -262,6 +301,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
 	Player player = vm.getPlayer(callId);
 
+	AudioGroup secretAudioGroup;
+
 	switch (code) {
 	case CallStatus.ESTABLISHED:
 	    if (player == null) {
@@ -291,11 +332,13 @@ public class AudioParticipantComponentMO extends CellComponentMO
 		return;
 	    }
 
+	    secretAudioGroup = getSecretAudioGroup(player);
+
 	    if (playerIsChatting(player)) {
-		VoiceChatHandler.getInstance().setSpeaking(player, cellID, true);
+		VoiceChatHandler.getInstance().setSpeaking(player, cellID, true, secretAudioGroup);
 	    }
 
-	    if (inSecretChat(player)) {
+	    if (secretAudioGroup != null) {
 		return;
 	    }
 
@@ -310,11 +353,13 @@ public class AudioParticipantComponentMO extends CellComponentMO
 		return;
 	    }
 
+	    secretAudioGroup = getSecretAudioGroup(player);
+
 	    if (playerIsChatting(player)) {
-		VoiceChatHandler.getInstance().setSpeaking(player, cellID, false);
+		VoiceChatHandler.getInstance().setSpeaking(player, cellID, false, secretAudioGroup);
 	    }
 
-	    if (inSecretChat(player)) {
+	    if (secretAudioGroup != null) {
 		return;
 	    }
 
@@ -327,10 +372,10 @@ public class AudioParticipantComponentMO extends CellComponentMO
 		return;
 	    }
 
-	    ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+	    AudioGroup[] audioGroups = player.getAudioGroups();
 
-	    for (AudioGroup group: audioGroups) {
-		group.removePlayer(player);
+	    for (int i = 0; i < audioGroups.length; i++) {
+		audioGroups[i].removePlayer(player);
 	    }
             break;
 	  
@@ -383,11 +428,11 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
 	VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
 
-	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+	AudioGroup[] audioGroups = player.getAudioGroups();
 
-	for (AudioGroup audioGroup : audioGroups) {
-	    if (audioGroup.equals(parameters.livePlayerAudioGroup) == false &&
-	    	    audioGroup.equals(parameters.stationaryPlayerAudioGroup) == false) {
+	for (int i = 0; i < audioGroups.length; i++) {
+	    if (audioGroups[i].equals(parameters.livePlayerAudioGroup) == false &&
+	    	    audioGroups[i].equals(parameters.stationaryPlayerAudioGroup) == false) {
 
 		return true;
 	    }
@@ -396,18 +441,18 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	return false;
     }
 
-    private boolean inSecretChat(Player player) {
-	ArrayList<AudioGroup> audioGroups = player.getAudioGroups();
+    private AudioGroup getSecretAudioGroup(Player player) {
+	AudioGroup[] audioGroups = player.getAudioGroups();
 
-        for (AudioGroup audioGroup : audioGroups) {
-            AudioGroupPlayerInfo info = audioGroup.getPlayerInfo(player);
+	for (int i = 0; i < audioGroups.length; i++) {
+            AudioGroupPlayerInfo info = audioGroups[i].getPlayerInfo(player);
 
             if (info.chatType == AudioGroupPlayerInfo.ChatType.SECRET) {
-		return true;
+		return audioGroups[i];
 	    }
 	}
 
-	return false;
+	return null;
     }
 
     static class MyTransformChangeListener implements TransformChangeListenerSrv {

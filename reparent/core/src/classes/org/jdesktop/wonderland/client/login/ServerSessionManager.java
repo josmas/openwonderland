@@ -36,6 +36,7 @@ import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.LoginParameters;
+import org.jdesktop.wonderland.client.comms.ServerUnavailableException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandServerInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -304,6 +305,14 @@ public class ServerSessionManager {
                 isConnect = true;
             }
 
+            // make sure there is a Darkstar server available
+            if (getDetails().getDarkstarServers() == null ||
+                    getDetails().getDarkstarServers().length == 0)
+            {
+                throw new ServerUnavailableException("No running Darkstar " +
+                        "server found for " + getDetails().getServerURL());
+            }
+
             // choose a Darkstar server to connect to
             DarkstarServer ds = getDetails().getDarkstarServers()[0];
             WonderlandServerInfo serverInfo =
@@ -409,7 +418,7 @@ public class ServerSessionManager {
                     if (status == Status.DISCONNECTED) {
                         synchronized (primarySessionLock) {
                             if (getPrimarySession() == primarySession) {
-                                System.out.println("[ServerSessionManager] set primary session to null");
+                                logger.fine("[ServerSessionManager] set primary session to null");
                                 setPrimarySession(null);
                             }
                         }
@@ -500,7 +509,7 @@ public class ServerSessionManager {
     protected void checkTimeStamp(ServerDetails details)
             throws LoginFailureException
     {
-        logger.warning("[ServerSessionManager] checkTimeStamp old: " +
+        logger.fine("[ServerSessionManager] checkTimeStamp old: " +
                     getDetails().getTimeStamp() + " new: " +
                     details.getTimeStamp());
 

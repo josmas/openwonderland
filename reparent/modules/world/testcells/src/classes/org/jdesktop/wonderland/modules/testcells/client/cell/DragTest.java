@@ -70,27 +70,30 @@ public class DragTest extends SimpleShapeCell {
     }
 
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
-
             case ACTIVE:
-                if (cellRenderer != null) { // May be null if this is a 2D renderer
-                    dragListener.addToEntity(cellRenderer.getEntity());
+                if (increasing) {
+                    if (cellRenderer != null) { // May be null if this is a 2D renderer
+                        dragListener.addToEntity(cellRenderer.getEntity());
+                    }
                 }
                 break;
 
             case DISK:
-                if (cellRenderer != null) { // May be null if this is a 2D renderer
-                    dragListener.removeFromEntity(cellRenderer.getEntity());
+                if (!increasing) {
+                    if (cellRenderer != null) { // May be null if this is a 2D renderer
+                        dragListener.removeFromEntity(cellRenderer.getEntity());
+                    }
                 }
         }
-
-        return ret;
     }
 
     private class MyDragListener extends EventClassListener {
+
+	boolean dragging;
 
         // The intersection point on the entity over which the button was pressed, in world coordinates.
         Vector3f dragStartWorld;
@@ -111,17 +114,22 @@ public class DragTest extends SimpleShapeCell {
 
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
-                if (buttonEvent.isPressed() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+                dragging = false;
+                if (buttonEvent.isPressed() && buttonEvent.getButton() == 
+                        MouseButtonEvent3D.ButtonId.BUTTON1) {
                     MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
-                    dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
-                    dragStartWorld = buttonEvent.getIntersectionPointWorld();
-                    translationOnPress = transform.getTranslation(null);
+                    if (awtButtonEvent.getModifiersEx() == 0) {
+                        dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
+                        dragStartWorld = buttonEvent.getIntersectionPointWorld();
+                        translationOnPress = transform.getTranslation(null);
+                        dragging = true;
+                    } 
                 }
                 return;
             }
 
 
-            if (!(event instanceof MouseDraggedEvent3D)) {
+	    if (!dragging || !(event instanceof MouseDraggedEvent3D)) {
                 return;
             }
 

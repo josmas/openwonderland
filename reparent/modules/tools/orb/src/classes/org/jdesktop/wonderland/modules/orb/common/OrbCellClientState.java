@@ -40,23 +40,31 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 public class OrbCellClientState extends CellClientState {
 
     private String username;
+    private String usernameAlias;
     private String callID;
     private String playerWithVpCallID;
+    private int bystanderCount;
 
     /** Default constructor */
     public OrbCellClientState() {
     }
     
-    public OrbCellClientState(String username, String callID, 
-	    String  playerWithVpCallID) {
+    public OrbCellClientState(String username, String usernameAlias, String callID, 
+	    String  playerWithVpCallID, int bystanderCount) {
 
 	this.username = username;
+	this.usernameAlias = usernameAlias;
 	this.callID = callID;
 	this.playerWithVpCallID = playerWithVpCallID;
+	this.bystanderCount = bystanderCount;
     }
 
     public String getUsername() {
 	return username;
+    }
+
+    public String getUsernameAlias() {
+	return usernameAlias;
     }
 
     public String getCallID() {
@@ -65,6 +73,10 @@ public class OrbCellClientState extends CellClientState {
 
     public String getPlayerWithVpCallID() {
 	return playerWithVpCallID;
+    }
+
+    public int getBystanderCount() {
+	return bystanderCount;
     }
 
 }

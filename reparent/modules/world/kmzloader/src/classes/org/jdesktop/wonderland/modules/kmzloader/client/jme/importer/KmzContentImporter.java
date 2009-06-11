@@ -60,14 +60,10 @@ public class KmzContentImporter extends AbstractContentImporter {
      */
     @Override
     public boolean isContentExists(File file) {
-        logger.warning("DOES THE FILE EXIST? " + file.getName());
         String fileName = file.getName();
-        logger.warning("FILE NAME IS " + fileName);
         ContentCollection userRoot = getUserRoot();
-        logger.warning("GOT USER ROOT");
         try {
             boolean exists = (userRoot.getChild(fileName) != null);
-            logger.warning("EXISTENCE IS " + exists);
             return exists;
         } catch (ContentRepositoryException excp) {
             logger.log(Level.WARNING, "Error while try to find " + fileName +
@@ -81,12 +77,10 @@ public class KmzContentImporter extends AbstractContentImporter {
      */
     @Override
     public String uploadContent(File file) throws IOException {
-        logger.warning("STARTING TO UPLOAD CONTENT");
         KmzModelLoader loader = new KmzModelLoader();
         loader.importModel(file);
         Map<URL, ZipEntry> textureMap = loader.getTextureMap();
         ZipFile zipFile = new ZipFile(file);
-        logger.warning("DONE PARSING FILE");
 
         // Create the directory to hold the contents of the model. We place it
         // in a directory named after the kmz file. If the directory already
@@ -198,9 +192,7 @@ public class KmzContentImporter extends AbstractContentImporter {
         tmpFile.deleteOnExit();
         FileUtils.copyFile(is, new FileOutputStream(tmpFile));
         try {
-            logger.warning("UPLOADING " + fileName);
             contentFile.put(tmpFile);
-            logger.warning("DONE UPLOADING");
         } catch (ContentRepositoryException excp) {
             logger.log(Level.WARNING, "Unable to write content from " + fileName +
                     " to resource", excp);
@@ -216,13 +208,11 @@ public class KmzContentImporter extends AbstractContentImporter {
 
         // Loop through each file in the zip file and see which have a .dae
         // extension. Write them to the content repository
-        logger.warning("DEPLOYING MODELS");
         try {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements() == true) {
                 ZipEntry zipEntry = entries.nextElement();
                 String zipEntryName = zipEntry.getName();
-                logger.warning("LOOKING AT ENTRY " + zipEntryName);
                 if (zipEntryName.endsWith(".dae") == true) {
                     write(zipFile, zipEntry, root, zipEntryName);
                 }

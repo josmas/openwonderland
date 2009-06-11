@@ -37,4 +37,8 @@ public class PresenceManagerFactory {
 	return manager;
     }
 
+    public static void reset() {
+	managers = new HashMap();
+    }
+
 }

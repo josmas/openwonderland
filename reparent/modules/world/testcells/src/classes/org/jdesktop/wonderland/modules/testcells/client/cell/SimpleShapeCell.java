@@ -50,12 +50,21 @@ public class SimpleShapeCell extends Cell {
     @Override
     public void setClientState(CellClientState configData) {
         super.setClientState(configData);
+
         SimpleShapeCellClientState c = (SimpleShapeCellClientState) configData;
+
+	boolean shapeChanged = true;
+
+	if (shape != null && shape.equals(c.getShape()) == true) {
+	    shapeChanged = false;
+	}
+
         this.shape = c.getShape();
         this.mass = c.getMass();
         this.materialJME = c.getMaterialJME();
 
-        if (shapeRenderer!=null) {
+        if (shapeRenderer!=null && shapeChanged) {
+	    System.out.println("Shape changed");
             shapeRenderer.shapeChanged();
             shapeRenderer.colorChanged();
         }

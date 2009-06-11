@@ -78,18 +78,18 @@ public class PortalComponent extends CellComponent
     }
 
     @Override
-    public void setStatus(CellStatus status) {
-        super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         // get the activation bounds from the cell we are part of
         BoundingVolume[] bounds = new BoundingVolume[] {
             this.cell.getLocalBounds()
         };
 
-        if (status == CellStatus.ACTIVE) {
+        if (increasing && status == CellStatus.ACTIVE) {
             System.out.println("[PortalComponent] add prox listener: " + bounds[0]);
             prox.addProximityListener(this, bounds);
-        } else if (status == CellStatus.INACTIVE) {
+        } else if (!increasing && status == CellStatus.INACTIVE) {
             System.out.println("[PortalComponent] remove prox listener");
             prox.removeProximityListener(this);
         }

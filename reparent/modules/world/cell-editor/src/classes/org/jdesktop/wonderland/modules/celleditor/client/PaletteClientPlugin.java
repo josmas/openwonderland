@@ -33,6 +33,7 @@ import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
 /**
@@ -88,7 +89,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
     /**
      * @inheritDoc()
      */
-    public ContextMenuItem[] getContextMenuItems(final Cell cell) {
+    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
 
         return new ContextMenuItem[] {
             new SimpleContextMenuItem("Properties...", null, new PropertiesListener()),

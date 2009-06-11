@@ -33,6 +33,13 @@ public class WonderlandClientID implements Serializable {
     private ManagedReference<ClientSession> sessionRef;
 
     /**
+     * For subclass constructor
+     */
+    protected WonderlandClientID() {
+
+    }
+
+    /**
      * Create a new clientID from the given ClientSession
      * @param session the session to wrap
      */

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.client.scenemanager.event;
 
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.LinkedList;
 import org.jdesktop.mtgame.Entity;
@@ -32,18 +33,23 @@ import org.jdesktop.wonderland.client.input.Event;
 public class HoverEvent extends SceneEvent {
     /* True if the hovering has started, false if the hovering has stopped */
     private boolean isStart = false;
-    
+
+    /* The MouseEvent that resulted in this context event */
+    private MouseEvent mouseEvent = null;
+
     /** Default constructor */
     public HoverEvent() {
     }
     
     /**
      * Constructor, takes the Enitity over which the hovering takes place and
-     * whether hovering is starting or stopping
+     * whether hovering is starting or stopping and the mouse event that caused
+     * the hover.
      */
-    public HoverEvent(Entity entity, boolean isStart) {
+    public HoverEvent(Entity entity, boolean isStart, MouseEvent mouseEvent) {
         super(new LinkedList(Arrays.asList(entity)));
         this.isStart = isStart;
+        this.mouseEvent = mouseEvent;
     }
     
     /**
@@ -55,7 +61,16 @@ public class HoverEvent extends SceneEvent {
     public boolean isStart() {
         return isStart;
     }
-    
+
+    /**
+     * Returns the mouse event that resulted in this hover event.
+     *
+     * @return The MouseEvent object
+     */
+    public MouseEvent getMouseEvent() {
+        return mouseEvent;
+    }
+
     /** 
      * {@inheritDoc}
      * <br>
@@ -67,6 +82,7 @@ public class HoverEvent extends SceneEvent {
             event = new HoverEvent();
         }
         ((HoverEvent) event).isStart = isStart;
+        ((HoverEvent) event).mouseEvent = mouseEvent;
         return super.clone(event);
     }
 }

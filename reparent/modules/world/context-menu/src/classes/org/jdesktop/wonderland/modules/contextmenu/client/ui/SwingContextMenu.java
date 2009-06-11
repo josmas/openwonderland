@@ -83,11 +83,10 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         contextMenu.setResizable(false);
         contextMenu.setUndecorated(true);
         contextMenu.getContentPane().setLayout(new GridLayout(1, 1));
+
         contextPanel = new JPanel();
-        contextPanel.setBackground(WL_LIGHT_BLUE);
-        contextPanel.setOpaque(true);
         contextMenu.getContentPane().add(contextPanel);
-        contextPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        contextPanel.setBorder(BorderFactory.createLineBorder(WL_LIGHT_BLUE, 2));
         contextPanel.setLayout(new BoxLayout(contextPanel, BoxLayout.Y_AXIS));
     }
 
@@ -133,7 +132,7 @@ public class SwingContextMenu implements MenuItemRepaintListener {
      * would be repaintMenuItem() which may try to access the context menu
      * before it has been created.
      */
-    private synchronized void initializeMenu(Cell cell) {
+    private synchronized void initializeMenu(ContextEvent event, Cell cell) {
         // Loop through any menu item and remove the listener
         for (Map.Entry<JMenuItem, ContextMenuItem> entry : menuItemMap.entrySet()) {
             entry.getValue().removeMenuItemRepaintListener(this);
@@ -155,6 +154,14 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         contextPanel.add(titlePanel);
         contextPanel.invalidate();
 
+        // Look for the context component on the current Cell, we need to find
+        // out whether we want to show the standard menu items.
+        ContextMenuComponent cmc = cell.getComponent(ContextMenuComponent.class);
+        boolean showStandardMenuItems = true;
+        if (cmc != null) {
+            showStandardMenuItems = cmc.isShowStandardMenuItems();
+        }
+
         // Fetch the manager of the context menu and all of the factories
         // that generate menu items.
         ContextMenuManager cmm = ContextMenuManager.getContextMenuManager();
@@ -162,19 +169,24 @@ public class SwingContextMenu implements MenuItemRepaintListener {
 
         // For each of the factories, loop through each of its items and
         // add to the menu
-        for (ContextMenuFactorySPI factory : factoryList) {
-            ContextMenuItem items[] = factory.getContextMenuItems(cell);
-            for (ContextMenuItem item : items) {
-                addContextMenuItem(item, cell);
+        if (showStandardMenuItems == true) {
+            for (ContextMenuFactorySPI factory : factoryList) {
+                ContextMenuItem items[] = factory.getContextMenuItems(event);
+                for (ContextMenuItem item : items) {
+                    addContextMenuItem(item, cell);
+                }
             }
         }
 
-        // Look for the context component and add its items
-        ContextMenuComponent cmc = cell.getComponent(ContextMenuComponent.class);
+        // Look for the context component and add its items from the registered
+        // factories
         if (cmc != null) {
-            ContextMenuItem items[] = cmc.getContextMenuItems();
-            for (ContextMenuItem item : items) {
-                addContextMenuItem(item, cell);
+            ContextMenuFactorySPI factories[] = cmc.getContextMenuFactories();
+            for (ContextMenuFactorySPI factory : factories) {
+                ContextMenuItem items[] = factory.getContextMenuItems(event);
+                for (ContextMenuItem item : items) {
+                    addContextMenuItem(item, cell);
+                }
             }
         }
     }
@@ -281,6 +293,7 @@ public class SwingContextMenu implements MenuItemRepaintListener {
 
             // Otherwise, highlight the menu item and hide the menu
             item.setBackground(WL_GREEN);
+            item.repaint();
             hideContextMenu();
 
             // Find the listener to dispatch the action to
@@ -301,7 +314,10 @@ public class SwingContextMenu implements MenuItemRepaintListener {
             // Highlight the menu item with a color, but only if it is enabled
             JMenuItem item = (JMenuItem)e.getSource();
             if (item.isEnabled() == true) {
+                System.out.println("MOUSE ENTERED");
                 item.setBackground(WL_LIGHT_GREEN);
+                item.setOpaque(true);
+                item.repaint();
                 contextMenu.pack();
             }
         }
@@ -309,6 +325,7 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         @Override
         public void mouseExited(MouseEvent e) {
             // De-highlight the menu item with a color, but only if it is enabled
+            System.out.println("MOUSE EXITED");
             JMenuItem item = (JMenuItem) e.getSource();
             if (item.isEnabled() == true) {
                 item.setBackground(Color.white);
@@ -344,22 +361,13 @@ public class SwingContextMenu implements MenuItemRepaintListener {
             else if (event instanceof ContextEvent) {
                 // Show the context menu, initialize the menu if this is the
                 // first time
-                Entity entity = null;
-                List<Entity> entityList = ((ContextEvent)event).getEntityList();
-                if (entityList != null && entityList.isEmpty() == false) {
-                    entity = entityList.get(0);
-                }
-                
-                Cell cell = null;
-                if (entity != null) {
-                    cell = SceneManager.getCellForEntity(entity);
-                }
+                Cell cell = ((ContextEvent)event).getPrimaryCell();
                 if (cell == null) {
+                    hideContextMenu();
                     return;
                 }
-
-                initializeMenu(cell);
                 ContextEvent ce = (ContextEvent) event;
+                initializeMenu(ce, cell);
                 showContextMenu(ce.getMouseEvent(), cell);
             }
         }

@@ -53,6 +53,8 @@ public interface HUD {
      */
     public HUDComponent createComponent(JComponent component, Cell cell);
 
+    public HUDComponent createMessage(String message);
+
     /**
      * Adds a HUD component to the HUD
      * @param component the component to add
@@ -88,18 +90,6 @@ public interface HUD {
      * @return the component manager
      */
     public HUDComponentManager getComponentManager();
-
-    /**
-     * Set the layout of the HUD
-     * @param layout the layout
-     */
-    public void setLayoutManager(HUDLayoutManager layout);
-
-    /**
-     * Get the layout of the HUD
-     * @return the layout
-     */
-    public HUDLayoutManager getLayoutManager();
 
     /**
      * Assigns a name to this HUD

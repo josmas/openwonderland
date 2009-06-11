@@ -17,7 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
+import java.awt.Point;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
 
 /**
@@ -32,4 +34,37 @@ import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
 public class HUDAbsoluteLayoutManager implements HUDLayoutManager {
 
     private static final Logger logger = Logger.getLogger(HUDAbsoluteLayoutManager.class.getName());
+
+    private int hudWidth;
+    private int hudHeight;
+
+    public HUDAbsoluteLayoutManager(int hudWidth, int hudHeight) {
+        this.hudWidth = hudWidth;
+        this.hudHeight = hudHeight;
+    }
+
+    /**
+     * Add a HUD component to the list of components this layout manager
+     * is managing.
+     * @param component the component to manage
+     */
+    public void manageComponent(HUDComponent component) {
+    }
+
+    /**
+     * Remove a HUD component from the list of components this layout manager
+     * is managing.
+     * @param component the component to stop managing
+     */
+    public void unmanageComponent(HUDComponent component) {
+    }
+
+    /**
+     * Get the position of the given component according to the specified
+     * layout.
+     * @param component the component for which the position is needed
+     */
+    public Point getLocation(HUDComponent component) {
+        return component.getLocation();
+    }
 }

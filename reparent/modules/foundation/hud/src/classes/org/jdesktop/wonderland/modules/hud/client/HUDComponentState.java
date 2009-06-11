@@ -31,9 +31,14 @@ public class HUDComponentState {
     private static final Logger logger = Logger.getLogger(HUDComponentState.class.getName());
     private HUDComponent component;
     private HUDComponentVisualState state;
+    // HUD component visuals
     private Window2D window;
     private HUDView2D view;
     private HUDView3D worldView;
+    // HUD frame visuals
+    private HUDFrame2D frame;
+    private Window2D frameWindow;
+    private HUDView2D frameView;
     private boolean decorated;
     private int zorder;
 
@@ -55,88 +60,136 @@ public class HUDComponentState {
     }
 
     /**
-     * Sets the managed HUDComponent
-     * @param component the HUDComponent
+     * Sets the managed HUD component
+     * @param component the HUD component
      */
     public void setComponent(HUDComponent component) {
         this.component = component;
     }
 
     /**
-     * Gets the managed HUDComponent
-     * @return the managed HUDComponent
+     * Gets the managed HUD component
+     * @return the managed HUD component
      */
     public HUDComponent getComponent() {
         return component;
     }
 
     /**
-     * Sets the window of the HUDComponent
-     * @param window the HUDComponent's window
+     * Sets the frame decoration for the HUD component
+     * @param frame the frame
+     */
+    public void setFrame(HUDFrame2D frame) {
+        this.frame = frame;
+    }
+
+    /**
+     * Gets the frame for the HUD component
+     * @return the HUD component's frame
+     */
+    public HUDFrame2D getFrame() {
+        return frame;
+    }
+
+    /**
+     * Sets the frame view of the HUD component
+     * @param view the HUD component's frame view
+     */
+    public void setFrameView(HUDView2D frameView) {
+        this.frameView = frameView;
+    }
+
+    /**
+     * Gets the HUD component's frame view
+     * @return the HUD component's frame view
+     */
+    public HUDView2D getFrameView() {
+        return frameView;
+    }
+
+    /**
+     * Sets the HUD component's frame window
+     * @param window the HUD components frame window
+     */
+    public void setFrameWindow(Window2D frameWindow) {
+        this.frameWindow = frameWindow;
+    }
+
+    /**
+     * Gets the HUD component's frame window
+     * @return the HUD component's window
+     */
+    public Window2D getFrameWindow() {
+        return frameWindow;
+    }
+
+    /**
+     * Sets the window of the HUD component
+     * @param window the HUD component's window
      */
     public void setWindow(Window2D window) {
         this.window = window;
     }
 
     /**
-     * Gets the HUDComponent's window
-     * @return the HUDComponent's window
+     * Gets the HUD component's window
+     * @return the HUD component's window
      */
     public Window2D getWindow() {
         return window;
     }
 
     /**
-     * Sets the view of the HUDComponent
-     * @param view the HUDComponent's view
+     * Sets the view of the HUD component
+     * @param view the HUD component's view
      */
     public void setView(HUDView2D view) {
         this.view = view;
     }
 
     /**
-     * Gets the HUDComponent's view
-     * @return the HUDComponent's view
+     * Gets the HUD component's view
+     * @return the HUD component's view
      */
     public HUDView2D getView() {
         return view;
     }
 
     /**
-     * Sets the world view of the HUDComponent
-     * @param view the HUDComponent's view
+     * Sets the world view of the HUD component
+     * @param view the HUD component's view
      */
     public void setWorldView(HUDView3D view) {
         this.worldView = view;
     }
 
     /**
-     * Gets the HUDComponent's world view
-     * @return the HUDComponent's world view
+     * Gets the HUD component's world view
+     * @return the HUD component's world view
      */
     public HUDView3D getWorldView() {
         return worldView;
     }
 
     /**
-     * Gets whether the HUDComponent is visible
-     * @return true if the HUDComponent is visible, false if it's hidden
+     * Gets whether the HUD component is visible
+     * @return true if the HUD component is visible, false if it's hidden
      */
     public boolean isVisible() {
         return ((view != null) && (view.isActuallyVisible()));
     }
 
     /**
-     * Gets whether the HUDComponent is visible in world
-     * @return true if the HUDComponent is visible in world, false if it's hidden
+     * Gets whether the HUD component is visible in world
+     * @return true if the HUD component is visible in world, false if it's hidden
      */
     public boolean isWorldVisible() {
         return ((worldView != null) && (worldView.isActuallyVisible()));
     }
 
     /**
-     * Sets whether the HUDComponent is decorated
-     * @param decorated true to decorate the HUDComponent, false to remove
+     * Sets whether the HUD component is decorated
+     * @param decorated true to decorate the HUD component, false to remove
      * decorations
      */
     public void setDecorated(boolean decorated) {
@@ -144,24 +197,24 @@ public class HUDComponentState {
     }
 
     /**
-     * Gets whether the HUDComponent is decorated
-     * @return true if the HUDComponent is decorated, false if it is not
+     * Gets whether the HUD component is decorated
+     * @return true if the HUD component is decorated, false if it is not
      */
     public boolean isDecorated() {
         return decorated;
     }
 
     /**
-     * Sets the visual state of the HUDComponent, whether it's minimized,
+     * Sets the visual state of the HUD component, whether it's minimized,
      * maximized or in normal state
-     * @param state the new visual state of the HUDComponent
+     * @param state the new visual state of the HUD component
      */
     public void setState(HUDComponentVisualState state) {
         this.state = state;
     }
 
     /**
-     * Get's the visual state of the HUDComponent
+     * Get's the visual state of the HUD component
      * @return the visual state
      */
     public HUDComponentVisualState getState() {
@@ -169,16 +222,16 @@ public class HUDComponentState {
     }
 
     /**
-     * Sets the z-order of the HUDComponent
-     * @param zorder the z-order of the HUDComponent
+     * Sets the z-order of the HUD component
+     * @param zorder the z-order of the HUD component
      */
     public void setZOrder(int zorder) {
         this.zorder = zorder;
     }
 
     /**
-     * Gets the z-order of the HUDComponent
-     * @return the HUDComponent's z-order
+     * Gets the z-order of the HUD component
+     * @return the HUD component's z-order
      */
     public int getZOrder() {
         return zorder;

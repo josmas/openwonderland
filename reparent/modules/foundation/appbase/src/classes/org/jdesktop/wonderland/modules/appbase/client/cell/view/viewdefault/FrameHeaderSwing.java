@@ -23,17 +23,22 @@ import java.util.LinkedList;
 import java.awt.Component;
 import java.awt.Color;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
-import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
+import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
 
 /**
  * The frame header (top side) for Frame2DCellSwing. Uses a WindowSwing.
@@ -43,10 +48,10 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 @ExperimentalAPI
 public class FrameHeaderSwing
     extends FrameComponent
-    implements HeaderPanel.Container, MouseListener
+    implements HeaderPanel.Container, MouseListener, MouseMotionListener
 {
     // TODO: New UI: add zones: move planar, move z, rotate
-    private WindowSwing headerWindow;
+    private WindowSwingHeader headerWindow;
 
     /** The AWT background color of the header window. */
     private Color bkgdColor;
@@ -63,6 +68,25 @@ public class FrameHeaderSwing
     /** Whether the frame is visible. */
     private boolean visible;
 
+    /* The view of this header in the cell displayer. */
+    private View2DEntity frameView;
+
+    /** 
+     * An event listener which accepts (consumes) events for this WindowSwing if 
+     * it has control. 
+     *
+     * Note that consumed events are sent directly to Swing,
+     * *NOT* to the compute/commitEvent methods of this listener!
+     * There is special code in InputPicker to make this happen.
+     */
+     private EventListenerBaseImpl consumingListener = new ConsumeOnControlListener();
+
+    /** True if a drag is active. */
+    private boolean dragging;
+
+    /** The mouse press point in local coordinates. */
+    private Vector2f dragStartLocal;
+
     /**
      * Create a new instance of FrameHeaderSwing.
      *
@@ -75,8 +99,8 @@ public class FrameHeaderSwing
         this.view = view;
         Window2D viewWindow = view.getWindow();
         app = viewWindow.getApp();
-        headerWindow = new WindowSwing(app, Window2D.Type.POPUP, viewWindow, 1, 1, false,
-                view.getPixelScale(), "Header Window for " + view.getName());
+        headerWindow = new WindowSwingHeader(app, viewWindow, 1, 1, view.getPixelScale(), 
+                                             "Header Window for " + view.getName(), view);
         headerWindow.setCoplanar(true);
 
         headerPanel = new HeaderPanel();
@@ -84,17 +108,51 @@ public class FrameHeaderSwing
         headerPanel.setContainer(this);
         headerWindow.setComponent(headerPanel);
 
-        // TODO: window close: maintain list of close listeners
-        // Call them on close button press.
-
         headerPanel.addMouseListener(this);
+        headerPanel.addMouseMotionListener(this);
 
         // Unless we do this the interior of the frame will deliver events 
         // to the control arb of the application and they will look like they
         // are coming from the interior of the main window's view. We don't want this.
         View2DDisplayer displayer = view.getDisplayer();
-        View2D frameView = headerWindow.getView(displayer);
-        ((View2DEntity)frameView).disableGUI();
+        frameView = (View2DEntity) headerWindow.getView(displayer);
+        frameView.disableGUI();
+
+        // Arrange for InputPicker to send the event to swing when the app has control.
+        consumingListener.addToEntity(frameView.getEntity());
+    }
+
+    private class ConsumeOnControlListener extends EventListenerBaseImpl {
+        @Override
+        public boolean consumesEvent (Event event) {
+
+            /* Note: I thought that I could shut off header events using this technique.
+               But it doesn't act as I would suspect. For example, it allows the control
+               change (click) event through to WindowSwingEmbeddedToolkit, but the event
+               disappears after that! Fortunately, there is an alternate technique that 
+               works: check for control in each FrameHeaderSwing mouse event handler.
+
+            if (app.getControlArb().hasControl()) {
+                System.err.println("COCL.consumesEvent, true because have control");
+                return true;
+            }
+
+            // Always let the control change event through, even if app doesn't have control
+            if (event instanceof MouseEvent3D) {
+                MouseEvent me = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
+                boolean result = Gui2D.isChangeControlEvent(me);
+                System.err.println("COCL.consumesEvent, result = " + result);
+                return result;
+            }
+
+            return false;
+            */
+
+            return true;
+        }
+        public boolean propagatesToParent (Event event) {
+            return false;
+        }
     }
 
     /**
@@ -112,6 +170,13 @@ public class FrameHeaderSwing
         }
 
         headerPanel.removeMouseListener(this);
+        headerPanel.removeMouseMotionListener(this);
+
+        Entity viewEntity = getEntity();
+        if (viewEntity != null) {
+            consumingListener.removeFromEntity(viewEntity);
+        }
+
         view = null;
     }
 
@@ -157,7 +222,7 @@ public class FrameHeaderSwing
         int x = (int) (-sideThickness / pixelScale.x);
         int y = -height;
 
-        headerWindow.setOffset(x, y);
+        headerWindow.setPixelOffset(x, y);
         headerWindow.setSize(width, height);
     }
 
@@ -167,9 +232,16 @@ public class FrameHeaderSwing
      * @param text The new title.
      */
     public void setTitle(String title) {
-        if (title != null) {
-            headerPanel.setTitle(title);
-        }
+        headerPanel.setTitle(title);
+    }
+
+    /**
+     * Set the controller displayed in the header.
+     *
+     * @param text The new controller.
+     */
+    public void setController(String controller) {
+        headerPanel.setController(controller);
     }
 
     /**
@@ -194,6 +266,8 @@ public class FrameHeaderSwing
 
 
     public void	mouseClicked(MouseEvent e) {
+        if (view == null) return;
+
         if  (Gui2D.isChangeControlEvent(e)) {
             ControlArb appControlArb = app.getControlArb();
             if (appControlArb.hasControl()) {
@@ -201,16 +275,129 @@ public class FrameHeaderSwing
             } else {
                 appControlArb.takeControl();
             }
+            return;
         } 
+
+        if (!app.getControlArb().hasControl()) return;
+
+        if (e.getID() == MouseEvent.MOUSE_CLICKED &&
+            e.getButton() == MouseEvent.BUTTON1 &&
+            e.getModifiersEx() == 0) {
+            view.getWindow().restackToTop();
+        }
     }
 
     public void mouseEntered(MouseEvent e) {
+        if (view == null) return;
+        if (!app.getControlArb().hasControl()) return;
     }
+
     public void	mouseExited(MouseEvent e) {
+        if (view == null) return;
+        if (!app.getControlArb().hasControl()) return;
     }
+
     public void	mousePressed(MouseEvent e) {
+        if (view == null) return;
+
+        // Is this a Window menu event? Display menu even when we don't have control.
+        if (e.getID() == MouseEvent.MOUSE_PRESSED &&
+            e.getButton() == MouseEvent.BUTTON3 &&
+            e.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK) {
+            view.getWindow().displayWindowMenu(view.getEntity(), e);
+            return;
+        }
+
+        if (!app.getControlArb().hasControl()) return;
+
+        // TODO: the following drag code only works for secondary windows. Eventually 
+        // upgrade it to work with primary windows also.
+        if (view.getType() != View2D.Type.SECONDARY) return;
+
+        //System.err.println("******* Press event " + e);
+
+        if (!dragging && 
+            e.getButton() == MouseEvent.BUTTON1 &&
+            e.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
+
+            dragging = true;
+
+            Vector2f pixelScale = view.getPixelScale();
+            dragStartLocal = new Vector2f();
+            dragStartLocal.x = e.getX() * pixelScale.x;
+            dragStartLocal.y = -e.getY() * pixelScale.y;
+
+            view.userMovePlanarStart();
+        }
     }
+
+    public void mouseDragged(MouseEvent e) {
+        if (view == null) return;
+        if (!app.getControlArb().hasControl()) return;
+
+        // TODO: the following drag code only works for secondary windows. Eventually 
+        // upgrade it to work with primary windows also.
+        if (view.getType() != View2D.Type.SECONDARY) return;
+
+        //System.err.println("******* Drag event " + e);
+        if (dragging) {
+
+            Vector2f pixelScale = view.getPixelScale();
+            Vector2f dragCurrentLocal = new Vector2f();
+            dragCurrentLocal.x = e.getX() * pixelScale.x;
+            dragCurrentLocal.y = -e.getY() * pixelScale.y;
+
+            Vector2f dragVectorLocal = dragCurrentLocal.subtractLocal(dragStartLocal);
+
+            //System.err.println("dragVectorLocal = " + dragVectorLocal);
+            view.userMovePlanarUpdate(new Vector2f(dragVectorLocal.x, dragVectorLocal.y));
+        }
+    }
+
     public void mouseReleased(MouseEvent e) {
+        if (view == null) return;
+        if (!app.getControlArb().hasControl()) return;
+
+        // TODO: the following drag code only works for secondary windows. Eventually 
+        // upgrade it to work with primary windows also.
+        if (view.getType() != View2D.Type.SECONDARY) return;
+
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            if (dragging) {
+                dragging = false;
+                view.userMovePlanarFinish();
+            }
+        }
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        if (!app.getControlArb().hasControl()) return;
+    }
+
+    // For ortho subwindow debug: set to true to debug ortho subwindows with close button
+    private static final boolean orthoSubwindowDebug = false;
+
+    public void close () {
+        Window2D viewWindow = view.getWindow();
+        if (orthoSubwindowDebug) {
+            viewWindow.toggleOrtho();
+        } else {
+            viewWindow.closeUser();
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void updateControl(ControlArb controlArb) {
+        super.updateControl(controlArb);
+
+        if (controlArb instanceof ControlArbSingle) {
+            ControlArbSingle ca = (ControlArbSingle) controlArb;
+            setController(ca.getController());
+        } else {
+            // TODO: someday: if it's Multi it would be nice to display the number of users controlling,
+            // or actually a list of users controlling.
+        }
     }
 }
 

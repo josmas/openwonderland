@@ -56,6 +56,12 @@ public class WebServerLauncher {
     private static final String WEBSERVER_KILLSWITCH_PROPERTY =
             "wonderland.webserver.killswitch";
 
+    // the property to determine what class to launch
+    private static final String WEBSERVER_LAUNCH_CLASS_PROPERTY =
+            "wonderland.webserver.launch.class";
+    private static final String WEBSERVER_LAUNCH_CLASS_DEFAULT =
+            "org.jdesktop.wonderland.webserver.RunAppServer";
+
     private static final Logger logger = 
             Logger.getLogger(WebServerLauncher.class.getName());
 
@@ -79,6 +85,14 @@ public class WebServerLauncher {
             }
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "Error loading default properties", ex);
+            System.exit(-1);
+        }
+
+        // read in the arguments, including the properties file (if any), before
+        // we set up logging, so the logging takes the system properties int
+        // account
+        if (!parseArguments(args)) {
+            usage();
             System.exit(-1);
         }
 
@@ -116,11 +130,6 @@ public class WebServerLauncher {
             } catch (IOException ioe) {
                 logger.log(Level.WARNING, "Error setting up log config", ioe);
             }
-        }
-        
-        if (!parseArguments(args)) {
-            usage();
-            System.exit(-1);
         }
 
         // If the web server port property has not been set at this point, then
@@ -164,11 +173,14 @@ public class WebServerLauncher {
 
             // create a classloader with those files and use it
             // to reflectively instantiate an instance of the 
-            // RunAppServer class, and call its run method
+            // launch class, and call its run method
             classLoader = new LauncherClassLoader(urls.toArray(new URL[0]));
             Thread.currentThread().setContextClassLoader(classLoader);
-            
-            Class c = classLoader.loadClass("org.jdesktop.wonderland.webserver.RunAppServer");
+
+            String launchClass = System.getProperty(WEBSERVER_LAUNCH_CLASS_PROPERTY,
+                                                    WEBSERVER_LAUNCH_CLASS_DEFAULT);
+
+            Class c = classLoader.loadClass(launchClass);
             c.newInstance();
 
             // log that everything is started up

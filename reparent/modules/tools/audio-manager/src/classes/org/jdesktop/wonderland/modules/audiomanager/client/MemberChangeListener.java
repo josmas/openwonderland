@@ -25,8 +25,8 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  */
 public interface MemberChangeListener {
 
-    public void memberAdded(PresenceInfo member);
+    public void memberChange(PresenceInfo member, boolean added);
 
-    public void memberRemoved(PresenceInfo member);
+    public void setMemberList(PresenceInfo[] memberList);
     
 }

@@ -38,6 +38,10 @@ import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoUsernameAliasChangeMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
+
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
 
 import com.jme.bounding.BoundingBox;
@@ -65,14 +69,19 @@ public class PresenceManagerImpl implements PresenceManager {
 	this.session = session;
     }
 
-    public void addSession(PresenceInfo presenceInfo) {
+    public void addPresenceInfo(PresenceInfo presenceInfo) {
+	session.send(PresenceManagerClient.getInstance(), new PresenceInfoAddedMessage(presenceInfo));
+	//presenceInfoAdded(presenceInfo);
+    }
+
+    public void presenceInfoAdded(PresenceInfo presenceInfo) {
 	synchronized (cellIDMap) {
 	    synchronized (sessionIDMap) {
 		synchronized (userIDMap) {
 		    synchronized (callIDMap) {
 			if (alreadyInMaps(presenceInfo) == false) {
-			    addPresenceInfo(presenceInfo);
-			}
+			    addPresenceInfoInternal(presenceInfo);
+			} 
 		    }
 	        }
 	    }
@@ -81,71 +90,63 @@ public class PresenceManagerImpl implements PresenceManager {
 	notifyListeners(presenceInfo, ChangeType.USER_ADDED);
     }
 
-    private void addPresenceInfo(PresenceInfo presenceInfo) {
-	logger.finer("Adding presenceInfo for " + presenceInfo);
+    private void addPresenceInfoInternal(PresenceInfo presenceInfo) {
+	logger.fine("Adding presenceInfo for " + presenceInfo);
 
-	PresenceInfo info = cellIDMap.get(presenceInfo.cellID);
+	PresenceInfo info;
 
-	if (info != null && info.equals(presenceInfo) == false) {
-	    System.out.println("cellIDMap already has entry for " + info);
+	if (presenceInfo.cellID != null) {
+	    cellIDMap.put(presenceInfo.cellID, presenceInfo);
 	}
 
-	cellIDMap.put(presenceInfo.cellID, presenceInfo);
-
 	if (presenceInfo.clientID != null) {
-	    info = sessionIDMap.get(presenceInfo.clientID);
-
-	    if (info != null && info.equals(presenceInfo) == false) {
-	        System.out.println("sessionIDMap already has entry for " + info);
-	    }
-
 	    sessionIDMap.put(presenceInfo.clientID, presenceInfo);
 	}
 
 	info = userIDMap.get(presenceInfo.userID);
 
-	if (info != null && info.equals(presenceInfo) == false) {
-	    System.out.println("userIDMap already has entry for " + info);
-	}
-
 	userIDMap.put(presenceInfo.userID, presenceInfo);
 
 	if (presenceInfo.callID != null) {
-	    info = callIDMap.get(presenceInfo.callID);
-
-	    if (info != null && info.equals(presenceInfo) == false) {
-	        System.out.println("callIDMap already has entry for " + info);
-	    }
-
 	    callIDMap.put(presenceInfo.callID, presenceInfo);
 	}
     }
 
     private boolean alreadyInMaps(PresenceInfo presenceInfo) {
-	PresenceInfo info = cellIDMap.get(presenceInfo.cellID);
+ 	PresenceInfo info;
 
-	if (info != null && info.equals(presenceInfo)) {
-	    return true;
+	if (presenceInfo.cellID != null) {
+	    info = cellIDMap.get(presenceInfo.cellID);
+
+	    if (info != null && info.equals(presenceInfo) == false) {
+		logger.warning("Already in cellIDMap:  Existing PI " + info + " new PI " + presenceInfo);
+	        return true;
+	    }
 	}
 
 	if (presenceInfo.clientID != null) {
 	    info = sessionIDMap.get(presenceInfo.clientID);
 
-	    if (info != null && info.equals(presenceInfo)) {
+	    if (info != null && info.equals(presenceInfo) == false) {
+		logger.warning("Already in clientIDMap:  Existing PI " + info + " new PI " + presenceInfo);
 	        return true;
 	    }
 	}
 
-	info = userIDMap.get(presenceInfo.userID);
+	if (presenceInfo.userID != null) {
+	    info = userIDMap.get(presenceInfo.userID);
 
-	if (info != null && info.equals(presenceInfo)) {
-	    return true;
+	    if (info != null && info.equals(presenceInfo) == false) {
+		logger.warning("Already in userIDMap:  Existing PI " + info + " new PI " + presenceInfo);
+	        return true;
+	    }
 	}
 
 	if (presenceInfo.callID != null) {
 	    info = callIDMap.get(presenceInfo.callID);
 
-	    if (info != null && info.equals(presenceInfo)) {
+	    if (info != null && info.equals(presenceInfo) == false) {
+		logger.warning("Already in callIDMap:  Existing PI " + info + " new PI " + presenceInfo);
 	        return true;
 	    }
 	}
@@ -168,9 +169,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	}
     }
 
-    private void notifyListenersAliasChanged(String previousAlias, 
-	    PresenceInfo presenceInfo) {
-
+    private void notifyListenersAliasChanged(PresenceInfo presenceInfo) {
 	/*
 	 * Notify listeners
 	 */
@@ -181,11 +180,16 @@ public class PresenceManagerImpl implements PresenceManager {
 	}
 
 	for (int i = 0; i < listenerArray.length; i++) {
-	    listenerArray[i].aliasChanged(previousAlias, presenceInfo);
+	    listenerArray[i].usernameAliasChanged(presenceInfo);
 	}
     }
 
-    public void removeSession(PresenceInfo presenceInfo) {
+    public void removePresenceInfo(PresenceInfo presenceInfo) {
+	session.send(PresenceManagerClient.getInstance(),
+	    new PresenceInfoRemovedMessage(presenceInfo));
+    }
+
+    public void presenceInfoRemoved(PresenceInfo presenceInfo) {
 	synchronized (cellIDMap) {
 	    synchronized (sessionIDMap) {
 		synchronized (userIDMap) {
@@ -373,15 +377,16 @@ public class PresenceManagerImpl implements PresenceManager {
     }
 
     /**
-     * Change username in PresenceInfo.
+     * Change usernameAlias in PresenceInfo.
      * @param String user name
      */
-    public void changeUsername(PresenceInfo info, String username) {
-	String usernameAlias = info.usernameAlias;
+    public void changeUsernameAlias(PresenceInfo info) {
+	session.send(PresenceManagerClient.getInstance(), 
+	    new PresenceInfoUsernameAliasChangeMessage(info));
+    }
 
-	info.usernameAlias = username;
-
-	notifyListenersAliasChanged(usernameAlias, info);
+    public void usernameAliasChanged(PresenceInfo info) {
+	notifyListenersAliasChanged(info);
     }
 
     /**
@@ -456,4 +461,22 @@ public class PresenceManagerImpl implements PresenceManager {
 	}
     }
     
+    /**
+     * Display all presenceInfo
+     */
+    public void dump() {
+	dump("Cell ID MAP", cellIDMap.values().toArray(new PresenceInfo[0]));
+        dump("Session ID Map", sessionIDMap.values().toArray(new PresenceInfo[0]));
+        dump("User ID Map", userIDMap.values().toArray(new PresenceInfo[0]));
+        dump("Call ID Map", callIDMap.values().toArray(new PresenceInfo[0]));
+    }
+
+    private void dump(String message, PresenceInfo[] info) {
+	System.out.println(message);
+
+	for (int i = 0; i < info.length; i++) {
+	    System.out.println("  " + info[i]);
+	}
+    }
+
 }

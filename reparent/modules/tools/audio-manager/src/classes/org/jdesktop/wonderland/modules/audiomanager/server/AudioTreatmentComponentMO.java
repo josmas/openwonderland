@@ -17,6 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.server;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingCapsule;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.bounding.OrientedBoundingBox;
+
 import com.jme.math.Vector3f;
 
 import com.sun.sgs.app.AppContext;
@@ -33,24 +39,32 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
+
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import com.sun.voip.client.connector.CallStatus;
 
+import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
+import com.sun.mpk20.voicelib.app.FalloffFunction;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
@@ -78,17 +92,19 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
     private static final Logger logger =
             Logger.getLogger(AudioTreatmentComponentMO.class.getName());
-    private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
-    private String groupId;
-    private String[] treatments;
-    private double x;
-    private double y;
-    private double z;
-    private double fullVolumeRadius;
-    private double zeroVolumeRadius;
-    private boolean useFullVolumeSpatializer = false;
-    private static String serverURL;
 
+    private static final String ASSET_PREFIX = "wonderland-web-asset/asset/";
+
+    private String groupId;
+    private String[] treatments = new String[0];
+    private double volume = 1;
+    private PlayWhen playWhen = PlayWhen.ALWAYS;
+    private double extent = 10;
+    private double fullVolumeAreaPercent = 25;
+    private boolean distanceAttenuated = true;
+    private double falloff = 50;
+
+    private static String serverURL;
 
     static {
         serverURL = System.getProperty("wonderland.web.server.url");
@@ -101,21 +117,43 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
      */
     public AudioTreatmentComponentMO(CellMO cellMO) {
         super(cellMO);
+
+        // The AudioTreatment Component depends upon the Proximity Component.
+        // We add this component as a dependency if it does not yet exist
+        if (cellMO.getComponent(ProximityComponentMO.class) == null) {
+            cellMO.addComponent(new ProximityComponentMO(cellMO));
+        }
     }
 
     @Override
     public void setServerState(CellComponentServerState serverState) {
-        AudioTreatmentComponentServerState state = (AudioTreatmentComponentServerState) serverState;
+	super.setServerState(serverState);
 
-        treatments = state.getTreatments();
+	if (isLive()) {
+	    cleanup();
+	}
+
+        AudioTreatmentComponentServerState state = (AudioTreatmentComponentServerState) serverState;
 
         groupId = state.getGroupId();
 
-        fullVolumeRadius = state.getFullVolumeRadius();
-        zeroVolumeRadius = state.getZeroVolumeRadius();
-        useFullVolumeSpatializer = state.getUseFullVolumeSpatializer();
+        treatments = state.getTreatments();
 
-        logger.finer("Treatment:  fvr " + fullVolumeRadius + " zvr " + zeroVolumeRadius + " useFullVolumeSpatializer " + useFullVolumeSpatializer);
+	volume = state.getVolume();
+
+	playWhen = state.getPlayWhen();
+
+	extent = state.getExtent();
+
+	fullVolumeAreaPercent = state.getFullVolumeAreaPercent();
+
+ 	distanceAttenuated = state.getDistanceAttenuated();
+
+	falloff = state.getFalloff();
+
+	if (isLive()) {
+	    initialize();
+	}
     }
 
     @Override
@@ -124,15 +162,18 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
         if (state == null) {
             state = new AudioTreatmentComponentServerState();
+
+            state.setGroupId(groupId);
+            state.setTreatments(treatments);
+	    state.setVolume(volume);
+	    state.setPlayWhen(playWhen);
+	    state.setExtent(extent);
+	    state.setFullVolumeAreaPercent(fullVolumeAreaPercent);
+	    state.setDistanceAttenuated(distanceAttenuated);
+	    state.setFalloff(falloff);
         }
 
-        state.treatments = treatments;
-        state.setGroupId(groupId);
-        state.setFullVolumeRadius(fullVolumeRadius);
-        state.setZeroVolumeRadius(zeroVolumeRadius);
-        state.setUseFullVolumeSpatializer(useFullVolumeSpatializer);
-
-        return state;
+        return super.getServerState(state);
     }
 
     @Override
@@ -141,8 +182,22 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
-        // TODO: Create own client state object?
-        return clientState;
+	AudioTreatmentComponentClientState state = (AudioTreatmentComponentClientState) clientState;
+
+	if (state == null) {
+	    state = new AudioTreatmentComponentClientState();
+
+	    state.groupId = groupId;
+	    state.treatments = treatments;
+	    state.volume = volume;
+	    state.playWhen = playWhen;
+	    state.extent = extent;
+	    state.fullVolumeAreaPercent = fullVolumeAreaPercent;
+	    state.distanceAttenuated = distanceAttenuated;
+	    state.falloff = falloff;
+	}
+
+        return super.getClientState(state, clientID, capabilities);
     }
 
     @Override
@@ -153,38 +208,72 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
         if (live == false) {
             channelComponent.removeMessageReceiver(AudioTreatmentMessage.class);
+	    removeProximityListener();
             return;
         }
 
-        ComponentMessageReceiverImpl receiver =
-                new ComponentMessageReceiverImpl(cellRef, this);
+        ComponentMessageReceiverImpl receiver = new ComponentMessageReceiverImpl(cellRef, this);
 
         channelComponent.addMessageReceiver(AudioTreatmentMessage.class, receiver);
+
+	initialize();
+    }
+
+    private void initialize() {
+	if (groupId == null || treatments.length == 0) {
+	    /*
+	     * The AudioTreatmentComponent hasn't been configured yet.
+	     */
+	    logger.info("Not starting treatment:  groupID " + groupId + " treatments.length " 
+		+ treatments.length);
+
+	    return;
+	}
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         TreatmentGroup group = vm.createTreatmentGroup(groupId);
+	
+	float cellRadius = getCellRadius();
+
+	double fullVolumeRadius = fullVolumeAreaPercent / 100. * cellRadius;
+
+	double falloff = .92 + ((50 - this.falloff) * ((1 - .92) / 50));
+
+	if (falloff >= 1) {
+	    falloff = .999;
+	}
+
+	//System.out.println("id " + groupId + " cellRadius " + cellRadius 
+	//    + " extent " + extent + " fvr " + fullVolumeRadius + " falloff " 
+	//    + falloff + " volume " + volume);
 
         for (int i = 0; i < treatments.length; i++) {
             TreatmentSetup setup = new TreatmentSetup();
 
-            if (useFullVolumeSpatializer == false) {
+            if (distanceAttenuated == true) {
                 DefaultSpatializer spatializer = new DefaultSpatializer();
 
                 setup.spatializer = spatializer;
 
                 spatializer.setFullVolumeRadius(fullVolumeRadius);
 
-                if (zeroVolumeRadius != 0) {
-                    spatializer.setZeroVolumeRadius(zeroVolumeRadius);
-                }
+		if (extent == 0) {
+                    spatializer.setZeroVolumeRadius(cellRadius);
+		} else {
+                    spatializer.setZeroVolumeRadius(extent);
+		}
+
+		FalloffFunction falloffFunction = spatializer.getFalloffFunction();
+
+		falloffFunction.setFalloff(falloff);
             } else {
-                setup.spatializer = new FullVolumeSpatializer(fullVolumeRadius);
+                setup.spatializer = new FullVolumeSpatializer(cellRadius);
             }
 
-            String treatment = treatments[i];
+	    setup.spatializer.setAttenuator(volume);
 
-            logger.fine("Processing " + treatment);
+            String treatment = treatments[i];
 
             String treatmentId = CallID.getCallID(cellRef.get().getCellID());
 
@@ -242,27 +331,58 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             try {
 		Treatment t = vm.createTreatment(treatmentId, setup);
                 group.addTreatment(t);
+
+		if (playWhen.equals(PlayWhen.ALWAYS) == false) {
+		    t.pause(true);
+		}
+
+	        if (playWhen.equals(PlayWhen.FIRST_IN_RANGE)) {
+	            addProximityListener(t);
+	        }
             } catch (IOException e) {
-                logger.warning("Unable to create treatment " + setup.treatment + e.getMessage());
+                System.out.println("Unable to create treatment " + setup.treatment + e.getMessage());
                 return;
             }
         }
     }
 
-    public String[] getTreatments() {
-        return treatments;
+    private void cleanup() {
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        TreatmentGroup group = vm.createTreatmentGroup(groupId);
+
+	Treatment[] treatments = group.getTreatments().values().toArray(new Treatment[0]);
+
+	for (int i = 0; i < treatments.length; i++) {
+	    Treatment treatment = treatments[i];
+
+	    Call call = treatment.getCall();
+	
+	    if (call == null) {
+		System.out.println("No call for treatment " + treatment);
+		group.removeTreatment(treatment);
+	    } else {
+		System.out.println("Ending call for treatment " + treatment);
+
+		try {
+		    call.end(true);
+		} catch (IOException e) {
+		    System.out.println("Unable to end call " + call + ":  " + e.getMessage());
+		}
+	    }
+	}
+
+	try {
+	    vm.removeTreatmentGroup(group);
+	} catch (IOException e) {
+	    System.out.println("Unable to remove treatment group " + group);
+	}
+
+	vm.dump("all");
     }
 
     public CellMO getCell() {
         return cellRef.get();
-    }
-
-    public double getFullVolumeRadius() {
-        return fullVolumeRadius;
-    }
-
-    public double getZeroVolumeRadius() {
-        return zeroVolumeRadius;
     }
 
     @Override
@@ -273,10 +393,14 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
         private ManagedReference<AudioTreatmentComponentMO> compRef;
 
+        private CellID cellID;
+
         public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellRef,
                 AudioTreatmentComponentMO comp) {
 
             super(cellRef.get());
+
+	    cellID = cellRef.get().getCellID();
 
             compRef = AppContext.getDataManager().createReference(comp);
         }
@@ -286,7 +410,29 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
             if (message instanceof AudioTreatmentMessage) {
                 AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
-                logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.startTreatment());
+                logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.restartTreatment());
+
+            	String treatmentId = CallID.getCallID(cellID);
+
+        	Treatment treatment = null;
+
+		try {
+		    treatment = AppContext.getManager(VoiceManager.class).getTreatment(treatmentId);
+		} catch (IOException e) {
+		}
+
+		if (treatment == null) {
+		    System.out.println("Can't find treatment " + treatmentId);
+		    return;
+		}
+
+		logger.fine("restart " + msg.restartTreatment() + " pause " + msg.isPaused());
+
+		if (msg.restartTreatment()) {
+		    treatment.restart(msg.isPaused());
+		} else {
+		    treatment.pause(msg.isPaused());
+		}
                 return;
             }
 
@@ -297,6 +443,8 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
     public void callStatusChanged(CallStatus callStatus) {
         String callId = callStatus.getCallId();
 
+	System.out.println("callStatus " + callStatus);
+
         switch (callStatus.getCode()) {
             case CallStatus.ESTABLISHED:
                 break;
@@ -304,6 +452,62 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             case CallStatus.TREATMENTDONE:
                 break;
         }
+    }
+
+    private AudioTreatmentProximityListener proximityListener;
+
+    private void addProximityListener(Treatment treatment) {
+        // Fetch the proximity component, we will need this below. If it does
+        // not exist (it should), then log an error
+        ProximityComponentMO component = cellRef.get().getComponent(ProximityComponentMO.class);
+
+        if (component == null) {
+            logger.warning("The AudioTreatment Component does not have a " +
+                    "Proximity Component for Cell ID " + cellRef.get().getCellID());
+            return;
+        }
+
+        // We are making this component live, add a listener to the proximity component.
+	BoundingVolume[] bounds = new BoundingVolume[1];
+
+	float cellRadius = getCellRadius();
+
+        bounds[0] = new BoundingSphere(cellRadius, new Vector3f());
+
+        AudioTreatmentProximityListener proximityListener = 
+	    new AudioTreatmentProximityListener(cellRef.get(), treatment);
+
+        component.addProximityListener(proximityListener, bounds);
+    }
+
+    private void removeProximityListener() {
+	if (proximityListener != null) {
+            ProximityComponentMO component = cellRef.get().getComponent(ProximityComponentMO.class);
+	    component.removeProximityListener(proximityListener);
+	}
+    }
+
+    private float getCellRadius() {
+	BoundingVolume bounds = cellRef.get().getLocalBounds();
+
+	float cellRadius;
+
+	if (bounds instanceof BoundingSphere) {
+	    cellRadius = ((BoundingSphere) bounds).getRadius();
+	} else if (bounds instanceof BoundingBox) {
+	    Vector3f extent = new Vector3f();
+	    extent = ((BoundingBox) bounds).getExtent(extent);
+	    cellRadius = extent.getZ();
+	} else if (bounds instanceof BoundingCapsule) {
+	    cellRadius = ((BoundingCapsule) bounds).getRadius();
+	} else if (bounds instanceof OrientedBoundingBox) {
+	    Vector3f extent = ((OrientedBoundingBox) bounds).getExtent();
+	    cellRadius = extent.getZ();
+	} else {
+	    cellRadius = 5;
+	}
+
+	return cellRadius;
     }
 
     /**
