@@ -14,7 +14,9 @@
         <title>Error</title>
     </head>
     <body>
-        <h2>Error loading resource</h2>
+        <h2>X11 Apps Error</h2>
         ${requestScope['message']}
+        <br><br>
+        <a href="/xapps-config/wonderland-xapps-config/browse">Ok</a>
     </body>
 </html>

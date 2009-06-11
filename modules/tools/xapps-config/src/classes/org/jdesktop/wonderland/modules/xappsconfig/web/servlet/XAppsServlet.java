@@ -178,13 +178,40 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener,
         String appName = request.getParameter("appName");
         String command = request.getParameter("command");
 
-        // Create a file, basd upon the app name for the new X11 app, creating
-        // it if necessary
+        // Check to see if the command is blank. If so, then flag an error
+        if (command == null || command.equals("") == true) {
+            String msg = "The command must not be null. Cancelling.";
+            error(request, response, msg);
+            return;
+        }
+
+        // Check to see if the app name is null or an empty string. If so, then
+        // just take the first token of the command.
+        if (appName == null || appName.equals("") == true) {
+            // First find the first token before the first space. Since the
+            // command is not null, we are guaranteed to have at least one token
+            String tokens[] = command.split(" ");
+            String firstToken = tokens[0];
+
+            // Next, if there are any '/' in the name, then just take the last
+            // token. Note that X11 Apps only run on Linux/UNIX, so we only
+            // care about the '/' which would appear in path names of the
+            // command
+            String paths[] = firstToken.split("/");
+            appName = paths[paths.length - 1];
+        }
+
+        // We need to check whether the selected app name has already been taken.
+        // If so, log an error and return. Create a file, based upon the app
+        // name for the new X11 app, creating it if necessary
         String nodeName = appName + ".xml";
         ContentNode appNode = xAppsCollection.getChild(nodeName);
-        if (appNode == null) {
-            appNode = xAppsCollection.createChild(nodeName, Type.RESOURCE);
+        if (appNode != null) {
+            String msg = "The app name " + appName + " already exists. Cancelling.";
+            error(request, response, msg);
+            return;
         }
+        appNode = xAppsCollection.createChild(nodeName, Type.RESOURCE);
 
         // Write the XAppRegistryItem object as an XML stream to this new file
         ContentResource resource = (ContentResource)appNode;
