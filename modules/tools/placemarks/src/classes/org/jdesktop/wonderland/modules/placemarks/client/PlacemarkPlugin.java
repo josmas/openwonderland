@@ -33,7 +33,9 @@ import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
+import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -52,7 +54,8 @@ import org.jdesktop.wonderland.modules.placemarks.common.PlacemarkList;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-public class PlacemarkPlugin extends BaseClientPlugin {
+public class PlacemarkPlugin extends BaseClientPlugin
+        implements SessionLifecycleListener, SessionStatusListener {
 
     private static Logger logger = Logger.getLogger(PlacemarkPlugin.class.getName());
     private WeakReference<EditPlacemarksJFrame> managePlacemarksFrameRef = null;
@@ -74,6 +77,11 @@ public class PlacemarkPlugin extends BaseClientPlugin {
         // We will listen for changes to the list of registered Placemarks and
         // edit the main menu as a result.
         listener = new PlacemarkMenuListener();
+
+        // Create a new base connection to use for Placemark Config updates and
+        // registry for notifications in changes to the current session.
+        placemarksConfigConnection = new PlacemarkClientConfigConnection();
+        sessionManager.addLifecycleListener(this);
 
         // Create the "Manage Placemarks..." menu item. The menu will be added
         // when our server intiializes.
@@ -180,28 +188,6 @@ public class PlacemarkPlugin extends BaseClientPlugin {
         // Add the "Manage Placemarks..." and "Add Placemark..." to the main frame
         JmeClientMain.getFrame().addToPlacemarksMenu(manageMI, -1);
         JmeClientMain.getFrame().addToPlacemarksMenu(addMI, -1);
-
-        // Create a new connection to receive messages about changes in the
-        // Placemarks configured.
-        ServerSessionManager session = getSessionManager();
-        session.addLifecycleListener(new SessionLifecycleListener() {
-            public void sessionCreated(WonderlandSession session) {
-                // Do nothing
-            }
-
-            public void primarySession(WonderlandSession session) {
-                try {
-                    placemarksConfigConnection = new PlacemarkClientConfigConnection();
-                    placemarksConfigConnection.connect(session);
-                    configListener = new ClientPlacemarkConfigListener();
-                    placemarksConfigConnection.addPlacemarkConfigListener(configListener);
-
-                } catch (ConnectionFailureException excp) {
-                    logger.log(Level.WARNING, "Unable to connect to Placemarks" +
-                            " Config connection", excp);
-                }
-            }
-        });
     }
 
     /**
@@ -211,6 +197,60 @@ public class PlacemarkPlugin extends BaseClientPlugin {
     protected void deactivate() {
         // Remove the "Manage Placemarks..." from the main frame
         JmeClientMain.getFrame().removeFromPlacemarksMenu(manageMI);
+    }
+
+        /**
+     * @inheritDoc()
+     */
+    public void sessionCreated(WonderlandSession session) {
+        // Do nothing.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void primarySession(WonderlandSession session) {
+        session.addSessionStatusListener(this);
+        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+            connectClient(session);
+        }
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void sessionStatusChanged(WonderlandSession session, Status status) {
+        switch (status) {
+            case CONNECTED:
+                connectClient(session);
+                return;
+
+            case DISCONNECTED:
+                disconnectClient();
+                return;
+        }
+    }
+
+    /**
+     * Connect the client.
+     */
+    private void connectClient(WonderlandSession session) {
+        try {
+            configListener = new ClientPlacemarkConfigListener();
+            placemarksConfigConnection.addPlacemarkConfigListener(configListener);
+            placemarksConfigConnection.connect(session);
+        } catch (ConnectionFailureException e) {
+            logger.log(Level.WARNING, "Connect client error", e);
+        }
+    }
+
+    /**
+     * Disconnect the client
+     */
+    private void disconnectClient() {
+        placemarksConfigConnection.disconnect();
+        placemarksConfigConnection.removePlacemarkConfigListener(configListener);
+        configListener = null;
     }
 
     /**

@@ -23,7 +23,9 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
+import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
@@ -37,11 +39,25 @@ import org.jdesktop.wonderland.modules.xappsconfig.common.XAppRegistryItem;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-public class XAppRegistryPlugin extends BaseClientPlugin {
+public class XAppRegistryPlugin extends BaseClientPlugin 
+        implements SessionLifecycleListener, SessionStatusListener {
 
     private static Logger logger = Logger.getLogger(XAppRegistryPlugin.class.getName());
     private XAppsClientConfigConnection xappsConfigConnection = null;
     private X11AppConfigListener listener = null;
+
+    /**
+     * @inheritDoc()
+     */
+    @Override
+    public void initialize(ServerSessionManager session) {
+        // Create a new base connection to use for X11 Config updates and
+        // registry for notifications in changes to the current session.
+        xappsConfigConnection = new XAppsClientConfigConnection();
+        session.addLifecycleListener(this);
+
+        super.initialize(session);
+    }
 
     /**
      * @inheritDoc()
@@ -71,28 +87,6 @@ public class XAppRegistryPlugin extends BaseClientPlugin {
             XAppCellFactory factory = new XAppCellFactory(appName, command);
             registry.registerCellFactory(factory);
         }
-
-        // Create a new connection to receive messages about changes in the
-        // X11 Apps configured.
-        ServerSessionManager session = getSessionManager();
-        session.addLifecycleListener(new SessionLifecycleListener() {
-            public void sessionCreated(WonderlandSession session) {
-                // Do nothing
-            }
-
-            public void primarySession(WonderlandSession session) {
-                try {
-                    xappsConfigConnection = new XAppsClientConfigConnection();
-                    xappsConfigConnection.connect(session);
-                    listener = new X11AppConfigListener();
-                    xappsConfigConnection.addX11AppConfigListener(listener);
-
-                } catch (ConnectionFailureException excp) {
-                    logger.log(Level.WARNING, "Unable to connect to X11" +
-                            " Apps Config connection", excp);
-                }
-            }
-        });
     }
 
     /**
@@ -100,14 +94,63 @@ public class XAppRegistryPlugin extends BaseClientPlugin {
      */
     @Override
     protected void deactivate() {
-        // Remove the listen for changes to the X11 app configuration
-        if (xappsConfigConnection != null) {
-            xappsConfigConnection.removeX11AppConfigListener(listener);
-            listener = null;
-            xappsConfigConnection = null;
+        // Do nothing.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void sessionCreated(WonderlandSession session) {
+        // Do nothing.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void primarySession(WonderlandSession session) {
+        session.addSessionStatusListener(this);
+        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
+            connectClient(session);
         }
     }
 
+    /**
+     * @inheritDoc()
+     */
+    public void sessionStatusChanged(WonderlandSession session, Status status) {
+        switch (status) {
+            case CONNECTED:
+                connectClient(session);
+                return;
+
+            case DISCONNECTED:
+                disconnectClient();
+                return;
+        }
+    }
+
+    /**
+     * Connect the client.
+     */
+    private void connectClient(WonderlandSession session) {
+        try {
+            listener = new X11AppConfigListener();
+            xappsConfigConnection.addX11AppConfigListener(listener);
+            xappsConfigConnection.connect(session);
+        } catch (ConnectionFailureException e) {
+            logger.log(Level.WARNING, "Connect client error", e);
+        }
+    }
+
+    /**
+     * Disconnect the client
+     */
+    private void disconnectClient() {
+        xappsConfigConnection.disconnect();
+        xappsConfigConnection.removeX11AppConfigListener(listener);
+        listener = null;
+    }
+    
     /**
      * Listens for when X11 Apps are added or removed.
      */
