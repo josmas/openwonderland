@@ -153,8 +153,9 @@ public class SceneManager {
                 
                 // If there is a currently hovering entity, then send a stop
                 // event
+                MouseEvent mouseEvent = (MouseEvent) ((MouseEvent3D) event).getAwtEvent();
                 if (hoverEntity != null) {
-                    inputManager.postEvent(new HoverEvent(hoverEntity, false));
+                    inputManager.postEvent(new HoverEvent(hoverEntity, false, mouseEvent));
                     hoverEntity = null;
                 }
                 
@@ -165,7 +166,7 @@ public class SceneManager {
                 // Launch a new timer task, but not unless we are actually over
                 // a non-null entity
                 if (entity != null) {
-                    HoverTimerTask task = new HoverTimerTask(entity, hoverStartTime);
+                    HoverTimerTask task = new HoverTimerTask(entity, hoverStartTime, mouseEvent);
                     hoverTimer = new Timer();
                     hoverTimer.schedule(task, policy.getHoverDelay());
                 }
@@ -316,11 +317,15 @@ public class SceneManager {
         
         /* The time this task was started (roughly) */
         private long thisStartTime = -1;
-        
+
+        /* The Mouse Event that caused the hover event */
+        private MouseEvent mouseEvent = null;
+
         /** Constructor, takes the Entity we are intereted in */
-        public HoverTimerTask(Entity entity, long time) {
+        public HoverTimerTask(Entity entity, long time, MouseEvent mouseEvent) {
             lastEventEntity = entity;
             this.thisStartTime = time;
+            this.mouseEvent = mouseEvent;
         }
         
         @Override
@@ -335,7 +340,8 @@ public class SceneManager {
             synchronized(SceneManager.this) {
                 if (thisStartTime == hoverStartTime) {
                     hoverEntity = lastEventEntity;
-                    InputManager.inputManager().postEvent(new HoverEvent(lastEventEntity, true));
+                    HoverEvent ev = new HoverEvent(lastEventEntity, true, mouseEvent);
+                    InputManager.inputManager().postEvent(ev);
                     hoverTimer = null;
                 }
             }
@@ -361,6 +367,7 @@ public class SceneManager {
     }
     
     class MySelectionListener extends EventClassListener {
+
         @Override
         public Class[] eventClassesToConsume() {
             return new Class[] {
@@ -369,33 +376,40 @@ public class SceneManager {
                         SelectionEvent.class
             };
         }
-
-        // Note: we don't override computeEvent because we don't do any computation in this listener.
         
         @Override
         public void commitEvent(Event event) {
             Logger logger = Logger.getLogger(MySelectionListener.class.getName());
             SceneEvent se = (SceneEvent)event;
             if (event instanceof ActivatedEvent) {
-                logger.warning("SELECTION: ACTIVATED EVENT " + se.getEntityList().get(0));
+                logger.warning("SELECTION: ACTIVATED EVENT " +
+                        se.getEntityList().get(0));
             }
             else if (event instanceof SelectionEvent) {
                 List<Entity> selected = SceneManager.getSceneManager().getSelectedEntities();
                 ListIterator<Entity> it = selected.listIterator();
-                Logger.getLogger(MySelectionListener.class.getName()).warning("SELECTION: SELECTION EVENT " + selected.size());
+                logger.warning("SELECTION: SELECTION EVENT " + selected.size());
                 while (it.hasNext() == true) {
                     Entity entity = it.next();
-                    Logger.getLogger(MySelectionListener.class.getName()).warning("SELECTION: SELETION EVENT " + entity.getName());
+                    logger.warning("SELECTION: SELETION EVENT " +
+                            entity.getName());
                 }
             }
             else if (event instanceof ContextEvent) {
-                logger.warning("SELECTION: CONTEXT EVENT " + se.getEntityList().size());
+                logger.warning("SELECTION: CONTEXT EVENT " +
+                        se.getEntityList().size());
             }
             else if (event instanceof HoverEvent) {
-                logger.warning("SELECTION: HOVER EVENT " + se.getEntityList().get(0) + " " + ((HoverEvent)event).isStart());
+                logger.warning("SELECTION: HOVER EVENT " +
+                        se.getEntityList().get(0) + " " +
+                        ((HoverEvent)event).isStart() + " @ " +
+                        ((HoverEvent)event).getMouseEvent().getX() + " " +
+                        ((HoverEvent)event).getMouseEvent().getY());
             }
             else if (event instanceof EnterExitEvent) {
-                logger.warning("SELECTION: ENTER EXIT EVENT " + se.getEntityList().get(0) + " " + ((EnterExitEvent)event).isEnter());
+                logger.warning("SELECTION: ENTER EXIT EVENT " +
+                        se.getEntityList().get(0) + " " +
+                        ((EnterExitEvent)event).isEnter());
             }
         }
     }
