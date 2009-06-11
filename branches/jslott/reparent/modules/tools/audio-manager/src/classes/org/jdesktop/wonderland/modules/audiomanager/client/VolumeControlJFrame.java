@@ -6,26 +6,32 @@
 
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 /**
  *
  * @author  jp
  */
 public class VolumeControlJFrame extends javax.swing.JFrame {
 
+    private CellID cellID;
     private VolumeChangeListener listener;
-    private String userName;
+    private String name;
+    private String otherCallID;
 
     /** Creates new form VolumeControlJFrame */
     public VolumeControlJFrame() {
         initComponents();
     }
 
-    public VolumeControlJFrame(VolumeChangeListener listener, String userName) {
+    public VolumeControlJFrame(CellID cellID, VolumeChangeListener listener, String name, String otherCallID) {
+	this.cellID = cellID;
+	this.listener = listener;
+	this.otherCallID = otherCallID;
+
         initComponents();
 
-	setTitle(userName);
-	this.listener = listener;
-	this.userName = userName;
+	setTitle(name);
     }
 
     /** This method is called from within the constructor to
@@ -68,16 +74,18 @@ public class VolumeControlJFrame extends javax.swing.JFrame {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(volumeControlSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(26, Short.MAX_VALUE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
 private void volumeControlSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeControlSliderStateChanged
-	javax.swing.JSlider source = (javax.swing.JSlider) evt.getSource();
+    javax.swing.JSlider source = (javax.swing.JSlider) evt.getSource();
 
-	listener.volumeChanged(userName, source.getValue() / 5.0);
+    int volume = source.getValue();
+
+    listener.volumeChanged(cellID, otherCallID, volume);
 }//GEN-LAST:event_volumeControlSliderStateChanged
 
     /**

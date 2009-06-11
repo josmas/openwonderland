@@ -45,10 +45,12 @@ public class View2DSet {
         }
         displayers.clear();
 
-        for (Window2D window : windows) {
+        LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
+        for (Window2D window : toRemoveList) {
             remove(window);
         }
         windows.clear();
+        toRemoveList.clear();
     }
 
     /**

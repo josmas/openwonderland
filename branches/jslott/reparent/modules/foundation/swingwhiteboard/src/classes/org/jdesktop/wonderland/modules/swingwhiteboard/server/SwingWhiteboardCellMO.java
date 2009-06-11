@@ -109,6 +109,29 @@ public class SwingWhiteboardCellMO extends App2DCellMO {
     }
 
     /**
+     * Returns the setup information currently configured on the cell. If the
+     * setup argument is non-null, fill in that object and return it. If the
+     * setup argument is null, create a new setup object.
+     *
+     * @param cellServerState The setup object, if null, creates one.
+     * @return The current setup information
+     */
+    @Override
+    public CellServerState getServerState(CellServerState cellServerState) {
+        logger.info("Getting server state");
+        /* Create a new EventRecorderCellServerState and populate its members */
+        if (cellServerState == null) {
+            cellServerState = new SwingWhiteboardCellServerState();
+            SwingWhiteboardCellServerState state = (SwingWhiteboardCellServerState)cellServerState;
+            state.pixelScaleX = pixelScale.x;
+            state.pixelScaleY = pixelScale.y;
+            state.preferredHeight=preferredHeight;
+            state.preferredWidth=preferredWidth;
+        }
+        return super.getServerState(cellServerState);
+    }
+
+    /**
      * Process a message from a client.
      *
      * Sync message: send all accumulated messages back to the client (the sender).

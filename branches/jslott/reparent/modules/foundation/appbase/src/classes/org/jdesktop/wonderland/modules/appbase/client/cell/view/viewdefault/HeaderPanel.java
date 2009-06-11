@@ -13,6 +13,7 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import java.awt.Color;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
 /**
  *
@@ -22,6 +23,7 @@ public class HeaderPanel extends javax.swing.JPanel {
 
     public interface Container {
         // TODO: add call backs to FrameHeaderSwing
+        public void close ();
     }
 
     private Container container;
@@ -33,6 +35,12 @@ public class HeaderPanel extends javax.swing.JPanel {
     /** Creates new form HeaderPanel */
     public HeaderPanel() {
         initComponents();
+
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -48,31 +56,33 @@ public class HeaderPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
 
-        jLabel1.setText("Window Title");
-
-        jLabel2.setText("Controller");
+        setMaximumSize(new java.awt.Dimension(32767, 29));
+        setMinimumSize(new java.awt.Dimension(50, 29));
 
         jButton1.setFont(new java.awt.Font("DejaVu Sans", 0, 10));
-        jButton1.setText("X");
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close.png"))); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
+                .add(22, 22, 22)
                 .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 202, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                .add(36, 36, 36)
+                .add(jButton1))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(jButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(jLabel2)
-                .add(jLabel1))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jButton1)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(jLabel2)
+                        .add(jLabel1)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -96,6 +106,7 @@ public class HeaderPanel extends javax.swing.JPanel {
         }
     }
 
+    @Override
     public void addMouseListener (MouseListener listener) {
         super.addMouseListener(listener);
         if (jLabel1 != null) {
@@ -109,6 +120,7 @@ public class HeaderPanel extends javax.swing.JPanel {
         }
     }
 
+    @Override
     public void removeMouseListener (MouseListener listener) {
         super.removeMouseListener(listener);
         if (jLabel1 != null) {
@@ -123,14 +135,57 @@ public class HeaderPanel extends javax.swing.JPanel {
 
     }
 
-    public void setTitle (String title) {
-        //System.err.println("########## HeaderPanel = " + this);
-        //System.err.println("########## HeaderPanel, title = " + title);
+    @Override
+    public void addMouseMotionListener (MouseMotionListener listener) {
+        super.addMouseMotionListener(listener);
         if (jLabel1 != null) {
-            //System.err.println("########## HeaderPanel, actually setting title = " + title);
-            // TODO: notyet
-            //jLabel1.setText(title);
+            jLabel1.addMouseMotionListener(listener);
+        }
+        if (jLabel2 != null) {
+            jLabel2.addMouseMotionListener(listener);
+        }
+        if (jButton1 != null) {
+            jButton1.addMouseMotionListener(listener);
         }
     }
+
+    @Override
+    public void removeMouseMotionListener (MouseMotionListener listener) {
+        super.removeMouseMotionListener(listener);
+        if (jLabel1 != null) {
+            jLabel1.removeMouseMotionListener(listener);
+        }
+        if (jLabel2 != null) {
+            jLabel2.removeMouseMotionListener(listener);
+        }
+        if (jButton1 != null) {
+            jButton1.removeMouseMotionListener(listener);
+        }
+    }
+
+    public void setTitle (String title) {
+        if (title == null) {
+            title = " ";
+        }
+        if (jLabel1 != null) {
+            jLabel1.setText(title);
+        }
+    }
+
+    public void setController (String controller) {
+        if (controller == null) {
+            controller = " ";
+        }
+        if (jLabel1 != null) {
+            jLabel2.setText(controller);
+        }
+    }
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+        if (container != null) {
+            container.close();
+        }
+    }
+
 }
         

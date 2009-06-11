@@ -69,6 +69,9 @@ public abstract class BaseRunner implements Runner {
     /** the name of this runner */
     private String name = "unknown";
 
+    /** the location of this runner */
+    private String location = "localhost";
+
     /** the base directory (where files and checksums are stored) */
     private File baseDir;
 
@@ -89,6 +92,7 @@ public abstract class BaseRunner implements Runner {
 
     /** the base URL to connect to */
     private String serverURL;
+    private String localURL;
 
     /** the current status */
     private Status status = Status.NOT_RUNNING;
@@ -123,11 +127,30 @@ public abstract class BaseRunner implements Runner {
     protected void setName(String name) {
         this.name = name;
     }
+
+    /**
+     * Get the location of this runner.  Only valid after configure is
+     * called.
+     * @return the location of the runner.
+     */
+    public String getLocation() {
+        return location;
+    }
+
+    /**
+     * Set the location of this runner
+     * @param location the location of this runner
+     */
+    protected void setLocation(String location) {
+        this.location = location;
+    }
     
     /**
      * Configure the runner.  Curently parses the following properties:
      * <ul><li><code>runner.name</code> - the name to return in 
      *         <code>getName()</code>
+     *     <li><code>runner.location</code> - the location to return in
+     *         <code>getLocation()</code>
      * </ul>
      * @param props the properties to configure with
      * @throws RunnerConfigurationException if there is an error
@@ -137,8 +160,19 @@ public abstract class BaseRunner implements Runner {
             setName(props.getProperty("runner.name"));
         }
 
+        if (props.containsKey("runner.location")) {
+            setLocation(props.getProperty("runner.location"));
+        }
+        
         // the server URL should always be set in the system properties
         serverURL = System.getProperty(Constants.WEBSERVER_URL_PROP);
+
+        // XXX find a better way to get the local URL XXX
+        // in some cases, like a remote runner, the local URL may be
+        // different than the serverURL.  In that case, make sure we know
+        // the localURL as well
+        localURL = "http://" + System.getProperty(Constants.WEBSERVER_HOST_PROP).trim() +
+                   ":" + System.getProperty(Constants.WEBSERVER_PORT_PROP).trim() + "/";
     }
 
     /**
@@ -170,6 +204,14 @@ public abstract class BaseRunner implements Runner {
         if (getStatus() != Status.NOT_RUNNING) {
             throw new IllegalStateException("Can't start runner in " + 
                                             getStatus() + " state");
+        }
+
+        // read properties to update name and location
+        if (props.containsKey("runner.name")) {
+            setName(props.getProperty("runner.name"));
+        }
+        if (props.containsKey("runner.location")) {
+            setLocation(props.getProperty("runner.location"));
         }
 
         // update the run directory to make sure we have the latest of
@@ -553,6 +595,14 @@ public abstract class BaseRunner implements Runner {
             statusUpdater.setName(getName() + " status update notifier");
             statusUpdater.start();
         }
+    }
+
+    /**
+     * Get status information on this runner
+     * @return the status info
+     */
+    public RunnerInfo getRunnerInfo() {
+        return new RunnerInfo(localURL, this);
     }
     
     /**

@@ -35,6 +35,16 @@
             <fileset dir="${current.dir}/web"/>
         </jar>
 
+        <!-- remote webapp -->
+        <mkdir dir="${build.lib.dir}/remote"/>
+        <jar jarfile="${build.lib.dir}/remote/wonderland-web-remote-runner.war">
+            <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
+                <include name="org/jdesktop/wonderland/runner/resources/**"/>
+            </zipfileset>
+
+            <fileset dir="${current.dir}/remote-web"/>
+        </jar>
+
         <jar jarfile="${dist.dir}/wonderland-runner-api.jar">
             <fileset dir="${build.classes.dir}">
                 <include name="org/jdesktop/wonderland/runner/*.class"/>

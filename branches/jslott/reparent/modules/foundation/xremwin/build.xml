@@ -8,6 +8,9 @@
     <property name="module.packagename" value="org.jdesktop.wonderland.modules.xremwin"/>
     <property name="module.jarname" value="xremwin"/>
     
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
     <pathconvert property="module-common.classpath">
       <path location="${current.dir}/../appbase/build/client/appbase-client.jar"/>
       <path location="${current.dir}/../appbase/build/client/appbase-client-cell.jar"/>
@@ -20,13 +23,21 @@
     </pathconvert>
 
     <property name="module-server.classpath" value="${current.dir}/../appbase/build/server/appbase-server.jar"/>
-
-    <!-- import common build file -->
-    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
-                                                -module-compile-client"/>
+                                                -module-compile-client,
+                                                -module-jar-common"/>
+
+    <target name="-module-jar-common" depends="-module-compile-common">
+      <mkdir dir="${current.dir}/build/lib"/>
+      <jar destfile="${current.dir}/build/lib/xremwin-common.jar">
+        <fileset dir="${build.classes.dir}">
+          <include name="${module.src}/common/**"/>
+        </fileset>
+      </jar>
+    </target>
+
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
@@ -62,6 +73,5 @@
     </target>                                                       
                                            
     <target name="deploy" depends="dist, -module-deploy"/>
-
     <target name="clean" depends="-module-clean"/>
 </project>

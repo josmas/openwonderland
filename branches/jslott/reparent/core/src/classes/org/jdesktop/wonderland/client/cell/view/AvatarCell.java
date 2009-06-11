@@ -64,6 +64,8 @@ public class AvatarCell extends ViewCell {
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         CellRenderer ret = null;
+        System.err.println("AvatarCell.createCellRenderer "+this);
+        Thread.dumpStack();
         switch(rendererType) {
             case RENDERER_2D :
                 // No 2D Renderer yet

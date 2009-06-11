@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.testcells.client.jme.cellrenderer;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Geometry;
 import com.jme.scene.Node;
 import com.jme.scene.shape.Box;
@@ -30,14 +29,12 @@ import com.jme.scene.shape.Sphere;
 import com.jme.scene.shape.Teapot;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
-import com.jme.scene.state.ZBufferState;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.common.cell.config.jme.MaterialJME;
 import org.jdesktop.wonderland.modules.testcells.client.cell.SimpleShapeCell;
-import org.jdesktop.wonderland.modules.testcells.common.cell.state.SimpleShapeCellClientState;
 
 /**
  * Render basic jme shapes

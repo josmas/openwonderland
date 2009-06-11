@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * The component server state
+ * The component client state
  * @author jprovino
  */
 public class AudioParticipantComponentClientState extends CellComponentClientState {

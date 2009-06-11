@@ -21,7 +21,6 @@ import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -33,15 +32,21 @@ import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.help.HelpSystem;
 import org.jdesktop.wonderland.common.LogControl;
 import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
+import org.jdesktop.mtgame.FrameRateListener;
+import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 
 /**
@@ -59,10 +64,12 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private JRadioButtonMenuItem firstPersonRB;
     private JRadioButtonMenuItem thirdPersonRB;
     private JRadioButtonMenuItem frontPersonRB;
-    private DecimalFormat floatFormat = new DecimalFormat("###.0");
+    private final Map<JMenuItem, Integer> menuWeights = new HashMap<JMenuItem, Integer>();
+    private JMenu frameRateMenu;
+    private Meter meter;
+    private HUDComponent fpsComponent;
+    private WorldManager wm;
 
-    private final Map<JMenuItem, Integer> menuWeights =
-                                              new HashMap<JMenuItem, Integer>();
 
     static {
         new LogControl(MainFrameImpl.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
@@ -74,12 +81,27 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
     /** Creates new form MainFrame */
     public MainFrameImpl(WorldManager wm, int width, int height) {
-
-        // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
-        // For now, force the cross-platform (metal) LAF to be used
-        // Also workaround bug 10.
+        this.wm = wm;
         try {
-            UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+
+            boolean hasNimbus = false;
+
+            try {
+                Class.forName("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+                hasNimbus = true;
+            } catch (ClassNotFoundException e) {
+            }
+
+            // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
+            // For now, force the cross-platform (metal) LAF to be used, or Nimbus
+            // Also workaround bug 10.
+            if (hasNimbus) {
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+            } else {
+                // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+            }
+
             if ("Mac OS X".equals(System.getProperty("os.name"))) {
                 //to workaround popup clipping on the mac we force top-level popups
                 //note: this is implemented in scenario's EmbeddedPopupFactory
@@ -94,13 +116,6 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
         initComponents();
         initMenus();
-
-        wm.getRenderManager().setFrameRateListener(new FrameRateListener() {
-
-            public void currentFramerate(float framerate) {
-                fpsLabel.setText("FPS: " + floatFormat.format(framerate));
-            }
-        }, 100);
 
         setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle").getString("Wonderland"));
         centerPanel.setMinimumSize(new Dimension(width, height));
@@ -182,6 +197,55 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         addToViewMenu(frontPersonRB, 2);
         cameraButtonGroup.add(frontPersonRB);
 
+        // Frame Rate menu
+        frameRateMenu = new JMenu(bundle.getString("Max Frame Rate"));
+
+        JMenuItem fps15 = new JCheckBoxMenuItem(bundle.getString("15 fps"));
+        JMenuItem fps30 = new JCheckBoxMenuItem(bundle.getString("30 fps (default)"));
+        JMenuItem fps60 = new JCheckBoxMenuItem(bundle.getString("60 fps"));
+        JMenuItem fps120 = new JCheckBoxMenuItem(bundle.getString("120 fps"));
+        JMenuItem fps200 = new JCheckBoxMenuItem(bundle.getString("200 fps"));
+
+        frameRateMenu.add(fps15);
+        frameRateMenu.add(fps30);
+        frameRateMenu.add(fps60);
+        frameRateMenu.add(fps120);
+        frameRateMenu.add(fps200);
+
+        addToViewMenu(frameRateMenu, 4);
+
+        fps15.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frameRateActionPerformed(evt);
+            }
+        });
+        fps30.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frameRateActionPerformed(evt);
+            }
+        });
+        fps60.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frameRateActionPerformed(evt);
+            }
+        });
+        fps120.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frameRateActionPerformed(evt);
+            }
+        });
+        fps200.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                frameRateActionPerformed(evt);
+            }
+        });
+
+        RenderManager rm;
         // Help menu
         HelpSystem helpSystem = new HelpSystem();
         JMenu helpMenu = helpSystem.getHelpJMenu();
@@ -203,13 +267,38 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
     private void cameraChangedActionPerformed(java.awt.event.ActionEvent evt) {
         if (evt.getSource() == firstPersonRB) {
-            ClientContextJME.getViewManager().setCameraProcessor(new FirstPersonCameraProcessor());
+            ClientContextJME.getViewManager().setCameraController(new FirstPersonCameraProcessor());
         } else if (evt.getSource() == thirdPersonRB) {
-            ClientContextJME.getViewManager().setCameraProcessor(new ThirdPersonCameraProcessor());
+            ClientContextJME.getViewManager().setCameraController(new ThirdPersonCameraProcessor());
         } else if (evt.getSource() == frontPersonRB) {
-            ClientContextJME.getViewManager().setCameraProcessor(new FrontHackPersonCameraProcessor());
+            ClientContextJME.getViewManager().setCameraController(new FrontHackPersonCameraProcessor());
         }
 
+    }
+
+    private void frameRateActionPerformed(java.awt.event.ActionEvent evt) {
+        JMenuItem mi = (JMenuItem) evt.getSource();
+        String[] fpsString = mi.getText().split(" ");
+        int fps = Integer.valueOf(fpsString[0]);
+        logger.info("maximum fps: " + fps);
+        setDesiredFrameRate(fps);
+    }
+
+    public void setDesiredFrameRate(int desiredFrameRate) {
+        for (int i = 0; i < frameRateMenu.getItemCount(); i++) {
+            JMenuItem item = frameRateMenu.getItem(i);
+            String[] fpsString = item.getText().split(" ");
+            int fps = Integer.valueOf(fpsString[0]);
+            if (fps == desiredFrameRate) {
+                item.setSelected(true);
+            } else {
+                item.setSelected(false);
+            }
+        }
+        wm.getRenderManager().setDesiredFrameRate(desiredFrameRate);
+        if (meter != null) {
+            meter.setMaxValue(desiredFrameRate);
+        }
     }
 
     public void updateGoButton() {
@@ -251,8 +340,8 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             weight = Integer.MAX_VALUE;
         }
 
-        logger.fine(menu.getText() + " menu: inserting [" + menuItem.getText() + 
-                    "] with weight: " + weight);
+        logger.fine(menu.getText() + " menu: inserting [" + menuItem.getText() +
+                "] with weight: " + weight);
 
         // find the index of the first menu item with a higher weight or
         // the same weight and later in the alphabet
@@ -268,8 +357,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 }
 
                 if (menuItem.getName() != null &&
-                    menuItem.getName().compareTo(curItem.getName()) > 0)
-                {
+                        menuItem.getName().compareTo(curItem.getName()) > 0) {
                     break;
                 }
             }
@@ -358,6 +446,27 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /**
      * {@inheritDoc}
      */
+    public void addToInsertMenu(JMenuItem menuItem) {
+        addToMenu(insertMenu, menuItem, -1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void addToInsertMenu(JMenuItem menuItem, int index) {
+        addToMenu(insertMenu, menuItem, index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeFromInsertMenu(JMenuItem menuItem) {
+        removeFromMenu(insertMenu, menuItem);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void addToToolsMenu(JMenuItem menuItem) {
         addToMenu(toolsMenu, menuItem, -1);
     }
@@ -427,12 +536,39 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         serverField.setText(serverURL);
     }
 
-    public void addServerURLListener(ServerURLListener listener) {
-        serverListener = listener;
+    public void connected(boolean connected) {
+        showFPSMeter(connected);
     }
 
-    public void setMessageLabel(String msg) {
-        messageLabel.setText(msg);
+    public void showFPSMeter(boolean visible) {
+        if (meter == null) {
+            // display FPS meter
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+            // create fps Swing control
+            meter = new Meter("fps:");
+            meter.setPreferredSize(new Dimension(200, 30));
+            meter.setMaxValue(30);
+
+            // create HUD control panel
+            fpsComponent = mainHUD.createComponent(meter);
+            fpsComponent.setPreferredLocation(Layout.SOUTHEAST);
+
+            // add HUD control panel to HUD
+            mainHUD.addComponent(fpsComponent);
+
+            ClientContextJME.getWorldManager().getRenderManager().setFrameRateListener(new FrameRateListener() {
+
+                public void currentFramerate(float framerate) {
+                    meter.setValue(framerate);
+                }
+            }, 100);
+        }
+        fpsComponent.setVisible(visible);
+    }
+
+    public void addServerURLListener(ServerURLListener listener) {
+        serverListener = listener;
     }
 
     /** This method is called from within the constructor to
@@ -450,15 +586,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         serverField = new javax.swing.JTextField();
         goButton = new javax.swing.JButton();
         centerPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        messageLabel = new javax.swing.JTextField();
-        jPanel3 = new javax.swing.JPanel();
-        fpsLabel = new javax.swing.JLabel();
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         editMenu = new javax.swing.JMenu();
         viewMenu = new javax.swing.JMenu();
+        insertMenu = new javax.swing.JMenu();
         placemarksMenu = new javax.swing.JMenu();
         toolsMenu = new javax.swing.JMenu();
         windowMenu = new javax.swing.JMenu();
@@ -468,18 +600,16 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         serverPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        serverPanel.setLayout(new java.awt.BorderLayout());
+        serverPanel.setPreferredSize(new java.awt.Dimension(692, 35));
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle"); // NOI18N
         serverLabel.setText(bundle.getString("Location:")); // NOI18N
-        serverPanel.add(serverLabel, java.awt.BorderLayout.WEST);
 
         serverField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverFieldActionPerformed(evt);
             }
         });
-        serverPanel.add(serverField, java.awt.BorderLayout.CENTER);
 
         goButton.setText(bundle.getString("Go!")); // NOI18N
         goButton.addActionListener(new java.awt.event.ActionListener() {
@@ -487,30 +617,31 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 goButtonActionPerformed(evt);
             }
         });
-        serverPanel.add(goButton, java.awt.BorderLayout.EAST);
+
+        org.jdesktop.layout.GroupLayout serverPanelLayout = new org.jdesktop.layout.GroupLayout(serverPanel);
+        serverPanel.setLayout(serverPanelLayout);
+        serverPanelLayout.setHorizontalGroup(
+            serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(serverPanelLayout.createSequentialGroup()
+                .add(serverLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(serverField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(goButton))
+        );
+        serverPanelLayout.setVerticalGroup(
+            serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(serverPanelLayout.createSequentialGroup()
+                .add(serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(serverLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(serverPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(serverField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(goButton)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         getContentPane().add(serverPanel, java.awt.BorderLayout.NORTH);
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
-
-        jPanel1.setLayout(new java.awt.BorderLayout());
-
-        messageLabel.setColumns(20);
-        messageLabel.setEditable(false);
-        messageLabel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                messageLabelActionPerformed(evt);
-            }
-        });
-        jPanel2.add(messageLabel);
-
-        jPanel1.add(jPanel2, java.awt.BorderLayout.WEST);
-
-        fpsLabel.setText(bundle.getString("FPS_:")); // NOI18N
-        jPanel3.add(fpsLabel);
-
-        jPanel1.add(jPanel3, java.awt.BorderLayout.CENTER);
-
-        getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_END);
 
         fileMenu.setText(bundle.getString("File")); // NOI18N
         mainMenuBar.add(fileMenu);
@@ -518,8 +649,11 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         editMenu.setText(bundle.getString("Edit")); // NOI18N
         mainMenuBar.add(editMenu);
 
-        viewMenu.setText(bundle.getString("View")); // NOI18N
+        viewMenu.setText("View");
         mainMenuBar.add(viewMenu);
+
+        insertMenu.setText("Insert");
+        mainMenuBar.add(insertMenu);
 
         placemarksMenu.setText("Placemarks");
         mainMenuBar.add(placemarksMenu);
@@ -550,22 +684,14 @@ private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     }
 }//GEN-LAST:event_goButtonActionPerformed
 
-private void messageLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_messageLabelActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_messageLabelActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JLabel fpsLabel;
     private javax.swing.JButton goButton;
+    private javax.swing.JMenu insertMenu;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JMenuBar mainMenuBar;
-    private javax.swing.JTextField messageLabel;
     private javax.swing.JMenu placemarksMenu;
     private javax.swing.JTextField serverField;
     private javax.swing.JLabel serverLabel;
@@ -574,5 +700,4 @@ private void messageLabelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JMenu viewMenu;
     private javax.swing.JMenu windowMenu;
     // End of variables declaration//GEN-END:variables
-
 }

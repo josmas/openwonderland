@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.hud;
 
+import java.awt.Point;
+
 /**
  * A HUDLayoutManager lays out 2D objects in a 2D rectangular space.
  *
@@ -28,4 +30,24 @@ package org.jdesktop.wonderland.client.hud;
  */
 public interface HUDLayoutManager {
 
+    /**
+     * Add a HUD component to the list of components this layout manager
+     * is managing.
+     * @param component the component to manage
+     */
+    public void manageComponent(HUDComponent component);
+
+    /**
+     * Remove a HUD component from the list of components this layout manager
+     * is managing.
+     * @param component the component to stop managing
+     */
+    public void unmanageComponent(HUDComponent component);
+
+    /**
+     * Get the position of the given component according to the specified
+     * layout.
+     * @param component the component for which the position is needed
+     */
+    public Point getLocation(HUDComponent component);
 }

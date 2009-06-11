@@ -1,14 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * CellFactoryRunApp.java
+/**
+ * Project Wonderland
  *
- * Created on Apr 19, 2009, 1:04:13 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.xremwin.client;
 
 import java.util.StringTokenizer;
@@ -20,10 +26,9 @@ import java.util.StringTokenizer;
 public class RunXAppDialog extends javax.swing.JDialog {
 
     private boolean cancelled;
-    private String appName;
     private String command;
-    private boolean persistFlag;
-    private boolean privateFlag = true;
+    private String appName;
+    private boolean addToPalette = false;
 
     /** Creates new form CellFactoryRunApp */
     public RunXAppDialog(java.awt.Frame parent, boolean modal) {
@@ -45,33 +50,16 @@ public class RunXAppDialog extends javax.swing.JDialog {
         commandLabel = new javax.swing.JLabel();
         commandTextField = new javax.swing.JTextField();
         rememberCheckBox = new javax.swing.JCheckBox();
-        availableAllCheckBox = new javax.swing.JCheckBox();
-        rememberOnlyButton = new javax.swing.JButton();
-        rememberAndRunButton = new javax.swing.JButton();
         runButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        appNameLabel.setText("App Name");
+        appNameLabel.setText("App Name:");
 
         commandLabel.setText("Command");
 
-        rememberCheckBox.setText("Remember this entry");
-        // TODO: for now
-        rememberCheckBox.setEnabled(false);
-        
-        availableAllCheckBox.setText("Available to all users");
-        availableAllCheckBox.setEnabled(false);
-        // TODO: enable only if remember = true
-
-        rememberOnlyButton.setText("Remember Only");
-        rememberOnlyButton.setEnabled(false);
-        // TODO: enable only if remember = true
-
-        rememberAndRunButton.setText("Remember and Run");
-        rememberAndRunButton.setEnabled(false);
-        // TODO: enable only if remember = true
+        rememberCheckBox.setText("Add entry to the Cell Palette");
 
         runButton.setText("Run");
         runButton.addActionListener(new java.awt.event.ActionListener() {
@@ -94,97 +82,70 @@ public class RunXAppDialog extends javax.swing.JDialog {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(rememberCheckBox)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                .add(rememberOnlyButton)
-                                .add(availableAllCheckBox))
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(rememberAndRunButton))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(commandLabel)
-                            .add(18, 18, 18)
-                            .add(commandTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 269, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(appNameLabel)
-                            .add(18, 18, 18)
-                            .add(appNameTextField))))
-                .addContainerGap(44, Short.MAX_VALUE))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(94, 94, 94)
-                .add(cancelButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 116, Short.MAX_VALUE)
-                .add(runButton)
-                .add(110, 110, 110))
+                            .add(appNameLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(commandTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                            .add(appNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 269, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(rememberCheckBox)
+                        .addContainerGap(160, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(runButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(cancelButton)
+                        .add(116, 116, 116))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(30, 30, 30)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(commandLabel)
-                    .add(commandTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(appNameLabel)
                     .add(appNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(commandLabel)
+                    .add(commandTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rememberCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(availableAllCheckBox)
-                .add(32, 32, 32)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(rememberOnlyButton)
-                    .add(rememberAndRunButton))
-                .add(27, 27, 27)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(runButton)
                     .add(cancelButton))
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {                                             
-        cancelled = false;
-        dispose();
-}                                            
-
+                                        
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         cancelled = true;
+        appName = null;
+        command = null;
+        addToPalette = false;
         dispose();
 }//GEN-LAST:event_cancelButtonActionPerformed
 
-    /**
-    * @param args the command line arguments
-    */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                RunXAppDialog dialog = new RunXAppDialog(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
+    private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
+        cancelled = false;
+        appName = fetchAppName();
+        command = appNameTextField.getText();
+        addToPalette = rememberCheckBox.isSelected();
+        dispose();
+    }//GEN-LAST:event_runButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel appNameLabel;
     private javax.swing.JTextField appNameTextField;
-    private javax.swing.JCheckBox availableAllCheckBox;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel commandLabel;
     private javax.swing.JTextField commandTextField;
-    private javax.swing.JButton rememberAndRunButton;
     private javax.swing.JCheckBox rememberCheckBox;
-    private javax.swing.JButton rememberOnlyButton;
     private javax.swing.JButton runButton;
     // End of variables declaration//GEN-END:variables
 
@@ -194,7 +155,39 @@ public class RunXAppDialog extends javax.swing.JDialog {
         return command != null && command.trim().length() > 0;
     }
 
-    public String getAppName () {
+    /**
+     * Returns the app name entered into the dialog.
+     *
+     * @return The String app name to run
+     */
+    public String getAppName() {
+        return appName;
+    }
+    
+    /**
+     * Returns the command entered into the dialog.
+     * 
+     * @return The String command to run
+     */
+    public String getCommand() {
+        return command;
+    }
+
+    /**
+     * Returns true if the app should be added to the Cell Palette for future
+     * use.
+     *
+     * @return True if the app should be added to the Cell Palette
+     */
+    public boolean isAddToCellPalette() {
+        return addToPalette;
+    }
+    
+    /**
+     * Figures out what the app name should be based upon a combination of the
+     * app name text field and the command name (if the former is null).
+     */
+    private String fetchAppName () {
         String appNameStr = appNameTextField.getText();
         if (appNameStr != null && appNameStr.trim().length() > 0) {
             return appNameStr;
@@ -211,17 +204,5 @@ public class RunXAppDialog extends javax.swing.JDialog {
             // Return the first token
             return tok.nextToken();
         }
-    }
-
-    public String getCommand () {
-        return command;
-    }
-
-    public boolean getPersistFlag () {
-        return persistFlag;
-    }
-
-    public boolean getPrivateFlag () {
-        return privateFlag;
     }
 }

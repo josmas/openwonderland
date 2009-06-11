@@ -43,6 +43,14 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 @ExperimentalAPI
 public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitListener {
 
+    /** Defines a listener which is called when the client exits. */
+    public interface ExitListener {
+        public void clientExitted(ClientXrwMaster client);
+    }
+
+    /** A listener which is called when the app exits. */
+    private ExitListener exitListener;
+
     private SlaveCloseWindowMsgArgs slaveCloseWindowMsgArgs = new SlaveCloseWindowMsgArgs();
     private SetWindowTitleMsgArgs setWindowTitleMsgArgs = new SetWindowTitleMsgArgs();
     protected WindowSystemXrw winSys;
@@ -69,7 +77,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
         // Connect to the Xremwin server
 
         int wsDisplayMaster = winSys.getDisplayNum();
-        serverProxy = new ServerProxyMaster(session, masterHost, wsDisplayMaster, serverSocket);
+        serverProxy = new ServerProxyMaster(session, masterHost, wsDisplayMaster, serverSocket, this);
         try {
             serverProxy.connect();
         } catch (IOException ex) {
@@ -92,6 +100,25 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
     public void cleanup() {
         super.cleanup();
         winSys = null;
+        AppXrw.logger.severe("ClientXrwMaster cleaned up");
+
+        if (exitListener != null) {
+            exitListener.clientExitted(this);
+        }
+    }
+
+    /**
+     * Specify a listener which is called when the client exits. 
+     */
+    public void setExitListener (ExitListener exitListener) {
+        this.exitListener = exitListener;
+    }
+
+    /**
+     * Return the app of this client.
+     */
+    public AppXrw getApp () {
+        return (AppXrw) app;
     }
 
     /**
@@ -211,7 +238,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
 
     /** {@inheritDoc} */
     public void windowCloseUser(WindowXrw win) {
-        AppXrw.logger.finer("User closed window " + win.getWid());
+        AppXrw.logger.info("User closed window " + win.getWid());
         windowClose(win.getWid());
     }
 
@@ -221,7 +248,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
      * @param wid The wid of the window the slave has closed.
      */
     private void windowCloseSlave(int wid) {
-        AppXrw.logger.finer("Slave closed window " + wid);
+        AppXrw.logger.info("Slave closed window " + wid);
         windowClose(wid);
     }
 
@@ -229,12 +256,17 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
      * Close the given window.
      */
     private void windowClose (int wid) {
+        AppXrw.logger.info("Tell the window system to delete the window " + wid);
         winSys.deleteWindow(wid);
     }
 
     // Called by window system exit listener 
     public void windowSystemExitted() {
-        controlArb.releaseControl();
+        AppXrw.logger.severe("Window system exitted");
+        if (controlArb != null) {
+            controlArb.releaseControl();
+        }
+        cleanup();
     }
 
     public void writeSyncSlavePixels(BigInteger slaveID, byte[] pixelBytes) {

@@ -17,12 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
-import com.jme.math.Vector2f;
-import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.App2DCellRendererJME;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
@@ -35,7 +32,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
  */
 public class HUDView3D extends View2DEntity {
 
-    private static final Logger logger = Logger.getLogger(HUDView2D.class.getName());
+    private static final Logger logger = Logger.getLogger(HUDView3D.class.getName());
     private View2DDisplayer displayer;
     private Cell cell;
 
@@ -95,20 +92,6 @@ public class HUDView3D extends View2DEntity {
         }
     }
 
-    @Override
-    /**
-     * From App2DCell.updatePrimaryTransform
-     */
-    protected void updatePrimaryTransform(CellTransform userDeltaTransform) {
-        Vector3f translation = getTranslationUserCurrent();
-
-        if (type == Type.PRIMARY && isOrtho()) {
-            Vector2f locOrtho = getLocationOrtho();
-            translation.addLocal(new Vector3f(locOrtho.x, locOrtho.y, 0f));
-        }
-        sgChangeTransformUserSet(viewNode, new CellTransform(null, translation));
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -162,8 +145,7 @@ public class HUDView3D extends View2DEntity {
                 ", ortho: " + isOrtho();
 
         if (isOrtho()) {
-            string += ", ortho location: " + this.getLocationOrtho() +
-                    ", translation user ortho: " + this.getTranslationUserOrtho();
+            string += ", ortho location: " + this.getLocationOrtho();
         }
         return string;
     }

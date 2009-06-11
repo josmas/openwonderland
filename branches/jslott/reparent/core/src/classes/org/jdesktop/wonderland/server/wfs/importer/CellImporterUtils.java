@@ -47,7 +47,7 @@ public class CellImporterUtils {
          * the stream. Upon error return null.
          */
         try {
-            URL url = new URL(getWebServerURL(), WFS_PREFIX + root + "/cells/?reload=" + Boolean.toString(reload));
+            URL url = getURL(WFS_PREFIX + root + "/cells/?reload=" + Boolean.toString(reload));
             return CellList.decode("", url.openStream());
         } catch (java.lang.Exception excp) {
             return null;
@@ -67,10 +67,10 @@ public class CellImporterUtils {
         try {
             URL url = null;
             if (relativePath.compareTo("") == 0) {
-                url = new URL(getWebServerURL(), WFS_PREFIX + root + "/cell/" + name);
+                url = getURL(WFS_PREFIX + root + "/cell/" + name);
             }
             else {
-                url = new URL(getWebServerURL(), WFS_PREFIX + root + "/cell/" + relativePath + "/" + name);
+                url = getURL(WFS_PREFIX + root + "/cell/" + relativePath + "/" + name);
             }
             
             /* Read in and parse the cell setup information */
@@ -88,7 +88,7 @@ public class CellImporterUtils {
      */
     public static CellList getWFSRootChildren(String root) {
         try {
-            URL url = new URL(getWebServerURL(), WFS_PREFIX + root + "/directory/");
+            URL url = getURL(WFS_PREFIX + root + "/directory/");
             return CellList.decode("", url.openStream());
         } catch (java.lang.Exception excp) {
             System.err.println(excp);
@@ -106,7 +106,7 @@ public class CellImporterUtils {
          * the stream. Upon error return null.
          */
         try {
-            URL url = new URL(getWebServerURL(), WFS_PREFIX + root + "/directory/" + canonicalName);
+            URL url = getURL(WFS_PREFIX + root + "/directory/" + canonicalName);
             return CellList.decode(canonicalName, url.openStream());
         } catch (java.lang.Exception excp) {
             return null;
@@ -122,7 +122,7 @@ public class CellImporterUtils {
          * the stream. Upon error return null.
          */
         try {
-            URL url = new URL(getWebServerURL(), WFS_PREFIX + "roots");
+            URL url = getURL(WFS_PREFIX + "roots");
             CellImporter.getLogger().info("WFS: Loading roots at " + url.toExternalForm());
             return WorldRootList.decode(url.openStream());
         } catch (java.lang.Exception excp) {
@@ -136,5 +136,34 @@ public class CellImporterUtils {
      */
     public static URL getWebServerURL() throws MalformedURLException {
         return WonderlandContext.getWebServerURL();
+    }
+
+    /**
+     * Forms a URL using the web server as the base url, appending the given
+     * URL suffix. Properly encodes space.
+     *
+     * @param urlPart A part of a URL
+     * @return A URL consisting of the base URL + the given URL part
+     * @throw MalformedURLException Upon an invalid URL
+     */
+    private static URL getURL(String urlPart) throws MalformedURLException {
+        urlPart = encodeSpaces(urlPart);
+        return new URL(getWebServerURL(), urlPart);
+    }
+
+    /**
+     * Replaces all of the spaces (' ') in a URI string with '%20'
+     */
+    private static String encodeSpaces(String uri) {
+        StringBuilder sb = new StringBuilder(uri);
+        int index = 0;
+        while ((index = sb.indexOf(" ", index )) != -1) {
+            // If we find a space at position 'index', then replace the space
+            // and update the value of 'index'. The value of 'index' should be
+            // the next character after the replaced '%20', which is index + 3
+            sb.replace(index, index + 1, "%20");
+            index += 3;
+        }
+        return sb.toString();
     }
 }

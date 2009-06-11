@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 
 /**
  * The main interface to Embedded Swing. This singleton provides access to the three basic capabilities
@@ -68,16 +69,17 @@ class WindowSwingEmbeddedToolkit
 
     @Override
     protected CoordinateHandler createCoordinateHandler(JComponent parent, Point2D point, MouseEvent e) {
-        logger.fine("Enter WSET.createCoordinateHandler, mouseEvent = " + e);
+        logger.fine("Enter WSET.createCoordinateHandler, frame coords: mouseEvent = " + e);
 
-        // Convert event from frame coords into canvas coords
+        // Temporarily convert event from frame coords into canvas coords
         Canvas canvas = JmeClientMain.getFrame().getCanvas();
         JFrame frame = (JFrame) e.getSource();
         Point framePoint = e.getPoint();
         Point canvasPoint = SwingUtilities.convertPoint(frame, framePoint, canvas);
         e.translatePoint(canvasPoint.x - framePoint.x, canvasPoint.y - framePoint.y);
 
-        // TODO: someday: I don't think we need to do this anymore for drag events. But it doesn't hurt.
+        logger.fine("Canvas coords, mouseEvent = " + e);
+
         InputManager.PickEventReturn ret = InputManager.inputManager().pickMouseEventSwing(e);
         if (ret == null || ret.entity == null || ret.destPickDetails == null) {
             logger.fine("WindowSwing miss");
@@ -107,6 +109,7 @@ class WindowSwingEmbeddedToolkit
                 return targetEmbeddedPeer;
             }
 
+            // Note: event is in frame coordinates
             public Point2D transform(Point2D src, Point2D dst, MouseEvent event) {
 
                 logger.fine("src = " + src);
@@ -114,11 +117,18 @@ class WindowSwingEmbeddedToolkit
 
                 Point pt;
                 if (event.getID() == MouseEvent.MOUSE_DRAGGED) {
-                    pt = view.calcIntersectionPixelOfEyeRay(event.getX(), event.getY());
+
+                    // We will need the event in canvas coordinates
+                    Canvas canvas = JmeClientMain.getFrame().getCanvas();
+                    JFrame frame = (JFrame) event.getSource();
+                    Point framePoint = event.getPoint();
+                    Point canvasPoint = SwingUtilities.convertPoint(frame, framePoint, canvas);
+                    int canvasX = event.getX() + canvasPoint.x - framePoint.x;
+                    int canvasY = event.getY() + canvasPoint.y - framePoint.y;
+                    pt = view.calcIntersectionPixelOfEyeRay(canvasX, canvasY);
                 } else {
                     pt = view.calcPositionInPixelCoordinates(intersectionPointWorld, true);
                 }
-
                 
                 // TODO: temp
                 if (pt == null) {
@@ -137,7 +147,10 @@ class WindowSwingEmbeddedToolkit
                 return dst;
             }
         };
+
+        // Restore the event to frame coordinates
         e.translatePoint(-(canvasPoint.x - framePoint.x), -(canvasPoint.y - framePoint.y));
+
         return coordinateHandler;
     }
 
@@ -159,7 +172,7 @@ class WindowSwingEmbeddedToolkit
 
         final WindowSwing popup = winPopup;
 
-        winPopup.setOffset(x, y);
+        winPopup.setPixelOffset(x, y);
 
         return new Popup() {
 

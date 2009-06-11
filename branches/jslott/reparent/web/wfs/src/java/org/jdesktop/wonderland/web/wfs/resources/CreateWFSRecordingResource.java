@@ -48,7 +48,7 @@ public class CreateWFSRecordingResource {
      * that represents the new recording
      * 
      * @param name the name of the recording
-     * @return A Recording object
+     * @return A WorldRoot object
      */
     @GET
     @Produces({"text/plain", "application/xml", "application/json"})

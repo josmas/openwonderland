@@ -20,7 +20,11 @@ package org.jdesktop.wonderland.server.wfs.exporter;
 import java.util.Map;
 import java.util.Set;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * A service for exporting cells.  This service provides a set of
@@ -47,8 +51,7 @@ public interface CellExportManager {
      * Create a new recording for writing cells to.  This method will contact
      * the remote web service to create a new recording, and then call the
      * given listener with the result of that call.
-     * @param name the name of the recording to create, or null to use the
-     * default name
+     * @param name the name of the recording to create
      * @param cells the set of cells to record
      * @param listener a recording creation listener that will be notified of
      * the result of this call
@@ -58,11 +61,11 @@ public interface CellExportManager {
 
 
     /**
-     * Write a set of cells to the given snapshot.  This method will fetch the
+     * Write a set of cells to the given snapshot/recording.  This method will fetch the
      * given set of cells, and write the contents of the cells and all their
      * children to the remote web service.  Finally, the listener will be
      * notified with the results of the call.
-     * @param worldRoot the snapshot to write to
+     * @param worldRoot the snapshot/recording to write to
      * @param cellIDs a set of cell IDs to write.  Each cellID will be used
      * as a root for writing, so the entire graph under the given set of
      * cell IDs will be written.  The cellIDs set will be accessed across
@@ -70,9 +73,24 @@ public interface CellExportManager {
      * for the set be serializable and work correctly in the face of concurrent
      * access.  Typically, a ScalableHashSet is the best choice for the set.
      * @param listener a listener that will be notified of the results
+     * @param recordCellIDs if true, record the cellID of each cell
      */
     public void exportCells(WorldRoot worldRoot, Set<CellID> cellIDs,
-                            CellExportListener listener);
+                            CellExportListener listener, boolean recordCellIDs);
+
+    /**
+     * List the recordings that are currently accessible via the web service.
+     * This is used to respond to a client's request to open a form for a user to select
+     * a "tape".<p>
+     * The listener will be notifed with the results of the call. The inclusion of
+     * these parameters is because the originating message requires a ResponseMessage return, which in
+     * turn requires these parameters.
+     * @param messageID the id of the message that originated the request
+     * @param sender the sender of the message request
+     * @param clientID the wonderlandClientID of the request
+     * @param listener a list recordings listener whose method listRecordingsResult is called on success, or listRecordingsFailed on failure.
+     */
+    public void listRecordings(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, ListRecordingsListener listener);
 
     /**
      * A listener that will be notified of the success or failure of
@@ -104,7 +122,7 @@ public interface CellExportManager {
         /**
          * Notification that a recording has been created successfully
          * @param worldRoot the world root that was created
-         * @param cells the cells to be created
+         * @param cells the cells to be recorded
          */
         public void recordingCreated(WorldRoot worldRoot, Set<CellID> cells);
 
@@ -155,4 +173,36 @@ public interface CellExportManager {
          */
         public Throwable getFailureCause();
     }
+
+    /**
+     * A listener that will be notified of result of requesting a list of
+     * the currrent recordings accessible via the web service.
+     * Implementations of ListRecordingsListener
+     * must be either a ManagedObject or Serializable.
+     */
+    public interface ListRecordingsListener {
+
+        /**
+         * The result of listing the recordings.
+         * @param messageID the message id of the originating message
+         * @param sender the sender of the originating message
+         * @param clientID the wonderland client id of the originating client
+         * @param recordings the list of recordings
+         */
+        public void listRecordingsResult(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, WFSRecordingList recordings);
+        
+        /**
+         * The listings of recordings failed.
+         * @param messageID the message id of the originating message
+         * @param sender the sender of the originating message
+         * @param clientID the wonderland client id of the originating client
+         * @param message the message accompanying the exception
+         * @param ex the exception that was caught describing the failure
+         */
+        public void listRecordingsFailed(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, String message, Exception ex);
+        
+    }
+
+
+
 }

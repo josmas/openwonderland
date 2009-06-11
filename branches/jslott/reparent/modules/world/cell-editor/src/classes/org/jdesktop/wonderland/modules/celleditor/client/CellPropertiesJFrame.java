@@ -150,7 +150,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                         ((DefaultTreeModel) cellHierarchyTree.getModel()).removeNodeFromParent(node);
                     }
                 }
-                else if (status == CellStatus.BOUNDS) {
+                else if (status == CellStatus.RENDERING) {
                     // If the node does not exist, then create it
                     if (node == null) {
                         createJTreeNode(cell);

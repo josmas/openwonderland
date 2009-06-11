@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.runner.Runner;
 public class RunnerWrapper {
     private String name;
     private String status;
-    private String location = "localhost";
+    private String location;
     private boolean hasLog = false;
     private boolean runnable;
 
@@ -60,6 +60,7 @@ public class RunnerWrapper {
         this.status = runner.getStatus().toString();
         this.hasLog = runner.getLogFile().exists();
         this.runnable = runner.isRunnable();
+        this.location = runner.getLocation();
     }
     
     @XmlElement

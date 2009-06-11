@@ -3417,7 +3417,7 @@
     </Materials>
     <Materials TargetMeshName="SweaterMaleShape" AlphaState="0" Name="MysteryNode!">
         <Textures>
-            <RelativePath>assets/models/collada/Clothing/MaleClothing/CollegeSweats_Gators.png</RelativePath>
+            <RelativePath>assets/models/collada/Clothing/MaleClothing/CollegeSweats_FBall01.png</RelativePath>
             <TextureUnit>0</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>

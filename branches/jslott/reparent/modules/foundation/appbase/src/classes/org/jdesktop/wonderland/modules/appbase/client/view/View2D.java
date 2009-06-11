@@ -204,28 +204,61 @@ public interface View2D {
     public Vector2f getPixelScale ();
 
     /** 
-     * Specify the pixel offset translation from the top left corner of the parent (comes from the app). 
-     * Update afterward.
+     * Specify the first part the view's offset translation in local coordinates from the center of the 
+     * parent to the center of this view. Update immediately. Note: setPixelOffset is the other part of 
+     * the offset translation. The two offsets are added to produce the effective offset.
+     *
+     * NOTE: this part of the offset also applies to primary views. In this case the offset is from
+     * the center of the cell to the center of the view.
      */
-    public void setOffset(Point offset);
+    public void setOffset(Vector2f offset);
 
     /** 
-     * Specify the pixel offset translation from the top left corner of the parent (comes from the app).
-     * Update if specified.
+     * Specify the first part view's offset translation in local coordinates from the center of the parent 
+     * to the center of this view. Update if specified. Note: setPixelOffset is the other part of the 
+     * offset translation. The two offsets are added to produce the effective offset.
      */
-    public void setOffset(Point offset, boolean update);
+    public void setOffset(Vector2f offset, boolean update);
 
-    /** Returns the offset. */
-    public Point getOffset ();
+    /** Returns the offset translation in local coordinates. */
+    public Vector2f getOffset ();
 
-    /** Specify the user-specified translation of this view. Update afterward. */
-    public void setTranslationUser (Vector3f translation);
+    /** 
+     * Specify the second part of view's offset translation as a pixel offset from the top left corner of 
+     * the parent to the top left corner of the view. Update immediately. Uses the view's pixel current 
+     * scale to convert this pixel offset into local coordinates. Note: setOffset is the other part of the 
+     * offset translation. The two offsets are added to produce the effective offset.
+     *
+     * NOTE: the pixel offset is ignored by primary views.
+     */
+    public void setPixelOffset(Point pixelOffset);
 
-    /** Specify the user-specified translation of this view. Update if specified. */
-    public void setTranslationUser (Vector3f translation, boolean update);
+    /** 
+     * Specify the second part of view's offset translation as a pixel offset from the top left corner of 
+     * the parent to the top left corner of the view. Update if specified. Uses the view's pixel current 
+     * scale to convert this pixel offset into local coordinates. Note: setOffset is the other part of the 
+     * offset translation. The two offsets are added to produce the effective offset.
+     *
+     * NOTE: the pixel offset is ignored by primary views.
+     */
+    public void setPixelOffset(Point pixelOffset, boolean update);
 
-    /** Returns the user translation of this view. */
-    public Vector3f getTranslationUser ();
+    /** Returns the offset in terms of pixels. */
+    public Point getPixelOffset ();
+
+    /** 
+     * Apply the given translation vector as a delta to the current user transform of the view. 
+     * Update immediately. Note: ortho and non-ortho modes have separate user transforms.
+     * The value of the ortho attribute determines which one is current.
+     */
+    public void applyDeltaTranslationUser (Vector3f deltaTranslation);
+
+    /** 
+     * Apply the given translation vector as a delta to the current user transform of the view. 
+     * Update if specified. Note: ortho and non-ortho modes have separate user transforms.
+     * The value of the ortho attribute determines which one is current.
+     */
+    public void applyDeltaTranslationUser (Vector3f deltaTranslation, boolean update);
 
     /** Apply all pending updates. */
     public void update ();

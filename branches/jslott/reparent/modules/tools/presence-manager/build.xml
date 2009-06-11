@@ -9,6 +9,11 @@
     <property name="module.jarname" value="presencemanager"/>
     <property name="module.plugins" value="PresenceManagerServerPlugin PresenceManagerClientPlugin"/>
 
+    <pathconvert property="module-server.classpath">
+        <path location="${current.dir}/../audio-manager/lib/voicelib.jar"/>
+        <path location="${current.dir}/../audio-manager/lib/bridge_connector.jar"/>
+    </pathconvert>
+
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        

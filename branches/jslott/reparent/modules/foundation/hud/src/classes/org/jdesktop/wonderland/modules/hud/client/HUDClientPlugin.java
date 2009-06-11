@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDFactory;
 import org.jdesktop.wonderland.client.hud.HUDManager;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
@@ -51,14 +52,14 @@ public class HUDClientPlugin extends BaseClientPlugin {
         HUD wonderlandHUD = HUDFactory.createHUD(canvas.getX(), canvas.getY(), canvas.getWidth(), canvas.getHeight());
         wonderlandHUD.setName("main");
 
-        // define how components are laid in the Wonderland main HUD
-        wonderlandHUD.setLayoutManager(new HUDAbsoluteLayoutManager());
+        // create the default HUD Manager factory
+        HUDManagerFactory.setHUDManagerFactorySPI(new WonderlandHUDManagerFactory());
 
         // create a HUD manager instance to manage all the HUDs
-        HUDManager manager = WonderlandHUDManager.getHUDManager();
+        HUDManager manager = HUDManagerFactory.createHUDManager();
 
         // define how HUDs are laid out on the screen
-        manager.setLayoutManager(new HUDAbsoluteLayoutManager());
+        manager.setLayoutManager(new HUDAbsoluteLayoutManager(canvas.getWidth(), canvas.getHeight()));
 
         // manage the main HUD
         manager.addHUD(wonderlandHUD);
@@ -66,9 +67,12 @@ public class HUDClientPlugin extends BaseClientPlugin {
         // create a component manager for the HUD components in this HUD
         HUDComponentManager compManager = new WonderlandHUDComponentManager();
 
+        // define the layout of HUD components in the Wonderland main HUD
+        compManager.setLayoutManager(new HUDCompassLayoutManager(canvas.getWidth(), canvas.getHeight()));
+
         // manage the components in the main HUD
         wonderlandHUD.setComponentManager(compManager);
-    
+
         // call the superclass's initialize method
         super.initialize(loginManager);
     }

@@ -32,7 +32,6 @@ import com.jme.image.Image;
 import com.jme.image.Texture;
 import com.jme.image.Texture2D;
 import com.jme.math.Vector2f;
-import com.jme.math.Vector3f;
 import com.jme.util.geom.BufferUtils;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -41,8 +40,19 @@ import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
+import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
@@ -84,10 +94,15 @@ public abstract class Window2D {
         UNKNOWN, PRIMARY, SECONDARY, POPUP
     };
     /** 
-     * The offset in pixels from top left of parent. 
+     * The offset in local coords from the center of the parent to the center of the window.
      * Ignored by primary (initially primary is always centered in cell).
      */
-    private Point offset = new Point(0, 0);
+    private Vector2f offset = new Vector2f(0f, 0f);
+    /** 
+     * The additional offset in pixels from top left of parent to the top left of this window. 
+     * Ignored by primary (initially primary is always centered in cell).
+     */
+    private Point pixelOffset = new Point(0, 0);
     /** The size of the window specified by the application. */
     private Dimension size = new Dimension(1, 1);
     /** The initial size of the pixels of the window's views (specified by WFS). */
@@ -152,6 +167,17 @@ public abstract class Window2D {
     private LinkedList<EntityComponentEntry> entityComponents = new LinkedList<EntityComponentEntry>();
 
     /**
+     * A close listener is a listener which is called when the window is closed (e.g. via the user 
+     * clicking on frame close button).
+     */
+    public interface CloseListener {
+        public void windowClosed (Window2D window);
+    }
+
+    /** The attached close listeners. */
+    private final LinkedList<CloseListener> closeListeners = new LinkedList<CloseListener>();
+
+    /**
      * Create an instance of Window2D with a default name. The first such window created for an app 
      * becomes the primary window. Subsequent windows are secondary windows.
      * @param app The application to which this window belongs.
@@ -179,6 +205,11 @@ public abstract class Window2D {
      */
     public Window2D(App2D app, int width, int height, boolean decorated, Vector2f pixelScale, String name,
                     DrawingSurface surface) {
+
+        if (width <= 0 || height <= 0) {
+            throw new RuntimeException("Invalid window size");
+        }
+
         this.app = app;
         this.size = new Dimension(width, height);
         this.decorated = decorated;
@@ -265,6 +296,11 @@ public abstract class Window2D {
      */
     public Window2D(App2D app, Type type, Window2D parent, int width, int height, boolean decorated,
             Vector2f pixelScale, String name, DrawingSurface surface) {
+
+        if (width <= 0 || height <= 0) {
+            throw new RuntimeException("Invalid window size");
+        }
+
         this.app = app;
         this.size = new Dimension(width, height);
         this.decorated = decorated;
@@ -438,16 +474,17 @@ public abstract class Window2D {
        getAllChildren
     */
 
-    /**
-     * Sets the offset (in pixels) of this window relative to its parent. If the window has no parent
-     * the offset is ignored. The offset is the distance from the upper left corner of the parent to the
-     * upper left corner of this window. Any decoration is ignored in both cases.
+    /** 
+     * Specify the first part the window's offset translation in local coordinates from the center of the parent to the 
+     * center of this window. Note: setPixelOffset is the other part of the offset translation.The two offsets are 
+     * added to produce the effective offset. If the window has no parent the offset is ignored. Any decoration 
+     * is ignored.
      */
-    public synchronized void setOffset(int x, int y) {
-        if (offset.x == x && offset.y == y) {
+    public void setOffset(Vector2f offset) {
+        if (this.offset.x == offset.x && this.offset.y == offset.y) {
             return;
         }
-        this.offset = new Point(x, y);
+        this.offset = (Vector2f) offset.clone();
         changeMask |= CHANGED_OFFSET;
         updateViews();
     }
@@ -455,15 +492,45 @@ public abstract class Window2D {
     /**
      * Returns the X offset of the window with respect to its parent.
      */
-    public int getOffsetX() {
+    public float getOffsetX() {
         return offset.x;
     }
 
     /**
      * Returns the Y offset of the window with respect to its parent.
      */
-    public int getOffsetY() {
+    public float getOffsetY() {
         return offset.y;
+    }
+
+    /** 
+     * Specify the second part of window's offset translation as a pixel offset from the top left corner of 
+     * the parent to the top left corner of the window. Uses the window's pixel current 
+     * scale to convert this pixel offset into local coordinates. Note: setOffset is the other part of the 
+     * offset translation. The two offsets are added to produce the effective offset. If the window has no 
+     * parent the offset is ignored. Any decoration is ignored.
+     */
+    public synchronized void setPixelOffset(int x, int y) {
+        if (pixelOffset.x == x && pixelOffset.y == y) {
+            return;
+        }
+        this.pixelOffset = new Point(x, y);
+        changeMask |= CHANGED_OFFSET;
+        updateViews();
+    }
+
+    /**
+     * Returns the X pixel offset of the window with respect to its parent.
+     */
+    public int getPixelOffsetX() {
+        return pixelOffset.x;
+    }
+
+    /**
+     * Returns the Y pixel offset of the window with respect to its parent.
+     */
+    public int getPixelOffsetY() {
+        return pixelOffset.y;
     }
 
     /**
@@ -476,8 +543,12 @@ public abstract class Window2D {
      * @param width The new width of the window.
      * @param height The new height of the window.
      */
-    // TODO: winconfig: delete
     public synchronized void setSize(int width, int height) {
+
+        if (width <= 0 || height <= 0) {
+            throw new RuntimeException("Invalid window size");
+        }
+
         if (this.size.width == width && this.size.height == height) {
             return;
         }
@@ -505,8 +576,7 @@ public abstract class Window2D {
     }
 
     /**
-     * Change both the window size and window stacking order in the same call. This
-     * is done for this window on the local client and all other clients.
+     * Change both the window size and window stacking order in the same call. 
      * <br><br>
      * This is like performing the following:
      * <br><br>
@@ -520,62 +590,24 @@ public abstract class Window2D {
      * @param height The new height of the window.
      * @param sibling The window which will be directly below this window after this call.
      */
-    /* TODO: winconfig: notyet
-    public synchronized void configure(int width, int height, Window2D sibling) {
-        configureLocal(width, height, sibling);
-
-        // TODO: winconfig: swing: resize
-        //if (app.isSwsShared(SwsClient.Attr.WINDOW_SIZE)) {
-        //  SwsClient swsClient = getApp().getSwsClient();
-        //  swsClient.setSize(swsWindowID, width, height);
-        //}
-
-        // TODO: winconfig: swing: stack
-        //if (app.isSwsShared(SwsClient.Op.WINDOW_RESTACK)) {
-        //    SwsClient swsClient = getApp().getSwsClient();
-        //    swsClient.restackAbove(swsWindowID, sibling.swsWindowID);
-        //}
-    }
-    */
-    // TODO: winconfig: delete
     public synchronized void configure(int width, int height, Window2D sibWin) {
+
+        if (width <= 0 || height <= 0) {
+            throw new RuntimeException("Invalid window size");
+        }
+
         this.size = new Dimension(width, height);
         changeMask |= CHANGED_SIZE;
 
-        // TODO: stack
-
-        updateViews();
-    }
-
-    /**
-     * Change both the window size and window stacking order in the same call. This
-     * is done for this window on the local client only.
-     * <br><br>
-     * This is like performing the following:
-     * <br><br>
-     * setSizeLocal(width, height);
-     * <br>
-     * restackAboveLocal(sibling);
-     * <br><br>
-     * The visual representations of the window are updated accordingly.
-     * 
-     * @param width The new width of the window.
-     * @param height The new height of the window.
-     * @param sibling The window which will be directly below this window after this call.
-     */
-    /* TODO: winconfig: notyet
-    public synchronized void configureLocal (int width, int height, Window2D sibling) {
-        this.size = new Dimension(width, height);
-        changeMask |= CHANGED_SIZE;
- 
-        if (sibling != null) {
-            // This will call updateViews if necessary
-            app.getWindowStack().restackAbove(this, sibling);
+        if (sibWin != null) {
+            app.getWindowStack().restackAbove(this, sibWin);
             changeMask |= CHANGED_STACK;
+            updateViews();
+            app.changedStackAllWindowsExcept(this);
+        } else {
             updateViews();
         }
     }
-    */
 
     /**
      * Specify the initial pixel scale for the window's views when they are in cell mode.
@@ -620,12 +652,18 @@ public abstract class Window2D {
                 app.getWindowStack().add(this);
                 changeMask |= CHANGED_STACK;
                 updateViews();
+                app.changedStackAllWindowsExcept(this);
             }
         } else {
             // Remove newly invisible windows from the stack
-            app.getWindowStack().remove(this);
-            changeMask |= CHANGED_STACK;
-            updateViews();
+            if (app != null) {
+                if (!coplanar) {
+                    app.getWindowStack().remove(this);
+                    changeMask |= CHANGED_STACK;
+                    updateViews();
+                    app.changedStackAllWindowsExcept(this);
+                }
+            }
         }
     }
 
@@ -684,8 +722,6 @@ public abstract class Window2D {
      * @param title The string to display as the window title.
      */
     public synchronized void setTitle(String title) {
-        //System.err.println("@@@@@@@@@@@@ window = " + this);
-        //System.err.println("@@@@@@@@@@@@ title = " + title);
         if (title == null && this.title == null) {
             return;
         }
@@ -707,23 +743,20 @@ public abstract class Window2D {
      /**
       * Specify whether this window is in the same local Z plane as its parent.
       * Ignored by non-popups.
+      * <br><br>
+      * NOTE: You must set this attribute only when the window is not visible.
+      * Otherwise an exception is thrown.
       */
     public synchronized void setCoplanar (boolean coplanar) {
+        if (isVisibleApp()) {
+            throw new RuntimeException("Cannot call setCoplanar when the window is visible.");
+        }
         if (this.coplanar == coplanar) return;
         this.coplanar = coplanar;
-        if (coplanar) {
-            // Remove newly coplanar windows from the stack
-            app.getWindowStack().remove(this);
-            changeMask |= CHANGED_STACK;
-            updateViews();
-        } else {
-            // If a window has just become non-coplanar and it is visible, add it to the stack
-            if (isVisibleApp()) {
-                app.getWindowStack().add(this);
-                changeMask |= CHANGED_STACK;
-                updateViews();
-            }
-        }
+
+        // Mark stack changed but don't update views right away. The stack change will be 
+        // propagated to the views when the window is made visible.
+        changeMask |= CHANGED_STACK;
     }
 
     /** 
@@ -734,99 +767,47 @@ public abstract class Window2D {
     }
 
     /**
-     * Moves this window to the top of the app's window stack in the local client and all other clients.
+     * Moves this window to the top of the app's window stack.
      */
     public synchronized void restackToTop () {
-        restackToTopLocal();
-
-        /* TODO: winconfig: swing: stack
-        if (app.isSwsShared(Sws.Op.WINDOW_RESTACK)) {
-            SwsClient swsClient = getApp().getSwsClient();
-            swsClient.restackToTop(swsWindowID);
-        }
-        */
-    }
-
-    /**
-     * Moves this window to the top of the app's window stack in the local client only.
-     */
-    public synchronized void restackToTopLocal () {
         app.getWindowStack().restackToTop(this);
         changeMask |= CHANGED_STACK;
         updateViews();
+        app.changedStackAllWindowsExcept(this);
     }
 
     /**
-     * Moves this window to the bottom of the app's window stack in the local client and all other clients.
+     * Moves this window to the bottom of the app's window stack.
      */
     public synchronized void restackToBottom () {
-        restackToBottomLocal();
-
-        /* TODO: winconfig: swing: stack
-        if (app.isSwsShared(Sws.Op.WINDOW_RESTACK)) {
-            SwsClient swsClient = getApp().getSwsClient();
-            swsClient.restackToBottom(swsWindowID);
-        }
-        */
-    }
-
-    /**
-     * Moves this window to the bottom of the app's window stack in the local client only.
-     */
-    public synchronized void restackToBottomLocal () {
         app.getWindowStack().restackToBottom(this);
         changeMask |= CHANGED_STACK;
         updateViews();
+        app.changedStackAllWindowsExcept(this);
     }
 
     /**
-     * Moves this window so that it is above the given sibling window in the app's window stack
-     * in the local client and all other clients. If sibling is null, this window is moved to the 
-     * top of the stack.
+     * Moves this window so that it is above the given sibling window in the app's window stack.
+     * If sibling is null, this window is moved to the top of the stack.
      * @param sibling After this call, the sibling window will be below this window in the stack.
      */
-    /* TODO: winconfig: stack
     public synchronized void restackAbove (Window2D sibling) {
-        restackAboveLocal(sibling);
-
-        //TODO: winconfig: swing: stack
-        //if (app.isSwsShared(Sws.Op.WINDOW_RESTACK)) {
-        //    SwsClient swsClient = getApp().getSwsClient();
-        //    swsClient.restackAbove(swsWindowID, sibling.swsWindowID);
-        //}
-    }
-    */
-
-    /**
-     * Moves this window so that it is above the given sibling window in the app's window stack
-     * in the local client only. If sibling is null, this window is moved to the top of the stack.
-     * @param sibling After this call, the sibling window will be below this window in the stack.
-     */
-    public synchronized void restackAbove/*TODO:winconfig:restack:Local*/ (Window2D sibling) {
         app.getWindowStack().restackAbove(this, sibling);
         changeMask |= CHANGED_STACK;
         updateViews();
+        app.changedStackAllWindowsExcept(this);
     }
 
     /**
-     * Moves this window so that it is below the given sibling window in the app's window stack
-     * in the local client and all other clients. If sibling is null, this window is moved to the 
-     * bottom of the stack.
+     * Moves this window so that it is below the given sibling window in the app's window stack.
+     * If sibling is null, this window is moved to the bottom of the stack.
      * @param sibling After this call, the sibling window will be above this window in the stack.
      */
     public synchronized void restackBelow (Window2D sibling) {
-        restackBelow(sibling);
-    }
-
-    /**
-     * Moves this window so that it is below the given sibling window in the app's window stack
-     * in the local client only. If sibling is null, this window is moved to the bottom of the stack.
-     * @param sibling After this call, the sibling window will be above this window in the stack.
-     */
-    public synchronized void restackBelowLocal (Window2D sibling) {
         app.getWindowStack().restackBelow(this, sibling);
         changeMask |= CHANGED_STACK;
         updateViews();
+        app.changedStackAllWindowsExcept(this);
     }
 
     /**
@@ -1131,25 +1112,46 @@ public abstract class Window2D {
         // User must have control in order to close the window
         if (!app.getControlArb().hasControl()) {
             // TODO: bring up swing option window: "You cannot close this window because you do not have control"
+            // Danger: can't do this in SAS!
+            logger.warning("You cannot close this window because you do not have control");
             return;
         }
 
-        // TODO: call close listeners
-
-        /* TODO: winconfig: swing: close
-        if (app.isSwsShared(Sws.Op.WINDOW_CLOSE)) {
-            SwsClient swsClient = getApp().getSwsClient();
-            // TODO: This verifies client has control on server. This isn't something the Xremwin server 
-            // does. Eventually migrate Xremwin close to use sws close
-            swsClient.windowClose(swsWindowID);  
-        }    
-        // TODO: what else do we need to do to close the swing window and quit the app if the 
-        // window is primary? Does WindowSwing.cleanup() suffice? Prob not. Doesn't quit app. Since 
-        // hasControl is checked on the server we need to implement the actual window closure in a 
-        // message handler in reaction to an "actually close" message coming back from the server.
-        */
+        // Call close listeners
+        synchronized (closeListeners) {
+            for (CloseListener listener : closeListeners) {
+                listener.windowClosed(this);
+            }
+        }
 
         cleanup();
+    }
+
+    /**
+     * Add a close listener to this window. The listener will be called when the window is closed.
+     */
+    public void addCloseListener (CloseListener listener) {
+        synchronized (closeListeners) {
+            closeListeners.add(listener);
+        }
+    }
+
+    /**
+     * Remove a close listener from this window. 
+     */
+    public void removeCloseListener (CloseListener listener) {
+        synchronized (closeListeners) {
+            closeListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Return an iterator over the close listeners for this window. 
+     */
+    public Iterator<CloseListener> getCloseListeners () {
+        synchronized (closeListeners) {
+            return closeListeners.iterator();
+        }
     }
 
     /**
@@ -1374,6 +1376,7 @@ public abstract class Window2D {
             }
             if ((changeMask & CHANGED_OFFSET) != 0) {
                 view.setOffset(offset, false);
+                view.setPixelOffset(pixelOffset, false);
             }
             if ((changeMask & CHANGED_VISIBLE_APP) != 0) {
                 view.setVisibleApp(visibleApp, false);
@@ -1473,5 +1476,175 @@ public abstract class Window2D {
     }
 
     protected void repaint() {
+    }
+
+    // For ortho subwindows debug 
+    private boolean ortho = false;
+
+    // For ortho subwindows debug 
+    public void toggleOrtho () {
+        ortho = ! ortho;
+
+        // Get first view, should be the cell view
+        Iterator<View2D> it = getViews();
+        View2DEntity view = (View2DEntity) it.next();
+
+        if (ortho) {
+            
+            // In this test, the view in the ortho plane is at a fixed location.
+            view.setLocationOrtho(new Vector2f(500f, 300f), false);
+            
+            // Test
+            //view.setPixelScaleOrtho(2.0f, 2.0f);
+            //view.setPixelScaleOrtho(0.5f, 0.5f);
+
+            // Move the window view into the ortho plane
+            logger.warning("Move view into ortho " + view);
+            view.setOrtho(true, false);
+
+        } else {
+
+            // Move the window view into the cell
+            logger.warning("Move view out of ortho " + view);
+            view.setOrtho(false, false);
+        }
+
+        // Now make it all happen
+        view.update();
+    }
+
+    /**
+     * Call this when the app has control in order to display the window menu for this window.
+     * @param entity An arbitrary entity belonging to the window's cell.
+     * @param mouseEvent The triggering AWT event.
+     */
+    public void displayWindowMenu (Entity entity, MouseEvent mouseEvent) {
+        LinkedList<Entity> entities = new LinkedList<Entity>();
+        entities.add(entity);
+        WindowContextMenuEvent windowMenuEvent = new WindowContextMenuEvent(entities, mouseEvent);
+        InputManager.inputManager().postEvent(windowMenuEvent);
+    }
+
+    /**
+     * NOTE: INTERNAL API.
+     * <br>
+     * This helps us distinguish menu events when the window has control versus doesn't have control
+     * These are only ever sent when the window has control.
+     */
+    @InternalAPI
+    public class WindowContextMenuEvent extends ContextEvent {
+        private Window2D window;
+
+        // Default constructor -- For clone only.
+        private WindowContextMenuEvent () {
+            super();
+        }
+
+        public WindowContextMenuEvent (LinkedList<Entity> entities, MouseEvent mouseEvent) {
+            super(entities, mouseEvent);
+            window = Window2D.this;
+        }
+
+        public Window2D getWindow () {
+            return window;
+        }
+
+        /** 
+         * {@inheritDoc}
+         * <br>
+         * If event is null, a new event of this class is created and returned.
+         */
+        @Override
+        public Event clone (Event event) {
+            if (event == null) {
+                event = new WindowContextMenuEvent();
+            }
+            ((WindowContextMenuEvent)event).window = window;
+            return super.clone(event);
+        }
+    }
+
+    /**
+     * Return the window menu items for this window based on its current state.
+     */
+    public ContextMenuItem[] windowMenuItems (ContextMenuComponent contextMenuComp) {
+        ArrayList<ContextMenuItem> menuItems = new ArrayList<ContextMenuItem>();
+        switch (type) {
+
+        case PRIMARY:
+        case UNKNOWN:
+            contextMenuComp.setShowStandardMenuItems(true);
+
+            // ITEM 1: Take/release control
+            if (app.getControlArb().hasControl()) {
+                menuItems.add(
+                    new SimpleContextMenuItem("Release Control", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            app.getControlArb().releaseControl();
+                        }
+                    }));
+            } else {
+                menuItems.add(
+                    new SimpleContextMenuItem("Take Control", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            app.getControlArb().takeControl();
+                        }
+                        }));
+            }
+                    
+            if (app.getControlArb().hasControl()) {
+
+                // ITEMS 2 & 3: Restacking items
+                menuItems.add(
+                    new SimpleContextMenuItem("To Front", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            Window2D.this.restackToTop();
+                        }
+                    }));
+                menuItems.add(
+                    new SimpleContextMenuItem("To Back", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            Window2D.this.restackToBottom();
+                        }
+                    }));
+
+                /* TODO: eventually add:
+                 menuItems[1] = SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
+                 public void actionPerformed(ContextMenuItemEvent event) {
+                 System.err.println("Show in HUD Not yet implemented.");
+                 }
+                 })
+                */
+            }
+
+            return menuItems.toArray(new ContextMenuItem[1]);
+
+        case SECONDARY:
+            // TODO: bug workaround for 231
+            //contextMenuComp.setShowStandardMenuItems(false);
+            contextMenuComp.setShowStandardMenuItems(true);
+
+            if (app.getControlArb().hasControl()) {
+                // ITEMS 1 & 2: Restacking items
+                menuItems.add(
+                    new SimpleContextMenuItem("To Front", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            Window2D.this.restackToTop();
+                        }
+                    }));
+                menuItems.add(
+                    new SimpleContextMenuItem("To Back", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            Window2D.this.restackToBottom();
+                        }
+                    }));
+            }
+
+            return menuItems.toArray(new ContextMenuItem[1]);
+
+        case POPUP:
+        default:
+            return null;
+        }
     }
 }

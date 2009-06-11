@@ -72,9 +72,9 @@ public class WindowXrw extends WindowConventional {
 
         // Determine whether this window is transient for another
         // TODO: not yet implemented
-        int transientForWid = ((AppXrw) app).getTransientForWid(wid);
+        int transientForWid = ((AppXrw)app).getTransientForWid(wid);
         if (transientForWid != 0) {
-            winTransientFor = AppXrw.widToWindow.get(transientForWid);
+            winTransientFor = ((AppXrw)app).widToWindow.get(transientForWid);
         }
 
         setScreenPosition/*TODO:winconfig:resize:Local*/(x, y);
@@ -140,10 +140,10 @@ public class WindowXrw extends WindowConventional {
 
         WindowXrw parent = (WindowXrw) getParent();
         if (getType() == Type.PRIMARY || parent == null) {
-            setOffset(0, 0);
+            setPixelOffset(0, 0);
         } else {
             if (parent.scrPos != null) {
-                setOffset(scrPos.x - parent.scrPos.x, scrPos.y - parent.scrPos.y);
+                setPixelOffset(scrPos.x - parent.scrPos.x, scrPos.y - parent.scrPos.y);
             }
         }
     }
@@ -163,10 +163,12 @@ public class WindowXrw extends WindowConventional {
      */
     @Override
     public void closeUser() {
-        super.closeUser();
 
         // Notify the Xremwin server and other clients
         ((AppXrw) app).getClient().windowCloseUser(this);
+
+        // now clean up the window.
+        super.closeUser();
     }
 
     /**

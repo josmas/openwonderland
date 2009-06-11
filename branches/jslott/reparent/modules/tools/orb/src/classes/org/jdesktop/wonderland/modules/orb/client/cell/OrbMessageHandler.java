@@ -45,10 +45,12 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachVirtualPlayerMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetBystanderCountMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangePositionMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbMuteCallMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbSpeakingMessage;
 
@@ -79,6 +81,7 @@ import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import com.jme.math.Vector3f;
 
 import java.awt.Color;
+import java.awt.Font;
 
 import com.jme.scene.Node;
 
@@ -104,6 +107,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     private OrbDialog orbDialog;
 
     private String username;
+    private String usernameAlias;
 
     private NameTagNode nameTag;
 
@@ -111,13 +115,15 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
     private PresenceInfo presenceInfo;
 
+    private boolean presenceInfoAdded;
+
     private FollowMe followMe;
 
     private static HashMap<Cell, ArrayList<OrbCell>> attachedOrbMap = new HashMap();
 
     private static ArrayList<OrbCell> detachedOrbList = new ArrayList();
 
-    public OrbMessageHandler(OrbCell orbCell, WonderlandSession session) {
+    public OrbMessageHandler(OrbCell orbCell, WonderlandSession session, int bystanderCount) {
 	this.orbCell = orbCell;
 	this.session = session;
 
@@ -146,6 +152,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
             };
 
         channelComp.addMessageReceiver(OrbAttachMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(OrbAttachVirtualPlayerMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(OrbSetBystanderCountMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbChangeNameMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbEndCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbMuteCallMessage.class, msgReceiver);
@@ -158,44 +166,57 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	if (username == null) {
 	    username = "No user name!";
+	} else {
+	    username = " " + username;
 	}
+	
+	usernameAlias = username;
 
-	WonderlandIdentity userID = 
-	    new WonderlandIdentity(username, username, null);
+	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
 
-	String callID = null;
+	WonderlandIdentity userID = new WonderlandIdentity(username, username, null);
 
-	String s = orbCell.getPlayerWithVpCallID();
+	presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, 
+	    orbCell.getCallID());
 
-	if (s == null || s.length() == 0) {
-	    callID = orbCell.getCallID();
-	}
+	presenceInfo.usernameAlias = usernameAlias;
 
-        presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, callID);
-
-	pm.addSession(presenceInfo);
+	if (playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID())) {
+	    /*
+	     * It's a real call.  Use the actually callID and userID.
+	     */
+	    pm.addPresenceInfo(presenceInfo);
+	    presenceInfoAdded = true;
+	} 
 
         NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
 	    orbCell.addComponent(comp);
 	nameTag = comp.getNameTagNode();
 
-	if (orbCell.getPlayerWithVpCallID().length() > 0) {
-	    PresenceInfo info = pm.getPresenceInfo(orbCell.getPlayerWithVpCallID());
+	//nameTag.setFont(Font.decode("Sans-PLAIN-20"));
 
-	    if (info == null) {
-		System.out.println("Can't find presence info for CallID " 
-		    + orbCell.getPlayerWithVpCallID());
-		return;
-	    }
+	setBystanderCount(bystanderCount);
 
-	    logger.fine("Attach orb " + orbCell.getCellID() 
-		+ " player with " + orbCell.getPlayerWithVpCallID() + " to " + info);
+	if (orbCell.getPlayerWithVpCallID() != null) {
+	    PresenceInfo info = pm.getPresenceInfo(playerWithVpCallID);
+
+            if (info == null) {
+                logger.warning("Can't find presence info for CallID "
+		    + playerWithVpCallID);
+
+                return;
+            }
+
+	    logger.info("Attach orb " + orbCell.getCellID() 
+		+ " player with " + playerWithVpCallID + " to " + info);
 
             channelComp.send(new OrbAttachMessage(orbCell.getCellID(), info.cellID, true));
 	} else {
 	    /*
 	     * Ask the server to tell us if the orb is attached.
 	     */
+	    logger.fine("Asking server if orb is attached " + orbCell.getCellID());
+
             channelComp.send(new OrbAttachMessage(orbCell.getCellID(), null, true));
 	}
     }
@@ -207,6 +228,10 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	orbRootNode.attachChild(nameTag);
     }
 	
+    public FollowMe getFollowMe() {
+	return followMe;
+    }
+
     private boolean done;
 
     public void done() {
@@ -226,14 +251,20 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 		if (attachedOrbList != null) {
 		    attachedOrbList.remove(orbCell);
 		}
-	    }
 
-	    reorderAttachedOrbs();
+		if (attachedOrbList.size() > 0) {
+	            positionAttachedOrbs(hostCell);
+		} else {
+		    attachedOrbMap.remove(hostCell);
+		}
+	    }
 	}
 
 	followMe.done();
 
         channelComp.removeMessageReceiver(OrbAttachMessage.class);
+        channelComp.removeMessageReceiver(OrbAttachVirtualPlayerMessage.class);
+	channelComp.removeMessageReceiver(OrbSetBystanderCountMessage.class);
 	channelComp.removeMessageReceiver(OrbChangeNameMessage.class);
 	channelComp.removeMessageReceiver(OrbEndCallMessage.class);
         channelComp.removeMessageReceiver(OrbMuteCallMessage.class);
@@ -243,32 +274,47 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	orbRootNode.detachChild(nameTag);
 	nameTag.done();
 
-	pm.removeSession(presenceInfo);
+	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
+
+	if (presenceInfoAdded) {
+	    pm.removePresenceInfo(presenceInfo);
+	}
+    }
+
+    private void setBystanderCount(int n) {
+	if (n == 0) {
+	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
+	} else {
+	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias + " + " + n);
+	}
     }
 
     public void processMessage(final Message message) {
-	logger.finest("process message " + message);
+	System.out.println("process message " + message);
 
 	if (message instanceof OrbEndCallMessage) {
 	    if (orbDialog != null) {
 		orbDialog.setVisible(false);
 	    }
+
+	    done();
 	    return;
 	}
 
 	if (message instanceof OrbSpeakingMessage) {
 	    OrbSpeakingMessage msg = (OrbSpeakingMessage) message;
 
-	    logger.info("Orb speaking " + msg.isSpeaking());
+	    logger.fine("Orb speaking " + msg.isSpeaking() + " cellID " + msg.getCellID()
+		+ " pi " + presenceInfo);
 
-	    pm.setSpeaking(presenceInfo, msg.isSpeaking());
+	    if (presenceInfoAdded) {
+		pm.setSpeaking(presenceInfo, msg.isSpeaking());
+	    }
 
 	    if (msg.isSpeaking()) {
-	        nameTag.setNameTag(EventType.STARTED_SPEAKING, 
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	        nameTag.setNameTag(EventType.STARTED_SPEAKING, username, usernameAlias);
 	    } else {
-	        nameTag.setNameTag(EventType.STOPPED_SPEAKING, 
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	        nameTag.setNameTag(EventType.STOPPED_SPEAKING, username, usernameAlias);
 	    }
 
 	    return;
@@ -277,96 +323,124 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	if (message instanceof OrbMuteCallMessage) {
 	    OrbMuteCallMessage msg = (OrbMuteCallMessage) message;
 
-	    pm.setMute(presenceInfo, msg.isMuted());
-
-	    if (msg.isMuted()) {
-                nameTag.setNameTag(EventType.MUTE, 
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
-	    } else {
-                nameTag.setNameTag(EventType.UNMUTE, 
-		    presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	    if (presenceInfoAdded) {
+		pm.setMute(presenceInfo, msg.isMuted());
 	    }
 
+	    if (msg.isMuted()) {
+                nameTag.setNameTag(EventType.MUTE, username, usernameAlias);
+	    } else {
+                nameTag.setNameTag(EventType.UNMUTE, username, usernameAlias);
+	    }
+
+	    return;
+	}
+
+	if (message instanceof OrbSetBystanderCountMessage) {
+	    OrbSetBystanderCountMessage msg = (OrbSetBystanderCountMessage) message;
+	    int n = msg.getBystanderCount();
+
+	    System.out.println("Orb bystander count " + n);
+
+	    setBystanderCount(n);
 	    return;
 	}
 
 	if (message instanceof OrbChangeNameMessage) {
 	    OrbChangeNameMessage msg = (OrbChangeNameMessage) message;
 
-	    username = msg.getName();
-	    pm.changeUsername(presenceInfo, username);
-	    nameTag.setNameTag(EventType.CHANGE_NAME, 
-		presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	    usernameAlias = msg.getName();
+
+	    if (presenceInfoAdded) {
+		presenceInfo.usernameAlias = usernameAlias;
+	        pm.changeUsernameAlias(presenceInfo);
+	    }
+
+	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 	    return;
 	}
 
 	if (message instanceof OrbAttachMessage) {
 	    OrbAttachMessage msg = (OrbAttachMessage) message;
 
-	    Cell newHostCell = ClientContext.getCellCache(session).getCell(msg.getHostCellID());
+	    attachOrb(msg.getHostCellID(), msg.isAttached());
+	    return;
+	}
 
-	    if (newHostCell == null) {
-		System.out.println("Can't find host cell for " + msg.getHostCellID());
+	if (message instanceof OrbAttachVirtualPlayerMessage) {
+	    OrbAttachVirtualPlayerMessage msg = (OrbAttachVirtualPlayerMessage) message;
+
+	    PresenceInfo info = pm.getPresenceInfo(msg.getHostCallID());
+
+	    if (info == null) {
+		logger.warning("OrbAttachVirtualPlayerMessage, no presence info for callID " 
+		    + msg.getHostCallID());
 		return;
 	    }
 
-	    if (logger.isLoggable(Level.FINE)) {
-	        String s = "None";
-
-	        if (hostCell != null) {
-	     	    s = hostCell.getCellID().toString();
-	        }
-
-	        logger.fine("Attach " + msg.isAttached() + " avatarCellID " 
-		    + avatarCell.getCellID() + " new host " + newHostCell.getCellID()
-		    + " current host " + s);
-	    }
-
-	    if (msg.isAttached()) {
-		if (hostCell != null) {
-		    /*
-		     * Someone else has attached the Orb.
-		     */
-		    detachOrb(false);
-		}
-
-		synchronized (detachedOrbList) {
-		    detachedOrbList.remove(orbCell);
-		}
-
-		ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(newHostCell);
-
-		if (attachedOrbList == null) {
-		    attachedOrbList = new ArrayList();
-
-		    attachedOrbMap.put(newHostCell, attachedOrbList);
-		} 
-
-		synchronized (attachedOrbList) {
-		    attachedOrbList.remove(orbCell);
-		    attachedOrbList.add(orbCell);
-		}
-		
-		hostCell = newHostCell;
-		newHostCell.addTransformChangeListener(this);
-		transformChanged(newHostCell, true);
-	    } else {
-		detachOrb(true);
-	    }
+	    attachOrb(info.cellID, true);
 	    return;
-	}
+ 	}
     }
 
-    private void detachOrb(boolean setTransform) {
-	if (hostCell == null) {
+    private void attachOrb(CellID hostCellID, boolean attach) {
+	Cell newHostCell = ClientContext.getCellCache(session).getCell(hostCellID);
+
+	if (newHostCell == null) {
+	    logger.warning("Can't find host cell for " + hostCellID);
 	    return;
 	}
 
-        hostCell.removeTransformChangeListener(this);
+	if (logger.isLoggable(Level.FINE)) {
+	    String s = "None";
 
-	if (setTransform) {
-	    transformChanged(hostCell, false);
+	    if (hostCell != null) {
+	     	s = hostCell.getCellID().toString();
+	    }
+
+	    logger.fine("Attach " + attach + " avatarCellID " 
+		+ avatarCell.getCellID() + " new host " + newHostCell.getCellID()
+		+ " current host " + s);
 	}
+
+	if (attach) {
+	    if (hostCell != null) {
+		/*
+		 * Someone else has attached the Orb.
+		 */
+		logger.fine("Detaching " + orbCell.getCellID() + " from "
+		    + hostCell.getCellID());
+		detachOrb(false);
+	    }
+
+	    synchronized (detachedOrbList) {
+		detachedOrbList.remove(orbCell);
+	    }
+
+	    ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(newHostCell);
+
+	    if (attachedOrbList == null) {
+		attachedOrbList = new ArrayList();
+
+		attachedOrbMap.put(newHostCell, attachedOrbList);
+	    } 
+
+	    synchronized (attachedOrbList) {
+		attachedOrbList.remove(orbCell);
+		attachedOrbList.add(orbCell);
+	    }
+		
+	    hostCell = newHostCell;
+	    newHostCell.addTransformChangeListener(this);
+	    positionAttachedOrbs(newHostCell);
+	} else {
+	    detachOrb(true);
+	}
+	return;
+    }
+
+    private void detachOrb(boolean positionAttachedOrbs) {
+        hostCell.removeTransformChangeListener(this);
 
 	ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
 
@@ -378,35 +452,22 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    detachedOrbList.add(orbCell);
 	}
 
+	if (positionAttachedOrbs) {
+	    positionAttachedOrbs(hostCell);
+	}
+
 	if (orbDialog != null) {
             orbDialog.orbDetached();
 	}
+
 	hostCell = null;
     }
 
     public void transformChanged(Cell cell, ChangeSource source) {
-	transformChanged(cell, true);
-    }
-
-    private void transformChanged(Cell cell, boolean isAttached) {
 	logger.finest("Cell " + cell.getName() + " moved to " 
 	    + cell.getLocalTransform());
 
-	CellTransform transform = cell.getLocalTransform();
-	Vector3f translation = transform.getTranslation(null);
-	
-	if (isAttached) {
-	    // Position ourself based on other orbs
-	    float orbHeight = getOrbHeight();
-
-	    translation.setY(orbHeight);  // Raise orb.
-	    followMe.setTargetPosition(translation);
-	} else {
-	    translation.setZ(translation.getZ() + (float) .2);
-	    translation.setY((float) .5);  // lower orb.
-	    followMe.setTargetPosition(translation,
-		transform.getRotation(null));
-	}
+ 	positionAttachedOrbs(cell);
     }
 
     public void positionChanged(Vector3f position) {
@@ -416,43 +477,24 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     public void targetReached(Vector3f position) {
     }
 
-    private float getOrbHeight() {
-	int i = detachedOrbList.indexOf(orbCell);
-
-	if (i >= 0) {
-	    return (float) (.1 + (.3 * i)); 
-	}
-
-	i = 0;
-
-	if (hostCell != null) {
-	    ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
-
-	    if (attachedOrbList != null) {
-	         i = attachedOrbList.indexOf(orbCell);
-
-	        if (i < 0) {
-	            i = 0;
-	        }
-	    } 
-	}
-
-	return (float) (2.2 + (.3 * i)); 
-    }
-
     private void reorderDetachedOrbs() {
 	synchronized (detachedOrbList) {
-	    for (int i = 0 ; i < detachedOrbList.size(); i++) {
-		transformChanged(detachedOrbList.get(i), true);
-	    }
+	    //for (int i = 0 ; i < detachedOrbList.size(); i++) {
+	    //    translation.setZ(translation.getZ() + (float) .2);
+	    //    translation.setY((float) .5);  // lower orb.
+	    //    followMe.setTargetPosition(translation,
+	    //	    transform.getRotation(null));
+	    //}
 	}
+
     }
 
-    private void reorderAttachedOrbs() {
+    private void positionAttachedOrbs(Cell hostCell) {
 	if (hostCell == null) {
 	    return;
 	}
-	
+
+	CellTransform transform = hostCell.getLocalTransform();
 	ArrayList<OrbCell> attachedOrbList = attachedOrbMap.get(hostCell);
 
 	if (attachedOrbList == null) {
@@ -461,7 +503,13 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	synchronized (attachedOrbList) {
 	    for (int i = 0; i < attachedOrbList.size(); i++) {
-		transformChanged(attachedOrbList.get(i), true);
+
+		Vector3f translation = new Vector3f();
+		transform.getTranslation(translation);
+
+		translation.setY((float) (2.2 + (.3 * i)));  // Raise orb.
+		attachedOrbList.get(i).getOrbMessageHandler().getFollowMe().setTargetPosition(
+		    translation);
 	    }
 	}
     }
@@ -473,9 +521,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    /*
 	     * If it's a virtual orb for me, ignore it.
 	     */
-	    if (callID.equals(SoftphoneControlImpl.getInstance().getCallID()) == true) {
-		return;
-	    }
+	    //if (callID.equals(SoftphoneControlImpl.getInstance().getCallID()) == true) {
+	    //	return;
+	    //}
 	}
 
 	if (orbDialog == null) {

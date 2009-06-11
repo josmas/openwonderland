@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderConnectionType;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchMessage;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchStatusMessage;
+import org.jdesktop.wonderland.modules.sas.common.SasProviderAppExittedMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
 
 /**
@@ -71,27 +72,28 @@ public class SasProviderConnection extends BaseConnection {
             return;
         }
         
-        System.err.println("**** Received message from server: " + message);
+        logger.warning("Received message from server: " + message);
 
         if (!(message instanceof SasProviderLaunchMessage)) {
             throw new RuntimeException("Unexpected message type "+message.getClass().getName());
         }
         SasProviderLaunchMessage msg = (SasProviderLaunchMessage) message;
 
-        System.err.println("################### Received launch message from server");
-        System.err.println("execCap = " + msg.getExecutionCapability());
-        System.err.println("appName = " + msg.getAppName());
-        System.err.println("command = " + msg.getCommand());
+        logger.warning("Received launch message from server");
+        logger.warning("execCap = " + msg.getExecutionCapability());
+        logger.warning("appName = " + msg.getAppName());
+        logger.warning("command = " + msg.getCommand());
 
         if (listener == null) {
             logger.warning("No provider listener is registered.");
             sendResponse(msg.getMessageID(), null);
         }
 
-        System.err.println("################### Attempting to launch X app");
+        logger.warning("Attempting to launch X app");
         String connInfo = listener.launch(msg.getAppName(), msg.getCommand(), 
-                                          new Vector2f(0.01f, 0.01f)/*TODO: msg.getPixelScale()*/);
-        System.err.println("connInfo = " + connInfo);
+                                          new Vector2f(0.01f, 0.01f)/*TODO: msg.getPixelScale()*/,
+                                          this, msg.getMessageID());
+        logger.warning("connInfo = " + connInfo);
         sendResponse(msg.getMessageID(), connInfo);
     }
     
@@ -115,18 +117,38 @@ public class SasProviderConnection extends BaseConnection {
             status = SasProviderLaunchStatusMessage.LaunchStatus.SUCCESS;
         }
 
-        logger.severe("########### Respond with status message = " + status);
-        logger.severe("status = " + status);
-        logger.severe("launchMessageID = " + launchMessageID);
-        logger.severe("connInfo = " + connInfo);
+        logger.info("Respond with status message = " + status);
+        logger.info("status = " + status);
+        logger.info("launchMessageID = " + launchMessageID);
+        logger.info("connInfo = " + connInfo);
 
         try {
             SasProviderLaunchStatusMessage msg = 
                 new SasProviderLaunchStatusMessage(status, launchMessageID, connInfo);
             send(msg);
-            logger.severe("########### sent success message");
+            logger.info("sent success message");
         } catch (Exception ex) {
             logger.warning("Message send error while responding to launch message, msgID = " + 
+                           launchMessageID);
+        }
+    }
+    
+    /**
+     * Called when an app exits.
+     * @param launchMessageID The message ID of the message that launched the app.
+     * @param exitValue The exit value of the app.
+     */
+    public void appExitted (MessageID launchMessageID, int exitValue) {
+        logger.info("App exitted.");
+        logger.info("launchMessageID = " + launchMessageID);
+        logger.info("exitValue = " + exitValue);
+
+        try {
+            SasProviderAppExittedMessage msg = 
+                new SasProviderAppExittedMessage(launchMessageID, exitValue);
+            send(msg);
+        } catch (Exception ex) {
+            logger.warning("Message send error sending app exitted message, msgID = " + 
                            launchMessageID);
         }
     }

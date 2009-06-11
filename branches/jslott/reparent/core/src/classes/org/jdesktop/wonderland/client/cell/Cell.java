@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.ComponentChangeListener.ChangeType;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -237,7 +238,7 @@ public class Cell {
 
             // Set the status of the component, making sure to pass through all
             // intermediate statues.
-            component.setComponentStatus(currentStatus);
+            component.setComponentStatus(currentStatus, true);
         }
 
         // Tell all listeners of a new component. Should we only do this if the
@@ -257,7 +258,7 @@ public class Cell {
     public void removeComponent(Class<? extends CellComponent> componentClass) {
         CellComponent component = components.remove(componentClass);
         if (component != null) {
-            component.setComponentStatus(CellStatus.DISK);
+            component.setComponentStatus(CellStatus.DISK, false);
             notifyComponentChangeListeners(ChangeType.REMOVED, component);
         }
     }
@@ -523,7 +524,7 @@ public class Cell {
      * Cell states
      *
      * DISK - Cell is on disk with no memory footprint
-     * BOUNDS - Cell object is in memory with bounds initialized, NO geometry is loaded
+     * INACTIVE - Cell object is in memory with bounds initialized, NO geometry is loaded
      * INACTIVE - All cell data is in memory
      * ACTIVE - Cell is within the avatars proximity bounds
      * VISIBLE - Cell is in the view frustum
@@ -536,6 +537,26 @@ public class Cell {
         }
     }
 
+    private void setRendererStatus(CellRenderer rend, CellStatus status) {
+        int currentRendStatus = rend.getStatus().ordinal();
+        int requiredRendStatus = status.ordinal();
+
+        if (currentRendStatus == requiredRendStatus)
+            return;
+
+        boolean increasing;
+        int dir = (requiredRendStatus > currentRendStatus ? 1 : -1);
+        if (dir==1)
+            increasing = true;
+        else
+            increasing = false;
+
+        while (currentRendStatus != requiredRendStatus) {
+            currentRendStatus += dir;
+            rend.setStatus(CellStatus.values()[currentRendStatus], increasing);
+        }
+    }
+
     /**
      * Set the status of this cell
      *
@@ -543,12 +564,12 @@ public class Cell {
      * Cell states
      *
      * DISK - Cell is on disk with no memory footprint
-     * BOUNDS - Cell object is in memory with bounds initialized, NO geometry is loaded
+     * INACTIVE - Cell object is in memory with bounds initialized, NO geometry is loaded
      * INACTIVE - All cell data is in memory
      * ACTIVE - Cell is within the avatars proximity bounds
      * VISIBLE - Cell is in the view frustum
      * 
-     * The system guarantees that if a change is made between non adjacent status, say from BOUNDS to VISIBLE
+     * The system guarantees that if a change is made between non adjacent status, say from INACTIVE to VISIBLE
      * that setStatus will automatically be called for the intermediate values.
      * 
      * If you overload this method in your own class you must call super.setStatus(...) as the first operation
@@ -558,15 +579,11 @@ public class Cell {
      * from implementations of the cache.
      *
      * @param status the cell status
-     * @return true if the status was changed, false if the new and previous status are the same
+     * @param increasing indicates if the status is increasing
      */
-    public boolean setStatus(CellStatus status) {
-        synchronized (statusLock) {
-            if (currentStatus == status) {
-                return false;
-            }
-
-            if (status == CellStatus.BOUNDS) {
+    protected void setStatus(CellStatus status, boolean increasing) {
+        synchronized(statusLock) {
+            if (status == CellStatus.INACTIVE && increasing) {
                 resolveAutoComponentAnnotationsForCell();
                 CellComponent[] compList = components.values().toArray(new CellComponent[components.size()]);
                 for (CellComponent c : compList) {
@@ -577,45 +594,47 @@ public class Cell {
             currentStatus = status;
 
             for (CellComponent component : components.values()) {
-                component.setComponentStatus(status);
+                component.setComponentStatus(status, increasing);
             }
 
             for (CellRenderer renderer : cellRenderers.values()) {
-                renderer.setStatus(status);
+                setRendererStatus(renderer, status);
             }
 
             switch (status) {
                 case DISK:
-                    if (transformChangeListeners != null) {
-                        transformChangeListeners.clear();
-                    }
+                    if (!increasing) {
+                        if (transformChangeListeners != null) {
+                            transformChangeListeners.clear();
+                        }
 
-                    // Also, remove the message listener for updates to the
-                    // cell state
-                    ChannelComponent channel = getComponent(ChannelComponent.class);
-                    if (channel != null) {
-                        channel.removeMessageReceiver(CellClientStateMessage.class);
-                        channel.removeMessageReceiver(CellClientComponentMessage.class);
-                    }
+                        // Also, remove the message listener for updates to the
+                        // cell state
+                        ChannelComponent channel = getComponent(ChannelComponent.class);
+                        if (channel != null) {
+                            channel.removeMessageReceiver(CellClientStateMessage.class);
+                            channel.removeMessageReceiver(CellClientComponentMessage.class);
+                        }
 
-                    // remove the receivers
-                    clientStateReceiver = null;
-                    componentReceiver = null;
+                        // remove the receivers
+                        clientStateReceiver = null;
+                        componentReceiver = null;
 
-                    // Now clear all components
-                    if (components != null) {
-                        components.clear();
+                        // Now clear all components
+                        if (components != null) {
+                            components.clear();
+                        }
                     }
                     break;
 
-                case BOUNDS:
-                    if (clientStateReceiver == null) {
+                case ACTIVE:
+                    if (increasing && clientStateReceiver == null) {
                         // Add the message receiver for all messages meant to
                         // update the state cell on the client-side
                         clientStateReceiver = new CellClientStateMessageReceiver(this);
                         componentReceiver = new CellComponentMessageReceiver(this);
 
-                        channel = getComponent(ChannelComponent.class);
+                        ChannelComponent channel = getComponent(ChannelComponent.class);
                         if (channel != null) {
                             channel.addMessageReceiver(CellClientStateMessage.class,
                                                        clientStateReceiver);
@@ -624,16 +643,23 @@ public class Cell {
                         }
                     }
                     break;
+                case RENDERING :
+                    if (increasing) {
+                        logger.warning("STATE ENTER "+this);
+                        try {
+                            getCellRenderer(ClientContext.getRendererType());
+                        } catch(Exception e) {
+                            logger.log(Level.SEVERE, "Failed to get Cell Renderer for cell "+getClass().getName(), e);
+                        }
+                    }
+                 break;
             }
         }
-
         // update both local and global listeners.  This is done after the
         // lock is released, so the status may change again before the listeners
         // are called
         notifyStatusChangeListeners(status);
         CellManager.getCellManager().notifyCellStatusChange(this, status);
-        
-        return true;
     }
 
     /**
@@ -677,7 +703,7 @@ public class Cell {
                 }
 
                 Class componentClazz = f.getType();
-                CellComponent comp = getComponent(componentClazz);
+                CellComponent comp = getComponent(CellComponent.getLookupClass(componentClazz));
                 if (comp == null) {
                     try {
                         comp = (CellComponent) componentClazz.getConstructor(Cell.class).newInstance(this);
@@ -831,16 +857,17 @@ public class Cell {
      * @return the renderer, or null if no renderer of the specified type is available
      */
     public CellRenderer getCellRenderer(RendererType rendererType) {
-        CellRenderer ret = cellRenderers.get(rendererType);
-        if (ret == null) {
-            ret = createCellRenderer(rendererType);
-            if (ret != null) {
-                cellRenderers.put(rendererType, ret);
-                ret.setStatus(currentStatus);
+        synchronized(cellRenderers) {
+            CellRenderer ret = cellRenderers.get(rendererType);
+            if (ret == null) {
+                ret = createCellRenderer(rendererType);
+                if (ret != null) {
+                    cellRenderers.put(rendererType, ret);
+                    setRendererStatus(ret, currentStatus);
+                }
             }
+            return ret;
         }
-
-        return ret;
     }
 
     /**

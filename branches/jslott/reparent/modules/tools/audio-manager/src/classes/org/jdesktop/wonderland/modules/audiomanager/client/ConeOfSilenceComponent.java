@@ -21,8 +21,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.cell.ProximityComponent;
-import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -38,61 +36,45 @@ import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
  * @author jprovino
  */
 @ExperimentalAPI
-public class ConeOfSilenceComponent extends CellComponent implements ProximityListener {
-    
-    private static Logger logger = Logger.getLogger(ConeOfSilenceComponent.class.getName());
+public class ConeOfSilenceComponent extends CellComponent {
 
+    private static Logger logger = Logger.getLogger(ConeOfSilenceComponent.class.getName());
     private ChannelComponent channelComp;
     private ChannelComponent.ComponentMessageReceiver msgReceiver;
-    
+
     public ConeOfSilenceComponent(Cell cell) {
         super(cell);
-
-	ProximityComponent comp = new ProximityComponent(cell);
-
-	BoundingVolume[] boundingVolume = new BoundingVolume[1];
-
-	boundingVolume[0] = cell.getLocalBounds();
-
-	comp.addProximityListener(this, boundingVolume);
-
-	cell.addComponent(comp);
     }
-    
+
     @Override
-    public void setStatus(CellStatus status) {
-        switch(status) {
-	case DISK:
-	    if (msgReceiver != null) {
-                channelComp.removeMessageReceiver(CellServerComponentMessage.class);
-                msgReceiver = null;
-            }
-            break;
+    protected void setStatus(CellStatus status, boolean increasing) {
+        switch (status) {
+            case DISK:
+                if (msgReceiver != null) {
+                    channelComp.removeMessageReceiver(CellServerComponentMessage.class);
+                    msgReceiver = null;
+                }
+                break;
 
-	case BOUNDS:
-	    if (msgReceiver == null) {
-                msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-                    public void messageReceived(CellMessage message) {
-                    }
-                };
+            case ACTIVE:
+                if (increasing && msgReceiver == null) {
+                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
-                channelComp = cell.getComponent(ChannelComponent.class);
-		channelComp.addMessageReceiver(CellServerComponentMessage.class, msgReceiver);
-	    }
-            break;
+                        public void messageReceived(CellMessage message) {
+                        }
+                    };
+
+                    channelComp = cell.getComponent(ChannelComponent.class);
+                    channelComp.addMessageReceiver(CellServerComponentMessage.class, msgReceiver);
+                }
+                break;
         }
     }
 
     @Override
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
+
+        logger.info("setClientState for cone! " + clientState);
     }
-
-    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume,
-            int proximityIndex) {
-
-        logger.info("COS cellID " + cell.getCellID() + " viewCellID " + viewCellID
- + " entered = " + entered);
-    }
-
 }

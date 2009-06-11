@@ -43,16 +43,35 @@ public class NameTagNode extends Node {
     public static final Color SPEAKING_COLOR = Color.RED;
     public static final Color NOT_SPEAKING_COLOR = new Color(1f, 1f, 1f);
     public static final Color CONE_OF_SILENCE_COLOR = Color.BLACK;
-    public static final Font REAL_NAME_FONT = Font.decode("Sans PLAIN 40");
-    public static final Font ALIAS_NAME_FONT = Font.decode("Sans ITALIC 40");
+
+    public static final String DEFAULT_FONT_NAME = "Sans";
+    public static final String DEFAULT_FONT_NAME_TYPE = "PLAIN";
+    public static final String DEFAULT_FONT_ALIAS_TYPE = "ITALIC";
+
+    public static final int SMALL_FONT_SIZE = 20;
+    public static final int DEFAULT_FONT_SIZE = 40;
+    public static final int LARGE_FONT_SIZE = 50;
+
+    public static final Font REAL_NAME_FONT = 
+        fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_NAME_TYPE, DEFAULT_FONT_SIZE);
+
+    public static final Font ALIAS_NAME_FONT = 
+        fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_ALIAS_TYPE, DEFAULT_FONT_SIZE);
+
     private Color foregroundColor = NOT_SPEAKING_COLOR;
     
     private Color backgroundColor = new Color(0f, 0f, 0f);
+
     private Font font = REAL_NAME_FONT;
+
     public static final String LEFT_MUTE = "[";
     public static final String RIGHT_MUTE = "]";
+
     public static final String SPEAKING = "...";
+
     private boolean done;
+
+    private TextLabel2D label=null;
 
     public enum EventType {
         STARTED_SPEAKING,
@@ -61,16 +80,32 @@ public class NameTagNode extends Node {
         UNMUTE,
         CHANGE_NAME,
 	ENTERED_CONE_OF_SILENCE,
-	EXITED_CONE_OF_SILENCE
+	EXITED_CONE_OF_SILENCE,
+	HIDE,
+	SMALL_FONT,
+	REGULAR_FONT,
+	LARGE_FONT
     }
     private final float height;
     private String name;
     private Spatial q;
     private String usernameAlias;
+    private boolean visible;
+    private int fontSize;
+
+    private static HashMap<String, NameTagNode> nameTagMap = new HashMap();
+
+    private static Font fontDecode (String fontName, String fontType, int fontSize) {
+        return Font.decode(fontName + " " + fontType + " " + fontSize);
+    }
 
     public NameTagNode(String name, float height) {
         this.name = name;
         this.height = height;
+        visible = true;
+
+	nameTagMap.put(name, this);
+
         setNameTag(name);
     }
 
@@ -81,6 +116,8 @@ public class NameTagNode extends Node {
 
         done = true;
 
+	nameTagMap.remove(name);
+    
         detachChild(q);
     }
 
@@ -122,12 +159,67 @@ public class NameTagNode extends Node {
 
     public void setFont(Font font) {
         this.font = font;
+        updateFont();
     }
+
+    /**
+     * Sets the font to a font of the default name but with the given size.
+     */
+    public void setSizedDefaultFont(int fontSize) {
+        this.fontSize = fontSize;
+        Font newFont;
+        if (name.equals(usernameAlias) == false) {
+            newFont = fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_ALIAS_TYPE, fontSize);
+        } else {
+            newFont = fontDecode(DEFAULT_FONT_NAME, DEFAULT_FONT_NAME_TYPE, fontSize);
+	}
+        setFont(newFont);
+    }
+
+    public void setVisible (boolean visible) {
+        this.visible = visible;
+        setNameTag(name);
+    }
+
+    /**
+     * Returns whether the name tag is visible. 
+     */
+    public boolean isVisible () {
+        return visible;
+    }
+
+    public static void setMyNameTag(EventType eventType, String username,
+	    String usernameAlias) {
+
+	NameTagNode nameTag = nameTagMap.get(username);
+
+	if (nameTag == null) {
+	    System.out.println("Can't find name tag for " + username);
+	    return;
+	}
+
+	nameTag.setNameTag(eventType, username, usernameAlias);
+    }
+
+    public static void setOtherNameTags(EventType eventType, String username, String usernameAlias) {
+	String[] keys = nameTagMap.keySet().toArray(new String[0]);
+
+	for (int i = 0; i < keys.length; i++) {
+	    if (keys[i].equals(username)) {
+		continue;
+	    }
+
+	    NameTagNode nameTag = nameTagMap.get(keys[i]);
+	    nameTag.setNameTag(eventType, username, usernameAlias);
+	}
+    }
+
     private boolean inConeOfSilence;
+    private boolean isSpeaking;
     private boolean isMuted;
 
     public void setNameTag(EventType eventType, String username, String usernameAlias) {
-        setNameTag(eventType, username, usernameAlias, null, null);
+        setNameTag(eventType, username, usernameAlias, foregroundColor, font);
     }
 
     public void setNameTag(EventType eventType, String username, String usernameAlias,
@@ -135,6 +227,30 @@ public class NameTagNode extends Node {
 
         this.usernameAlias = usernameAlias;
 
+	switch (eventType) {
+	case HIDE:
+	    setVisible(false);
+	    return;
+
+	case SMALL_FONT:
+	    setVisible(false);
+	    setSizedDefaultFont(SMALL_FONT_SIZE);
+	    setVisible(true);
+	    return;
+	
+	case REGULAR_FONT:
+	    setVisible(false);
+	    setSizedDefaultFont(DEFAULT_FONT_SIZE);
+	    setVisible(true);
+	    return;
+	
+	case LARGE_FONT:
+	    setVisible(false);
+	    setSizedDefaultFont(LARGE_FONT_SIZE);
+	    setVisible(true);
+	    return;
+	}
+	
 	if (eventType == EventType.ENTERED_CONE_OF_SILENCE) {
 	    inConeOfSilence = true;
 	    return;
@@ -148,11 +264,13 @@ public class NameTagNode extends Node {
 
 	switch (eventType) {
 	case STARTED_SPEAKING:
+	    isSpeaking = true;
  	    displayName = getDisplayName(usernameAlias, true, false);
 	    setForegroundColor(SPEAKING_COLOR);
 	    break;
 	
 	case STOPPED_SPEAKING:
+	    isSpeaking = false;
  	    displayName = getDisplayName(usernameAlias, false, false);
 	    setForegroundColor(NOT_SPEAKING_COLOR);
 	    break;
@@ -170,6 +288,8 @@ public class NameTagNode extends Node {
 	    break;
 
         case CHANGE_NAME:
+	    this.usernameAlias = usernameAlias;
+	    displayName = getDisplayName(usernameAlias, isSpeaking, isMuted);
             break;
         }
 
@@ -179,7 +299,9 @@ public class NameTagNode extends Node {
 
         if (name.equals(usernameAlias) == false) {
             setFont(ALIAS_NAME_FONT);
-        }
+        } else {
+            setFont(REAL_NAME_FONT);
+	}
 
         if (foregroundColor != null) {
             setForegroundColor(foregroundColor);
@@ -203,23 +325,35 @@ public class NameTagNode extends Node {
     }
 
     private void setNameTagImpl(String name) {
-        if (q != null) {
-            detachChild(q);
+        if (visible && name != null) {
+            if (label==null) {
+                label = new TextLabel2D(name, foregroundColor, backgroundColor, 0.3f, true, font);
+                label.setLocalTranslation(0, height, 0);
+
+                Matrix3f rot = new Matrix3f();
+                rot.fromAngleAxis((float) Math.PI, new Vector3f(0f, 1f, 0f));
+                label.setLocalRotation(rot);
+
+                attachChild(label);
+            } else {
+                label.setText(name, foregroundColor, backgroundColor);
+            }
+        } else {
+            if (label != null) {
+                detachChild(label);
+                label = null;
+            }
         }
+    }
 
-        TextLabel2D label = new TextLabel2D(name, foregroundColor, backgroundColor);
-
-        if (font != null) {
-            label.setFont(font);
-        }
-
-        q = label.getBillboard(0.3f);
-        q.setLocalTranslation(0, height, 0);
-
-        Matrix3f rot = new Matrix3f();
-        rot.fromAngleAxis((float) Math.PI, new Vector3f(0f, 1f, 0f));
-        q.setLocalRotation(rot);
-
-        attachChild(q);
+    private void updateFont () {
+        if (label != null && font != null) {
+            ClientContextJME.getSceneWorker().addWorker(new WorkCommit() {
+                public void commit() {
+                    label.setFont(font);
+                    ClientContextJME.getWorldManager().addToUpdateList(NameTagNode.this);
+                }
+            });
+        }        
     }
 }

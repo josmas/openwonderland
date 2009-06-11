@@ -79,7 +79,7 @@ public class AvatarRenderManager {
             Constructor con = clazz.getConstructor(Cell.class);
             return (CellRenderer) con.newInstance(cell);
         } catch (Exception e) {
-            Logger.getAnonymousLogger().log(Level.INFO, "Failed to create Renderer because ", e);
+            Logger.getAnonymousLogger().log(Level.WARNING, "Failed to create Renderer because ", e);
             throw new RendererUnavailable(clazz.getName());
         }
     }

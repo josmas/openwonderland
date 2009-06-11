@@ -49,8 +49,8 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
     private static final Logger logger =
             Logger.getLogger(DarkstarWebLogin.class.getName());
 
-    private static final Map<DarkstarRunner, ServerSessionManager> sessions =
-            new LinkedHashMap<DarkstarRunner, ServerSessionManager>();
+    private static final Map<DarkstarRunnerImpl, ServerSessionManager> sessions =
+            new LinkedHashMap<DarkstarRunnerImpl, ServerSessionManager>();
 
     private static final Set<DarkstarServerListener> listeners =
             new CopyOnWriteArraySet<DarkstarServerListener>();
@@ -74,9 +74,9 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
         RunManager.getInstance().addRunnerListener(this);
 
         // if any runners already exist, add them
-        Collection<DarkstarRunner> runners =
-                RunManager.getInstance().getAll(DarkstarRunner.class);
-        for (DarkstarRunner dr : runners) {
+        Collection<DarkstarRunnerImpl> runners =
+                RunManager.getInstance().getAll(DarkstarRunnerImpl.class);
+        for (DarkstarRunnerImpl dr : runners) {
             runnerAdded(dr);
         }
     }
@@ -90,7 +90,7 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
     public void addDarkstarServerListener(DarkstarServerListener listener) {
         listeners.add(listener);
 
-        for (Entry<DarkstarRunner, ServerSessionManager> e : sessions.entrySet()) {
+        for (Entry<DarkstarRunnerImpl, ServerSessionManager> e : sessions.entrySet()) {
             listener.serverStarted(e.getKey(), e.getValue());
         }
     }
@@ -108,7 +108,7 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
      * @param runner the runner that was added
      */
     public void runnerAdded(Runner runner) {
-        if (!(runner instanceof DarkstarRunner)) {
+        if (!(runner instanceof DarkstarRunnerImpl)) {
             return;
         }
 
@@ -123,7 +123,7 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
      * @param runner the runner that was removed
      */
     public void runnerRemoved(Runner runner) {
-        if (!(runner instanceof DarkstarRunner)) {
+        if (!(runner instanceof DarkstarRunnerImpl)) {
             return;
         }
 
@@ -143,10 +143,10 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
             public void run() {
                 switch (status) {
                     case RUNNING:
-                        fireServerStarted((DarkstarRunner) runner);
+                        fireServerStarted((DarkstarRunnerImpl) runner);
                         break;
                     case NOT_RUNNING:
-                        fireServerStopped((DarkstarRunner) runner);
+                        fireServerStopped((DarkstarRunnerImpl) runner);
                         break;
                 }
             }
@@ -157,7 +157,7 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
      * Notify listeners of a server starting
      * @param runner the runner that started
      */
-    protected void fireServerStarted(DarkstarRunner runner) {
+    protected void fireServerStarted(DarkstarRunnerImpl runner) {
 
         try {
             // XXX TODO: Make server-specific
@@ -177,7 +177,7 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
      * Notify listeners of a server stopping
      * @param runner the runner that stopped
      */
-    protected void fireServerStopped(DarkstarRunner runner) {
+    protected void fireServerStopped(DarkstarRunnerImpl runner) {
         for (DarkstarServerListener l : listeners) {
             l.serverStopped(runner);
         }
@@ -189,7 +189,7 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
     public interface DarkstarServerListener {
         /**
          * Notification that the server has started up
-         * @param runner the DarkstarRunner that started up
+         * @param runner the DarkstarRunnerImpl that started up
          * @param sessionManager a server sesssion manager that can be
          * used to connect to this server
          */
@@ -198,7 +198,7 @@ public class DarkstarWebLogin implements RunnerListener, RunnerStatusListener {
 
         /**
          * Notification that the server has shut down
-         * @param runner the DarkstarRunner that shut down
+         * @param runner the DarkstarRunnerImpl that shut down
          */
         public void serverStopped(DarkstarRunner runner);
     }

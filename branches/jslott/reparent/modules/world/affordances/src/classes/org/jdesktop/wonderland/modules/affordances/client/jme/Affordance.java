@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.affordances.client.jme;
 
 import com.jme.scene.Node;
+import com.jme.scene.state.RenderState.StateType;
+import com.jme.scene.state.ZBufferState;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
@@ -25,22 +27,17 @@ import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
-import org.jdesktop.wonderland.client.cell.ComponentChangeListener.ChangeType;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
-import org.jdesktop.wonderland.client.jme.CellRefComponent;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
-import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
-import org.jdesktop.wonderland.common.messages.ErrorMessage;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
-import org.jdesktop.wonderland.modules.affordances.client.cell.AffordanceException;
 
 /**
- * The base class of all Affordances (manipulators)
+ * The base class of all Affordances (manipulators), e.g. for translation,
+ * rotation, and resizing. This base class is an MTGame Entity and can be
+ * added directly to the world scene graph. This class cannot be created directly
+ * since it is abstract: rather one of the subclasses must be created.
+ * <p>
+ * The setVisible() method makes the affordance either visible or not in the
+ * world scene graph.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
@@ -48,53 +45,74 @@ public abstract class Affordance extends Entity {
 
     protected static Logger logger = Logger.getLogger(Affordance.class.getName());
     protected Node rootNode;
-    protected MovableComponent movableComp;
-    protected Cell cell = null;
-    
+    private boolean isVisible = false;
+
+    protected static ZBufferState zbuf = null;
+    static {
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        zbuf = (ZBufferState)rm.createRendererState(StateType.ZBuffer);
+        zbuf.setEnabled(true);
+        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+    }
+
     /** Constructor, takes the cell */
-    public Affordance(String name, Cell cell) throws AffordanceException {
+    protected Affordance(String name) {
         super(name);
-        this.cell = cell;
 
         // Create the root node of the cell and the render component to attach
         // to the Entity with the node
         rootNode = new Node();
-        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        RenderComponent rc = rm.createRenderComponent(rootNode);
         this.addComponent(RenderComponent.class, rc);
+    }
 
-        // Add a cell ref component to the entity. This will let us associated
-        // the entity with the cell and make it easy to detect when we click
-        // off of the cell
-        CellRefComponent refComponent = new CellRefComponent(cell);
-        this.addComponent(CellRefComponent.class, refComponent);
+    /**
+     * Returns the root Node for the affordance Entity.
+     *
+     * @param The Entity root Node
+     */
+    public Node getRootNode() {
+        return rootNode;
+    }
 
-        // Check to see if the movable component already exists on the cell. If
-        // not, try to add it
-        checkMovableComponent();
-        if (movableComp == null) {
-            addMovableComponent(cell);
+    /**
+     * Sets whether the affordance is visible (true) or invisible (false).
+     *
+     * @param visible True to make the affordance visible, false to not
+     */
+    public synchronized void setVisible(boolean visible) {
+        // If we want to make the affordance visible and it already is not
+        // visible, then make it visible.
+        if (visible == true && isVisible == false) {
+            RenderUpdater updater = new RenderUpdater() {
+                public void update(Object arg0) {
+                    Affordance affordance = (Affordance)arg0;
+                    Node rootNode = affordance.getRootNode();
+                    ClientContextJME.getWorldManager().addEntity(affordance);
+                    ClientContextJME.getWorldManager().addToUpdateList(rootNode);
+                }
+            };
+            WorldManager wm = ClientContextJME.getWorldManager();
+            wm.addRenderUpdater(updater, this);
+            isVisible = true;
+            return;
         }
 
-    }
-
-    /**
-     * Returns the affordance's cell.
-     *
-     * @return The Cell
-     */
-    protected Cell getCell() {
-        return this.cell;
-    }
-
-    /**
-     * Returns the scene root for the Cell's scene graph
-     *
-     * @return The scene graph root Node
-     */
-    protected Node getSceneGraphRoot() {
-        CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-        RenderComponent cellRC = (RenderComponent)renderer.getEntity().getComponent(RenderComponent.class);
-        return cellRC.getSceneRoot();
+        // If we want to make the affordance invisible and it already is
+        // visible, then make it invisible
+        if (visible == false && isVisible == true) {
+            RenderUpdater updater = new RenderUpdater() {
+                public void update(Object arg0) {
+                    Affordance affordance = (Affordance)arg0;
+                    ClientContextJME.getWorldManager().removeEntity(affordance);
+                }
+            };
+            WorldManager wm = ClientContextJME.getWorldManager();
+            wm.addRenderUpdater(updater, this);
+            isVisible = false;
+            return;
+        }
     }
 
     /**
@@ -106,90 +124,21 @@ public abstract class Affordance extends Entity {
     public abstract void setSize(float size);
 
     /**
-     * Removes the affordance from the cell.
+     * Removes the affordance from the cell and cleans it up so that it may
+     * be garbage collected. Once this method is invoked, the affordance can
+     * no longer be used and must be recreated. If the affordance is currently
+     * visible, this method makes it invisible first.
      */
-    public abstract void remove();
-
-    /**
-     * Adds this affordance to the scene graph.
-     */
-    public void addAffordanceToScene() {
-        // We should add a listener just in case the movable component gets
-        // added. We add the listener first, just in case the component gets
-        // added inbetween the time we check and the time we add the listener.
-        if (movableComp == null) {
-            cell.addComponentChangeListener(new ComponentChangeListener() {
-                public void componentChanged(Cell cell, ChangeType type, CellComponent component) {
-                    if (type == ChangeType.ADDED && component instanceof MovableComponent) {
-                        checkMovableComponent();
-                        updateSceneGraph();
-                    }
-                }
-            });
-        }
-
-        // Recheck whether the movable component exists here. If so, then add
-        // to the scene graph right away.
-        checkMovableComponent();
-        updateSceneGraph();
-
+    public void dispose() {
+        setVisible(false);
     }
 
     /**
-     * Checks whether the movable component exists and sets it if so.
+     * Make this entity pickable by adding a collision component to it.
      */
-    private synchronized void checkMovableComponent() {
-        if (movableComp == null) {
-            movableComp = cell.getComponent(MovableComponent.class);
-        }
-    }
-
-    /* True if the entity has been added to the scene graph. */
-    private boolean addedToSceneGraph = false;
-
-    /**
-     * Updates the scene graph to add this affordance
-     */
-    private synchronized void updateSceneGraph() {
-        // Since we are updating the scene graph, we need to put this in a
-        // special update thread. Also this method is synchronized and we keep
-        // track of whether it has been added in a boolean. This ensures that
-        // it only gets added once.
-        if (addedToSceneGraph == false) {
-            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-                public void update(Object arg0) {
-                    ClientContextJME.getWorldManager().addEntity((Entity) arg0);
-                    ClientContextJME.getWorldManager().addToUpdateList(((Affordance) arg0).rootNode);
-                }
-            }, this);
-            addedToSceneGraph = true;
-        }
-    }
-
-    /**
-     * Adds the movable component, assumes it does not already exist.
-     *
-     * @param affordance
-     * @param cell
-     * @throws AffordanceException Upon error adding the component
-     */
-    private void addMovableComponent(Cell cell) throws AffordanceException {
-        
-        // Go ahead and try to add the affordance. If we cannot, then throw
-        // an exception right away.
-        String className = "org.jdesktop.wonderland.server.cell.MovableComponentMO";
-        CellServerComponentMessage cscm = CellServerComponentMessage.newAddMessage(cell.getCellID(), className);
-        ResponseMessage response = cell.sendCellMessageAndWait(cscm);
-        if (response instanceof ErrorMessage) {
-            throw new AffordanceException("Unable to add movable component " +
-                    "for Cell " + cell.getName() + " with ID " +
-                    cell.getCellID());
-        }
-    }
-
-    // Make this entity pickable by adding a collision component to it
     protected void makeEntityPickable(Entity entity, Node node) {
-        JMECollisionSystem collisionSystem = (JMECollisionSystem)ClientContextJME.getWorldManager().getCollisionManager().
+        JMECollisionSystem collisionSystem = (JMECollisionSystem)
+                ClientContextJME.getWorldManager().getCollisionManager().
                 loadCollisionSystem(JMECollisionSystem.class);
 
         CollisionComponent cc = collisionSystem.createCollisionComponent(node);
@@ -207,7 +156,7 @@ public abstract class Affordance extends Entity {
         subEntity.addComponent(RenderComponent.class, thisRC);
 
         // Add this Entity to the parent Entity
-        RenderComponent parentRC = (RenderComponent)this.getComponent(RenderComponent.class);
+        RenderComponent parentRC = this.getComponent(RenderComponent.class);
         thisRC.setAttachPoint(parentRC.getSceneRoot());
         this.addEntity(subEntity);
     }

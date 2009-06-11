@@ -739,7 +739,7 @@ public class IncomingCallHandler implements ManagedCallBeginEndListener,
 		    username = call.getId();
 		}
 
-		new Orb(username, call.getId(), center, .1, false, "");
+		new Orb(username, username, call.getId(), center, .1, false);
 
 		state = ESTABLISHED;
             } catch (IOException e) {

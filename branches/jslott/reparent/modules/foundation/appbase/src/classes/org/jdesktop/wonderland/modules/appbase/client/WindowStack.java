@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
-/**
  * The stack of visible, non-coplanar windows of an app. Each window in the stack has a unique
  * zOrder determined by its position in the stack. The topmost visible window has zOrder = 0, 
  * and zOrders increase from top to bottom. The zOrder of the bottommost visible window is 
@@ -63,7 +62,7 @@ class WindowStack {
       * @param window The window to be removed.
       */
     public synchronized void remove(Window2D window) {
-        if (window == null || !window.isVisibleApp() || window.isCoplanar()) return;
+        if (window == null || window.isCoplanar()) return;
         stack.remove(window);
     }
 
@@ -214,7 +213,6 @@ class WindowStack {
     public synchronized int getStackPositionOfWindow (Window2D window) {
         if (window == null) return -1;
         int idx = stack.indexOf(window);
-        //System.err.println("getStackPos: stack idx of window " + window + " = " + idx);
         if (idx < 0 || idx >= stack.size()) {
             return -1;
         } else {
@@ -253,6 +251,18 @@ class WindowStack {
             } else {
                 return 0;
             }
+        }
+    }
+
+    // For debug
+    public void printStack() {
+        System.err.println("Window stack: ");
+        int i = 0;
+        for (Window2D window : stack) {
+            System.err.print(i++);
+            System.err.print(": " + window + ": ");
+            System.err.print(": " + window.getName());
+            System.err.println("(" + window.isVisibleApp() + ")");
         }
     }
 }

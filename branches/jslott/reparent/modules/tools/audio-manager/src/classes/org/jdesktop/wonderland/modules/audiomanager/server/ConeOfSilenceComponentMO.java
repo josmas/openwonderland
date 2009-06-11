@@ -55,7 +55,11 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
     private String name = "COS";
 
-    private float fullVolumeRadius = (float) 1.6;
+    private double fullVolumeRadius = 1.6;
+
+    private double outsideAudioVolume = 0;
+
+    //ConeOfSilenceProximityListener proximityListener;
 
     /**
      * Create a ConeOfSilenceComponent for the given cell. 
@@ -85,6 +89,8 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
 
         fullVolumeRadius = cs.getFullVolumeRadius();
 
+	outsideAudioVolume = cs.getOutsideAudioVolume();
+
 	addProximityListener(isLive());
     }
 
@@ -93,14 +99,18 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
      */
     @Override
     public CellComponentServerState getServerState(CellComponentServerState serverState) {
-        // Create the proper server state object if it does not yet exist
-        if (serverState == null) {
-            serverState = new ConeOfSilenceComponentServerState();
-        }
-        ((ConeOfSilenceComponentServerState)serverState).setFullVolumeRadius(fullVolumeRadius);
-        ((ConeOfSilenceComponentServerState)serverState).setName(name);
+	ConeOfSilenceComponentServerState state = (ConeOfSilenceComponentServerState) serverState;
 
-        return super.getServerState(serverState);
+        // Create the proper server state object if it does not yet exist
+        if (state == null) {
+            state = new ConeOfSilenceComponentServerState();
+        }
+
+        state.setFullVolumeRadius(fullVolumeRadius);
+        state.setName(name);
+        state.setOutsideAudioVolume(outsideAudioVolume);
+
+        return super.getServerState(state);
     }
 
     /**
@@ -146,12 +156,14 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         // If we are making this component live, then add a listener to the proximity component.
         if (live == true) {
             BoundingVolume[] bounds = new BoundingVolume[1];
-            bounds[0] = new BoundingSphere(fullVolumeRadius, new Vector3f());
+            bounds[0] = new BoundingSphere((float) fullVolumeRadius, new Vector3f());
+
+	    //if (proximityListener != null) {
+	    //    component.removeProximityListener(proximityListener);
+	    //}
 
             ConeOfSilenceProximityListener proximityListener = 
-		new ConeOfSilenceProximityListener(cellRef.get());
-
-	    //listenerRef = AppContext.getDataManager().createReference(proximityListener);
+		new ConeOfSilenceProximityListener(cellRef.get(), name, outsideAudioVolume);
 
             component.addProximityListener(proximityListener, bounds);
         }

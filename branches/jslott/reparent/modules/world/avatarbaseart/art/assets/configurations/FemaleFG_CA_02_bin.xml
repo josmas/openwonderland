@@ -3,7 +3,7 @@
     <Attributes>
         <Name>AvatarJaneDoe</Name>
         <Gender>2</Gender>
-        <HeadAttachment>assets/models/collada/Heads/FemaleHead/FemaleHi.bhf</HeadAttachment>
+        <HeadAttachment>assets/models/collada/Heads/FemaleHead/FG_FemaleLowPoly_01.bhf</HeadAttachment>
         <LoadingInstructions>
             <item>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</item>
             <item>Hair</item>

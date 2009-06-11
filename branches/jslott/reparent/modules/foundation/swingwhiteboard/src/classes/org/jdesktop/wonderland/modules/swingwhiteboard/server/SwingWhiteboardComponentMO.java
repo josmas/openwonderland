@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCompoundCellMessage;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -60,7 +61,7 @@ public class SwingWhiteboardComponentMO extends CellComponentMO {
             // force a local channel
             channelComponentRef.get().addLocalChannelRequest(SwingWhiteboardComponentMO.class.getName());
             channelComponentRef.getForUpdate().addMessageReceiver(WhiteboardCompoundCellMessage.class,
-                            new ComponentMessageReceiverImpl(this, cellRef));
+                            new ComponentMessageReceiverImpl(cellRef.get()));
         } else {
             channelComponentRef.getForUpdate().removeMessageReceiver(WhiteboardCompoundCellMessage.class);
         }
@@ -86,25 +87,17 @@ public class SwingWhiteboardComponentMO extends CellComponentMO {
      * Receiver for for whiteboard messages.
      * Note: inner classes of managed objects must be non-static.
      */
-    private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
+    private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
 
-        private ManagedReference<SwingWhiteboardComponentMO> compRef;
-        private ManagedReference<CellMO> cellRef;
-
-        public ComponentMessageReceiverImpl(SwingWhiteboardComponentMO comp, ManagedReference<CellMO> cellRef) {
-            compRef = AppContext.getDataManager().createReference(comp);
-            this.cellRef = cellRef;
+        public ComponentMessageReceiverImpl(CellMO cellMO) {
+            super(cellMO);
         }
 
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
             WhiteboardCompoundCellMessage cmsg = (WhiteboardCompoundCellMessage) message;
-            CellMO cell = cellRef.get();
-            ((SwingWhiteboardCellMO) cell).receivedMessage(sender, clientID, cmsg);
+            ((SwingWhiteboardCellMO) getCell()).receivedMessage(sender, clientID, cmsg);
         }
 
-        public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            //TODO: consider making this a subclass of AbstractMessageReceiver
-//            Logger.getAnonymousLogger().warning("SwingWhiteboardComponentMO does not support recording");
-        }
+        
     }
 }

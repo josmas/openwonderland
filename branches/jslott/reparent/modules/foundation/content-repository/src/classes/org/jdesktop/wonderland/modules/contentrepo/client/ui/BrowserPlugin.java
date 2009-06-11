@@ -37,8 +37,6 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
-import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 
 /**
  *
@@ -46,34 +44,14 @@ import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegis
  */
 @Plugin
 public class BrowserPlugin extends BaseClientPlugin {
+    
     private static Logger logger = Logger.getLogger(BrowserPlugin.class.getName());
-
-    private BrowserFrame frame;
     private WeakReference<ContentBrowserJDialog> browserDialogRef = null;
-
-    //private JMenuItem oldBrowserItem;
     private JMenuItem newBrowserItem;
     private ContentBrowserJDialog defaultBrowser;
 
     @Override
     public void initialize(final ServerSessionManager loginInfo) {
-//        Action launchAction = new AbstractAction("Content Browser") {
-//            public synchronized void actionPerformed(ActionEvent e) {
-//                if (frame == null) {
-//                    ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
-//                    ContentRepository repo = registry.getRepository(loginInfo);
-//                    frame = new BrowserFrame(repo);
-//                }
-//
-//                SwingUtilities.invokeLater(new Runnable() {
-//                    public void run() {
-//                        frame.setVisible(true);
-//                    }
-//                });
-//            }
-//        };
-//        oldBrowserItem = new JMenuItem(launchAction);
-
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
@@ -147,7 +125,6 @@ public class BrowserPlugin extends BaseClientPlugin {
         manager.setDefaultContentBrowser(defaultBrowser);
 
         // add menu items
-        //JmeClientMain.getFrame().addToToolsMenu(oldBrowserItem, 5);
         JmeClientMain.getFrame().addToToolsMenu(newBrowserItem, 6);
     } 
     
@@ -161,7 +138,6 @@ public class BrowserPlugin extends BaseClientPlugin {
         }
 
         // remove menu items
-        //JmeClientMain.getFrame().removeFromToolsMenu(oldBrowserItem);
         JmeClientMain.getFrame().removeFromToolsMenu(newBrowserItem);
     }
 }

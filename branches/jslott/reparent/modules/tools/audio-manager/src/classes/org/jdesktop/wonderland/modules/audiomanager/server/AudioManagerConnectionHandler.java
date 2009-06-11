@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBrid
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
 
@@ -125,32 +126,25 @@ public class AudioManagerConnectionHandler
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	if (message instanceof GetVoiceBridgeMessage) {
-	    System.out.println("Got GetVoiceBridgeMessage");
+	    //System.out.println("Got GetVoiceBridgeMessage");
 
 	    BridgeInfo bridgeInfo;
 
 	    try {
 		bridgeInfo = vm.getVoiceBridge();
 
-		if (bridgeInfo == null) {
-		    logger.warning("There are no voice bridges online");
-		    return;
-		}
-
-	        logger.info("Got voice bridge '" + bridgeInfo + "'");
+	        System.out.println("Senging voice bridge info '" + bridgeInfo + "'");
 	    } catch (IOException e) {
-		logger.warning("unable to get voice bridge:  " + e.getMessage());
+		System.out.println("unable to get voice bridge:  " + e.getMessage());
 		return;
 	    }
-
-	    System.out.println("Sending " + bridgeInfo.toString());
 
 	    sender.send(clientID, new GetVoiceBridgeResponseMessage(bridgeInfo.toString()));
 	    return;
 	}
 
 	if (message instanceof PlaceCallMessage) {
-	    logger.fine("Got place call message from " + clientID);
+	    logger.fine("Got join chat message from " + clientID);
 
 	    PlaceCallMessage msg = (PlaceCallMessage) message;
 
@@ -279,6 +273,25 @@ public class AudioManagerConnectionHandler
 	    return;
 	}
 
+	if (message instanceof PlayTreatmentMessage) {
+	    PlayTreatmentMessage msg = (PlayTreatmentMessage) message;
+
+	    Call call = vm.getCall(msg.getCallID());
+
+	    if (call == null) {
+		logger.warning("No call for " + msg.getCallID());
+		return;
+	    }
+
+	    try {
+		call.playTreatment(msg.getTreatment());
+	    } catch (IOException e) {
+		logger.warning("Unable to play treatment " + msg.getTreatment() 
+		    + " to call " + call + ": " + e.getMessage());
+	    }
+	    return;
+	}
+
         throw new UnsupportedOperationException("Unknown message:  " + message);
     }
 
@@ -345,6 +358,12 @@ public class AudioManagerConnectionHandler
 
 	if (call == null) {
 	    logger.fine("Can't find call for " + callID);
+
+	    Player player = vm.getPlayer(callID);
+
+	    if (player != null) {
+		vm.removePlayer(player);
+	    }
 	    return;
 	}
 

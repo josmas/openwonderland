@@ -107,23 +107,25 @@ public class ProximityComponent extends CellComponent {
     }
     
     @Override
-    public void setStatus(CellStatus status) {
+    protected void setStatus(CellStatus status, boolean increasing) {
         synchronized(listenerRecords) {
-            super.setStatus(status);
+            super.setStatus(status, increasing);
 
             switch(status) {
                 case ACTIVE :
-                    if (viewTransformListener==null) {
-                        viewTransformListener = new ViewTransformListener();
-                        cellTransformListener = new CellTransformListener();
+                    if (increasing) {
+                        if (viewTransformListener==null) {
+                            viewTransformListener = new ViewTransformListener();
+                            cellTransformListener = new CellTransformListener();
+                        }
+
+                        CellTransform worldTransform = cell.getWorldTransform();
+                        for(ProximityListenerRecord l : listenerRecords)
+                            l.updateWorldBounds(worldTransform);
+
+                        cell.getCellCache().getViewCell().addTransformChangeListener(viewTransformListener);
+                        cell.addTransformChangeListener(cellTransformListener);
                     }
-
-                    CellTransform worldTransform = cell.getWorldTransform();
-                    for(ProximityListenerRecord l : listenerRecords)
-                        l.updateWorldBounds(worldTransform);
-
-                    cell.getCellCache().getViewCell().addTransformChangeListener(viewTransformListener);
-                    cell.addTransformChangeListener(cellTransformListener);
                     break;
                 case DISK :
                     if (viewTransformListener!=null) {

@@ -257,7 +257,7 @@ public class ChannelComponentMO extends CellComponentMO {
      * @param session
      * @param message
      */
-    void messageReceived(WonderlandClientSender sender,
+    public void messageReceived(WonderlandClientSender sender,
                                 WonderlandClientID clientID,
                                 CellMessage message ) {
 

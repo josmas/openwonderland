@@ -156,13 +156,16 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                 rootCells.add(cell);
             }
 
+            // TODO this will change, the state will applied when the cell
+            // becomes ACTIVE
             if (setup!=null)
                 cell.setClientState(setup);
             else
                 logger.warning("Cell has null setup "+className+"  "+cell);
 
             // Force the cell to create the JME renderer entity
-            createCellRenderer(cell);
+            // Current assumption is that the cell is about to be VISIBLE, so we want the renderer asap
+//            createCellRenderer(cell);
 
             // notify listeners
             fireCellLoaded(cell);
@@ -171,7 +174,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                 // No point in makeing cells active if we don't have a view
                 // The changeCellStatus actually changes the status on another thread
                 // so we don't perform geometry load operations on the DS listener thread
-                changeCellStatus(cell, CellStatus.ACTIVE);
+                changeCellStatus(cell, CellStatus.VISIBLE);
             }
 
             return cell;
@@ -213,7 +216,12 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      * @param cell the cell to create a renderer for
      */
     protected CellRenderer createCellRenderer(Cell cell) {
-        return cell.getCellRenderer(ClientContext.getRendererType());
+        try {
+            return cell.getCellRenderer(ClientContext.getRendererType());
+        } catch(Exception e) {
+            logger.log(Level.SEVERE, "Failed to get Cell Renderer for cell "+cell.getClass().getName(), e);
+        }
+        return null;
     }
 
     /**
@@ -228,6 +236,10 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
 
             // update the status
             setCellStatus(cell, CellStatus.DISK);
+
+            if (cell.getParent()==null) {
+                rootCells.remove(cell);
+            }
         }
     }
 
@@ -306,30 +318,21 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         logger.fine("Set status of cell " + cell.getCellID() +
                        " to " + status);
 
-        int currentStatus = cell.getStatus().ordinal();
-        int requiredStatus = status.ordinal();
+        synchronized(cell) {
+            int currentStatus = cell.getStatus().ordinal();
+            int requiredStatus = status.ordinal();
 
-        if (currentStatus==requiredStatus)
-            return;
+            if (currentStatus==requiredStatus)
+                return;
 
-        int dir = (requiredStatus>currentStatus ? 1 : -1);
+            int dir = (requiredStatus>currentStatus ? 1 : -1);
+            boolean increasing = (dir==1);
 
-        while(currentStatus!=requiredStatus) {
-            currentStatus += dir;
-            cell.setStatus(CellStatus.values()[currentStatus]);
+            while(currentStatus!=requiredStatus) {
+                currentStatus += dir;
+                cell.setStatus(CellStatus.values()[currentStatus], increasing);
+            }
         }
-
-//        int ord = status.ordinal();
-//        int currentOrd = currentStatus.ordinal();
-//        if (ord>currentOrd+1 || ord<currentOrd-1) {
-//            int t = currentOrd;
-//            int dir = (ord>currentOrd ? 1 : -1);
-//            System.err.println("CALLING setSTATUS "+status+"  "+currentOrd+" heading for "+ord+"  "+CellStatus.values()[t+dir]+"  "+(t+dir));
-//            setStatus(CellStatus.values()[t+dir]);
-//        } else {
-//            System.err.println("ord "+ord+"  currentOrd "+currentOrd);
-//
-//        }
     }
 
     /**
@@ -363,8 +366,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         // Activate all current cells
         synchronized(cells) {
             for(Cell cell : cells.values()) {
-                if (cell.getStatus().ordinal()<CellStatus.ACTIVE.ordinal())
-                    changeCellStatus(cell, CellStatus.ACTIVE);
+                if (cell.getStatus().ordinal()<CellStatus.VISIBLE.ordinal())
+                    changeCellStatus(cell, CellStatus.VISIBLE);
             }
         }
     }

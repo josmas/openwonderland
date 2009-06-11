@@ -45,6 +45,7 @@ import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -73,7 +74,7 @@ public abstract class BasicRenderer implements CellRendererJME {
     
     private static ZBufferState zbuf = null;
 
-    private boolean isRendering = false;
+    private CellStatus status = CellStatus.DISK;
     
     static {
         zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
@@ -93,10 +94,16 @@ public abstract class BasicRenderer implements CellRendererJME {
         return cell;
     }
 
-    public void setStatus(CellStatus status) {
+    public CellStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(CellStatus status,boolean increasing) {
+        System.err.println("*** BASIC REND "+status+"  "+this);
+        this.status = status;
         switch(status) {
             case ACTIVE :
-                if (cell!=null && !isRendering) {
+                if (increasing && cell!=null) {
                     Entity parentEntity= findParentEntity(cell.getParent());
                     Entity thisEntity = getEntity();
 
@@ -107,8 +114,13 @@ public abstract class BasicRenderer implements CellRendererJME {
 
                     thisEntity.addComponent(CellRefComponent.class, new CellRefComponent(cell));
 
+                    if (parentEntity!=null) {
+                        parentEntity.addEntity(thisEntity);
+                    } else {
+                        ClientContextJME.getWorldManager().addEntity(thisEntity);
+                    }
+
                     // Figure out the correct parent entity for this cells entity.
-                    // Do this before the Entity becomes live
                     if (parentEntity!=null && thisEntity!=null) {
                         RenderComponent parentRendComp = (RenderComponent) parentEntity.getComponent(RenderComponent.class);
                         RenderComponent thisRendComp = (RenderComponent)thisEntity.getComponent(RenderComponent.class);
@@ -117,20 +129,12 @@ public abstract class BasicRenderer implements CellRendererJME {
                         }
                     }
 
-                    if (parentEntity!=null) {
-                        parentEntity.addEntity(thisEntity);
-                    } else {
-                        ClientContextJME.getWorldManager().addEntity(thisEntity);
-                    }
-
-                    isRendering = true;
-
                 } else {
                     logger.info("No Entity for Cell "+cell.getClass().getName());
                 }
             break;
-            case BOUNDS :
-                if (isRendering) {
+            case INACTIVE :
+                if (!increasing) {
                     try {
                         Entity parent = getEntity().getParent();
                         if (parent!=null)
@@ -141,7 +145,6 @@ public abstract class BasicRenderer implements CellRendererJME {
                         System.err.println("NPE in "+this);
                         e.printStackTrace();
                     }
-                    isRendering = false;
                 }
                 break;
         }
@@ -194,7 +197,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         rootNode.setName("CellRoot_"+cell.getCellID());
         sceneRoot = createSceneGraph(ret);
         rootNode.attachChild(sceneRoot);
-        applyTransform(rootNode, cell.getLocalTransform());
+        applyTransform(rootNode, cell.getWorldTransform());
         addRenderState(rootNode);
 
         addDefaultComponents(ret, rootNode);
@@ -248,7 +251,7 @@ public abstract class BasicRenderer implements CellRendererJME {
 
             CollisionComponent cc=null;
 //            if (rootNode.getWorldBound()==null) {
-//                logger.warning("No BOUNDS FOR "+this.getClass().getName());
+//                logger.warning("No INACTIVE FOR "+this.getClass().getName());
 //            } else {
                 cc = setupCollision(collisionSystem, rootNode);
                 if (cc!=null)

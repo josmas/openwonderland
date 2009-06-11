@@ -67,20 +67,23 @@ public class SecurityComponent extends CellComponent {
     }
 
     @Override
-    public void setStatus(CellStatus status) {
-        super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
-            case BOUNDS:
-                if (receiver == null) {
-                    receiver = new SecurityMessageReceiver();
-                    channel.addMessageReceiver(PermissionsChangedMessage.class,
-                                               receiver);
+            case ACTIVE:
+                if (increasing) {
+                    if (receiver == null) {
+                        receiver = new SecurityMessageReceiver();
+                        channel.addMessageReceiver(PermissionsChangedMessage.class,
+                                                   receiver);
+                    }
+                } else {
+                    channel.removeMessageReceiver(PermissionsChangedMessage.class);
+                    receiver = null;
                 }
                 break;
             case DISK:
-                channel.removeMessageReceiver(PermissionsChangedMessage.class);
-                receiver = null;
                 break;
         }
     }

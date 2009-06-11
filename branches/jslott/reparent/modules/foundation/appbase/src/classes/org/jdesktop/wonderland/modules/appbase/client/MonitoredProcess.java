@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -34,6 +35,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 @ExperimentalAPI
 public class MonitoredProcess {
+
+    private static final Logger logger = Logger.getLogger(MonitoredProcess.class.getName());
 
     /** The name of the process */
     private String processName;
@@ -201,7 +204,10 @@ public class MonitoredProcess {
      * Forcibly kill the process and clean up resources.
      */
     public void cleanup() {
+        logger.warning("Shutting down process  " + processName);
+
         if (process != null) {
+            logger.warning("Shutting down process object for process " + processName);
             process.destroy();
             process = null;
         }

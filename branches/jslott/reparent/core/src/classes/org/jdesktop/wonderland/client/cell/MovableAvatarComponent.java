@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.cell;
 
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -75,6 +76,7 @@ public class MovableAvatarComponent extends MovableComponent {
                 // first clear any messages in the throttle thread
                 throttle.clear();
 
+//                System.err.println("Sending "+transform.getTranslation(null));
                 // Now send the current change
                 channelComp.send(createMoveRequestMessage(transform));
 
@@ -113,6 +115,7 @@ public class MovableAvatarComponent extends MovableComponent {
         super.serverMoveRequest(msg);
 
         MovableAvatarMessage mam = (MovableAvatarMessage) msg;
+//        System.err.println("Move message "+msg.getCellTransform().getTranslation(null)+"  "+mam.getTrigger()+" "+mam.getAnimationName());
         if (mam.getTrigger()!=NO_TRIGGER) {
             ((AvatarCell)cell).triggerAction(mam.getTrigger(), mam.isPressed(), mam.getAnimationName());
         }

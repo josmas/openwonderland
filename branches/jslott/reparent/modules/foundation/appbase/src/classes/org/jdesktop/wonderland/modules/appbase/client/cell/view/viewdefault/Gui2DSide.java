@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
+import javax.swing.SwingUtilities;
 
 /**
  * The GUI code for a side of a frame.
@@ -35,8 +36,9 @@ import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 @ExperimentalAPI
 class Gui2DSide extends Gui2D {
 
-    /** For Debug: A listener for key events */
+    /** For Debug: A listener for key events 
     protected SideKeyListener keyListener;
+    */
 
     /** 
      * Create a new instance of Gui2DSide.
@@ -52,7 +54,7 @@ class Gui2DSide extends Gui2D {
      */
     @Override
     protected void attachMouseListener(Entity entity) {
-        mouseListener = new SideMouseListener();
+        mouseListener = new SideMouseListener(entity);
         mouseListener.addToEntity(entity);
     }
 
@@ -61,8 +63,13 @@ class Gui2DSide extends Gui2D {
      */
     protected class SideMouseListener extends Gui2D.MouseListener {
 
+        // The entity to which this listener is attached.
+        private Entity entity;
+
         /** Create a new instance of SideMouseListener. */
-        public SideMouseListener () {
+        public SideMouseListener (Entity entity) {
+            this.entity = entity;
+
             // Tell the processor component super class that we are going to use some swing UI in commitEvent
             setSwingSafe(true);
         }
@@ -75,16 +82,17 @@ class Gui2DSide extends Gui2D {
             MouseEvent3D me3d = (MouseEvent3D) event;
             MouseEvent me = (MouseEvent) me3d.getAwtEvent();
 
-            /* TODO: notyet
-            // Window menu event?
-            if (me.getID() == MouseEvent.MOUSE_CLICKED &&
-                me.getButton() == MouseEvent.BUTTON3) {
-                ((View2DCell)getView()).getFrame().windowMenuShowAt(me);
-            }
-            */
-
-            // We only recognize config on the border when user has control
+            // We only recognize some events on the border when user has control
             if (view.getWindow().getApp().getControlArb().hasControl()) {
+
+                // Is this a Window menu event?
+                if (me.getID() == MouseEvent.MOUSE_PRESSED &&
+                    me.getButton() == MouseEvent.BUTTON3 &&
+                    me.getModifiersEx() == MouseEvent.BUTTON3_DOWN_MASK) {
+                    ((View2DCell)getView()).getWindow().displayWindowMenu(entity, me);
+                    return;
+                }
+
                 action = determineIfConfigAction(me, me3d);
                 if (action != null) {
                     performConfigAction(action, me, me3d);
@@ -110,10 +118,9 @@ class Gui2DSide extends Gui2D {
      */
     @Override
     protected void attachKeyListener(Entity entity) {
-        // For debug
-        // System.err.println("*********** Attached side key listener");
-        keyListener = new SideKeyListener();
-        keyListener.addToEntity(entity);
+        // For Debug
+        //keyListener = new SideKeyListener();
+        //keyListener.addToEntity(entity);
     }
 
     /**
@@ -121,35 +128,27 @@ class Gui2DSide extends Gui2D {
      */
     @Override
     protected void detachKeyListener(Entity entity) {
-        // For debug
-        if (keyListener != null && entity != null) {
-            keyListener.removeFromEntity(entity);
-        }
+        // For Debug
+        //if (keyListener != null && entity != null) {
+        //    keyListener.removeFromEntity(entity);
+        //}
     }
 
     /**
      * For Debug: The key listener for this GUI.
-     */
     protected class SideKeyListener extends EventClassListener {
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public Class[] eventClassesToConsume() {
             return new Class[]{KeyEvent3D.class};
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public void commitEvent(Event event) {
 
             KeyEvent3D ke3d = (KeyEvent3D) event;
             KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
 
-            // TODO: temporary gui: ^C over frame closes the window.
             if (ke3d.isPressed() &&
                 ke.getKeyCode() == KeyEvent.VK_C &&
                 (ke.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) != 0) {
@@ -158,11 +157,11 @@ class Gui2DSide extends Gui2D {
             }
         }
 
-        /** {@inheritDoc} */
         public boolean propagatesToParent (Event event) {
             return false;
         }
     }
+    */
 
     /**
      * Determine if this is a window configuration action.
@@ -189,7 +188,11 @@ class Gui2DSide extends Gui2D {
     @Override
     protected void performConfigAction(Action action, MouseEvent me, MouseEvent3D me3d) {
         if (action.type == ActionType.TO_FRONT) {
-            Gui2DSide.this.view.getWindow().restackToTop();
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    Gui2DSide.this.view.getWindow().restackToTop();
+                }
+            });
             return;
         }
 

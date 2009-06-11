@@ -52,20 +52,18 @@ public class ViewCell extends Cell {
     }
 
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean changed = super.setStatus(status);
-        if (changed) {
-            switch(status) {
-                case BOUNDS :
+    protected void setStatus(CellStatus status,boolean increasing) {
+        super.setStatus(status, increasing);
+        switch(status) {
+            case ACTIVE :
+                if (increasing)
                     movableComp = (MovableAvatarComponent) getComponent(MovableComponent.class);
-                    break;
-                case DISK :
+                break;
+            case INACTIVE :
+                if (!increasing)
                     movableComp = null;
-                    break;
-            }
+                break;
         }
-
-        return changed;
     }
 
     @Override

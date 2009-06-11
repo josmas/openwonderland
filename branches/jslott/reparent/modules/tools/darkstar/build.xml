@@ -32,6 +32,7 @@
         <path location="${core.dir}/build/lib/wonderland-client.jar"/>
         <path location="${core.dir}/build/lib/wonderland-common.jar"/>
         <path location="${web.dir}/front/dist/wonderland-webadmin-core.jar"/>
+        <path location="${web.dir}/wfs/dist/wonderland-wfs.jar"/>
     </pathconvert>
     
     <target name="build" depends="-module-init, -module-compile-server, -darkstar-compile-web"/>
@@ -75,6 +76,17 @@
                     </zipfileset>
 
                     <fileset dir="${current.dir}/web"/>
+                </jar>
+            </part>
+
+            <part name="webremote">
+                <jar name="darkstarserver-remote.war">
+                    <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
+                        <include name="${module.src}/web/resources/DarkstarRunnerActionResource*.class"/>
+                        <include name="${module.src}/common/**"/>
+                    </zipfileset>
+
+                    <fileset dir="${current.dir}/webremote"/>
                 </jar>
             </part>
         </module>

@@ -195,10 +195,12 @@ public abstract class ClientXrw implements Runnable {
     public void cleanup() {
         if (!stop && thread != null) {
             stop = true;
+            /* Note: can't join thread here. Conflicts with app base shutdown hook.
             try {
                 thread.join();
             } catch (InterruptedException ex) {
             }
+            */
             thread = null;
         }
 
@@ -221,6 +223,7 @@ public abstract class ClientXrw implements Runnable {
         }
 
         enable = false;
+        AppXrw.logger.severe("ClientXrw cleaned up");
     }
 
     /** 
@@ -604,8 +607,8 @@ public abstract class ClientXrw implements Runnable {
      * @param wid The X11 window ID.
      */
     protected WindowXrw lookupWindow(int wid) {
-        synchronized (AppXrw.widToWindow) {
-            return AppXrw.widToWindow.get(wid);
+        synchronized (((AppXrw)app).widToWindow) {
+            return ((AppXrw)app).widToWindow.get(wid);
         }
     }
 
@@ -616,8 +619,8 @@ public abstract class ClientXrw implements Runnable {
      * @param window The window to associate with the wid.
      */
     protected void addWindow(int wid, WindowXrw window) {
-        synchronized (AppXrw.widToWindow) {
-            AppXrw.widToWindow.put(wid, window);
+        synchronized (((AppXrw)app).widToWindow) {
+            ((AppXrw)app).widToWindow.put(wid, window);
         }
     }
 
@@ -627,8 +630,8 @@ public abstract class ClientXrw implements Runnable {
      * @param window The window to disassociate from the wid.
      */
     protected void removeWindow(WindowXrw win) {
-        synchronized (AppXrw.widToWindow) {
-            AppXrw.widToWindow.remove(win.getWid());
+        synchronized (((AppXrw)app).widToWindow) {
+            ((AppXrw)app).widToWindow.remove(win.getWid());
         }
     }
 
@@ -667,30 +670,6 @@ public abstract class ClientXrw implements Runnable {
      */
     private void configureWindow(WindowXrw win, ConfigureWindowMsgArgs msg) {
 
-        /* TODO: winconfig: x11: notyet
-        // Ignore messages from ourself
-        if (msg.clientId == clientId) {
-            return;
-        }
-
-        int wAndBorder = msg.wAndBorder;
-        int hAndBorder = msg.hAndBorder;
-
-        if (wAndBorder > WINDOW_MAX_WIDTH) {
-            wAndBorder = WINDOW_MAX_WIDTH;
-            AppXrw.logger.warning("createWindow: width " + wAndBorder + " was truncated to maximum width");
-        }
-        if (hAndBorder > WINDOW_MAX_HEIGHT) {
-            hAndBorder = WINDOW_MAX_HEIGHT;
-            AppXrw.logger.warning("createWindow: height " + hAndBorder + " was truncated to maximum height");
-        }
-
-        WindowXrw sibWin = lookupWindow(msg.sibid);
-        win.setScreenPositionLocal(msg.x, msg.y);
-        win.setSizeLocal(wAndBorder, hAndBorder);
-        win.restackAboveLocal(sibWin);
-        */
-
         // Is this a configure from ourselves or some other client?
         if (msg.clientId == clientId) {
 
@@ -704,6 +683,15 @@ public abstract class ClientXrw implements Runnable {
             } else {
                 // Not a resize. It's a move-or-restack-only from ourselves. Ignore it.
             }
+        }
+
+        if (msg.wAndBorder > WINDOW_MAX_WIDTH) {
+            msg.wAndBorder = WINDOW_MAX_WIDTH;
+            AppXrw.logger.warning("createWindow: width " + msg.wAndBorder + " was truncated to maximum width");
+        }
+        if (msg.hAndBorder > WINDOW_MAX_HEIGHT) {
+            msg.hAndBorder = WINDOW_MAX_HEIGHT;
+            AppXrw.logger.warning("createWindow: height " + msg.hAndBorder + " was truncated to maximum height");
         }
 
         WindowXrw sibWin = lookupWindow(msg.sibid);

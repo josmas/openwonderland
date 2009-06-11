@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+
 /**
  * Listener for Volume Change
  * 
@@ -24,6 +26,6 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
  */
 public interface VolumeChangeListener {
 
-    public void volumeChanged(String userName, double volume);
+    public void volumeChanged(CellID cellID, String otherCallID, int volume);
 
 }

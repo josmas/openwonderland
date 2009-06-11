@@ -155,7 +155,7 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
                 }
             }
 
-            public void aliasChanged(String arg0, PresenceInfo arg1) {
+            public void usernameAliasChanged(PresenceInfo arg1) {
                 // do nothing
             }
         });

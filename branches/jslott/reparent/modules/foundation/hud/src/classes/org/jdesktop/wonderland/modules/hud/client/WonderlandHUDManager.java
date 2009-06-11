@@ -36,33 +36,18 @@ import org.jdesktop.wonderland.client.hud.HUDManager;
  *
  * @author nsimpson
  */
-public class WonderlandHUDManager implements HUDManager {
+public class WonderlandHUDManager extends HUDManager {
 
     private static final Logger logger = Logger.getLogger(WonderlandHUDManager.class.getName());
     protected String name;
     protected HUDLayoutManager layout;
     protected boolean visible;
-    protected static WonderlandHUDManager manager;
 
     protected enum visualState {
 
         MINIMIZED, NORMAL, MAXIMIZED
     };
-    protected Map huds;
-
-    public WonderlandHUDManager() {
-        huds = Collections.synchronizedMap(new HashMap());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public static WonderlandHUDManager getHUDManager() {
-        if (manager == null) {
-            manager = new WonderlandHUDManager();
-        }
-        return manager;
-    }
+    protected static Map<String, HUD> huds = Collections.synchronizedMap(new HashMap());
 
     /**
      * {@inheritDoc}
@@ -88,7 +73,7 @@ public class WonderlandHUDManager implements HUDManager {
     public HUD getHUD(String name) {
         HUD hud = null;
         if (name != null) {
-            hud = (HUD) huds.get(name);
+            hud = huds.get(name);
         }
         return hud;
     }

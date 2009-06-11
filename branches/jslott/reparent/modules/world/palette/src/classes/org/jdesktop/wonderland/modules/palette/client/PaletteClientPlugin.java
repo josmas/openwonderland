@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.palette.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
@@ -37,6 +39,7 @@ import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
 import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
@@ -56,6 +59,8 @@ import org.jdesktop.wonderland.modules.security.client.SecurityComponent;
 public class PaletteClientPlugin extends BaseClientPlugin
         implements ContextMenuFactorySPI
 {
+    private static Logger logger = Logger.getLogger(PaletteClientPlugin.class.getName());
+
     /* The single instance of the cell palette dialog */
     private WeakReference<CellPalette> cellPaletteFrameRef = null;
 
@@ -79,7 +84,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // Create the Palette menu and the Cell submenu and dialog that lets
         // users create new cells.  The menu will be added when our server
         // becomes primary.
-        paletteMI = new JMenuItem("Cell Palette");
+        paletteMI = new JMenuItem("Component...");
         paletteMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 CellPalette cellPaletteFrame;
@@ -99,7 +104,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        paletteHUDMI = new JMenuItem("Cell Palette HUD");
+        paletteHUDMI = new JMenuItem("Shortcuts");
         paletteHUDMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 HUDCellPalette hudCellPaletteFrame;
@@ -119,23 +124,23 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        moduleMI = new JMenuItem("Module Art Palette");
-        moduleMI.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                ModulePalette modulePaletteFrame;
-                if (modulePaletteFrameRef == null || modulePaletteFrameRef.get() == null) {
-                    modulePaletteFrame = new ModulePalette();
-                    modulePaletteFrameRef = new WeakReference(modulePaletteFrame);
-                }
-                else {
-                    modulePaletteFrame = modulePaletteFrameRef.get();
-                }
-
-                if (modulePaletteFrame.isVisible() == false) {
-                    modulePaletteFrame.setVisible(true);
-                }
-            }
-        });
+//        moduleMI = new JMenuItem("Module Art Palette");
+//        moduleMI.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                ModulePalette modulePaletteFrame;
+//                if (modulePaletteFrameRef == null || modulePaletteFrameRef.get() == null) {
+//                    modulePaletteFrame = new ModulePalette();
+//                    modulePaletteFrameRef = new WeakReference(modulePaletteFrame);
+//                }
+//                else {
+//                    modulePaletteFrame = modulePaletteFrameRef.get();
+//                }
+//
+//                if (modulePaletteFrame.isVisible() == false) {
+//                    modulePaletteFrame.setVisible(true);
+//                }
+//            }
+//        });
 
         super.initialize(loginInfo);
     }
@@ -146,9 +151,9 @@ public class PaletteClientPlugin extends BaseClientPlugin
     @Override
     protected void activate() {
         // activate
-        JmeClientMain.getFrame().addToToolsMenu(paletteMI, 2);
-        JmeClientMain.getFrame().addToToolsMenu(paletteHUDMI, 3);
-        JmeClientMain.getFrame().addToToolsMenu(moduleMI, 4);
+        JmeClientMain.getFrame().addToInsertMenu(paletteMI, 0);
+        JmeClientMain.getFrame().addToWindowMenu(paletteHUDMI, 6);
+//        JmeClientMain.getFrame().addToToolsMenu(moduleMI, 4);
 
         // Register the handler for CellServerState flavors with the system-wide
         // drag and drop manager. When the preview icon is dragged from the Cell
@@ -160,9 +165,9 @@ public class PaletteClientPlugin extends BaseClientPlugin
     @Override
     protected void deactivate() {
         // deactivate
-        JmeClientMain.getFrame().removeFromToolsMenu(paletteMI);
-        JmeClientMain.getFrame().removeFromToolsMenu(paletteHUDMI);
-        JmeClientMain.getFrame().removeFromToolsMenu(moduleMI);
+        JmeClientMain.getFrame().removeFromInsertMenu(paletteMI);
+        JmeClientMain.getFrame().removeFromWindowMenu(paletteHUDMI);
+//        JmeClientMain.getFrame().removeFromToolsMenu(moduleMI);
 
         DragAndDropManager dndManager = DragAndDropManager.getDragAndDropManager();
         dndManager.unregisterDataFlavorHandler(dndHandler);
@@ -171,7 +176,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
     /**
      * @inheritDoc()
      */
-    public ContextMenuItem[] getContextMenuItems(final Cell cell) {
+    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
         final SimpleContextMenuItem deleteItem = 
                 new SimpleContextMenuItem("Delete", null, new DeleteListener());
 
@@ -180,6 +185,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         // find the security component for both this cell and it's parent,
         // if any
+        final Cell cell = event.getPrimaryCell();
         final SecurityComponent sc = cell.getComponent(SecurityComponent.class);
         final SecurityComponent psc;
         if (cell.getParent() != null) {
@@ -205,6 +211,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
         }
 
         return new ContextMenuItem[] {
+            new SimpleContextMenuItem("Properties...", null, new PropertiesListener()),
             deleteItem,
             duplicateItem,
         };
@@ -245,6 +252,26 @@ public class PaletteClientPlugin extends BaseClientPlugin
         }
 
         return out;
+    }
+
+    /**
+     * Listener class for the "Properties..." context menu item
+     */
+    private class PropertiesListener implements ContextMenuActionListener {
+
+        public void actionPerformed(ContextMenuItemEvent event) {
+/*
+            // Create a new cell edit frame passing in the Cell and make
+            // it visible
+            Cell cell = event.getCell();
+            try {
+                CellEditFrame frame = new CellEditFrame(cell);
+                frame.setVisible(true);
+            } catch (IllegalStateException excp) {
+                Logger.getLogger(PaletteClientPlugin.class.getName()).log(Level.WARNING, null, excp);
+            }
+*/
+        }
     }
 
     /**

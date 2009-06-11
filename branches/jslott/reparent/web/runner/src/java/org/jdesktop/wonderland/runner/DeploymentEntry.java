@@ -17,9 +17,6 @@
  */
 package org.jdesktop.wonderland.runner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -35,6 +32,7 @@ import javax.xml.bind.annotation.XmlTransient;
 public class DeploymentEntry {
     private String runnerName;
     private String runnerClass;
+    private String location = "localhost";
     private Properties runProps = new Properties();
     
     public DeploymentEntry() {
@@ -91,6 +89,15 @@ public class DeploymentEntry {
 
     public void setRunnerName(String runnerName) {
         this.runnerName = runnerName;
+    }
+
+    @XmlElement
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     @Override

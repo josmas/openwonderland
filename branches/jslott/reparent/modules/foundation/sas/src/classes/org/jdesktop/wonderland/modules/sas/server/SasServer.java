@@ -157,9 +157,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         // Construct the launch request
         LaunchRequest launchReq = new LaunchRequest(cellID, executionCapability, appName, command);
 
-        // TODO: For now make sure that only one app can be launched per cell.
-        // ---> Is this already provided by the fact that only one setlive for this cell can be extant?
-        // Later: allow multiple apps per cell.
+        // TODO: someday: allow multiple apps per cell.
 
         LinkedList<ProviderProxy> providers = execCapToProviderList.get(executionCapability);
         if (providers == null || providers.size() <= 0) {
@@ -171,7 +169,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             return;
         }
 
-        // TODO: for now, just try only the first provider
+        // TODO: someday: Right now we just try only the first provider. Eventually try multiple providers.
         ProviderProxy provider = providers.getFirst();
 
         // Now request the provider to launch the app
@@ -218,7 +216,8 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             pendingLaunches.add(launchReq);
             // Note: server has already been marked for update above
 
-            // TODO: at some point we need to give up and call cell.appLaunchResult with a failure status
+            // TODO: someday: at some point we need to give up and call cell.appLaunchResult with a failure 
+            // status. Need to implement a timeout.
             return;
         }
 

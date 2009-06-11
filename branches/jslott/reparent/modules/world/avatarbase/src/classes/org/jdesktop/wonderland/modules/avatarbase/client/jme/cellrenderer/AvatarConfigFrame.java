@@ -17,6 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import com.jme.math.Vector3f;
+import com.jme.scene.Spatial;
+import com.jme.scene.shape.Box;
+import com.jme.util.export.binary.BinaryImporter;
+import com.jme.util.resource.ResourceLocator;
+import com.jme.util.resource.ResourceLocatorTool;
 import imi.character.CharacterAttributes;
 import imi.character.avatar.FemaleAvatarAttributes;
 import imi.character.avatar.MaleAvatarAttributes;
@@ -36,12 +42,15 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager.AvatarManagerListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME.RelativeResourceLocator;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 
 /**
@@ -61,6 +70,54 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
     private boolean enableCustomisation = false;
 
+    private String[] defaultMaleConfigs = new String[] {
+        "MaleD_CA_00_bin.xml",
+        "MaleD_CA_01_bin.xml",
+        "MaleFG_AA_00_bin.xml",
+        "MaleFG_AA_01_bin.xml",
+        "MaleFG_AA_02_bin.xml",
+        "MaleFG_AA_03_bin.xml",
+        "MaleFG_AA_04_bin.xml",
+        "MaleFG_CA_01_bin.xml",
+        "MaleFG_CA_03_bin.xml",
+        "MaleFG_CA_04_bin.xml",
+        "MaleFG_CA_05_bin.xml",
+        "MaleFG_CA_06_bin.xml",
+        "MaleMeso_00.xml",
+        "MaleMeso_01.xml",
+        "Male_Medium_Heavy.xml",
+        "Male_Medium_Normal.xml",
+        "Male_Short_Heavy.xml",
+        "Male_Short_Normal.xml",
+        "Male_Tall_Heavy.xml",
+        "Male_Tall_Normal.xml",
+    };
+
+    private String[] defaultFemaleConfigs = new String[] {
+        "FemaleD_AZ_00_bin.xml",
+        "FemaleD_CA_00_bin.xml",
+        "FemaleFG_AA_01_bin.xml",
+        "FemaleFG_AA_02_bin.xml",
+        "FemaleFG_AA_03_bin.xml",
+        "FemaleFG_AA_04_bin.xml",
+        "FemaleFG_AA_05_bin.xml",
+        "FemaleFG_AA_06_bin.xml",
+        "FemaleFG_CA_00_bin.xml",
+        "FemaleFG_CA_01_bin.xml",
+        "FemaleFG_CA_02_bin.xml",
+        "FemaleFG_CA_03_bin.xml",
+        "FemaleFG_CA_04_bin.xml",
+        "FemaleFG_CA_05_bin.xml",
+        "FemaleFG_CA_06_bin.xml",
+        "FemaleFG_CA_07_bin.xml",
+        "Female_Medium_Heavy.xml",
+        "Female_Medium_Normal.xml",
+        "Female_Short_Heavy.xml",
+        "Female_Short_Normal.xml",
+        "Female_Tall_Heavy.xml",
+        "Female_Tall_Normal.xml",
+
+    };
     /** Creates new form AvatarConfigFrame */
     public AvatarConfigFrame(AvatarImiJME avatarRenderer) {
         this.avatarRenderer = avatarRenderer;
@@ -138,6 +195,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         randomizeB = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         importB = new javax.swing.JButton();
+        createCustomB = new javax.swing.JButton();
 
         jPanel2.setLayout(new java.awt.BorderLayout());
         jPanel2.add(scrollPane, java.awt.BorderLayout.CENTER);
@@ -285,13 +343,25 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             }
         });
 
+        createCustomB.setText("Customize...");
+        createCustomB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createCustomBActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout createAvatarPanelLayout = new org.jdesktop.layout.GroupLayout(createAvatarPanel);
         createAvatarPanel.setLayout(createAvatarPanelLayout);
         createAvatarPanelLayout.setHorizontalGroup(
             createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(createAvatarPanelLayout.createSequentialGroup()
-                .add(54, 54, 54)
-                .add(jLabel4)
+                .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(createAvatarPanelLayout.createSequentialGroup()
+                        .add(43, 43, 43)
+                        .add(jLabel4))
+                    .add(createAvatarPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(createCustomB)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(addB)
@@ -303,13 +373,13 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                         .add(maleRB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(femaleRB)))
-                .addContainerGap(50, Short.MAX_VALUE))
+                .addContainerGap(61, Short.MAX_VALUE))
             .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(createAvatarPanelLayout.createSequentialGroup()
                     .add(17, 17, 17)
                     .add(jLabel1)
                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(avatarNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
+                    .add(avatarNameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
                     .add(8, 8, 8)))
         );
         createAvatarPanelLayout.setVerticalGroup(
@@ -323,7 +393,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(createAvatarPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(randomizeB)
-                    .add(importB))
+                    .add(importB)
+                    .add(createCustomB))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(addB)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -379,27 +450,45 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         final JFrame f = this;
         f.setCursor(waitCursor);
 
-        EventQueue.invokeLater(new Runnable() {
+        Runnable r = new Runnable() {
             public void run() {
 
-                WlAvatarCharacter avatarCharacter;
-                CharacterAttributes attributes;
+                WlAvatarCharacter avatarCharacter=null;
                 String name = avatarNameTF.getText();
-
-                if (femaleRB.isSelected())
-                    attributes = new FemaleAvatarAttributes(name, true);
-                else
-                    attributes = new MaleAvatarAttributes(name, true);
 
                 WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
                 ServerSessionManager manager = session.getSessionManager();
                 String serverHostAndPort = manager.getServerNameAndPort();
-                attributes.setBaseURL("wla://avatarbaseart@"+serverHostAndPort+"/");
-
-                LoadingInfo.startedLoading(avatarRenderer.getCell().getCellID(), name);
+                
                 try {
-                    WorldManager wm = ClientContextJME.getWorldManager();
-                    avatarCharacter = new WlAvatarCharacter(attributes, wm);
+                    LoadingInfo.startedLoading(avatarRenderer.getCell().getCellID(), name);
+                    // Choose a random config from the default configs
+                    String configName = null;
+                    if (femaleRB.isSelected()) {
+                        int i = (int) Math.round(Math.random()*defaultFemaleConfigs.length-1);
+                        configName = "assets/configurations/"+defaultFemaleConfigs[i];
+                    } else {
+                        int i = (int) Math.round(Math.random()*defaultMaleConfigs.length-1);
+                        configName = "assets/configurations/"+defaultMaleConfigs[i];
+                    }
+                    try {
+                        String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
+                        URL avatarConfigURL = AssetUtils.getAssetURL(baseURL + configName, avatarRenderer.getCell());
+                        avatarCharacter = new WlAvatarCharacter(avatarConfigURL, ClientContextJME.getWorldManager(), baseURL);
+                    } catch (MalformedURLException ex) {
+                        Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                // Choose random components
+//                CharacterAttributes attributes;
+//                if (femaleRB.isSelected())
+//                    attributes = new FemaleAvatarAttributes(name, true);
+//                else
+//                    attributes = new MaleAvatarAttributes(name, true);
+//
+//                attributes.setBaseURL("wla://avatarbaseart@"+serverHostAndPort+"/");
+
+//                    avatarCharacter = new WlAvatarCharacter(attributes, ClientContextJME.getWorldManager());
                 } finally {
                     LoadingInfo.finishedLoading(avatarRenderer.getCell().getCellID(), name);
                 }
@@ -407,7 +496,8 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 avatarRenderer.changeAvatar(avatarCharacter);
                 f.setCursor(normalCursor);
            }
-        });
+        };
+        new Thread(r).start();
 
     }//GEN-LAST:event_randomizeBActionPerformed
 
@@ -555,6 +645,23 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_importBActionPerformed
 
+    private void createCustomBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createCustomBActionPerformed
+        String name = avatarNameTF.getText();
+      
+        WonderlandAvatarAttributes attrs;
+        try {
+            if (maleRB.isSelected()) {
+                attrs = WonderlandAvatarAttributes.loadMale();
+            } else {
+                attrs = WonderlandAvatarAttributes.loadFemale();
+            }
+        } catch (IOException ioe) {
+            throw new IllegalStateException("Unable to load attributes", ioe);
+        }
+
+        JFrame editFrame = new AvatarDetailsFrame(avatarRenderer, name, attrs);
+        editFrame.setVisible(true);
+    }//GEN-LAST:event_createCustomBActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addB;
@@ -563,6 +670,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     private javax.swing.JTextField avatarNameTF;
     private javax.swing.JPanel chooseAvatarPanel;
     private javax.swing.JPanel createAvatarPanel;
+    private javax.swing.JButton createCustomB;
     private javax.swing.JButton customiseB;
     private javax.swing.JFrame customiseFrame;
     private javax.swing.JTextField defaultAvatarTF;
