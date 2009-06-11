@@ -68,18 +68,20 @@ public class Orb implements ManagedObject, Serializable {
     public Orb(String id, String username, String callID, Vector3f center, 
 	    double size, boolean simulateCalls) {
 
-	this(id, username, callID, center, size, simulateCalls, null);
+	this(id, username, callID, center, size, simulateCalls, null, 0);
     }    
 
-    public Orb(VirtualPlayer vp, Vector3f center, double size, String callID) {
+    public Orb(VirtualPlayer vp, Vector3f center, double size, String callID,
+	    int bystanderCount) {
+
 	// XXX need to make user name unique
 	// But then InCallDialog will show the wrong name.
 	this(vp.getId(), vp.realPlayer.getCall().getSetup().cp.getName(), callID,
-	center, .1, false, vp);
+	center, .1, false, vp, bystanderCount);
     }
 
     private Orb(String orbID, String username, String callID, Vector3f center, 
-	    double size, boolean simulateCalls, VirtualPlayer vp) {
+	    double size, boolean simulateCalls, VirtualPlayer vp, int bystanderCount) {
 
 	this.id = id;
 	this.username = username;
@@ -94,7 +96,7 @@ public class Orb implements ManagedObject, Serializable {
 
 	if (vp != null) {
             orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
-	        center, (float) size, username, callID, simulateCalls, vp);
+	        center, (float) size, username, callID, simulateCalls, vp, bystanderCount);
 	} else {
             orbCellMO = (OrbCellMO) CellMOFactory.loadCellMO(cellType, 
 	        center, (float) size, username, callID, simulateCalls);

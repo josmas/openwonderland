@@ -263,7 +263,7 @@ public class OrbStatusListener implements ManagedCallStatusListener,
 		return;
 	    }
 
-	    int n = p.getNumberOfPlayersInRange();
+	    int n = p.getPlayersInRange().length;
 
 	    try {
                 if (n == 0) {

@@ -123,7 +123,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
     private static ArrayList<OrbCell> detachedOrbList = new ArrayList();
 
-    public OrbMessageHandler(OrbCell orbCell, WonderlandSession session) {
+    public OrbMessageHandler(OrbCell orbCell, WonderlandSession session, int bystanderCount) {
 	this.orbCell = orbCell;
 	this.session = session;
 
@@ -166,8 +166,10 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	if (username == null) {
 	    username = "No user name!";
+	} else {
+	    username = " " + username;
 	}
-
+	
 	usernameAlias = username;
 
 	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
@@ -192,6 +194,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	nameTag = comp.getNameTagNode();
 
 	//nameTag.setFont(Font.decode("Sans-PLAIN-20"));
+
+	setBystanderCount(bystanderCount);
 
 	if (orbCell.getPlayerWithVpCallID() != null) {
 	    PresenceInfo info = pm.getPresenceInfo(playerWithVpCallID);
@@ -277,8 +281,16 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	}
     }
 
+    private void setBystanderCount(int n) {
+	if (n == 0) {
+	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
+	} else {
+	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias + " + " + n);
+	}
+    }
+
     public void processMessage(final Message message) {
-	logger.finest("process message " + message);
+	System.out.println("process message " + message);
 
 	if (message instanceof OrbEndCallMessage) {
 	    if (orbDialog != null) {
@@ -326,9 +338,11 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	if (message instanceof OrbSetBystanderCountMessage) {
 	    OrbSetBystanderCountMessage msg = (OrbSetBystanderCountMessage) message;
+	    int n = msg.getBystanderCount();
 
-	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias
-		+ " (" + msg.getBystanderCount() + ")");
+	    System.out.println("Orb bystander count " + n);
+
+	    setBystanderCount(n);
 	    return;
 	}
 

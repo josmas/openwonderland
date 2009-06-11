@@ -64,6 +64,7 @@ public class OrbCell extends Cell {
     private String username;
     private String callID;
     private String playerWithVpCallID;
+    private int bystanderCount;
 
     public OrbCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -72,14 +73,15 @@ public class OrbCell extends Cell {
     }
 
     @Override
-    protected void setStatus(CellStatus status,boolean increasing) {
-	super.setStatus(status,increasing);
+    protected void setStatus(CellStatus status, boolean increasing) {
+	super.setStatus(status, increasing);
 
 	switch (status) {
 	case INACTIVE:
             if (orbMessageHandler == null) {
 	        logger.fine("Creating orb Message handler for " + getCellID());
-                orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession());
+                orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession(),
+		    bystanderCount);
 	    }
 	    break;
         case DISK:
@@ -116,6 +118,8 @@ public class OrbCell extends Cell {
 	if (playerWithVpCallID != null && playerWithVpCallID.length() == 0) {
 	    playerWithVpCallID = null;
 	}
+
+	bystanderCount = orbCellClientState.getBystanderCount();
     }
 
     @Override
