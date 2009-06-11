@@ -582,7 +582,7 @@ public class Cell {
      * @param increasing indicates if the status is increasing
      */
     protected void setStatus(CellStatus status, boolean increasing) {
-        synchronized (statusLock) {
+        synchronized(statusLock) {
             if (status == CellStatus.INACTIVE && increasing) {
                 resolveAutoComponentAnnotationsForCell();
                 CellComponent[] compList = components.values().toArray(new CellComponent[components.size()]);
@@ -655,7 +655,6 @@ public class Cell {
                  break;
             }
         }
-
         // update both local and global listeners.  This is done after the
         // lock is released, so the status may change again before the listeners
         // are called
@@ -858,16 +857,17 @@ public class Cell {
      * @return the renderer, or null if no renderer of the specified type is available
      */
     public CellRenderer getCellRenderer(RendererType rendererType) {
-        CellRenderer ret = cellRenderers.get(rendererType);
-        if (ret == null) {
-            ret = createCellRenderer(rendererType);
-            if (ret != null) {
-                cellRenderers.put(rendererType, ret);
-                setRendererStatus(ret, currentStatus);
+        synchronized(cellRenderers) {
+            CellRenderer ret = cellRenderers.get(rendererType);
+            if (ret == null) {
+                ret = createCellRenderer(rendererType);
+                if (ret != null) {
+                    cellRenderers.put(rendererType, ret);
+                    setRendererStatus(ret, currentStatus);
+                }
             }
+            return ret;
         }
-
-        return ret;
     }
 
     /**
