@@ -21,6 +21,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -56,8 +57,14 @@ public class ViewCell extends Cell {
         super.setStatus(status, increasing);
         switch(status) {
             case ACTIVE :
-                if (increasing)
+                if (increasing) {
+
+                    // TODO, check this is the local avatar
+                    CellClientSession s = (CellClientSession)getCellCache().getSession();
+                    if (s.getCellCacheConnection().getViewCellID().equals(getCellID()))
+                        s.getLocalAvatar().viewCellConfigured(getCellID());
                     movableComp = (MovableAvatarComponent) getComponent(MovableComponent.class);
+                }
                 break;
             case INACTIVE :
                 if (!increasing)

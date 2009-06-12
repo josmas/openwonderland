@@ -194,6 +194,7 @@ public class ViewManager {
      * @param cell ViewCell to register
      */
     public void register(ViewCell cell) {
+        System.err.println(cell.getCellCache());
         sessionViewCells.put(cell.getCellCache().getSession(), cell);
     }
 
@@ -265,10 +266,6 @@ public class ViewManager {
             }
 
             avatarControls.attach((ViewCell) cell);
-            // enable the controls
-            avatarControls.setEnabled(true);
-            
-
         }
 
         Entity entity = ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();

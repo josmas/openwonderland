@@ -174,6 +174,8 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
                 // The changeCellStatus actually changes the status on another thread
                 // so we don't perform geometry load operations on the DS listener thread
                 changeCellStatus(cell, CellStatus.VISIBLE);
+            } else if (cell instanceof ViewCell) {
+                changeCellStatus(cell, CellStatus.ACTIVE);
             }
 
             return cell;
