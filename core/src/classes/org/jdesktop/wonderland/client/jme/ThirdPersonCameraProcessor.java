@@ -57,6 +57,13 @@ public class ThirdPersonCameraProcessor implements CameraController {
     private EventClassFocusListener listener = null;
 
     private boolean enabled = false;
+
+    private int mouseX = 0;
+    private int mouseY = 0;
+    private float elevation = 0f;
+
+    private Vector3f avatarPos = new Vector3f();
+    private Quaternion avatarRot = new Quaternion();
     
     public ThirdPersonCameraProcessor() {
         wm = ClientContextJME.getWorldManager();
@@ -76,18 +83,24 @@ public class ThirdPersonCameraProcessor implements CameraController {
 
     @Override
     public void viewMoved(CellTransform worldTransform) {
-        translation = worldTransform.getTranslation(translation);
+        avatarPos = worldTransform.getTranslation(avatarPos);
+        avatarRot = worldTransform.getRotation(avatarRot);
+        update(avatarPos, avatarRot );
+    }
+
+    private void update(Vector3f tIn, Quaternion rIn) {
+        translation.set(tIn);
         tmp = translation.clone();
-        rotation = worldTransform.getRotation(rotation);
+        rotation.set(rIn);
         viewRot.set(rotation);
         viewTranslation.set(translation);
 
         Vector3f cameraTrans = rotation.mult(offset);
 //            System.out.println("Camera trans "+cameraTrans );
         translation.addLocal(cameraTrans);
-        commitRequired=true;
 
         rotation.lookAt(rotation.mult(cameraLook), yUp);
+        commitRequired=true;
     }
 
     public void setEnabled(boolean enabled, CameraNode cameraNode) {
@@ -122,6 +135,25 @@ public class ThirdPersonCameraProcessor implements CameraController {
                                 int clicks = ((MouseWheelEvent)mouse).getWheelRotation();
                                 offset.z -= cameraZoom*clicks;
                                 viewMoved(new CellTransform(viewRot, viewTranslation));
+                            } else if (mouse.isShiftDown()) {
+                                int diffX = mouse.getX() - mouseX;
+                                int diffY = mouse.getY() - mouseY;
+
+                                elevation += Math.toRadians(diffY)/4f;
+                                if (elevation>Math.PI/2)
+                                    elevation = (float)Math.PI/2;
+                                else if (elevation<-Math.PI/2)
+                                    elevation = -(float)Math.PI/2;
+
+                                cameraLook.set(0, (float)Math.sin(elevation), 1);
+                                cameraLook.normalize();
+
+                                mouseX = mouse.getX();
+                                mouseY = mouse.getY();
+                                update(avatarPos, avatarRot);
+                            } else {
+                                mouseX = mouse.getX();
+                                mouseY = mouse.getY();
                             }
                         }
                     }

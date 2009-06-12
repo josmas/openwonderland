@@ -38,6 +38,7 @@ public class LocalAvatar implements ClientView {
     private String viewID = "DEFAULT";
     private ViewCell viewCell = null;
     private WonderlandSession session;
+    private CellID viewCellID = null;
     
     private ArrayList<ViewCellConfiguredListener> configListeners = null;
     

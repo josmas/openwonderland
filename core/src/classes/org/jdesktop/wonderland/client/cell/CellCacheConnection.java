@@ -113,11 +113,12 @@ public class CellCacheConnection extends BaseConnection {
                                 msg.getCellName()
                                 );
                 }
-                if (viewCellID!=null && viewCellID.equals(msg.getCellID())) {
-                    clientView.viewCellConfigured(viewCellID);
-                    // We only need notification once
-                    viewCellID = null;
-                }
+//                if (viewCellID!=null && viewCellID.equals(msg.getCellID())) {
+//
+//                    clientView.viewCellConfigured(viewCellID);
+//                    // We only need notification once
+//                    viewCellID = null;
+//                }
                 break;
 
             case CONFIGURE_CELL:
@@ -154,6 +155,10 @@ public class CellCacheConnection extends BaseConnection {
         ViewCreateResponseMessage msg = registerView(clientView.getViewID());
         clientView.serverInitialized(msg);
         viewCellID = msg.getViewCellID();
+    }
+
+    public CellID getViewCellID() {
+        return viewCellID;
     }
 
     /**
