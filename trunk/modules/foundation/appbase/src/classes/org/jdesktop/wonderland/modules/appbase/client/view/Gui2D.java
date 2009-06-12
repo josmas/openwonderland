@@ -253,7 +253,12 @@ public class Gui2D {
      * Is this the event which takes or releases control of an app group (which for this LAF is Shift-Left-click)?
      */
     public static boolean isChangeControlEvent(MouseEvent me) {
-        return me.getID() == MouseEvent.MOUSE_CLICKED &&
+        // Note: this used to be MOUSE_CLICKED. But in order to fix 246 we need
+        // FrameHeaderSwing.ConsumeOnControlListener to work and for this to work
+        // I found that I needed the control changed event to be pressed, not clicked.
+        // I don't know why. See the doc in FrameHeaderSwing.ConsumeOnControlListener.consumesEvent
+        // for more info.
+        return me.getID() == MouseEvent.MOUSE_PRESSED &&
                 me.getButton() == MouseEvent.BUTTON1 &&
                 (me.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0;
     }

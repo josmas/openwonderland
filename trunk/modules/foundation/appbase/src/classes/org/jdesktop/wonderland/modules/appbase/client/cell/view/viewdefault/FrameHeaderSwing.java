@@ -29,6 +29,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
@@ -122,33 +123,29 @@ public class FrameHeaderSwing
         consumingListener.addToEntity(frameView.getEntity());
     }
 
+    // Note: this is necessary to fix bug 246.
     private class ConsumeOnControlListener extends EventListenerBaseImpl {
         @Override
         public boolean consumesEvent (Event event) {
 
-            /* Note: I thought that I could shut off header events using this technique.
-               But it doesn't act as I would suspect. For example, it allows the control
-               change (click) event through to WindowSwingEmbeddedToolkit, but the event
-               disappears after that! Fortunately, there is an alternate technique that 
-               works: check for control in each FrameHeaderSwing mouse event handler.
-
             if (app.getControlArb().hasControl()) {
-                System.err.println("COCL.consumesEvent, true because have control");
                 return true;
             }
 
             // Always let the control change event through, even if app doesn't have control
+            // TODO: low: for some reason, when the control change event is Shift Left Click
+            // the event gets consumed by this event but never gets handed off to the
+            // mouseClicked listener in the parent class. I don't know why; maybe it's 
+            // some sort of grab issue. But when the control change event is pressed
+            // this listener works fine.
+
             if (event instanceof MouseEvent3D) {
                 MouseEvent me = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
                 boolean result = Gui2D.isChangeControlEvent(me);
-                System.err.println("COCL.consumesEvent, result = " + result);
                 return result;
             }
 
             return false;
-            */
-
-            return true;
         }
         public boolean propagatesToParent (Event event) {
             return false;
@@ -268,16 +265,6 @@ public class FrameHeaderSwing
     public void	mouseClicked(MouseEvent e) {
         if (view == null) return;
 
-        if  (Gui2D.isChangeControlEvent(e)) {
-            ControlArb appControlArb = app.getControlArb();
-            if (appControlArb.hasControl()) {
-                appControlArb.releaseControl();
-            } else {
-                appControlArb.takeControl();
-            }
-            return;
-        } 
-
         if (!app.getControlArb().hasControl()) return;
 
         if (e.getID() == MouseEvent.MOUSE_CLICKED &&
@@ -307,6 +294,16 @@ public class FrameHeaderSwing
             view.getWindow().displayWindowMenu(view.getEntity(), e);
             return;
         }
+
+        if  (Gui2D.isChangeControlEvent(e)) {
+            ControlArb appControlArb = app.getControlArb();
+            if (appControlArb.hasControl()) {
+                appControlArb.releaseControl();
+            } else {
+                appControlArb.takeControl();
+            }
+            return;
+        } 
 
         if (!app.getControlArb().hasControl()) return;
 
