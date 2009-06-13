@@ -69,6 +69,7 @@ public class App2DCellRendererJME extends App2DCellRenderer {
 
         // For debug
         //ClientContext.getInputManager().addGlobalEventListener(new SceneGraphPrinter());
+        //ClientContext.getInputManager().addGlobalEventListener(new OrthoPrinter());
     }
 
     // For debug
@@ -86,18 +87,41 @@ public class App2DCellRendererJME extends App2DCellRenderer {
                 KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
                 if (ke.getKeyCode() == KeyEvent.VK_P) {
                     printEntitySceneGraphs(App2DCellRendererJME.this.getEntity(), 0);
-                } else if (ke.getKeyCode() == KeyEvent.VK_O) {
-                    // Print ortho nodes attachd to the world manager
-                    WorldManager wm = ClientContextJME.getWorldManager();
-                    for (int i=0; i < wm.numEntities(); i++) {
-                        Entity e = wm.getEntity(i);
-                        RenderComponent rc = (RenderComponent) e.getComponent(RenderComponent.class);
-                        if (rc == null || !rc.getOrtho()) continue;
-                        System.err.println("Ortho node = " + rc.getSceneRoot());
-                        GraphicsUtils.printNode(rc.getSceneRoot());
-                    }
                 }
             }
+        }
+    }
+
+    // For debug
+    public static class OrthoPrinter extends EventClassListener {
+
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[]{KeyEvent3D.class};
+        }
+
+        @Override
+        public void commitEvent(Event event) {
+            KeyEvent3D ke3d = (KeyEvent3D) event;
+            if (ke3d.isPressed()) {
+                KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
+                if (ke.getKeyCode() == KeyEvent.VK_O) {
+                    printOrthoNodes();
+                }
+            }
+        }
+    }
+
+    // For debug
+    public static void printOrthoNodes () {
+        // Print ortho nodes attached to the world manager
+        WorldManager wm = ClientContextJME.getWorldManager();
+        for (int i=0; i < wm.numEntities(); i++) {
+            Entity e = wm.getEntity(i);
+            RenderComponent rc = (RenderComponent) e.getComponent(RenderComponent.class);
+            if (rc == null || !rc.getOrtho()) continue;
+            System.err.println("Ortho node = " + rc.getSceneRoot());
+            GraphicsUtils.printNode(rc.getSceneRoot());
         }
     }
 
