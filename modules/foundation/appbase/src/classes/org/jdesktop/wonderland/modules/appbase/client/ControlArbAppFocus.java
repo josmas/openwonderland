@@ -23,6 +23,12 @@ import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import java.util.logging.Logger;
 import java.awt.Canvas;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDButton;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**
@@ -44,6 +50,15 @@ public abstract class ControlArbAppFocus extends ControlArb {
     /** The number of apps which have control. */
     private static int numControlledApps;
 
+    /** The HUD on which the release control all button is displayed. */
+    private static HUD hud;
+
+    /** The release control all button. */
+    private static HUDButton releaseControlAllButton;
+
+    /** Is the release control all button visible? */
+    private static boolean releaseControlAllButtonVisible;
+
     /**
      * Create an instance of ControlArbAppFocus.
      */
@@ -55,7 +70,6 @@ public abstract class ControlArbAppFocus extends ControlArb {
     @Override
     public void cleanup() {
         super.cleanup();
-        numControlledApps = 0;
     }
 
     /**
@@ -72,8 +86,12 @@ public abstract class ControlArbAppFocus extends ControlArb {
 
         numControlledApps++;
         if (numControlledApps == 1) {
+
             // At least one app has keyboard/mouse control. Disable global (world) listeners.
             inputManager.removeKeyMouseFocus(inputManager.getGlobalFocusEntity());            
+
+            // Display a button to allow the user to release control
+            releaseControlAllButtonSetVisible(true);
         }
     }
 
@@ -91,6 +109,10 @@ public abstract class ControlArbAppFocus extends ControlArb {
 
         numControlledApps--;
         if (numControlledApps <= 0) {
+
+            // Undisplay a button to allow the user to release control
+            releaseControlAllButtonSetVisible(false);
+
             // No more apps have control. Reenable global (world) listeners.
             inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());            
 
@@ -99,6 +121,29 @@ public abstract class ControlArbAppFocus extends ControlArb {
             if (!canvas.requestFocusInWindow()) {
                 logger.warning("Focus request for main canvas rejected.");
             }
+        }
+    }
+
+    public static void releaseControlAllButtonSetVisible (boolean visible) {
+        if (releaseControlAllButtonVisible == visible) return;
+        releaseControlAllButtonVisible = visible;
+
+        if (visible) {
+            if (releaseControlAllButton == null) {
+                hud = HUDManagerFactory.getHUDManager().getHUD("main");
+                releaseControlAllButton = hud.createButton("Release App Control");
+                releaseControlAllButton.setDecoratable(false);
+                releaseControlAllButton.setPreferredLocation(Layout.NORTHEAST);
+                releaseControlAllButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent event) {
+                        ControlArb.releaseControlAll();
+                    }
+                });
+                hud.addComponent(releaseControlAllButton);
+            }
+            releaseControlAllButton.setVisible(true);
+        } else {
+            releaseControlAllButton.setVisible(false);
         }
     }
 }

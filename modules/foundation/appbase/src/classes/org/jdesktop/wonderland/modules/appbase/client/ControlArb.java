@@ -41,7 +41,7 @@ public abstract class ControlArb {
     private static final Logger logger = Logger.getLogger(ControlArb.class.getName());
 
     /** A list of controllers in the Wonderland client session */
-    protected static final LinkedList<ControlArb> controlArbs = new LinkedList<ControlArb>();
+    private static final LinkedList<ControlArb> controlArbs = new LinkedList<ControlArb>();
     /** A list of components to notify of a state change in the control arb */
     protected final LinkedList<ControlChangeListener> listeners = new LinkedList<ControlChangeListener>();
     /** The application controlled by this arbiter */
@@ -68,7 +68,7 @@ public abstract class ControlArb {
      * Create a new instance of ControlArb.
      */
     public ControlArb() {
-        synchronized (this) {
+        synchronized (controlArbs) {
             controlArbs.add(this);
         }
     }
@@ -76,11 +76,13 @@ public abstract class ControlArb {
     /**
      * Clean up resources held.
      */
-    public synchronized void cleanup() {
+    public void cleanup() {
         if (hasControl()) {
             releaseControl();
         }
-        controlArbs.remove(this);
+        synchronized (controlArbs) {
+            controlArbs.remove(this);
+        }
         listeners.clear();
         app = null;
         appControl = false;
@@ -138,9 +140,22 @@ public abstract class ControlArb {
     /**
      * Release control of all applications in the Wonderland client session.
      */
-    public synchronized static void releaseControlAll() {
-        for (ControlArb controlArb : controlArbs) {
-            controlArb.releaseControl();
+    public static void releaseControlAll() {
+
+        // This method is implemented this way because releasing control might cause the 
+        // removeControlAllButton to disappear. Currently, the HUD actually (and probably 
+        // spuriously creates a window when this happens. This can result in a new HUD app,
+        // and a new control arb being created. This results in a ConcurrentComodification
+        // exception
+
+        LinkedList<ControlArb> controlArbsCopy;
+        synchronized (controlArbs) {
+            controlArbsCopy = (LinkedList<ControlArb>) controlArbs.clone();
+        }
+        for (ControlArb controlArb : controlArbsCopy) {
+            if (controlArb.hasControl()) {
+                controlArb.releaseControl();
+            }
         }
     }
 
@@ -214,9 +229,11 @@ public abstract class ControlArb {
     /**
      * Informs the control change listeners of all control arbs that the state has been updated.
      */
-    protected synchronized static void updateControlAll() {
-        for (ControlArb controlArb : controlArbs) {
-            controlArb.updateControl();
+    protected static void updateControlAll() {
+        synchronized (controlArbs) {
+            for (ControlArb controlArb : controlArbs) {
+                controlArb.updateControl();
+            }
         }
     }
 }
