@@ -293,14 +293,21 @@ public class Gui2D {
              */
 
             case TOGGLE_CONTROL:
-                ControlArb controlArb = view.getWindow().getApp().getControlArb();
-                if (controlArb.hasControl()) {
-                    logger.info("Release control");
-                    controlArb.releaseControl();
-                } else {
-                    logger.info("Take control");
-                    controlArb.takeControl();
-                }
+                // This must be done later because the JOGL AWT lock may be released at this point,
+                // and, hence, the OGL context. We now need an OGL context for this operation
+                // because it now involves displaying a HUD button.
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        ControlArb controlArb = view.getWindow().getApp().getControlArb();
+                        if (controlArb.hasControl()) {
+                            logger.info("Release control");
+                            controlArb.releaseControl();
+                        } else {
+                            logger.info("Take control");
+                            controlArb.takeControl();
+                        }
+                    }
+                });
                 break;
         }
     }
