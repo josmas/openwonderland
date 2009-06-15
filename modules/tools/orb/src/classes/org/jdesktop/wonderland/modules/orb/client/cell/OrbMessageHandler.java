@@ -282,6 +282,18 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	}
     }
 
+    public static void makeOrbsVisible(boolean isVisible) {
+        OrbCell[] attachedOrbs = attachedOrbMap.values().toArray(new OrbCell[0]);
+
+	for (int i = 0; i < attachedOrbs.length; i++) {
+	    attachedOrbs[i].setVisible(isVisible);
+	}
+
+	for (OrbCell orbCell : detachedOrbList) {
+	    orbCell.setVisible(isVisible);
+	}
+    }
+
     private String[] bystanders;
 
     private BystandersListener listener;
@@ -310,7 +322,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     }
 
     public void processMessage(final Message message) {
-	System.out.println("process message " + message);
+	logger.finer("process message " + message);
 
 	if (message instanceof OrbEndCallMessage) {
 	    if (orbDialog != null) {

@@ -8,6 +8,8 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
+
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
 
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
@@ -297,25 +299,31 @@ private void applyChanges() {
 
     originalOtherNameTagAttributes = otherNameTagAttributes;
 
+    System.out.println("otherNameTagAttributes " + otherNameTagAttributes);
+
     switch (otherNameTagAttributes) {
     case HIDE:
 	NameTagNode.setOtherNameTags(EventType.HIDE, 
             presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	OrbCell.makeOrbsVisible(false);
 	break;
 
     case SMALL_FONT:
 	NameTagNode.setOtherNameTags(EventType.SMALL_FONT, 
             presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	OrbCell.makeOrbsVisible(true);
 	break;
 
     case REGULAR_FONT:
 	NameTagNode.setOtherNameTags(EventType.REGULAR_FONT, 
             presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	OrbCell.makeOrbsVisible(true);
 	break;
 
     case LARGE_FONT:
 	NameTagNode.setOtherNameTags(EventType.LARGE_FONT, 
             presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+	OrbCell.makeOrbsVisible(true);
 	break;
     }
 }
