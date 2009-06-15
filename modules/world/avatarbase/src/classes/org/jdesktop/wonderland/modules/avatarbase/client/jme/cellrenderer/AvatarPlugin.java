@@ -28,7 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
@@ -54,23 +54,23 @@ import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
  */
 @Plugin
 public class AvatarPlugin extends BaseClientPlugin
-        implements ViewManagerListener
-{
+        implements ViewManagerListener {
+
     private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
     private ServerSessionManager loginManager;
     private String baseURL;
     private WeakReference<AvatarTestPanel> testPanelRef = null;
     private WeakReference<GestureHUDPanel> gesturePanelRef = null;
+    private WeakReference<GestureHUD> gestureHUDRef = null;
     private Instrumentation instrumentation;
-
     private JMenuItem avatarControlsMI;
     private JMenuItem gestureMI;
     private JMenuItem avatarMI;
     private JMenuItem avatarSettingsMI;
     private JMenuItem startingLocationMI;
-
     private AvatarImiJME curAvatar;
     private boolean menusAdded = false;
+    private boolean gestureHUDEnabled = false;
     private final SessionLifecycleListener lifecycleListener;
 
     public AvatarPlugin() {
@@ -92,7 +92,7 @@ public class AvatarPlugin extends BaseClientPlugin
 
         // Set the base URL
         String serverHostAndPort = loginManager.getServerNameAndPort();
-        this.baseURL = "wla://avatarbaseart@"+serverHostAndPort+"/";
+        this.baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
 
         // XXX TODO: this shouldn't be done here -- it should be done in
         // activate or should be registered per session not globally 
@@ -105,6 +105,7 @@ public class AvatarPlugin extends BaseClientPlugin
 
         avatarControlsMI = new JMenuItem(bundle.getString("Avatar_Controls"));
         avatarControlsMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 if (testPanelRef == null || testPanelRef.get() == null) {
                     AvatarTestPanel test = new AvatarTestPanel();
@@ -121,26 +122,25 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
-        gestureMI = new JMenuItem(bundle.getString("Gesture_UI"));
+        gestureMI = new JCheckBoxMenuItem(bundle.getString("Gesture_UI"));
+        gestureMI.setSelected(false);
         gestureMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-                if (gesturePanelRef == null || gesturePanelRef.get() == null) {
-                    GestureHUDPanel hudPanel = new GestureHUDPanel();
-                    hudPanel.setAvatarCharactar(curAvatar.getAvatarCharacter());
-                    JFrame f = new JFrame(bundle.getString("Gesture_UI"));
-                    f.getContentPane().add(hudPanel);
-                    f.pack();
-                    f.setVisible(true);
-                    f.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-                    gesturePanelRef = new WeakReference(hudPanel);
-                } else {
-                    SwingUtilities.getRoot(gesturePanelRef.get().getParent()).setVisible(true);
+                if (gestureHUDRef == null || gestureHUDRef.get() == null) {
+                    GestureHUD hud = new GestureHUD();
+                    hud.setAvatarCharacter(curAvatar.getAvatarCharacter());
+                    gestureHUDRef = new WeakReference(hud);
                 }
+                gestureHUDEnabled = !gestureHUDEnabled;
+                gestureMI.setSelected(gestureHUDEnabled);
+                ((GestureHUD)gestureHUDRef.get()).setVisible(gestureHUDEnabled);
             }
         });
 
         avatarMI = new JMenuItem(bundle.getString("Avatar_Appearance..."));
         avatarMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
                 if (cell instanceof AvatarCell) {
@@ -162,6 +162,7 @@ public class AvatarPlugin extends BaseClientPlugin
 
         startingLocationMI = new JMenuItem(bundle.getString("Starting_Location"));
         startingLocationMI.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 GameContext context = curAvatar.getAvatarCharacter().getContext();
                 CharacterSteeringHelm helm = curAvatar.getAvatarCharacter().getContext().getSteering();
@@ -191,7 +192,7 @@ public class AvatarPlugin extends BaseClientPlugin
     }
 
     @Override
-    protected void activate() {        
+    protected void activate() {
         // add view listener -- menus will be added once the primary
         // view cell has changed
         ClientContextJME.getViewManager().addViewManagerListener(this);
@@ -200,7 +201,7 @@ public class AvatarPlugin extends BaseClientPlugin
             primaryViewCellChanged(null, ClientContextJME.getViewManager().getPrimaryViewCell());
         }
     }
-    
+
     @Override
     protected void deactivate() {
         // remove menus
@@ -208,13 +209,14 @@ public class AvatarPlugin extends BaseClientPlugin
             JmeClientMain.getFrame().removeFromWindowMenu(avatarControlsMI);
             JmeClientMain.getFrame().removeFromWindowMenu(gestureMI);
             JmeClientMain.getFrame().removeFromEditMenu(avatarMI);
-            if (avatarSettingsMI!=null)
+            if (avatarSettingsMI != null) {
                 JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
+            }
             JmeClientMain.getFrame().removeFromPlacemarksMenu(startingLocationMI);
 
             menusAdded = false;
         }
-        
+
         // remove view listener
         ClientContextJME.getViewManager().removeViewManagerListener(this);
     }
@@ -232,10 +234,10 @@ public class AvatarPlugin extends BaseClientPlugin
         } else {
             testPanelRef.get().setAvatarCharactar(curAvatar.getAvatarCharacter());
         }
-        if (gesturePanelRef == null || gesturePanelRef.get() == null) {
+        if (gestureHUDRef == null || gestureHUDRef.get() == null) {
             // Do nothing
         } else {
-            gesturePanelRef.get().setAvatarCharactar(curAvatar.getAvatarCharacter());
+            gestureHUDRef.get().setAvatarCharacter(curAvatar.getAvatarCharacter());
         }
 
         // notify the avatar config manager that the view cell has changed
@@ -246,8 +248,9 @@ public class AvatarPlugin extends BaseClientPlugin
             JmeClientMain.getFrame().addToWindowMenu(avatarControlsMI, 0);
             JmeClientMain.getFrame().addToWindowMenu(gestureMI, 0);
             JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
-            if (avatarSettingsMI!=null)
+            if (avatarSettingsMI != null) {
                 JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
+            }
             JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
 
             menusAdded = true;
