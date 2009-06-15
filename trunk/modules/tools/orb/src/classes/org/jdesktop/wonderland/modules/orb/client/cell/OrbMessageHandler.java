@@ -496,6 +496,10 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     }
 
     private void reorderDetachedOrbs() {
+	if (hostCell == null) {
+	    return;
+	}
+
 	CellTransform transform = hostCell.getLocalTransform();
 
 	Vector3f translation = new Vector3f();
