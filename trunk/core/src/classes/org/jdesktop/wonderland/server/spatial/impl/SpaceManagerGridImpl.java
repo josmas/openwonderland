@@ -96,8 +96,6 @@ class SpaceManagerGridImpl implements SpaceManager {
         } else
             throw new RuntimeException("Bounds not supported "+volume.getClass().getName());
 
-        yStep = 0;
-
 //        System.out.println("RADIUS "+radius+"  step "+step);
 //        System.err.println("Bounds "+volume);
 //        System.err.println("Current "+x+", "+y+", "+z);
