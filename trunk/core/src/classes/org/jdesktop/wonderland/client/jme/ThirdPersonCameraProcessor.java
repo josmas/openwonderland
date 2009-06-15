@@ -135,7 +135,7 @@ public class ThirdPersonCameraProcessor implements CameraController {
                                 int clicks = ((MouseWheelEvent)mouse).getWheelRotation();
                                 offset.z -= cameraZoom*clicks;
                                 viewMoved(new CellTransform(viewRot, viewTranslation));
-                            } else if (mouse.isShiftDown()) {
+                            } else if (mouse.isControlDown()) {
                                 int diffX = mouse.getX() - mouseX;
                                 int diffY = mouse.getY() - mouseY;
 
