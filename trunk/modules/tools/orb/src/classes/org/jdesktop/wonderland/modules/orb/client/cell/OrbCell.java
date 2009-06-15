@@ -155,6 +155,18 @@ public class OrbCell extends Cell {
 	return orbMessageHandler;
     }
 
+    public static void makeOrbsVisible(boolean isVisible) {
+	OrbMessageHandler.makeOrbsVisible(isVisible);
+    }
+
+    public void setVisible(boolean isVisible) {
+	if (orbCellRenderer == null) {
+	    return;
+	}
+
+	orbCellRenderer.setVisible(isVisible);
+    }
+	
     public void orbSelected() {
 	if (orbMessageHandler == null) {
 	    logger.warning("No orbMessageHandler");

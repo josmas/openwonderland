@@ -53,7 +53,11 @@ public class OrbCellRenderer extends BasicRenderer {
     private Entity entity;
     private MyMouseListener listener;
 
-    String username;
+    private String username;
+
+    private Node node;
+    private Node pivot;
+    private Sphere sphere;
 
     public OrbCellRenderer(Cell cell) {
         super(cell);
@@ -87,47 +91,6 @@ public class OrbCellRenderer extends BasicRenderer {
 	return createAnimationEntity();
     }
 
-    /**
-     * Creates a wireframe box or sphere with the same size as the bounds.
-     */
-    private Node createWireframeEntity() {
-        /* Fetch the basic info about the cell */
-        String name = cell.getCellID().toString();
-        CellTransform transform = cell.getLocalTransform();
-        Vector3f translation = transform.getTranslation(null);
-        Vector3f scaling = transform.getScaling(null);
-        Quaternion rotation = transform.getRotation(null);
-        
-        /* Create the new object -- either a Box or Sphere */
-        TriMesh mesh = null;
-        if (cell.getLocalBounds() instanceof BoundingBox) {
-            Vector3f extent = ((BoundingBox)cell.getLocalBounds()).getExtent(null);
-            mesh = new Box(name, new Vector3f(), extent.x, extent.y, extent.z);
-        } else if (cell.getLocalBounds() instanceof BoundingSphere) {
-            float radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
-            mesh = new Sphere(name, new Vector3f(), 10, 10, radius);
-        } else {
-            logger.warning("Unsupported Bounds type " +cell.getLocalBounds().getClass().getName());
-            return new Node();
-        }
-        
-        /* Create the scene graph object and set its wireframe state */
-        Node node = new Node();
-        node.attachChild(mesh);
-        node.setModelBound(new BoundingBox());
-        node.updateModelBound();
-        //node.setLocalTranslation(translation);
-        //node.setLocalScale(scaling);
-        //node.setLocalRotation(rotation);
-
-        WireframeState wiState = (WireframeState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
-        wiState.setEnabled(true);
-        node.setRenderState(wiState);
-        node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
-	((OrbCell) cell).setOrbRootNode(node);
-        return node;
-    }
-
     private Node createAnimationEntity() {
 	float radius = (float) .5;
 
@@ -135,10 +98,10 @@ public class OrbCellRenderer extends BasicRenderer {
             radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
 	} 
 
-	Sphere s = new Sphere("My sphere", 30, 30, radius);
+	sphere = new Sphere("My sphere", 30, 30, radius);
 
 	// I will rotate this pivot to move my light
-	Node pivot=new Node("Pivot node");
+	pivot=new Node("Pivot node");
 	// This light will rotate around my sphere. Notice I don't
 	// give it a position
 	PointLight pl=new PointLight();
@@ -186,10 +149,10 @@ public class OrbCellRenderer extends BasicRenderer {
 	// Tell my pivot it is controlled by st
 	pivot.addController(st);
 
-        Node node = new Node();
+        node = new Node();
 	// Attach pivot and sphere to graph
 	node.attachChild(pivot);
-	node.attachChild(s);
+	node.attachChild(sphere);
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
 
@@ -207,6 +170,16 @@ public class OrbCellRenderer extends BasicRenderer {
 	logger.fine("ANIMATION ENTITY CREATED");
 	((OrbCell) cell).setOrbRootNode(node);
 	return node;
+    }
+
+    public void setVisible(boolean isVisible) {
+	if (isVisible) {
+	    node.attachChild(pivot);
+	    node.attachChild(sphere);
+	} else {
+	    node.detachChild(pivot);
+	    node.detachChild(sphere);
+	}
     }
 
     public void removeMouseListener() {
