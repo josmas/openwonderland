@@ -78,7 +78,12 @@ public class SelectionClientPlugin extends BaseClientPlugin {
 
         @Override
         public void commitEvent(Event event) {
-            // Fetch the Emtity from the event, if there is one
+            // NOTE: disabled by nsimpson as temporary workaround for bug 239:
+            // HUD controls have spurious shadows
+            if (true) {
+                return;
+            }
+            // Fetch the Entity from the event, if there is one
             final EnterExitEvent eeEvent = (EnterExitEvent)event;
             List<Entity> entityList = eeEvent.getEntityList();
             if (entityList == null || entityList.isEmpty() == true) {
