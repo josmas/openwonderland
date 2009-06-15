@@ -17,54 +17,94 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
-import java.awt.Point;
+import com.jme.math.Vector2f;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
+import org.jdesktop.wonderland.client.hud.HUDView;
 
 /**
- * A HUDAbsoluteLayoutManager lays out 2D objects in a 2D rectangular space
- * according to their specified coordinates. The management of the position
- * of objects in the space is therefore the responsibility of another
- * mechanism. For example, a HUDManager might divide up the screen into
- * non-overlapping rectangular regions for multiple HUDs.
+ * A HUDAbsoluteLayoutManager lays out components in a 2D rectangular space
+ * according to their specified coordinates. Essentially, this is a no-op
+ * layout manager; it does no layout management.
  * 
  * @author nsimpson
  */
 public class HUDAbsoluteLayoutManager implements HUDLayoutManager {
 
     private static final Logger logger = Logger.getLogger(HUDAbsoluteLayoutManager.class.getName());
+    // a mapping between HUD components and their views
+    protected Map<HUDComponent, HUDView> hudViewMap;
+    protected int hudWidth;
+    protected int hudHeight;
 
-    private int hudWidth;
-    private int hudHeight;
+    public HUDAbsoluteLayoutManager() {
+        this(0, 0);
+    }
 
     public HUDAbsoluteLayoutManager(int hudWidth, int hudHeight) {
         this.hudWidth = hudWidth;
         this.hudHeight = hudHeight;
+        hudViewMap = Collections.synchronizedMap(new HashMap());
     }
 
     /**
-     * Add a HUD component to the list of components this layout manager
-     * is managing.
-     * @param component the component to manage
+     * {@inheritDoc}
      */
     public void manageComponent(HUDComponent component) {
+        hudViewMap.put(component, null);
     }
 
     /**
-     * Remove a HUD component from the list of components this layout manager
-     * is managing.
-     * @param component the component to stop managing
+     * {@inheritDoc}
      */
     public void unmanageComponent(HUDComponent component) {
+        hudViewMap.remove(component);
     }
 
     /**
-     * Get the position of the given component according to the specified
-     * layout.
-     * @param component the component for which the position is needed
+     * {@inheritDoc}
      */
-    public Point getLocation(HUDComponent component) {
-        return component.getLocation();
+    public void addView(HUDComponent component, HUDView view) {
+        hudViewMap.put(component, view);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void removeView(HUDComponent component, HUDView view) {
+        if (hudViewMap.containsKey(component)) {
+            hudViewMap.put(component, null);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HUDView getView(HUDComponent component) {
+        return hudViewMap.get(component);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Vector2f getLocation(HUDComponent component) {
+        Vector2f location = new Vector2f();
+
+        if (!hudViewMap.containsKey(component)) {
+            return location;
+        }
+
+        HUDView2D view = (HUDView2D)hudViewMap.get(component);
+
+        if (component != null) {
+            location.set((float) component.getLocation().getX(),
+                    (float) component.getLocation().getY());
+        }
+
+        return location;
     }
 }

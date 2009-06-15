@@ -17,91 +17,84 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
-import java.awt.Point;
+import com.jme.math.Vector2f;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
 
 /**
- *
+ * A layout manager which lays out HUD components according to compass point
+ * positions.
  * @author nsimpson
  */
-public class HUDCompassLayoutManager implements HUDLayoutManager {
+public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
 
-    private static final Logger logger = Logger.getLogger(HUDAbsoluteLayoutManager.class.getName());
-    private int hudWidth;
-    private int hudHeight;
+    private static final Logger logger = Logger.getLogger(HUDCompassLayoutManager.class.getName());
 
     public HUDCompassLayoutManager(int hudWidth, int hudHeight) {
-        this.hudWidth = hudWidth;
-        this.hudHeight = hudHeight;
+        super(hudWidth, hudHeight);
     }
 
     /**
-     * Add a HUD component to the list of components this layout manager
-     * is managing.
-     * @param component the component to manage
+     * {@inheritDoc}
      */
-    public void manageComponent(HUDComponent component) {
-    }
+    @Override
+    public Vector2f getLocation(HUDComponent component) {
+        Vector2f location = new Vector2f();
 
-    /**
-     * Remove a HUD component from the list of components this layout manager
-     * is managing.
-     * @param component the component to stop managing
-     */
-    public void unmanageComponent(HUDComponent component) {
-    }
+        if (component == null) {
+            return location;
+        }
 
-    /**
-     * Get the position of the given component according to the specified
-     * layout.
-     * @param component the component for which the position is needed
-     */
-    public Point getLocation(HUDComponent component) {
-        Point location = new Point();
+        HUDView2D view2d = (HUDView2D) hudViewMap.get(component);
+
+        if (view2d == null) {
+            return location;
+        }
+
+        // get HUD component's view width
+        float compWidth = view2d.getDisplayerLocalWidth();
+        float compHeight = view2d.getDisplayerLocalHeight();
+
+        // get the center of the HUD
+        float hudCenterX = hudWidth / 2f;
+        float hudCenterY = hudHeight / 2f;
 
         if (component.getPreferredLocation() != Layout.NONE) {
-            int centerX = hudWidth / 2;
-            int centerY = hudHeight / 2;
-            int compCenterX = component.getWidth() / 2;
-            int compCenterY = component.getHeight() / 2;
-
             switch (component.getPreferredLocation()) {
                 case NORTH:
-                    location.setLocation(centerX, hudHeight - compCenterY - 20);
+                    location.set(hudCenterX, hudHeight - 20 - compHeight);
                     break;
                 case SOUTH:
-                    location.setLocation(centerX, 20 + compCenterY);
+                    location.set(hudCenterX, 20);
                     break;
                 case WEST:
-                    location.setLocation(20 + compCenterX, centerY);
+                    location.set(20 + compWidth / 2f, hudCenterY - compHeight / 2f);
                     break;
                 case EAST:
-                    location.setLocation(hudWidth - 20 - compCenterX, centerY);
+                    location.set(hudWidth - 20 - compWidth / 2f, hudCenterY - compHeight / 2f);
                     break;
                 case CENTER:
-                    location.setLocation(centerX, centerY);
+                    location.set(hudCenterX, hudCenterY);
                     break;
                 case NORTHWEST:
-                    location.setLocation(20 + compCenterX, hudHeight - compCenterY - 20);
+                    location.set(20 + compWidth / 2f, hudHeight - 20 - compHeight / 2f);
                     break;
                 case NORTHEAST:
-                    location.setLocation(hudWidth - 20 - compCenterX, hudHeight - compCenterY - 20);
+                    location.set(hudWidth - 20 - compWidth / 2f, hudHeight - 20 - compHeight / 2f);
                     break;
                 case SOUTHWEST:
-                    location.setLocation(20 + compCenterX, 20 + compCenterY);
+                    location.set(20 + compWidth / 2f, 20 + compHeight / 2f);
                     break;
                 case SOUTHEAST:
-                    location.setLocation(hudWidth - 20 - compCenterX, 20 + compCenterY);
+                    location.set(hudWidth - 20 - compWidth / 2, 20 + compHeight / 2f);
                     break;
                 default:
                     logger.warning("unhandled layout type: " + component.getPreferredLocation());
                     break;
             }
         } else {
-            location = component.getLocation();
+            location.set(component.getX() + compWidth / 2f, component.getY() + compHeight / 2f);
         }
         return location;
     }

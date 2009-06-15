@@ -17,37 +17,56 @@
  */
 package org.jdesktop.wonderland.client.hud;
 
-import java.awt.Point;
+import com.jme.math.Vector2f;
+import java.util.List;
 
 /**
- * A HUDLayoutManager lays out 2D objects in a 2D rectangular space.
+ * A HUDLayoutManager lays out HUD components in a 2D rectangular space.
  *
- * A HUDLayoutManager could be used by a HUDManager to layout HUDs on the
- * screen or by a HUDComponentManager to layout the HUDComponents it
- * manages.
+ * A HUDLayoutManager could be used to layout HUDs on the screen or HUD
+ * components within a HUD.
  * 
  * @author nsimpson
  */
 public interface HUDLayoutManager {
 
     /**
-     * Add a HUD component to the list of components this layout manager
-     * is managing.
+     * Add a component to the list of component this layout manager manages.
      * @param component the component to manage
      */
     public void manageComponent(HUDComponent component);
 
     /**
-     * Remove a HUD component from the list of components this layout manager
-     * is managing.
+     * Remove a component from the list of component this layout manager manages.
      * @param component the component to stop managing
      */
     public void unmanageComponent(HUDComponent component);
+
+    /**
+     * Associates a view with a component
+     * @param component the component
+     * @param view the view associated with this component
+     */
+    public void addView(HUDComponent component, HUDView view);
+
+    /**
+     * Removes a view from a component
+     * @param component the component
+     * @param view the view to remove from the component
+     */
+    public void removeView(HUDComponent component, HUDView view);
+
+    /**
+     * Gets the view associated with a component
+     * @param component the component
+     * @return the specified component's view
+     */
+    public HUDView getView(HUDComponent component);
 
     /**
      * Get the position of the given component according to the specified
      * layout.
      * @param component the component for which the position is needed
      */
-    public Point getLocation(HUDComponent component);
+    public Vector2f getLocation(HUDComponent component);
 }

@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.hud.client;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.hud.HUDView;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.App2DCellRendererJME;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
@@ -30,7 +31,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
  * A 3D view for HUD component windows
  * @author nsimpson
  */
-public class HUDView3D extends View2DEntity {
+public class HUDView3D extends View2DEntity implements HUDView {
 
     private static final Logger logger = Logger.getLogger(HUDView3D.class.getName());
     private View2DDisplayer displayer;

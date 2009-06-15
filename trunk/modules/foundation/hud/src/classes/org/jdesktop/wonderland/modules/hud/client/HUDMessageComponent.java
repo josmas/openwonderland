@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 public class HUDMessageComponent extends HUDComponent2D implements HUDMessage {
 
     private static final Logger logger = Logger.getLogger(HUDMessageComponent.class.getName());
-    private HUDDialogImpl dialogImpl;
+    private HUDMessageImpl dialogImpl;
     protected String message;
     protected int rows = 1;
 
@@ -55,7 +55,7 @@ public class HUDMessageComponent extends HUDComponent2D implements HUDMessage {
      */
     private void initializeDialog() {
         if (dialogImpl == null) {
-            component = dialogImpl = new HUDDialogImpl();
+            component = dialogImpl = new HUDMessageImpl();
             Dimension size = dialogImpl.getPreferredSize();
             setBounds(0, 0, size.width, size.height);
             JmeClientMain.getFrame().getCanvas3DPanel().add(component);
