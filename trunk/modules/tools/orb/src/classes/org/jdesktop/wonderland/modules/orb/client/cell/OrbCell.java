@@ -64,7 +64,7 @@ public class OrbCell extends Cell {
     private String username;
     private String callID;
     private String playerWithVpCallID;
-    private int bystanderCount;
+    private String[] bystanders;
 
     public OrbCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -81,7 +81,7 @@ public class OrbCell extends Cell {
             if (orbMessageHandler == null) {
 	        logger.fine("Creating orb Message handler for " + getCellID());
                 orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession(),
-		    bystanderCount);
+		    bystanders);
 	    }
 	    break;
         case DISK:
@@ -119,7 +119,7 @@ public class OrbCell extends Cell {
 	    playerWithVpCallID = null;
 	}
 
-	bystanderCount = orbCellClientState.getBystanderCount();
+	bystanders = orbCellClientState.getBystanders();
     }
 
     @Override
@@ -157,11 +157,29 @@ public class OrbCell extends Cell {
 
     public void orbSelected() {
 	if (orbMessageHandler == null) {
-	    logger.warning("No phoneMessageHandler");
+	    logger.warning("No orbMessageHandler");
 	    return;
 	}
 
 	orbMessageHandler.orbSelected();
+    }
+
+    public void setBystandersListener(BystandersListener listener) {
+	if (orbMessageHandler == null) {
+	    logger.warning("No orbMessageHandler");
+	    return;
+	}
+
+	orbMessageHandler.setBystandersListener(listener);
+    }
+	
+    public String[] getBystanders() {
+	if (orbMessageHandler == null) {
+	    logger.warning("No orbMessageHandler");
+	    return new String[0];
+	}
+
+	return orbMessageHandler.getBystanders();
     }
 
 }

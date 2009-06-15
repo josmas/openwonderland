@@ -46,7 +46,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachVirtualPlayerMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetBystanderCountMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbBystandersMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangePositionMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbEndCallMessage;
@@ -123,9 +123,10 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
     private static ArrayList<OrbCell> detachedOrbList = new ArrayList();
 
-    public OrbMessageHandler(OrbCell orbCell, WonderlandSession session, int bystanderCount) {
+    public OrbMessageHandler(OrbCell orbCell, WonderlandSession session, String[] bystanders) {
 	this.orbCell = orbCell;
 	this.session = session;
+	this.bystanders = bystanders;
 
 	synchronized (detachedOrbList) {
 	    detachedOrbList.add(orbCell);
@@ -153,7 +154,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
         channelComp.addMessageReceiver(OrbAttachMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbAttachVirtualPlayerMessage.class, msgReceiver);
-        channelComp.addMessageReceiver(OrbSetBystanderCountMessage.class, msgReceiver);
+        channelComp.addMessageReceiver(OrbBystandersMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbChangeNameMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbEndCallMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbMuteCallMessage.class, msgReceiver);
@@ -195,7 +196,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	//nameTag.setFont(Font.decode("Sans-PLAIN-20"));
 
-	setBystanderCount(bystanderCount);
+	setBystanders(bystanders);
 
 	if (orbCell.getPlayerWithVpCallID() != null) {
 	    PresenceInfo info = pm.getPresenceInfo(playerWithVpCallID);
@@ -264,7 +265,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
         channelComp.removeMessageReceiver(OrbAttachMessage.class);
         channelComp.removeMessageReceiver(OrbAttachVirtualPlayerMessage.class);
-	channelComp.removeMessageReceiver(OrbSetBystanderCountMessage.class);
+	channelComp.removeMessageReceiver(OrbBystandersMessage.class);
 	channelComp.removeMessageReceiver(OrbChangeNameMessage.class);
 	channelComp.removeMessageReceiver(OrbEndCallMessage.class);
         channelComp.removeMessageReceiver(OrbMuteCallMessage.class);
@@ -281,12 +282,31 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	}
     }
 
-    private void setBystanderCount(int n) {
-	if (n == 0) {
+    private String[] bystanders;
+
+    private BystandersListener listener;
+
+    public void setBystandersListener(BystandersListener listener) {
+	this.listener = listener;
+    }
+
+    private void setBystanders(String[] bystanders) {
+	if (bystanders.length == 0) {
 	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 	} else {
-	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias + " + " + n);
+	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias + " + " 
+		+ bystanders.length);
 	}
+
+	this.bystanders = bystanders;
+
+	if (listener != null) {
+	    listener.setBystanders(bystanders);
+	}
+    }
+  
+    public String[] getBystanders() {
+	return bystanders;
     }
 
     public void processMessage(final Message message) {
@@ -336,13 +356,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    return;
 	}
 
-	if (message instanceof OrbSetBystanderCountMessage) {
-	    OrbSetBystanderCountMessage msg = (OrbSetBystanderCountMessage) message;
-	    int n = msg.getBystanderCount();
-
-	    System.out.println("Orb bystander count " + n);
-
-	    setBystanderCount(n);
+	if (message instanceof OrbBystandersMessage) {
+	    OrbBystandersMessage msg = (OrbBystandersMessage) message;
+	    setBystanders(msg.getBystanders());
 	    return;
 	}
 
@@ -460,6 +476,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
             orbDialog.orbDetached();
 	}
 
+	reorderDetachedOrbs();
+
 	hostCell = null;
     }
 
@@ -478,13 +496,18 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     }
 
     private void reorderDetachedOrbs() {
+	CellTransform transform = hostCell.getLocalTransform();
+
+	Vector3f translation = new Vector3f();
+	transform.getTranslation(translation);
+
 	synchronized (detachedOrbList) {
-	    //for (int i = 0 ; i < detachedOrbList.size(); i++) {
-	    //    translation.setZ(translation.getZ() + (float) .2);
-	    //    translation.setY((float) .5);  // lower orb.
-	    //    followMe.setTargetPosition(translation,
-	    //	    transform.getRotation(null));
-	    //}
+	    for (int i = 0 ; i < detachedOrbList.size(); i++) {
+	        translation.setZ(translation.getZ() + (float) .2);
+	        translation.setY((float) .5);  // lower orb.
+	        followMe.setTargetPosition(translation,
+	    	    transform.getRotation(null));
+	    }
 	}
 
     }
@@ -503,7 +526,6 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	synchronized (attachedOrbList) {
 	    for (int i = 0; i < attachedOrbList.size(); i++) {
-
 		Vector3f translation = new Vector3f();
 		transform.getTranslation(translation);
 
@@ -530,7 +552,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
 	    
 	    orbDialog = new OrbDialog(orbCell, channelComp, 
-		avatar.getViewCell().getCellID());
+		avatar.getViewCell().getCellID(), pm);
 	} 
 
 	orbDialog.setVisible(true);
