@@ -121,8 +121,7 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
 
 	    members.add(info);
 
-	    memberData.add(NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
-		info.isMuted));
+	    memberData.add(info.usernameAlias);
 	}
 
 	String[] memberArray = memberData.toArray(new String[0]);
