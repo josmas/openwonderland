@@ -108,15 +108,6 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
     /**
      * {@inheritDoc}
-     * <br><br>
-     * Note on subclassing: unless a subclass overrides this method, true is always returned.
-     */
-    public boolean propagatesToUnder (Event event) {
-	return false;
-    }
-
-    /**
-     * {@inheritDoc}
      */
     public void computeEvent (Event event) {}
 
