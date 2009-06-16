@@ -43,6 +43,8 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
+
 import java.lang.reflect.Method;
 
 /**
@@ -172,14 +174,18 @@ public class OrbCellRenderer extends BasicRenderer {
 	return node;
     }
 
-    public void setVisible(boolean isVisible) {
-	if (isVisible) {
-	    node.attachChild(pivot);
-	    node.attachChild(sphere);
-	} else {
-	    node.detachChild(pivot);
-	    node.detachChild(sphere);
-	}
+    public void setVisible(final boolean isVisible) {
+	ClientContextJME.getSceneWorker().addWorker(new WorkCommit() {
+   	    public void commit() {
+		if (isVisible) {
+	    	    node.attachChild(pivot);
+	            node.attachChild(sphere);
+	 	} else {
+	    	    node.detachChild(pivot);
+	    	    node.detachChild(sphere);
+		}
+	    }
+    	});
     }
 
     public void removeMouseListener() {
