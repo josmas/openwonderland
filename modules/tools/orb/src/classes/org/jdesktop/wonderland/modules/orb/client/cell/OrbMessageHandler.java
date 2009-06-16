@@ -64,6 +64,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -283,10 +284,16 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     }
 
     public static void makeOrbsVisible(boolean isVisible) {
-        OrbCell[] attachedOrbs = attachedOrbMap.values().toArray(new OrbCell[0]);
+	Collection<ArrayList<OrbCell>> attachedOrbs = attachedOrbMap.values();
 
-	for (int i = 0; i < attachedOrbs.length; i++) {
-	    attachedOrbs[i].setVisible(isVisible);
+	Iterator<ArrayList<OrbCell>> it = attachedOrbs.iterator();
+
+	while (it.hasNext()) {
+	    ArrayList<OrbCell> orbs = it.next();
+
+	    for (OrbCell orb : orbs) {
+	        orb.setVisible(isVisible);
+	    }
 	}
 
 	for (OrbCell orbCell : detachedOrbList) {
