@@ -122,10 +122,9 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
         DirtyTrackingGraphics gNew = new DirtyTrackingGraphics((Graphics2D) bufImageNew.getGraphics());
         gNew.setClip(0, 0, width, height);
 
-        // Erase the buffered image to all white
-        // TODO: change this to 50% gray?
+        // Erase the buffered image to 50% gray (less noticed by user)
         Color bkgdSave = gNew.getBackground();
-        gNew.setBackground(Color.WHITE);
+        gNew.setBackground(Color.GRAY);
         gNew.clearRect(0, 0, width, height);
         gNew.setBackground(bkgdSave);
 
