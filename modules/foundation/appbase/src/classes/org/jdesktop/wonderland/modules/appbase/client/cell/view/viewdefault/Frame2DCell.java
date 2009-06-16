@@ -93,7 +93,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
 
     /** 
      ** The window menu associated with this frame. 
-     ** TODO: eventually put in HUD
      */
     private WindowMenuSwing windowMenu;
 

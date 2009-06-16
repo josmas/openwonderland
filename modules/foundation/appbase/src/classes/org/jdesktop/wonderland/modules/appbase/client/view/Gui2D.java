@@ -275,23 +275,6 @@ public class Gui2D {
 
         switch (action.type) {
 
-            /* TODO
-            case MOVE_CAMERA_TO_BEST_VIEW:
-            logger.severe("AW: " + action.type);
-            // TODO window.moveToBestView(AppWindowImage.MoveMode.CAMERA);
-            break;
-
-            case MOVE_AVATAR_TO_BEST_VIEW:
-            logger.severe("AW: " + action.type);
-            // TODO window.moveToBestView(AppWindowImage.MoveMode.AVATAR);
-            break;
-
-            case MOVE_WINDOW_TO_BEST_VIEW:
-            logger.severe("AW: " + action.type);
-            //TODO window.moveToBestView(AppWindowImage.MoveMode.WINDOW);
-            break;
-             */
-
             case TOGGLE_CONTROL:
                 // This must be done later because the JOGL AWT lock may be released at this point,
                 // and, hence, the OGL context. We now need an OGL context for this operation

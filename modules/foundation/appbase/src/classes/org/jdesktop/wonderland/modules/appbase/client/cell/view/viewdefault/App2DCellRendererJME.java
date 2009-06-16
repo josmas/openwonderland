@@ -202,33 +202,4 @@ public class App2DCellRendererJME extends App2DCellRenderer {
         }
         */
     }
-
-    /**
-     * Remove an event listener from the root entity of this renderer.
-     * @param listener The listener to remove.
-     */
-    /* TODO: used anywhere?
-    public void removeEventListener(EventListener listener) {
-        listener.removeFromEntity(getEntity());
-    }
-    */
-
-    /**
-     * Does the root entity of this renderer have the given listener attached to it?
-     * @param listener The listener to check whether it is attached this renderer's root entity.
-     */
-    /* TODO: used anywhere?
-    public boolean hasEventListener(EventListener listener) {
-        return listener.isListeningForEntity(getEntity());
-    }
-    */
-
-    /**
-     * Returns the given component of the renderer's entity.
-     */
-    /* TODO: used anywhere?
-    public EntityComponent getEntityComponent(Class clazz) {
-        return getEntity().getComponent(clazz);
-    }
-    */
 }

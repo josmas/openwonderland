@@ -98,7 +98,6 @@ public class AppConventionalConnection extends BaseConnection {
             (AppConventionalCellSetConnectionInfoMessage) message;
 
         CellID cellID = msg.getCellID();
-        // TODO: paul: is this correct?
         CellCache cellCache = ClientContext.getCellCache(session);
         if (cellCache == null) {
             logger.warning("Cannot set cell connection info for this session. Session has no cell cache.");
