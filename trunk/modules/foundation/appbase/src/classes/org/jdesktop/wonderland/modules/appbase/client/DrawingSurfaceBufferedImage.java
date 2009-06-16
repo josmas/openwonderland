@@ -239,32 +239,17 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
 
                 public void run() {
                     Rectangle dirtyRect = g.getDirtyRectangle();
-                    //System.err.println("&&&&&&&&&&&&&&&& DBSI: surface = " + DrawingSurfaceBufferedImage.this);
-                    //System.err.println("&&&&&&&&&&&&&&&& DBSI: diryRect = " + dirtyRect);
                     if (dirtyRect != null) {
+			int x1 = dirtyRect.x;
+			int y1 = dirtyRect.y;
+			int x2 = dirtyRect.x + dirtyRect.width - 1;
+			int y2 = dirtyRect.y + dirtyRect.height - 1;
 
-                        //System.err.println("&&&&&&&&&&&&&&&& DBSI: Drawing to texture " + getTexture());
-                        //System.err.println("&&&&&&&&&&&&&&&& Drawing to texture id " + texid);
-
-                        /*
-                        System.err.println("copy dirty rect = " +
-                        dirtyRect.x + ", " + dirtyRect.y + ", " +
-                        dirtyRect.width + ", " + dirtyRect.height);
-                         */
-
-                        /* TODO: debug hack
-                        FAILS!
-                        if (!imageGraphics.drawImage(bufImage,
-                        dirtyRect.x, dirtyRect.y,
-                        dirtyRect.width, dirtyRect.width,
-                        null)) {
-                         */
-                        //debugPrintBufImage(); 
-                        if (!imageGraphics.drawImage(bufImage, 0, 0,
-                                bufImage.getWidth(), bufImage.getHeight(), null)) {
+                        if (!imageGraphics.drawImage(bufImage, x1, y1, x2, y2,
+                                       x1, y1, x2, y2, null, null)) {
                             logger.warning("drawImage returned false. Skipping image rendering.");
                         }
-                        //System.err.println("&&&&&&&&&&& CLEAR DIRTY");
+
                         g.clearDirty();
                         checkForUpdateReturn = true;
                     } else {
@@ -334,17 +319,12 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
         }
 
         public synchronized void addDirtyRectangle(int x, int y, int width, int height) {
-            //System.err.println("addDirtyRect, newRect = " + x + ", " + y + ", " + width + ", " + height);
             Rectangle newRect = new Rectangle(x, y, width, height);
             if (dirtyRect == null) {
                 dirtyRect = newRect;
             } else {
                 dirtyRect = unionRects(dirtyRect, newRect);
             }
-        /*
-        System.err.println("addDirtyRect, union = " + dirtyRect.x + ", " + dirtyRect.y + ", " +
-        dirtyRect.width + ", " + dirtyRect.height);
-         */
         }
 
         // The union of two rectangles returned in a third rectangle.
@@ -352,12 +332,12 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
             int r1x0 = r1.x;
             int r1y0 = r1.y;
             int r1x1 = r1.x + r1.width;
-            int r1y1 = r1.y + r1.width;
+            int r1y1 = r1.y + r1.height;
 
             int r2x0 = r2.x;
             int r2y0 = r2.y;
             int r2x1 = r2.x + r2.width;
-            int r2y1 = r2.y + r2.width;
+            int r2y1 = r2.y + r2.height;
 
             int x0 = Math.min(r1x0, r2x0);
             int y0 = Math.min(r1y0, r2y0);
