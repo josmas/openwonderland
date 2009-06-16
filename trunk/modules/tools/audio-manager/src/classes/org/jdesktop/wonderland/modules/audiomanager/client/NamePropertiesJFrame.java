@@ -299,8 +299,6 @@ private void applyChanges() {
 
     originalOtherNameTagAttributes = otherNameTagAttributes;
 
-    System.out.println("otherNameTagAttributes " + otherNameTagAttributes);
-
     switch (otherNameTagAttributes) {
     case HIDE:
 	NameTagNode.setOtherNameTags(EventType.HIDE, 
