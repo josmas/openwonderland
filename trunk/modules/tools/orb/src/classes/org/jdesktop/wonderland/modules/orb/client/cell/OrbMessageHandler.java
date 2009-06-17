@@ -225,9 +225,10 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
     private Node orbRootNode;
 
-    public void setOrbRootNode(Node orbRootNode) {
-	this.orbRootNode = orbRootNode;
-	orbRootNode.attachChild(nameTag);
+    
+
+    Node getNameTagNode() {
+        return nameTag;
     }
 	
     public FollowMe getFollowMe() {
@@ -310,7 +311,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     }
 
     private void setBystanders(String[] bystanders) {
-	if (bystanders.length == 0) {
+
+	if ((bystanders == null) || (bystanders.length == 0)) {
 	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 	} else {
 	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias + " + " 

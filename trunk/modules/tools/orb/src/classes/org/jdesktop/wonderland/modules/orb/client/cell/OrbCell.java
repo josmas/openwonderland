@@ -93,9 +93,11 @@ public class OrbCell extends Cell {
 	}
     }
 
-    public void setOrbRootNode(Node orbRootNode) {
-	orbMessageHandler.setOrbRootNode(orbRootNode);
+    Node getNameTagNode() {
+        return orbMessageHandler.getNameTagNode();
     }
+
+
 
     /**
      * Called when the cell is initially created and any time there is a 
