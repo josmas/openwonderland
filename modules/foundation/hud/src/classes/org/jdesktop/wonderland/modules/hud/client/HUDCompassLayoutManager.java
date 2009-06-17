@@ -63,7 +63,7 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
         if (component.getPreferredLocation() != Layout.NONE) {
             switch (component.getPreferredLocation()) {
                 case NORTH:
-                    location.set(hudCenterX, hudHeight - 20 - compHeight);
+                    location.set(hudCenterX, hudHeight - 20 - compHeight / 2f);
                     break;
                 case SOUTH:
                     location.set(hudCenterX, 20);
