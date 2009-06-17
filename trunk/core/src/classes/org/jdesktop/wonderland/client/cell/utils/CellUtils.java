@@ -32,6 +32,8 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 
 /**
  * A collection of useful utility routines pertaining to Cells.
@@ -113,5 +115,25 @@ public class CellUtils {
                 session.getConnection(CellEditConnectionType.CLIENT_TYPE);
         CellCreateMessage msg = new CellCreateMessage(null, state);
         connection.send(msg);
+    }
+
+    /**
+     * Requests the server to delete the given cell from the world
+     * of the primary session. Returns true if the deletion succeeds.
+     * <br><br>
+     * Note: currently always returns true because the server doesn't send 
+     * any response to the cell delete message.
+     */
+    public static boolean deleteCell (CellID cellID) {
+
+        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+        CellEditChannelConnection connection = (CellEditChannelConnection)
+            session.getConnection(CellEditConnectionType.CLIENT_TYPE);
+        CellDeleteMessage msg = new CellDeleteMessage(cellID);
+        connection.send(msg);
+
+        // TODO: there really really should be an OK/Error response from the server!
+
+        return true;
     }
 }

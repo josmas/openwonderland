@@ -40,6 +40,10 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
+import javax.swing.JOptionPane;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 
 /**
  * The frame header (top side) for Frame2DCellSwing. Uses a WindowSwing.
@@ -51,6 +55,8 @@ public class FrameHeaderSwing
     extends FrameComponent
     implements HeaderPanel.Container, MouseListener, MouseMotionListener
 {
+    private static Logger logger = Logger.getLogger(FrameHeaderSwing.class.getName());
+
     // TODO: New UI: add zones: move planar, move z, rotate
     private WindowSwingHeader headerWindow;
 
@@ -127,6 +133,7 @@ public class FrameHeaderSwing
     private class ConsumeOnControlListener extends EventListenerBaseImpl {
         @Override
         public boolean consumesEvent (Event event) {
+            if (app == null) return false;
 
             if (app.getControlArb().hasControl()) {
                 return true;
@@ -157,7 +164,6 @@ public class FrameHeaderSwing
      */
     @Override
     public void cleanup() {
-        super.cleanup();
 
         setVisible(false);
 
@@ -174,7 +180,13 @@ public class FrameHeaderSwing
             consumingListener.removeFromEntity(viewEntity);
         }
 
+        frameView = null;
+
+        super.cleanup();
+
+        visible = false;
         view = null;
+        app = null;
     }
 
     /**
@@ -263,7 +275,7 @@ public class FrameHeaderSwing
 
 
     public void	mouseClicked(MouseEvent e) {
-        if (view == null) return;
+        if (app == null || view == null) return;
 
         if (!app.getControlArb().hasControl()) return;
 
@@ -275,17 +287,17 @@ public class FrameHeaderSwing
     }
 
     public void mouseEntered(MouseEvent e) {
-        if (view == null) return;
+        if (app == null || view == null) return;
         if (!app.getControlArb().hasControl()) return;
     }
 
     public void	mouseExited(MouseEvent e) {
-        if (view == null) return;
+        if (app == null || view == null) return;
         if (!app.getControlArb().hasControl()) return;
     }
 
     public void	mousePressed(MouseEvent e) {
-        if (view == null) return;
+        if (app == null || view == null) return;
 
         // Is this a Window menu event? Display menu even when we don't have control.
         if (e.getID() == MouseEvent.MOUSE_PRESSED &&
@@ -329,7 +341,7 @@ public class FrameHeaderSwing
     }
 
     public void mouseDragged(MouseEvent e) {
-        if (view == null) return;
+        if (app == null || view == null) return;
         if (!app.getControlArb().hasControl()) return;
 
         // TODO: the following drag code only works for secondary windows. Eventually 
@@ -352,8 +364,8 @@ public class FrameHeaderSwing
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (view == null) return;
-        if (!app.getControlArb().hasControl()) return;
+        if (app == null || view == null) return;
+        if (!app.getControlArb().hasControl()) return; 
 
         // TODO: the following drag code only works for secondary windows. Eventually 
         // upgrade it to work with primary windows also.
@@ -379,7 +391,32 @@ public class FrameHeaderSwing
         if (orthoSubwindowDebug) {
             viewWindow.toggleOrtho();
         } else {
-            viewWindow.closeUser();
+            boolean isPrimary = viewWindow.getType() == Window2D.Type.PRIMARY ||
+                                viewWindow.getType() == Window2D.Type.UNKNOWN;
+            
+            // If this is a primary WindowSwing, quit the app cell as well.
+            if (viewWindow instanceof WindowSwing && isPrimary) {
+
+                // Display a confirmation dialog to make sure we really want to delete the cell.
+                App2D app = viewWindow.getApp();
+                int result = JOptionPane.showConfirmDialog(
+                    JmeClientMain.getFrame().getFrame(),
+                    "Are you sure you wish to quit app " + app.getName() + "?",
+                    "Confirm Quit",
+                    JOptionPane.YES_NO_OPTION);
+                if (result == JOptionPane.NO_OPTION) {
+                    return;
+                }
+
+                App2DCell cell = view.getCell();
+                viewWindow.closeUser();
+                cell.destroy();
+
+            } else {
+                // For non-swing windows, simply close the window. The app itself will figure out
+                // whether closing this window quits the app.
+                viewWindow.closeUser();
+            }
         }
     }
 
