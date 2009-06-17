@@ -448,6 +448,10 @@ public class SoftphoneControlImpl {
     public void setAudioQuality(AudioQuality quality) {
 	this.quality = quality;
 
+	if (isRunning() == false) {
+	    return;
+	}
+
         sendCommandToSoftphone("sampleRate=" + quality.sampleRate());
         sendCommandToSoftphone("channels=" + quality.channels());
         sendCommandToSoftphone("transmitSampleRate=" + quality.transmitSampleRate());

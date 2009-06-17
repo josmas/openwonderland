@@ -27,8 +27,6 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
-import org.jdesktop.wonderland.common.NetworkAddress;
-
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 import org.jdesktop.wonderland.common.cell.CallID;
@@ -89,6 +87,9 @@ import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
 
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
+
+import com.sun.stun.NetworkAddressManager;
+import com.sun.stun.NetworkAddressManager.NetworkAddress;
 
 /**
  *
@@ -421,17 +422,28 @@ public class AudioManagerClient extends BaseConnection implements
             String localAddress = null;
 
             try {
-                InetAddress ia = NetworkAddress.getPrivateLocalAddress(
+                InetAddress ia;
+
+		NetworkAddress networkAddress = NetworkAddressManager.getDefaultNetworkAddress();
+
+		if (networkAddress != null) {
+		    ia = networkAddress.getHostAddress();
+		    System.out.println("using default " + ia);
+		} else {
+                    ia = NetworkAddressManager.getPrivateLocalAddress(
                         "server:" + tokens[5] + ":" + tokens[7] + ":10000");
+		    System.out.println("using private " + ia);
+		}
 
                 localAddress = ia.getHostAddress();
             } catch (UnknownHostException e) {
+		System.out.println("EXCEPTION! + ia " + e.getMessage());
                 logger.warning(e.getMessage());
 
                 logger.warning("The client is unable to connect to the bridge public address. " + " Trying the bridge private Address.");
 
                 try {
-                    InetAddress ia = NetworkAddress.getPrivateLocalAddress(
+                    InetAddress ia = NetworkAddressManager.getPrivateLocalAddress(
                             "server:" + tokens[2] + ":" + tokens[4] + ":10000");
 
                     localAddress = ia.getHostAddress();
@@ -446,6 +458,13 @@ public class AudioManagerClient extends BaseConnection implements
                             presenceInfo.userID.getUsername(), registrarAddress, 10, localAddress);
 
                     logger.fine("Starting softphone:  " + presenceInfo);
+
+		    String phoneNumber = 
+			System.getProperty("org.jdesktop.wonderland.modules.audiomanager.client.PHONE_NUMBER");
+
+		    if (phoneNumber != null && phoneNumber.length() > 0) {
+			sipURL = phoneNumber;
+		    }
 
                     // XXX need location and direction
                     session.send(this, new PlaceCallMessage(presenceInfo, sipURL, 0., 0., 0., 90., false));
