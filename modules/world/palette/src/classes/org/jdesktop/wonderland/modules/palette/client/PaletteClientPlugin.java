@@ -42,12 +42,12 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
-import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDuplicateMessage;
 import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
 import org.jdesktop.wonderland.common.cell.security.ModifyAction;
 import org.jdesktop.wonderland.modules.palette.client.dnd.CellPaletteDataFlavorHandler;
 import org.jdesktop.wonderland.modules.security.client.SecurityComponent;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 
 /**
  * Client-size plugin for the cell palette.
@@ -290,14 +290,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
                 return;
             }
 
-            // If we want to delete, send a message to the server as such
-            WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-            CellEditChannelConnection connection = (CellEditChannelConnection)
-                    session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-            CellDeleteMessage msg = new CellDeleteMessage(cell.getCellID());
-            connection.send(msg);
-
-            // Really should receive an OK/Error response from the server!
+            CellUtils.deleteCell(cell.getCellID());
         }
     }
 

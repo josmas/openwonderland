@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -104,6 +105,17 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         pixelScale = null;
         views.clear();
         app = null;
+    }
+
+    /**
+     * Destroy the app cell.
+     */
+    public void destroy () {
+        app.cleanup();
+        cleanup();
+
+        // Tell the server to remove the cell from the world
+        CellUtils.deleteCell(getCellID());
     }
 
     /**
