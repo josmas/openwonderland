@@ -172,7 +172,7 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_okButtonActionPerformed
 
     private void usernameAliasTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_usernameAliasTextFieldKeyReleased
-        if (usernameAliasTextField.getText().isEmpty()) {
+        if (usernameAliasTextField.getText().length() == 0) {
             okButton.setEnabled(false);
         } else {
             okButton.setEnabled(true);
