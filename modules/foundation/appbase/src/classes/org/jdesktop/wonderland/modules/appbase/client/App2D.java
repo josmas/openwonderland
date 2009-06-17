@@ -322,7 +322,8 @@ public abstract class App2D {
         logger.warning("Shutting down app base...");
 
         // Note: I tried to run this in a synchronized block, but it hung.
-        for (App2D app : apps) {
+        LinkedList<App2D> appsCopy = (LinkedList<App2D>) apps.clone();
+        for (App2D app : appsCopy) {
             logger.warning("Shutting down app " + app);
             app.cleanup();
         }
