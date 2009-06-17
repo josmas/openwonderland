@@ -150,7 +150,6 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
     /**
      * {@inheritDoc}
      */
-    // TODO: I think this can be deleted
     @Override
     public void initializeSurface() {
         initSurface(g);
