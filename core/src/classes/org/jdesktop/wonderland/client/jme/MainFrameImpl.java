@@ -67,6 +67,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private JRadioButtonMenuItem frontPersonRB;
     private final Map<JMenuItem, Integer> menuWeights = new HashMap<JMenuItem, Integer>();
     private JMenu frameRateMenu;
+    private JMenuItem fpsMI;
     private Meter meter;
     private HUDComponent fpsComponent;
     private WorldManager wm;
@@ -246,7 +247,21 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             }
         });
 
-        RenderManager rm;
+        // frame rate meter
+        fpsMI = new JCheckBoxMenuItem(bundle.getString("FPS_Meter"));
+        fpsMI.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                if ((fpsComponent == null) || !fpsComponent.isVisible()) {
+                    showFPSMeter(true);
+                } else {
+                    showFPSMeter(false);
+                }
+            }
+        });
+
+        addToWindowMenu(fpsMI, -1);
+
         // Help menu
         HelpSystem helpSystem = new HelpSystem();
         JMenu helpMenu = helpSystem.getHelpJMenu();
@@ -336,7 +351,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /**
      * {@inheritDoc}
      */
-    public void addToMenu( JMenu menu,  JMenuItem menuItem, int weight) {
+    public void addToMenu(JMenu menu, JMenuItem menuItem, int weight) {
         if (weight < 0) {
             weight = Integer.MAX_VALUE;
         }
@@ -547,7 +562,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     }
 
     public void connected(boolean connected) {
-        showFPSMeter(connected);
+        //showFPSMeter(connected);
     }
 
     public void showFPSMeter(boolean visible) {
@@ -562,6 +577,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
             // create HUD control panel
             fpsComponent = mainHUD.createComponent(meter);
+            fpsComponent.setDecoratable(false);
             fpsComponent.setPreferredLocation(Layout.SOUTHEAST);
 
             // add HUD control panel to HUD
@@ -575,6 +591,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             }, 100);
         }
         fpsComponent.setVisible(visible);
+        fpsMI.setSelected(visible);
     }
 
     public void addServerURLListener(ServerURLListener listener) {
