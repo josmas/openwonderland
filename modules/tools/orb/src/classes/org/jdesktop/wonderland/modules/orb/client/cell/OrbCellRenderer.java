@@ -17,28 +17,19 @@
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
-import com.jme.animation.SpatialTransformer;
-import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
-import com.jme.light.PointLight;
-import com.jme.light.SimpleLightNode;
-import com.jme.math.FastMath;
-import com.jme.math.Quaternion;
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import com.jme.scene.TriMesh;
-import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.CullState;
-import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.ShadeState;
 import com.jme.scene.state.ShadeState.ShadeMode;
-import com.jme.scene.state.WireframeState;
 import com.sun.scenario.animation.Animation;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Clip.RepeatBehavior;
@@ -46,13 +37,13 @@ import java.util.HashSet;
 import java.util.Set;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
@@ -126,22 +117,26 @@ public class OrbCellRenderer extends BasicRenderer {
 
     private void attachNameTag() {
         Node nameTag = ((OrbCell) cell).getNameTagNode();
+        nameTag.setLocalTranslation(0, OUTER_RADIUS/2, 0);
         orbNode.attachChild(nameTag);
     }
 
     private void attachOrb(Entity entity) {
         attachInnerOrb(entity);
         attachOuterOrb(entity);
-        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, orbNode, 0f, 360, new Vector3f(0f,0f,1f));
+        //Spin the inner orb
+        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, innerOrbNode, 0f, 360, new Vector3f(0f,0f,1f));
         Clip spinnerClip = Clip.create(1000, Clip.INDEFINITE, spinner);
         spinnerClip.setRepeatBehavior(RepeatBehavior.LOOP);
         spinnerClip.start();
         spinnerClip.resume();
-        RotationAnimationProcessor rotator = new RotationAnimationProcessor(entity, orbNode, 0f, 360, new Vector3f(0f,1f,0f));
+        //Rotate the inner orb
+        RotationAnimationProcessor rotator = new RotationAnimationProcessor(entity, innerOrbNode, 0f, 360, new Vector3f(0f,1f,0f));
         Clip rotatorClip = Clip.create(1000, Clip.INDEFINITE, rotator);
         rotatorClip.setRepeatBehavior(RepeatBehavior.LOOP);
         rotatorClip.start();
         rotatorClip.resume();
+        //Traslate the whole orb
         TranslationAnimationProcessor translator = new TranslationAnimationProcessor(entity, orbNode, new Vector3f(0f,MINIMUM_HEIGHT,0f) , new Vector3f(0f,MAXIMUM_HEIGHT,0f));
         Clip translatorClip = Clip.create(1000, Clip.INDEFINITE, translator);
         translatorClip.setRepeatBehavior(RepeatBehavior.REVERSE);
@@ -185,7 +180,7 @@ public class OrbCellRenderer extends BasicRenderer {
 
 
     public void setVisible(final boolean isVisible) {
-        ClientContextJME.getSceneWorker().addWorker(new WorkCommit() {
+        SceneWorker.addWorker(new WorkCommit() {
 
             public void commit() {
                 if (isVisible) {
