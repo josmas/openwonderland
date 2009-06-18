@@ -106,7 +106,12 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
      * @inheritDoc()
      */
     public void apply() {
-        // Do nothing for now.
+        // Take the value from the shape type and populate the server state
+        // with it.
+        String newShapeType = (String) shapeTypeComboBox.getSelectedItem();
+        CellServerState state = editor.getCellServerState();
+        ((SampleCellServerState)state).setShapeType(newShapeType);
+        editor.addToUpdateList(state);
     }
 
     /**

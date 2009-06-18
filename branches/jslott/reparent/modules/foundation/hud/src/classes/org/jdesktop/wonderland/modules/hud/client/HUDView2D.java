@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.hud.client;
 
 import org.jdesktop.mtgame.Entity;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.hud.HUDView;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
@@ -28,7 +29,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
  * A 2D view for HUD component windows
  * @author nsimpson
  */
-public class HUDView2D extends View2DEntity {
+public class HUDView2D extends View2DEntity implements HUDView {
 
     private static final Logger logger = Logger.getLogger(HUDView2D.class.getName());
     private View2DDisplayer displayer;

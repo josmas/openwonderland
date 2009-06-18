@@ -1123,10 +1123,11 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 CellServerStateUpdateMessage message)
         {
             CellMO cellMO = getCell();
+            CellID cellID = cellMO.getCellID();
 
             // Fetch the cell, and set its server state. Catch all exceptions
             // and report. This assumes that all components have been removed
-            // from the server state object, since they are handle separately
+            // from the server state object, since they are handled separately
             // below. The client needs to remove the component state objects
             // to save network bandwidth in the message size.
             CellServerState state = message.getCellServerState();
@@ -1168,7 +1169,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
             // Fetch a new client-state and set it. Send a message on the
             // cell channel with the new state.
             CellClientState clientState = cellMO.getClientState(null, clientID, null);
-            cellMO.sendCellMessage(clientID, new CellClientStateMessage(cellMO.getCellID(), clientState));
+            CellClientStateMessage ccsm = new CellClientStateMessage(cellID, clientState);
+            cellMO.sendCellMessage(clientID, ccsm);
         }
     }
 

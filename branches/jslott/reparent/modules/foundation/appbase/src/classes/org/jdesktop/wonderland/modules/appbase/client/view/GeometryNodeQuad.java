@@ -59,11 +59,6 @@ class GeometryNodeQuad extends GeometryNode {
         setTexCoords(1f, 1f);
 
         quad.updateModelBound();
-
-        /* TODO: debug
-           quad.printRenderState();
-           quad.printGeometry();
-        */
     }
 
     /**

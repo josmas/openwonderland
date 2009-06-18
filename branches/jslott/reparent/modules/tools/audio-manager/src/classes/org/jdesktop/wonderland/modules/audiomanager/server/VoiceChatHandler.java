@@ -723,9 +723,9 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    return;
 	}
 
-	int n = getNumberOfPlayersInRange(vp.audioGroup, vp.realPlayer);
+	String[] bystanders = getBystanders(vp.audioGroup, vp.realPlayer);
 
-	orb = new Orb(vp, center, .1, vp.realPlayer.getId(), n);
+	orb = new Orb(vp, center, .1, vp.realPlayer.getId(), bystanders);
 
 	orb.addComponent(new AudioParticipantComponentMO(orb.getOrbCellMO()));
 
@@ -741,17 +741,17 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	//    + orbs.size() + " players in range " + n);
     }
 
-    private int getNumberOfPlayersInRange(AudioGroup audioGroup, Player player) {
+    private String[] getBystanders(AudioGroup audioGroup, Player player) {
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
 
 	Player[] playersInRange = player.getPlayersInRange();
 
+	ArrayList<String> bystanders = new ArrayList();
+
 	//System.out.println("Get:  group " + audioGroup + " in range "
 	//    + playersInRange.length + " player " + player);
-
-	int n = 0;
 
 	for (int i = 0; i < playersInRange.length; i++) {
 	    Player p = playersInRange[i];
@@ -772,14 +772,12 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	    if (info == null || info.isSpeaking == false) {
 		//System.out.println("Get:  counting " + p + " info " + info + " group " + audioGroup);
-		n++;
-
+		bystanders.add(p.getId());
 		//System.out.println(vm.dump("audioGroups"));
 	    }
 	}
 
-	//System.out.println("Get:  returning " + n);
-	return n;
+	return bystanders.toArray(new String[0]);
     }
 
 
@@ -848,12 +846,12 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    
 	    //System.out.println("Orb for " + orb.getVirtualPlayer());
 
-	    int n = getNumberOfPlayersInRange(orb.getVirtualPlayer().audioGroup, player);
+	    String[] bystanders = getBystanders(orb.getVirtualPlayer().audioGroup, player);
 
 	    // Update Orb name tag with count of players in range	
 
-	    orb.setBystanderCount(n);
-	    //System.out.println("Setting bystander count to " + n);
+	    orb.setBystanders(bystanders);
+	    //System.out.println("Setting bystander count to " + bystanders.length);
 	}
 
 	WonderlandClientSender sender = 

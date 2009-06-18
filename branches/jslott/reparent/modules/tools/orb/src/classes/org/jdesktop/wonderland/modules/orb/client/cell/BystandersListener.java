@@ -1,4 +1,4 @@
-/*
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -15,28 +15,10 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.orb.common.messages;
+package org.jdesktop.wonderland.modules.orb.client.cell;
 
-import org.jdesktop.wonderland.common.cell.CellID;
+public interface BystandersListener {
 
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
-/**
- *
- * @author jprovino
- */
-public class OrbSetBystanderCountMessage extends CellMessage {   
-    
-    private int bystanderCount;
-
-    public OrbSetBystanderCountMessage(CellID cellID, int bystanderCount) {
-	super(cellID);
-
-	this.bystanderCount = bystanderCount;
-    }
-    
-    public int getBystanderCount() {
-	return bystanderCount;
-    }
+    public void setBystanders(String[] bystanders);
 
 }

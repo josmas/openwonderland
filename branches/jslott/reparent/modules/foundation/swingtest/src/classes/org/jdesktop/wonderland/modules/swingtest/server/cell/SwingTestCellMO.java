@@ -78,4 +78,22 @@ public class SwingTestCellMO extends App2DCellMO {
         preferredHeight = serverState.getPreferredHeight();
         pixelScale = new Vector2f(serverState.getPixelScaleX(), serverState.getPixelScaleY());
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CellServerState getServerState(CellServerState stateToFill) {
+        if (stateToFill == null) {
+            return null;
+        }
+
+        super.getServerState(stateToFill);
+
+        SwingTestCellServerState state = (SwingTestCellServerState) stateToFill;
+        state.setPreferredWidth(preferredWidth);
+        state.setPreferredHeight(preferredHeight);
+
+        return stateToFill;
+    }
 }

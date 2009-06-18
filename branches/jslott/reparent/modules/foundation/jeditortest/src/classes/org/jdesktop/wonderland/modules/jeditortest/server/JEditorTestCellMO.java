@@ -80,4 +80,23 @@ public class JEditorTestCellMO extends App2DCellMO {
 	preferredHeight = state.getPreferredHeight();
 	pixelScale = new Vector2f(state.getPixelScaleX(), state.getPixelScaleY());
     }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CellServerState getServerState(CellServerState stateToFill) {
+        if (stateToFill == null) {
+            return null;
+        }
+
+        super.getServerState(stateToFill);
+
+        JEditorTestCellServerState state = (JEditorTestCellServerState) stateToFill;
+        state.setPreferredWidth(preferredWidth);
+        state.setPreferredHeight(preferredHeight);
+
+        return stateToFill;
+    }
 }

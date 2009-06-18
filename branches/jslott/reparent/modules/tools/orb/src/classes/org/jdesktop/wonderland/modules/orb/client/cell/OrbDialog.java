@@ -25,6 +25,8 @@ import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetVolumeMessage;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
@@ -38,6 +40,7 @@ public class OrbDialog extends javax.swing.JDialog {
     private OrbCell orbCell;
     private ChannelComponent channelComp;
     private CellID avatarCellID;
+    private PresenceManager pm;
 
     private String username;
 
@@ -47,17 +50,21 @@ public class OrbDialog extends javax.swing.JDialog {
         initComponents();
     }
 
-    public OrbDialog(OrbCell orbCell, ChannelComponent channelComp, CellID avatarCellID) {
+    public OrbDialog(OrbCell orbCell, ChannelComponent channelComp, CellID avatarCellID,
+	    PresenceManager pm) {
+
 	this.orbCell = orbCell;
 	this.channelComp = channelComp;
 	this.avatarCellID = avatarCellID;
+	this.pm = pm;
 
 	username = orbCell.getUsername();
 	
 	initComponents();
 
 	if (orbCell.getPlayerWithVpCallID() != null) {
-	    attachButton.setEnabled(false);
+	    //attachButton.setEnabled(false);
+	    attachButton.setText("Bystanders");
 	    endCallButton.setEnabled(false);
 	    muteButton.setEnabled(false);
 	    nameTextField.setEnabled(false);
@@ -146,9 +153,9 @@ public class OrbDialog extends javax.swing.JDialog {
                     .add(layout.createSequentialGroup()
                         .add(endCallButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 93, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(18, 18, 18)
-                        .add(muteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 84, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(muteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(18, 18, 18)
-                        .add(attachButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 96, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(attachButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 113, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(12, 12, 12)
                         .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 94, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
@@ -178,9 +185,9 @@ public class OrbDialog extends javax.swing.JDialog {
                 .add(23, 23, 23)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(endCallButton)
+                    .add(okButton)
                     .add(muteButton)
-                    .add(attachButton)
-                    .add(okButton))
+                    .add(attachButton))
                 .addContainerGap(23, Short.MAX_VALUE))
         );
 
@@ -193,8 +200,18 @@ private void endCallButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     setVisible(false);
 }//GEN-LAST:event_endCallButtonActionPerformed
 
+private BystandersDialog bystandersDialog;
+
 private void attachButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attachButtonActionPerformed
-    
+    if (attachButton.getText().equals("Bystanders")) {
+	if (bystandersDialog == null) {
+	    bystandersDialog = new BystandersDialog(orbCell, pm);
+	}
+
+	bystandersDialog.setVisible(true);
+	return;
+    }
+
     if (attachButton.getText().equals("Attach")) {
 	attachButton.setText("Detach");
         channelComp.send(new OrbAttachMessage(orbCell.getCellID(), avatarCellID, true));
