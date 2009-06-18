@@ -40,6 +40,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.RenderManager;
@@ -335,39 +336,48 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /**
      * {@inheritDoc}
      */
-    public void addToMenu(JMenu menu, JMenuItem menuItem, int weight) {
+    public void addToMenu( JMenu menu,  JMenuItem menuItem, int weight) {
         if (weight < 0) {
             weight = Integer.MAX_VALUE;
         }
 
-        logger.fine(menu.getText() + " menu: inserting [" + menuItem.getText() +
+        final int weightFinal = weight;
+        final JMenu menuFinal = menu;
+        final JMenuItem menuItemFinal = menuItem;
+
+        logger.fine(menuFinal.getText() + " menu: inserting [" + menuItemFinal.getText() +
                 "] with weight: " + weight);
 
-        // find the index of the first menu item with a higher weight or
-        // the same weight and later in the alphabet
-        int index = 0;
-        for (index = 0; index < menu.getItemCount(); index++) {
-            JMenuItem curItem = menu.getItem(index);
-            int curWeight = menuWeights.get(curItem);
-            if (curWeight > weight) {
-                break;
-            } else if (curWeight == weight) {
-                if (curItem.getName() == null) {
-                    break;
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                // find the index of the first menu item with a higher weight or
+                // the same weight and later in the alphabet
+                int index = 0;
+                for (index = 0; index < menuFinal.getItemCount(); index++) {
+                    JMenuItem curItem = menuFinal.getItem(index);
+                    int curWeight = menuWeights.get(curItem);
+                    if (curWeight > weightFinal) {
+                        break;
+                    } else if (curWeight == weightFinal) {
+                        if (curItem.getName() == null) {
+                            break;
+                        }
+
+                        if (menuItemFinal.getName() != null &&
+                                menuItemFinal.getName().compareTo(curItem.getName()) > 0) {
+                            break;
+                        }
+                    }
                 }
 
-                if (menuItem.getName() != null &&
-                        menuItem.getName().compareTo(curItem.getName()) > 0) {
-                    break;
-                }
+                // add the item at the right place
+                menuFinal.insert(menuItemFinal, index);
+
+                // remember the menu's weight
+                menuWeights.put(menuItemFinal, weightFinal);
             }
-        }
-
-        // add the item at the right place
-        menu.insert(menuItem, index);
-
-        // remember the menu's weight
-        menuWeights.put(menuItem, weight);
+        });
     }
 
     /**

@@ -45,7 +45,6 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
 
         // Listen for changes to the info text field
         infoTextField.getDocument().addDocumentListener(new InfoTextFieldListener());
-        
     }
 
     /**
@@ -66,7 +65,12 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
      * @inheritDoc()
      */
     public void apply() {
-        // Do nothing for now.
+        // Fetch the latest from the info text field and set it.
+        CellServerState state = editor.getCellServerState();
+        CellComponentServerState compState =
+                state.getComponentServerState(SampleCellComponentServerState.class);
+        ((SampleCellComponentServerState)compState).setInfo(infoTextField.getText());
+        editor.addToUpdateList(compState);
     }
 
     /**
@@ -80,10 +84,11 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
      * @inheritDoc()
      */
     public void refresh() {
-        CellServerState cellServerState = editor.getCellServerState();
-        CellComponentServerState state = cellServerState.getComponentServerState(SampleCellComponentServerState.class);
+        CellServerState state = editor.getCellServerState();
+        CellComponentServerState compState =
+                state.getComponentServerState(SampleCellComponentServerState.class);
         if (state != null) {
-            originalInfo = ((SampleCellComponentServerState) state).getInfo();
+            originalInfo = ((SampleCellComponentServerState) compState).getInfo();
             infoTextField.setText(originalInfo);
             return;
         }

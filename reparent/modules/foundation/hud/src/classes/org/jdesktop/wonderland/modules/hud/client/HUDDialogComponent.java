@@ -30,27 +30,27 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
  *
  * @author nsimpson
  */
-public class HUDInputDialog extends HUDComponent2D implements HUDDialog {
+public class HUDDialogComponent extends HUDComponent2D implements HUDDialog {
 
-    private static final Logger logger = Logger.getLogger(HUDInputDialog.class.getName());
+    private static final Logger logger = Logger.getLogger(HUDDialogComponent.class.getName());
     private HUDInputDialogImpl dialogImpl;
 
-    public HUDInputDialog() {
+    public HUDDialogComponent() {
         super();
         initializeDialog();
     }
 
-    public HUDInputDialog(Cell cell) {
+    public HUDDialogComponent(Cell cell) {
         this();
         setCell(cell);
     }
 
-    public HUDInputDialog(String label) {
+    public HUDDialogComponent(String label) {
         this();
         dialogImpl.setLabelText(label);
     }
 
-    public HUDInputDialog(String label, String value, Cell cell) {
+    public HUDDialogComponent(String label, String value, Cell cell) {
         this(label);
         setCell(cell);
         dialogImpl.setValueText(value);

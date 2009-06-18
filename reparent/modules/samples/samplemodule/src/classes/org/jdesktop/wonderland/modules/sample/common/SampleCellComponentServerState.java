@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.sample.common;
 
+import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
@@ -47,6 +48,7 @@ public class SampleCellComponentServerState extends CellComponentServerState {
     }
 
     public void setInfo(String info) {
+        Logger.getLogger(SampleCellComponentServerState.class.getName()).warning("SETTING INFO TO " + info);
         this.info = info;
     }
 }

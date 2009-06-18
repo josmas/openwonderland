@@ -288,13 +288,22 @@ public class WFSRecording extends WFSRoot {
     /**
      * Write out the footer for the printWriter and then close the writer
      * (and indirectly the underlying file)
+     * @param timestamp the timestamp for the message
      */
-    public void closeChangesFile() {
+    public void closeChangesFile(long timestamp) {
+        //Add a message to indicate that we've reached the end of the recording
+        //This is read by the playback mechanism to indicate to the user that
+        //playback has completed
+        changesWriter.println("<EndMessage timestamp=\"" + timestamp + "\"/>");
         changesWriter.println("</Wonderland_Changes>");
         changesWriter.println("</Wonderland_Recorder>");
         changesWriter.close();
     }
 
+    /**
+     * Public accessor for the changes file for this recording
+     * @return the changes file, may be null or non-existent file
+     */
     public File getChangesFile() {
         return new File(getDirectory(), CHANGES_DESC);
     }

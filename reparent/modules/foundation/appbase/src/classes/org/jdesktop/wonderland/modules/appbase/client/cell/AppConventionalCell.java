@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
  * The client-side cell for an 2D conventional application.
@@ -38,14 +39,22 @@ public abstract class AppConventionalCell extends App2DCell {
 
     /** The session used by the cell cache of this cell to connect to the server */
     private WonderlandSession cellCacheSession;
-    /** The user-visible app name */
+    /** The user-visible app name. */
     protected String appName;
+    /** Is this a SAS- or user-launched app? */
+    protected String launchLocation;
+    /** If a user-launched app, who is the launching user?  */
+    protected String launchUser;
+    /** The execution command. */
+    protected String command;
     /** The connection info. */
     protected String connectionInfo;
     /** The App Conventional connection to the server. */
     private static AppConventionalConnection connection;
     /** The current primary session. */
     private static WonderlandSession currentPrimarySession;
+    /** The app has been started. */
+    private boolean appStarted;
     /** Indicates that this cell is a slave and has connectedToTheApp. */
     private boolean slaveStarted;
 
@@ -111,46 +120,73 @@ public abstract class AppConventionalCell extends App2DCell {
 
         AppConventionalCellClientState state = (AppConventionalCellClientState) clientState;
         appName = state.getAppName();
+        launchLocation = state.getLaunchLocation();
+        launchUser = state.getLaunchUser();
+        command = state.getCommand();
 
-        if (state.getLaunchLocation().equalsIgnoreCase("user") &&
-            state.getLaunchUser().equals(cellCacheSession.getUserID().getUsername())) {
+        if (launchLocation.equalsIgnoreCase("user") &&
+            launchUser.equals(cellCacheSession.getUserID().getUsername())) {
 
-            // Master case
-
-            connectionInfo = startMaster(appName, state.getCommand(), false);
-            if (connectionInfo == null) {
-                logger.warning("Cannot launch app " + appName);
-                // TODO: what else to do? Delete the cell? If so, how?
-                return;
-            }
-            logger.info("AppConventional cellID " + getCellID() + " connectionInfo = " + connectionInfo);
-
-            // Notify server and clients of the new connection info.
-            AppConventionalCellSetConnectionInfoMessage msg =
-                new AppConventionalCellSetConnectionInfoMessage(getCellID(), connectionInfo);
-
-            // Send the message to the server for broadcast to all slaves (and also this master
-            // so we must self-ignore (see setConnectionInfo). Note that we cannot send this
-            // message synchronously and wait for a response because we are already in a
-            // darkstar message handler.
-            connection.send(msg);
+            // Master case: nothing to do
 
         } else {
 
             // Slave case
-            //
-            // Slaves must wait to connect until valid connection info is known. This can happen in one
-            // of two ways. If the slave cell was loaded into this client AFTER the master app started 
-            // the connection info will already be known (i.e. non-null). Otherwise, if the slave cell
-            // was loaded into this client BEFORE the master app started this client will eventually
-            // receive a SetConnectionInfo message whic contains the connection info.
-
             connectionInfo = state.getConnectionInfo();
             logger.severe("Initial connection info value for slave = " + connectionInfo);
-            if (connectionInfo != null) {
-                logger.severe("Starting slave from setClientState");
-                startTheSlave(connectionInfo);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
+
+        // Launch the app when it is visible for the first time
+        if (status == CellStatus.VISIBLE && increasing && !appStarted) {
+
+            if (launchLocation.equalsIgnoreCase("user") &&
+                launchUser.equals(cellCacheSession.getUserID().getUsername())) {
+
+                // Master case
+
+                connectionInfo = startMaster(appName, command, false);
+                if (connectionInfo == null) {
+                    logger.warning("Cannot launch app " + appName);
+                    // TODO: what else to do? Delete the cell? If so, how?
+                    return;
+                }
+                logger.info("AppConventional cellID " + getCellID() + " connectionInfo = " + 
+                            connectionInfo);
+
+                // Notify server and clients of the new connection info.
+                AppConventionalCellSetConnectionInfoMessage msg =
+                    new AppConventionalCellSetConnectionInfoMessage(getCellID(), connectionInfo);
+
+                // Send the message to the server for broadcast to all slaves (and also this master
+                // so we must self-ignore (see setConnectionInfo). Note that we cannot send this
+                // message synchronously and wait for a response because we are already in a
+                // darkstar message handler.
+                connection.send(msg);
+
+            } else {
+
+                // Slave case
+                //
+                // Slaves must wait to connect until valid connection info is known. This can happen 
+                // in one of two ways. If the slave cell was loaded into this client AFTER the master
+                // app started the connection info will already be known (i.e. non-null). Otherwise, 
+                // if the slave cell was loaded into this client BEFORE the master app started this 
+                // client will eventually receive a SetConnectionInfo message whic contains the 
+                // connection info.
+
+                if (connectionInfo != null) {
+                    logger.severe("Starting slave from setClientState");
+                    startTheSlave(connectionInfo);
+                }
             }
+
+            appStarted = true;
         }
     }
 

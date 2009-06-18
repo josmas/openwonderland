@@ -24,7 +24,7 @@ import java.beans.PropertyChangeListener;
  * 
  * @author nsimpson
  */
-public interface HUDDialog {
+public interface HUDDialog extends HUDComponent {
 
     /**
      * Sets the string to be displayed on the text field label

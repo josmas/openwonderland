@@ -136,11 +136,6 @@ public abstract class WindowConventional extends Window2D {
         return borderWidth;
     }
 
-    /** TODO: promote to parent! */
-    public void moveToBestView() {
-        // TODO
-    }
-
     /**
      * Insert the given pixels into the window's image into a subrectangle starting at (x, y) 
      * (in borderless coordinates) and having dimensions w x h.

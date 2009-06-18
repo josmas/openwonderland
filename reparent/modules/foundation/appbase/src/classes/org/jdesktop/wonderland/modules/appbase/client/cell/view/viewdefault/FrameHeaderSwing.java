@@ -29,6 +29,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
@@ -39,6 +40,10 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
+import javax.swing.JOptionPane;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 
 /**
  * The frame header (top side) for Frame2DCellSwing. Uses a WindowSwing.
@@ -50,6 +55,8 @@ public class FrameHeaderSwing
     extends FrameComponent
     implements HeaderPanel.Container, MouseListener, MouseMotionListener
 {
+    private static Logger logger = Logger.getLogger(FrameHeaderSwing.class.getName());
+
     // TODO: New UI: add zones: move planar, move z, rotate
     private WindowSwingHeader headerWindow;
 
@@ -122,33 +129,30 @@ public class FrameHeaderSwing
         consumingListener.addToEntity(frameView.getEntity());
     }
 
+    // Note: this is necessary to fix bug 246.
     private class ConsumeOnControlListener extends EventListenerBaseImpl {
         @Override
         public boolean consumesEvent (Event event) {
-
-            /* Note: I thought that I could shut off header events using this technique.
-               But it doesn't act as I would suspect. For example, it allows the control
-               change (click) event through to WindowSwingEmbeddedToolkit, but the event
-               disappears after that! Fortunately, there is an alternate technique that 
-               works: check for control in each FrameHeaderSwing mouse event handler.
+            if (app == null) return false;
 
             if (app.getControlArb().hasControl()) {
-                System.err.println("COCL.consumesEvent, true because have control");
                 return true;
             }
 
             // Always let the control change event through, even if app doesn't have control
+            // TODO: low: for some reason, when the control change event is Shift Left Click
+            // the event gets consumed by this event but never gets handed off to the
+            // mouseClicked listener in the parent class. I don't know why; maybe it's 
+            // some sort of grab issue. But when the control change event is pressed
+            // this listener works fine.
+
             if (event instanceof MouseEvent3D) {
                 MouseEvent me = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
                 boolean result = Gui2D.isChangeControlEvent(me);
-                System.err.println("COCL.consumesEvent, result = " + result);
                 return result;
             }
 
             return false;
-            */
-
-            return true;
         }
         public boolean propagatesToParent (Event event) {
             return false;
@@ -160,7 +164,6 @@ public class FrameHeaderSwing
      */
     @Override
     public void cleanup() {
-        super.cleanup();
 
         setVisible(false);
 
@@ -177,7 +180,13 @@ public class FrameHeaderSwing
             consumingListener.removeFromEntity(viewEntity);
         }
 
+        frameView = null;
+
+        super.cleanup();
+
+        visible = false;
         view = null;
+        app = null;
     }
 
     /**
@@ -266,17 +275,7 @@ public class FrameHeaderSwing
 
 
     public void	mouseClicked(MouseEvent e) {
-        if (view == null) return;
-
-        if  (Gui2D.isChangeControlEvent(e)) {
-            ControlArb appControlArb = app.getControlArb();
-            if (appControlArb.hasControl()) {
-                appControlArb.releaseControl();
-            } else {
-                appControlArb.takeControl();
-            }
-            return;
-        } 
+        if (app == null || view == null) return;
 
         if (!app.getControlArb().hasControl()) return;
 
@@ -288,17 +287,17 @@ public class FrameHeaderSwing
     }
 
     public void mouseEntered(MouseEvent e) {
-        if (view == null) return;
+        if (app == null || view == null) return;
         if (!app.getControlArb().hasControl()) return;
     }
 
     public void	mouseExited(MouseEvent e) {
-        if (view == null) return;
+        if (app == null || view == null) return;
         if (!app.getControlArb().hasControl()) return;
     }
 
     public void	mousePressed(MouseEvent e) {
-        if (view == null) return;
+        if (app == null || view == null) return;
 
         // Is this a Window menu event? Display menu even when we don't have control.
         if (e.getID() == MouseEvent.MOUSE_PRESSED &&
@@ -307,6 +306,16 @@ public class FrameHeaderSwing
             view.getWindow().displayWindowMenu(view.getEntity(), e);
             return;
         }
+
+        if  (Gui2D.isChangeControlEvent(e)) {
+            ControlArb appControlArb = app.getControlArb();
+            if (appControlArb.hasControl()) {
+                appControlArb.releaseControl();
+            } else {
+                appControlArb.takeControl();
+            }
+            return;
+        } 
 
         if (!app.getControlArb().hasControl()) return;
 
@@ -332,7 +341,7 @@ public class FrameHeaderSwing
     }
 
     public void mouseDragged(MouseEvent e) {
-        if (view == null) return;
+        if (app == null || view == null) return;
         if (!app.getControlArb().hasControl()) return;
 
         // TODO: the following drag code only works for secondary windows. Eventually 
@@ -355,8 +364,8 @@ public class FrameHeaderSwing
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (view == null) return;
-        if (!app.getControlArb().hasControl()) return;
+        if (app == null || view == null) return;
+        if (!app.getControlArb().hasControl()) return; 
 
         // TODO: the following drag code only works for secondary windows. Eventually 
         // upgrade it to work with primary windows also.
@@ -382,7 +391,32 @@ public class FrameHeaderSwing
         if (orthoSubwindowDebug) {
             viewWindow.toggleOrtho();
         } else {
-            viewWindow.closeUser();
+            boolean isPrimary = viewWindow.getType() == Window2D.Type.PRIMARY ||
+                                viewWindow.getType() == Window2D.Type.UNKNOWN;
+            
+            // If this is a primary WindowSwing, quit the app cell as well.
+            if (viewWindow instanceof WindowSwing && isPrimary) {
+
+                // Display a confirmation dialog to make sure we really want to delete the cell.
+                App2D app = viewWindow.getApp();
+                int result = JOptionPane.showConfirmDialog(
+                    JmeClientMain.getFrame().getFrame(),
+                    "Are you sure you wish to quit app " + app.getName() + "?",
+                    "Confirm Quit",
+                    JOptionPane.YES_NO_OPTION);
+                if (result == JOptionPane.NO_OPTION) {
+                    return;
+                }
+
+                App2DCell cell = view.getCell();
+                viewWindow.closeUser();
+                cell.destroy();
+
+            } else {
+                // For non-swing windows, simply close the window. The app itself will figure out
+                // whether closing this window quits the app.
+                viewWindow.closeUser();
+            }
         }
     }
 

@@ -50,9 +50,8 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
  * <br><br>
  * The <code>InputManager</code> also supports a set of global event listeners. These are independent of 
  * any entities. The system always delivers all events to global event listeners which are willing 
- * to consume these events. Note: the return values of <code>propagateToParent()</code> and 
- * <code>propagateToUnder()</code> for global listeners
- * are ignored. Note: The <code>pickDetails</code> field of an event is null for events received by the 
+ * to consume these events. Note: the return value of <code>propagateToParent()</code> for global listeners
+ * is ignored. Note: The <code>pickDetails</code> field of an event is null for events received by the 
  * global listeners.
  * <br><br>
  * In Wonderland Release 0.4, the Wonderland client provided the notion of an "event mode." The event mode 

@@ -229,13 +229,6 @@ public class Gui2DInterior extends Gui2D {
             KeyEvent3D ke3d = (KeyEvent3D) event;
             KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
 
-            if (ke3d.isPressed() &&
-                ke.getKeyCode() == KeyEvent.VK_F12 &&
-                (ke.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
-                ControlArb.releaseControlAll();
-                return;
-            }
-
             /* For ortho subwindow debugging -- TODO: doesn't work. See bug 203 
             if (ke3d.isPressed() &&
                 ke.getKeyCode() == KeyEvent.VK_F11 &&

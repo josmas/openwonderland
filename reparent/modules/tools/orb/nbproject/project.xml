@@ -48,6 +48,10 @@
                     <ide-action name="build"/>
                     <ide-action name="rebuild"/>
                     <ide-action name="clean"/>
+                    <action>
+                        <label>Deploy to Server</label>
+                        <target>deploy</target>
+                    </action>
                 </context-menu>
             </view>
             <subprojects/>
@@ -55,7 +59,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../lib/jaxb/jaxb-api.jar:../../../lib/jaxb/jsr173_1.0_api.jar:../../../core/ext/common/mtgame.jar:../../../core/ext/jme20/target/jme.jar:../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../core/build/lib/wonderland-server.jar:../../../core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../../../core/ext/sgs/sgs-server-0.9.6.3/lib/sgs-shared-1.0.jar:../../../core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:../../../core/ext/sgs/sgs-0.9.6-r4193/lib/sgs.jar:../../../core/ext/sgs/sgs-client-0.9.6-r4193/lib/sgs-client.jar:../audio-manager/lib/bridge_connector.jar:../audio-manager/lib/voicelib.jar:../audio-manager/lib/voip.jar:../../../core/ext/common/swing-layout-1.0.jar:../../../core/ext/macosx/jars/jogl.jar:../../world/avatarbase/dist/avatarbase.jar:../presence-manager/dist/presencemanager.jar</classpath>
+                <classpath mode="compile">../../../lib/jaxb/jaxb-api.jar:../../../lib/jaxb/jsr173_1.0_api.jar:../../../core/ext/common/mtgame.jar:../../../core/ext/jme20/target/jme.jar:../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../core/build/lib/wonderland-server.jar:../../../core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../../../core/ext/sgs/sgs-server-0.9.6.3/lib/sgs-shared-1.0.jar:../../../core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:../../../core/ext/sgs/sgs-0.9.6-r4193/lib/sgs.jar:../../../core/ext/sgs/sgs-client-0.9.6-r4193/lib/sgs-client.jar:../audio-manager/lib/bridge_connector.jar:../audio-manager/lib/voicelib.jar:../audio-manager/lib/voip.jar:../../../core/ext/common/swing-layout-1.0.jar:../../../core/ext/macosx/jars/jogl.jar:../presence-manager/build/classes:../../world/avatarbase/build/classes:../../../core/ext/common/Scenario.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

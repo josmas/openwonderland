@@ -64,7 +64,7 @@ public class OrbCell extends Cell {
     private String username;
     private String callID;
     private String playerWithVpCallID;
-    private int bystanderCount;
+    private String[] bystanders;
 
     public OrbCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -81,7 +81,7 @@ public class OrbCell extends Cell {
             if (orbMessageHandler == null) {
 	        logger.fine("Creating orb Message handler for " + getCellID());
                 orbMessageHandler = new OrbMessageHandler(this, getCellCache().getSession(),
-		    bystanderCount);
+		    bystanders);
 	    }
 	    break;
         case DISK:
@@ -93,9 +93,11 @@ public class OrbCell extends Cell {
 	}
     }
 
-    public void setOrbRootNode(Node orbRootNode) {
-	orbMessageHandler.setOrbRootNode(orbRootNode);
+    Node getNameTagNode() {
+        return orbMessageHandler.getNameTagNode();
     }
+
+
 
     /**
      * Called when the cell is initially created and any time there is a 
@@ -119,7 +121,7 @@ public class OrbCell extends Cell {
 	    playerWithVpCallID = null;
 	}
 
-	bystanderCount = orbCellClientState.getBystanderCount();
+	bystanders = orbCellClientState.getBystanders();
     }
 
     @Override
@@ -155,13 +157,43 @@ public class OrbCell extends Cell {
 	return orbMessageHandler;
     }
 
+    public static void makeOrbsVisible(boolean isVisible) {
+	OrbMessageHandler.makeOrbsVisible(isVisible);
+    }
+
+    public void setVisible(boolean isVisible) {
+	if (orbCellRenderer == null) {
+	    return;
+	}
+
+	orbCellRenderer.setVisible(isVisible);
+    }
+	
     public void orbSelected() {
 	if (orbMessageHandler == null) {
-	    logger.warning("No phoneMessageHandler");
+	    logger.warning("No orbMessageHandler");
 	    return;
 	}
 
 	orbMessageHandler.orbSelected();
+    }
+
+    public void setBystandersListener(BystandersListener listener) {
+	if (orbMessageHandler == null) {
+	    logger.warning("No orbMessageHandler");
+	    return;
+	}
+
+	orbMessageHandler.setBystandersListener(listener);
+    }
+	
+    public String[] getBystanders() {
+	if (orbMessageHandler == null) {
+	    logger.warning("No orbMessageHandler");
+	    return new String[0];
+	}
+
+	return orbMessageHandler.getBystanders();
     }
 
 }

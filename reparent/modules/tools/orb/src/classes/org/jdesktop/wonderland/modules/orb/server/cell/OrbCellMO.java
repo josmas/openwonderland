@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.orb.server.cell;
 
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachVirtualPlayerMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
-import org.jdesktop.wonderland.modules.orb.common.messages.OrbSetBystanderCountMessage;
+import org.jdesktop.wonderland.modules.orb.common.messages.OrbBystandersMessage;
 
 import java.util.logging.Logger;
 
@@ -75,7 +75,7 @@ public class OrbCellMO extends CellMO {
     private String callID;
     private boolean simulateCalls;
     private VirtualPlayer vp;
-    private int bystanderCount;
+    private String[] bystanders;
 
 //    @UsesCellComponentMO(AudioParticipantComponentMO.class)
 //    private ManagedReference<AudioParticipantComponentMO> compRef;
@@ -98,12 +98,12 @@ public class OrbCellMO extends CellMO {
     public OrbCellMO(Vector3f center, float size, String username, 
 	    String callID, boolean simulateCalls) {
 
-	this(center, size, username, callID, simulateCalls, null, 0);
+	this(center, size, username, callID, simulateCalls, null, new String[0]);
     }
 
     public OrbCellMO(Vector3f center, float size, String username, 
 	    String callID, boolean simulateCalls, VirtualPlayer vp,
-	    int bystanderCount) {
+	    String[] bystanders) {
 
 	super(new BoundingSphere(size, center), new CellTransform(null, center));
 
@@ -111,7 +111,7 @@ public class OrbCellMO extends CellMO {
         this.callID = callID;
         this.simulateCalls = simulateCalls;
 	this.vp = vp;
-	this.bystanderCount = bystanderCount;
+	this.bystanders = bystanders;
 
         addComponent(new MovableComponentMO(this));
     }
@@ -151,7 +151,7 @@ public class OrbCellMO extends CellMO {
 
         if (cellClientState == null) {
             cellClientState = new OrbCellClientState(username, username, callID, 
-		getPlayerWithVpCallID(), bystanderCount);
+		getPlayerWithVpCallID(), bystanders);
         }
 
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -175,7 +175,7 @@ public class OrbCellMO extends CellMO {
         /* Create a new BasicCellState and populate its members */
         if (cellServerState == null) {
             cellServerState = new OrbCellServerState(username, username, callID, 
-		getPlayerWithVpCallID(), bystanderCount);
+		getPlayerWithVpCallID(), bystanders);
         }
 
         return super.getServerState(cellServerState);
@@ -197,12 +197,12 @@ public class OrbCellMO extends CellMO {
     	return username;
     }
    
-    public void setBystanderCount(int bystanderCount) {
+    public void setBystanders(String[] bystanders) {
 	CommsManager cm = WonderlandContext.getCommsManager();
 
         WonderlandClientSender sender = cm.getSender(CellChannelConnectionType.CLIENT_TYPE);
 
-	sender.send(new OrbSetBystanderCountMessage(cellID, bystanderCount));
+	sender.send(new OrbBystandersMessage(cellID, bystanders));
     }
 
     public String getCallID() {

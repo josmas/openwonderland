@@ -87,12 +87,16 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
         setBuddyList();
     }
 
+    private ArrayList<String> userList = new ArrayList();
+
     private void setBuddyList() {
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
-        PresenceInfo ourInfo = pm.getPresenceInfo(cellID);
+	if (userListChanged(presenceInfoList) == false) {
+	    return;
+	}
 
-        ArrayList<String> userData = new ArrayList();
+        ArrayList<String> userList = new ArrayList();
 
         for (int i = 0; i < presenceInfoList.length; i++) {
             PresenceInfo info = presenceInfoList[i];
@@ -102,25 +106,28 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
                 continue;
             }
 
-            //if (info.callID.equals(ourInfo.callID)) {
-            //    // It's us, skip it.
-            //    continue;
-            //}
-
-	    String displayName = NameTagNode.getDisplayName(info.usernameAlias,
-                info.isSpeaking, info.isMuted);
-
-	    //System.out.println("ADDING " + displayName);
-            userData.add(displayName);
+            userList.add(info.usernameAlias);
         }
 
-	String[] userArray = userData.toArray(new String[0]);
+	String[] userArray = userList.toArray(new String[0]);
 
 	SortUsers.sort(userArray);
+
+	this.userList = userList;
 
         buddyList.setListData(userArray);
 
 	enableButtons();
+    }
+
+    private boolean userListChanged(PresenceInfo[] infoList) {
+	for (int i = 0; i < infoList.length; i++) {
+	     if (userList.contains(infoList[i].usernameAlias) == false) {
+		return true;
+	     }
+	}
+
+	return false;
     }
 
     private void enableButtons() {

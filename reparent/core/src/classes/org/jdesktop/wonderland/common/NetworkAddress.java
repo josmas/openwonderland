@@ -33,76 +33,11 @@ public class NetworkAddress {
     private static Logger logger = Logger.getLogger(NetworkAddress.class.getName());
 
     public static InetAddress getPrivateLocalAddress() throws UnknownHostException {
-	InetAddress ia = NetworkAddressManager.getPrivateLocalAddress();
-
-	logger.finer("Default:  " + ia);
-	return ia;
+	return NetworkAddressManager.getPrivateLocalAddress();
     } 
 
     public static InetAddress getPrivateLocalAddress(String s) throws UnknownHostException {
-	if (s == null || s.length() == 0) {
-	    InetAddress ia = NetworkAddressManager.getPrivateLocalAddress();
-
-	    logger.finer("Default:  " + ia);
-	    return ia;
-	}
-
-	logger.finer(s);
-
-	String[] tokens = s.split(":");
-
-	if (tokens.length == 1 || tokens[0].equalsIgnoreCase("host")) {
-	    /*
-	     * It's a host name or address
-	     */
-	    InetAddress ia = InetAddress.getByName(tokens[0]);
-
-	    logger.finer("Host " + s + ": " + ia);
-	    return ia;
-	}
-
-	if (tokens[0].equalsIgnoreCase("interface")) {
-	    InetAddress ia = NetworkAddressManager.getPrivateLocalAddress(tokens[1]);
-
-	    logger.finer("Interface " + tokens[1] + ": " + ia);
-	    return ia;
-	}
-
-	if (tokens[0].equalsIgnoreCase("server") == false) {
-	    logger.warning("Invalid specification:  " + s);
-	    throw new UnknownHostException("Invalid specification:  " + s);
-	}
-
-	if (tokens.length < 3) {
-	    logger.warning("Invalid server specified:  " + s);
-	    throw new UnknownHostException("Invalid server specified:  " + s);
-	}
-
-	int port;
-
-	try {
-	    port = Integer.parseInt(tokens[2]);	
-	} catch (NumberFormatException e) {
-	    logger.warning("Invalid port specified:  " + s);
-	    throw new UnknownHostException("Invalid port specified:  " + s);
-	}
-	
-	int timeout = 500;
-
-	if (tokens.length == 4) {
-	    try {
-		timeout = Integer.parseInt(tokens[3]);
-	    } catch (NumberFormatException e) {
-		logger.warning("Invalid timeout specified:  " + s
-		    + " defaulting to " + timeout);
-	    }
-	}
-
-	InetAddress ia = NetworkAddressManager.getPrivateLocalAddress(
-	    tokens[1], port, timeout);
-
-	logger.finer("server " + tokens[1] + ":" + port + ": " + ia);
-	return ia;
+	return NetworkAddressManager.getPrivateLocalAddress();
     }
 
     /*

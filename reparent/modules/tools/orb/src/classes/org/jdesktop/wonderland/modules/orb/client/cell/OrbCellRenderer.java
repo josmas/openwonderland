@@ -17,221 +17,251 @@
  */
 package org.jdesktop.wonderland.modules.orb.client.cell;
 
-import com.jme.animation.SpatialTransformer;
-import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
-import com.jme.light.PointLight;
-import com.jme.light.SimpleLightNode;
-import com.jme.math.FastMath;
-import com.jme.math.Quaternion;
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import com.jme.scene.TriMesh;
-import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Sphere;
-import com.jme.scene.state.LightState;
+import com.jme.scene.state.BlendState;
+import com.jme.scene.state.CullState;
+import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
-import com.jme.scene.state.WireframeState;
+import com.jme.scene.state.RenderState.StateType;
+import com.jme.scene.state.ShadeState;
+import com.jme.scene.state.ShadeState.ShadeMode;
+import com.sun.scenario.animation.Animation;
+import com.sun.scenario.animation.Clip;
+import com.sun.scenario.animation.Clip.RepeatBehavior;
+import java.util.HashSet;
+import java.util.Set;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
-import java.lang.reflect.Method;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
+import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 
 /**
  * @author jprovino
  */
 public class OrbCellRenderer extends BasicRenderer {
+    private static final float INNER_RADIUS = 0.175f;
+    private static final float OUTER_RADIUS = 0.25f;
+    private static final ColorRGBA DEFAULT_COLOR = new ColorRGBA(0.7f, 0.3f, 0.3f, 1.0f);
+    private static final float MINIMUM_HEIGHT = 0.0f;
+    private static final float MAXIMUM_HEIGHT = 0.1f;
+    private static MaterialState DEFAULT_MATERIALSTATE;
+    private static ShadeState DEFAULT_SHADESTATE;
+    private static MaterialState HOVER_MATERIALSTATE;
+    private static ShadeState HOVER_SHADESTATE;
     
-    private Entity entity;
-    private MyMouseListener listener;
 
-    String username;
+    static {
+        DEFAULT_MATERIALSTATE = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
+        DEFAULT_MATERIALSTATE.setAmbient(DEFAULT_COLOR);
+        DEFAULT_MATERIALSTATE.setDiffuse(DEFAULT_COLOR);
+        DEFAULT_MATERIALSTATE.setSpecular(DEFAULT_COLOR);
+        DEFAULT_MATERIALSTATE.setEmissive(new ColorRGBA(0.0f, 0.0f, 0.0f, 1f));
+        DEFAULT_SHADESTATE = (ShadeState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Shade);
+        DEFAULT_SHADESTATE.setEnabled(true);
+        DEFAULT_SHADESTATE.setShadeMode(ShadeMode.Flat);
+
+        /** Mouse-over appearance **/
+        HOVER_MATERIALSTATE = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
+        HOVER_MATERIALSTATE.setAmbient(new ColorRGBA(0.0f, 0.0f, 0.3f, 1.0f));
+        HOVER_MATERIALSTATE.setDiffuse(new ColorRGBA(0.3f, 0.3f, 0.7f, 1.0f));
+        HOVER_MATERIALSTATE.setSpecular(new ColorRGBA(0.3f, 0.3f, 0.7f, 1.0f));
+        HOVER_MATERIALSTATE.setEmissive(new ColorRGBA(0.8f, 0.6f, 0.6f, 1.0f));
+        HOVER_SHADESTATE = (ShadeState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Shade);
+        HOVER_SHADESTATE.setEnabled(true);
+        HOVER_SHADESTATE.setShadeMode(ShadeMode.Smooth);
+    }
+
+    private MyMouseListener listener;
+    //The root of the cell, contains the orbNode
+    private Node root;
+    //The node containing the innerOrbNode and the outer sphere
+    private Node orbNode;
+    private Set<Animation> animations = new HashSet<Animation>();
+    //The node containing the inner sphere
+    private Node innerOrbNode;
+    //The inner sphere
+    private Sphere innerOrb;
 
     public OrbCellRenderer(Cell cell) {
         super(cell);
-
-	username = ((OrbCell) cell).getUsername();
+        listener = new MyMouseListener();
     }
-    
+
     protected Node createSceneGraph(Entity entity) {
-	this.entity = entity;
-
-        ColorRGBA color = new ColorRGBA();
-
-        //ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
-        //buf.setEnabled(true);
-        //buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-
-        PointLight light = new PointLight();
-        light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 0.75f));
-        light.setAmbient(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
-        light.setLocation(new Vector3f(100, 100, 100));
-        light.setEnabled(true);
-        //LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
-        //lightState.setEnabled(true);
-        //lightState.attach(light);
-        
-        color.r = 0.0f; color.g = 0.0f; color.b = 1.0f; color.a = 1.0f;
-        //return createWireframeEntity();
-
-	listener = new MyMouseListener();
-	listener.addToEntity(entity);
-	return createAnimationEntity();
+        root = new Node("orb root");
+        orbNode = new Node("orb node");
+        attachOrb(entity);
+        attachNameTag();
+        createSpeakingAnimations(entity);
+        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(root);
+        entity.addComponent(RenderComponent.class, rc);
+        listener.addToEntity(entity);
+        setVisible(true);
+        return root;
     }
 
-    /**
-     * Creates a wireframe box or sphere with the same size as the bounds.
-     */
-    private Node createWireframeEntity() {
-        /* Fetch the basic info about the cell */
-        String name = cell.getCellID().toString();
-        CellTransform transform = cell.getLocalTransform();
-        Vector3f translation = transform.getTranslation(null);
-        Vector3f scaling = transform.getScaling(null);
-        Quaternion rotation = transform.getRotation(null);
-        
-        /* Create the new object -- either a Box or Sphere */
-        TriMesh mesh = null;
-        if (cell.getLocalBounds() instanceof BoundingBox) {
-            Vector3f extent = ((BoundingBox)cell.getLocalBounds()).getExtent(null);
-            mesh = new Box(name, new Vector3f(), extent.x, extent.y, extent.z);
-        } else if (cell.getLocalBounds() instanceof BoundingSphere) {
-            float radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
-            mesh = new Sphere(name, new Vector3f(), 10, 10, radius);
-        } else {
-            logger.warning("Unsupported Bounds type " +cell.getLocalBounds().getClass().getName());
-            return new Node();
-        }
-        
-        /* Create the scene graph object and set its wireframe state */
-        Node node = new Node();
-        node.attachChild(mesh);
-        node.setModelBound(new BoundingBox());
-        node.updateModelBound();
-        //node.setLocalTranslation(translation);
-        //node.setLocalScale(scaling);
-        //node.setLocalRotation(rotation);
-
-        WireframeState wiState = (WireframeState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_WIREFRAME);
-        wiState.setEnabled(true);
-        node.setRenderState(wiState);
-        node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
-	((OrbCell) cell).setOrbRootNode(node);
-        return node;
+    private void attachNameTag() {
+        Node nameTag = ((OrbCell) cell).getNameTagNode();
+        nameTag.setLocalTranslation(0, OUTER_RADIUS/2, 0);
+        orbNode.attachChild(nameTag);
     }
 
-    private Node createAnimationEntity() {
-	float radius = (float) .5;
+    private void attachOrb(Entity entity) {
+        attachInnerOrb(entity);
+        attachOuterOrb(entity);
+        //Spin the inner orb
+        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, innerOrbNode, 0f, 360, new Vector3f(0f,0f,1f));
+        Clip spinnerClip = Clip.create(1000, Clip.INDEFINITE, spinner);
+        spinnerClip.setRepeatBehavior(RepeatBehavior.LOOP);
+        spinnerClip.start();
+        spinnerClip.resume();
+        //Rotate the inner orb
+        RotationAnimationProcessor rotator = new RotationAnimationProcessor(entity, innerOrbNode, 0f, 360, new Vector3f(0f,1f,0f));
+        Clip rotatorClip = Clip.create(1000, Clip.INDEFINITE, rotator);
+        rotatorClip.setRepeatBehavior(RepeatBehavior.LOOP);
+        rotatorClip.start();
+        rotatorClip.resume();
+        //Traslate the whole orb
+        TranslationAnimationProcessor translator = new TranslationAnimationProcessor(entity, orbNode, new Vector3f(0f,MINIMUM_HEIGHT,0f) , new Vector3f(0f,MAXIMUM_HEIGHT,0f));
+        Clip translatorClip = Clip.create(1000, Clip.INDEFINITE, translator);
+        translatorClip.setRepeatBehavior(RepeatBehavior.REVERSE);
+        translatorClip.start();
+        translatorClip.resume();
+    }
 
-        if (cell.getLocalBounds() instanceof BoundingSphere) {
-            radius = ((BoundingSphere)cell.getLocalBounds()).getRadius();
-	} 
+    private void attachInnerOrb(Entity entity) {
+        innerOrbNode = new Node("Inner orb node");
+        innerOrb = new Sphere("Inner Orb", 8, 8, INNER_RADIUS);
+        innerOrb.setModelBound(new BoundingSphere());
+        innerOrb.updateModelBound();
+        innerOrb.setRenderState(DEFAULT_MATERIALSTATE);
+        innerOrb.setRenderState(DEFAULT_SHADESTATE);
+        innerOrbNode.attachChild(innerOrb);
+        orbNode.attachChild(innerOrbNode);
+    }
 
-	Sphere s = new Sphere("My sphere", 30, 30, radius);
+    private void attachOuterOrb(Entity entity) {
+        Sphere outerOrb = new Sphere("Outer Orb", 16, 16, OUTER_RADIUS);
+        outerOrb.setModelBound(new BoundingSphere());
+        outerOrb.updateModelBound();
+        ColorRGBA orbColour = new ColorRGBA(0f, 0f, 1f, 0.2f);
+        MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
+        matState.setDiffuse(orbColour);
+        outerOrb.setRenderState(matState);
 
-	// I will rotate this pivot to move my light
-	Node pivot=new Node("Pivot node");
-	// This light will rotate around my sphere. Notice I don't
-	// give it a position
-	PointLight pl=new PointLight();
-	// Color the light red
-	pl.setDiffuse(ColorRGBA.red);
-	// Enable the light
-	pl.setEnabled(true);
-	// Remove the default light and attach this one
-        LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_LIGHT);
-	lightState.detachAll();
-	lightState.attach(pl);
-	// This node will hold my light
-	SimpleLightNode ln=
-	 new SimpleLightNode("A node for my pointLight",pl);
-	// I set the light's position thru the node
-	ln.setLocalTranslation(new Vector3f(0,10,0));
-	// I attach the light's node to my pivot
-	pivot.attachChild(ln);
-	// I create a box and attach it too my lightnode.
-	// This lets me see where my light is
-	Box b=new Box("Blarg", new Vector3f(-.3f,-.3f,-.3f),
-	new Vector3f(.3f,.3f,.3f));
-	ln.attachChild(b);
-	// I create a controller to rotate my pivot
-	SpatialTransformer st=new SpatialTransformer(1);
-	// I tell my spatial controller to change pivot
-	st.setObject(pivot,0,-1);
-	// Assign a rotation for object 0 at time 0 to rotate 0
-	// degrees around the z axis
-	Quaternion x0=new Quaternion();
-	x0.fromAngleAxis(0,new Vector3f(0,0,1));
-	st.setRotation(0,0,x0);
-	// Assign a rotation for object 0 at time 2 to rotate 180
-	// degrees around the z axis
-	Quaternion x180=new Quaternion();
-	x180.fromAngleAxis(FastMath.DEG_TO_RAD*180,new Vector3f(0,0,1));
-	st.setRotation(0,2,x180);
-	// Assign a rotation for object 0 at time 4 to rotate 360
-	// degrees around the z axis
-	Quaternion x360=new Quaternion();
-	x360.fromAngleAxis(FastMath.DEG_TO_RAD*360,new Vector3f(0,0,1));
-	st.setRotation(0,4,x360);
-	// Prepare my controller to start moving around
-	st.interpolateMissing();
-	// Tell my pivot it is controlled by st
-	pivot.addController(st);
+        BlendState bs = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Blend);
+        bs.setEnabled(true);
+        bs.setBlendEnabled(true);
+        bs.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
+        bs.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
+        outerOrb.setRenderState(bs);
 
-        Node node = new Node();
-	// Attach pivot and sphere to graph
-	node.attachChild(pivot);
-	node.attachChild(s);
-        node.setModelBound(new BoundingBox());
-        node.updateModelBound();
+        CullState cs = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Cull);
+        cs.setEnabled(true);
+        cs.setCullFace(CullState.Face.Back);
+        outerOrb.setRenderState(cs);
+        orbNode.attachChild(outerOrb);
+    }
 
-        CellTransform transform = cell.getLocalTransform();
-        Vector3f translation = transform.getTranslation(null);
-        Vector3f scaling = transform.getScaling(null);
-        Quaternion rotation = transform.getRotation(null);
 
-        //node.setLocalTranslation(translation);
-        //node.setLocalScale(scaling);
-        //node.setLocalRotation(rotation);
+    public void setVisible(final boolean isVisible) {
+        SceneWorker.addWorker(new WorkCommit() {
 
-        node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
-
-	logger.fine("ANIMATION ENTITY CREATED");
-	((OrbCell) cell).setOrbRootNode(node);
-	return node;
+            public void commit() {
+                if (isVisible) {
+                    root.attachChild(orbNode);
+                } else {
+                    root.detachChild(orbNode);
+                }
+            }
+        });
     }
 
     public void removeMouseListener() {
-	listener.removeFromEntity(entity);
+        listener.removeFromEntity(entity);
+    }
+
+    private void createSpeakingAnimations(Entity entity) {
+        ScaleAnimationProcessor scaler = new ScaleAnimationProcessor(entity, innerOrbNode, 1.0f, OUTER_RADIUS/INNER_RADIUS * 0.9f);
+        Clip scalingClip = Clip.create(1000, Clip.INDEFINITE, scaler);
+        scalingClip.setRepeatBehavior(RepeatBehavior.REVERSE);
+        scalingClip.start();
+        scalingClip.pause();
+        animations.add(scalingClip);
+        //Need to add a colour animator?
+    }
+
+    private void setRenderState(Sphere aSphere, RenderState aRenderState) {
+            aSphere.setRenderState(aRenderState);
+            ClientContextJME.getWorldManager().addToUpdateList(aSphere);
+    }
+
+    private void enableSpeakingAnimations(boolean b) {
+        for (Animation anim : animations) {
+            if (b) {
+                anim.resume();
+            } else {
+                anim.pause();
+            }
+        }
     }
 
     class MyMouseListener extends EventClassListener {
 
-	public MyMouseListener() {
-	    setSwingSafe(true);
-	}
+        public MyMouseListener() {
+            setSwingSafe(true);
+        }
 
-	public Class[] eventClassesToConsume () {
-	    return new Class[] { MouseEvent3D.class };
-	}
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[]{MouseEvent3D.class};
+        }
 
-	public void commitEvent (Event event) {
-	    if (event instanceof MouseButtonEvent3D) {
-		MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
-		if (buttonEvent.isPressed()) {
-		    logger.info("Orb Selected");
-		    ((OrbCell) cell).orbSelected();
-		}
-	    } 
-	}
+        @Override
+        public void commitEvent(Event event) {
+            if (event instanceof MouseEnterExitEvent3D) {
+                MouseEnterExitEvent3D mevt = (MouseEnterExitEvent3D) event;
+                if (mevt.isEnter()) {
+                    setRenderState(innerOrb, HOVER_MATERIALSTATE);
+                    setRenderState(innerOrb, HOVER_SHADESTATE);
+                } else {
+                    setRenderState(innerOrb, DEFAULT_MATERIALSTATE);
+                    setRenderState(innerOrb, DEFAULT_SHADESTATE);
+                }
+            }
+            if (event instanceof MouseButtonEvent3D) {
+                MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
+                if (buttonEvent.isPressed() && (buttonEvent.getButton() == ButtonId.BUTTON1)) {
+                    logger.info("Orb Selected");
+                    ((OrbCell) cell).orbSelected();
+                }
+                //For testing only
+                if (buttonEvent.isPressed() && (buttonEvent.getButton() == ButtonId.BUTTON3)) {
+                    if (!buttonEvent.getAwtEvent().isControlDown()) {
+                        enableSpeakingAnimations(true);
+                    }
+                    if (!buttonEvent.getAwtEvent().isShiftDown()){
+                        enableSpeakingAnimations(false);
+                    }
+                }
+            }
+        }
+
+        
     }
-
 }

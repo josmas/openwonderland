@@ -37,6 +37,8 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  */
 public class AvatarCell extends ViewCell {
 
+    private boolean selectedForInput = false;
+
     public AvatarCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
@@ -64,8 +66,6 @@ public class AvatarCell extends ViewCell {
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         CellRenderer ret = null;
-        System.err.println("AvatarCell.createCellRenderer "+this);
-        Thread.dumpStack();
         switch(rendererType) {
             case RENDERER_2D :
                 // No 2D Renderer yet
@@ -86,6 +86,22 @@ public class AvatarCell extends ViewCell {
         }
         
         return ret;
+    }
+
+    /**
+     * @return the selectedForInput
+     * @InternalAPI
+     */
+    public boolean isSelectedForInput() {
+        return selectedForInput;
+    }
+
+    /**
+     * @param selectedForInput the selectedForInput to set
+     * @InternalAPI
+     */
+    public void setSelectedForInput(boolean selectedForInput) {
+        this.selectedForInput = selectedForInput;
     }
 
     /**

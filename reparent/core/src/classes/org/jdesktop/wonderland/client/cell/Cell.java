@@ -538,22 +538,24 @@ public class Cell {
     }
 
     private void setRendererStatus(CellRenderer rend, CellStatus status) {
-        int currentRendStatus = rend.getStatus().ordinal();
-        int requiredRendStatus = status.ordinal();
+        synchronized(statusLock) {
+            int currentRendStatus = rend.getStatus().ordinal();
+            int requiredRendStatus = status.ordinal();
 
-        if (currentRendStatus == requiredRendStatus)
-            return;
+            if (currentRendStatus == requiredRendStatus)
+                return;
 
-        boolean increasing;
-        int dir = (requiredRendStatus > currentRendStatus ? 1 : -1);
-        if (dir==1)
-            increasing = true;
-        else
-            increasing = false;
+            boolean increasing;
+            int dir = (requiredRendStatus > currentRendStatus ? 1 : -1);
+            if (dir==1)
+                increasing = true;
+            else
+                increasing = false;
 
-        while (currentRendStatus != requiredRendStatus) {
-            currentRendStatus += dir;
-            rend.setStatus(CellStatus.values()[currentRendStatus], increasing);
+            while (currentRendStatus != requiredRendStatus) {
+                currentRendStatus += dir;
+                rend.setStatus(CellStatus.values()[currentRendStatus], increasing);
+            }
         }
     }
 
@@ -641,13 +643,8 @@ public class Cell {
                             channel.addMessageReceiver(CellClientComponentMessage.class,
                                                        componentReceiver);
                         }
-                    }
-                    break;
-                case RENDERING :
-                    if (increasing) {
-                        logger.warning("STATE ENTER "+this);
                         try {
-                            getCellRenderer(ClientContext.getRendererType());
+                            createCellRendererImpl(ClientContext.getRendererType());
                         } catch(Exception e) {
                             logger.log(Level.SEVERE, "Failed to get Cell Renderer for cell "+getClass().getName(), e);
                         }
@@ -850,13 +847,7 @@ public class Cell {
         return null;
     }
 
-    /**
-     * Return the renderer of the given type for this cell. If a renderer of the
-     * requested type is not available null will be returned
-     * @param rendererType the type of the render to return
-     * @return the renderer, or null if no renderer of the specified type is available
-     */
-    public CellRenderer getCellRenderer(RendererType rendererType) {
+    private void createCellRendererImpl(RendererType rendererType) {
         synchronized(cellRenderers) {
             CellRenderer ret = cellRenderers.get(rendererType);
             if (ret == null) {
@@ -866,6 +857,18 @@ public class Cell {
                     setRendererStatus(ret, currentStatus);
                 }
             }
+        }
+    }
+
+    /**
+     * Return the renderer of the given type for this cell. If a renderer of the
+     * requested type is not available, or the cell is not in at least the RENDERING state  null will be returned
+     * @param rendererType the type of the render to return
+     * @return the renderer, or null if no renderer of the specified type is available
+     */
+    public CellRenderer getCellRenderer(RendererType rendererType) {
+        synchronized(cellRenderers) {
+            CellRenderer ret = cellRenderers.get(rendererType);
             return ret;
         }
     }
