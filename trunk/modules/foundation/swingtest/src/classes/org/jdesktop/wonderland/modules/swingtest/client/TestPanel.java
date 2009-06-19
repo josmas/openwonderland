@@ -31,8 +31,6 @@ public class TestPanel extends javax.swing.JPanel {
     public interface Container {
         public void validate();
         public void setOrtho(boolean ortho);
-        // TODO: for testing view.setVisible hack
-        //public void setVisibleHack (boolean visible);
     }
 
     private JFrame frame;
@@ -101,8 +99,6 @@ public class TestPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         add(jButton1, gridBagConstraints);
 
-        // TODO: for testing view.setVisible hack
-        //jButton2.setText("Make invisible");
         jButton2.setText("Add Slider");
 	jButton2.setToolTipText("This button adds a slider to the window");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -209,7 +205,6 @@ public class TestPanel extends javax.swing.JPanel {
     private boolean sliderShown = false;
 
 private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-    /* TODO: for testing view.setVisible hack: comment this out */
     if (sliderShown) {
 	// Remove slider
 	remove(jSlider1);
@@ -234,14 +229,7 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     }
 
     sliderShown = ! sliderShown;
-    /* TODO: for testing view.setVisible hack: comment the above out out */
 
-    /* TODO: for testing view.setVisible hack: uncomment the following
-    if (container != null) {
-        container.setVisibleHack(false);
-    }
-    */
-    
 }//GEN-LAST:event_jButton2ActionPerformed
     
     
