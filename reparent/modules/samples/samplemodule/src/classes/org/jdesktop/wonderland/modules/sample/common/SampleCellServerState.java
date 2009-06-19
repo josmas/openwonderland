@@ -55,4 +55,9 @@ public class SampleCellServerState extends CellServerState {
         Logger.getLogger(SampleCellServerState.class.getName()).warning("SETTING TO NEW SHAPE TYPE " + shapeType);
         this.shapeType = shapeType;
     }
+
+    @Override
+    public String toString() {
+        return "[SHAPE TYPE] " + shapeType;
+    }
 }

@@ -64,6 +64,7 @@ import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.PropertiesManager;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
+import org.jdesktop.wonderland.client.cell.registry.CellComponentRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -197,7 +198,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                 if (dirtyPanelSet.isEmpty() == false) {
                     int result = JOptionPane.showConfirmDialog(
                             CellPropertiesJFrame.this,
-                            "Do you wish to apply the properties before switching?",
+                            "Do you wish to apply the properties before closing?",
                             "Apply values?", JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
                     if (result == JOptionPane.YES_OPTION) {
@@ -294,7 +295,9 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         for(int i=0; i<level; i++)
             buf.append(' ');
 
-        buf.append(n.getName()+" "+n.getLocalTranslation()+"  "+n.getLocalRotation()+"  world "+n.getWorldTranslation()+"  "+n.getWorldRotation());
+        buf.append(n.getName() + " " + n.getLocalTranslation() + "  " +
+                n.getLocalRotation() + "  world " + n.getWorldTranslation() +
+                "  " + n.getWorldRotation());
 
         System.err.println(buf);
 
@@ -367,22 +370,16 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         mainPanel = new javax.swing.JPanel();
         topLevelSplitPane = new javax.swing.JSplitPane();
         cellHierarchyPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
         treePanel = new javax.swing.JPanel();
         treeScrollPane = new javax.swing.JScrollPane();
         cellHierarchyTree = new javax.swing.JTree();
         bottomLevelSplitPane = new javax.swing.JSplitPane();
         jPanel4 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
         propertyPanel = new javax.swing.JPanel();
         propertyButtonPanel = new javax.swing.JPanel();
         applyButton = new javax.swing.JButton();
         restoreButton = new javax.swing.JButton();
         capabilityPanel = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
         capabilityListPanel = new javax.swing.JPanel();
         capabilityListScrollPane = new javax.swing.JScrollPane();
         capabilityList = new javax.swing.JList();
@@ -393,31 +390,13 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         setTitle("Cell Editor");
         getContentPane().setLayout(new java.awt.GridLayout(1, 1));
 
-        mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        mainPanel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 1, true));
         mainPanel.setLayout(new java.awt.GridLayout(1, 1));
 
         topLevelSplitPane.setOneTouchExpandable(true);
 
-        cellHierarchyPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        cellHierarchyPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("World Hierarchy"));
         cellHierarchyPanel.setLayout(new java.awt.GridBagLayout());
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        jPanel1.setLayout(new java.awt.GridLayout(1, 1));
-
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel2.setText("Cell Hierarchy");
-        jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
-        jLabel2.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
-        jPanel1.add(jLabel2);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
-        cellHierarchyPanel.add(jPanel1, gridBagConstraints);
 
         treePanel.setMinimumSize(new java.awt.Dimension(250, 23));
         treePanel.setLayout(new java.awt.GridLayout(1, 0));
@@ -449,29 +428,11 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
 
         bottomLevelSplitPane.setBorder(null);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Properties"));
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        jPanel3.setLayout(new java.awt.GridLayout(1, 1));
-
-        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel4.setText("Cell Properties");
-        jLabel4.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
-        jLabel4.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
-        jPanel3.add(jLabel4);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
-        jPanel4.add(jPanel3, gridBagConstraints);
-
         propertyPanel.setBackground(new java.awt.Color(255, 255, 255));
-        propertyPanel.setLayout(new java.awt.GridLayout());
+        propertyPanel.setLayout(new java.awt.GridLayout(1, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -510,35 +471,17 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
 
         bottomLevelSplitPane.setRightComponent(jPanel4);
 
-        capabilityPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        capabilityPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Capabilities"));
         capabilityPanel.setLayout(new java.awt.GridBagLayout());
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        jPanel2.setLayout(new java.awt.GridLayout(1, 1));
-
-        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel3.setText("Cell Capabilities");
-        jLabel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
-        jLabel3.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
-        jPanel2.add(jLabel3);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
-        capabilityPanel.add(jPanel2, gridBagConstraints);
-
-        capabilityListPanel.setLayout(new java.awt.GridLayout());
+        capabilityListPanel.setLayout(new java.awt.GridLayout(1, 0));
 
         capabilityListScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         capabilityListScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         capabilityList.setBackground(new java.awt.Color(204, 204, 255));
         capabilityList.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        capabilityList.setFont(new java.awt.Font("Lucida Grande", 1, 12)); // NOI18N
+        capabilityList.setFont(new java.awt.Font("Lucida Grande", 1, 12));
         capabilityList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         capabilityListScrollPane.setViewportView(capabilityList);
 
@@ -558,7 +501,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         capabilityButtonPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 0, 5, 0));
         capabilityButtonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
 
-        addCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        addCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         addCapabilityButton.setText("+");
         addCapabilityButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         addCapabilityButton.addActionListener(new java.awt.event.ActionListener() {
@@ -568,7 +511,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         });
         capabilityButtonPanel.add(addCapabilityButton);
 
-        removeCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        removeCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         removeCapabilityButton.setEnabled(false);
         removeCapabilityButton.setLabel("-");
         removeCapabilityButton.setMargin(new java.awt.Insets(2, 4, 2, 4));
@@ -626,7 +569,6 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         // Simply restore all of the values in the GUI
         restoreValues();
     }//GEN-LAST:event_restoreButtonActionPerformed
-
 
     /**
      * Inner class to deal with selection on the capability list.
@@ -892,7 +834,6 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         // Fetch the default server state for the factory, and cell id. Make
         // sure we make it dynamically added
         CellComponentServerState state = spi.getDefaultCellComponentServerState();
-        //state.setStatic(false);
         CellID cellID = selectedCell.getCellID();
 
         // Send a ADD component message on the cell channel. Wait for a
@@ -933,10 +874,25 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             return;
         }
 
+        // Using the registry of Cell components, find a factory to generate
+        // a default cell component server state class.
+        CellComponentRegistry r = CellComponentRegistry.getCellComponentRegistry();
+        CellComponentFactorySPI spi = r.getCellFactoryByStateClass(clazz);
+        if (spi == null) {
+            logger.warning("Could not find cell component factory for " +
+                    clazz.getName());
+            return;
+        }
+
+        // Create a new (default) instance of the server-side cell component
+        // state class. We use this to find out what the class name is for
+        // the cell component on the server side.
+        CellComponentServerState s = spi.getDefaultCellComponentServerState();
+        String className = s.getServerComponentClassName();
+
         // Send a message to remove the component giving the class name. Wait
         // for a response.
         CellID cellID = selectedCell.getCellID();
-        String className = clazz.getName();
 
         // Send a message to the server with the cell id and class name and
         // wait for a response
@@ -1259,12 +1215,6 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
     private javax.swing.JPanel capabilityPanel;
     private javax.swing.JPanel cellHierarchyPanel;
     private javax.swing.JTree cellHierarchyTree;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel propertyButtonPanel;

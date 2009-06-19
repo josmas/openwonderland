@@ -70,9 +70,24 @@ public class CellTransform implements Serializable {
      * @param scale
      */
     public CellTransform(Quaternion rotate, Vector3f translate, Vector3f scale) {
-        this(rotate, translate, scale.x);
-        Logger.getLogger(CellTransform.class.getName()).warning("Non uniform scale is not supported, please use another CellTransform constructor");
-        Thread.dumpStack();
+        if (rotate==null)
+            this.rotation = new Quaternion();
+        else
+            this.rotation = rotate.clone();
+
+        if (translate==null)
+            this.translation = new Vector3f();
+        else
+            this.translation = translate.clone();
+
+        if (scale == null) {
+            this.scale = 0.0f;
+        }
+        else { 
+            this.scale = scale.x;
+            Logger.getLogger(CellTransform.class.getName()).warning("Non uniform scale is not supported, please use another CellTransform constructor");
+            Thread.dumpStack();
+        }
     }
     
     /**
