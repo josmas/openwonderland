@@ -41,8 +41,6 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
-
-            <part name="wfs" dir="${current.dir}/wfs"/>
         </module>
     </target>                                  
              
