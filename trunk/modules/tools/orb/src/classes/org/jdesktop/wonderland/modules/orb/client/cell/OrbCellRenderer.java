@@ -54,8 +54,8 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
  * @author jprovino
  */
 public class OrbCellRenderer extends BasicRenderer {
-    private static final float INNER_RADIUS = 0.175f;
-    private static final float OUTER_RADIUS = 0.25f;
+    private static final float INNER_RADIUS = 0.175f / 2f;
+    private static final float OUTER_RADIUS = 0.25f / 2f;
     private static final ColorRGBA DEFAULT_COLOR = new ColorRGBA(0.7f, 0.3f, 0.3f, 1.0f);
     private static final float MINIMUM_HEIGHT = 0.0f;
     private static final float MAXIMUM_HEIGHT = 0.1f;
@@ -118,7 +118,12 @@ public class OrbCellRenderer extends BasicRenderer {
     private void attachNameTag() {
         Node nameTag = ((OrbCell) cell).getNameTagNode();
         nameTag.setLocalTranslation(0, OUTER_RADIUS/2, 0);
-        orbNode.attachChild(nameTag);
+        SceneWorker.addWorker(new WorkCommit() {
+
+            public void commit() {
+        	orbNode.attachChild(nameTag);
+	    }
+	};
     }
 
     private void attachOrb(Entity entity) {
@@ -151,8 +156,14 @@ public class OrbCellRenderer extends BasicRenderer {
         innerOrb.updateModelBound();
         innerOrb.setRenderState(DEFAULT_MATERIALSTATE);
         innerOrb.setRenderState(DEFAULT_SHADESTATE);
-        innerOrbNode.attachChild(innerOrb);
-        orbNode.attachChild(innerOrbNode);
+
+        SceneWorker.addWorker(new WorkCommit() {
+
+            public void commit() {
+        	innerOrbNode.attachChild(innerOrb);
+        	orbNode.attachChild(innerOrbNode);
+	    }
+	};
     }
 
     private void attachOuterOrb(Entity entity) {
@@ -175,7 +186,13 @@ public class OrbCellRenderer extends BasicRenderer {
         cs.setEnabled(true);
         cs.setCullFace(CullState.Face.Back);
         outerOrb.setRenderState(cs);
-        orbNode.attachChild(outerOrb);
+
+        SceneWorker.addWorker(new WorkCommit() {
+
+            public void commit() {
+        	orbNode.attachChild(outerOrb);
+	    }
+	};
     }
 
 
