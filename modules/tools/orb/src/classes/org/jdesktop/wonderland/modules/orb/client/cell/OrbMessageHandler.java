@@ -573,14 +573,17 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    //}
 	}
 
-	if (orbDialog == null) {
-	    LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
+	SwingUtilities.invokeLater(new Runnable() {
+	    public void run() {
+		if (orbDialog == null) {
+	    	    LocalAvatar avatar = ((CellClientSession)session).getLocalAvatar();
 	    
-	    orbDialog = new OrbDialog(orbCell, channelComp, 
-		avatar.getViewCell().getCellID(), pm);
-	} 
-
-	orbDialog.setVisible(true);
+	            orbDialog = new OrbDialog(orbCell, channelComp, 
+		        avatar.getViewCell().getCellID(), pm);
+		} 
+		orbDialog.setVisible(true);
+	    }
+	});
     }
 
 }
