@@ -3,7 +3,6 @@
  *
  * Created on June 19, 2009, 12:23 PM
  */
-
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
@@ -14,7 +13,6 @@ import org.jdesktop.wonderland.client.softphone.MicrophoneVuMeterListener;
 
 import org.jdesktop.wonderland.client.jme.Meter;
 
-import java.awt.Dimension;
 
 import java.io.IOException;
 
@@ -25,44 +23,43 @@ import java.io.IOException;
 public class MicVuMeterFrame extends javax.swing.JFrame implements MicrophoneVuMeterListener {
 
     private Meter meter;
-    
+
     /** Creates new form MicVuMeterFrame */
     public MicVuMeterFrame() {
         initComponents();
 
-	SoftphoneControl sc = SoftphoneControlImpl.getInstance();
+        SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
-	sc.addMicrophoneVuMeterListener(this);
+        sc.addMicrophoneVuMeterListener(this);
 
-	sc.startVuMeter(true);
+        sc.startVuMeter(true);
 
-	meter = new Meter("Vu:");
+        meter = new Meter("Vu:");
 
-        meter.setPreferredSize(new Dimension(200, 30));
+        meter.setPreferredSize(vuMeterPanel.getSize());
 
-	meter.setMaxValue(1D);
+        meter.setMaxValue(1D);
 
-	meter.setVisible(true);
+        meter.setVisible(true);
 
-	vuMeterPanel.add(meter);
+        vuMeterPanel.add(meter);
 
-	pack();
-	validate();
+        pack();
+        validate();
 
-	vuMeterPanel.setVisible(true);
+        vuMeterPanel.setVisible(true);
     }
-    
     private int count;
 
     public void microphoneVuMeterData(String data) {
-	//System.out.println("GOT vuMeter data " + data);
+        //System.out.println("GOT vuMeter data " + data);
         double value = Math.round(Double.parseDouble(data) * 100) / 100D;
 
-	vuMeterLabel.setText(String.valueOf(value));
+        vuMeterLabel.setText(String.valueOf(value));
 
-	if ((count++ % 10) == 0) {
-	    meter.setValue(value);
-	}
+        if ((count++ % 10) == 0) {
+            meter.setValue(value);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -103,50 +100,38 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements MicrophoneVuM
 
         vuMeterLabel.setText(" ");
 
-        org.jdesktop.layout.GroupLayout vuMeterPanelLayout = new org.jdesktop.layout.GroupLayout(vuMeterPanel);
-        vuMeterPanel.setLayout(vuMeterPanelLayout);
-        vuMeterPanelLayout.setHorizontalGroup(
-            vuMeterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 200, Short.MAX_VALUE)
-        );
-        vuMeterPanelLayout.setVerticalGroup(
-            vuMeterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 59, Short.MAX_VALUE)
-        );
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jLabel1)
+                    .add(vuMeterLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, vuMeterLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, micVolumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .add(37, 37, 37))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(micVolumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
+                    .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(52, 52, 52)
-                        .add(micVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap()
+                        .add(jLabel1))
+                    .add(micVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(63, 63, 63)
-                        .add(jLabel1)))
-                .add(28, 28, 28)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(vuMeterLabel)
-                    .add(jLabel2))
-                .add(18, 18, 18)
-                .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(29, Short.MAX_VALUE))
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(vuMeterLabel))
+                    .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         pack();
@@ -155,35 +140,35 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements MicrophoneVuM
     private void micVolumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_micVolumeSliderStateChanged
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
-	double volume = VolumeUtil.getServerVolume(micVolumeSlider.getValue());
+        double volume = VolumeUtil.getServerVolume(micVolumeSlider.getValue());
 
-	System.out.println("Volume is " + volume);
+        System.out.println("Volume is " + volume);
 
-	try {
-	    sc.sendCommandToSoftphone("microphoneVolume=" + volume);
-	} catch (IOException e) {
-	    System.out.println("Unable to send microphone volume command to softphone:  " + e.getMessage());
-	}
+        try {
+            sc.sendCommandToSoftphone("microphoneVolume=" + volume);
+        } catch (IOException e) {
+            System.out.println("Unable to send microphone volume command to softphone:  " + e.getMessage());
+        }
     }//GEN-LAST:event_micVolumeSliderStateChanged
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-	SoftphoneControl sc = SoftphoneControlImpl.getInstance();
-	sc.removeMicrophoneVuMeterListener(this);
+        SoftphoneControl sc = SoftphoneControlImpl.getInstance();
+        sc.removeMicrophoneVuMeterListener(this);
         sc.startVuMeter(true);
-            
+
     }//GEN-LAST:event_formWindowClosing
-    
+
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new MicVuMeterFrame().setVisible(true);
             }
         });
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -191,5 +176,4 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements MicrophoneVuM
     private javax.swing.JLabel vuMeterLabel;
     private javax.swing.JPanel vuMeterPanel;
     // End of variables declaration//GEN-END:variables
-    
 }
