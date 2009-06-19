@@ -118,12 +118,7 @@ public class OrbCellRenderer extends BasicRenderer {
     private void attachNameTag() {
         final Node nameTag = ((OrbCell) cell).getNameTagNode();
         nameTag.setLocalTranslation(0, OUTER_RADIUS/2, 0);
-        SceneWorker.addWorker(new WorkCommit() {
-
-            public void commit() {
-        	orbNode.attachChild(nameTag);
-	    }
-	});
+       	orbNode.attachChild(nameTag);
     }
 
     private void attachOrb(Entity entity) {
@@ -157,13 +152,8 @@ public class OrbCellRenderer extends BasicRenderer {
         innerOrb.setRenderState(DEFAULT_MATERIALSTATE);
         innerOrb.setRenderState(DEFAULT_SHADESTATE);
 
-        SceneWorker.addWorker(new WorkCommit() {
-
-            public void commit() {
-        	innerOrbNode.attachChild(innerOrb);
-        	orbNode.attachChild(innerOrbNode);
-	    }
-	});
+        innerOrbNode.attachChild(innerOrb);
+        orbNode.attachChild(innerOrbNode);
     }
 
     private void attachOuterOrb(Entity entity) {
@@ -187,12 +177,7 @@ public class OrbCellRenderer extends BasicRenderer {
         cs.setCullFace(CullState.Face.Back);
         outerOrb.setRenderState(cs);
 
-        SceneWorker.addWorker(new WorkCommit() {
-
-            public void commit() {
-        	orbNode.attachChild(outerOrb);
-	    }
-	});
+       	orbNode.attachChild(outerOrb);
     }
 
 
