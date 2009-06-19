@@ -20,10 +20,10 @@ package org.jdesktop.wonderland.common.cell.state;
 import java.io.Serializable;
 
 /**
- * The CellComponentServerState class is the base class for the cell configuration
- * (setup) information for all cell components. Individual cell components may
- * be mixed into cells to give them added functionality: subclasses of this
- * class provide the necessary configuration information.
+ * The CellComponentServerState class is the base class for the server state
+ * information for all cell components. Individual cell components may be
+ * mixed into cells to give them added functionality: subclasses of this class
+ * provide the necessary configuration information.
  * <p>
  * This mechanism used JAXB to serialize and deserialize objects to/from XML.
  * Each subclass of CellSetupComponent must be annotated with @XmlRootElement
@@ -32,8 +32,7 @@ import java.io.Serializable;
  * design its own XML schema for its setup information, typically using the
  * @XmlElement and @XmlAttribute annotations.
  * <p>
- * Each subclass of CellComponentServerState must declare itself with the mechanism
- * annotated JAXB classes, by implementing the CellSetupAPI interface.
+ * Each subclass of this abstract class must implement a default constructor.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */

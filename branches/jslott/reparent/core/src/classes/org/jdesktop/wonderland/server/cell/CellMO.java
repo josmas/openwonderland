@@ -440,7 +440,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
                         new ComponentStateMessageReceiver(this));
                 channel.addMessageReceiver(CellServerStateSetMessage.class,
                         new ComponentStateMessageReceiver(this));
-
+                channel.addMessageReceiver(CellServerStateUpdateMessage.class,
+                        new ComponentStateMessageReceiver(this));
             }
 
             Collection<ManagedReference<CellComponentMO>> compList = components.values();
@@ -458,6 +459,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 channel.removeMessageReceiver(CellServerComponentMessage.class);
                 channel.removeMessageReceiver(CellServerStateRequestMessage.class);
                 channel.removeMessageReceiver(CellServerStateSetMessage.class);
+                channel.removeMessageReceiver(CellServerStateUpdateMessage.class);
             }
         }
 

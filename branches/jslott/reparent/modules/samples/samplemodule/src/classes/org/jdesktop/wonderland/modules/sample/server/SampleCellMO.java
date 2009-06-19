@@ -62,6 +62,7 @@ public class SampleCellMO extends CellMO {
     @Override
     public void setServerState(CellServerState serverState) {
         shapeType = ((SampleCellServerState)serverState).getShapeType();
+        logger.warning("SHAPE TYPE " + shapeType);
         super.setServerState(serverState);
     }
 
