@@ -18,18 +18,10 @@
 package org.jdesktop.wonderland.client.softphone;
 
 /*
- * Listener for softphone changes
+ * Listener for microphone vu meter data
  */
-public interface SoftphoneListener {
+public interface MicrophoneVuMeterListener {
 
-    public void softphoneVisible(boolean isVisible);
-    public void softphoneMuted(boolean muted);
-    public void softphoneConnected(boolean connected);
-    public void softphoneExited();
-
-    /*
-     * This will allow some feedback to the user that the mic gain is too high.
-     */
-    public void microphoneGainTooHigh();
+    public void microphoneVuMeterData(String data);
 
 }
