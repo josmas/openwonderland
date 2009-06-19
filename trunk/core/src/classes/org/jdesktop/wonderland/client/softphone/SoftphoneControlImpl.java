@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ThreadManager;
 
-public class SoftphoneControlImpl {
+public class SoftphoneControlImpl implements SoftphoneControl {
     private static final Logger logger =
             Logger.getLogger(SoftphoneControlImpl.class.getName());
  
@@ -69,7 +69,7 @@ public class SoftphoneControlImpl {
     /**
      * State of the softphone
      */
-    enum State { VISIBLE, INVISIBLE, MUTED, UNMUTED, CONNECTED, DISCONNECTED, EXITED, TOO_LOUD }
+    enum State { VISIBLE, INVISIBLE, MUTED, UNMUTED, CONNECTED, DISCONNECTED, EXITED, TOO_LOUD, VU_METER_DATA }
     
     /**
      * Gets the one instance of SoftphoneControlImpl
@@ -512,6 +512,44 @@ public class SoftphoneControlImpl {
         }
     }
 
+    public void startVuMeter(boolean startVuMeter) {
+	sendCommandToSoftphone("StartVuMeter=" + startVuMeter);
+    }
+
+    private ArrayList<MicrophoneVuMeterListener> microphoneVuMeterListeners = 
+	new ArrayList<MicrophoneVuMeterListener>();
+
+    public void addMicrophoneVuMeterListener(MicrophoneVuMeterListener listener) {
+        synchronized(microphoneVuMeterListeners) {
+	    if (microphoneVuMeterListeners.contains(listener)) {
+		logger.warning("Duplicate listener!!!");
+		return;
+	    }
+
+            microphoneVuMeterListeners.add(listener);
+        }
+    }
+
+    public void removeMicrophoneVuMeterListener(MicrophoneVuMeterListener listener) {
+        synchronized(microphoneVuMeterListeners) {
+            microphoneVuMeterListeners.remove(listener);
+        }
+    }
+
+    private void notifyMicrophoneVuMeterListeners(String data) {
+        ArrayList<MicrophoneVuMeterListener> listeners = new ArrayList<MicrophoneVuMeterListener>();
+
+        synchronized(microphoneVuMeterListeners) {
+            for (MicrophoneVuMeterListener listener : microphoneVuMeterListeners) {
+                listeners.add(listener);
+            }
+	}
+
+	for (MicrophoneVuMeterListener listener : listeners) {
+	    listener.microphoneVuMeterData(data);
+	}
+    }
+
     private boolean quiet = false;
 
     private void lineReceived(ProcOutputListener source, String line) {
@@ -524,6 +562,12 @@ public class SoftphoneControlImpl {
       
 	    if (line.indexOf("Connected:") >= 0) {
 	    	quiet = true;
+	    }
+
+	    if (line.indexOf("VuMeterData:") >= 0) {
+		String[] tokens = line.split(":");
+                notifyMicrophoneVuMeterListeners(tokens[1]);
+	  	return;
 	    }
 
 	    if (line.indexOf("Connected") >= 0) {

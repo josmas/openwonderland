@@ -37,8 +37,6 @@ public interface SoftphoneControl {
 
     public String getCallID();
 
-    public boolean isSoftphoneCallID(CellID cellID);
-
     public void register(String registrarAddress) throws IOException;
 
     public boolean isRunning();
@@ -53,7 +51,7 @@ public interface SoftphoneControl {
 
     public boolean isMuted();
     
-    public void getAudioQuality();
+    public AudioQuality getAudioQuality();
 
     public void setAudioQuality(AudioQuality quality) throws IOException;
 
@@ -63,8 +61,14 @@ public interface SoftphoneControl {
     
     public void logAudioProblem() throws IOException;
 
-    public void addListener(SoftphoneListener listener);
+    public void addSoftphoneListener(SoftphoneListener listener);
 
-    public void removeListener(SoftphoneListener listener);
+    public void removeSoftphoneListener(SoftphoneListener listener);
+
+    public void addMicrophoneVuMeterListener(MicrophoneVuMeterListener listener);
+
+    public void removeMicrophoneVuMeterListener(MicrophoneVuMeterListener listener);
+
+    public void startVuMeter(boolean startVuMeter);
 
 }

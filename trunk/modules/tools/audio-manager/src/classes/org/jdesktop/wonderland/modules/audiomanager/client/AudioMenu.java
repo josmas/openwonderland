@@ -125,6 +125,7 @@ public class AudioMenu extends javax.swing.JPanel {
         testAudioMenuItem = new javax.swing.JMenuItem();
         reconnectSoftphoneMenuItem = new javax.swing.JMenuItem();
         logAudioProblemMenuItem = new javax.swing.JMenuItem();
+        micVuMeter = new javax.swing.JMenuItem();
 
         audioMenu.setText("Audio");
         audioMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -173,6 +174,14 @@ public class AudioMenu extends javax.swing.JPanel {
         });
         audioMenu.add(logAudioProblemMenuItem);
 
+        micVuMeter.setText("Microphone Volume");
+        micVuMeter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                micVuMeterActionPerformed(evt);
+            }
+        });
+        audioMenu.add(micVuMeter);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -216,6 +225,16 @@ public class AudioMenu extends javax.swing.JPanel {
 private void audioQualityMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_audioQualityMenuActionPerformed
 }//GEN-LAST:event_audioQualityMenuActionPerformed
 
+private MicVuMeterFrame micVuMeterFrame;
+
+private void micVuMeterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micVuMeterActionPerformed
+    if (micVuMeterFrame == null) {
+	micVuMeterFrame = new MicVuMeterFrame();
+    }
+
+    micVuMeterFrame.setVisible(true);
+}//GEN-LAST:event_micVuMeterActionPerformed
+
     private void populateAudioQualityMenu() {
         ButtonGroup audioQualityButtons = new ButtonGroup();
 
@@ -252,6 +271,7 @@ private void audioQualityMenuActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JMenu audioMenu;
     private javax.swing.JMenu audioQualityMenu;
     private javax.swing.JMenuItem logAudioProblemMenuItem;
+    private javax.swing.JMenuItem micVuMeter;
     private javax.swing.JMenuItem reconnectSoftphoneMenuItem;
     private javax.swing.JMenuItem testAudioMenuItem;
     private javax.swing.JMenuItem transferCallMenuItem;
