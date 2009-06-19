@@ -42,6 +42,8 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import java.util.prefs.Preferences;
+
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -86,7 +88,26 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         audioQualityComboBox.setModel(
                 new DefaultComboBoxModel(AudioQuality.values()));
         //audioQualityComboBox.setSelectedItem(wcc.getAudioQuality());
-        audioQualityComboBox.setSelectedItem(AudioQuality.VPN);
+
+	AudioQuality audioQuality = AudioQuality.VPN;
+
+	Preferences prefs = Preferences.userNodeForPackage(LoginOptionsFrame.class);
+
+	String s = prefs.get(
+	    "org.jdesktop.wonderland.modules.audiomanager.client.AUDIO_QUALITY", null);
+
+	if (s != null) {
+	    AudioQuality[] AudioQualityValues = AudioQuality.values();
+
+	    for (int i = 0; i < AudioQualityValues.length; i++) {
+		if (AudioQualityValues[i].toString().equals(s)) {
+		    audioQuality = AudioQualityValues[i];
+		    break;
+		}
+	    }
+	}
+
+        audioQualityComboBox.setSelectedItem(audioQuality);
 
         //wcc.setPhoneNumber("");
 
@@ -486,6 +507,11 @@ private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 
         // store the audio quality
         //wcc.setAudioQuality((AudioQuality) audioQualityComboBox.getSelectedItem());
+
+	Preferences prefs = Preferences.userNodeForPackage(LoginOptionsFrame.class);
+
+	prefs.put("org.jdesktop.wonderland.modules.audiomanager.client.AUDIO_QUALITY",
+            ((AudioQuality) audioQualityComboBox.getSelectedItem()).toString());
 
 	SoftphoneControlImpl.getInstance().setAudioQuality((AudioQuality) audioQualityComboBox.getSelectedItem());
         
