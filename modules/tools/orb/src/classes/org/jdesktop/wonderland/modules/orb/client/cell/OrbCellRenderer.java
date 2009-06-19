@@ -116,14 +116,14 @@ public class OrbCellRenderer extends BasicRenderer {
     }
 
     private void attachNameTag() {
-        Node nameTag = ((OrbCell) cell).getNameTagNode();
+        final Node nameTag = ((OrbCell) cell).getNameTagNode();
         nameTag.setLocalTranslation(0, OUTER_RADIUS/2, 0);
         SceneWorker.addWorker(new WorkCommit() {
 
             public void commit() {
         	orbNode.attachChild(nameTag);
 	    }
-	};
+	});
     }
 
     private void attachOrb(Entity entity) {
@@ -163,11 +163,11 @@ public class OrbCellRenderer extends BasicRenderer {
         	innerOrbNode.attachChild(innerOrb);
         	orbNode.attachChild(innerOrbNode);
 	    }
-	};
+	});
     }
 
     private void attachOuterOrb(Entity entity) {
-        Sphere outerOrb = new Sphere("Outer Orb", 16, 16, OUTER_RADIUS);
+        final Sphere outerOrb = new Sphere("Outer Orb", 16, 16, OUTER_RADIUS);
         outerOrb.setModelBound(new BoundingSphere());
         outerOrb.updateModelBound();
         ColorRGBA orbColour = new ColorRGBA(0f, 0f, 1f, 0.2f);
@@ -192,7 +192,7 @@ public class OrbCellRenderer extends BasicRenderer {
             public void commit() {
         	orbNode.attachChild(outerOrb);
 	    }
-	};
+	});
     }
 
 
