@@ -50,17 +50,34 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements MicrophoneVuM
 
         vuMeterPanel.setVisible(true);
     }
+
+    private static final int VU_COUNT = 10;
     private int count;
+
+    private double[] micVuValues = new double[VU_COUNT];
 
     public void microphoneVuMeterData(String data) {
         //System.out.println("GOT vuMeter data " + data);
         double value = Math.round(Double.parseDouble(data) * 100) / 100D;
 
-        vuMeterLabel.setText(String.valueOf(value));
+        if (count == VU_COUNT) {
+	    count = 0;
 
-        if ((count++ % 10) == 0) {
-            meter.setValue(value);
-        }
+	    double max = 0;
+
+	    for (int i = 0; i < VU_COUNT; i++) {
+		if (micVuValues[i] > max) {
+		    max = micVuValues[i];
+		}
+	    }
+
+            meter.setValue(max);
+            vuMeterLabel.setText(String.valueOf(max));
+        } else {
+            micVuValues[count] = value;
+	}
+
+	count++;
     }
 
     /** This method is called from within the constructor to
