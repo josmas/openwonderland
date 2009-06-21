@@ -39,7 +39,8 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements MicrophoneVuM
         meter.setPreferredSize(vuMeterPanel.getSize());
 
         meter.setMaxValue(1D);
-
+        meter.setWarningValue(0.90);
+        
         meter.setVisible(true);
 
         vuMeterPanel.add(meter);
