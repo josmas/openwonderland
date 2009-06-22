@@ -274,15 +274,15 @@ public class WFSRecording extends WFSRoot {
         changesWriter.println("<Wonderland_Changes timestamp=\"" + timestamp + "\">");
     }
 
+    
+
     /**
-     * Append a change message to the changes file
-     * @param encodedMessage the messages to be written
-     * @param timestamp the timestamp for the message
+     * Record a change on the changesWriter.<br>
+     * Delegate this to the argument
+     * @param writer an object responsible for writing the change on the changesWriter
      */
-    public void appendChangeMessage(String encodedMessage, long timestamp) {
-        changesWriter.println("<Message timestamp=\"" + timestamp + "\">");
-        changesWriter.println(encodedMessage);
-        changesWriter.println("</Message>");
+    public void recordChange(WFSRecordingWriter writer) {
+        writer.recordChange(changesWriter); 
     }
 
     /**
