@@ -38,6 +38,7 @@ import javax.xml.bind.annotation.XmlTransient;
 public class CellDescriptor {
     @XmlElementRef private WorldRoot worldRoot = null;
     @XmlElementRef private CellPath cellParent = null;
+    @XmlElement(name="cell-id") private String cellID = null;
     @XmlElement(name="cell-name") private String cellName = null;
     @XmlElement(name="xml-setup-info") private String setupInfo = null;
 
@@ -55,13 +56,19 @@ public class CellDescriptor {
     }
     
     /** Constructor, takes all of the class attributes */
-    public CellDescriptor(WorldRoot worldRoot, CellPath cellParent, String cellName, String setupInfo) {
+    public CellDescriptor(WorldRoot worldRoot, CellPath cellParent, String cellID, String cellName, String setupInfo) {
         this.worldRoot = worldRoot;
         this.cellParent = cellParent;
+        this.cellID = cellID;
         this.cellName = cellName;
         this.setupInfo = setupInfo;
     }
 
+    @XmlTransient
+    public String getCellID() {
+        return cellID;
+    }
+    
     @XmlTransient
     public String getCellName() {
         return cellName;

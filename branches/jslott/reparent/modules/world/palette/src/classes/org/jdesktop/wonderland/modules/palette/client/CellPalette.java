@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.palette.client;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureRecognizer;
 import java.awt.dnd.DragSource;
 import java.net.URL;
 import java.util.Collections;
@@ -63,6 +64,13 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
     /* The listener for changes in the list of registered Cell factories */
     private CellRegistryListener cellListener = null;
 
+    /* The drag support from the preview label */
+    private DragSource dragSource = null;
+
+    /* The drag gesture recognizers for the cell palette */
+    private DragGestureRecognizer previewRecognizer = null;
+    private DragGestureRecognizer listRecognizer = null;
+
     /** Creates new form CellPalette */
     public CellPalette() {
         // Initialize the GUI components
@@ -77,14 +85,8 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         cellList.addListSelectionListener(this);
 
         // Add support for drag from the preview image label
-        DragSource ds = DragSource.getDefaultDragSource();
+        dragSource = DragSource.getDefaultDragSource();
         gestureListener = new PaletteDragGestureListener();
-        ds.createDefaultDragGestureRecognizer(previewLabel,
-                DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
-
-        // Add support for drag from the text list of cells
-        ds.createDefaultDragGestureRecognizer(cellList,
-                DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
 
         // Create a listener for changes to the list of registered Cell
         // factories, to be used in setVisible(). When the list changes we
@@ -144,6 +146,7 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         cellScrollPane.setViewportView(cellList);
 
         createButton.setText("Insert");
+        createButton.setEnabled(false);
         createButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createActionPerformed(evt);
@@ -271,6 +274,21 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             // be null (not sure why this would happen), then simply return.
             String selectedName = (String) cellList.getSelectedValue();
             if (selectedName == null) {
+                // If nothing is selected, then disable the Insert button, the
+                // preview image and disable drag-and-drop from the preview
+                // label.
+                createButton.setEnabled(false);
+                previewLabel.setIcon(null);
+
+                // Make sure the recognizers are not null, and set their
+                // components to null;
+                if (previewRecognizer != null) {
+                    previewRecognizer.setComponent(null);
+                }
+
+                if (listRecognizer != null) {
+                    listRecognizer.setComponent(null);
+                }
                 return;
             }
 
@@ -281,6 +299,9 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             if (cellFactory == null) {
                 return;
             }
+
+            // Enable the Insert button
+            createButton.setEnabled(true);
 
             // Otherwise, update the preview image, if one exists, otherwise
             // use the default image.
@@ -300,6 +321,28 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 // Pass the necessary information for drag and drop
                 gestureListener.cellFactory = cellFactory;
                 gestureListener.previewImage = noPreviewAvailableImage;
+            }
+
+            // Enable drag-and-drop from the preview image, creating the
+            // recognizer if necessary
+            if (previewRecognizer == null) {
+                previewRecognizer =
+                        dragSource.createDefaultDragGestureRecognizer(previewLabel,
+                        DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+            }
+            else {
+                previewRecognizer.setComponent(previewLabel);
+            }
+
+            // Add support for drag from the text list of cells, creating the
+            // recognizer if necessary
+            if (listRecognizer == null) {
+                listRecognizer =
+                        dragSource.createDefaultDragGestureRecognizer(cellList,
+                        DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+            }
+            else {
+                listRecognizer.setComponent(cellList);
             }
         }
     }

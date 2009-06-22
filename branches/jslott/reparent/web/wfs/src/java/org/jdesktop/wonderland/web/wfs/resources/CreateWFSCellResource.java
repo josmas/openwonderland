@@ -127,10 +127,12 @@ public class CreateWFSCellResource {
         
         // When we have reached here, the directory in which to place the new
         // cell is in 'wfsDirectory'. We create the cell and write the WFS
-        // back out to its disk
+        // back out to its disk. In this case, the cell name is the name of
+        // the file, which should be <Cell Name>-<Cell ID>.
         try {
             wfs.acquireOwnership();
-            String cellName = cellDescriptor.getCellName();
+            String cellName = cellDescriptor.getCellName() + "-" +
+                    cellDescriptor.getCellID().toString();
             WFSCell cell = wfsDirectory.addCell(cellName);
             if (cell == null) {
                 logger.warning("[WFS] Failed to create cell " + cellName +

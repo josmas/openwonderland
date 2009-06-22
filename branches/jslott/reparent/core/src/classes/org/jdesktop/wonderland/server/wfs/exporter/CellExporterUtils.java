@@ -26,8 +26,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.wfs.CellDescriptor;
 import org.jdesktop.wonderland.common.wfs.CellPath;
@@ -94,6 +94,7 @@ public class CellExporterUtils {
         // Create the cell on the server, fetch the setup information from the
         // cell. If the cell does not return a valid setup object, then simply
         // ignore the cell (and its children).
+        String cellID = cellMO.getCellID().toString();
         String cellName = cellMO.getName();
         CellServerState setup = cellMO.getServerState(null);
         if (setup == null) {
@@ -102,8 +103,7 @@ public class CellExporterUtils {
         // If required, put the cellID of the cell in its metadata
         // Required by event recorder
         if (recordCellIDs) {
-            String cellID = cellMO.getCellID().toString();
-            setup.getMetaData().put("CellID", cellID);
+            setup.getMetaData().put("CellID", cellID.toString());
         }
 
         // Write the setup information as an XML string. If we have trouble
@@ -115,7 +115,7 @@ public class CellExporterUtils {
         // Create the descriptor for the cell using the world root, path of the
         // parent, name of the cell and setup information we obtained from the
         // cell
-        return new CellDescriptor(worldRoot, parentPath, cellName, setupStr);
+        return new CellDescriptor(worldRoot, parentPath, cellID, cellName, setupStr);
     }
 
     /**

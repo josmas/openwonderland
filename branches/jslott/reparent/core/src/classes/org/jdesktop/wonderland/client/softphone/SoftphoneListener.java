@@ -31,4 +31,5 @@ public interface SoftphoneListener {
      * This will allow some feedback to the user that the mic gain is too high.
      */
     public void microphoneGainTooHigh();
+
 }
