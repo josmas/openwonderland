@@ -116,6 +116,7 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
 		}
 	    }
 
+	    max = Math.sqrt(max);
             meter.setValue(max);
             vuMeterLabel.setText(String.valueOf(max));
         } else {
