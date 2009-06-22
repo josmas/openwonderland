@@ -43,24 +43,6 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
         cellNameTextField.getDocument().addDocumentListener(new NameTextFieldListener());
     }
 
-    /**
-     * @inheritDoc()
-     */
-    public void apply() {
-        // Update the server-side state for the Cell.
-        String name = cellNameTextField.getText();
-        CellServerState cellServerState = editor.getCellServerState();
-        ((CellServerState)cellServerState).setName(name);
-        editor.addToUpdateList(cellServerState);
-    }
-
-    /**
-     * @inheritDoc()
-     */
-    public void close() {
-        // We do nothing here, since any changes in the GUI property sheet do
-        // not take effect until apply(), so there is no state to revert here.
-    }
 
     /**
      * @inheritDoc()
@@ -79,7 +61,14 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
     /**
      * @inheritDoc()
      */
-    public void refresh() {
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void open() {
         // Fetch the name and CellID from the Cell and Cell server state and
         // update the GUI
         Cell cell = editor.getCell();
@@ -96,8 +85,31 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
     /**
      * @inheritDoc()
      */
-    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
-        this.editor = editor;
+    public void restore() {
+        // Reset the GUI to the original name of the text field
+        cellNameTextField.setText(originalCellName);
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void close() {
+        // We do nothing here, since any changes in the GUI property sheet do
+        // not take effect until apply(), so there is no state to revert here
+        // and nothing to really clean up.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void apply() {
+        // Update the server-side state for the Cell. Reset the original value
+        // of the name for the next restore().
+        String name = cellNameTextField.getText();
+        CellServerState cellServerState = editor.getCellServerState();
+        ((CellServerState)cellServerState).setName(name);
+        originalCellName = name;
+        editor.addToUpdateList(cellServerState);
     }
 
     /**

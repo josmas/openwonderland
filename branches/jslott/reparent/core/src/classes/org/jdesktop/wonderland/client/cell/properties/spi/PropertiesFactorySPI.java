@@ -23,31 +23,30 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  * An interface implemented by cells that allow their properties to be edited
- * by a GUI properties panel. This class must be annotated with @CellProperties
- * and is displayed by a dialog container.
+ * by a GUI properties panel. This class must be annotated with
+ * @PropertiesFactory and is displayed by a dialog container.
  * <p>
- * The GUI properties panel has a well-defined life-cycle. When it is about to
- * be displayed, the container invokes the refresh() method on this interface.
- * When the "Apply" action is selected by the user, the apply() method is
- * invokved, and when the "Close" action is selected by the user, the close()
- * method is invoked.
+ * The GUI properties panel has a well-defined life-cycle. When a Cell is
+ * selected, the open() method for all of its property sheets are invoked. After
+ * users have made changes to properties, its apply() or restore() method will
+ * be invoked. Finally, when another Cell is selected, its close() method is
+ * invoked.
  * <p>
- * The specific actions the CellPropertiesSPI class takes when these three
- * methods are invoked is implementation specific. If the refresh() method is
- * invoked, the class should update the state of the GUI according to the state
- * stored in the Cell.
+ * The specific actions the PropertiesFactorySPI class takes when these four
+ * methods are invoked is implementation specific.
  * <p>
  * It is the responsibility of the class that implements this interface to
  * properly update the state of the Cell when apply() is invoked. It can either
  * interact with the Cell interface directly, or update the state of the cell
  * via methods on CellPropertiesEditor.
  * <p>
- * A CellPropertiesSPI class make also choose to immediately update the values
+ * A PropertiesFactorySPI class make also choose to immediately update the values
  * of the Cell when the GUI is changed, and not only when apply() is invoked.
  * <p>
- * When the close() method is called, the CellPropertiesSPI class should revert
- * all values in the state back to the values at the last apply(), if it so
- * chooses.
+ * When the restore() method is called, the PropertiesFactorySPI class should
+ * revert all values in the state back to the values at the last apply(). When
+ * the close() method is invoked, the PropertiesFactorySPI class should revert
+ * all values and perform any necessary cleanup.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
@@ -78,22 +77,32 @@ public interface PropertiesFactorySPI {
     public JPanel getPropertiesJPanel();
 
     /**
-     * Instructs the GUI to refresh its values against the currently set values
-     * in the state of the Cell. This method is typically called when the
-     * properties panel is first displayed.
+     * Tells the proeprties GUI panel that is is about to be displayed and it
+     * should refresh its values against the currently set values in the state
+     * of the Cell. Although this method is typically only called when a Cell
+     * is first selected, it may be invoked multiple times without any
+     * intervening close() method invocations.
      */
-    public void refresh();
+    public void open();
+
+    /**
+     * Tells the properties GUI panel that it is being closed. The panel should
+     * revert any intermediate changes it made to the state of the Cell after
+     * the last time apply() was invoked. It should also perform any necessary
+     * cleanup (e.g. remove listeners on the current Cell) before a new Cell's
+     * properties are displayed.
+     */
+    public void close();
+
+    /**
+     * Instructs the GUI to refresh its values against the currently set values
+     * in the state of the Cell or the last known "original" state.
+     */
+    public void restore();
 
     /**
      * Applies the values current set in the properties GUI panel to the state
      * of the Cell.
      */
     public void apply();
-
-    /**
-     * Tells the properties GUI panel that it is being closed. The panel should
-     * revert any intermediate changes it made to the state of the Cell after
-     * the last time apply() was invoked.
-     */
-    public void close();
 }

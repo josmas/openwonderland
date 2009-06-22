@@ -581,8 +581,14 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
     }//GEN-LAST:event_applyButtonActionPerformed
 
     private void restoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreButtonActionPerformed
-        // Simply restore all of the values in the GUI
-        restoreValues();
+        // Show a confirmation dialog before the restore takes place.
+        int result = JOptionPane.showConfirmDialog(this,
+                "Do you wish to restore the properties to original values?",
+                "Restore values?", JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        if (result == JOptionPane.YES_OPTION) {
+            restoreValues();
+        }
     }//GEN-LAST:event_restoreButtonActionPerformed
 
     /**
@@ -671,10 +677,12 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             return;
         }
 
-        // Tell each of the panels to update their GUIs. This will have the
-        // effect of resetting their original values so they know whether they
-        // are dirty or not.
-        updateGUI();
+        // Clear out the set of "dirty" panels and disable the apply/restore
+        // buttons
+        dirtyPanelSet.clear();
+        applyButton.setEnabled(false);
+        restoreButton.setEnabled(false);
+
     }
 
     /**
@@ -687,8 +695,14 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
 
         // Next iteratate through all factories and tell them to refresh
         for (PropertiesFactorySPI factory : factoryList) {
-            factory.refresh();
+            factory.restore();
         }
+
+        // Clear out the set of "dirty" panels and disable the apply/restore
+        // buttons
+        dirtyPanelSet.clear();
+        applyButton.setEnabled(false);
+        restoreButton.setEnabled(false);
     }
 
     /**
@@ -762,7 +776,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
     private void updateGUI() {
         // Loop through all of the panels and tell them to refresh their values
         for (PropertiesFactorySPI factory : factoryList) {
-            factory.refresh();
+            factory.open();
         }
     }
     
@@ -834,7 +848,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                 listModel.addElement(displayName);
                 factoryList.add(factory);
                 factory.setCellPropertiesEditor(this);
-                factory.refresh();
+                factory.open();
             }
         }
     }
@@ -1168,8 +1182,15 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             return;
         }
 
-        // Clear out any existing Cells
+        // Clear out any existing Cells from the tree.
+        for (Cell cell : cellNodes.keySet()) {
+            DefaultMutableTreeNode node = cellNodes.get(cell);
+            System.out.println("CLEARNING OUT CELL NODE " + node.toString());
+            ((DefaultMutableTreeNode)node.getParent()).remove(node);
+        }
         cellNodes.clear();
+        DefaultTreeModel treeModel = (DefaultTreeModel) cellHierarchyTree.getModel();
+        treeModel.reload();
 
         // Loop through all of the root cells and add into the world
         Collection<Cell> rootCells = cache.getRootCells();
@@ -1207,6 +1228,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         }
         DefaultTreeModel treeModel = (DefaultTreeModel)cellHierarchyTree.getModel();
         treeModel.insertNodeInto(ret, parentNode, parentNode.getChildCount());
+        System.out.println("ADDING CELL NODE " + ret.toString());
 
         // Recursively iterate through all of the Cell's children and add to
         // the tree.

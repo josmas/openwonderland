@@ -1109,7 +1109,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             cellMO.setServerState(state);
 
             // Notify the sender that things went OK
-            sender.send(clientID, new OKMessage(message.getMessageID()));
+//            sender.send(clientID, new OKMessage(message.getMessageID()));
 
             // Fetch a new client-state and set it. Send a message on the
             // cell channel with the new state.
@@ -1166,7 +1166,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             }
 
             // Notify the sender that things went OK
-            sender.send(clientID, new OKMessage(message.getMessageID()));
+//            sender.send(clientID, new OKMessage(message.getMessageID()));
 
             // Fetch a new client-state and set it. Send a message on the
             // cell channel with the new state.
@@ -1242,8 +1242,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 } else {
                     // Otherwise, the component already exists, so send an error
                     // message back to the client.
-                    sender.send(clientID, new ErrorMessage(message.getMessageID(),
-                                "The Component " + className + " already exists."));
+//                    sender.send(clientID, new ErrorMessage(message.getMessageID(),
+//                                "The Component " + className + " already exists."));
                     return;
                 }
             } catch (java.lang.Exception excp) {
@@ -1255,7 +1255,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 // Log an error in the log and send back an error message.
                 logger.log(Level.WARNING, "Unable to add component " +
                         className + " for cell " + cellMO.getName(), excp);
-                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
+//                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
                 return;
             }
 
@@ -1292,7 +1292,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 // Remove the component and send a success message back to the
                 // client
                 cellMO.removeComponent(component);
-                sender.send(clientID, new OKMessage(message.getMessageID()));
+//                sender.send(clientID, new OKMessage(message.getMessageID()));
 
                 // Send the same event message to all clients as an asynchronous
                 // event
@@ -1301,7 +1301,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             } catch (java.lang.ClassNotFoundException excp) {
                 // Just got an exception and ignore here
                 logger.log(Level.WARNING, "Cannot find component class", excp);
-                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
+//                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
             }
         }
     }
