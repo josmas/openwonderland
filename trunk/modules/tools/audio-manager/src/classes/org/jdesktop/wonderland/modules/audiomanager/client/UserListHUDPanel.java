@@ -25,8 +25,10 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -56,9 +58,8 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
     private ChannelComponent channelComp;
     private PresenceManager pm;
     private PresenceInfo presenceInfo;
-    private HashMap<PresenceInfo, HUDComponent> volumeControlMap = new HashMap();
-    private HashMap<PresenceInfo, HUDComponent> changeNameMap = new HashMap();
-    private HashMap<String, Integer> usernameMap = new HashMap();
+    private Map<PresenceInfo, HUDComponent> changeNameMap = Collections.synchronizedMap(new HashMap<PresenceInfo, HUDComponent>());
+    private Map<String, Integer> usernameMap = Collections.synchronizedMap(new HashMap<String, Integer>());
     private HUDComponent namePropertiesHUDComponent;
     private String[] selection = null;
     private DefaultListModel userListModel;
@@ -95,7 +96,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         setVisible(false);
     }
 
-    public void setUserList() {
+    public synchronized void setUserList() {
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
         for (int i = 0; i < presenceInfoList.length; i++) {
