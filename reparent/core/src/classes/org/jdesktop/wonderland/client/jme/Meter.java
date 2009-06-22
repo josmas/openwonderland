@@ -36,6 +36,7 @@ public class Meter extends JPanel {
 
     private String label;
     private double value;
+    private double warning;
     private double max;
     private int leftIndent = 2;
     private int rightIndent = 2;
@@ -47,8 +48,10 @@ public class Meter extends JPanel {
     private int fontSize = 12;
     private String fontName = "Arial";
     private RoundRectangle2D.Double bar;
-    private Color gradientStartColor = new Color(89, 149, 37); // green
-    private Color gradientEndColor = new Color(219, 250, 203);
+    private Color normalStartColor = new Color(89, 149, 37); // green
+    private Color normalEndColor = new Color(219, 250, 203);
+    private Color warningStartColor = new Color(255, 0, 0);  // red
+    private Color warningEndColor = new Color(255, 84, 84);
     private DecimalFormat floatFormat = new DecimalFormat("###.0");
     private Font font;
     private FontMetrics fontMetrics;
@@ -78,9 +81,18 @@ public class Meter extends JPanel {
         repaint();
     }
 
+    public void setWarningValue(double warning) {
+        this.warning = warning;
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         //Calendar then = Calendar.getInstance();
+        Color startColor = ((warning > 0) && (value >= warning)) ? warningStartColor :
+            normalStartColor;
+        Color endColor = ((warning > 0) && (value >= warning)) ? warningEndColor :
+            normalEndColor;
+
         Graphics2D g2 = (Graphics2D) g;
 
         // calculate the sizes of the label and value strings
@@ -117,8 +129,8 @@ public class Meter extends JPanel {
         int barWidth = (int) ((value / max) * availableWidth);
         bar.setRoundRect(leftIndent + labelWidth + labelGap, y, barWidth, barHeight, 5, 5);
         g2.setClip(bar);
-        paint = new GradientPaint(0, 0, gradientStartColor,
-                availableWidth, getHeight(), gradientEndColor);
+        paint = new GradientPaint(0, 0, startColor,
+                availableWidth, getHeight(), endColor);
         g2.setPaint(paint);
         g2.fillRect(0, 0, getWidth(), getHeight());
         g2.setClip(0, 0, w, h);

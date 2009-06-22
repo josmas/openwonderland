@@ -401,6 +401,23 @@ public class AudioManagerClient extends BaseConnection implements
     public void microphoneGainTooHigh() {
     }
 
+    private MicVuMeterFrame micVuMeterFrame;
+
+    public void microphoneVolume() {
+	try {
+            if (SoftphoneControlImpl.getInstance().isConnected() == false) {
+	        return;
+	    }
+	} catch (IOException e) {
+	    return;
+	}
+ 
+        if (micVuMeterFrame != null) {
+            micVuMeterFrame.startVuMeter(false);
+        }
+        micVuMeterFrame = new MicVuMeterFrame(this);
+    }
+
     public void transferCall(String phoneNumber) {
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 

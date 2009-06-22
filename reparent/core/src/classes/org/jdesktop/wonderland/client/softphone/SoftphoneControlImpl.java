@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ThreadManager;
 
-public class SoftphoneControlImpl {
+public class SoftphoneControlImpl implements SoftphoneControl {
     private static final Logger logger =
             Logger.getLogger(SoftphoneControlImpl.class.getName());
  
@@ -512,6 +512,48 @@ public class SoftphoneControlImpl {
         }
     }
 
+    public void startVuMeter(boolean startVuMeter) {
+	sendCommandToSoftphone("StartVuMeter=" + startVuMeter);
+    }
+
+    private ArrayList<MicrophoneInfoListener> microphoneInfoListeners = 
+	new ArrayList<MicrophoneInfoListener>();
+
+    public void addMicrophoneInfoListener(MicrophoneInfoListener listener) {
+        synchronized(microphoneInfoListeners) {
+	    if (microphoneInfoListeners.contains(listener)) {
+		logger.warning("Duplicate listener!!!");
+		return;
+	    }
+
+            microphoneInfoListeners.add(listener);
+        }
+    }
+
+    public void removeMicrophoneInfoListener(MicrophoneInfoListener listener) {
+        synchronized(microphoneInfoListeners) {
+            microphoneInfoListeners.remove(listener);
+        }
+    }
+
+    private void notifyMicrophoneInfoListeners(String data, boolean isVuMeterData) {
+        ArrayList<MicrophoneInfoListener> listeners = new ArrayList<MicrophoneInfoListener>();
+
+        synchronized(microphoneInfoListeners) {
+            for (MicrophoneInfoListener listener : microphoneInfoListeners) {
+                listeners.add(listener);
+            }
+	}
+
+	for (MicrophoneInfoListener listener : listeners) {
+	    if (isVuMeterData) {
+	        listener.microphoneData(data);
+	    } else {
+		listener.microphoneVolume(data);
+	    }
+	}
+    }
+
     private boolean quiet = false;
 
     private void lineReceived(ProcOutputListener source, String line) {
@@ -524,6 +566,18 @@ public class SoftphoneControlImpl {
       
 	    if (line.indexOf("Connected:") >= 0) {
 	    	quiet = true;
+	    }
+
+	    if (line.indexOf("VuMeterData:") >= 0) {
+		String[] tokens = line.split(":");
+                notifyMicrophoneInfoListeners(tokens[1], true);
+	  	return;
+	    }
+
+	    if (line.indexOf("MicrophoneVolume:") >= 0) {
+		String[] tokens = line.split(":");
+                notifyMicrophoneInfoListeners(tokens[1], false);
+	  	return;
 	    }
 
 	    if (line.indexOf("Connected") >= 0) {

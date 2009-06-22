@@ -208,7 +208,7 @@ public class CellImporter {
             }
 
             /* Set the cell name */
-            cellMO.setName(child.name);
+//            cellMO.setName(child.name);
 
             /** XXX TODO: add an import details cell component XXX */
 
