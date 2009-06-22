@@ -50,6 +50,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
+import org.jdesktop.wonderland.client.ClientContext;
+
 import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
@@ -132,9 +134,11 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         // get the right initial value for the http proxy
         updateHttpProxy();
 
+	systemProxyRB.setEnabled(false);
+        wlProxyRB.setEnabled(false);
+
         // set the cache directory
-        //cacheLocation.setText(WonderlandConfigUtil.getWonderlandDir() +
-        //        File.separator + "cache");
+        cacheLocation.setText(ClientContext.getUserDirectory().toString());
     }
 
     /** This method is called from within the constructor to
@@ -573,23 +577,23 @@ private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
 }//GEN-LAST:event_okButtonActionPerformed
 
 private void clearCacheButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearCacheButtonActionPerformed
-        //String cacheDir = WonderlandConfigUtil.getWonderlandDir() + 
-        //                  File.separator + "cache";
-        //String assetDBDir = WonderlandConfigUtil.getWonderlandDir() +
-        //                  File.separator + "AssetDB";
-        //
-        //int result = JOptionPane.showConfirmDialog(this, 
-        //        "WARNING\n" +
-        //        "The contents of the following directories will be deleted: \n\n" +
-        //        "    " + cacheDir + "\n    " + assetDBDir + "\n\n" + 
-        //        "Would you like to continue?",
-        //        "Confirm delete directories",
-        //        JOptionPane.YES_NO_OPTION,
-        //        JOptionPane.WARNING_MESSAGE);
-        //if (result == JOptionPane.YES_OPTION) {
-        //    deleteTree(new File(cacheDir));
-        //    deleteTree(new File(assetDBDir));
-        //}
+        String cacheDir = cacheLocation.getText() + File.separator + "cache";
+        String assetDBDir = cacheLocation.getText() + File.separator + "AssetDB";
+	String avatarCacheDir = cacheLocation.getText() + File.separator + "AvatarCache";
+        
+        int result = JOptionPane.showConfirmDialog(this, 
+                "WARNING\n" +
+                "The contents of the following directories will be deleted: \n\n" +
+                "    " + cacheDir + "\n    " + assetDBDir + "\n    " + avatarCacheDir + "\n\n" + 
+                "Would you like to continue?",
+                "Confirm delete directories",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        if (result == JOptionPane.YES_OPTION) {
+            deleteTree(new File(cacheDir));
+            deleteTree(new File(assetDBDir));
+            deleteTree(new File(avatarCacheDir));
+        }
 }//GEN-LAST:event_clearCacheButtonActionPerformed
 
 private void httpProxyPortTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_httpProxyPortTFActionPerformed
