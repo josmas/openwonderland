@@ -103,8 +103,6 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
     private double[] micVuValues = new double[VU_COUNT];
 
     public void microphoneVuMeterData(String data) {
-        double value = Math.round(Double.parseDouble(data) * 100) / 100D;
-
         if (count == VU_COUNT) {
 	    count = 0;
 
@@ -116,11 +114,10 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
 		}
 	    }
 
-	    max = Math.sqrt(max);
             meter.setValue(max);
             vuMeterLabel.setText(String.valueOf(max));
         } else {
-            micVuValues[count] = value;
+            micVuValues[count] = Math.round(Math.sqrt(Double.parseDouble(data)) * 100) / 100D;
 	}
 
 	count++;
