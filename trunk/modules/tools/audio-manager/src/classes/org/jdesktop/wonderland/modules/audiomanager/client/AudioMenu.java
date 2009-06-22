@@ -225,14 +225,8 @@ public class AudioMenu extends javax.swing.JPanel {
 private void audioQualityMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_audioQualityMenuActionPerformed
 }//GEN-LAST:event_audioQualityMenuActionPerformed
 
-private MicVuMeterFrame micVuMeterFrame;
-
 private void micVuMeterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micVuMeterActionPerformed
-    if (micVuMeterFrame == null) {
-	micVuMeterFrame = new MicVuMeterFrame();
-    }
-
-    micVuMeterFrame.setVisible(true);
+    audioMenuListener.microphoneVolume();
 }//GEN-LAST:event_micVuMeterActionPerformed
 
     private void populateAudioQualityMenu() {

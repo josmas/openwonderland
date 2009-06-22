@@ -9,6 +9,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 import org.jdesktop.wonderland.client.softphone.MicrophoneVuMeterListener;
 
 import org.jdesktop.wonderland.client.jme.Meter;
@@ -20,19 +21,24 @@ import java.io.IOException;
  *
  * @author  jp
  */
-public class MicVuMeterFrame extends javax.swing.JFrame implements MicrophoneVuMeterListener {
+public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneListener,
+	MicrophoneVuMeterListener, DisconnectListener {
+
+    private AudioManagerClient client;
 
     private Meter meter;
 
-    /** Creates new form MicVuMeterFrame */
     public MicVuMeterFrame() {
         initComponents();
+    }
 
-        SoftphoneControl sc = SoftphoneControlImpl.getInstance();
+    /** Creates new form MicVuMeterFrame */
+    public MicVuMeterFrame(AudioManagerClient client) {
+	this.client = client;
 
-        sc.addMicrophoneVuMeterListener(this);
+        initComponents();
 
-        sc.startVuMeter(true);
+	client.addDisconnectListener(this);
 
         meter = new Meter("Vu:");
 
@@ -49,6 +55,46 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements MicrophoneVuM
         validate();
 
         vuMeterPanel.setVisible(true);
+
+	startVuMeter(true);
+    }
+
+    public void disconnected() {
+	startVuMeter(false);
+    }
+
+    public void startVuMeter(boolean startVuMeter) {
+        SoftphoneControl sc = SoftphoneControlImpl.getInstance();
+
+	client.removeDisconnectListener(this);
+
+        sc.removeSoftphoneListener(this);
+        sc.removeMicrophoneVuMeterListener(this);
+
+	if (startVuMeter) {
+	    client.addDisconnectListener(this);
+            sc.addSoftphoneListener(this);
+            sc.addMicrophoneVuMeterListener(this);
+	}
+
+        sc.startVuMeter(startVuMeter);
+	setVisible(startVuMeter);
+    }
+
+    public void softphoneVisible(boolean isVisible) {
+    }
+
+    public void softphoneMuted(boolean muted) {
+    }
+
+    public void softphoneConnected(boolean connected) {
+        SoftphoneControlImpl.getInstance().startVuMeter(connected);
+    }
+
+    public void softphoneExited() {
+    }
+
+    public void microphoneGainTooHigh() {
     }
 
     private static final int VU_COUNT = 10;
@@ -57,7 +103,6 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements MicrophoneVuM
     private double[] micVuValues = new double[VU_COUNT];
 
     public void microphoneVuMeterData(String data) {
-        //System.out.println("GOT vuMeter data " + data);
         double value = Math.round(Double.parseDouble(data) * 100) / 100D;
 
         if (count == VU_COUNT) {
@@ -170,10 +215,7 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements MicrophoneVuM
     }//GEN-LAST:event_micVolumeSliderStateChanged
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-        SoftphoneControl sc = SoftphoneControlImpl.getInstance();
-        sc.removeMicrophoneVuMeterListener(this);
-        sc.startVuMeter(true);
-
+	startVuMeter(false);
     }//GEN-LAST:event_formWindowClosing
 
     /**
