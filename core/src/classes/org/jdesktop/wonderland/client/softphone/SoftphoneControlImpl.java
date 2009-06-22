@@ -69,7 +69,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
     /**
      * State of the softphone
      */
-    enum State { VISIBLE, INVISIBLE, MUTED, UNMUTED, CONNECTED, DISCONNECTED, EXITED, TOO_LOUD, VU_METER_DATA }
+    enum State { VISIBLE, INVISIBLE, MUTED, UNMUTED, CONNECTED, DISCONNECTED, EXITED, TOO_LOUD }
     
     /**
      * Gets the one instance of SoftphoneControlImpl
@@ -516,37 +516,41 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	sendCommandToSoftphone("StartVuMeter=" + startVuMeter);
     }
 
-    private ArrayList<MicrophoneVuMeterListener> microphoneVuMeterListeners = 
-	new ArrayList<MicrophoneVuMeterListener>();
+    private ArrayList<MicrophoneInfoListener> microphoneInfoListeners = 
+	new ArrayList<MicrophoneInfoListener>();
 
-    public void addMicrophoneVuMeterListener(MicrophoneVuMeterListener listener) {
-        synchronized(microphoneVuMeterListeners) {
-	    if (microphoneVuMeterListeners.contains(listener)) {
+    public void addMicrophoneInfoListener(MicrophoneInfoListener listener) {
+        synchronized(microphoneInfoListeners) {
+	    if (microphoneInfoListeners.contains(listener)) {
 		logger.warning("Duplicate listener!!!");
 		return;
 	    }
 
-            microphoneVuMeterListeners.add(listener);
+            microphoneInfoListeners.add(listener);
         }
     }
 
-    public void removeMicrophoneVuMeterListener(MicrophoneVuMeterListener listener) {
-        synchronized(microphoneVuMeterListeners) {
-            microphoneVuMeterListeners.remove(listener);
+    public void removeMicrophoneInfoListener(MicrophoneInfoListener listener) {
+        synchronized(microphoneInfoListeners) {
+            microphoneInfoListeners.remove(listener);
         }
     }
 
-    private void notifyMicrophoneVuMeterListeners(String data) {
-        ArrayList<MicrophoneVuMeterListener> listeners = new ArrayList<MicrophoneVuMeterListener>();
+    private void notifyMicrophoneInfoListeners(String data, boolean isVuMeterData) {
+        ArrayList<MicrophoneInfoListener> listeners = new ArrayList<MicrophoneInfoListener>();
 
-        synchronized(microphoneVuMeterListeners) {
-            for (MicrophoneVuMeterListener listener : microphoneVuMeterListeners) {
+        synchronized(microphoneInfoListeners) {
+            for (MicrophoneInfoListener listener : microphoneInfoListeners) {
                 listeners.add(listener);
             }
 	}
 
-	for (MicrophoneVuMeterListener listener : listeners) {
-	    listener.microphoneVuMeterData(data);
+	for (MicrophoneInfoListener listener : listeners) {
+	    if (isVuMeterData) {
+	        listener.microphoneData(data);
+	    } else {
+		listener.microphoneVolume(data);
+	    }
 	}
     }
 
@@ -566,7 +570,13 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 
 	    if (line.indexOf("VuMeterData:") >= 0) {
 		String[] tokens = line.split(":");
-                notifyMicrophoneVuMeterListeners(tokens[1]);
+                notifyMicrophoneInfoListeners(tokens[1], true);
+	  	return;
+	    }
+
+	    if (line.indexOf("MicrophoneVolume:") >= 0) {
+		String[] tokens = line.split(":");
+                notifyMicrophoneInfoListeners(tokens[1], false);
 	  	return;
 	    }
 

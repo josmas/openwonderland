@@ -10,7 +10,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
-import org.jdesktop.wonderland.client.softphone.MicrophoneVuMeterListener;
+import org.jdesktop.wonderland.client.softphone.MicrophoneInfoListener;
 
 import org.jdesktop.wonderland.client.jme.Meter;
 
@@ -22,7 +22,7 @@ import java.io.IOException;
  * @author  jp
  */
 public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneListener,
-	MicrophoneVuMeterListener, DisconnectListener {
+	MicrophoneInfoListener, DisconnectListener {
 
     private AudioManagerClient client;
 
@@ -69,12 +69,19 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
 	client.removeDisconnectListener(this);
 
         sc.removeSoftphoneListener(this);
-        sc.removeMicrophoneVuMeterListener(this);
+        sc.removeMicrophoneInfoListener(this);
 
 	if (startVuMeter) {
 	    client.addDisconnectListener(this);
             sc.addSoftphoneListener(this);
-            sc.addMicrophoneVuMeterListener(this);
+            sc.addMicrophoneInfoListener(this);
+
+	    try {
+	        sc.sendCommandToSoftphone("getMicrophoneVolume");
+	    } catch (IOException e) {
+		System.out.println("Unable to get Microphone volume:  " 
+		    + e.getMessage());
+	    }
 	}
 
         sc.startVuMeter(startVuMeter);
@@ -102,7 +109,7 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
 
     private double[] micVuValues = new double[VU_COUNT];
 
-    public void microphoneVuMeterData(String data) {
+    public void microphoneData(String data) {
         if (count == VU_COUNT) {
 	    count = 0;
 
@@ -121,6 +128,10 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
 	}
 
 	count++;
+    }
+
+    public void microphoneVolume(String data) {
+	micVolumeSlider.setValue(VolumeUtil.getClientVolume(Double.parseDouble(data)));
     }
 
     /** This method is called from within the constructor to
@@ -202,8 +213,6 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
         double volume = VolumeUtil.getServerVolume(micVolumeSlider.getValue());
-
-        System.out.println("Volume is " + volume);
 
         try {
             sc.sendCommandToSoftphone("microphoneVolume=" + volume);

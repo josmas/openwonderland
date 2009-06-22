@@ -65,9 +65,9 @@ public interface SoftphoneControl {
 
     public void removeSoftphoneListener(SoftphoneListener listener);
 
-    public void addMicrophoneVuMeterListener(MicrophoneVuMeterListener listener);
+    public void addMicrophoneInfoListener(MicrophoneInfoListener listener);
 
-    public void removeMicrophoneVuMeterListener(MicrophoneVuMeterListener listener);
+    public void removeMicrophoneInfoListener(MicrophoneInfoListener listener);
 
     public void startVuMeter(boolean startVuMeter);
 
