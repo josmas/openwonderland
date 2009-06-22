@@ -404,6 +404,14 @@ public class AudioManagerClient extends BaseConnection implements
     private MicVuMeterFrame micVuMeterFrame;
 
     public void microphoneVolume() {
+	try {
+            if (SoftphoneControlImpl.getInstance().isConnected() == false) {
+	        return;
+	    }
+	} catch (IOException e) {
+	    return;
+	}
+ 
         if (micVuMeterFrame != null) {
             micVuMeterFrame.startVuMeter(false);
         }
