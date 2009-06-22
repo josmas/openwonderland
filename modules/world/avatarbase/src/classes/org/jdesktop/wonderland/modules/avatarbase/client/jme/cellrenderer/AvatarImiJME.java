@@ -17,10 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
@@ -29,6 +31,7 @@ import com.jme.renderer.Renderer;
 import com.jme.scene.BillboardNode;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import com.jme.scene.shape.Box;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import com.jme.util.export.binary.BinaryImporter;
@@ -37,6 +40,8 @@ import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import imi.character.CharacterAttributes;
 import imi.character.CharacterMotionListener;
+import imi.character.avatar.AvatarController;
+import imi.character.avatar.CollisionController;
 import imi.character.avatar.MaleAvatarAttributes;
 import imi.character.statemachine.GameContextListener;
 import imi.character.statemachine.GameState;
@@ -48,6 +53,8 @@ import imi.scene.processors.CharacterProcessor;
 import imi.scene.processors.JSceneEventProcessor;
 import imi.utils.input.AvatarControlScheme;
 import java.net.URL;
+import org.jdesktop.mtgame.CollisionComponent;
+import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorCollectionComponent;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -67,6 +74,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
@@ -100,9 +108,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
     private CellMoveListener cellMoveListener = null;
 
-    private CellStatus status = CellStatus.DISK;
-
     private Entity rootEntity = null;
+
+    private CollisionController collisionController = null;
 
     public AvatarImiJME(Cell cell) {
         super(cell);
@@ -150,7 +158,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 if (state instanceof CycleActionState) {
                     animationName = avatarCharacter.getContext().getState(CycleActionState.class).getAnimationName();
                 }
-                ((MovableAvatarComponent) c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, animationName, null);
+                if (c.getComponent(MovableComponent.class)==null)
+                    System.err.println("!!!! NULL MovableComponent");
+                else
+                    ((MovableAvatarComponent) c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, animationName, null);
             }
         };
 
@@ -201,7 +212,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     @Override
     public void setStatus(CellStatus status,boolean increasing) {
         super.setStatus(status,increasing);
-        this.status = status;
         switch(status) {
             case DISK :
                 break;
@@ -245,6 +255,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     cell.getComponent(MovableComponent.class).addServerCellMoveListener(cellMoveListener);
                 }
                 break;
+            case RENDERING :
+                if (((AvatarCell)cell).isSelectedForInput())
+                    selectForInput(true);
         }
     }
 
@@ -304,6 +317,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
             if (rc != null) {
                 addDefaultComponents(avatarCharacter, rc.getSceneRoot());
+                avatarCharacter.removeComponent(CollisionComponent.class); // We don't want collision as we use the collision graph
             } else {
                 logger.warning("NO RenderComponent for Avatar");
             }
@@ -376,6 +390,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             String serverHostAndPort = manager.getServerNameAndPort();
             String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
 
+            Spatial collisionGraph = null;
+
             logger.info("[AvatarImiJme] AVATAR CONFIG URL "+avatarConfigURL);
 
             LoadingInfo.startedLoading(cell.getCellID(), username);
@@ -389,7 +405,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     attributes.setUseSimpleStaticModel(true, null);
                     attributes.setBaseURL(baseURL);
                     ret = new WlAvatarCharacter(attributes, wm);
-    //                Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(new URL(baseURL+"assets/models/collada/Avatars/placeholder.bin"));
+//                    Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(new URL(baseURL+"assets/models/collada/Avatars/placeholder.bin"));
 
                     URL url = new URL(baseURL+"assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
                     ResourceLocator resourceLocator = new RelativeResourceLocator(url);
@@ -400,9 +416,13 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
                     ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
+//                    placeHolder = new Box("AvatarTest", new Vector3f(0f,0.92f,0f), 0.4f, 0.9f, 0.3f);
+                    collisionGraph = new Box("AvatarCollision", new Vector3f(0f,0.92f,0f), 0.4f, 0.6f, 0.3f);
+
                     ret.getJScene().getExternalKidsRoot().attachChild(placeHolder);
                 } else {
                     ret = new WlAvatarCharacter(avatarConfigURL, wm, "wla://avatarbaseart@" + serverHostAndPort + "/");
+                    collisionGraph = new Box("AvatarCollision", new Vector3f(0f,0.92f,0f), 0.4f, 0.6f, 0.3f);
                 }
 
                 ret.getModelInst().getTransform().getLocalMatrix(true).set(origin);
@@ -429,6 +449,16 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 external.attachChild(nameTag);
                 external.setModelBound(new BoundingSphere());
                 external.updateModelBound();
+                external.updateGeometricState(0, true);
+
+                collisionGraph.setModelBound(new BoundingSphere());
+                collisionGraph.updateModelBound();
+
+                // JSCENE HAS NOT CHILDREN, so this does nothing
+                ret.getJScene().updateGeometricState(0, true);
+
+                System.err.println("JSCENE CREATED "+ret.getJScene().getWorldBound());
+                GraphicsUtils.printGraphBounds(ret.getJScene());
 
         //        JScene jscene = avatar.getJScene();
         //        jscene.renderToggle();      // both renderers
@@ -445,6 +475,18 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             } finally {
                 LoadingInfo.finishedLoading(cell.getCellID(), username);
             }
+
+
+            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Default");
+
+//            Node collisionRoot = ret.getJScene().getExternalKidsRoot();
+//            CollisionComponent cc = ((JMECollisionSystem)collisionSystem).createCollisionComponent(collisionRoot);
+//            ret.addComponent(CollisionComponent.class, cc);
+
+            collisionController = new CollisionController(collisionGraph, (JMECollisionSystem)collisionSystem);
+
+            ((AvatarController)ret.getController()).setCollisionController(collisionController);
+
             return ret;
     }
 
