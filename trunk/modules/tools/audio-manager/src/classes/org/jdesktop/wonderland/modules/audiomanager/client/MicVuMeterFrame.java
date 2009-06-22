@@ -117,8 +117,6 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
             volume = Math.round(Math.sqrt(volume) * 100) / 100D;
 
             meter.setValue(volume);
-            vuMeterLabel.setText(String.valueOf(volume));
-
 	    volume = 0;
         } else {
 	    double volume = Double.parseDouble(data);
@@ -146,7 +144,6 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
         micVolumeSlider = new javax.swing.JSlider();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        vuMeterLabel = new javax.swing.JLabel();
         vuMeterPanel = new javax.swing.JPanel();
 
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -171,8 +168,6 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
 
         jLabel2.setText("VuMeter Value:");
 
-        vuMeterLabel.setText(" ");
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -181,7 +176,6 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jLabel1)
-                    .add(vuMeterLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -199,10 +193,7 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
                     .add(micVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(vuMeterLabel))
+                    .add(jLabel2)
                     .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -241,7 +232,6 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JSlider micVolumeSlider;
-    private javax.swing.JLabel vuMeterLabel;
     private javax.swing.JPanel vuMeterPanel;
     // End of variables declaration//GEN-END:variables
 }
