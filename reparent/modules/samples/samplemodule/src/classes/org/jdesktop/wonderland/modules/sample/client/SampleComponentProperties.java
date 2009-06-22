@@ -64,13 +64,21 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
     /**
      * @inheritDoc()
      */
-    public void apply() {
-        // Fetch the latest from the info text field and set it.
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void open() {
         CellServerState state = editor.getCellServerState();
         CellComponentServerState compState =
                 state.getComponentServerState(SampleCellComponentServerState.class);
-        ((SampleCellComponentServerState)compState).setInfo(infoTextField.getText());
-        editor.addToUpdateList(compState);
+        if (state != null) {
+            originalInfo = ((SampleCellComponentServerState) compState).getInfo();
+            infoTextField.setText(originalInfo);
+        }
     }
 
     /**
@@ -83,36 +91,21 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
     /**
      * @inheritDoc()
      */
-    public void refresh() {
+    public void apply() {
+        // Fetch the latest from the info text field and set it.
         CellServerState state = editor.getCellServerState();
         CellComponentServerState compState =
                 state.getComponentServerState(SampleCellComponentServerState.class);
-        if (state != null) {
-            originalInfo = ((SampleCellComponentServerState) compState).getInfo();
-            infoTextField.setText(originalInfo);
-            return;
-        }
+        ((SampleCellComponentServerState)compState).setInfo(infoTextField.getText());
+        editor.addToUpdateList(compState);
     }
 
     /**
      * @inheritDoc()
      */
-    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
-        this.editor = editor;
-    }
-
-    /**
-     * @inheritDoc()
-     */
-    public <T extends CellServerState> void getCellServerState(T cellServerState) {
-        // Figure out whether there already exists a server state for the
-        // component.
-        CellComponentServerState state = cellServerState.getComponentServerState(SampleCellComponentServerState.class);
-        if (state == null) {
-            state = new SampleCellComponentServerState();
-        }
-        ((SampleCellComponentServerState)state).setInfo(infoTextField.getText());
-        cellServerState.addComponentServerState(state);
+    public void restore() {
+        // Restore from the original state stored.
+        infoTextField.setText(originalInfo);
     }
 
     /**
@@ -178,7 +171,6 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
                 .addContainerGap(252, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField infoTextField;

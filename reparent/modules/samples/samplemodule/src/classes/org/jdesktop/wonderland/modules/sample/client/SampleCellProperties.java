@@ -105,16 +105,30 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
     /**
      * @inheritDoc()
      */
-    public void apply() {
-        // Take the value from the shape type and populate the server state
-        // with it.
-        String newShapeType = (String) shapeTypeComboBox.getSelectedItem();
-        CellServerState state = editor.getCellServerState();
-        ((SampleCellServerState)state).setShapeType(newShapeType);
-        System.out.println("SETTING NEW SHAPE TYPE " + newShapeType);
-        editor.addToUpdateList(state);
+    public JPanel getPropertiesJPanel() {
+        return this;
     }
 
+    /**
+     * @inheritDoc()
+     */
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void open() {
+        // Fetch the current state from the cell's server state and update
+        // the GUI.
+        CellServerState state = editor.getCellServerState();
+        if (state != null) {
+            originalShapeType = ((SampleCellServerState)state).getShapeType();
+            shapeTypeComboBox.setSelectedItem(originalShapeType);
+        }
+    }
+    
     /**
      * @inheritDoc()
      */
@@ -125,24 +139,21 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
     /**
      * @inheritDoc()
      */
-    public JPanel getPropertiesJPanel() {
-        return this;
+    public void apply() {
+        // Take the value from the shape type and populate the server state
+        // with it.
+        String newShapeType = (String) shapeTypeComboBox.getSelectedItem();
+        CellServerState state = editor.getCellServerState();
+        ((SampleCellServerState)state).setShapeType(newShapeType);
+        originalShapeType = newShapeType;
+        editor.addToUpdateList(state);
     }
 
     /**
      * @inheritDoc()
      */
-    public void refresh() {
-        SampleCellServerState state = (SampleCellServerState)editor.getCellServerState();
-        originalShapeType = state.getShapeType();
+    public void restore() {
         shapeTypeComboBox.setSelectedItem(originalShapeType);
-    }
-
-    /**
-     * @inheritDoc()
-     */
-    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
-        this.editor = editor;
     }
 
     /** This method is called from within the constructor to

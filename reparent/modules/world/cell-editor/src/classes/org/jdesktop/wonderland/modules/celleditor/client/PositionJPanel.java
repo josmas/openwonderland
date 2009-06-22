@@ -76,8 +76,20 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
      * new message to the movable component
      */
     private boolean setLocal = false;
-    
-    /** Creates new form PositionJPanel */
+
+    /*
+     * The original values when the properties sheet is first set to a Cell.
+     * These original values will be used when the cancel() method is invoked,
+     * to revert any changes.
+     */
+    private Vector3f originalTranslation = null;
+    private Quaternion originalRotation = null;
+    private Vector3f originalScaling = null;
+
+    /**
+     * Default constructor, creates the GUI and sets up the JSpinners with the
+     * proper model and editor.
+     */
     public PositionJPanel() {
         // Initialize the GUI components
         initComponents();
@@ -176,29 +188,44 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         setLocal = isLocal;
     }
 
-    public void apply() {
-        // Do nothing
-    }
-
-    public void close() {
-        dispose();
-    }
-
+    /**
+     * @inheritDoc()
+     */
     public String getDisplayName() {
         return "Position";
     }
 
+    /**
+     * @inheritDoc()
+     */
     public JPanel getPropertiesJPanel() {
         return this;
     }
 
-    public void refresh() {
+    /**
+     * @inheritDoc()
+     */
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void open() {
         // Fetch the current Cell, make sure it has the movable component and
         // turn everything on.
         Cell cell = editor.getCell();
         if (cell == null) {
             return;
         }
+
+        // Store the values currently on the Cell. This will be used when we
+        // go to restore the values later
+        CellTransform transform = cell.getLocalTransform();
+        originalTranslation = transform.getTranslation(null);
+        originalRotation = transform.getRotation(null);
+        originalScaling = transform.getScaling(null);
         
         movableComponent = cell.getComponent(MovableComponent.class);
         if (movableComponent == null) {
@@ -272,39 +299,52 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         }
     }
 
-    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
-        this.editor = editor;
+    /**
+     * @inheritDoc()
+     */
+    public void apply() {
+        // Do nothing specifically, but re-set the "original" values so that
+        // the changes can no longer be restored.
+        Cell cell = editor.getCell();
+        CellTransform transform = cell.getLocalTransform();
+        originalTranslation = transform.getTranslation(null);
+        originalRotation = transform.getRotation(null);
+        originalScaling = transform.getScaling(null);
     }
 
     /**
-     * Cleans up any listeners and resources that are present on this panel.
-     * Once this method is invoked, the panel can no longer be used again.
+     * @inheritDoc()
      */
-    public void dispose() {
-        // Fetch the currently selected Cell. If there is one, then simply
-        // return
+    public void restore() {
+        // Fetch the current Cell, there should be one, although there may not
+        // be a movable component.
         Cell cell = editor.getCell();
-        if (cell == null) {
+        if (movableComponent == null) {
+            logger.warning("Unable to find movable component on Cell " + cell.getName());
             return;
         }
 
+        // We revert the values to when this property sheet was originally open
+        // for the Cell. We only do this if we can find a movable component
+        // (which should be the case if we made any changes).
+        CellTransform transform = cell.getLocalTransform();
+        transform.setTranslation(originalTranslation);
+        transform.setScaling(originalScaling.x);
+        transform.setRotation(originalRotation);
+        movableComponent.localMoveRequest(transform);
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void close() {
+        // First restore any existing changes
+        restore();
+
+        // Finally remove any existing listeners from the Cell
+        Cell cell = editor.getCell();
         cell.removeComponentChangeListener(componentListener);
         cell.removeTransformChangeListener(transformListener);
-//        xTranslationModel.removeChangeListener(translationListener);
-//        yTranslationModel.removeChangeListener(translationListener);
-//        zTranslationModel.removeChangeListener(translationListener);
-//        xRotationModel.removeChangeListener(rotationListener);
-//        yRotationModel.removeChangeListener(rotationListener);
-//        zRotationModel.removeChangeListener(rotationListener);
-//        xScaleModel.removeChangeListener(scaleListener);
-//        yScaleModel.removeChangeListener(scaleListener);
-//        zScaleModel.removeChangeListener(scaleListener);
-
-//        componentListener = null;
-//        transformListener = null;
-//        translationListener = null;
-//        rotationListener = null;
-//        scaleListener = null;
     }
 
     /**
@@ -346,6 +386,7 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
             CellTransform cellTransform = cell.getLocalTransform();
             cellTransform.setTranslation(translation);
             movableComponent.localMoveRequest(cellTransform);
+            editor.setPanelDirty(PositionJPanel.class, true);
         }
     }
 
@@ -369,6 +410,7 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
             CellTransform cellTransform = cell.getLocalTransform();
             cellTransform.setRotation(newRotation);
             movableComponent.localMoveRequest(cellTransform);
+            editor.setPanelDirty(PositionJPanel.class, true);
         }
     }
 
@@ -383,6 +425,7 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
             CellTransform cellTransform = cell.getLocalTransform();
             cellTransform.setScaling(x);
             movableComponent.localMoveRequest(cellTransform);
+            editor.setPanelDirty(PositionJPanel.class, true);
         }
     }
 
