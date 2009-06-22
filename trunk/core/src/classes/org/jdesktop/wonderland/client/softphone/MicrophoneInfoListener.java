@@ -18,10 +18,12 @@
 package org.jdesktop.wonderland.client.softphone;
 
 /*
- * Listener for microphone vu meter data
+ * Listener for microphone data and volume change
  */
-public interface MicrophoneVuMeterListener {
+public interface MicrophoneInfoListener {
 
-    public void microphoneVuMeterData(String data);
+    public void microphoneData(String data);
+
+    public void microphoneVolume(String data);
 
 }
