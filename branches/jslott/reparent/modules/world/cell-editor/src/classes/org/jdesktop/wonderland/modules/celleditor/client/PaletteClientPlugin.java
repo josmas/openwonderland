@@ -61,7 +61,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
                 CellPropertiesJFrame frame = getCellPropertiesJFrame();
                 if (frame.isVisible() == false) {
                     frame.setSelectedCell(null);
-                    frame.setSize(650, 550);
+                    frame.setSize(800, 650);
                     frame.setVisible(true);
                 }
             }
@@ -123,7 +123,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
             try {
                 CellPropertiesJFrame frame = getCellPropertiesJFrame();
                 frame.setSelectedCell(cell);
-                frame.setSize(650, 550);
+                frame.setSize(800, 650);
                 frame.setVisible(true);
             } catch (IllegalStateException excp) {
                 Logger.getLogger(PaletteClientPlugin.class.getName()).log(Level.WARNING, null, excp);

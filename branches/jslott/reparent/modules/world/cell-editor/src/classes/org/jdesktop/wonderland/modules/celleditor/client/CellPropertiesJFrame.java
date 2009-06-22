@@ -107,6 +107,10 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
     private Set<Class> dirtyPanelSet = new HashSet();
     private StateUpdates stateUpdates = null;
 
+    // The two standard panels for all Cells: Basic and Position
+    private PropertiesFactorySPI basicPropertiesFactory = null;
+    private PropertiesFactorySPI positionPropertiesFactory = null;
+
     /** Constructor */
     public CellPropertiesJFrame() {
         factoryList = new LinkedList();
@@ -122,16 +126,12 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         capabilityList.addListSelectionListener(new CapabilityListSelectionListener());
 
         // Create and add a basic panel for all cells as a special case.
-        BasicJPanel basicPanel = new BasicJPanel();
-        basicPanel.setCellPropertiesEditor(this);
-        listModel.add(0, basicPanel.getDisplayName());
-        factoryList.add(0, basicPanel);
+        basicPropertiesFactory = new BasicJPanel();
+        basicPropertiesFactory.setCellPropertiesEditor(this);
 
         // Create the position panel for all cells as a special case.
-        PositionJPanel positionPanel = new PositionJPanel();
-        positionPanel.setCellPropertiesEditor(this);
-        listModel.add(1, positionPanel.getDisplayName());
-        factoryList.add(1, positionPanel);
+        positionPropertiesFactory = new PositionJPanel();
+        positionPropertiesFactory.setCellPropertiesEditor(this);
 
         // Set up all of the stuff we need to the tree to display Cells
         treeRoot = new DefaultMutableTreeNode("World Root");
@@ -257,9 +257,11 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         // Cell.
         clearPanelSet();
 
-        // Now, set the currnent Cell. If it is null, we simply return
+        // Now, set the currnent Cell. If it is null, we simply return. We
+        // also turn off the "add" capability button
         selectedCell = cell;
         if (selectedCell == null) {
+            addCapabilityButton.setEnabled(false);
             return;
         }
 
@@ -271,12 +273,18 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             throw new IllegalStateException("Unable to fetch cell server state");
         }
 
+        // Turn on the "add" capability button
+        addCapabilityButton.setEnabled(true);
+
         // Update the panel set based upon the elements in the server state
         updatePanelSet();
         if (isVisible() == true) {
             updateGUI();
         }
 
+        // Set the initial selected capability to "Basic"
+        capabilityList.setSelectedIndex(0);
+        
         // Debug aid, prints out the graph for selected cells
 //        CellRendererJME rend = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
 //        if (rend!=null) {
@@ -369,16 +377,13 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
 
         mainPanel = new javax.swing.JPanel();
         topLevelSplitPane = new javax.swing.JSplitPane();
-        cellHierarchyPanel = new javax.swing.JPanel();
-        treePanel = new javax.swing.JPanel();
-        treeScrollPane = new javax.swing.JScrollPane();
-        cellHierarchyTree = new javax.swing.JTree();
-        bottomLevelSplitPane = new javax.swing.JSplitPane();
         jPanel4 = new javax.swing.JPanel();
-        propertyPanel = new javax.swing.JPanel();
         propertyButtonPanel = new javax.swing.JPanel();
-        applyButton = new javax.swing.JButton();
         restoreButton = new javax.swing.JButton();
+        applyButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        propertyPanel = new javax.swing.JPanel();
+        leftSplitPanePanel = new javax.swing.JSplitPane();
         capabilityPanel = new javax.swing.JPanel();
         capabilityListPanel = new javax.swing.JPanel();
         capabilityListScrollPane = new javax.swing.JScrollPane();
@@ -386,6 +391,10 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         capabilityButtonPanel = new javax.swing.JPanel();
         addCapabilityButton = new javax.swing.JButton();
         removeCapabilityButton = new javax.swing.JButton();
+        cellHierarchyPanel = new javax.swing.JPanel();
+        treePanel = new javax.swing.JPanel();
+        treeScrollPane = new javax.swing.JScrollPane();
+        cellHierarchyTree = new javax.swing.JTree();
 
         setTitle("Cell Editor");
         getContentPane().setLayout(new java.awt.GridLayout(1, 1));
@@ -395,67 +404,14 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
 
         topLevelSplitPane.setOneTouchExpandable(true);
 
-        cellHierarchyPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("World Hierarchy"));
-        cellHierarchyPanel.setLayout(new java.awt.GridBagLayout());
-
-        treePanel.setMinimumSize(new java.awt.Dimension(250, 23));
-        treePanel.setLayout(new java.awt.GridLayout(1, 0));
-
-        treeScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-        treeScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
-        cellHierarchyTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
-        cellHierarchyTree.setDragEnabled(true);
-        cellHierarchyTree.setEditable(true);
-        cellHierarchyTree.setShowsRootHandles(true);
-        treeScrollPane.setViewportView(cellHierarchyTree);
-
-        treePanel.add(treeScrollPane);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
-        cellHierarchyPanel.add(treePanel, gridBagConstraints);
-
-        topLevelSplitPane.setLeftComponent(cellHierarchyPanel);
-
-        bottomLevelSplitPane.setBorder(null);
-
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Properties"));
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        propertyPanel.setBackground(new java.awt.Color(255, 255, 255));
-        propertyPanel.setLayout(new java.awt.GridLayout(1, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 3);
-        jPanel4.add(propertyPanel, gridBagConstraints);
-
         propertyButtonPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 0, 5, 0));
-        propertyButtonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
+        propertyButtonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 0));
 
-        applyButton.setText("Apply");
-        applyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                applyButtonActionPerformed(evt);
-            }
-        });
-        propertyButtonPanel.add(applyButton);
-
-        restoreButton.setText("Restore");
+        restoreButton.setText("Revert");
+        restoreButton.setEnabled(false);
         restoreButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 restoreButtonActionPerformed(evt);
@@ -463,13 +419,41 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         });
         propertyButtonPanel.add(restoreButton);
 
+        applyButton.setText("Apply");
+        applyButton.setEnabled(false);
+        applyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyButtonActionPerformed(evt);
+            }
+        });
+        propertyButtonPanel.add(applyButton);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 1.0;
         jPanel4.add(propertyButtonPanel, gridBagConstraints);
 
-        bottomLevelSplitPane.setRightComponent(jPanel4);
+        propertyPanel.setBackground(new java.awt.Color(255, 255, 255));
+        propertyPanel.setLayout(new java.awt.GridLayout(1, 0));
+        jScrollPane1.setViewportView(propertyPanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel4.add(jScrollPane1, gridBagConstraints);
+
+        topLevelSplitPane.setRightComponent(jPanel4);
+
+        leftSplitPanePanel.setDividerLocation(250);
+        leftSplitPanePanel.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
         capabilityPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Capabilities"));
         capabilityPanel.setLayout(new java.awt.GridBagLayout());
@@ -503,6 +487,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
 
         addCapabilityButton.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         addCapabilityButton.setText("+");
+        addCapabilityButton.setEnabled(false);
         addCapabilityButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         addCapabilityButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -528,9 +513,39 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         capabilityPanel.add(capabilityButtonPanel, gridBagConstraints);
 
-        bottomLevelSplitPane.setLeftComponent(capabilityPanel);
+        leftSplitPanePanel.setBottomComponent(capabilityPanel);
 
-        topLevelSplitPane.setRightComponent(bottomLevelSplitPane);
+        cellHierarchyPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("World Hierarchy"));
+        cellHierarchyPanel.setLayout(new java.awt.GridBagLayout());
+
+        treePanel.setMinimumSize(new java.awt.Dimension(250, 23));
+        treePanel.setLayout(new java.awt.GridLayout(1, 0));
+
+        treeScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+        treeScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
+        cellHierarchyTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        cellHierarchyTree.setDragEnabled(true);
+        cellHierarchyTree.setShowsRootHandles(true);
+        treeScrollPane.setViewportView(cellHierarchyTree);
+
+        treePanel.add(treeScrollPane);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
+        cellHierarchyPanel.add(treePanel, gridBagConstraints);
+
+        leftSplitPanePanel.setTopComponent(cellHierarchyPanel);
+
+        topLevelSplitPane.setLeftComponent(leftSplitPanePanel);
 
         mainPanel.add(topLevelSplitPane);
 
@@ -688,17 +703,9 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             factory.close();
         }
 
-        // Next, loop through all the factories (again), and remove them from
-        // the list model. We do not remove the first two, since they are the
-        // fixed panels. Also, remove the item from the list of factories now
-        // too.
-        int size = factoryList.size();
-        for (int i = 2; i < size; i++) {
-            // We always want to remove the 2nd element, because as we remove
-            // elements the next element to remove is in the 2nd position.
-            listModel.remove(2);
-            factoryList.remove(2);
-        }
+        // We simply clear out the list model and the list of factories
+        listModel.clear();
+        factoryList.clear();
     }
 
     /**
@@ -770,6 +777,12 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         Class clazz = selectedCellServerState.getClass();
         PropertiesManager manager = PropertiesManager.getPropertiesManager();
         cellProperties = manager.getPropertiesByClass(clazz);
+
+        // For all cells, add the "Basic" and "Position" panels
+        listModel.addElement(basicPropertiesFactory.getDisplayName());
+        factoryList.add(basicPropertiesFactory);
+        listModel.addElement(positionPropertiesFactory.getDisplayName());
+        factoryList.add(positionPropertiesFactory);
 
         // If the cell properties panel exists, add an entry for it
         if (cellProperties != null && cellProperties.getPropertiesJPanel() != null) {
@@ -981,7 +994,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             Object userObject = treeNode.getUserObject();
             if (userObject instanceof Cell) {
                 Cell cell = (Cell) treeNode.getUserObject();
-                setText(cell.getName()+" id="+cell.getCellID());
+                setText(cell.getName());
             }
             return this;
         }
@@ -1207,7 +1220,6 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addCapabilityButton;
     private javax.swing.JButton applyButton;
-    private javax.swing.JSplitPane bottomLevelSplitPane;
     private javax.swing.JPanel capabilityButtonPanel;
     private javax.swing.JList capabilityList;
     private javax.swing.JPanel capabilityListPanel;
@@ -1216,6 +1228,8 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
     private javax.swing.JPanel cellHierarchyPanel;
     private javax.swing.JTree cellHierarchyTree;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSplitPane leftSplitPanePanel;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel propertyButtonPanel;
     private javax.swing.JPanel propertyPanel;
