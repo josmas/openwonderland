@@ -267,8 +267,8 @@ public class AvatarPlugin extends BaseClientPlugin
         if (!menusAdded) {
             JmeClientMain.getFrame().addToWindowMenu(avatarControlsMI, 0);
             JmeClientMain.getFrame().addToWindowMenu(gestureMI, 0);
-            JmeClientMain.getFrame().addToToolsMenu(gravityEnabledMI, 0);
-            JmeClientMain.getFrame().addToToolsMenu(collisionEnabledMI, 0);
+            JmeClientMain.getFrame().addToToolsMenu(gravityEnabledMI, -1);
+            JmeClientMain.getFrame().addToToolsMenu(collisionEnabledMI, -1);
             JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
             if (avatarSettingsMI != null) {
                 JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
