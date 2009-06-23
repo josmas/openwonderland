@@ -124,7 +124,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void open() {
-        System.out.println("AUDIO TREATMENT OPEN");
         CellServerState cellServerState = editor.getCellServerState();
         AudioTreatmentComponentServerState state =
                 (AudioTreatmentComponentServerState)cellServerState.getComponentServerState(AudioTreatmentComponentServerState.class);
@@ -200,8 +199,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         } else {
             falloffSlider.setEnabled(false);
         }
-        System.out.println("AUDIO TREATMENT OPEN DONE");
-
     }
 
     /**
@@ -253,17 +250,6 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         state.setDistanceAttenuated(distanceAttenuated);
         state.setFalloff(falloffSlider.getValue());
         editor.addToUpdateList(state);
-
-        // Reset the original values
-        originalGroupId = audioGroupIdTextField.getText();
-        originalFileTreatments = fileTextField.getText();
-        originalUrlTreatments = urlTextField.getText();
-        originalVolume = volumeSlider.getValue();
-        originalPlayWhen = playWhen;
-        originalExtentRadius = (Double)extentRadiusSpinner.getValue();
-        originalFullVolumeAreaPercent = (Double)fullVolumeAreaPercentModel.getValue();
-        originalDistanceAttenuated = distanceAttenuated;
-        originalFalloff = (Integer)falloffSlider.getValue();
     }
 
     /**

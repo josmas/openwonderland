@@ -165,13 +165,6 @@ public class PortalComponentProperties extends javax.swing.JPanel
         }
         state.setLook(look);
         editor.addToUpdateList(state);
-
-        // Reset the original values
-        origServerURL = serverURL;
-        origX = xstr;
-        origY = ystr;
-        origZ = zstr;
-        origAngle = anglestr;
     }
 
 

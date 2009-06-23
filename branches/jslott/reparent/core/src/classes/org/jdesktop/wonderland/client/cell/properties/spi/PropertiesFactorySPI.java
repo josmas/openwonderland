@@ -35,6 +35,11 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * The specific actions the PropertiesFactorySPI class takes when these four
  * methods are invoked is implementation specific.
  * <p>
+ * The open() method is invoked when the Cell is first selected and its
+ * properties are to be displayed. It is also invoked after apply() is called
+ * and the properties editor has refreshed its copy of the current Cell's
+ * server state.
+ *
  * It is the responsibility of the class that implements this interface to
  * properly update the state of the Cell when apply() is invoked. It can either
  * interact with the Cell interface directly, or update the state of the cell
@@ -79,9 +84,9 @@ public interface PropertiesFactorySPI {
     /**
      * Tells the proeprties GUI panel that is is about to be displayed and it
      * should refresh its values against the currently set values in the state
-     * of the Cell. Although this method is typically only called when a Cell
-     * is first selected, it may be invoked multiple times without any
-     * intervening close() method invocations.
+     * of the Cell. This method is typically called when a Cell is first
+     * selected or after an appply(). Therefore, it may be invoked multiple
+     * times without any intervening close() method invocations.
      */
     public void open();
 

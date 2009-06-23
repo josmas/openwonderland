@@ -103,12 +103,10 @@ public class BasicJPanel extends JPanel implements PropertiesFactorySPI {
      * @inheritDoc()
      */
     public void apply() {
-        // Update the server-side state for the Cell. Reset the original value
-        // of the name for the next restore().
+        // Update the server-side state for the Cell.
         String name = cellNameTextField.getText();
         CellServerState cellServerState = editor.getCellServerState();
         ((CellServerState)cellServerState).setName(name);
-        originalCellName = name;
         editor.addToUpdateList(cellServerState);
     }
 

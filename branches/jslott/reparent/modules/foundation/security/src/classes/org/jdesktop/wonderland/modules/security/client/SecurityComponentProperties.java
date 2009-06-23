@@ -168,9 +168,6 @@ public class SecurityComponentProperties extends JPanel
         CellPermissions out = perms.toPermissions();
         state.setPermissions(out);
         editor.addToUpdateList(state);
-
-        // Reset the original value
-        originalPermissions = out;
     }
 
     /**

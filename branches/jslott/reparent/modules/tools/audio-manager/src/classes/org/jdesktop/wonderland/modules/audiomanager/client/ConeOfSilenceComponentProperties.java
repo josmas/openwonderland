@@ -130,11 +130,6 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
         state.setFullVolumeRadius((Double) fullVolumeRadiusModel.getValue());
         state.setOutsideAudioVolume(VolumeUtil.getServerVolume(outsideAudioVolumeSlider.getValue()));
         editor.addToUpdateList(state);
-
-        // Reset the original values
-        originalName = nameTextField.getText();
-        originalFullVolumeRadius = (Double)fullVolumeRadiusModel.getValue();
-        originalOutsideAudioVolume = outsideAudioVolumeSlider.getValue();
     }
 
     /**

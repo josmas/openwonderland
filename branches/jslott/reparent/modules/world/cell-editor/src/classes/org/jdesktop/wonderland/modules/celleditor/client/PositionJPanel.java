@@ -173,6 +173,43 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         xScaleModel.addChangeListener(scaleListener);
         yScaleModel.addChangeListener(scaleListener);
         zScaleModel.addChangeListener(scaleListener);
+
+        // Create a listener for changes in the components on a Cell. This is
+        // used to fetch the movable component if it is added.
+        componentListener = new ComponentChangeListener() {
+            public void componentChanged(Cell cell, ChangeType type, CellComponent component) {
+                if (type == ChangeType.ADDED && component instanceof MovableComponent) {
+                    movableComponent = (MovableComponent)component;
+                    translationXTF.setEnabled(true);
+                    translationYTF.setEnabled(true);
+                    translationZTF.setEnabled(true);
+                    rotationXTF.setEnabled(true);
+                    rotationYTF.setEnabled(true);
+                    rotationZTF.setEnabled(true);
+                    scaleXTF.setEnabled(true);
+                }
+            }
+        };
+
+        // Create a listener for changes in the Cell's transform and update
+        // the GUI appropriately. We need to do this updating of the GUI in the
+        // AWT Event Thread. We also want to make a note that the values are
+        // being set programmatically so they do not spawn extra messages to the
+        // movable component.
+        transformListener = new TransformChangeListener() {
+            public void transformChanged(Cell cell, ChangeSource source) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            setLocalChanges(true);
+                            updateGUI();
+                        } finally {
+                            setLocalChanges(false);
+                        }
+                    }
+                });
+            }
+        };
     }
 
     /**
@@ -239,21 +276,8 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
         }
 
         // Listen for changes, if there is a movable component added or removed
-        // update the state of the fields
-        componentListener = new ComponentChangeListener() {
-            public void componentChanged(Cell cell, ChangeType type, CellComponent component) {
-                if (type == ChangeType.ADDED && component instanceof MovableComponent) {
-                    movableComponent = (MovableComponent)component;
-                    translationXTF.setEnabled(true);
-                    translationYTF.setEnabled(true);
-                    translationZTF.setEnabled(true);
-                    rotationXTF.setEnabled(true);
-                    rotationYTF.setEnabled(true);
-                    rotationZTF.setEnabled(true);
-                    scaleXTF.setEnabled(true);
-                }
-            }
-        };
+        // update the state of the fields. It is ok if open() is called more
+        // than once, this method call will not add duplicate listeners.
         cell.addComponentChangeListener(componentListener);
 
         // If it does not exist, attempt to add the movable component. Create
@@ -270,27 +294,13 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
             }
         }
 
-        // Listen for changes to the cell transform that may be done by other
-        // parts of this client or other clients. We need to do this updating
-        // of the GUI in the AWT Event Thread. We also want to make a note that
-        // the values are being set programmatically so they do not spawn extra
-        // messages to the movable component.
-        transformListener = new TransformChangeListener() {
-            public void transformChanged(Cell cell, ChangeSource source) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        try {
-                            setLocalChanges(true);
-                            updateGUI();
-                        } finally {
-                            setLocalChanges(false);
-                        }
-                    }
-                });
-            }
-        };
+        // Listen for changes in the Cell's transform. It is ok if open() is
+        // called more than once, this method call will not add duplicate
+        // listeners.
         cell.addTransformChangeListener(transformListener);
 
+        // Update the GUI, set local changes to true so that messages to the
+        // movable component are NOT generated.
         setLocalChanges(true);
         try {
             updateGUI();
@@ -303,13 +313,7 @@ public class PositionJPanel extends JPanel implements PropertiesFactorySPI {
      * @inheritDoc()
      */
     public void apply() {
-        // Do nothing specifically, but re-set the "original" values so that
-        // the changes can no longer be restored.
-        Cell cell = editor.getCell();
-        CellTransform transform = cell.getLocalTransform();
-        originalTranslation = transform.getTranslation(null);
-        originalRotation = transform.getRotation(null);
-        originalScaling = transform.getScaling(null);
+        // Do nothing.
     }
 
     /**

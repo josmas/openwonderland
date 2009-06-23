@@ -691,6 +691,9 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         applyButton.setEnabled(false);
         restoreButton.setEnabled(false);
 
+        // Finally, with the new server state just fetched, re-open the panels
+        // to cause their GUIs to be refreshed
+        updateGUI();
     }
 
     /**
