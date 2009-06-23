@@ -643,13 +643,16 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
      * of the panels and tells them to apply().
      */
     private void applyValues() {
-        // XXXX
-        // We need to loop through only those for which are dirty! XXXXXX
-        // XXXX
         // Loop through all of the properties in the list and tell them to
-        // apply
+        // apply if they have been marked as dirty.
         for (PropertiesFactorySPI factory : factoryList) {
-            factory.apply();
+            // Fetch the Class for the factory and see if it is either in the
+            // cell or cell component dirty list
+            Class clazz = factory.getClass();
+            if (dirtyPanelSet.contains(clazz) == true) {
+                logger.warning("Dirty set contains " + clazz.getName());
+                factory.apply();
+            }
         }
 
         // As a first step, remove all of the cell component server states from
