@@ -119,7 +119,7 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
             meter.setValue(volume);
 	    volume = 0;
         } else {
-	    double volume = Double.parseDouble(data);
+	    double volume = Math.abs(Double.parseDouble(data));
 
 	    if (volume > this.volume) {
 		this.volume = volume;
