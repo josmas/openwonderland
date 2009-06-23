@@ -69,11 +69,11 @@ public class CellUtils {
         ViewManager manager = ViewManager.getViewManager();
         ViewCell viewCell = manager.getPrimaryViewCell();
 //        Vector3f cameraPosition = manager.getCameraPosition(null);
-        Vector3f cameraPosition = viewCell.getWorldTransform().getTranslation(null);
+        Vector3f avatarPosition = viewCell.getWorldTransform().getTranslation(null);
         Vector3f cameraLookDirection = manager.getCameraLookDirection(null);
 
         // For now, the origin of the Cell is right on top of the avatar
-        Vector3f origin = cameraPosition;
+//        Vector3f origin = cameraPosition;
         
         // HACK ALERT: If we find a "sizing-hint" field in the Cell server state
         // meta data, then we use that to place the Cell 1 unit away from the
@@ -85,19 +85,23 @@ public class CellUtils {
 //            distance = 1.0f + sizing;
 //        }
 
+
+        // Hard-code distance away to 1.0.
+        distance = 1.0f;
+
         // Compute the new vector away from the camera position to be a certain
         // number of scalar units away
-//        float lengthSquared = cameraLookDirection.lengthSquared();
-//        float factor = (distance * distance) / lengthSquared;
-//        Vector3f origin = cameraPosition.add(cameraLookDirection.mult(factor));
+        float lengthSquared = cameraLookDirection.lengthSquared();
+        float factor = (distance * distance) / lengthSquared;
+        Vector3f origin = avatarPosition.add(cameraLookDirection.mult(factor));
 
-//        System.out.println("CAMERA POSITION " + cameraPosition);
-//        System.out.println("CAMERA LOOK AT " + cameraLookDirection);
-//        System.out.println("LENGTH SQ " + lengthSquared);
-//        System.out.println("DISTANCE SQ " + (distance * distance));
+        System.out.println("AVATAR POSITION " + avatarPosition);
+        System.out.println("CAMERA LOOK AT " + cameraLookDirection);
+        System.out.println("LENGTH SQ " + lengthSquared);
+        System.out.println("DISTANCE SQ " + (distance * distance));
 //        System.out.println("SIZING HINT " + sizingHint);
-//        System.out.println("FACTOR " + factor);
-//        System.out.println("ORIGIN " + origin);
+        System.out.println("FACTOR " + factor);
+        System.out.println("CELL ORIGIN " + origin);
         
         // Create a position component that will set the initial origin
         PositionComponentServerState position = new PositionComponentServerState();
