@@ -40,6 +40,6 @@ public class PortalComponentFactory implements CellComponentFactorySPI {
     }
 
     public String getDescription() {
-        return "A portal component allows users to teleport";
+        return "A portal capability allows users to teleport";
     }
 }

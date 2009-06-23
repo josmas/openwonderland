@@ -454,6 +454,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
 
         leftSplitPanePanel.setDividerLocation(250);
         leftSplitPanePanel.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        leftSplitPanePanel.setOneTouchExpandable(true);
 
         capabilityPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Capabilities"));
         capabilityPanel.setLayout(new java.awt.GridBagLayout());
@@ -641,6 +642,9 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
      * of the panels and tells them to apply().
      */
     private void applyValues() {
+        // XXXX
+        // We need to loop through only those for which are dirty! XXXXXX
+        // XXXX
         // Loop through all of the properties in the list and tell them to
         // apply
         for (PropertiesFactorySPI factory : factoryList) {
