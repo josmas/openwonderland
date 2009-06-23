@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentCompone
 public class AudioTreatmentComponentFactory implements CellComponentFactorySPI {
 
     public String getDisplayName() {
-        return "Audio Capabilities Component";
+        return "Audio Capabilities";
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
@@ -40,7 +40,7 @@ public class AudioTreatmentComponentFactory implements CellComponentFactorySPI {
     }
 
     public String getDescription() {
-        return "Audio Capabilities Component";
+        return "Audio Capabilities";
     }
 
 }

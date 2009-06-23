@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantCompo
 public class AudioParticipantComponentFactory implements CellComponentFactorySPI {
 
     public String getDisplayName() {
-        return "Audio Participant Component";
+        return "Audio Participant";
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
@@ -40,7 +40,7 @@ public class AudioParticipantComponentFactory implements CellComponentFactorySPI
     }
 
     public String getDescription() {
-        return "Audio Participant Component";
+        return "Audio Participant";
     }
 
 }
