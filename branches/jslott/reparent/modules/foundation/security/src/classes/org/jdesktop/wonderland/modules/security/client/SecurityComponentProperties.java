@@ -45,8 +45,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-//import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
-//import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.security.common.ActionDTO;
 import org.jdesktop.wonderland.modules.security.common.CellPermissions;
@@ -59,13 +59,16 @@ import org.jdesktop.wonderland.modules.security.common.SecurityComponentServerSt
  *
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-//@CellComponentProperties
+@PropertiesFactory(SecurityComponentServerState.class)
 public class SecurityComponentProperties extends JPanel 
-       /// implements CellComponentPropertiesSPI
+       implements PropertiesFactorySPI
 {
     private CellPropertiesEditor editor = null;
     private PermTableModel perms = new PermTableModel();
     private EditPermsTableModel editPerms = null;
+
+    // The original permissions before any editing took place
+    private CellPermissions originalPermissions = null;
 
     /** Creates new form SecurityComponentProperties */
     public SecurityComponentProperties() {
@@ -109,43 +112,52 @@ public class SecurityComponentProperties extends JPanel
     /**
      * @inheritDoc()
      */
-    public Class getServerCellComponentClass() {
-        return SecurityComponentServerState.class;
-    }
-
-    /**
-     * @inheritDoc()
-     */
     public String getDisplayName() {
-        return "Cell Security Component";
+        return "Security";
     }
 
     /**
      * @inheritDoc()
      */
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
+    public JPanel getPropertiesJPanel() {
         return this;
     }
 
     /**
      * @inheritDoc()
      */
-    public <T extends CellServerState> void updateGUI(T cellServerState) {
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void open() {
+        CellServerState cellServerState = editor.getCellServerState();
         SecurityComponentServerState state =  (SecurityComponentServerState)
                 cellServerState.getComponentServerState(SecurityComponentServerState.class);
 
         // set the lists up based on the model
-        perms.fromPermissions(state.getPermissions());
+        originalPermissions = state.getPermissions();
+        perms.fromPermissions(originalPermissions);
         permsTable.repaint();
     }
 
     /**
      * @inheritDoc()
      */
-    public <T extends CellServerState> void getCellServerState(T cellServerState) {
+    public void close() {
+        // Do nothing
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void apply() {
         // Figure out whether there already exists a server state for the
         // component.
+        CellServerState cellServerState = editor.getCellServerState();
         SecurityComponentServerState state = (SecurityComponentServerState)
                 cellServerState.getComponentServerState(SecurityComponentServerState.class);
         if (state == null) {
@@ -153,9 +165,20 @@ public class SecurityComponentProperties extends JPanel
         }
 
         CellPermissions out = perms.toPermissions();
-
         state.setPermissions(out);
         cellServerState.addComponentServerState(state);
+
+        // Reset the original value
+        originalPermissions = out;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void restore() {
+        // Restore the GUI to the original values
+        perms.fromPermissions(originalPermissions);
+        permsTable.repaint();
     }
 
     /** This method is called from within the constructor to
