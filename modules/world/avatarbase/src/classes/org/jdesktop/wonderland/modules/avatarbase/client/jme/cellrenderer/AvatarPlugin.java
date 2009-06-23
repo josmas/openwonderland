@@ -68,6 +68,8 @@ public class AvatarPlugin extends BaseClientPlugin
     private JMenuItem avatarMI;
     private JMenuItem avatarSettingsMI;
     private JMenuItem startingLocationMI;
+    private JCheckBoxMenuItem collisionEnabledMI;
+    private JCheckBoxMenuItem gravityEnabledMI;
     private AvatarImiJME curAvatar;
     private boolean menusAdded = false;
     private boolean gestureHUDEnabled = false;
@@ -151,6 +153,22 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
+        collisionEnabledMI = new JCheckBoxMenuItem("Avatar Collision Enabled");
+        collisionEnabledMI.setSelected(true); // TODO should be set by server
+        collisionEnabledMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ClientContext.getInputManager().postEvent(new AvatarCollisionChangeRequestEvent(collisionEnabledMI.isSelected(), gravityEnabledMI.isSelected()));
+            }
+        });
+
+        gravityEnabledMI = new JCheckBoxMenuItem("Avatar Gravity Enabled");
+        gravityEnabledMI.setSelected(true); // TODO should be set by server
+        gravityEnabledMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ClientContext.getInputManager().postEvent(new AvatarCollisionChangeRequestEvent(collisionEnabledMI.isSelected(), gravityEnabledMI.isSelected()));
+            }
+        });
+
         // Avatar Instrumentation is a dev tool
 //        avatarSettingsMI = new JMenuItem(bundle.getString("Avatar_Settings..."));
 //        avatarSettingsMI.addActionListener(new ActionListener() {
@@ -208,6 +226,8 @@ public class AvatarPlugin extends BaseClientPlugin
         if (menusAdded) {
             JmeClientMain.getFrame().removeFromWindowMenu(avatarControlsMI);
             JmeClientMain.getFrame().removeFromWindowMenu(gestureMI);
+            JmeClientMain.getFrame().removeFromWindowMenu(collisionEnabledMI);
+            JmeClientMain.getFrame().removeFromWindowMenu(gravityEnabledMI);
             JmeClientMain.getFrame().removeFromEditMenu(avatarMI);
             if (avatarSettingsMI != null) {
                 JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
@@ -247,6 +267,8 @@ public class AvatarPlugin extends BaseClientPlugin
         if (!menusAdded) {
             JmeClientMain.getFrame().addToWindowMenu(avatarControlsMI, 0);
             JmeClientMain.getFrame().addToWindowMenu(gestureMI, 0);
+            JmeClientMain.getFrame().addToWindowMenu(gravityEnabledMI, 0);
+            JmeClientMain.getFrame().addToWindowMenu(collisionEnabledMI, 0);
             JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
             if (avatarSettingsMI != null) {
                 JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
