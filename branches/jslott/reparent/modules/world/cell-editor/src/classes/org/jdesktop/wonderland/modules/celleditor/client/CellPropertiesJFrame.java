@@ -559,6 +559,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         // Create a new AddComponentDialog and display. Wait for the dialog
         // to close
         AddComponentDialog dialog = new AddComponentDialog(this, true, selectedCell);
+        dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
 
         // If the OK button was pressed on the dialog and we can fetch a valid

@@ -1,32 +1,35 @@
-/*
- * AudioParticipantComponentProperties.java
+/**
+ * Project Wonderland
  *
- * Created on May 27, 2009, 12:45 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import javax.swing.JPanel;
-
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentServerState;
-
-//import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
-
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-
-//import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
-
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 
 /**
  *
  * @author  jp
  */
-//@CellComponentProperties
-public class AudioParticipantComponentProperties extends javax.swing.JPanel /*implements CellComponentPropertiesSPI */{
-
-    private CellPropertiesEditor editor;
+@PropertiesFactory(AudioParticipantComponentServerState.class)
+public class AudioParticipantComponentProperties extends javax.swing.JPanel
+        implements PropertiesFactorySPI {
 
     /** Creates new form AudioParticipantComponentProperties */
     public AudioParticipantComponentProperties() {
@@ -36,56 +39,50 @@ public class AudioParticipantComponentProperties extends javax.swing.JPanel /*im
     /**
      * @{inheritDoc}
      */
-    public Class getServerCellComponentClass() {
-        return AudioParticipantComponentServerState.class;
-    }
-
-    /**
-     * @{inheritDoc}
-     */
     public String getDisplayName() {
-        return "Audio Participant Component";
+        return "Audio Participant";
     }
 
     /**
      * @{inheritDoc}
      */
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
+    public JPanel getPropertiesJPanel() {
         return this;
     }
 
     /**
      * @{inheritDoc}
      */
-    public <T extends CellServerState> void updateGUI(T cellServerState) {
-        CellComponentServerState state = cellServerState.getComponentServerState(AudioParticipantComponentServerState.class);
-        if (state == null) {
-	    return;
-	}
-
-        //originalName = ((AudioParticipantComponentServerState)state).getName();
-        //originalFullVolumeRadius = ((AudioParticipantComponentServerState)state).getFullVolumeRadius();
-        //nameTextField.setText(originalName);
-        //fullVolumeRadiusSpinner.setValue(originalFullVolumeRadius);
+    public void apply() {
+        // Do nothing
     }
 
     /**
      * @{inheritDoc}
      */
-    public <T extends CellServerState> void getCellServerState(T cellServerState) {
-        // Figure out whether there already exists a server state for the
-        // component.
-        CellComponentServerState state = cellServerState.getComponentServerState(AudioParticipantComponentServerState.class);
-        if (state == null) {
-            state = new AudioParticipantComponentServerState();
-        }
+    public void close() {
+        // Do nothing
+    }
 
-	
-        //((AudioParticipantComponentServerState)state).setName(nameTextField.getText());
-        //Float value = (Float)fullVolumeRadiusModel.getValue();
-        //((AudioParticipantComponentServerState)state).setFullVolumeRadius(value);
-        cellServerState.addComponentServerState(state);
+    /**
+     * @{inheritDoc}
+     */
+    public void open() {
+        // Do nothing
+    }
+
+    /**
+     * @{inheritDoc}
+     */
+    public void restore() {
+        // Do nothing
+    }
+
+    /**
+     * @{inheritDoc}
+     */
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        // Do nothing
     }
 
     /** This method is called from within the constructor to
