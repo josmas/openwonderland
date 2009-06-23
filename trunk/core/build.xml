@@ -71,7 +71,7 @@
             <jvmarg value="-Dwonderland.version=${wonderland.version}"/>
             <jvmarg value="-Drun.properties.file=file:${run-client.properties.file}"/>
             <jvmarg value="-Djme.trackDirect=true"/>
-            <!--<jvmarg value="-Djme.checkRenderThread=true"/>-->
+            <jvmarg value="-Djme.checkRenderThread=true"/>
 
             <!--start debug-->
             <!--
