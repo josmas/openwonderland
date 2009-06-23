@@ -124,6 +124,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
      * @{inheritDoc}
      */
     public void open() {
+        System.out.println("AUDIO TREATMENT OPEN");
         CellServerState cellServerState = editor.getCellServerState();
         AudioTreatmentComponentServerState state =
                 (AudioTreatmentComponentServerState)cellServerState.getComponentServerState(AudioTreatmentComponentServerState.class);
@@ -199,6 +200,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         } else {
             falloffSlider.setEnabled(false);
         }
+        System.out.println("AUDIO TREATMENT OPEN DONE");
+
     }
 
     /**

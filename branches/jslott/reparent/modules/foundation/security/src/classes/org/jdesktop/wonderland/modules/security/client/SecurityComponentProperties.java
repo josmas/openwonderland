@@ -164,9 +164,10 @@ public class SecurityComponentProperties extends JPanel
             state = new SecurityComponentServerState();
         }
 
+        // Update the permissions state and add to the update list
         CellPermissions out = perms.toPermissions();
         state.setPermissions(out);
-        cellServerState.addComponentServerState(state);
+        editor.addToUpdateList(state);
 
         // Reset the original value
         originalPermissions = out;
