@@ -693,9 +693,14 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         public void setCollisionController(CollisionController collisionController) {
             synchronized(this) {
                 this.collisionController = collisionController;
-                if (evt!=null && collisionController!=null) {
-                    collisionController.setCollisionEnabled(evt.isCollisionEnabled());
-                    collisionController.setGravityEnabled(evt.isGravityEnabled());
+                if (collisionController!=null) {
+                    if (evt!=null) {
+                        collisionController.setCollisionEnabled(evt.isCollisionEnabled());
+                        collisionController.setGravityEnabled(evt.isGravityEnabled());
+                    } else {
+                        collisionController.setCollisionEnabled(false);
+                        collisionController.setGravityEnabled(true);
+                    }
                 }
             }
         }
@@ -713,7 +718,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         public void computeEvent(Event evtIn) {
             synchronized(this) {
                 evt = (AvatarCollisionChangeRequestEvent) evtIn;
-                System.err.println("HERE "+evt.isCollisionEnabled());
                 if (collisionController!=null) {
                     collisionController.setCollisionEnabled(evt.isCollisionEnabled());
                     collisionController.setGravityEnabled(evt.isGravityEnabled());

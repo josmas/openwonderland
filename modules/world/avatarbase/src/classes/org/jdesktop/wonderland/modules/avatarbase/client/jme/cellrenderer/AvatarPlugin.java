@@ -154,7 +154,7 @@ public class AvatarPlugin extends BaseClientPlugin
         });
 
         collisionEnabledMI = new JCheckBoxMenuItem(bundle.getString("Avatar_Collision_Enabled"));
-        collisionEnabledMI.setSelected(true); // TODO should be set by server
+        collisionEnabledMI.setSelected(false); // TODO should be set by server
         collisionEnabledMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ClientContext.getInputManager().postEvent(new AvatarCollisionChangeRequestEvent(collisionEnabledMI.isSelected(), gravityEnabledMI.isSelected()));
