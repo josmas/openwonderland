@@ -111,6 +111,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private Entity rootEntity = null;
 
     private CollisionController collisionController = null;
+    private CollisionChangeRequestListener collisionChangeRequestListener;
 
     public AvatarImiJME(Cell cell) {
         super(cell);
@@ -165,7 +166,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
         };
 
-        // TODO - not fully implemented/tested
         ClientContext.getInputManager().addGlobalEventListener(new EventClassListener() {
 
             private Class[] consumeClasses = new Class[]{
@@ -203,6 +203,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             public void computeEvent(Event evtIn) {
             }
         });
+
+        collisionChangeRequestListener = new CollisionChangeRequestListener();
+        ClientContext.getInputManager().addGlobalEventListener(collisionChangeRequestListener);
 
     }
 
@@ -484,6 +487,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 //            ret.addComponent(CollisionComponent.class, cc);
 
             collisionController = new CollisionController(collisionGraph, (JMECollisionSystem)collisionSystem);
+            collisionChangeRequestListener.setCollisionController(collisionController);
 
             ((AvatarController)ret.getController()).setCollisionController(collisionController);
 
@@ -669,10 +673,52 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     class DebugNode extends Node {
+        @Override
         public void draw(Renderer r) {
             System.err.println("START**********************************");
             super.draw(r);
             System.err.println("END ***********************************");
+        }
+    }
+
+    class CollisionChangeRequestListener extends EventClassListener {
+
+        private CollisionController collisionController;
+        private AvatarCollisionChangeRequestEvent evt=null;
+
+        private Class[] consumeClasses = new Class[]{
+            AvatarCollisionChangeRequestEvent.class,
+        };
+
+        public void setCollisionController(CollisionController collisionController) {
+            synchronized(this) {
+                this.collisionController = collisionController;
+                if (evt!=null && collisionController!=null) {
+                    collisionController.setCollisionEnabled(evt.isCollisionEnabled());
+                    collisionController.setGravityEnabled(evt.isGravityEnabled());
+                }
+            }
+        }
+
+        @Override
+        public Class[] eventClassesToConsume() {
+            return consumeClasses;
+        }
+
+        @Override
+        public void commitEvent(Event event) {
+        }
+
+        @Override
+        public void computeEvent(Event evtIn) {
+            synchronized(this) {
+                evt = (AvatarCollisionChangeRequestEvent) evtIn;
+                System.err.println("HERE "+evt.isCollisionEnabled());
+                if (collisionController!=null) {
+                    collisionController.setCollisionEnabled(evt.isCollisionEnabled());
+                    collisionController.setGravityEnabled(evt.isGravityEnabled());
+                }
+            }
         }
     }
 }
