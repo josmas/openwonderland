@@ -153,7 +153,7 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
-        collisionEnabledMI = new JCheckBoxMenuItem("Avatar Collision Enabled");
+        collisionEnabledMI = new JCheckBoxMenuItem(bundle.getString("Avatar_Collision_Enabled"));
         collisionEnabledMI.setSelected(true); // TODO should be set by server
         collisionEnabledMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -161,7 +161,7 @@ public class AvatarPlugin extends BaseClientPlugin
             }
         });
 
-        gravityEnabledMI = new JCheckBoxMenuItem("Avatar Gravity Enabled");
+        gravityEnabledMI = new JCheckBoxMenuItem(bundle.getString("Avatar_Gravity_Enabled"));
         gravityEnabledMI.setSelected(true); // TODO should be set by server
         gravityEnabledMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -226,8 +226,8 @@ public class AvatarPlugin extends BaseClientPlugin
         if (menusAdded) {
             JmeClientMain.getFrame().removeFromWindowMenu(avatarControlsMI);
             JmeClientMain.getFrame().removeFromWindowMenu(gestureMI);
-            JmeClientMain.getFrame().removeFromWindowMenu(collisionEnabledMI);
-            JmeClientMain.getFrame().removeFromWindowMenu(gravityEnabledMI);
+            JmeClientMain.getFrame().removeFromToolsMenu(collisionEnabledMI);
+            JmeClientMain.getFrame().removeFromToolsMenu(gravityEnabledMI);
             JmeClientMain.getFrame().removeFromEditMenu(avatarMI);
             if (avatarSettingsMI != null) {
                 JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
@@ -267,8 +267,8 @@ public class AvatarPlugin extends BaseClientPlugin
         if (!menusAdded) {
             JmeClientMain.getFrame().addToWindowMenu(avatarControlsMI, 0);
             JmeClientMain.getFrame().addToWindowMenu(gestureMI, 0);
-            JmeClientMain.getFrame().addToWindowMenu(gravityEnabledMI, 0);
-            JmeClientMain.getFrame().addToWindowMenu(collisionEnabledMI, 0);
+            JmeClientMain.getFrame().addToToolsMenu(gravityEnabledMI, 0);
+            JmeClientMain.getFrame().addToToolsMenu(collisionEnabledMI, 0);
             JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
             if (avatarSettingsMI != null) {
                 JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
