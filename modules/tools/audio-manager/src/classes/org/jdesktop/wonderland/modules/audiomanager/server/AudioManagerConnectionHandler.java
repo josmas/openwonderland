@@ -144,63 +144,9 @@ public class AudioManagerConnectionHandler
 	}
 
 	if (message instanceof PlaceCallMessage) {
-	    logger.fine("Got join chat message from " + clientID);
+	    logger.fine("Got PlaceCallMessage from " + clientID);
 
-	    PlaceCallMessage msg = (PlaceCallMessage) message;
-
-	    PresenceInfo info = msg.getPresenceInfo();
-
-	    CellMO cellMO = CellManagerMO.getCellManager().getCell(info.cellID);
-
-	    AudioParticipantComponentMO audioParticipantComponentMO = 
-		cellMO.getComponent(AudioParticipantComponentMO.class);
-
-	    if (audioParticipantComponentMO == null) {
-		logger.warning("Cell " + cellMO.getCellID() 
-		    + " doesn't have an AudioParticipantComponent!");
-		return;
-	    }
-
-	    CallSetup setup = new CallSetup();
-
-	    CallParticipant cp = new CallParticipant();
-
-	    setup.cp = cp;
-
-	    String callID = info.callID;
-
-	    vm.removeCallStatusListener(audioParticipantComponentMO, callID);
-	    vm.addCallStatusListener(audioParticipantComponentMO, callID);
-
-	    logger.fine("callID " + callID);
-
-	    if (callID == null) {
-	        logger.fine("Can't place call to " + msg.getSipURL()
-		    + ".  No cell for " + callID);
-		return;
-	    }
-
-	    cp.setCallId(callID);
-	    cp.setName(info.userID.getUsername());
-            cp.setPhoneNumber(msg.getSipURL());
-            cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
-            cp.setVoiceDetection(true);
-            cp.setDtmfDetection(true);
-            cp.setVoiceDetectionWhileMuted(true);
-            cp.setHandleSessionProgress(true);
-            cp.setJoinConfirmationTimeout(0);
-	    cp.setCallAnsweredTreatment(null);
-
-	    sessionCallIDMap.put(clientID.getID(), callID);
-
-	    try {
-	        setupCall(callID, setup, msg.getX(), 
-		    msg.getY(), msg.getZ(), msg.getDirection());
-	    } catch (IOException e) {
-		logger.warning("Unable to place call " + cp + " " 
-		    + e.getMessage());
-		sessionCallIDMap.remove(clientID.getID());
-	    }
+	    placeCall(clientID, (PlaceCallMessage) message);
 	    return;
 	}
 
@@ -235,27 +181,46 @@ public class AudioManagerConnectionHandler
 	    Call call = vm.getCall(callID);
 
 	    if (call == null) {
-		// XXX we should be nicer and place the call!
-		logger.warning("Unable to transfer call.  No Call for " + callID);
+		if (msg.getCancel() == true) {
+		    return;
+		}
+
+		double x = 0;
+		double y = 0;
+		double z = 0;
+		double orientation = 0;
+
+		Player player = vm.getPlayer(callID);
+
+		if (player != null) {
+		    x = -player.getX();
+		    y = player.getY();
+		    z = player.getZ();
+		    orientation = player.getOrientation();
+		}
+		
+		placeCall(clientID, new PlaceCallMessage(msg.getPresenceInfo(), msg.getPhoneNumber(), 
+		    x, y, z, orientation, true));
 		return;
 	    }
 
 	    CallParticipant cp = call.getSetup().cp;
 
-            cp.setPhoneNumber(msg.getPhoneNumber());
-            cp.setJoinConfirmationTimeout(90);
-
-	    String callAnsweredTreatment = System.getProperty(
-                "com.sun.sgs.impl.app.voice.CALL_ANSWERED_TREATMENT");
-
-	    if (callAnsweredTreatment == null || callAnsweredTreatment.length() == 0) {
-		callAnsweredTreatment = "dialtojoin.au";
+	    if (msg.getCancel() == true) {
+	        try {
+	            call.transfer(cp, true);
+	        } catch (IOException e) {
+		    logger.warning("Unable to cancel call transfer:  " + e.getMessage());
+	        }
+		return;
 	    }
 
-            cp.setCallAnsweredTreatment(callAnsweredTreatment);
+            cp.setPhoneNumber(msg.getPhoneNumber());
+
+	    setJoinConfirmation(cp);
 
 	    try {
-	        call.transfer(cp);
+	        call.transfer(cp, false);
 	    } catch (IOException e) {
 		logger.warning("Unable to transfer call:  " + e.getMessage());
 	    }
@@ -293,6 +258,81 @@ public class AudioManagerConnectionHandler
 	}
 
         throw new UnsupportedOperationException("Unknown message:  " + message);
+    }
+
+    private void placeCall(WonderlandClientID clientID, PlaceCallMessage msg) {
+	PresenceInfo info = msg.getPresenceInfo();
+
+	CellMO cellMO = CellManagerMO.getCellManager().getCell(info.cellID);
+
+	AudioParticipantComponentMO audioParticipantComponentMO = 
+	    cellMO.getComponent(AudioParticipantComponentMO.class);
+
+	if (audioParticipantComponentMO == null) {
+	    logger.warning("Cell " + cellMO.getCellID() 
+		+ " doesn't have an AudioParticipantComponent!");
+	    return;
+	}
+
+	CallSetup setup = new CallSetup();
+
+	CallParticipant cp = new CallParticipant();
+
+	setup.cp = cp;
+
+	String callID = info.callID;
+
+	if (callID == null) {
+	    logger.fine("Can't place call to " + msg.getSipURL()
+		+ ".  No cell for " + callID);
+	    return;
+	}
+
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	vm.removeCallStatusListener(audioParticipantComponentMO, callID);
+	vm.addCallStatusListener(audioParticipantComponentMO, callID);
+
+	cp.setCallId(callID);
+	cp.setName(info.userID.getUsername());
+        cp.setPhoneNumber(msg.getSipURL());
+
+	setJoinConfirmation(cp);
+
+        cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
+        cp.setVoiceDetection(true);
+        cp.setDtmfDetection(true);
+        cp.setVoiceDetectionWhileMuted(true);
+        cp.setHandleSessionProgress(true);
+
+	sessionCallIDMap.put(clientID.getID(), callID);
+
+	try {
+	    setupCall(callID, setup, msg.getX(), 
+		 msg.getY(), msg.getZ(), msg.getDirection());
+	} catch (IOException e) {
+	    logger.warning("Unable to place call " + cp + " " 
+		+ e.getMessage());
+	    sessionCallIDMap.remove(clientID.getID());
+	}
+    }
+
+    private void setJoinConfirmation(CallParticipant cp) {
+	if (cp.getPhoneNumber().startsWith("sip:")) {
+	    return;
+	}
+
+	cp.setJoinConfirmationTimeout(90);
+
+	String callAnsweredTreatment = System.getProperty(
+            "com.sun.sgs.impl.app.voice.CALL_ANSWERED_TREATMENT");
+
+	if (callAnsweredTreatment == null || callAnsweredTreatment.length() == 0) {
+	    callAnsweredTreatment = "dialtojoin.au";
+	}
+
+        cp.setCallAnsweredTreatment(callAnsweredTreatment);
+        cp.setCallEstablishedTreatment("joinCLICK.au");
     }
 
     public static void setupCall(String callID, CallSetup setup, double x, 
