@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantCallEndedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CallEndedResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterExitMessage;
@@ -341,10 +342,14 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void transferCall() {
-        CallMigrationForm callMigrationForm = CallMigrationForm.getInstance();
+	AudioParticipantComponent component = cell.getComponent(AudioParticipantComponent.class);
 
-        callMigrationForm.setClient(this);
-        callMigrationForm.setVisible(true);
+	if (component == null) {
+	    logger.warning("Can't transfer call:  No AudioParticipantComponent for " + cell.getCellID());
+	    return;
+	}
+
+	component.transferCall(this);
     }
 
     public void logAudioProblem() {
@@ -419,12 +424,11 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void transferCall(String phoneNumber) {
-        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-
-        session.send(this, new TransferCallMessage(presenceInfo, phoneNumber));
+        session.send(this, new TransferCallMessage(presenceInfo, phoneNumber, false));
     }
 
     public void cancelCallTransfer() {
+        session.send(this, new TransferCallMessage(presenceInfo, "", true));
     }
 
     @Override
@@ -435,6 +439,17 @@ public class AudioManagerClient extends BaseConnection implements
             GetVoiceBridgeResponseMessage msg = (GetVoiceBridgeResponseMessage) message;
 
             logger.warning("Got voice bridge " + msg.getBridgeInfo());
+
+	    String phoneNumber = System.getProperty(
+		"org.jdesktop.wonderland.modules.audiomanager.client.PHONE_NUMBER");
+
+	    System.setProperty(
+		"org.jdesktop.wonderland.modules.audiomanager.client.PHONE_NUMBER", "");
+
+	    if (phoneNumber != null && phoneNumber.length() > 0) {
+                session.send(this, new PlaceCallMessage(presenceInfo, phoneNumber, 0., 0., 0., 90., false));
+		return;
+	    }
 
             SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
@@ -605,6 +620,10 @@ public class AudioManagerClient extends BaseConnection implements
             }
 
             InputManager.inputManager().postEvent(avatarNameEvent);
+        } else if (message instanceof AudioParticipantCallEndedMessage) {
+            AudioParticipantCallEndedMessage msg = (AudioParticipantCallEndedMessage) message;
+
+            PresenceInfo info = pm.getPresenceInfo(msg.getCellID());
         } else {
             logger.warning("Unknown message " + message);
 

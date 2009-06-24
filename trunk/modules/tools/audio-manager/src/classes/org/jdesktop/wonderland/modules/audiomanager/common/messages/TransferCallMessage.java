@@ -33,10 +33,12 @@ public class TransferCallMessage extends Message {
 
     private PresenceInfo presenceInfo;
     private String phoneNumber;
+    private boolean cancel;
 
-    public TransferCallMessage(PresenceInfo presenceInfo, String phoneNumber) {
+    public TransferCallMessage(PresenceInfo presenceInfo, String phoneNumber, boolean cancel) {
 	this.presenceInfo = presenceInfo;
 	this.phoneNumber = phoneNumber;
+	this.cancel = cancel;
     }
 
     public PresenceInfo getPresenceInfo() {
@@ -45,6 +47,10 @@ public class TransferCallMessage extends Message {
 
     public String getPhoneNumber() {
 	return phoneNumber;
+    }
+
+    public boolean getCancel() {
+	return cancel;
     }
 
 }

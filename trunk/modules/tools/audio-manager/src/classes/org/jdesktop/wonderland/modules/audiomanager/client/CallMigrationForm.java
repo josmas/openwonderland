@@ -25,31 +25,23 @@ import java.util.logging.Logger;
  *
  * @author  jp
  */
-public class CallMigrationForm extends javax.swing.JFrame {
+public class CallMigrationForm extends javax.swing.JFrame implements DisconnectListener {
 
     private static final Logger logger = Logger.getLogger(CallMigrationForm.class.getName());
     private static CallMigrationForm callMigrationForm;
 
     private AudioManagerClient client;
 
-    public static CallMigrationForm getInstance() {
-        if (callMigrationForm == null) {
-            callMigrationForm = new CallMigrationForm();
-        }
-
-        callMigrationForm.resetForm();
-
-        return callMigrationForm;
-    }
-
-    public void setClient(AudioManagerClient client) {
+    public CallMigrationForm(AudioManagerClient client) { 
 	this.client = client;
-    }
 
-    private void resetForm() {
-        dialButton.setText("Transfer");
-        dialButton.setEnabled(false);
-        dialButton.setSelected(true);
+        initComponents();
+
+	client.addDisconnectListener(this);
+
+        transferButton.setText("Transfer");
+        transferButton.setEnabled(false);
+        transferButton.setSelected(true);
         phoneNumberTextField.setText("");
         phoneNumberTextField.setEnabled(true);
         phoneTransferRadioButton.setSelected(true);
@@ -58,7 +50,10 @@ public class CallMigrationForm extends javax.swing.JFrame {
 
     private CallMigrationForm() {
         initComponents();
-        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
+    }
+
+    public void disconnected() {
+	setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -72,7 +67,7 @@ public class CallMigrationForm extends javax.swing.JFrame {
         radioButtonGroup1 = new javax.swing.ButtonGroup();
         phoneNumberTextField = new javax.swing.JTextField();
         closeButton = new javax.swing.JButton();
-        dialButton = new javax.swing.JButton();
+        transferButton = new javax.swing.JButton();
         callStatusLabel = new javax.swing.JLabel();
         phoneTransferRadioButton = new javax.swing.JRadioButton();
         connectSoftphoneRadioButton = new javax.swing.JRadioButton();
@@ -95,11 +90,11 @@ public class CallMigrationForm extends javax.swing.JFrame {
             }
         });
 
-        dialButton.setFont(new java.awt.Font("Dialog", 0, 13));
-        dialButton.setText("Transfer");
-        dialButton.addActionListener(new java.awt.event.ActionListener() {
+        transferButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        transferButton.setText("Transfer");
+        transferButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dialButtonActionPerformed(evt);
+                transferButtonActionPerformed(evt);
             }
         });
 
@@ -135,28 +130,23 @@ public class CallMigrationForm extends javax.swing.JFrame {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(dialButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 110, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 106, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(67, 67, 67))
+                    .add(jLabel1)
+                    .add(callStatusLabel)
                     .add(layout.createSequentialGroup()
+                        .add(21, 21, 21)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(transferButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+                                .add(18, 18, 18)
+                                .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 145, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(layout.createSequentialGroup()
-                                .add(21, 21, 21)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(connectSoftphoneRadioButton)
-                                        .add(195, 195, 195))
-                                    .add(layout.createSequentialGroup()
-                                        .add(phoneTransferRadioButton)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(phoneNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE))))
-                            .add(jLabel1))
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(callStatusLabel)
-                        .addContainerGap(274, Short.MAX_VALUE))))
+                                .add(connectSoftphoneRadioButton)
+                                .add(195, 195, 195))
+                            .add(layout.createSequentialGroup()
+                                .add(phoneTransferRadioButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(phoneNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -171,7 +161,7 @@ public class CallMigrationForm extends javax.swing.JFrame {
                 .add(connectSoftphoneRadioButton)
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(dialButton)
+                    .add(transferButton)
                     .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(callStatusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -182,7 +172,7 @@ public class CallMigrationForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void phoneNumberTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_phoneNumberTextFieldKeyTyped
-        setDialButtonState();
+        setTransferButtonState();
     }//GEN-LAST:event_phoneNumberTextFieldKeyTyped
 
     private void closeButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeButtonMouseClicked
@@ -190,90 +180,73 @@ public class CallMigrationForm extends javax.swing.JFrame {
         setVisible(false);
 }//GEN-LAST:event_closeButtonMouseClicked
 
-    private void setDialButtonState() {
+    private void setTransferButtonState() {
         if (connectSoftphoneRadioButton.isSelected()) {
-            dialButton.setEnabled(true);
+            transferButton.setEnabled(true);
+	    transferButton.setText("Transfer");
         } else {
             phoneNumberTextField.setEnabled(true);
 
             String text = phoneNumberTextField.getText();
 
             if (text != null && text.length() > 0) {
-                dialButton.setEnabled(true);
-                getRootPane().setDefaultButton(dialButton);
+                transferButton.setEnabled(true);
+                getRootPane().setDefaultButton(transferButton);
             } else {
-                dialButton.setEnabled(false);
+                transferButton.setEnabled(false);
             }
         }
     }
 
-    private void dialButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dialButtonActionPerformed
-        if (dialButton.getText().equals("Transfer")) {
+    private void transferButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_transferButtonActionPerformed
+        if (transferButton.getText().equals("Transfer")) {
             callStatusLabel.setText("Transferring call...");
 
             if (connectSoftphoneRadioButton.isSelected()) {
                 client.reconnectSoftphone();
                 callStatusLabel.setText("");
-                setVisible(false);
             } else {
-                dialButton.setText("Cancel Call");
+                transferButton.setText("Cancel");
                 phoneNumberTextField.setEnabled(false);
 
                 client.transferCall(phoneNumberTextField.getText());
             }
         } else {
-            dialButton.setText("Transfer");
+            transferButton.setText("Transfer");
             phoneNumberTextField.setEnabled(true);
             callStatusLabel.setText("");
             client.cancelCallTransfer();
         }
 
-    }//GEN-LAST:event_dialButtonActionPerformed
+}//GEN-LAST:event_transferButtonActionPerformed
 
 private void connectSoftphoneRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectSoftphoneRadioButtonActionPerformed
     phoneNumberTextField.setEnabled(false);
-    dialButton.setEnabled(true);
+    transferButton.setEnabled(true);
+    transferButton.setText("Transfer");
+    callStatusLabel.setText("");
 }//GEN-LAST:event_connectSoftphoneRadioButtonActionPerformed
 
 private void phoneTransferRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneTransferRadioButtonActionPerformed
     phoneNumberTextField.setEnabled(true);
-    setDialButtonState();
+    setTransferButtonState();
+    callStatusLabel.setText("");
 }//GEN-LAST:event_phoneTransferRadioButtonActionPerformed
     
-    public void setCallStatus(String callId, String callStatus) {
-	if (callStatus.indexOf("Ended") >= 0) {
-	    if (callStatus.indexOf("Not Found") >= 0) {
-		callStatusLabel.setText("Invalid phone number");
-	    } else if (callStatus.indexOf("User requested call termination") >= 0) {
-		callStatusLabel.setText("Hung up");
-	    } else {
-	        callStatusLabel.setText(callStatus);
-	    }
-
-	    dialButton.setText("Transfer");
-	    setDialButtonState();
-	} else if (callStatus.indexOf("Migrated") >= 0 ||
-	        callStatus.indexOf("Established") >= 0) {
-
-	    dialButton.setText("Transfer");
-	    setDialButtonState();
-	    callStatusLabel.setText("");
-	    setVisible(false);
-	} else if (callStatus.indexOf("Migration Failed") >= 0) {
-	    callStatusLabel.setText("Call Transfer failed");
-	    dialButton.setText("Transfer");
-	    setDialButtonState();
-	}
+    public void setStatus(String status) {
+	callStatusLabel.setText(status);
+	transferButton.setText("Transfer");
+	setTransferButtonState();
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel callStatusLabel;
     private javax.swing.JButton closeButton;
     private javax.swing.JRadioButton connectSoftphoneRadioButton;
-    private javax.swing.JButton dialButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField phoneNumberTextField;
     private javax.swing.JRadioButton phoneTransferRadioButton;
     private javax.swing.ButtonGroup radioButtonGroup1;
+    private javax.swing.JButton transferButton;
     // End of variables declaration//GEN-END:variables
 }

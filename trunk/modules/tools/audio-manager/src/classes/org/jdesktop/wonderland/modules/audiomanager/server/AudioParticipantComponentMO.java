@@ -42,6 +42,9 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantCompo
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantCallEndedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantCallEstablishedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMigrateMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
@@ -312,6 +315,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
 	    vm.dump("all");
 	    player.setPrivateMixes(true);
+	    channelCompMO.sendAll(null, new AudioParticipantCallEstablishedMessage(cellID));
 	    break;
 
 	case CallStatus.MUTED:
@@ -366,6 +370,14 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    channelCompMO.sendAll(null, new AudioParticipantSpeakingMessage(cellID, false));
             break;
 
+	case CallStatus.MIGRATED:
+	    channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, true));
+	    break;
+
+	case CallStatus.MIGRATE_FAILED:
+	    channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, false));
+	    break;
+
 	case CallStatus.ENDED:
 	    if (player == null) {
 		logger.warning("Couldn't find player for " + status);
@@ -377,6 +389,9 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    for (int i = 0; i < audioGroups.length; i++) {
 		audioGroups[i].removePlayer(player);
 	    }
+
+	    channelCompMO.sendAll(null, new AudioParticipantCallEndedMessage(cellID, 
+		status.getOption("Reason")));
             break;
 	  
 	case CallStatus.BRIDGE_OFFLINE:

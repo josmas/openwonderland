@@ -49,6 +49,9 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantCallEndedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantCallEstablishedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMigrateMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
@@ -112,6 +115,9 @@ public class AudioParticipantComponent extends CellComponent implements
     protected void setStatus(CellStatus status, boolean increasing) {
 	switch(status) {
         case DISK:
+	    channelComp.removeMessageReceiver(AudioParticipantCallEndedMessage.class);
+	    channelComp.removeMessageReceiver(AudioParticipantCallEstablishedMessage.class);
+	    channelComp.removeMessageReceiver(AudioParticipantMigrateMessage.class);
 	    channelComp.removeMessageReceiver(AudioParticipantSpeakingMessage.class);
 	    channelComp.removeMessageReceiver(AudioParticipantMuteCallMessage.class);
 	    channelComp.removeMessageReceiver(ChangeUsernameAliasMessage.class);
@@ -120,6 +126,9 @@ public class AudioParticipantComponent extends CellComponent implements
 	case ACTIVE:
         if (increasing) {
             channelComp = cell.getComponent(ChannelComponent.class);
+            channelComp.addMessageReceiver(AudioParticipantCallEndedMessage.class, this);
+            channelComp.addMessageReceiver(AudioParticipantCallEstablishedMessage.class, this);
+            channelComp.addMessageReceiver(AudioParticipantMigrateMessage.class, this);
             channelComp.addMessageReceiver(AudioParticipantSpeakingMessage.class, this);
             channelComp.addMessageReceiver(AudioParticipantMuteCallMessage.class, this);
             channelComp.addMessageReceiver(ChangeUsernameAliasMessage.class, this);
@@ -149,16 +158,85 @@ public class AudioParticipantComponent extends CellComponent implements
         }
     }
     
+    private CallMigrationForm callMigrationForm;
+
+    public void transferCall(AudioManagerClient client) {
+	if (callMigrationForm == null) {
+            callMigrationForm = new CallMigrationForm(client);
+	}
+
+        callMigrationForm.setVisible(true);
+    }
+
     public void messageReceived(CellMessage message) {
+        if (message instanceof AudioParticipantCallEstablishedMessage) {
+	    if (callMigrationForm != null) {
+		callMigrationForm.setStatus("Call Established");
+	    }
+	}
+
+        if (message instanceof AudioParticipantMigrateMessage) {
+	    if (callMigrationForm == null) {
+		return;
+	    }
+
+	    AudioParticipantMigrateMessage msg = (AudioParticipantMigrateMessage) message;
+
+	    if (msg.isSuccessful()) {
+		callMigrationForm.setStatus("Migrated");
+	    } else {
+		callMigrationForm.setStatus("Migration failed");
+	    }
+	}
+
+        if (message instanceof AudioParticipantCallEndedMessage) {
+            AudioParticipantCallEndedMessage msg = (AudioParticipantCallEndedMessage) message;
+
+	    String reason = msg.getReason();
+
+	    String callID = CallID.getCallID(msg.getCellID());
+
+	    if (callID.equals(SoftphoneControlImpl.getInstance().getCallID()) == false) {
+		return;
+	    }
+
+	    if (reason.indexOf("Not Found") >= 0) {
+		reason = "Invalid phone number";
+
+		if (callMigrationForm == null) {
+	            new CallEndedDialog(reason);
+		}
+	    } else if (reason.indexOf("No voip Gateway!") >= 0) {
+		reason = "No connection to phone system";
+
+		if (callMigrationForm == null) {
+	            new CallEndedDialog(reason);
+		}
+	    }
+
+	    if (callMigrationForm != null && reason.equals("User requested call termination") == false) {
+		callMigrationForm.setStatus("Call ended:  " + reason);
+	    }
+
+	    return;
+	} 
+
         if (message instanceof AudioParticipantSpeakingMessage) {
             AudioParticipantSpeakingMessage msg = (AudioParticipantSpeakingMessage) message;
 	    setSpeakingIndicator(msg.getCellID(), msg.isSpeaking());
-        } else if (message instanceof AudioParticipantMuteCallMessage) {
+	    return;
+	}
+
+        if (message instanceof AudioParticipantMuteCallMessage) {
             AudioParticipantMuteCallMessage msg = (AudioParticipantMuteCallMessage) message;
 	    setMuteIndicator(msg.getCellID(), msg.isMuted());
-        } else if (message instanceof ChangeUsernameAliasMessage) {
+	    return;
+        } 
+
+	if (message instanceof ChangeUsernameAliasMessage) {
             ChangeUsernameAliasMessage msg = (ChangeUsernameAliasMessage) message;
 	    changeUsernameAlias(msg.getCellID(), msg.getPresenceInfo());
+	    return;
 	}
     }
 
