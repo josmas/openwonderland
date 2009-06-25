@@ -47,6 +47,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -54,9 +55,13 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.CellManager;
@@ -68,6 +73,7 @@ import org.jdesktop.wonderland.client.cell.registry.CellComponentRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -140,23 +146,29 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         cellHierarchyTree.setCellRenderer(new CellTreeRenderer());
 
         // Create a listener that will listen to the status of Cells. This
-        // listener gets added when the dialog is made visible
+        // listener gets added when the dialog is made visible. We need to do
+        // all of this in the AWT even thread.
         cellListener = new CellStatusChangeListener() {
-            public void cellStatusChanged(Cell cell, CellStatus status) {
-                DefaultMutableTreeNode node = cellNodes.get(cell);
-                if (status == CellStatus.DISK) {
-                    // If there is a Node that corresponds to the Cell, then
-                    // remove it from the tree
-                    if (node != null) {
-                        ((DefaultTreeModel) cellHierarchyTree.getModel()).removeNodeFromParent(node);
+            public void cellStatusChanged(final Cell cell, final CellStatus status) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        DefaultMutableTreeNode node = cellNodes.get(cell);
+                        if (status == CellStatus.DISK) {
+                            // If there is a Node that corresponds to the Cell,
+                            // then remove it from the tree.
+                            if (node != null) {
+                                TreeModel m = cellHierarchyTree.getModel();
+                                ((DefaultTreeModel) m).removeNodeFromParent(node);
+                            }
+                        }
+                        else if (status == CellStatus.RENDERING) {
+                            // If the node does not exist, then create it
+                            if (node == null) {
+                                createJTreeNode(cell);
+                            }
+                        }
                     }
-                }
-                else if (status == CellStatus.RENDERING) {
-                    // If the node does not exist, then create it
-                    if (node == null) {
-                        createJTreeNode(cell);
-                    }
-                }
+                });
             }
         };
 
@@ -286,13 +298,13 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         capabilityList.setSelectedIndex(0);
         
         // Debug aid, prints out the graph for selected cells
-//        CellRendererJME rend = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-//        if (rend!=null) {
-//            Entity ent = rend.getEntity();
-//            Node root = ent.getComponent(RenderComponent.class).getSceneRoot();
-//            root.updateGeometricState(0, true);
-//            print(root, 0);
-//        }
+        CellRendererJME rend = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+        if (rend!=null) {
+            Entity ent = rend.getEntity();
+            Node root = ent.getComponent(RenderComponent.class).getSceneRoot();
+            root.updateGeometricState(0, true);
+            print(root, 0);
+        }
     }
 
     private void print(Spatial n, int level) {
@@ -1135,7 +1147,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             if (userObject instanceof Cell) {
                 parentCellID = ((Cell)userObject).getCellID();
                 newParent = (Cell) userObject;
-                if (draggedCell.equals(newParent)) {
+                if (draggedCell.equals(newParent) == true) {
                     // User dropped cell on itself, return !
                     return;
                 }
@@ -1144,13 +1156,13 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             // Compute child transform change
             Cell oldParent = draggedCell.getParent();
             CellTransform oldParentWorld;
-            if (oldParent==null)
+            if (oldParent == null)
                 oldParentWorld = new CellTransform(null, null);
             else
                 oldParentWorld = oldParent.getWorldTransform();
 
             CellTransform newParentWorld;
-            if (newParent==null)
+            if (newParent == null)
                 newParentWorld = new CellTransform(null, null);
             else
                 newParentWorld = newParent.getWorldTransform();
@@ -1161,6 +1173,11 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             newParentWorld.mul(oldParentWorld);
             newParentWorld.mul(draggedCell.getLocalTransform());
 
+            System.out.println("TRANSFORM AFTER REPARENT TRANS: " +
+                    newParentWorld.getTranslation(null).toString() +
+                    " SCALE: " + newParentWorld.getScaling() +
+                    " ROTATION: " + newParentWorld.getRotation(null).toString());
+            
 //            transformGraph.add(newParentWorld.clone(null)); // Inverted newParentWorld
 //            transformGraph.add(oldParentWorld);
 //            transformGraph.add(draggedCell.getLocalTransform());
@@ -1171,8 +1188,8 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             // Send a message to the server indicating the change in the
             // parent. We need to send this over the cell edit connection,
             // rather than the cell connection.
-            CellEditChannelConnection connection = (CellEditChannelConnection)
-                    session.getConnection(CellEditConnectionType.CLIENT_TYPE);
+            CellEditChannelConnection connection =
+                    (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
             connection.send(new CellReparentMessage(cellID, parentCellID, newParentWorld));
 
             // Turn off the selected node border and repaint the tree.
@@ -1196,7 +1213,6 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         // Clear out any existing Cells from the tree.
         for (Cell cell : cellNodes.keySet()) {
             DefaultMutableTreeNode node = cellNodes.get(cell);
-            System.out.println("CLEARNING OUT CELL NODE " + node.toString());
             ((DefaultMutableTreeNode)node.getParent()).remove(node);
         }
         cellNodes.clear();
@@ -1239,7 +1255,6 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         }
         DefaultTreeModel treeModel = (DefaultTreeModel)cellHierarchyTree.getModel();
         treeModel.insertNodeInto(ret, parentNode, parentNode.getChildCount());
-        System.out.println("ADDING CELL NODE " + ret.toString());
 
         // Recursively iterate through all of the Cell's children and add to
         // the tree.
