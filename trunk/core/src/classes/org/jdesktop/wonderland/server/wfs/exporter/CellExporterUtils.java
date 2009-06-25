@@ -160,13 +160,12 @@ public class CellExporterUtils {
      * @return a list of names of recordings
      */
     public static WFSRecordingList getWFSRecordings() throws IOException, JAXBException {
-        System.out.println("In CellExporterUtils.getWFSRecordings");
         /*
          * Try to open up a connection the Jersey RESTful resource and parse
          * the stream. Upon error return null.
          */
         URL url = new URL(getWebServerURL(), WFS_PREFIX + "listrecordings");
-        CellExporter.logger.info("WFS: Loading recordings at " + url.toExternalForm());
+        //CellExporter.logger.info("WFS: Loading recordings at " + url.toExternalForm());
         return WFSRecordingList.decode(url.openStream());
         
     }
