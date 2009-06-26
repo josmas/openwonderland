@@ -42,6 +42,9 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantCompo
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantCallEndedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantCallEstablishedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMigrateMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
@@ -92,6 +95,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
     private CellID cellID;
 
+    private WonderlandClientID clientID;
+
     private boolean isSpeaking;
     private boolean isMuted;
 
@@ -138,6 +143,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    clientState = new AudioParticipantComponentClientState(isSpeaking, isMuted);
 	}
 
+	this.clientID = clientID;
 	return super.getClientState(clientState, clientID, capabilities);
     }
 
@@ -278,6 +284,13 @@ public class AudioParticipantComponentMO extends CellComponentMO
         AppContext.getManager(VoiceManager.class).removeCallStatusListener(listener, callID);
     }
 
+    public void callTransferToSameNumber() {
+        ChannelComponentMO channelCompMO = (ChannelComponentMO)
+            cellRef.get().getComponent(ChannelComponentMO.class);
+
+	channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, true));
+    }
+
     public void callStatusChanged(CallStatus status) {
 	logger.finer("AudioParticipantComponent go call status:  " + status);
 
@@ -303,6 +316,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
 	AudioGroup secretAudioGroup;
 
+	WonderlandClientSender sender = WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
+
 	switch (code) {
 	case CallStatus.ESTABLISHED:
 	    if (player == null) {
@@ -312,6 +327,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
 	    vm.dump("all");
 	    player.setPrivateMixes(true);
+	    channelCompMO.sendAll(null, new AudioParticipantCallEstablishedMessage(cellID));
 	    break;
 
 	case CallStatus.MUTED:
@@ -366,6 +382,16 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    channelCompMO.sendAll(null, new AudioParticipantSpeakingMessage(cellID, false));
             break;
 
+	case CallStatus.MIGRATED:
+	    //channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, true));
+	    sender.send(clientID, new AudioParticipantMigrateMessage(cellID, true));
+	    break;
+
+	case CallStatus.MIGRATE_FAILED:
+	    //channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, false));
+	    sender.send(clientID, new AudioParticipantMigrateMessage(cellID, false));
+	    break;
+
 	case CallStatus.ENDED:
 	    if (player == null) {
 		logger.warning("Couldn't find player for " + status);
@@ -377,6 +403,9 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    for (int i = 0; i < audioGroups.length; i++) {
 		audioGroups[i].removePlayer(player);
 	    }
+
+	    channelCompMO.sendAll(null, new AudioParticipantCallEndedMessage(cellID, 
+		status.getOption("Reason")));
             break;
 	  
 	case CallStatus.BRIDGE_OFFLINE:

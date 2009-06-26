@@ -43,7 +43,6 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.jdesktop.mtgame.FrameRateListener;
-import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -67,8 +66,10 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private JRadioButtonMenuItem frontPersonRB;
     private final Map<JMenuItem, Integer> menuWeights = new HashMap<JMenuItem, Integer>();
     private JMenu frameRateMenu;
+    private int desiredFrameRate = 30;
+    private FrameRateListener frameRateListener = null;
     private JMenuItem fpsMI;
-    private Meter meter;
+    private Chart chart;
     private HUDComponent fpsComponent;
     private WorldManager wm;
 
@@ -301,6 +302,8 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     }
 
     public void setDesiredFrameRate(int desiredFrameRate) {
+        this.desiredFrameRate = desiredFrameRate;
+
         for (int i = 0; i < frameRateMenu.getItemCount(); i++) {
             JMenuItem item = frameRateMenu.getItem(i);
             String[] fpsString = item.getText().split(" ");
@@ -312,8 +315,12 @@ public class MainFrameImpl extends JFrame implements MainFrame {
             }
         }
         wm.getRenderManager().setDesiredFrameRate(desiredFrameRate);
-        if (meter != null) {
-            meter.setMaxValue(desiredFrameRate);
+
+        removeFrameRateListener(frameRateListener);
+        frameRateListener = addFrameRateListener(desiredFrameRate);
+
+        if (chart != null) {
+            chart.setMaxValue(desiredFrameRate);
         }
     }
 
@@ -566,32 +573,54 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     }
 
     public void showFPSMeter(boolean visible) {
-        if (meter == null) {
-            // display FPS meter
-            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        if (visible) {
+            if (chart == null) {
+                // display FPS meter
+                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-            // create fps Swing control
-            meter = new Meter("fps:");
-            meter.setPreferredSize(new Dimension(200, 30));
-            meter.setMaxValue(30);
+                // create fps Swing control
+                chart = new Chart("fps:");
+                chart.setSampleSize(200);
+                chart.setMaxValue(30);
+                chart.setPreferredSize(new Dimension(200, 30));
 
-            // create HUD control panel
-            fpsComponent = mainHUD.createComponent(meter);
-            fpsComponent.setDecoratable(false);
-            fpsComponent.setPreferredLocation(Layout.SOUTHEAST);
+                // create HUD control panel
+                fpsComponent = mainHUD.createComponent(chart);
+                fpsComponent.setDecoratable(false);
+                fpsComponent.setPreferredLocation(Layout.SOUTHEAST);
 
-            // add HUD control panel to HUD
-            mainHUD.addComponent(fpsComponent);
+                // add HUD control panel to HUD
+                mainHUD.addComponent(fpsComponent);
 
-            ClientContextJME.getWorldManager().getRenderManager().setFrameRateListener(new FrameRateListener() {
-
-                public void currentFramerate(float framerate) {
-                    meter.setValue(framerate);
-                }
-            }, 100);
+                removeFrameRateListener(frameRateListener);
+                frameRateListener = addFrameRateListener(desiredFrameRate);
+            }
+        } else {
+            removeFrameRateListener(frameRateListener);
         }
         fpsComponent.setVisible(visible);
         fpsMI.setSelected(visible);
+    }
+
+    public FrameRateListener addFrameRateListener(int frameRate) {
+        FrameRateListener listener = new FrameRateListener() {
+
+                public void currentFramerate(float fps) {
+                    if (chart != null) {
+                        chart.setValue(fps);
+                    }
+                }
+            };
+        ClientContextJME.getWorldManager().getRenderManager().setFrameRateListener(listener, frameRate);
+
+        return listener;
+    }
+
+    public void removeFrameRateListener(FrameRateListener listener) {
+        if (listener != null) {
+            ClientContextJME.getWorldManager().getRenderManager().setFrameRateListener(null, desiredFrameRate);
+            frameRateListener = null;
+        }
     }
 
     public void addServerURLListener(ServerURLListener listener) {

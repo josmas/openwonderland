@@ -33,6 +33,12 @@ import org.jdesktop.wonderland.server.UserMO;
  */
 @ExperimentalAPI
 public abstract class ViewCellMO extends CellMO {
+
+    public ViewCellMO() {
+        super();
+        addComponent(new ChannelComponentMO(this), ChannelComponentMO.class);
+        //addComponent(new MovableAvatarComponentMO(this), MovableComponentMO.class);
+    }
     
     public ViewCellMO(BoundingVolume localBounds, CellTransform transform) {
         super(localBounds, transform);

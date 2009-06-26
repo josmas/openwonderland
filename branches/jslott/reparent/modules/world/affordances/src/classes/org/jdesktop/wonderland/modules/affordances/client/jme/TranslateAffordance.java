@@ -43,6 +43,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -159,14 +160,19 @@ public class TranslateAffordance extends Affordance {
         // of the affordances: this handles the case where the bounds of the
         // scene graph has changed and we need to update the affordances
         // accordingly.
-        final Node[] nodeArray = new Node[1];
-        nodeArray[0] = rootNode;
         sceneRoot.addGeometricUpdateListener(updateListener = new GeometricUpdateListener() {
-            public void geometricDataChanged(Spatial arg0) {
-                Vector3f translation = arg0.getWorldTranslation();
-                nodeArray[0].setLocalTranslation(translation);
-                setSize(currentScale);
-                ClientContextJME.getWorldManager().addToUpdateList(nodeArray[0]);
+            public void geometricDataChanged(final Spatial spatial) {
+                // We need to perform this work inside a proper updater, to
+                // make sure we are MT thread safe
+                RenderUpdater u = new RenderUpdater() {
+                    public void update(Object obj) {
+                        Vector3f translation = spatial.getWorldTranslation();
+                        rootNode.setLocalTranslation(translation);
+                        setSizeInternal(currentScale);
+                        ClientContextJME.getWorldManager().addToUpdateList(rootNode);
+                    }
+                };
+                ClientContextJME.getWorldManager().addRenderUpdater(u, this);
             }
         });
     }
@@ -174,7 +180,22 @@ public class TranslateAffordance extends Affordance {
     /**
      * @inheritDoc()
      */
-    public void setSize(float size) {
+    public void setSize(final float size) {
+        // Sets the size of the affordance in a thread-safe manner
+        RenderUpdater u = new RenderUpdater() {
+            public void update(Object obj) {
+                setSizeInternal(size);
+            }
+        };
+        ClientContextJME.getWorldManager().addRenderUpdater(u, this);
+    }
+
+    /**
+     * Sets the size of the translate affordance, based upon the bounds of the
+     * screen graph of the Cell. Calls of this method should make sure it is
+     * invoked properly in MT Game to be thread safe.
+     */
+    private void setSizeInternal(float size) {
         // To set the scale properly, we need to compute the scale w.r.t the
         // current size of the object as a ratio of the original size of the
         // object (in case the size of the object has changed).

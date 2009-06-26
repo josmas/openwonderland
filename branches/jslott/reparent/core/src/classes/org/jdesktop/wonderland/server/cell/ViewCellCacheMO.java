@@ -78,23 +78,23 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     
     private final static Logger logger = Logger.getLogger(ViewCellCacheMO.class.getName());
     
-    private ManagedReference<ViewCellMO> viewRef;
+    protected ManagedReference<ViewCellMO> viewRef;
 
     // If this Set becomes large we may want to move it into it's own managed object
     // so we don't pay the penalty of serialization when processing avatar moves
-    private Set<CellID> loaded = new HashSet<CellID>();
+    protected Set<CellID> loaded = new HashSet<CellID>();
     
-    private WonderlandClientSender sender;
-    private WonderlandClientID clientID;
+    protected WonderlandClientSender sender;
+    protected WonderlandClientID clientID;
     
-    private WonderlandIdentity identity;
+    protected WonderlandIdentity identity;
 
-    private ClientCapabilities capabilities = null;
+    protected ClientCapabilities capabilities = null;
          
     private PeriodicTaskHandle task = null;
     
     // handle revalidates
-    private RevalidateScheduler scheduler;
+    protected RevalidateScheduler scheduler;
     
     // whether or not to aggregate messages
     private static final boolean AGGREGATE_MESSAGES = true;
@@ -121,7 +121,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Notify CellCache that user has logged in
      */
-    void login(WonderlandClientSender sender, WonderlandClientID clientID) {
+    public void login(WonderlandClientSender sender, WonderlandClientID clientID) {
         this.sender = sender;
         this.clientID = clientID;
 
@@ -153,7 +153,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Notify CellCache that user has logged out
      */
-    void logout(WonderlandClientID clientID) {
+    protected void logout(WonderlandClientID clientID) {
         logger.warning("DEBUG - logout");
         ViewCellMO view = viewRef.get();
         UniverseManagerFactory.getUniverseManager().viewLogout(view);
@@ -359,7 +359,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         }
     }
 
-    private void sendLoadMessages(Collection<CellDescription> cells) {
+    protected void sendLoadMessages(Collection<CellDescription> cells) {
+
+
         ManagedReference<ViewCellCacheMO> viewCellCacheRef =
                 AppContext.getDataManager().createReference(this);
 
@@ -458,12 +460,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      * Superclass of operations to modify the list of cached cells.  Operations
      * include adding, removing or updating the list of cells.
      */
-    private static abstract class CellOp 
+    protected static abstract class CellOp
             implements Serializable, Runnable 
     {
         protected CellDescription desc;
         protected WonderlandClientID clientID;
-        protected ManagedReference<ViewCellCacheMO> viewCellCacheRef;
+        protected ManagedReference<? extends ViewCellCacheMO> viewCellCacheRef;
         protected ClientCapabilities capabilities;
         
         // optional message list.  If the list is not null, messages will
@@ -478,7 +480,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     
         public CellOp(CellDescription desc,
                       WonderlandClientID clientID,
-                      ManagedReference<ViewCellCacheMO> viewCellCacheRef,
+                      ManagedReference<? extends ViewCellCacheMO> viewCellCacheRef,
                       ClientCapabilities capabilities) 
         {
             this.desc = desc;
@@ -509,10 +511,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Operation to add a cell to the set of cached cells
      */
-    private static class CellLoadOp extends CellOp {
+    public static class CellLoadOp extends CellOp {
         public CellLoadOp(CellDescription desc,
                          WonderlandClientID clientID,
-                         ManagedReference<ViewCellCacheMO> viewCellCacheRef,
+                         ManagedReference<? extends ViewCellCacheMO> viewCellCacheRef,
                          ClientCapabilities capabilities) {
             super (desc, clientID, viewCellCacheRef, capabilities);
         }
@@ -539,10 +541,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Operation to remove a cell from the list of cached cells
      */
-    private static class CellUnloadOp extends CellOp {
+    protected static class CellUnloadOp extends CellOp {
         public CellUnloadOp(CellDescription desc,
                          WonderlandClientID clientID,
-                         ManagedReference<ViewCellCacheMO> viewCellCacheRef,
+                         ManagedReference<? extends ViewCellCacheMO> viewCellCacheRef,
                          ClientCapabilities capabilities) {
             super (desc, clientID, viewCellCacheRef, capabilities);
         }
@@ -584,7 +586,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
      * are managed.  Some schedulers will perform the operations immediately,
      * while others will try to batch them up in a single task.
      */
-    private interface RevalidateScheduler {
+    public interface RevalidateScheduler {
         public void startRevalidate();
         public void schedule(CellOp op);
         public void endRevalidate();
@@ -605,7 +607,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     /**
      * Perform all revalidate operations immediately in this task.
      */
-    private class ImmediateRevalidateScheduler 
+    public class ImmediateRevalidateScheduler
             implements RevalidateScheduler, Serializable 
     {
         // the sender to send to

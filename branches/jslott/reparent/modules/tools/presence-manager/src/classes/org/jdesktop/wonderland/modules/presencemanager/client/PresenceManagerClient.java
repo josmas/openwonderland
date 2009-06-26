@@ -87,8 +87,6 @@ public class PresenceManagerClient extends BaseConnection implements
 
         presenceManager = (PresenceManagerImpl) PresenceManagerFactory.getPresenceManager(session);
 
-	presenceManager.dump();
-
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
         avatar.addViewCellConfiguredListener(this);
         if (avatar.getViewCell() != null) {
