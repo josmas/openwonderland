@@ -171,8 +171,10 @@ public class AudioParticipantComponent extends CellComponent implements
     public void messageReceived(CellMessage message) {
         if (message instanceof AudioParticipantCallEstablishedMessage) {
 	    if (callMigrationForm != null) {
-		callMigrationForm.setStatus("Call Established");
+		callMigrationForm.setStatus("Migrated");
 	    }
+
+	    return;
 	}
 
         if (message instanceof AudioParticipantMigrateMessage) {
@@ -214,7 +216,13 @@ public class AudioParticipantComponent extends CellComponent implements
 		}
 	    }
 
-	    if (callMigrationForm != null && reason.equals("User requested call termination") == false) {
+	    if (callMigrationForm == null) {
+		return;
+	    }
+
+	    if (reason.equals("User requested call termination") == false && 
+		    reason.indexOf("migrated") < 0) {
+
 		callMigrationForm.setStatus("Call ended:  " + reason);
 	    }
 
