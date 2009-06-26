@@ -124,7 +124,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    throw new IOException("Softphone needs java 1.5.0 or later to run");
         }
         
-	quiet = true;
+	quiet = false;
 
 	exitNotificationSent = false;
 
@@ -177,11 +177,16 @@ public class SoftphoneControlImpl implements SoftphoneControl {
      * could not be launched or was canceled by the user.
      */
     private String waitForAddress() throws IOException {
+	long start = System.currentTimeMillis();
+
 	synchronized (this) {
-	    try {
-                wait(60000);
-	    } catch (InterruptedException e) {
-		e.printStackTrace();
+	    while (softphoneAddress == null && System.currentTimeMillis() - start < 60000) {
+	        try {
+                    wait(60000);
+	        } catch (InterruptedException e) {
+		    System.out.println("INTERRUPTEDEXCEPTION!");
+		    e.printStackTrace();
+	        }
 	    }
 
 	    if (softphoneAddress == null) {
@@ -473,14 +478,15 @@ public class SoftphoneControlImpl implements SoftphoneControl {
                 softphoneOutputStream.write(bytes);
                 softphoneOutputStream.flush();
             } catch (IOException e) {
-                //e.printStackTrace();
-                softphoneOutputStream = null;
+                e.printStackTrace();
+                //softphoneOutputStream = null;
 
 		System.out.println("SoftphoneControl exception:  " + e.getMessage());
+		System.out.println("IS RUNNING? " + isRunning());
 
-		close(
-                    "There was an error trying to use the software phone.  "
-                    + "Please check your system's audio settings and try again.");
+		//close(
+                //    "There was an error trying to use the software phone.  "
+                //    + "Please check your system's audio settings and try again.");
             }
         }
     }

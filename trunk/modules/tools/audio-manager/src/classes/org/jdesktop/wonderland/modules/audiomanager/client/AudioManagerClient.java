@@ -497,8 +497,19 @@ public class AudioManagerClient extends BaseConnection implements
 
                     logger.fine("Starting softphone:  " + presenceInfo);
 
-                    // XXX need location and direction
-                    session.send(this, new PlaceCallMessage(presenceInfo, sipURL, 0., 0., 0., 90., false));
+		    if (sipURL != null) {
+                        // XXX need location and direction
+                        session.send(this, new PlaceCallMessage(presenceInfo, sipURL, 0., 0., 0., 90., false));
+		    } else {
+			System.out.println("Failed to start softphone, retrying.");
+
+			try {
+			    Thread.sleep(2000);
+			} catch (InterruptedException e) {
+			}
+			
+			connectSoftphone();
+		    }
                 } catch (IOException e) {
                     logger.warning(e.getMessage());
                 }
