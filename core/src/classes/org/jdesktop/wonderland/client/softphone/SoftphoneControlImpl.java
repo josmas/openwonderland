@@ -181,6 +181,7 @@ public class SoftphoneControlImpl implements SoftphoneControl {
 	    try {
                 wait(60000);
 	    } catch (InterruptedException e) {
+		e.printStackTrace();
 	    }
 
 	    if (softphoneAddress == null) {
