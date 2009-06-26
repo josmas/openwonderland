@@ -95,6 +95,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
     private CellID cellID;
 
+    private WonderlandClientID clientID;
+
     private boolean isSpeaking;
     private boolean isMuted;
 
@@ -141,6 +143,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	    clientState = new AudioParticipantComponentClientState(isSpeaking, isMuted);
 	}
 
+	this.clientID = clientID;
 	return super.getClientState(clientState, clientID, capabilities);
     }
 
@@ -281,6 +284,13 @@ public class AudioParticipantComponentMO extends CellComponentMO
         AppContext.getManager(VoiceManager.class).removeCallStatusListener(listener, callID);
     }
 
+    public void callTransferToSameNumber() {
+        ChannelComponentMO channelCompMO = (ChannelComponentMO)
+            cellRef.get().getComponent(ChannelComponentMO.class);
+
+	channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, true));
+    }
+
     public void callStatusChanged(CallStatus status) {
 	logger.finer("AudioParticipantComponent go call status:  " + status);
 
@@ -305,6 +315,8 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	Player player = vm.getPlayer(callId);
 
 	AudioGroup secretAudioGroup;
+
+	WonderlandClientSender sender = WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
 
 	switch (code) {
 	case CallStatus.ESTABLISHED:
@@ -371,11 +383,13 @@ public class AudioParticipantComponentMO extends CellComponentMO
             break;
 
 	case CallStatus.MIGRATED:
-	    channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, true));
+	    //channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, true));
+	    sender.send(clientID, new AudioParticipantMigrateMessage(cellID, true));
 	    break;
 
 	case CallStatus.MIGRATE_FAILED:
-	    channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, false));
+	    //channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, false));
+	    sender.send(clientID, new AudioParticipantMigrateMessage(cellID, false));
 	    break;
 
 	case CallStatus.ENDED:

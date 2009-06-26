@@ -215,6 +215,22 @@ public class AudioManagerConnectionHandler
 		return;
 	    }
 
+	    if (msg.getPhoneNumber().equals(cp.getPhoneNumber())) {
+		CellMO cellMO = CellManagerMO.getCellManager().getCell(msg.getPresenceInfo().cellID);
+
+		AudioParticipantComponentMO audioParticipantComponentMO = 
+	    	    cellMO.getComponent(AudioParticipantComponentMO.class);
+
+		if (audioParticipantComponentMO == null) {
+	    	    logger.warning("Cell " + cellMO.getCellID() 
+			+ " doesn't have an AudioParticipantComponent!");
+	    	    return;
+		}
+
+		audioParticipantComponentMO.callTransferToSameNumber();
+		return;
+	    }
+
             cp.setPhoneNumber(msg.getPhoneNumber());
 
 	    setJoinConfirmation(cp);
