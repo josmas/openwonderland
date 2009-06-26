@@ -293,9 +293,10 @@ public class NameTagNode extends Node {
                 break;
         }
 
-        if ((usernameAlias != null) && !username.equals(usernameAlias)) {
+        if ((alias != null) && !alias.equals(username)) {
             // displaying an alias
             setFont(ALIAS_NAME_FONT);
+            usernameAlias = alias;
             updateLabel(getDisplayName(usernameAlias, isSpeaking, isMuted));
         } else {
             // displaying user name
