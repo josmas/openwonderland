@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.appbase.client.view;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.Method;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
@@ -28,8 +27,8 @@ import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
-import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import javax.media.opengl.GLContext;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
@@ -133,14 +132,18 @@ public class Gui2DInterior extends Gui2D {
         @Override
         public void commitEvent(Event event) {
             logger.fine("Interior mouse commitEvent, event = " + event);
-            MouseEvent3D me3d = (MouseEvent3D) event;
+            final MouseEvent3D me3d = (MouseEvent3D) event;
 
             // When user has control all events over the interior are sent to the app.
             // First send it to the app's view for conversion to a 2D event.
             
             if (view != null) {
                 if (view.getWindow().getApp().getControlArb().hasControl()) {
-                    view.deliverEvent(view.getWindow(), me3d);
+                    SwingUtilities.invokeLater(new Runnable () {
+                        public void run () {
+                            view.deliverEvent(view.getWindow(), me3d);
+                        }
+                    });
                     return;
                 }
             }
