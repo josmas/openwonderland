@@ -465,10 +465,10 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                     // Choose a random config from the default configs
                     String configName = null;
                     if (femaleRB.isSelected()) {
-                        int i = (int) Math.round(Math.random()*defaultFemaleConfigs.length-1);
+                        int i = (int) Math.round(Math.random()*(defaultFemaleConfigs.length-1));
                         configName = "assets/configurations/"+defaultFemaleConfigs[i];
                     } else {
-                        int i = (int) Math.round(Math.random()*defaultMaleConfigs.length-1);
+                        int i = (int) Math.round(Math.random()*(defaultMaleConfigs.length-1));
                         configName = "assets/configurations/"+defaultMaleConfigs[i];
                     }
                     try {

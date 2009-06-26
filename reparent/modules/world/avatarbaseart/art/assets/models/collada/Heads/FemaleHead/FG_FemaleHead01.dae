@@ -953,7 +953,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="eyeL_hiFile" name="eyeL_hiFile">
-      <init_from>file:///Users/astahl/Documents/maya/projects/IMI/characater/heads/female1/female1_eyeL_hi.jpg</init_from>
+      <init_from>file:///Users/astahl/Documents/maya/projects/IMI/characater/heads/female1/New_eye_hi.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>
@@ -962,7 +962,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="eyeR_hiFile" name="eyeR_hiFile">
-      <init_from>file:///Users/astahl/Documents/maya/projects/IMI/characater/heads/female1/female1_eyeR_hi.jpg</init_from>
+      <init_from>file:///Users/astahl/Documents/maya/projects/IMI/characater/heads/female1/New_eye_hi.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>

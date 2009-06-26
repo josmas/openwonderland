@@ -44,6 +44,7 @@ import javax.swing.JPanel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -161,30 +162,51 @@ public class RotateAffordance extends Affordance {
         
         // Listen for changes to the cell's translation and apply the same
         // update to the root node of the affordances
-        final Node[] nodeArray = new Node[1];
-        nodeArray[0] = rootNode;
         sceneRoot.addGeometricUpdateListener(updateListener = new GeometricUpdateListener() {
-            public void geometricDataChanged(Spatial arg0) {
-                // For the rotate affordance we need to move it whenever the
-                // cell is moved, but also need to rotate it when the cell
-                // rotation changes too. We also need to account for any changes
-                // to the size of the cell's scene graph, so we reset the size
-                // here to take care of that.
-                Vector3f translation = arg0.getWorldTranslation();
-                nodeArray[0].setLocalTranslation(translation);
+            public void geometricDataChanged(final Spatial spatial) {
+                // We need to perform this work inside a proper updater, to
+                // make sure we are MT thread safe
+                RenderUpdater u = new RenderUpdater() {
+                    public void update(Object obj) {
+                        // For the rotate affordance we need to move it whenever
+                        // the cell is moved, but also need to rotate it when
+                        // the cell rotation changes too. We also need to
+                        // account for any changes to the size of the cell's
+                        // scene graph, so we reset the size here to take care
+                        // of that.
+                        Vector3f translation = spatial.getWorldTranslation();
+                        rootNode.setLocalTranslation(translation);
 
-                Quaternion rotation = arg0.getLocalRotation();
-                nodeArray[0].setLocalRotation(rotation);
-                setSize(currentScale);
-                ClientContextJME.getWorldManager().addToUpdateList(nodeArray[0]);
+                        Quaternion rotation = spatial.getLocalRotation();
+                        rootNode.setLocalRotation(rotation);
+                        setSizeInternal(currentScale);
+                        ClientContextJME.getWorldManager().addToUpdateList(rootNode);
+                    }
+                };
+                ClientContextJME.getWorldManager().addRenderUpdater(u, this);
             }
         });
     }
 
-    /**
+   /**
      * @inheritDoc()
      */
-    public void setSize(float size) {
+    public void setSize(final float size) {
+        // Sets the size of the affordance in a thread-safe manner
+        RenderUpdater u = new RenderUpdater() {
+            public void update(Object obj) {
+                setSizeInternal(size);
+            }
+        };
+        ClientContextJME.getWorldManager().addRenderUpdater(u, this);
+    }
+
+    /**
+     * Sets the size of the translate affordance, based upon the bounds of the
+     * screen graph of the Cell. Calls of this method should make sure it is
+     * invoked properly in MT Game to be thread safe.
+     */
+    public void setSizeInternal(float size) {
         // To set the scale properly, we need to compute the scale w.r.t the
         // current size of the object as a ratio of the original size of the
         // object (in case the size of the object has changed).

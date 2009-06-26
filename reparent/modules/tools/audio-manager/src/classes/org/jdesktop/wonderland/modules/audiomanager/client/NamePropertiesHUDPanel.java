@@ -26,7 +26,7 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
+import javax.swing.JSpinner.DefaultEditor;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
@@ -58,6 +58,10 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
     public NamePropertiesHUDPanel() {
         initComponents();
+        myNameFontSizeSpinner.setValue("Regular");
+        otherNamesFontSizeSpinner.setValue("Regular");
+        ((DefaultEditor) myNameFontSizeSpinner.getEditor()).getTextField().setEditable(false);
+        ((DefaultEditor) otherNamesFontSizeSpinner.getEditor()).getTextField().setEditable(false);
     }
 
     public NamePropertiesHUDPanel(PresenceInfo presenceInfo) {
@@ -162,12 +166,12 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
         avatarNamesLabel = new javax.swing.JLabel();
         showMyNameCheckBox = new javax.swing.JCheckBox();
         myFontSizeLabel = new javax.swing.JLabel();
-        myNameFontSizeComboBox = new javax.swing.JComboBox();
         showOtherNamesCheckBox = new javax.swing.JCheckBox();
         otherFontSizeLabel = new javax.swing.JLabel();
-        othersNameFontSizeComboBox = new javax.swing.JComboBox();
         cancelButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
+        myNameFontSizeSpinner = new javax.swing.JSpinner();
+        otherNamesFontSizeSpinner = new javax.swing.JSpinner();
 
         avatarNamesLabel.setText("Avatar Names");
 
@@ -181,14 +185,6 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
         myFontSizeLabel.setText("Font size:");
 
-        myNameFontSizeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Small", "Regular", "Large" }));
-        myNameFontSizeComboBox.setSelectedIndex(1);
-        myNameFontSizeComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                myNameFontSizeComboBoxActionPerformed(evt);
-            }
-        });
-
         showOtherNamesCheckBox.setSelected(true);
         showOtherNamesCheckBox.setText("Show other's names");
         showOtherNamesCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -198,14 +194,6 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
         });
 
         otherFontSizeLabel.setText("Font size:");
-
-        othersNameFontSizeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Small", "Regular", "Large" }));
-        othersNameFontSizeComboBox.setSelectedIndex(1);
-        othersNameFontSizeComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                othersNameFontSizeComboBoxActionPerformed(evt);
-            }
-        });
 
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -218,6 +206,20 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
+            }
+        });
+
+        myNameFontSizeSpinner.setModel(new javax.swing.SpinnerListModel(new String[] {"Small", "Regular", "Large"}));
+        myNameFontSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                myNameFontSizeSpinnerStateChanged(evt);
+            }
+        });
+
+        otherNamesFontSizeSpinner.setModel(new javax.swing.SpinnerListModel(new String[] {"Small", "Regular", "Large"}));
+        otherNamesFontSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                otherNamesFontSizeSpinnerStateChanged(evt);
             }
         });
 
@@ -241,17 +243,17 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(cancelButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(okButton)
-                                .add(24, 24, 24))
+                                .add(okButton))
                             .add(layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(org.jdesktop.layout.GroupLayout.TRAILING, myFontSizeLabel)
                                     .add(org.jdesktop.layout.GroupLayout.TRAILING, otherFontSizeLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(othersNameFontSizeComboBox, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(myNameFontSizeComboBox, 0, 114, Short.MAX_VALUE))))))
-                .addContainerGap(14, Short.MAX_VALUE))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(myNameFontSizeSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                                    .add(otherNamesFontSizeSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))))
+                        .add(24, 24, 24)))
+                .add(14, 14, 14))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -260,16 +262,16 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
                 .add(avatarNamesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(showMyNameCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(myFontSizeLabel)
-                    .add(myNameFontSizeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(2, 2, 2)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(myNameFontSizeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(myFontSizeLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(showOtherNamesCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(2, 2, 2)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(otherFontSizeLabel)
-                    .add(othersNameFontSizeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(otherNamesFontSizeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cancelButton)
@@ -286,37 +288,20 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
         listeners.firePropertyChange("cancel", new String(""), null);
 }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void myNameFontSizeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myNameFontSizeComboBoxActionPerformed
-        JComboBox cb = (JComboBox) evt.getSource();
-
-        updateMyNameTag(true);
-}//GEN-LAST:event_myNameFontSizeComboBoxActionPerformed
-
-    private void othersNameFontSizeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_othersNameFontSizeComboBoxActionPerformed
-        JComboBox cb = (JComboBox) evt.getSource();
-
-        updateOthersNameTag(true);
-    }//GEN-LAST:event_othersNameFontSizeComboBoxActionPerformed
-
     private void updateMyNameTag(boolean showingName) {
         if (showingName) {
-            switch (myNameFontSizeComboBox.getSelectedIndex()) {
-                case 0:
-                    myNameTagAttribute = NameTagAttribute.SMALL_FONT;
-                    break;
-                case 1:
-                    myNameTagAttribute = NameTagAttribute.REGULAR_FONT;
-                    break;
-                case 2:
-                    myNameTagAttribute = NameTagAttribute.LARGE_FONT;
-                    break;
-                default:
-                    break;
+            if (myNameFontSizeSpinner.getValue().equals("Small")) {
+                myNameTagAttribute = NameTagAttribute.SMALL_FONT;
+            } else if (myNameFontSizeSpinner.getValue().equals("Regular")) {
+                myNameTagAttribute = NameTagAttribute.REGULAR_FONT;
+            } else if (myNameFontSizeSpinner.getValue().equals("Large")) {
+                myNameTagAttribute = NameTagAttribute.LARGE_FONT;
             }
-            myNameFontSizeComboBox.setEnabled(true);
+
+            myNameFontSizeSpinner.setEnabled(true);
         } else {
             myNameTagAttribute = NameTagAttribute.HIDE;
-            myNameFontSizeComboBox.setEnabled(false);
+            myNameFontSizeSpinner.setEnabled(false);
         }
         applyChanges();
     }
@@ -329,23 +314,18 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
     private void updateOthersNameTag(boolean showingName) {
         if (showingName) {
-            switch (othersNameFontSizeComboBox.getSelectedIndex()) {
-                case 0:
-                    otherNameTagAttributes = NameTagAttribute.SMALL_FONT;
-                    break;
-                case 1:
-                    otherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
-                    break;
-                case 2:
-                    otherNameTagAttributes = NameTagAttribute.LARGE_FONT;
-                    break;
-                default:
-                    break;
+            if (otherNamesFontSizeSpinner.getValue().equals("Small")) {
+                otherNameTagAttributes = NameTagAttribute.SMALL_FONT;
+            } else if (otherNamesFontSizeSpinner.getValue().equals("Regular")) {
+                otherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
+            } else if (otherNamesFontSizeSpinner.getValue().equals("Large")) {
+                otherNameTagAttributes = NameTagAttribute.LARGE_FONT;
             }
-            othersNameFontSizeComboBox.setEnabled(true);
+
+            otherNamesFontSizeSpinner.setEnabled(true);
         } else {
             otherNameTagAttributes = NameTagAttribute.HIDE;
-            othersNameFontSizeComboBox.setEnabled(false);
+            otherNamesFontSizeSpinner.setEnabled(false);
         }
         applyChanges();
     }
@@ -355,14 +335,23 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
         updateOthersNameTag(cb.isSelected());
     }//GEN-LAST:event_showOtherNamesCheckBoxItemStateChanged
+
+    private void myNameFontSizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_myNameFontSizeSpinnerStateChanged
+        updateMyNameTag(showMyNameCheckBox.isSelected());
+    }//GEN-LAST:event_myNameFontSizeSpinnerStateChanged
+
+    private void otherNamesFontSizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_otherNamesFontSizeSpinnerStateChanged
+        updateOthersNameTag(showOtherNamesCheckBox.isSelected());
+}//GEN-LAST:event_otherNamesFontSizeSpinnerStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel avatarNamesLabel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel myFontSizeLabel;
-    private javax.swing.JComboBox myNameFontSizeComboBox;
+    private javax.swing.JSpinner myNameFontSizeSpinner;
     private javax.swing.JButton okButton;
     private javax.swing.JLabel otherFontSizeLabel;
-    private javax.swing.JComboBox othersNameFontSizeComboBox;
+    private javax.swing.JSpinner otherNamesFontSizeSpinner;
     private javax.swing.JCheckBox showMyNameCheckBox;
     private javax.swing.JCheckBox showOtherNamesCheckBox;
     // End of variables declaration//GEN-END:variables

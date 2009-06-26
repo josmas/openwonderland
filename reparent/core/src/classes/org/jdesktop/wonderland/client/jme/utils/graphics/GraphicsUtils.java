@@ -37,6 +37,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -505,5 +507,19 @@ public class GraphicsUtils {
 
         System.err.println("Spatial render states = ");
         printCommonRenderStates(spatial);
+    }
+
+    /**
+     * Traverse the graph, printing the world bounds of each node
+     * @param roo
+     */
+    public static void printGraphBounds(Node root) {
+        TreeScan.findNode(root, new ProcessNodeInterface() {
+            public boolean processNode(Spatial node) {
+                System.err.println(node+"  "+node.getWorldBound());
+                return true;
+            }
+
+        });
     }
 }

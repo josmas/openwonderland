@@ -31,6 +31,7 @@ import javolution.util.FastList;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.jme.input.InputEvent3D;
@@ -104,9 +105,9 @@ public class AvatarControls extends ViewControls implements JSceneEventProcessor
             ClientContext.getInputManager().addGlobalEventListener(eventListener);
             // register the avatar controls with the world manager
             ClientContextJME.getWorldManager().addUserData(JSceneEventProcessor.class, this);
-            ((AvatarImiJME)viewCell.getCellRenderer(RendererType.RENDERER_JME)).selectForInput(enable);
+            ((AvatarCell)viewCell).setSelectedForInput(enable);
         } else {
-            ((AvatarImiJME)viewCell.getCellRenderer(RendererType.RENDERER_JME)).selectForInput(enable);
+            ((AvatarCell)viewCell).setSelectedForInput(enable);
             ClientContext.getInputManager().removeGlobalEventListener(eventListener);
             ClientContextJME.getWorldManager().removeUserData(JSceneEventProcessor.class);
         }
