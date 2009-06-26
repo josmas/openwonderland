@@ -36,7 +36,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -154,6 +153,10 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         contextPanel.add(titlePanel);
         contextPanel.invalidate();
 
+        // Tell the context menu listeners that we are about to display a
+        // context menu
+        ContextMenuManager.getContextMenuManager().fireContextMenuEvent(event);
+        
         // Look for the context component on the current Cell, we need to find
         // out whether we want to show the standard menu items.
         ContextMenuComponent cmc = cell.getComponent(ContextMenuComponent.class);
