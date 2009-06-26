@@ -40,6 +40,7 @@ public abstract class HUDManager {
     /**
      * Gets a HUD by name
      * @param name the name of the HUD to get
+     * @return a HUD if there's a HUD with the specified name
      */
     public abstract HUD getHUD(String name);
 

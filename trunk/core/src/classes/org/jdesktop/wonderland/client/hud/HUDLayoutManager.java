@@ -67,6 +67,7 @@ public interface HUDLayoutManager {
      * Get the position of the given component according to the specified
      * layout.
      * @param component the component for which the position is needed
+     * @return returns the location of the component on its containing HUD
      */
     public Vector2f getLocation(HUDComponent component);
 }
