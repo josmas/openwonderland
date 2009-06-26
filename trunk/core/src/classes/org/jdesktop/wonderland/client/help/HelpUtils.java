@@ -21,8 +21,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JMenu;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.help.HelpInfo;
 
 /**
@@ -40,37 +39,24 @@ public class HelpUtils {
     private static Logger logger = Logger.getLogger(HelpUtils.class.getName());
     
     /**
-     * Asks the web server for the help menu items.
+     * Asks the web server for the help menu items given the current primary
+     * server.
+     *
+     * @param manager The current primary server
+     * @return An object representing the Help menu structure
      */
-    public static HelpInfo fetchHelpInfo() {
+    public static HelpInfo fetchHelpInfo(ServerSessionManager manager) {
         try {
-            /* Open an HTTP connection to the Jersey RESTful service */
-            URL serverURL = new URL(System.getProperty(JmeClientMain.SERVER_URL_PROP));
-            URL url = new URL(serverURL, BASE_URL + "info/get");
+            // Open an HTTP connection to the Jersey RESTful service using the
+            // base URL of the primary connection.
+            String serverURL =  manager.getServerURL();
+            System.out.println("HELP URL " + serverURL + BASE_URL + "info/get");
+            URL url = new URL(serverURL + BASE_URL + "info/get");
             return HelpInfo.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
             /* Log an error and return null */
-            logger.log(Level.WARNING, "[HELP] FETCH HELP INFO Failed", excp);
+            logger.log(Level.WARNING, "Fetch of Help Info Failed", excp);
             return null;
         }
-    }
-    
-    /**
-     * Returns a menu representing the help system
-     */
-    public static JMenu getHelpMenu() {
-        /* Fetch the menu structure, if it does not exist, return an empty menu */
-        HelpInfo helpInfo = HelpUtils.fetchHelpInfo();
-        JMenu helpMenu = new JMenu("Help");
-        if (helpInfo == null) {
-            return helpMenu;
-        }
-        
-        /* Iterate through all of the entries and create the help menu structure */
-        HelpInfo.HelpMenuEntry entries[] = helpInfo.getHelpEntries();
-        for (HelpInfo.HelpMenuEntry entry : entries) {
-            // TODO
-        }
-        return helpMenu;
     }
 }
