@@ -25,11 +25,27 @@ import java.awt.event.ActionListener;
  */
 public interface HUDButton extends HUDComponent {
 
+    /**
+     * Sets the label on the button
+     * @param label the text to display on the button
+     */
     public void setLabel(String label);
 
+    /**
+     * Gets the text label
+     * @return the label text
+     */
     public String getLabel();
 
+    /**
+     * Adds an action listener to be notified when the button is pressed
+     * @param listener the listener to add
+     */
     public void addActionListener(ActionListener listener);
 
+    /**
+     * Removes an action listener from this button
+     * @param listener the listener to remove
+     */
     public void removeActionListener(ActionListener listener);
 }

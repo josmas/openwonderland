@@ -30,34 +30,93 @@ public class HUDComponentEvent {
     private ComponentEventType eventType;
     private Date eventTime;
 
-    // the types of HUDComponent events
+    /**
+     * Types of HUD component events
+     */
     public enum ComponentEventType {
 
+        /**
+         * A HUD component has been created
+         */
         CREATED,
+        /**
+         * A HUD component is visible on the HUD
+         */
         APPEARED,
+        /**
+         * A HUD component is visible in world
+         */
         APPEARED_WORLD,
+        /**
+         * A HUD component is no longer visible on the HUD
+         */
         DISAPPEARED,
+        /**
+         * A HUD component is no longer visible in world
+         */
         DISAPPEARED_WORLD,
+        /**
+         * A HUD component has changed display modes
+         */
         CHANGED_MODE,
+        /**
+         * A HUD component has moved on the HUD
+         */
         MOVED,
+        /**
+         * A HUD component has moved in world
+         */
         MOVED_WORLD,
+        /**
+         * A HUD component has resized
+         */
         RESIZED,
+        /**
+         * A HUD component is minimized
+         */
         MINIMIZED,
+        /**
+         * A HUD component is maximized
+         */
         MAXIMIZED,
+        /**
+         * A HUD component is iconified
+         */
         ICONIFIED,
+        /**
+         * A HUD component is enabled
+         */
         ENABLED,
+        /**
+         * A HUD component is disabled
+         */
         DISABLED
     };
 
+    /**
+     * Create a new instance of a HUD Component Event
+     * @param component the HUD component associated with this event
+     */
     public HUDComponentEvent(HUDComponent component) {
         this.component = component;
     }
 
+    /**
+     * Create a new instance of a HUD Component Event
+     * @param component the HUD component associated with this event
+     * @param eventType the event type
+     */
     public HUDComponentEvent(HUDComponent component, ComponentEventType eventType) {
         this.component = component;
         this.eventType = eventType;
     }
 
+    /**
+     * Create a new instance of a HUD Component Event
+     * @param component the HUD component associated with this event
+     * @param eventType the event type
+     * @param eventTime the time of the event
+     */
     public HUDComponentEvent(HUDComponent component, ComponentEventType eventType,
             Date eventTime) {
         this.component = component;
