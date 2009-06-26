@@ -264,6 +264,11 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         }
 
 
+        // Remember the selected index before we clear the capabilities panel.
+        // We do this to try to keep the same capability selected if at all
+        // possible.
+        int oldSelectedIndex = capabilityList.getSelectedIndex();
+
         // Remove any existing panels from the GUI. We first need to tell them
         // to close themselves. We do this before we set to the new selected
         // Cell.
@@ -294,17 +299,27 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             updateGUI();
         }
 
-        // Set the initial selected capability to "Basic"
-        capabilityList.setSelectedIndex(0);
+        // Try to set the selected index intelligently. A great example is if
+        // you select "Position" in one Cell and want to compare with the
+        // "Position" of another Cell. It's a pain to (1) select "Position",
+        // (2) select another Cell, (3) select "Position" again. So we try to
+        // keep the same tab selected.
+        if (capabilityList.getModel().getSize() > oldSelectedIndex && oldSelectedIndex != -1) {
+            capabilityList.setSelectedIndex(oldSelectedIndex);
+        }
+        else {
+            // Set the initial selected capability to "Basic"
+            capabilityList.setSelectedIndex(0);
+        }
         
         // Debug aid, prints out the graph for selected cells
-        CellRendererJME rend = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-        if (rend!=null) {
-            Entity ent = rend.getEntity();
-            Node root = ent.getComponent(RenderComponent.class).getSceneRoot();
-            root.updateGeometricState(0, true);
-            print(root, 0);
-        }
+//        CellRendererJME rend = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+//        if (rend!=null) {
+//            Entity ent = rend.getEntity();
+//            Node root = ent.getComponent(RenderComponent.class).getSceneRoot();
+//            root.updateGeometricState(0, true);
+//            print(root, 0);
+//        }
     }
 
     private void print(Spatial n, int level) {
