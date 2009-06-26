@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -59,7 +60,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
     private PresenceManager pm;
     private PresenceInfo presenceInfo;
     private Map<PresenceInfo, HUDComponent> changeNameMap = Collections.synchronizedMap(new HashMap<PresenceInfo, HUDComponent>());
-    private Map<String, Integer> usernameMap = Collections.synchronizedMap(new HashMap<String, Integer>());
+    private ConcurrentHashMap<String, String> usernameMap = new ConcurrentHashMap<String, String>();
     private HUDComponent namePropertiesHUDComponent;
     private String[] selection = null;
     private DefaultListModel userListModel;
@@ -115,11 +116,16 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 // add to list model
                 userListModel.addElement(displayName);
                 // remember username and position in list model
-                usernameMap.put(username, userListModel.indexOf(displayName));
+                usernameMap.put(username, displayName);
             } else {
                 // existing user
                 // update entry in list model
-                userListModel.setElementAt(displayName, usernameMap.get(username));
+                String oldName = usernameMap.get(username);
+                if (!displayName.equals(oldName)) {
+                    usernameMap.replace(username, displayName);
+                    int index = userListModel.indexOf(oldName);
+                    userListModel.setElementAt(displayName, index);
+                }
             }
         }
 
@@ -129,7 +135,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             // for each user previously displayed...
             String username = (String) iter.next();
             boolean found = false;
-            
+
             // check if user is in current presence list
             for (int i = 0; i < presenceInfoList.length; i++) {
                 PresenceInfo info = presenceInfoList[i];
@@ -139,8 +145,8 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 }
             }
             if (!found) {
-                // user is not longer present, remove them from the user list
-                userListModel.removeElementAt(usernameMap.get(username));
+                // user is no longer present, remove them from the user list
+                userListModel.removeElement(usernameMap.get(username));
                 usernameMap.remove(username);
             }
         }
