@@ -44,7 +44,6 @@ public class RunXAppCellFactory implements CellFactorySPI {
         return new String[] {};
     }
 
-    // TODO: jordan: how does he handle a null return?
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
 //
 //        // Show dialog to query values
