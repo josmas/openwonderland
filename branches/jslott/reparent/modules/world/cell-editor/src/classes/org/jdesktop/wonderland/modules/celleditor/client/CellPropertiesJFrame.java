@@ -106,12 +106,15 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
     private PropertiesFactorySPI cellProperties = null;
     private DefaultListModel listModel = null;
     private DefaultMutableTreeNode treeRoot = null;
-    private Map<Cell, DefaultMutableTreeNode> cellNodes = null;
     private CellStatusChangeListener cellListener = null;
     private TreeSelectionListener treeListener = null;
     private DefaultMutableTreeNode dragOverTreeNode = null;
     private Set<Class> dirtyPanelSet = new HashSet();
     private StateUpdates stateUpdates = null;
+
+    // A Map from the Cell to its node in the tree. All access to this Map must
+    // happen in the AWT Event Thread to insure synchronized access.
+    private Map<Cell, DefaultMutableTreeNode> cellNodes = null;
 
     // The two standard panels for all Cells: Basic and Position
     private PropertiesFactorySPI basicPropertiesFactory = null;
@@ -159,6 +162,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                             if (node != null) {
                                 TreeModel m = cellHierarchyTree.getModel();
                                 ((DefaultTreeModel) m).removeNodeFromParent(node);
+                                cellNodes.remove(cell);
                             }
                         }
                         else if (status == CellStatus.RENDERING) {
@@ -177,15 +181,13 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             public void valueChanged(TreeSelectionEvent e) {
                 DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)
                         cellHierarchyTree.getLastSelectedPathComponent();
-                if (selectedNode!=null) {
+                if (selectedNode != null) {
                     Object userObject = selectedNode.getUserObject();
                     if (userObject instanceof Cell) {
                         setSelectedCell((Cell)userObject);
                     }
-                    else {
-                        setSelectedCell(null);
-                    }
-                } else {
+                }
+                else {
                     setSelectedCell(null);
                 }
             }
@@ -304,7 +306,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         // "Position" of another Cell. It's a pain to (1) select "Position",
         // (2) select another Cell, (3) select "Position" again. So we try to
         // keep the same tab selected.
-        if (capabilityList.getModel().getSize() > oldSelectedIndex && oldSelectedIndex != -1) {
+        if (listModel.getSize() > oldSelectedIndex && oldSelectedIndex != -1) {
             capabilityList.setSelectedIndex(oldSelectedIndex);
         }
         else {
@@ -1168,36 +1170,36 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                 }
             }
 
-            // Compute child transform change
+            // Compute child transform change. We first find the world transform
+            // of the current parent. If there is no old parent (e.g. if the
+            // Cell is at the root), then use a null transform.
             Cell oldParent = draggedCell.getParent();
-            CellTransform oldParentWorld;
-            if (oldParent == null)
-                oldParentWorld = new CellTransform(null, null);
-            else
+            CellTransform oldParentWorld = new CellTransform(null, null);
+            if (oldParent != null) {
                 oldParentWorld = oldParent.getWorldTransform();
+            }
 
-            CellTransform newParentWorld;
-            if (newParent == null)
-                newParentWorld = new CellTransform(null, null);
-            else
+            // Find the world transform of the new parent. If there is no new
+            // parent (e.g. if the Cell is to be placed at the world root), then
+            // use a null transform.
+            CellTransform newParentWorld = new CellTransform(null, null);
+            if (newParent != null) {
                 newParentWorld = newParent.getWorldTransform();
+            }
 
-//            ArrayList<CellTransform> transformGraph = new ArrayList();
+            // Compute the new local transform of the moved Cell. We find the
+            // transform that will take us from the old parent to the new
+            // parent, and transform the transform of the Cell by that.
             newParentWorld.invert();
-
             newParentWorld.mul(oldParentWorld);
             newParentWorld.mul(draggedCell.getLocalTransform());
 
-            System.out.println("TRANSFORM AFTER REPARENT TRANS: " +
-                    newParentWorld.getTranslation(null).toString() +
-                    " SCALE: " + newParentWorld.getScaling() +
-                    " ROTATION: " + newParentWorld.getRotation(null).toString());
-            
+
+//            ArrayList<CellTransform> transformGraph = new ArrayList();
 //            transformGraph.add(newParentWorld.clone(null)); // Inverted newParentWorld
 //            transformGraph.add(oldParentWorld);
 //            transformGraph.add(draggedCell.getLocalTransform());
 //            CellTransform tmp = CellTransform.computeGraph(transformGraph);
-//
 //            System.err.println("New Child Transform "+tmp);
 
             // Send a message to the server indicating the change in the
