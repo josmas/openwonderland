@@ -1565,6 +1565,31 @@ public abstract class Window2D {
     }
 
     /**
+     * Perform any pre-processing necessary because a context menu is about
+     * to be displayed for this window.
+     */
+    public void contextMenuDisplayed(ContextMenuComponent contextMenuComp) {
+        // If the window type is PRIMARY/UNKNOWN, then we want to display the
+        // standard context menu items, otherwise if secondary, we do not
+        switch (type) {
+
+            case PRIMARY:
+            case UNKNOWN:
+                contextMenuComp.setShowStandardMenuItems(true);
+                break; 
+
+            case SECONDARY:
+                contextMenuComp.setShowStandardMenuItems(false);
+                break;
+
+            case POPUP:
+            default:
+                // Do nothing?
+                break; 
+        }
+    }
+
+    /**
      * Return the window menu items for this window based on its current state.
      */
     public ContextMenuItem[] windowMenuItems (ContextMenuComponent contextMenuComp) {
@@ -1573,7 +1598,7 @@ public abstract class Window2D {
 
         case PRIMARY:
         case UNKNOWN:
-            contextMenuComp.setShowStandardMenuItems(true);
+//            contextMenuComp.setShowStandardMenuItems(true);
 
             // ITEM 1: Take/release control
             if (app.getControlArb().hasControl()) {
@@ -1622,7 +1647,7 @@ public abstract class Window2D {
         case SECONDARY:
             // TODO: bug workaround for 231
             //contextMenuComp.setShowStandardMenuItems(false);
-            contextMenuComp.setShowStandardMenuItems(true);
+//            contextMenuComp.setShowStandardMenuItems(true);
 
             if (app.getControlArb().hasControl()) {
                 // ITEMS 1 & 2: Restacking items
