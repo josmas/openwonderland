@@ -18,15 +18,18 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import imi.character.CharacterEyes;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import javax.swing.JCheckBox;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDButton;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 /**
@@ -39,8 +42,10 @@ public class GestureHUD {
     private static final Logger logger = Logger.getLogger(GestureHUD.class.getName());
     private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
     private boolean visible = false;
+    private boolean showingGestures = true;
     private Map<String, String> gestureMap = new HashMap();
     private Map<String, HUDButton> buttonMap = new HashMap();
+    private HUDButton showGesturesButton;
     private HUD mainHUD;
     // map gestures to column, row locations on gesture HUD
     private String[][] gestures = {
@@ -75,13 +80,32 @@ public class GestureHUD {
                 if (GestureHUD.this.visible == visible) {
                     return;
                 }
-                GestureHUD.this.visible = visible;
-                for (String gesture : buttonMap.keySet()) {
-                    HUDButton button = buttonMap.get(gesture);
-                    button.setVisible(visible);
+                if (showGesturesButton == null) {
+                    showGesturesButton = mainHUD.createButton("Hide Gestures");
+                    showGesturesButton.setDecoratable(false);
+                    showGesturesButton.setLocation(leftMargin, bottomMargin);
+                    showGesturesButton.addActionListener(new ActionListener() {
+
+                        public void actionPerformed(ActionEvent event) {
+                            showingGestures = (showGesturesButton.getLabel().equals("Hide Gestures")) ? false : true;
+                            showGesturesButton.setLabel(showingGestures ? "Hide Gestures" : "Show Gestures");
+                            showGestureButtons(showingGestures);
+                        }
+                    });
+                    mainHUD.addComponent(showGesturesButton);
                 }
+                GestureHUD.this.visible = visible;
+                showGesturesButton.setVisible(visible);
+                showGestureButtons(visible && showingGestures);
             }
         });
+    }
+
+    public void showGestureButtons(boolean show) {
+        for (String gesture : buttonMap.keySet()) {
+            HUDButton button = buttonMap.get(gesture);
+            button.setVisible(show);
+        }
     }
 
     public boolean isVisible() {
