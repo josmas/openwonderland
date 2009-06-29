@@ -78,14 +78,14 @@ public class GestureHUD {
                     return;
                 }
                 if (showGesturesButton == null) {
-                    showGesturesButton = mainHUD.createButton("Hide Gestures");
+                    showGesturesButton = mainHUD.createButton(bundle.getString("HideGestures"));
                     showGesturesButton.setDecoratable(false);
                     showGesturesButton.setLocation(leftMargin, bottomMargin);
                     showGesturesButton.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent event) {
-                            showingGestures = (showGesturesButton.getLabel().equals("Hide Gestures")) ? false : true;
-                            showGesturesButton.setLabel(showingGestures ? "Hide Gestures" : "Show Gestures");
+                            showingGestures = (showGesturesButton.getLabel().equals(bundle.getString("HideGestures"))) ? false : true;
+                            showGesturesButton.setLabel(showingGestures ? bundle.getString("HideGestures") : bundle.getString("ShowGestures"));
                             showGestureButtons(showingGestures);
                         }
                     });
