@@ -80,6 +80,13 @@ public class WonderlandHUD implements HUD {
     /**
      * {@inheritDoc}
      */
+    public HUDComponent createComponent() {
+        return new HUDComponent2D();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public HUDComponent createComponent(JComponent component) {
         return new HUDComponent2D(component);
     }
