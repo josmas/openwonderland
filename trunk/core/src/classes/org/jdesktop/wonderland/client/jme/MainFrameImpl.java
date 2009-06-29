@@ -582,7 +582,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 chart = new Chart("fps:");
                 chart.setSampleSize(200);
                 chart.setMaxValue(30);
-                chart.setPreferredSize(new Dimension(200, 30));
+                chart.setPreferredSize(new Dimension(200, 34));
 
                 // create HUD control panel
                 fpsComponent = mainHUD.createComponent(chart);
