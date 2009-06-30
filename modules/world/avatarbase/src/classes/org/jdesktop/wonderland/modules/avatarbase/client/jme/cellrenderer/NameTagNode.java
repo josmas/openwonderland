@@ -110,6 +110,7 @@ public class NameTagNode extends Node {
         nameTagMap.put(name, this);
 
         setLabelText(name);
+	setNameTag(EventType.REGULAR_FONT, name, name);
     }
 
     public void done() {
@@ -341,4 +342,5 @@ public class NameTagNode extends Node {
             }
         });
     }
+
 }
