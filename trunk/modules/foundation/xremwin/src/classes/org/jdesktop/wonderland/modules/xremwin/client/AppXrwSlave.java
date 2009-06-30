@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
+import javax.swing.JOptionPane;
 
 /**
  * A Slave Xremwin app. This is the AppXrw subclass used on a client machine
@@ -44,7 +45,9 @@ public class AppXrwSlave extends AppXrw {
      */
     public AppXrwSlave(String appName, Vector2f pixelScale, 
                        ProcessReporter reporter, AppXrwConnectionInfo connectionInfo, 
-                       WonderlandSession session, View2DDisplayer displayer) {
+                       WonderlandSession session, View2DDisplayer displayer) 
+        throws InstantiationException
+    {
 
         super(appName, new ControlArbXrw(), pixelScale);
         controlArb.setApp(this);
@@ -57,9 +60,10 @@ public class AppXrwSlave extends AppXrw {
         try {
             client = new ClientXrwSlave(this, (ControlArbXrw) controlArb, session, connectionInfo, reporter);
         } catch (InstantiationException ex) {
-            ex.printStackTrace();
-            reportLaunchError("Cannot create Xremwin protocol client for " + appName);
+            JOptionPane.showMessageDialog(null, "Cannot create Xremwin protocol client for " + appName, 
+                                          "Error", JOptionPane.ERROR_MESSAGE);
             cleanup();
+            throw new InstantiationException();
         }
 
         // Finally, enable the client
