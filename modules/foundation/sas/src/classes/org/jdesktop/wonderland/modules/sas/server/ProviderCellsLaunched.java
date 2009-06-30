@@ -49,5 +49,6 @@ public class ProviderCellsLaunched implements ManagedObject, Serializable {
 
     public void clear() {
         cellsLaunched.clear();
+        AppContext.getDataManager().markForUpdate(this);
     }
 }

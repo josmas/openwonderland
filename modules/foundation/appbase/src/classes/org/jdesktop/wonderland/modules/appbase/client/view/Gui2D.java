@@ -212,9 +212,13 @@ public class Gui2D {
          * {@inheritDoc}
          */
         @Override
-        public void commitEvent(Event event) {
+        public void commitEvent(final Event event) {
             if (view != null) {
-                view.deliverEvent(view.getWindow(), (MouseEvent3D) event);
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        view.deliverEvent(view.getWindow(), (MouseEvent3D) event);
+                    }
+                });
             }
         }
     }
