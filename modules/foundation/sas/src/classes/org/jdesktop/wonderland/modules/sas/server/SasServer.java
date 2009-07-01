@@ -106,7 +106,12 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         logger.info("**** provider added to xremwin list, clientID = " + clientID);
 
         // See if there are any pending launches
-        tryPendingLaunches(execCap);
+        try {
+            tryPendingLaunches(execCap);
+        } catch (InstantiationException ie) {
+            logger.warning("Exception during new provider connection execution of pending launches.");
+            logger.warning("Exception = " + ie);
+        }
 
         // Mark server modified
         AppContext.getDataManager().markForUpdate(this);
@@ -148,8 +153,9 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
     /**
      * {@inheritDoc}
      */
-    public void appLaunch (AppConventionalCellMO cell, String executionCapability, String appName, 
-                           String command) {
+    public void appLaunch (AppConventionalCellMO cell, String executionCapability, String appName, String command) 
+        throws InstantiationException 
+    {
         logger.info("***** appLaunch, command = " + command);
 
         CellID cellID = cell.getCellID();
@@ -171,6 +177,9 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
 
         // TODO: someday: Right now we just try only the first provider. Eventually try multiple providers.
         ProviderProxy provider = providers.getFirst();
+        if (provider == null) {
+            throw new InstantiationException("Cannot find a provider for " + executionCapability);
+        }
 
         // Now request the provider to launch the app
         launchesInFlight.put(cellID, launchReq);
@@ -233,7 +242,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         // TODO: make sure we remove all inflight requests and messages and pending messages as well
     }
 
-    private void tryPendingLaunches (String executionCapability) {
+    private void tryPendingLaunches (String executionCapability) throws InstantiationException {
         LinkedList<LaunchRequest> reqs = pendingLaunches.getPendingLaunches(executionCapability);
         if (reqs == null) {
             return;
