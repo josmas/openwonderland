@@ -29,6 +29,7 @@ import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.input.InputManager.FocusChange;
 import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 
 /**
  * The abstract base class for an Event Distributor singleton. The Entity Distributor is part of the input 
@@ -185,7 +186,8 @@ public abstract class EventDistributor implements Runnable {
 		    logger.fine("Calling consume for listener " + listener);
 		    Event distribEvent = createEventForGlobalListener(event);
 		    if (listener.consumesEvent(distribEvent)) {
-			logger.fine("CONSUMED.");
+                        logger.fine("CONSUMED event: " + event);
+                        logger.fine("Consuming listener " + listener);
 			listener.postEvent(distribEvent);
 		    }
 		}
@@ -214,8 +216,9 @@ public abstract class EventDistributor implements Runnable {
                 logger.fine("Calling consume for listener " + listener);
                 Event distribEvent = createEventForEntity(event, entity);
                 if (listener.consumesEvent(distribEvent)) {
-		    logger.fine("CONSUMED by entity " + entity);
-		    logger.fine("Consuming listener " + listener);
+                    logger.fine("CONSUMED event: " + event);
+                    logger.fine("Consuming entity " + entity);
+                    logger.fine("Consuming listener " + listener);
 		    listener.postEvent(distribEvent);
                 }
                 propState.toParent |= listener.propagatesToParent(distribEvent);

@@ -17,14 +17,17 @@
  */
 package org.jdesktop.wonderland.client.contextmenu;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
@@ -36,6 +39,7 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 public class ContextMenuManager {
 
     private List<ContextMenuFactorySPI> factoryList = null;
+    private Set<ContextMenuListener> listeners = null;
 
     /** Constructor */
     public ContextMenuManager() {
@@ -45,6 +49,10 @@ public class ContextMenuManager {
         // not be modified by the callers.
         factoryList = new LinkedList();
 
+        // Initialize the list of context menu listeners. Accesses to this list
+        // must be synchronized.
+        listeners = new HashSet();
+
         // Listen for changes in the primary login session. If one already
         // exists then this will dispatch to the listener immediately. In
         // such a case, look for all of the @ContextMenuEntry annotation classes
@@ -52,7 +60,7 @@ public class ContextMenuManager {
         LoginManager.addPrimaryServerListener(new PrimaryServerListener() {
             public void primaryServer(ServerSessionManager server) {
                 synchronized (factoryList) {
-                    // Remove any previously existing items in the list
+                    // Remove any previously existing items in the list.
                     factoryList.clear();
 
                     if (server != null) {
@@ -65,6 +73,11 @@ public class ContextMenuManager {
                             factoryList.add(it.next());
                         }
                     }
+                }
+
+                synchronized (listeners) {
+                    // Remove any existing listeners too
+                    listeners.clear();
                 }
             }
         });
@@ -100,5 +113,58 @@ public class ContextMenuManager {
         synchronized (factoryList) {
             return factoryList;
         }
+    }
+
+
+    /**
+     * Adds a listener for context display events. If the listener already
+     * exists, this method does nothing.
+     *
+     * @param listener The listener to add
+     */
+    public void addContextMenuListener(ContextMenuListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes the given listener for context menu display events. If the
+     * listener does not exist, then this method does nothing.
+     *
+     * @param listener The listener to remove
+     */
+    public void removeContextMenuListener(ContextMenuListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listeners);
+        }
+    }
+
+    /**
+     * Dispatches an event to all listeners that a context menu is about to
+     * be displayed.
+     *
+     * @param event The ContextEvent that caused the menu to be displayed
+     */
+    public void fireContextMenuEvent(ContextEvent event) {
+        synchronized (listeners) {
+            for (ContextMenuListener listener : listeners) {
+                listener.contextMenuDisplayed(event);
+            }
+        }
+    }
+
+    /**
+     * Listener interface for an event when the context menu is about to be
+     * displayed. This is used if any threads wants to do special processing
+     * before the menu is displayed.
+     */
+    public interface ContextMenuListener {
+        /**
+         * Indicates that the context menu is about to be displayed.
+         *
+         * @param event The ContextEvent that caused the menu to be displayed
+         */
+        public void contextMenuDisplayed(ContextEvent event);
     }
 }

@@ -23,11 +23,50 @@ package org.jdesktop.wonderland.client.hud;
  */
 public interface CompassLayout {
 
+    /**
+     * Defines compass positions
+     */
     public enum Layout {
 
+        /**
+         * Not positioned using compass point positions
+         */
         NONE,
+        /**
+         * Position at center
+         */
         CENTER,
-        NORTH, SOUTH, WEST, EAST,
-        NORTHWEST, NORTHEAST, SOUTHWEST, SOUTHEAST
+        /**
+         * Position at north (top center)
+         */
+        NORTH,
+        /**
+         * Position at south (bottom center)
+         */
+        SOUTH,
+        /**
+         * Position at west (left center)
+         */
+        WEST,
+        /**
+         * Position at east (right center)
+         */
+        EAST,
+        /**
+         * Position at northwest (top left)
+         */
+        NORTHWEST,
+        /**
+         * Position at northeast (top right)
+         */
+        NORTHEAST,
+        /**
+         * Position at southwest (bottom left)
+         */
+        SOUTHWEST,
+        /**
+         * Position at southeast (bottom right)
+         */
+        SOUTHEAST
     };
 }

@@ -77,7 +77,7 @@ public class WindowXrw extends WindowConventional {
             winTransientFor = ((AppXrw)app).widToWindow.get(transientForWid);
         }
 
-        setScreenPosition/*TODO:winconfig:resize:Local*/(x, y);
+        setScreenPosition(x, y);
     }
 
     /**
@@ -99,7 +99,7 @@ public class WindowXrw extends WindowConventional {
     /**
      * Specify the absolute screen position of this window for this client only.
      */
-    public void setScreenPosition/*TODO:winconfig:resize:Local*/ (int x, int y) {
+    public void setScreenPosition (int x, int y) {
         scrPos = new Point(x, y);
         updateOffset();
     }
@@ -148,16 +148,6 @@ public class WindowXrw extends WindowConventional {
         }
     }
 
-    /** {@inheritDoc} */
-    /* TODO: winconfig: x11: notyet
-    public synchronized void setSize(int width, int height) {
-        setSizeLocal(width, height);
-
-        // Notify the Xremwin server and other clients
-        ((AppXrw) app).getClient().windowSetSize(this, width, height);
-    }
-    */
-
     /**
      * {@inheritDoc}
      */
@@ -188,12 +178,6 @@ public class WindowXrw extends WindowConventional {
      * @param visible Whether the window should be visible.
      * @param winTransientFor If non-null, the window whose visibility is being changed
      * is a transient window for winTransientFor.
-     */
-    /* TODO: notyet
-    public void setVisibleApp(boolean visible, WindowXrw winTransientFor) {
-    this.winTransientFor = winTransientFor;
-    super.setVisibleApp(visible);
-    }
      */
     public synchronized void setVisibleApp(boolean visible, boolean isPopup) {
         if (isVisibleApp() == visible) {

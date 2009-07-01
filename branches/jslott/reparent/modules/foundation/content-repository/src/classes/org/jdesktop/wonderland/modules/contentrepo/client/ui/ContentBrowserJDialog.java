@@ -308,9 +308,12 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
 
         topPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        homeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserHome20x20.png"))); // NOI18N
-        homeButton.setToolTipText("New Directory");
+        homeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserHome32x32.png"))); // NOI18N
+        homeButton.setToolTipText("Home");
         homeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        homeButton.setMaximumSize(new java.awt.Dimension(32, 32));
+        homeButton.setMinimumSize(new java.awt.Dimension(32, 32));
+        homeButton.setPreferredSize(new java.awt.Dimension(32, 32));
         homeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 homeButtonActionPerformed(evt);

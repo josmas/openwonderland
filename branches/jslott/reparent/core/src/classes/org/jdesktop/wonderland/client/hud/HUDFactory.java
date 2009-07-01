@@ -37,7 +37,7 @@ public class HUDFactory {
 
     /**
      * Binds a specific HUD factory service provider to this factory
-     * @param spi an instance of a HUD factory service provider
+     * @param spii an instance of a HUD factory service provider
      */
     public static void setHUDFactorySPI(final HUDFactorySPI spii) {
         spi = spii;

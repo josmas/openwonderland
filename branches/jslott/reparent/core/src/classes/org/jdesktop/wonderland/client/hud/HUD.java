@@ -41,6 +41,12 @@ import org.jdesktop.wonderland.client.cell.Cell;
 public interface HUD extends HUDView {
 
     /**
+     * Creates a new HUD component
+     * @return a new HUD component
+     */
+    public HUDComponent createComponent();
+
+    /**
      * Creates a new HUD component bound to a Swing component
      * @param component a Swing component to display in this HUD component
      * @return a new HUD component

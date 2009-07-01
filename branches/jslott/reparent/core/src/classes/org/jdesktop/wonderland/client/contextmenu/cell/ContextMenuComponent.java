@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
  */
 public class ContextMenuComponent extends CellComponent {
 
-    private Set<ContextMenuFactorySPI> factories;
+    private Set<ContextMenuFactorySPI> factories = null;
     private boolean showStandardMenuItems = true;
 
     public ContextMenuComponent(Cell cell) {
@@ -53,7 +53,7 @@ public class ContextMenuComponent extends CellComponent {
     }
 
     /**
-     * Remove the gives context menu factory from the cell component. This
+     * Remove the given context menu factory from the cell component. This
      * change will not effect a menu that is currently being displayed,
      * but will be applied next time the menu is displayed
      * 

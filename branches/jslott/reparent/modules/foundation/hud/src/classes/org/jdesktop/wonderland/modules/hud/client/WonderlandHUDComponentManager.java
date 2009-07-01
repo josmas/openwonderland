@@ -111,7 +111,16 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         logger.fine("adding HUD component to component manager: " + component);
 
         HUDComponentState state = new HUDComponentState(component);
-        Window2D window = createWindow(component);
+        HUDComponent2D component2D = (HUDComponent2D)component;
+        Window2D window;
+
+        if (component2D.getWindow() != null) {
+            window = component2D.getWindow();
+        } else {
+            window = createWindow(component);
+            component2D.setWindow(window);
+        }
+
         window.addEventListener(new EnterExitEvent3DLogger() {
 
             @Override
