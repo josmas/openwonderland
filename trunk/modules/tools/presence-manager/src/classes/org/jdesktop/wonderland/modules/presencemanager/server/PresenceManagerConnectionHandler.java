@@ -106,15 +106,22 @@ public class PresenceManagerConnectionHandler implements
 
 	if (message instanceof ClientConnectMessage) {
 	    ClientConnectMessage msg = (ClientConnectMessage) message;
+	    /*
+             * Send back all of the PresenceInfo data to the new client
+             */
+            Iterator<BigInteger> it = sessions.keySet().iterator();
 
-	    ArrayList<PresenceInfo> presenceInfoList = new ArrayList();
+            while (it.hasNext()) {
+                BigInteger id = it.next();
 
-	    presenceInfoList.add(msg.getPresenceInfo());
+                if (clientID.getID().equals(id)) {
+                    continue;
+                }
 
-	    sessions.put(clientID.getID(), presenceInfoList);
+                ArrayList<PresenceInfo> presenceInfoList = sessions.get(id);
 
-	    logger.fine("CLIENTCONNECTMESSAGE:  " + msg.getPresenceInfo());
-	    sendPresenceInfo(sender, clientID, msg.isConnected());
+                sender.send(clientID, new ClientConnectResponseMessage(presenceInfoList));
+	    }
 	    return;
 	}
 
@@ -123,11 +130,19 @@ public class PresenceManagerConnectionHandler implements
 
 	    ArrayList<PresenceInfo> presenceInfoList = sessions.get(clientID.getID());
 
+	    if (presenceInfoList == null) {
+		presenceInfoList = new ArrayList();
+	        sessions.put(clientID.getID(), presenceInfoList);
+	    }
+
 	    if (presenceInfoList.contains(presenceInfo) == false) {
 	        presenceInfoList.add(presenceInfo);
 	        logger.fine("PRESENCEINFOADDEDMESSAGE:  " + presenceInfo);
 	    }
 
+	    /*
+	     * Send presenceInfo to all clients
+	     */
 	    sender.send(message);
 	    return;
 	} 
@@ -138,6 +153,10 @@ public class PresenceManagerConnectionHandler implements
 	    ArrayList<PresenceInfo> presenceInfoList = sessions.get(clientID.getID());
 
 	    presenceInfoList.remove(presenceInfo);
+
+	    if (presenceInfoList.size() == 0) {
+		sessions.remove(clientID.getID());
+	    }
 
 	    sender.send(message);
 	    return;
@@ -175,28 +194,6 @@ public class PresenceManagerConnectionHandler implements
 		sender.send(new PresenceInfoRemovedMessage(info));
 	    }
 	}
-    }
-
-    private void sendPresenceInfo(WonderlandClientSender sender, WonderlandClientID clientID, 
-	boolean isConnected) {
-
-	/*
-         * Send back all of the PresenceInfo data to the new client
-         */
-        Iterator<BigInteger> it = sessions.keySet().iterator();
-
-        while (it.hasNext()) {
-            BigInteger id = it.next();
-
-            if (clientID.getID().equals(id)) {
-                continue;
-            }
-
-            ArrayList<PresenceInfo> presenceInfoList = sessions.get(id);
-
-            sender.send(clientID, new ClientConnectResponseMessage(presenceInfoList, 
-		isConnected));
-        }
     }
 
     public void callBeginEndNotification(CallStatus status) {

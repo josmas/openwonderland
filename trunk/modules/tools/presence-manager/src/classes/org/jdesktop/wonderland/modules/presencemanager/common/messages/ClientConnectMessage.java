@@ -30,21 +30,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 @ExperimentalAPI
 public class ClientConnectMessage extends Message {
 
-    private PresenceInfo presenceInfo;
-
-    private boolean isConnected;
-
-    public ClientConnectMessage(PresenceInfo presenceInfo, boolean isConnected) {
-	this.presenceInfo= presenceInfo;
-	this.isConnected = isConnected;
-    }
-
-    public PresenceInfo getPresenceInfo() {
-	return presenceInfo;
-    }
-
-    public boolean isConnected() {
-	return isConnected;
+    public ClientConnectMessage() {
     }
 
 }

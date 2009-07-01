@@ -23,6 +23,7 @@ import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.cell.CallID;
@@ -55,9 +56,8 @@ public class PresenceManagerClient extends BaseConnection implements
     private WonderlandSession session;
     private CellID cellID;
     private boolean connected = true;
-    private PresenceManagerImpl presenceManager;
+    private PresenceManagerImpl pm;
     private PresenceInfo presenceInfo;
-
     private static PresenceManagerClient client;
 
     public static PresenceManagerClient getInstance() {
@@ -85,7 +85,7 @@ public class PresenceManagerClient extends BaseConnection implements
         super.connect(session);
         this.session = session;
 
-        presenceManager = (PresenceManagerImpl) PresenceManagerFactory.getPresenceManager(session);
+        pm = (PresenceManagerImpl) PresenceManagerFactory.getPresenceManager(session);
 
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
         avatar.addViewCellConfiguredListener(this);
@@ -101,7 +101,7 @@ public class PresenceManagerClient extends BaseConnection implements
         // avatar.removeViewCellConfiguredListener(this);
         super.disconnect();
 	
-        session.send(this, new ClientConnectMessage(presenceInfo, false));
+	pm.removePresenceInfo(presenceInfo);
 
 	PresenceManagerFactory.reset();
     }
@@ -113,19 +113,18 @@ public class PresenceManagerClient extends BaseConnection implements
 
         SoftphoneControlImpl.getInstance().setCallID(callID);
 
-        presenceInfo = new PresenceInfo(cellID, session.getID(),
-            session.getUserID(), callID);
+	presenceInfo = new PresenceInfo(cellID, session.getID(), session.getUserID(), callID);
 
-        session.send(this, new ClientConnectMessage(presenceInfo, true));
+	pm.addPresenceInfo(presenceInfo);
 
-	//presenceManager.addPresenceInfo(presenceInfo);
+        session.send(this, new ClientConnectMessage());
 
-        logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + presenceManager);
+        logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + pm);
     }
 
     @Override
     public void handleMessage(Message message) {
-        logger.fine("got a message...");
+        logger.fine("got a message... " + message);
 
 	if (message instanceof ClientConnectResponseMessage) {
 	    ClientConnectResponseMessage msg = (ClientConnectResponseMessage) message;
@@ -133,16 +132,15 @@ public class PresenceManagerClient extends BaseConnection implements
 	    ArrayList<PresenceInfo> presenceInfoList = msg.getPresenceInfoList();
 
 	    for (PresenceInfo presenceInfo : presenceInfoList) {
-		logger.fine("Client connected:  " + msg.isConnected() + " " + presenceInfo);
+		logger.fine("Client connected: " + presenceInfo);
 
-		if (msg.isConnected()) {
-		    logger.fine("Got ClientConnectResponse:  adding pi " + presenceInfo);
-		    presenceManager.presenceInfoAdded(presenceInfo);
-		} else {
-		    presenceManager.presenceInfoRemoved(presenceInfo);
+		logger.fine("Got ClientConnectResponse:  adding pi " + presenceInfo);
+		pm.presenceInfoAdded(presenceInfo);
+
+		if (presenceInfo.usernameAlias.equals(presenceInfo.userID.getUsername()) == false) {
+		    pm.changeUsernameAlias(presenceInfo);
 		}
 	    }
-
 	    return;
 	}
 
@@ -151,7 +149,7 @@ public class PresenceManagerClient extends BaseConnection implements
 
             logger.fine("GOT PresenceInfoAddedMessage for " + m.getPresenceInfo());
 
-            presenceManager.presenceInfoAdded(m.getPresenceInfo());
+            pm.presenceInfoAdded(m.getPresenceInfo());
             return;
         }
 
@@ -159,7 +157,7 @@ public class PresenceManagerClient extends BaseConnection implements
             PresenceInfoRemovedMessage m = (PresenceInfoRemovedMessage) message;
 
             logger.fine("GOT PresenceInfoRemovedMessage for " + m.getPresenceInfo());
-            presenceManager.presenceInfoRemoved(m.getPresenceInfo());
+            pm.presenceInfoRemoved(m.getPresenceInfo());
             return;
         }
 
@@ -168,7 +166,7 @@ public class PresenceManagerClient extends BaseConnection implements
 
             logger.fine("GOT PresenceInfoUsernameAliasChangeMessage for " + m.getPresenceInfo());
 
-            presenceManager.usernameAliasChanged(m.getPresenceInfo());
+            pm.usernameAliasChanged(m.getPresenceInfo());
             return;
         }
 

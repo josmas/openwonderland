@@ -64,8 +64,15 @@ public class PresenceManagerImpl implements PresenceManager {
     }
 
     public void addPresenceInfo(PresenceInfo presenceInfo) {
+	/*
+	 * Add it now so others on this client can see it immediately
+	 */
+        presenceInfoAdded(presenceInfo);
+
+	/*
+	 * Send it to the server so it can be sent to all of the other clients.
+	 */
         session.send(PresenceManagerClient.getInstance(), new PresenceInfoAddedMessage(presenceInfo));
-    //presenceInfoAdded(presenceInfo);
     }
 
     public void presenceInfoAdded(PresenceInfo presenceInfo) {
