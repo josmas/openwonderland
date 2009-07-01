@@ -30,12 +30,14 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellDuplicateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellEditMessage.EditType;
+import org.jdesktop.wonderland.common.cell.messages.CellReparentMessage;
 import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
@@ -43,11 +45,13 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Or
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.security.Action;
+import org.jdesktop.wonderland.common.wfs.CellPath;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.SecureClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.security.Resource;
+import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
 
 /**
  * Handles CellEditMessages sent by the Wonderland client
@@ -97,26 +101,28 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                 }
                 break;
             case DELETE_CELL:
-                // delete requires permission from both the cell being
-                // deleted and the parent cell
-                CellDeleteMessage cdm = (CellDeleteMessage) editMessage;
-                CellMO deleteMO = CellManagerMO.getCell(cdm.getCellID());
-                if (deleteMO == null) {
-                    break;
-                }
-                Resource child = crm.getCellResource(cdm.getCellID());
-                Resource parent = null;
+                {
+                    // delete requires permission from both the cell being
+                    // deleted and the parent cell
+                    CellDeleteMessage cdm = (CellDeleteMessage) editMessage;
+                    CellMO deleteMO = CellManagerMO.getCell(cdm.getCellID());
+                    if (deleteMO == null) {
+                        break;
+                    }
+                    Resource child = crm.getCellResource(cdm.getCellID());
+                    Resource parent = null;
 
-                // get the cell's parent, if any
-                CellMO parentMO = deleteMO.getParent();
-                if (parentMO != null) {
-                    parent = crm.getCellResource(parentMO.getCellID());
-                }
+                    // get the cell's parent, if any
+                    CellMO parentMO = deleteMO.getParent();
+                    if (parentMO != null) {
+                        parent = crm.getCellResource(parentMO.getCellID());
+                    }
 
-                // now create a delete resource with child & parent
-                if (child != null || parent != null) {
-                    out = new DeleteCellResource(cdm.getCellID().toString(),
-                                                 child, parent);
+                    // now create a delete resource with child & parent
+                    if (child != null || parent != null) {
+                        out = new DeleteCellResource(cdm.getCellID().toString(),
+                                                     child, parent);
+                    }
                 }
                 break;
             case DUPLICATE_CELL:
@@ -126,6 +132,32 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                     out = crm.getCellResource(dupMO.getParent().getCellID());
                 }
                 break;
+
+            case REPARENT_CELL:
+                {
+                    CellReparentMessage msg = (CellReparentMessage) editMessage;
+
+                    CellMO childMO = CellManagerMO.getCell(msg.getCellID());
+                    if (childMO==null)
+                        break;
+
+                    Resource child = crm.getCellResource(msg.getCellID());
+                    Resource oldParent = null;
+                    Resource newParent = null;
+
+                    CellMO oldParentMO = childMO.getParent();
+                    if (oldParentMO!=null)
+                        oldParent = crm.getCellResource(oldParentMO.getCellID());
+
+                    CellMO newParentMO = CellManagerMO.getCell(msg.getParentCellID());
+                    if (newParentMO!=null)
+                        newParent = crm.getCellResource(msg.getParentCellID());
+
+                    if (child!=null || oldParent!=null || newParent!=null)
+                        out = new ReparentCellResource(msg.getCellID().toString(), child, oldParent, newParent);
+                }
+                break;
+
         }
 
         return out;
@@ -248,6 +280,55 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                         ", has multiple parents", excp);
             }
         }
+        else if (editMessage.getEditType() == EditType.REPARENT_CELL) {
+            // Find the cell id to move and the new parent id
+            CellID cellID = ((CellReparentMessage)editMessage).getCellID();
+            CellID newParentID = ((CellReparentMessage)editMessage).getParentCellID();
+
+            logger.warning("REPARENT CELL " + cellID + " " + newParentID);
+
+            // Figure out the new local coordinates of the cell wrt the new
+            // parent
+
+            // Change the parent cell
+            CellMO child = CellManagerMO.getCell(cellID);
+            CellMO oldParent = child.getParent();
+            CellMO newParent = CellManagerMO.getCell(newParentID);
+
+            System.err.println("ORIGINAL LOC "+child.getWorldTransform(null).getTranslation(null));
+
+            System.err.println("NEW PARENT "+newParent);
+            System.err.println("OLD PARENT "+oldParent);
+
+            if (oldParent==null) {
+                CellManagerMO.getCellManager().removeCellFromWorld(child);
+            } else {
+                oldParent.removeChild(child);
+            }
+
+            CellTransform childTransform = ((CellReparentMessage)editMessage).getChildCellTransform();
+            if (childTransform!=null)
+                child.setLocalTransform(childTransform);
+
+            if (newParent==null) {
+                try {
+                    CellManagerMO.getCellManager().insertCellInWorld(child);
+                } catch (MultipleParentException ex) {
+                    Logger.getLogger(CellEditConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                try {
+                    newParent.addChild(child);
+                    System.err.println("PArented "+child.getParent());
+                } catch (MultipleParentException ex) {
+                    Logger.getLogger(CellEditConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+            System.err.println("REPARENTED LOC "+child.getWorldTransform(null).getTranslation(null));
+
+
+        }
     }
 
     public boolean messageRejected(WonderlandClientSender sender,
@@ -331,6 +412,68 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             if (action instanceof ChildrenAction && parent != null) {
                 // route to parent (if any)
                 return parent.request(identity, action, registry);
+            } else if (!(action instanceof ChildrenAction) && child != null) {
+                // route to child (if any)
+                return child.request(identity, action, registry);
+            }
+
+            // if we got here, there is no-one to route to -- just grant the
+            // request
+            return true;
+        }
+    }
+
+    private static class ReparentCellResource implements Resource {
+        private String cellID;
+        private Resource child;
+        private Resource oldParent;
+        private Resource newParent;
+
+        public ReparentCellResource(String cellID, Resource child,
+                                  Resource oldParent,
+                                  Resource newParent)
+        {
+            this.cellID = cellID;
+            this.child = child;
+            this.oldParent = oldParent;
+            this.newParent = newParent;
+        }
+
+        public String getId() {
+            return "ReparentCell_" + cellID;
+        }
+
+        public Result request(WonderlandIdentity identity, Action action) {
+            if (action instanceof ChildrenAction && oldParent != null) {
+                Result tmp = Result.GRANT;
+                if (oldParent!=null )
+                    tmp = oldParent.request(identity, action);
+                Result tmp2 = Result.GRANT;
+                if (newParent!=null)
+                    tmp2 = newParent.request(identity, action);
+
+                return Result.combine(tmp, tmp2);
+            } else if (!(action instanceof ChildrenAction) && child != null) {
+                // route to child (if any)
+                return child.request(identity, action);
+            }
+
+            // if we got here, there is no-one to route to -- just grant the
+            // request
+            return Result.GRANT;
+        }
+
+        public boolean request(WonderlandIdentity identity, Action action,
+                               ComponentRegistry registry)
+        {
+            if (action instanceof ChildrenAction) {
+                boolean tmp = true;
+                if (oldParent!=null)
+                    tmp = oldParent.request(identity, action, registry);
+                boolean tmp2 = true;
+                if (newParent!=null)
+                    tmp2 = newParent.request(identity, action, registry);
+                return (tmp && tmp2);
             } else if (!(action instanceof ChildrenAction) && child != null) {
                 // route to child (if any)
                 return child.request(identity, action, registry);

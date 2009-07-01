@@ -36,7 +36,7 @@ public class MovableMessage extends CellMessage {
 
     private Vector3f translation;
     private Quaternion rotation;
-    private Vector3f scale=null;
+    private float scale=1f;
 
     /**
      * MOVE_REQUEST - client asking the server to move cell
@@ -71,14 +71,14 @@ public class MovableMessage extends CellMessage {
     /**
      * @return the scale
      */
-    public Vector3f getScale() {
+    public float getScale() {
         return scale;
     }
 
     /**
      * @param scale the scale to set
      */
-    public void setScale(Vector3f scale) {
+    public void setScale(float scale) {
         this.scale = scale;
     }
 
@@ -90,15 +90,15 @@ public class MovableMessage extends CellMessage {
         MovableMessage ret = new MovableMessage(cellID, ActionType.MOVE_REQUEST);
         ret.setTranslation(transform.getTranslation(null));
         ret.setRotation(transform.getRotation(null));
-        ret.setScale(transform.getScaling(null));
+        ret.setScale(transform.getScaling());
         return ret;
     }
     
      public static MovableMessage newMovedMessage(CellID cellID, Vector3f translation, Quaternion rotation) {
-         return newMovedMessage(cellID, translation, rotation, null);
+         return newMovedMessage(cellID, translation, rotation, 1f);
      }
 
-     public static MovableMessage newMovedMessage(CellID cellID, Vector3f translation, Quaternion rotation, Vector3f scale) {
+     public static MovableMessage newMovedMessage(CellID cellID, Vector3f translation, Quaternion rotation, float scale) {
         MovableMessage ret = new MovableMessage(cellID, ActionType.MOVED);
         ret.setTranslation(translation);
         ret.setRotation(rotation);
@@ -107,14 +107,14 @@ public class MovableMessage extends CellMessage {
     }
      
     public static MovableMessage newMoveRequestMessage(CellID cellID, CellTransform transform) {
-        return newMoveRequestMessage(cellID, transform.getTranslation(null), transform.getRotation(null), transform.getScaling(null));
+        return newMoveRequestMessage(cellID, transform.getTranslation(null), transform.getRotation(null), transform.getScaling());
     }
 
     public static MovableMessage newMoveRequestMessage(CellID cellID, Vector3f translation, Quaternion rotation) {
-        return newMoveRequestMessage(cellID, translation, rotation, null);
+        return newMoveRequestMessage(cellID, translation, rotation, 1f);
     }
 
-    public static MovableMessage newMoveRequestMessage(CellID cellID, Vector3f translation, Quaternion rotation, Vector3f scale) {
+    public static MovableMessage newMoveRequestMessage(CellID cellID, Vector3f translation, Quaternion rotation, float scale) {
         MovableMessage ret = new MovableMessage(cellID, ActionType.MOVE_REQUEST);
         ret.setTranslation(translation);
         ret.setRotation(rotation);

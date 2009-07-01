@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponen
 public class ConeOfSilenceComponentFactory implements CellComponentFactorySPI {
 
     public String getDisplayName() {
-        return "ConeComponent";
+        return "Cone of Silence";
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
@@ -40,7 +40,7 @@ public class ConeOfSilenceComponentFactory implements CellComponentFactorySPI {
     }
 
     public String getDescription() {
-        return "Cone of Silence Component";
+        return "Surrounds area with a Cone of Silence";
     }
 
 }

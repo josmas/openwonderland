@@ -22,8 +22,8 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
-import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentServerState;
@@ -32,8 +32,8 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentServerSt
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@CellComponentProperties
-public class SampleComponentProperties extends javax.swing.JPanel implements CellComponentPropertiesSPI {
+@PropertiesFactory(SampleCellComponentServerState.class)
+public class SampleComponentProperties extends JPanel implements PropertiesFactorySPI {
 
     private CellPropertiesEditor editor = null;
     private String originalInfo = null;
@@ -45,14 +45,6 @@ public class SampleComponentProperties extends javax.swing.JPanel implements Cel
 
         // Listen for changes to the info text field
         infoTextField.getDocument().addDocumentListener(new InfoTextFieldListener());
-        
-    }
-
-    /**
-     * @inheritDoc()
-     */
-    public Class getServerCellComponentClass() {
-        return SampleCellComponentServerState.class;
     }
 
     /**
@@ -65,35 +57,55 @@ public class SampleComponentProperties extends javax.swing.JPanel implements Cel
     /**
      * @inheritDoc()
      */
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
+    public JPanel getPropertiesJPanel() {
         return this;
     }
 
     /**
      * @inheritDoc()
      */
-    public <T extends CellServerState> void updateGUI(T cellServerState) {
-        CellComponentServerState state = cellServerState.getComponentServerState(SampleCellComponentServerState.class);
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void open() {
+        CellServerState state = editor.getCellServerState();
+        CellComponentServerState compState =
+                state.getComponentServerState(SampleCellComponentServerState.class);
         if (state != null) {
-            originalInfo = ((SampleCellComponentServerState) state).getInfo();
+            originalInfo = ((SampleCellComponentServerState) compState).getInfo();
             infoTextField.setText(originalInfo);
-            return;
         }
     }
 
     /**
      * @inheritDoc()
      */
-    public <T extends CellServerState> void getCellServerState(T cellServerState) {
-        // Figure out whether there already exists a server state for the
-        // component.
-        CellComponentServerState state = cellServerState.getComponentServerState(SampleCellComponentServerState.class);
-        if (state == null) {
-            state = new SampleCellComponentServerState();
-        }
-        ((SampleCellComponentServerState)state).setInfo(infoTextField.getText());
-        cellServerState.addComponentServerState(state);
+    public void close() {
+        // Do nothing for now.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void apply() {
+        // Fetch the latest from the info text field and set it.
+        CellServerState state = editor.getCellServerState();
+        CellComponentServerState compState =
+                state.getComponentServerState(SampleCellComponentServerState.class);
+        ((SampleCellComponentServerState)compState).setInfo(infoTextField.getText());
+        editor.addToUpdateList(compState);
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void restore() {
+        // Restore from the original state stored.
+        infoTextField.setText(originalInfo);
     }
 
     /**
@@ -159,7 +171,6 @@ public class SampleComponentProperties extends javax.swing.JPanel implements Cel
                 .addContainerGap(252, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField infoTextField;

@@ -197,7 +197,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         rootNode.setName("CellRoot_"+cell.getCellID());
         sceneRoot = createSceneGraph(ret);
         rootNode.attachChild(sceneRoot);
-        applyTransform(rootNode, cell.getWorldTransform());
+        applyTransform(rootNode, cell.getLocalTransform());
         addRenderState(rootNode);
 
         addDefaultComponents(ret, rootNode);
@@ -329,6 +329,7 @@ public abstract class BasicRenderer implements CellRendererJME {
      * @param transform
      */
     public static void applyTransform(Spatial node, CellTransform transform) {
+        logger.warning("APPLY TRANSFORM " + transform.getTranslation(null));
         node.setLocalRotation(transform.getRotation(null));
         node.setLocalScale(transform.getScaling(null));
         node.setLocalTranslation(transform.getTranslation(null));

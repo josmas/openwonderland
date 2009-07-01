@@ -90,6 +90,12 @@
 	    <jvmarg value="-agentlib:yjpagent"/>
 -->
 	    <!-- End Profiling -->
+            <!-- YourKit profile -->
+            <!--
+            <jvmarg value="-agentlib:yjpagent"/>
+            -->
+            <!-- End Profiling -->
+
             
             <classpath>
                 <pathelement path="${core-client.classpath}"/>

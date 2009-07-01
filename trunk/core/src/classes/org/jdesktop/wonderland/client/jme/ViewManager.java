@@ -435,7 +435,7 @@ public class ViewManager {
      */
     public CellTransform getCameraTransform() {
         if (cameraNode!=null)
-            return new CellTransform(cameraNode.getWorldRotation(), cameraNode.getWorldTranslation(), cameraNode.getWorldScale());
+            return new CellTransform(cameraNode.getWorldRotation(), cameraNode.getWorldTranslation(), cameraNode.getWorldScale().x);
         return new CellTransform(null, new Vector3f(0,0,0));
     }
 

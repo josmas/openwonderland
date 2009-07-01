@@ -136,8 +136,9 @@ public class SpatialCellImpl implements SpatialCell {
     }
 
     public void addChild(SpatialCell child, Identity identity) {
-        if (((SpatialCellImpl)child).parent!=null)
-            throw new RuntimeException("Multiple parent exception");
+        if (((SpatialCellImpl)child).parent!=null) {
+            throw new RuntimeException("Multiple parent exception, current parent "+((SpatialCellImpl)child).parent.cellID);
+        }
         
         acquireRootWriteLock();
         try {
@@ -151,6 +152,8 @@ public class SpatialCellImpl implements SpatialCell {
             if (rootNode!=null) {
                 worldBounds.mergeLocal(((SpatialCellImpl)child).updateWorldTransform(identity));
             }
+            notifyCacheChildAddedOrRemoved(this, (SpatialCellImpl)child, true);
+            revalidate(); // Security revalidation, optimize this
         } finally {
             releaseRootWriteLock();
         }
@@ -329,9 +332,15 @@ public class SpatialCellImpl implements SpatialCell {
     }
 
     public void removeChild(SpatialCell child) {
+        if (children==null)
+            return;
+
         acquireRootWriteLock();
         try {
+            System.err.println("SpatialCellImpl.removeChild() "+child);
             children.remove(child);
+            ((SpatialCellImpl)child).setParent(null);
+            notifyCacheChildAddedOrRemoved(this, (SpatialCellImpl)child, false);
         } finally {
             releaseRootWriteLock();
         }
@@ -532,10 +541,29 @@ public class SpatialCellImpl implements SpatialCell {
         if (root==null)
             return;
 
+        System.err.println("REVALIDATING CELL");
         Iterable<ViewCache> caches = root.viewCache.keySet();
         for(ViewCache cache : caches) {
+            System.err.println("  notifying cache "+cache);
             cache.cellRevalidated(this);
         }
+    }
+
+    private void notifyCacheChildAddedOrRemoved(SpatialCellImpl parent, SpatialCellImpl child, boolean added) {
+        SpatialCellImpl root = (SpatialCellImpl) getRoot();
+        if (root==null)
+            return;
+
+        System.err.println("notifyCacheChildAddedOrRemoved "+added+"  "+root.viewCache.size());
+
+        Iterable<ViewCache> caches = root.viewCache.keySet();
+        for(ViewCache cache : caches) {
+            if (added)
+                cache.childCellAdded(child);
+            else
+                cache.childCellRemoved(parent, child);
+        }
+
     }
 
     public void destroy() {

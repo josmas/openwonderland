@@ -35,7 +35,6 @@ import com.sun.sgs.app.PeriodicTaskHandle;
 import com.sun.sgs.app.Task;
 import com.sun.sgs.app.TaskManager;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,11 +50,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellHierarchyUnloadMessage;
-import org.jdesktop.wonderland.common.cell.messages.MovableAvatarMessage;
 import org.jdesktop.wonderland.common.cell.security.ViewAction;
 import org.jdesktop.wonderland.common.messages.MessageList;
-import org.jdesktop.wonderland.server.CellAccessControl;
-import org.jdesktop.wonderland.server.UserSecurityContextMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -83,6 +79,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     private final static Logger logger = Logger.getLogger(ViewCellCacheMO.class.getName());
     
     protected ManagedReference<ViewCellMO> viewRef;
+
+    // If this Set becomes large we may want to move it into it's own managed object
+    // so we don't pay the penalty of serialization when processing avatar moves
     protected Set<CellID> loaded = new HashSet<CellID>();
     
     protected WonderlandClientSender sender;
@@ -115,7 +114,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         viewRef = dm.createReference(view);
 
         identity = view.getUser().getIdentity();
-        
+
 //        dm.setBinding(identity.getUsername() + "_CELL_CACHE", this);
     }
     
@@ -312,7 +311,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
                 // do check this cell
                 check.put(cell.getCellID(), cell);
-            }
+            } 
         }
 
         // see if we need to check any of the cells
@@ -320,6 +319,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             // we do need to do this securely -- start a task
             SecureTask checkCells = new RevalidateCellsTask(check, this);
             security.doSecure(rm, checkCells);
+        } else {
+            // Nothing to do, no security changes for these cells.
         }
     }
 
@@ -354,7 +355,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
             // now send any messages
             cache.sendLoadMessages(load);
-            cache.generateUnloadMessagesService(unload);
+            cache.sendUnloadMessages(unload);
         }
     }
 
@@ -386,21 +387,23 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         return loaded.contains(cellID);
     }
 
-    public void generateUnloadMessagesService(Collection<CellDescription> removeCells) {
+    public void sendUnloadMessages(Collection<CellDescription> removeCells) {
         ManagedReference<ViewCellCacheMO> viewCellCacheRef =
                 AppContext.getDataManager().createReference(this);
 
 
         scheduler.startRevalidate();
         // oldCells contains the set of cells to be removed from client memory
+//        System.err.println("-- Loaded size "+loaded.size());
         for(CellDescription ref : removeCells) {
+//            System.err.println("UNLOADING "+ref.getCellID());
             if (loaded.remove(ref.getCellID())) {
                 if (logger.isLoggable(Level.FINER)) {
                     logger.fine("Leaving cell " + ref.getCellID() +
                                 " cellcache for user "+identity.getUsername());
                 }
 
-                // schedule the add operation
+                // schedule the remove operation
                 CellUnloadOp op = new CellUnloadOp(ref, clientID,
                                                    viewCellCacheRef,
                                                    capabilities);
@@ -528,8 +531,9 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 viewCellCacheRef.getForUpdate().addRevalidationListener(listener);
             }
 //            cellRef.setCellSessionProperties(prop);
-                    
-            logger.fine("Sending NEW CELL to Client: " + cell.getCellID().toString()+"  "+cell.getClass().getName());
+
+            if (logger.isLoggable(Level.FINER))
+                logger.finer("Sending NEW CELL to Client: " + cell.getCellID().toString()+"  "+cell.getClass().getName());
             sendMessage(newCreateCellMessage(cell, prop));
         }
     }
@@ -547,11 +551,12 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         
         public void run() {
             CellHierarchyMessage msg;
+            CellMO cell=null;
                     
             // the cell may be inactive or removed.  Try to get the cell,
             // and catch the exception if it no longer exists.
             try {
-                CellMO cell = CellManagerMO.getCellManager().getCell(desc.getCellID());
+                cell = CellManagerMO.getCellManager().getCell(desc.getCellID());
 
                 cell.removeSession(clientID);
 
@@ -568,8 +573,10 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 msg = newDeleteCellMessage(desc.getCellID());
             }
 
+            if (logger.isLoggable(Level.FINER)) {
+                logger.finer("SENDING Unload to Client "+msg.getCellID().toString()+"  "+(cell!=null ? cell.getClass().getName() : "null"));
+            }
             sendMessage(msg);
-            //System.out.println("SENDING "+msg.getClass().getName()+" "+msg.getBytes().length);
 
         }
     }
@@ -632,7 +639,7 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             } else {
                 op.setClientSender(sender);
             }
-            
+
             op.run();
         }
         

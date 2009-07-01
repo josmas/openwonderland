@@ -30,8 +30,24 @@ public interface Resource {
     public enum Result {
         GRANT,   // request was acceptable, immediately grant access
         DENY,    // request was unacceptable, immediately deny access
-        SCHEDULE // the request could not be resolved in this transaction,
+        SCHEDULE; // the request could not be resolved in this transaction,
                  // schedule outside a transaction
+
+
+        /**
+         * Combine 2 results.
+         * @param r1
+         * @param r2
+         * @return
+         */
+        public static Result combine(Result r1, Result r2) {
+            if (r1==DENY || r2==DENY)
+                return DENY;
+            if (r1==SCHEDULE || r2==SCHEDULE)
+                return SCHEDULE;
+
+            return GRANT;
+        }
     }
 
     /**
@@ -61,4 +77,6 @@ public interface Resource {
      */
     public boolean request(WonderlandIdentity identity, Action action,
                            ComponentRegistry registry);
+
+
 }

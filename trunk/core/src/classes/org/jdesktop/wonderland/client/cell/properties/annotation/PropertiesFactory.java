@@ -18,14 +18,24 @@
 package org.jdesktop.wonderland.client.cell.properties.annotation;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicate that this class is a CellComponentProperties implementation.
- * Classes annotated with this interface should also implement the
- * CellComponentPropertiesSPI interface
+ * Indicate that this class implements a property sheet for either a Cell or
+ * Cell Component. Classes annotated with this interface should also implement
+ * the PropertiesFactorySPI interface.
+ * <p>
+ * This annotation has a single value: the Class of the Cell's server state
+ * object or Cell Component's server state that must be provided.
+ *
  * @author jkaplan
+ * @author Jordan Slott <jslott@dev.java.net>
  */
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface CellComponentProperties {
+public @interface PropertiesFactory {
+    // The single value is the Class of the Cell's server state object
+    Class value();
 }

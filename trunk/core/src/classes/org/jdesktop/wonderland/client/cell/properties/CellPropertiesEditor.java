@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.client.cell.properties;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
  * An interface to represent a graphical editor of the cell properties. This
@@ -32,6 +34,21 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 public interface CellPropertiesEditor {
 
     /**
+     * Returns the Cell being edited.
+     *
+     * @return The Cell object
+     */
+    public Cell getCell();
+
+    /**
+     * Returns an instance of the Cell's server state object representing the
+     * state of the Cell when the properties editor was first displayed.
+     *
+     * @return The CellServerState object
+     */
+    public CellServerState getCellServerState();
+
+    /**
      * Tells the properties editor that the panel with the given class name
      * is either "dirty" (true, information has changed) or "clean" (false,
      * information has not changed) since the last "save".
@@ -43,9 +60,19 @@ public interface CellPropertiesEditor {
     public void setPanelDirty(Class clazz, boolean isDirty);
 
     /**
-     * Returns the Cell currently being edited.
+     * Adds a CellServerState object to the "update" list to be sent to the
+     * server during the next "apply" operation.
      *
-     * @return The currently edited Cell
+     * @param cellServerState The Cell server state to add to the update list
      */
-    public Cell getCell();
+    public void addToUpdateList(CellServerState cellServerState);
+
+    /**
+     * Adds a CellComponentServerState object to the "update" list to be sent
+     * to the server during the next "apply" operation.
+     *
+     * @param cellComponentServerState The CellComponent server state to add
+     * to the update list
+     */
+    public void addToUpdateList(CellComponentServerState cellComponentServerState);
 }

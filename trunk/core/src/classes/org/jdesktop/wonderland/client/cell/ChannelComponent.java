@@ -64,7 +64,7 @@ public class ChannelComponent extends CellComponent {
         // changes to bounds, this listener will deliver delayed messages
         cell.addStatusChangeListener(new CellStatusChangeListener() {
             public void cellStatusChanged(Cell cell, CellStatus status) {
-                logger.warning("[ChannelComponent] status of cell " + 
+                logger.fine("[ChannelComponent] status of cell " +
                                cell.getCellID() + " is " + status);
 
                 if (status == CellStatus.INACTIVE) {
@@ -166,14 +166,16 @@ public class ChannelComponent extends CellComponent {
      * When the status is set to bounds, deliver any queued messages
      */
     protected void deliverDelayedMessages() {
-        logger.warning("Delivering delayed messages to cell " + 
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Delivering delayed messages to cell " +
                        cell.getCellID() + " (" + cell.getClass().getName() + ")");
+        }
 
         // deliver delayed messaged
         synchronized (delayLock) {
             if (delayedMessages != null) {
-                logger.warning("Delivering " + delayedMessages.size() +
-                               " messages to cell " + cell.getCellID());
+//                logger.warning("Delivering " + delayedMessages.size() +
+//                               " messages to cell " + cell.getCellID());
 
                 try {
                     for (CellMessage message : delayedMessages) {

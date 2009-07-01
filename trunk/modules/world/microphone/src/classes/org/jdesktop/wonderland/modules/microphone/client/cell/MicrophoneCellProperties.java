@@ -12,9 +12,9 @@ import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerSta
 
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
+//import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
 
-import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
+//import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
 
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 
@@ -32,8 +32,8 @@ import javax.swing.event.DocumentListener;
  *
  * @author  jp
  */
-@CellProperties
-public class MicrophoneCellProperties extends JPanel implements CellPropertiesSPI {
+//@CellProperties
+public class MicrophoneCellProperties extends JPanel /*implements CellPropertiesSPI */ {
 
     private CellPropertiesEditor editor;
 

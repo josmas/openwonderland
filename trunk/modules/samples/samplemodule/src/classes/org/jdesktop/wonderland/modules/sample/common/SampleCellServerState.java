@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.sample.common;
 
+import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -51,6 +52,12 @@ public class SampleCellServerState extends CellServerState {
     }
 
     public void setShapeType(String shapeType) {
+        Logger.getLogger(SampleCellServerState.class.getName()).warning("SETTING TO NEW SHAPE TYPE " + shapeType);
         this.shapeType = shapeType;
+    }
+
+    @Override
+    public String toString() {
+        return "[SHAPE TYPE] " + shapeType;
     }
 }

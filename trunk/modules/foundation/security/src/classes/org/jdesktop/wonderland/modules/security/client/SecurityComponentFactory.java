@@ -41,7 +41,7 @@ public class SecurityComponentFactory implements CellComponentFactorySPI
 {
 
     public String getDisplayName() {
-        return "Cell Security Component";
+        return "Security";
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {

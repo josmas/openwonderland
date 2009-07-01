@@ -35,7 +35,7 @@ public class MovableMessageResponse extends ResponseMessage {
 
     private Vector3f translation;
     private Quaternion rotation;
-    private Vector3f scale=null;
+    private float scale=1f;
 
     /**
      * MOVE_MODIFIED - the final destination of the move requested by
@@ -70,14 +70,14 @@ public class MovableMessageResponse extends ResponseMessage {
     /**
      * @return the scale
      */
-    public Vector3f getScale() {
+    public float getScale() {
         return scale;
     }
 
     /**
      * @param scale the scale to set
      */
-    public void setScale(Vector3f scale) {
+    public void setScale(float scale) {
         this.scale = scale;
     }
 
@@ -85,7 +85,7 @@ public class MovableMessageResponse extends ResponseMessage {
         return actionType;
     }
     
-    public static MovableMessageResponse newMoveModifiedMessage(MessageID msgID, Vector3f translation, Quaternion rotation, Vector3f scale) {
+    public static MovableMessageResponse newMoveModifiedMessage(MessageID msgID, Vector3f translation, Quaternion rotation, float scale) {
         MovableMessageResponse ret = new MovableMessageResponse(msgID, ActionType.MOVE_MODIFIED);
         ret.setLocation(translation);
         ret.setRotation(rotation);
