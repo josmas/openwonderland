@@ -78,7 +78,7 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
-	//System.out.println("PRESENCEINFO CHANGED:  " + type + " " + presenceInfo);
+	logger.finer("PRESENCEINFO CHANGED:  " + type + " " + presenceInfo);
 	//pm.dump();
         setBuddyList();
     }
@@ -91,10 +91,6 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
 
     private void setBuddyList() {
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
-
-	if (userListChanged(presenceInfoList) == false) {
-	    return;
-	}
 
         ArrayList<String> userList = new ArrayList();
 
@@ -118,16 +114,6 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
         buddyList.setListData(userArray);
 
 	enableButtons();
-    }
-
-    private boolean userListChanged(PresenceInfo[] infoList) {
-	for (int i = 0; i < infoList.length; i++) {
-	     if (userList.contains(infoList[i].usernameAlias) == false) {
-		return true;
-	     }
-	}
-
-	return false;
     }
 
     private void enableButtons() {

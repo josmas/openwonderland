@@ -41,8 +41,8 @@ import java.awt.Point;
 public class AddMemberDialog extends javax.swing.JFrame implements PresenceManagerListener,
 	MemberChangeListener, KeypadListener {
 
-    private static final Logger logger =
-            Logger.getLogger(AddMemberDialog.class.getName());
+    private static final Logger logger = Logger.getLogger(AddMemberDialog.class.getName());
+
     private AudioManagerClient client;
     private WonderlandSession session;
     private PresenceManager pm;
@@ -99,27 +99,21 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
 
 	//pm.dump();
 
-	for (PresenceInfo info : members) {
-	    //System.out.println("AddUser:  Member:  " + info);
-	}
-
         for (int i = 0; i < presenceInfoList.length; i++) {
             PresenceInfo info = presenceInfoList[i];
 
-	    //System.out.println("AddUser:  PI: " + info);
+	    logger.finer("AddUser:  PI: " + info);
 
             if (info.callID == null) {
                 // It's a virtual player, skip it.
-		//System.out.println("AddUser:  skipping virtual player " + info);
+		logger.finer("AddUser:  skipping virtual player " + info);
                 continue;
             }
 
             if (memberscontains(info)) {
-		//System.out.println("members already has " + info);
+		logger.finer("members already has " + info);
                 continue;
             }
-
-	    members.add(info);
 
 	    memberData.add(info.usernameAlias);
 	}
@@ -145,8 +139,8 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
-	//System.out.println("AddMember presenceInfo changed " + info 
-	//    + " type " + type);
+	logger.finer("AddMember presenceInfo changed " + info 
+	    + " type " + type);
 
         setMemberList();
     }
@@ -156,6 +150,8 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
     }
 
     public void memberChange(PresenceInfo info, boolean added) {
+	logger.finer("memberChange " + info + " added " + added);
+
 	if (added) {
 	    if (mostRecentDialout != null &&
                     mostRecentDialout.userID.getUsername().equals(info.userID.getUsername())) {

@@ -34,19 +34,12 @@ public class ClientConnectResponseMessage extends Message {
 
     private ArrayList<PresenceInfo> presenceInfoList;
 
-    private boolean isConnected;
-
-    public ClientConnectResponseMessage(ArrayList<PresenceInfo> presenceInfoList, boolean isConnected) {
+    public ClientConnectResponseMessage(ArrayList<PresenceInfo> presenceInfoList) {
 	this.presenceInfoList = presenceInfoList;
-	this.isConnected = isConnected;
     }
 
     public ArrayList<PresenceInfo> getPresenceInfoList() {
 	return presenceInfoList;
-    }
-
-    public boolean isConnected() {
-	return isConnected;
     }
 
 }

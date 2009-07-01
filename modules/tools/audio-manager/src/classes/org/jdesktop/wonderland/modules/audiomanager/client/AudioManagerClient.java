@@ -264,7 +264,11 @@ public class AudioManagerClient extends BaseConnection implements
     public void disconnected() {
         super.disconnected();
 
-        PresenceManagerFactory.reset();
+	//if (presenceInfo != null) {
+	//    pm.removePresenceInfo(presenceInfo);
+	//}
+
+        //PresenceManagerFactory.reset();
 
         // TODO: add methods to remove listeners!
 
@@ -293,20 +297,17 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void viewConfigured(LocalAvatar localAvatar) {
-        cell = localAvatar.getViewCell();
-
+	cell = localAvatar.getViewCell();
         CellID cellID = cell.getCellID();
 
-        String callID = CallID.getCallID(cellID);
-
-        SoftphoneControlImpl.getInstance().setCallID(callID);
-
-        presenceInfo = new PresenceInfo(cellID, session.getID(), session.getUserID(), callID);
-
-        pm.addPresenceInfo(presenceInfo);
+	/*
+	 * We require the PresenceManager so by the time we get here,
+	 * our presenceInfo has to be available.
+	 */
+        presenceInfo = pm.getPresenceInfo(cellID);
 
         logger.fine("[AudioManagerClient] view configured for cell " +
-                cellID + " presence: " + presenceInfo + " from " + pm);
+            cellID + " presence: " + presenceInfo + " from " + pm);
 
         connectSoftphone();
     }
