@@ -139,6 +139,11 @@ public class CellCacheConnection extends BaseConnection {
                     l.deleteCell(msg.getCellID());
                 }
                 break;
+            case CHANGE_PARENT:
+                for(CellCacheMessageListener l : listeners) {
+                    l.changeParent(msg.getCellID(), msg.getParentID(), msg.getCellTransform());
+                }
+                break;
             default :
                 logger.warning("Message type not implemented "+msg.getActionType());
         }
@@ -213,7 +218,15 @@ public class CellCacheConnection extends BaseConnection {
          * @param cellID
          */
         public void deleteCell(CellID cellID);
-        
+
+        /**
+         * Changes the parent of the cell.
+         *
+         * @param cellID The Cell ID of the Cell to move
+         * @param parentCellID The Cell ID of the new parent
+         * @param cellTransform The new local transform of the Cell
+         */
+        public void changeParent(CellID cellID, CellID parentCellID, CellTransform cellTransform);
     }
     
 }

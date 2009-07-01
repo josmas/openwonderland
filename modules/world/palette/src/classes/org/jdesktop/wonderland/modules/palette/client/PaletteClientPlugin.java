@@ -211,7 +211,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
         }
 
         return new ContextMenuItem[] {
-            new SimpleContextMenuItem("Properties...", null, new PropertiesListener()),
+//            new SimpleContextMenuItem("Properties...", null, new PropertiesListener()),
             deleteItem,
             duplicateItem,
         };
@@ -260,6 +260,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
     private class PropertiesListener implements ContextMenuActionListener {
 
         public void actionPerformed(ContextMenuItemEvent event) {
+/*
             // Create a new cell edit frame passing in the Cell and make
             // it visible
             Cell cell = event.getCell();
@@ -269,6 +270,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
             } catch (IllegalStateException excp) {
                 Logger.getLogger(PaletteClientPlugin.class.getName()).log(Level.WARNING, null, excp);
             }
+*/
         }
     }
 

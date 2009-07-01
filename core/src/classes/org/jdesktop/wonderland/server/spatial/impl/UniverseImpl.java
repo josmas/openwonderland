@@ -20,12 +20,14 @@ package org.jdesktop.wonderland.server.spatial.impl;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
+import com.sun.sgs.kernel.TaskQueue;
 import com.sun.sgs.kernel.TaskScheduler;
 import com.sun.sgs.kernel.TransactionScheduler;
 import com.sun.sgs.service.DataService;
 import com.sun.sgs.service.TransactionProxy;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
@@ -46,6 +48,8 @@ public class UniverseImpl implements Universe {
     private TransactionScheduler transactionScheduler;
 
     private static final Logger logger = Logger.getLogger(UniverseImpl.class.getName());
+    private HashMap<Object, TaskQueue> taskQueues = new HashMap();
+
 
     public UniverseImpl(ComponentRegistry componentRegistry, TransactionProxy transactionProxy) {
         this.transactionProxy = transactionProxy;
@@ -72,6 +76,24 @@ public class UniverseImpl implements Universe {
 
     public void scheduleTransaction(KernelRunnable transaction, Identity identity) {
         transactionScheduler.scheduleTask(transaction, identity);
+    }
+
+    public void scheduleQueuedTransaction(KernelRunnable task, Identity identity, Object queueOwner) {
+        // TODO this implementation will not work in multinode
+        synchronized(taskQueues) {
+            TaskQueue queue = taskQueues.get(queueOwner);
+            if (queue==null) {
+                queue = transactionScheduler.createTaskQueue();
+                taskQueues.put(queueOwner, queue);
+            }
+            queue.addTask(task, identity);
+        }
+    }
+
+    public void deleteTransactionQueue(Object queueOwner) {
+        synchronized(taskQueues) {
+            taskQueues.remove(queueOwner);
+        }
     }
 
     public void addRootSpatialCell(CellID cellID, Identity identity) {
@@ -125,11 +147,17 @@ public class UniverseImpl implements Universe {
     public void removeCell(CellID id) {
         // TODO remove from caches
         logger.fine("removeCell "+id);
-        SpatialCell cell = getSpatialCell(id);
-        
+        SpatialCellImpl cell = (SpatialCellImpl) getSpatialCell(id);
+
+        if (cell.getParent()!=null) {
+            cell.getParent().removeChild(cell);
+        }
+
         cell.destroy();
 
+
         synchronized(cells) {
+            System.err.println("***** REMOVING CELL "+id);
             cells.remove(id);
         }
     }

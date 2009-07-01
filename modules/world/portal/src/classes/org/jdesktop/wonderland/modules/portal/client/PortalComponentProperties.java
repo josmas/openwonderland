@@ -23,8 +23,8 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
-import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
@@ -34,8 +34,9 @@ import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@CellComponentProperties
-public class PortalComponentProperties extends javax.swing.JPanel implements CellComponentPropertiesSPI {
+@PropertiesFactory(PortalComponentServerState.class)
+public class PortalComponentProperties extends javax.swing.JPanel
+        implements PropertiesFactorySPI {
 
     private CellPropertiesEditor editor = null;
     
@@ -62,13 +63,6 @@ public class PortalComponentProperties extends javax.swing.JPanel implements Cel
     /**
      * @inheritDoc()
      */
-    public Class getServerCellComponentClass() {
-        return PortalComponentServerState.class;
-    }
-
-    /**
-     * @inheritDoc()
-     */
     public String getDisplayName() {
         return "Portal";
     }
@@ -76,15 +70,19 @@ public class PortalComponentProperties extends javax.swing.JPanel implements Cel
     /**
      * @inheritDoc()
      */
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
+    public JPanel getPropertiesJPanel() {
         return this;
+    }
+
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
     }
 
     /**
      * @inheritDoc()
      */
-    public <T extends CellServerState> void updateGUI(T cellServerState) {
+    public void open() {
+        CellServerState cellServerState = editor.getCellServerState();
         PortalComponentServerState state = (PortalComponentServerState)
                  cellServerState.getComponentServerState(PortalComponentServerState.class);
         if (state != null) {
@@ -114,17 +112,23 @@ public class PortalComponentProperties extends javax.swing.JPanel implements Cel
                 origAngle = "";
             }
             angleTF.setText(origAngle);
-            
-            return;
         }
     }
 
     /**
      * @inheritDoc()
      */
-    public <T extends CellServerState> void getCellServerState(T cellServerState) {
+    public void close() {
+        // Do nothing
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void apply() {
         // Figure out whether there already exists a server state for the
         // component.
+        CellServerState cellServerState = editor.getCellServerState();
         PortalComponentServerState state = (PortalComponentServerState) 
             cellServerState.getComponentServerState(PortalComponentServerState.class);
         if (state == null) {
@@ -160,8 +164,20 @@ public class PortalComponentProperties extends javax.swing.JPanel implements Cel
             look = new Rotation(q);
         }
         state.setLook(look);
-        
-        cellServerState.addComponentServerState(state);
+        editor.addToUpdateList(state);
+    }
+
+
+    /**
+     * @inheritDoc()
+     */
+    public void restore() {
+        // Restore from the originally stored values.
+        urlTF.setText(origServerURL);
+        locX.setText(origX);
+        locY.setText(origY);
+        locZ.setText(origZ);
+        angleTF.setText(origAngle);
     }
 
     /**

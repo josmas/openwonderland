@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.Channel;
@@ -52,6 +51,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellServerStateRequestMessag
 import org.jdesktop.wonderland.common.cell.messages.CellClientStateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentResponseMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerStateSetMessage;
+import org.jdesktop.wonderland.common.cell.messages.CellServerStateUpdateMessage;
 import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
 import org.jdesktop.wonderland.common.cell.security.ComponentAction;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -236,9 +236,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
         child.setParent(this);
         
         childCellRefs.add(AppContext.getDataManager().createReference(child));
-        
+
         if (live) {
-           child.setLive(true);
+           child.setLive(true);     // setLive will add the child to the universe and form the parent/child relationship
         }
 
     }
@@ -259,7 +259,6 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 if (live) {
                     child.setLive(false);
                 }
-                UniverseManagerFactory.getUniverseManager().removeChild(this, child);
                 return true;
             } catch (MultipleParentException ex) {
                 // This should never happen
@@ -441,7 +440,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
                         new ComponentStateMessageReceiver(this));
                 channel.addMessageReceiver(CellServerStateSetMessage.class,
                         new ComponentStateMessageReceiver(this));
-
+                channel.addMessageReceiver(CellServerStateUpdateMessage.class,
+                        new ComponentStateMessageReceiver(this));
             }
 
             Collection<ManagedReference<CellComponentMO>> compList = components.values();
@@ -459,6 +459,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 channel.removeMessageReceiver(CellServerComponentMessage.class);
                 channel.removeMessageReceiver(CellServerStateRequestMessage.class);
                 channel.removeMessageReceiver(CellServerStateSetMessage.class);
+                channel.removeMessageReceiver(CellServerStateUpdateMessage.class);
             }
         }
 
@@ -1067,6 +1068,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
             if (message instanceof CellServerStateSetMessage) {
                 handleSetStateMessage(sender, clientID, (CellServerStateSetMessage) message);
             }
+
+            if (message instanceof CellServerStateUpdateMessage) {
+                handleUpdateStateMessage(sender, clientID, (CellServerStateUpdateMessage) message);
+            }
         }
 
         /**
@@ -1104,12 +1109,70 @@ public abstract class CellMO implements ManagedObject, Serializable {
             cellMO.setServerState(state);
 
             // Notify the sender that things went OK
-            sender.send(clientID, new OKMessage(message.getMessageID()));
+//            sender.send(clientID, new OKMessage(message.getMessageID()));
 
             // Fetch a new client-state and set it. Send a message on the
             // cell channel with the new state.
             CellClientState clientState = cellMO.getClientState(null, clientID, null);
             cellMO.sendCellMessage(clientID, new CellClientStateMessage(cellMO.getCellID(), clientState));
+        }
+
+        /**
+         * Handles when an UPDATE state message is received.
+         */
+        private void handleUpdateStateMessage(WonderlandClientSender sender,
+                WonderlandClientID clientID,
+                CellServerStateUpdateMessage message)
+        {
+            CellMO cellMO = getCell();
+            CellID cellID = cellMO.getCellID();
+
+            // Fetch the cell, and set its server state. Catch all exceptions
+            // and report. This assumes that all components have been removed
+            // from the server state object, since they are handled separately
+            // below. The client needs to remove the component state objects
+            // to save network bandwidth in the message size.
+            CellServerState state = message.getCellServerState();
+            if (state != null) {
+                cellMO.setServerState(state);
+            }
+
+            // Fetch the set of cell component server states. For each, update
+            // them individually. We need to fetch the component server state
+            // from the cell first. If an existing cell component server state
+            // does not already exist, then log a message and ignore.
+            Set<CellComponentServerState> compSet = message.getCellComponentServerStateSet();
+            if (compSet != null) {
+                for (CellComponentServerState compState : compSet) {
+                    CellComponentMO componentMO = null;
+                    try {
+                        String className = compState.getServerComponentClassName();
+                        Class clazz = Class.forName(className);
+                        componentMO = cellMO.getComponent(clazz);
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    if (componentMO == null) {
+                        logger.warning("Unable to find CellComponentMO for " +
+                                componentMO.getClass().getName() + " on Cell " +
+                                cellMO.getName() + " of type " +
+                                cellMO.getClass().getName());
+                        continue;
+                    }
+
+                    // Otherwise, set the state of the component
+                    componentMO.setServerState(compState);
+                }
+            }
+
+            // Notify the sender that things went OK
+//            sender.send(clientID, new OKMessage(message.getMessageID()));
+
+            // Fetch a new client-state and set it. Send a message on the
+            // cell channel with the new state.
+            CellClientState clientState = cellMO.getClientState(null, clientID, null);
+            CellClientStateMessage ccsm = new CellClientStateMessage(cellID, clientState);
+            cellMO.sendCellMessage(clientID, ccsm);
         }
     }
 
@@ -1179,8 +1242,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 } else {
                     // Otherwise, the component already exists, so send an error
                     // message back to the client.
-                    sender.send(clientID, new ErrorMessage(message.getMessageID(),
-                                "The Component " + className + " already exists."));
+//                    sender.send(clientID, new ErrorMessage(message.getMessageID(),
+//                                "The Component " + className + " already exists."));
                     return;
                 }
             } catch (java.lang.Exception excp) {
@@ -1192,7 +1255,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 // Log an error in the log and send back an error message.
                 logger.log(Level.WARNING, "Unable to add component " +
                         className + " for cell " + cellMO.getName(), excp);
-                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
+//                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
                 return;
             }
 
@@ -1229,7 +1292,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 // Remove the component and send a success message back to the
                 // client
                 cellMO.removeComponent(component);
-                sender.send(clientID, new OKMessage(message.getMessageID()));
+//                sender.send(clientID, new OKMessage(message.getMessageID()));
 
                 // Send the same event message to all clients as an asynchronous
                 // event
@@ -1238,7 +1301,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             } catch (java.lang.ClassNotFoundException excp) {
                 // Just got an exception and ignore here
                 logger.log(Level.WARNING, "Cannot find component class", excp);
-                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
+//                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
             }
         }
     }

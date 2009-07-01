@@ -24,9 +24,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
-import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponentServerState;
 
@@ -37,8 +36,10 @@ import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@CellComponentProperties
-public class ConeOfSilenceComponentProperties extends javax.swing.JPanel implements CellComponentPropertiesSPI {
+@PropertiesFactory(ConeOfSilenceComponentServerState.class)
+public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
+        implements PropertiesFactorySPI {
+
     private CellPropertiesEditor editor = null;
     private String originalName = null;
     private double originalFullVolumeRadius = 0.0;
@@ -65,13 +66,6 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
     /**
      * @{inheritDoc}
      */
-    public Class getServerCellComponentClass() {
-        return ConeOfSilenceComponentServerState.class;
-    }
-
-    /**
-     * @{inheritDoc}
-     */
     public String getDisplayName() {
         return "Cone Of Silence";
     }
@@ -79,24 +73,31 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
     /**
      * @{inheritDoc}
      */
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
+    public JPanel getPropertiesJPanel() {
         return this;
     }
 
     /**
      * @{inheritDoc}
      */
-    public <T extends CellServerState> void updateGUI(T cellServerState) {
-        ConeOfSilenceComponentServerState state = (ConeOfSilenceComponentServerState)
-	    cellServerState.getComponentServerState(ConeOfSilenceComponentServerState.class);
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * @{inheritDoc}
+     */
+    public void open() {
+        CellServerState cellServerState = editor.getCellServerState();
+        ConeOfSilenceComponentServerState state =
+                (ConeOfSilenceComponentServerState)cellServerState.getComponentServerState(ConeOfSilenceComponentServerState.class);
 
         if (state == null) {
-	    return;
-	}
+            return;
+        }
 
         originalName = state.getName();
-	originalOutsideAudioVolume = VolumeUtil.getClientVolume(state.getOutsideAudioVolume());
+        originalOutsideAudioVolume = VolumeUtil.getClientVolume(state.getOutsideAudioVolume());
         originalFullVolumeRadius = state.getFullVolumeRadius();
 
         nameTextField.setText(originalName);
@@ -107,21 +108,38 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel impleme
     /**
      * @{inheritDoc}
      */
-    public <T extends CellServerState> void getCellServerState(T cellServerState) {
-        // Figure out whether there already exists a server state for the
-        // component.
-        ConeOfSilenceComponentServerState state = (ConeOfSilenceComponentServerState)
-	    cellServerState.getComponentServerState(ConeOfSilenceComponentServerState.class);
+    public void close() {
+        // Do nothing
+    }
 
+    /**
+     * @{inheritDoc}
+     */
+    public void apply() {
+        // Figure out whether there already exists a server state for the
+        // component. If it does not exist, then return, but we could always
+        // create a new one really.
+        CellServerState cellServerState = editor.getCellServerState();
+        ConeOfSilenceComponentServerState state =
+                (ConeOfSilenceComponentServerState)cellServerState.getComponentServerState(ConeOfSilenceComponentServerState.class);
         if (state == null) {
-	    return;
-	}
+            return;
+        }
 
         state.setName(nameTextField.getText());
         state.setFullVolumeRadius((Double) fullVolumeRadiusModel.getValue());
         state.setOutsideAudioVolume(VolumeUtil.getServerVolume(outsideAudioVolumeSlider.getValue()));
+        editor.addToUpdateList(state);
+    }
 
-        cellServerState.addComponentServerState(state);
+    /**
+     * @{inheritDoc}
+     */
+    public void restore() {
+        // Reset the original values to the GUI
+        nameTextField.setText(originalName);
+        outsideAudioVolumeSlider.setValue(originalOutsideAudioVolume);
+        fullVolumeRadiusSpinner.setValue(originalFullVolumeRadius);
     }
 
     /**

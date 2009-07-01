@@ -34,9 +34,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
 import org.jdesktop.wonderland.client.content.ContentBrowserManager;
 import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI;
 import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI.ContentBrowserListener;
@@ -51,8 +51,8 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@CellProperties
-public class SampleCellProperties extends javax.swing.JPanel implements CellPropertiesSPI {
+@PropertiesFactory(SampleCellServerState.class)
+public class SampleCellProperties extends JPanel implements PropertiesFactorySPI {
     CellPropertiesEditor editor = null;
     private String originalShapeType = null;
 
@@ -93,6 +93,66 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
                 editor.setVisible(true);
             }
         });
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public String getDisplayName() {
+        return "Sample Cell";
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public JPanel getPropertiesJPanel() {
+        return this;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void open() {
+        // Fetch the current state from the cell's server state and update
+        // the GUI.
+        CellServerState state = editor.getCellServerState();
+        if (state != null) {
+            originalShapeType = ((SampleCellServerState)state).getShapeType();
+            shapeTypeComboBox.setSelectedItem(originalShapeType);
+        }
+    }
+    
+    /**
+     * @inheritDoc()
+     */
+    public void close() {
+        // Do nothing for now.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void apply() {
+        // Take the value from the shape type and populate the server state
+        // with it.
+        String newShapeType = (String) shapeTypeComboBox.getSelectedItem();
+        CellServerState state = editor.getCellServerState();
+        ((SampleCellServerState)state).setShapeType(newShapeType);
+        editor.addToUpdateList(state);
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void restore() {
+        shapeTypeComboBox.setSelectedItem(originalShapeType);
     }
 
     /** This method is called from within the constructor to
@@ -263,19 +323,6 @@ public class SampleCellProperties extends javax.swing.JPanel implements CellProp
     private javax.swing.JComboBox shapeTypeComboBox;
     private javax.swing.JTextField uriTextField;
     // End of variables declaration//GEN-END:variables
-
-    public Class getServerCellStateClass() {
-       return SampleCellServerState.class;
-    }
-
-    public String getDisplayName() {
-        return "Sample Cell";
-    }
-
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
-        return this;
-    }
 
     public <T extends CellServerState> void updateGUI(T cellServerState) {
         SampleCellServerState state = (SampleCellServerState)cellServerState;
