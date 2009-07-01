@@ -35,10 +35,13 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerCon
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoUsernameAliasChangeMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellManager;
+
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode.EventType;
 
 import java.util.ArrayList;
 
@@ -129,6 +132,8 @@ public class PresenceManagerClient extends BaseConnection implements
 	if (message instanceof ClientConnectResponseMessage) {
 	    ClientConnectResponseMessage msg = (ClientConnectResponseMessage) message;
 
+	    ArrayList<String> nameTagList = new ArrayList();
+
 	    ArrayList<PresenceInfo> presenceInfoList = msg.getPresenceInfoList();
 
 	    for (PresenceInfo presenceInfo : presenceInfoList) {
@@ -137,10 +142,26 @@ public class PresenceManagerClient extends BaseConnection implements
 		logger.fine("Got ClientConnectResponse:  adding pi " + presenceInfo);
 		pm.presenceInfoAdded(presenceInfo);
 
-		if (presenceInfo.usernameAlias.equals(presenceInfo.userID.getUsername()) == false) {
-		    pm.changeUsernameAlias(presenceInfo);
-		}
+		String username = presenceInfo.userID.getUsername();
+
+		NameTagNode nameTag = NameTagNode.getNameTagNode(username);
+
+		if (presenceInfo.usernameAlias.equals(username) == false) {
+ 		    pm.changeUsernameAlias(presenceInfo);
+ 		}
+
+		if (nameTag == null) {
+		    nameTagList.add(username);
+		} else {
+		    nameTag.updateLabel(presenceInfo.usernameAlias, presenceInfo.inConeOfSilence,
+		        presenceInfo.isSpeaking, presenceInfo.isMuted);
+	        }
 	    }
+
+	    if (nameTagList.size() > 0) {
+		new NameTagUpdater(nameTagList);
+	    } 
+
 	    return;
 	}
 
@@ -161,16 +182,69 @@ public class PresenceManagerClient extends BaseConnection implements
             return;
         }
 
-        if (message instanceof PresenceInfoUsernameAliasChangeMessage) {
-            PresenceInfoUsernameAliasChangeMessage m = (PresenceInfoUsernameAliasChangeMessage) message;
+        if (message instanceof PresenceInfoChangeMessage) {
+            PresenceInfoChangeMessage m = (PresenceInfoChangeMessage) message;
 
-            logger.fine("GOT PresenceInfoUsernameAliasChangeMessage for " + m.getPresenceInfo());
-
-            pm.usernameAliasChanged(m.getPresenceInfo());
+            logger.fine("GOT PresenceInfoChangeMessage for " + m.getPresenceInfo());
             return;
         }
 
         throw new UnsupportedOperationException("Unknown message:  " + message);
+    }
+
+    /*
+     * There is no way to know when other avatar names have been initialized.
+     * When we connect, if we can't update the names with mute and alias info
+     * because a name tag doesn't yet exist, we shedule the update for later.
+     */
+    class NameTagUpdater extends Thread {
+	
+	private ArrayList<String> nameTagList;
+
+	public NameTagUpdater(ArrayList<String> nameTagList) {
+	    this.nameTagList = nameTagList;
+
+	    start();
+	}
+
+	public void run() {
+	    while (true) {
+		String[] names = nameTagList.toArray(new String[0]);
+
+		for (int i = 0; i < names.length; i++) {
+		    String name = names[i];
+
+		    NameTagNode nameTag = NameTagNode.getNameTagNode(name);
+
+		    if (nameTag == null) {
+			continue;
+		    }
+
+		    nameTagList.remove(name);
+
+		    PresenceInfo[] info = pm.getUserPresenceInfo(name);
+
+		    if (info == null || info.length == 0) {
+			System.out.println("No presence info for " + name);
+			continue;
+		    }
+		
+		    PresenceInfo pi = info[0];
+
+		    nameTag.updateLabel(pi.usernameAlias, pi.inConeOfSilence,
+			pi.isSpeaking, pi.isMuted);
+		}
+
+		if (nameTagList.size() == 0) {
+		    break;
+		}
+
+	        try {
+		    Thread.sleep(200);
+		} catch (InterruptedException e) {
+		}
+	    }
+ 	}
     }
 
     public ConnectionType getConnectionType() {

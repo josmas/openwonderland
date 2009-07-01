@@ -28,11 +28,11 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  * @author jprovino
  */
 @ExperimentalAPI
-public class PresenceInfoUsernameAliasChangeMessage extends CellMessage {
+public class PresenceInfoChangeMessage extends CellMessage {
 
     private PresenceInfo presenceInfo;
 
-    public PresenceInfoUsernameAliasChangeMessage(PresenceInfo presenceInfo) {
+    public PresenceInfoChangeMessage(PresenceInfo presenceInfo) {
 	super(presenceInfo.cellID);
 
 	this.presenceInfo = presenceInfo;

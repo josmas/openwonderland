@@ -14,6 +14,10 @@
         <path location="${current.dir}/../audio-manager/lib/bridge_connector.jar"/>
     </pathconvert>
 
+    <pathconvert property="module-client.classpath">
+        <path location="${current.dir}/../../world/avatarbase/build/client/avatarbase-client.jar"/>
+    </pathconvert>
+
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        

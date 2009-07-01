@@ -266,7 +266,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         HUDComponent changeNameHUDComponent = changeNameMap.get(presenceInfo);
 
         if (changeNameHUDComponent == null) {
-            ChangeNameHUDPanel changeNameHUDPanel = new ChangeNameHUDPanel(this, presenceInfo);
+            ChangeNameHUDPanel changeNameHUDPanel = new ChangeNameHUDPanel(this, pm, presenceInfo);
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             final HUDComponent comp = mainHUD.createComponent(changeNameHUDPanel);
             comp.setPreferredLocation(Layout.NORTH);
