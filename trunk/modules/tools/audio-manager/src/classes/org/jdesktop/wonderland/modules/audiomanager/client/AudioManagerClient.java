@@ -264,12 +264,6 @@ public class AudioManagerClient extends BaseConnection implements
     public void disconnected() {
         super.disconnected();
 
-	//if (presenceInfo != null) {
-	//    pm.removePresenceInfo(presenceInfo);
-	//}
-
-        //PresenceManagerFactory.reset();
-
         // TODO: add methods to remove listeners!
 
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
