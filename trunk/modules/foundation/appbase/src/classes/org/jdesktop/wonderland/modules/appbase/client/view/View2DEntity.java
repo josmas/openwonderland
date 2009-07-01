@@ -616,8 +616,8 @@ public abstract class View2DEntity implements View2D {
         sizeApp = (Dimension) size.clone();
 
         // Note: AWT doesn't like zero image sizes
-        size.width = (size.width <= 0) ? 1 : size.width;
-        size.height = (size.height <= 0) ? 1 : size.height;
+        sizeApp.width = (sizeApp.width <= 0) ? 1 : sizeApp.width;
+        sizeApp.height = (sizeApp.height <= 0) ? 1 : sizeApp.height;
 
         changeMask |= CHANGED_SIZE_APP;
         if (update) {

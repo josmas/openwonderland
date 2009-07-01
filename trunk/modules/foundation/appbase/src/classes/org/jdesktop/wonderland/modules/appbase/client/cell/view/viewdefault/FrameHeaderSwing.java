@@ -212,12 +212,10 @@ public class FrameHeaderSwing
     protected void updateLayout() {
         Vector2f pixelScale = view.getPixelScale();
 
-        // Calculate preferred height
-        headerWindow.setSize(null);
-        headerWindow.validate();
+        // Get the preferred height
         Component embeddedComp = headerWindow.getComponent();
-        int preferredHeight = embeddedComp.getHeight();
-        
+        int preferredHeight = embeddedComp.getPreferredSize().height;
+
         // Calculate size. This is essentially the same as for FrameSide TOP, but converted to pixels.
         float innerWidth = view.getDisplayerLocalWidth();
         float innerHeight = view.getDisplayerLocalHeight();
