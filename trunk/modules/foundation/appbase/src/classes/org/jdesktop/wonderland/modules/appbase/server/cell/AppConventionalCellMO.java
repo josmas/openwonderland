@@ -101,7 +101,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
          * @param command The execution command.
          */
         public void appLaunch (AppConventionalCellMO cell, String executionCapability, String appname,
-                               String command);
+                               String command) throws InstantiationException;
         
         /**
          * Stop a running server shared application.
@@ -244,8 +244,15 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
         if (live) {
 
-            // TODO: need to generalize beyond xremwin
-            appServerLauncher.appLaunch(this, "xremwin", serverState.getAppName(), serverState.getCommand());
+            // TODO: someday: need to generalize beyond xremwin
+            try {
+                appServerLauncher.appLaunch(this, "xremwin", serverState.getAppName(), serverState.getCommand());
+            } catch (InstantiationException ex) {
+                // TODO: jon: what should this exception be?
+                RuntimeException re = new RuntimeException();
+                re.initCause(ex);
+                throw re;
+            }
 
         } else {
             if (connectionInfo != null) {

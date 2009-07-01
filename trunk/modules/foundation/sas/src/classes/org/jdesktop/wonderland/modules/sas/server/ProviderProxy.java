@@ -107,7 +107,9 @@ class ProviderProxy implements Serializable {
      * See if this provider will launch the app. The result is reported by calling
      * server.appLaunchResult.
      */
-    void tryLaunch (CellID cellID, String executionCapability, String appName, String command) {
+    void tryLaunch (CellID cellID, String executionCapability, String appName, String command) 
+        throws InstantiationException
+    {
         logger.severe("**** Provider tryLaunch, clientID = " + clientID);
         logger.severe("command = " + command);
 
@@ -120,7 +122,13 @@ class ProviderProxy implements Serializable {
         // Now send the message. The response will come back asynchronously via the 
         // SasProviderConnectionHandler and it will report the launch status to the 
         // SasServer.appLaunchResult method
-        sender.send(clientID, msg);
+        try {
+            sender.send(clientID, msg);
+        } catch (Exception ex) {
+            InstantiationException ie = new InstantiationException();
+            ie.initCause(ex);
+            throw ie;
+        }
     }
 
 
