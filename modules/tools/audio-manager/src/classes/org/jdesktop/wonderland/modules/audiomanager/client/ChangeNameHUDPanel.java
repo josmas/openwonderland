@@ -25,6 +25,7 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
@@ -36,16 +37,21 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 public class ChangeNameHUDPanel extends javax.swing.JPanel {
 
     private UsernameAliasChangeListener listener;
+    private PresenceManager pm;
     private PresenceInfo presenceInfo;
     private PropertyChangeSupport listeners;
+
 
     public ChangeNameHUDPanel() {
         initComponents();
     }
 
-    public ChangeNameHUDPanel(UsernameAliasChangeListener listener, PresenceInfo presenceInfo) {
+    public ChangeNameHUDPanel(UsernameAliasChangeListener listener, PresenceManager pm,
+	    PresenceInfo presenceInfo) {
+
         this();
         this.listener = listener;
+	this.pm = pm;
         this.presenceInfo = presenceInfo;
         aliasLabel.setText("Change alias for " + presenceInfo.userID.getUsername());
         usernameAliasTextField.setText(presenceInfo.userID.getUsername());
@@ -167,6 +173,7 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         presenceInfo.usernameAlias = usernameAliasTextField.getText();
+	pm.changeUsernameAlias(presenceInfo);
         listener.changeUsernameAlias(presenceInfo);
         listeners.firePropertyChange("ok", new String(""), null);
 }//GEN-LAST:event_okButtonActionPerformed

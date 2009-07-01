@@ -26,14 +26,9 @@ public interface PresenceManagerListener {
     public enum ChangeType {
 	USER_ADDED,
 	USER_REMOVED,
-	SPEAKING_CHANGED,
-	MUTE_CHANGED,
-	ENTER_EXIT_CONE_OF_SILENCE,
-	IN_SECRET_CHAT
+	UPDATED
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type);
-
-    public void usernameAliasChanged(PresenceInfo presenceInfo);
 
 }

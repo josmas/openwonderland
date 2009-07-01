@@ -113,6 +113,10 @@ public class NameTagNode extends Node {
 	setNameTag(EventType.REGULAR_FONT, name, name);
     }
 
+    public static NameTagNode getNameTagNode(String name) {
+	return nameTagMap.get(name);
+    }
+
     public void done() {
         if (done) {
             return;
@@ -317,7 +321,41 @@ public class NameTagNode extends Node {
         }
     }
 
+    public void updateLabel(String alias, boolean inConeOfSilence, boolean isSpeaking,
+	    boolean isMuted) {
+
+	//System.out.println("UPDATE LABEL:  name " + name + " alias " + alias + " isMuted " + isMuted);
+
+	removeLabel();
+
+	usernameAlias = alias;
+
+	if (name.equals(usernameAlias) == false) {
+            setFont(ALIAS_NAME_FONT);
+	} else {
+            setFont(REAL_NAME_FONT);
+	}
+
+	this.inConeOfSilence = inConeOfSilence;
+	this.isSpeaking = isSpeaking;
+	this.isMuted = isMuted;
+
+	if (isSpeaking) {
+	    setForegroundColor(SPEAKING_COLOR);
+	} else {
+	    setForegroundColor(NOT_SPEAKING_COLOR);
+	}
+
+	if (inConeOfSilence) {
+	    setForegroundColor(CONE_OF_SILENCE_COLOR);
+	}
+
+	updateLabel(getDisplayName(usernameAlias, isSpeaking, isMuted));
+    }
+
     private void updateLabel(final String displayName) {
+	//System.out.println("DISPLAY NAME:  " + displayName);
+
         if (labelHidden) {
             return;
         }

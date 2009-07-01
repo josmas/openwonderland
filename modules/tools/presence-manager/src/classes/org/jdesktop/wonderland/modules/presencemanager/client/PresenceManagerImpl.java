@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoUsernameAliasChangeMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
@@ -167,21 +167,6 @@ public class PresenceManagerImpl implements PresenceManager {
 
         for (int i = 0; i < listenerArray.length; i++) {
             listenerArray[i].presenceInfoChanged(presenceInfo, type);
-        }
-    }
-
-    private void notifyListenersAliasChanged(PresenceInfo presenceInfo) {
-        /*
-         * Notify listeners
-         */
-        PresenceManagerListener[] listenerArray;
-
-        synchronized (listeners) {
-            listenerArray = this.listeners.toArray(new PresenceManagerListener[0]);
-        }
-
-        for (int i = 0; i < listenerArray.length; i++) {
-            listenerArray[i].usernameAliasChanged(presenceInfo);
         }
     }
 
@@ -388,12 +373,11 @@ public class PresenceManagerImpl implements PresenceManager {
             PresenceInfo userInfo = users[0];
             userInfo.usernameAlias = info.usernameAlias;
         }
-        session.send(PresenceManagerClient.getInstance(),
-                new PresenceInfoUsernameAliasChangeMessage(info));
-    }
 
-    public void usernameAliasChanged(PresenceInfo info) {
-        notifyListenersAliasChanged(info);
+        session.send(PresenceManagerClient.getInstance(),
+	    new PresenceInfoChangeMessage(info));
+
+        notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -403,7 +387,11 @@ public class PresenceManagerImpl implements PresenceManager {
      */
     public void setSpeaking(PresenceInfo info, boolean isSpeaking) {
         info.isSpeaking = isSpeaking;
-        notifyListeners(info, ChangeType.SPEAKING_CHANGED);
+
+        session.send(PresenceManagerClient.getInstance(),
+	    new PresenceInfoChangeMessage(info));
+
+        notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -413,7 +401,11 @@ public class PresenceManagerImpl implements PresenceManager {
      */
     public void setMute(PresenceInfo info, boolean isMuted) {
         info.isMuted = isMuted;
-        notifyListeners(info, ChangeType.MUTE_CHANGED);
+
+        session.send(PresenceManagerClient.getInstance(),
+	    new PresenceInfoChangeMessage(info));
+
+        notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -423,7 +415,11 @@ public class PresenceManagerImpl implements PresenceManager {
      */
     public void setEnteredConeOfSilence(PresenceInfo info, boolean inConeOfSilence) {
         info.inConeOfSilence = inConeOfSilence;
-        notifyListeners(info, ChangeType.ENTER_EXIT_CONE_OF_SILENCE);
+
+        session.send(PresenceManagerClient.getInstance(),
+	    new PresenceInfoChangeMessage(info));
+
+        notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -433,7 +429,11 @@ public class PresenceManagerImpl implements PresenceManager {
      */
     public void setInSecretChat(PresenceInfo info, boolean inSecretChat) {
         info.inSecretChat = inSecretChat;
-        notifyListeners(info, ChangeType.ENTER_EXIT_CONE_OF_SILENCE);
+
+        session.send(PresenceManagerClient.getInstance(),
+	    new PresenceInfoChangeMessage(info));
+
+        notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**

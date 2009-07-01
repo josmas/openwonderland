@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerConnectionType;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoUsernameAliasChangeMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
@@ -162,8 +162,8 @@ public class PresenceManagerConnectionHandler implements
 	    return;
 	}
 
-	if (message instanceof PresenceInfoUsernameAliasChangeMessage) {
-	    PresenceInfo presenceInfo = ((PresenceInfoUsernameAliasChangeMessage) message).getPresenceInfo();
+	if (message instanceof PresenceInfoChangeMessage) {
+	    PresenceInfo presenceInfo = ((PresenceInfoChangeMessage) message).getPresenceInfo();
 
 	    ArrayList<PresenceInfo> presenceInfoList = sessions.get(clientID.getID());
 
