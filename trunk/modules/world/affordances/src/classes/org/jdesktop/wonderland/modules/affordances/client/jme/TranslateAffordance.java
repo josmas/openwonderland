@@ -41,6 +41,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
@@ -50,6 +51,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 
 /**
  * Visual affordance (manipulator) to move a cell around in the world.
@@ -403,7 +405,9 @@ public class TranslateAffordance extends Affordance {
             // post some Swing UI
             setSwingSafe(true);
 
-            // Create a label to display the current drag amount
+            // Create a label to display the current drag amount. Since this
+            // is not visible yet, we do not need to do it in the AWT Event
+            // Thread.
             labelFrame = new JFrame();
             labelFrame.setResizable(false);
             labelFrame.setUndecorated(true);
@@ -436,7 +440,7 @@ public class TranslateAffordance extends Affordance {
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
                 if (buttonEvent.isPressed() &&
-                        buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+                        buttonEvent.getButton() == ButtonId.BUTTON1) {
                     
                     // Fetch the initial location of the mouse drag event and
                     // store away the necessary information
@@ -444,17 +448,19 @@ public class TranslateAffordance extends Affordance {
                     dragStartScreen = new Point(awtButtonEvent.getX(), awtButtonEvent.getY());
                     dragStartWorld = buttonEvent.getIntersectionPointWorld();
                     
-                    // Set the initial value of the label to 0.0 and display
-                    setLabelPosition(awtMouseEvent);
-                    labelFrame.toFront();
-                    labelFrame.setVisible(true);
-                    labelFrame.repaint();
+                    // Show the position label, make sure we do this in an
+                    // AWT Event Thread
+                    showPositionLabel(awtMouseEvent);
 
                     // Tell the listeners that a translation has started.
                     fireTranslationStarted();
+                    return;
                 }
                 else if (buttonEvent.isReleased() == true) {
-                    labelFrame.setVisible(false);
+                    // Hide the position label, make sure we do this in an
+                    // AWT Event Thread
+                    hidePositionLabel();
+                    return;
                 }
                 return;
             }
@@ -494,17 +500,9 @@ public class TranslateAffordance extends Affordance {
                     break;
             }
 
-            // Set the label with the amount that we have dragged it. We display
-            // the dragged amount to two decimal points
-            StringBuilder movedString = new StringBuilder();
-            Formatter formatter = new Formatter(movedString);
-            formatter.format("%.2f", moved);
-            positionLabel.setText(movedString.toString());
-            labelFrame.pack();
-
-            // Figure out where to place the label based upon the location of
-            // the event.
-            setLabelPosition(awtMouseEvent);
+            // Update the position label, make sure we do this in an AWT Event
+            // Thread
+            updatePositionLabel(moved, awtMouseEvent);
 
             // Move the cell via the moveable comopnent
             fireTranslationChanged(addVector);
@@ -512,13 +510,62 @@ public class TranslateAffordance extends Affordance {
 
         /**
          * Sets the location of the frame holding the label given the current
-         * mouse event, using its location
+         * mouse event, using its location.
+         *
+         * NOTE: This method assumes it is being called within the AWT Event
+         * Thread.
          */
         private void setLabelPosition(MouseEvent mouseEvent) {
             Component component = mouseEvent.getComponent();
             Point parentPoint = new Point(component.getLocationOnScreen());
             parentPoint.translate(mouseEvent.getX() + 10, mouseEvent.getY() - 15);
             labelFrame.setLocation(parentPoint);
+        }
+        
+        /**
+         * Shows the position label, properly in an AWT Event THread
+         */
+       private void showPositionLabel(final MouseEvent mouseEvent) {
+           SwingUtilities.invokeLater(new Runnable() {
+               public void run() {
+                   setLabelPosition(mouseEvent);
+                   labelFrame.toFront();
+                   labelFrame.setVisible(true);
+                   labelFrame.repaint();
+               }
+           });
+       }
+
+
+        /**
+         * Hides the position label, properly in an AWT Event Thread
+         */
+        private void hidePositionLabel() {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    labelFrame.setVisible(false);
+                }
+            });
+        }
+
+        /**
+         * Updates the position label with the amount moved, properly in an
+         * AWT Event Thread.
+         */
+        private void updatePositionLabel(float moved, final MouseEvent mouseEvent) {
+            // Set the label with the amount that we have dragged it. We display
+            // the dragged amount to two decimal points
+            final StringBuilder movedString = new StringBuilder();
+            Formatter formatter = new Formatter(movedString);
+            formatter.format("%.2f", moved);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    positionLabel.setText(movedString.toString());
+                    labelFrame.pack();
+                    setLabelPosition(mouseEvent);
+                }
+            });
         }
     }
 }
