@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
+import javax.swing.SwingUtilities;
 
 /**
  * The GUI code for the frame close button.
@@ -162,7 +163,11 @@ class Gui2DCloseButton extends Gui2D {
                 break;
 
             case CLOSE_BUTTON_PRESSED:
-                notifyAllListeners();
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        notifyAllListeners();
+                    }
+                });
                 break;
         }
     }

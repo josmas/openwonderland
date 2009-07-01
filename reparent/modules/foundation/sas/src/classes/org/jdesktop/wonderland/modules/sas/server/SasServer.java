@@ -64,7 +64,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
     }
 
     /**
-     * A map of of the app launch requests in flight for various cells.
+     * A map of the app launch requests in flight for various cells.
      * "In flight" means that the request has been sent to a provider.
      * Note: We manage things so that only one launch request can be in flight at a time 
      * for a particular app cell.
@@ -157,7 +157,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         // Construct the launch request
         LaunchRequest launchReq = new LaunchRequest(cellID, executionCapability, appName, command);
 
-        // TODO: someday: allow multiple apps per cell.
+        // TODO: someday: allow multiple apps to be launched per cell.
 
         LinkedList<ProviderProxy> providers = execCapToProviderList.get(executionCapability);
         if (providers == null || providers.size() <= 0) {

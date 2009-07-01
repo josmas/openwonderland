@@ -36,7 +36,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import org.jdesktop.mtgame.Entity;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -154,6 +154,10 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         contextPanel.add(titlePanel);
         contextPanel.invalidate();
 
+        // Tell the context menu listeners that we are about to display a
+        // context menu
+        ContextMenuManager.getContextMenuManager().fireContextMenuEvent(event);
+        
         // Look for the context component on the current Cell, we need to find
         // out whether we want to show the standard menu items.
         ContextMenuComponent cmc = cell.getComponent(ContextMenuComponent.class);
@@ -354,21 +358,40 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         public void commitEvent(Event event) {
 
             // Go ahead and either close the context menu or show the context
-            // menu. We reacquire the lock afterwards
+            // menu.
             if (event instanceof ActivatedEvent || event instanceof SelectionEvent) {
-                hideContextMenu();
+                // Hide the context menu in the AWT Event Thread so that we do
+                // not interfere with the MT Game Render thread
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        hideContextMenu();
+                    }
+                });
             }
             else if (event instanceof ContextEvent) {
                 // Show the context menu, initialize the menu if this is the
                 // first time
-                Cell cell = ((ContextEvent)event).getPrimaryCell();
+                final Cell cell = ((ContextEvent)event).getPrimaryCell();
                 if (cell == null) {
-                    hideContextMenu();
+                    // Hide the context menu in the AWT Event Thread so that we do
+                    // not interfere with the MT Game Render thread
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            hideContextMenu();
+                        }
+                    });
                     return;
                 }
-                ContextEvent ce = (ContextEvent) event;
-                initializeMenu(ce, cell);
-                showContextMenu(ce.getMouseEvent(), cell);
+
+                // Initialize the context menu in the AWT Event Thread so that
+                // we do not interfere with the MT Game Render thread
+                final ContextEvent ce = (ContextEvent) event;
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        initializeMenu(ce, cell);
+                        showContextMenu(ce.getMouseEvent(), cell);
+                    }
+                });
             }
         }
     }

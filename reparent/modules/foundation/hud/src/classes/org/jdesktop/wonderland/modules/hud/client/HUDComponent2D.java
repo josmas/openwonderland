@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
 import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
 import org.jdesktop.wonderland.client.hud.HUDComponentListener;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
  * A HUDComponent2D is a 2D object that can be displayed on the HUD.
@@ -52,6 +53,7 @@ public class HUDComponent2D implements HUDComponent {
     private List<HUDComponentListener> listeners;
     private Cell cell;
     protected JComponent component;
+    protected Window2D window;
     private HUDComponentEvent event;
     private Rectangle2D bounds;     // on-HUD location
     private Vector3f worldLocation; // in-world location
@@ -82,12 +84,29 @@ public class HUDComponent2D implements HUDComponent {
         this.cell = cell;
     }
 
+    public HUDComponent2D(Window2D window) {
+        this.window = window;
+    }
+
+    public HUDComponent2D(Window2D window, Cell cell) {
+        this(window);
+        this.cell = cell;
+    }
+
     public void setComponent(JComponent component) {
         this.component = component;
     }
 
     public JComponent getComponent() {
         return component;
+    }
+
+    public void setWindow(Window2D window) {
+        this.window = window;
+    }
+
+    public Window2D getWindow() {
+        return window;
     }
 
     /**
@@ -365,7 +384,7 @@ public class HUDComponent2D implements HUDComponent {
      */
     public void addComponentListener(HUDComponentListener listener) {
         listeners.add(listener);
-    // TODO: notify the new listener that the component was created?
+        // TODO: notify the new listener that the component was created?
     }
 
     /**
@@ -409,7 +428,8 @@ public class HUDComponent2D implements HUDComponent {
 
     @Override
     public String toString() {
-        return "HUDComponent2D: " + component.getClass().getName() +
+        return "HUDComponent2D: " + 
+                ((component != null) ? component.getClass().getName() : "") +
                 ", bounds: " + bounds +
                 ", visible: " + visible +
                 ", world visible: " + worldVisible +

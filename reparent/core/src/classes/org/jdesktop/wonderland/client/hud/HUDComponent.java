@@ -36,9 +36,19 @@ import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
  */
 public interface HUDComponent {
 
+    /**
+     * Defines a type of visual component that can be displayed on a HUD
+     */
     public enum DisplayMode {
 
-        WORLD, HUD
+        /**
+         * Display in world
+         */
+        WORLD,
+        /**
+         * Display on screen
+         */
+        HUD
     };
 
     /**

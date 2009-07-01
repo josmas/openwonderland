@@ -125,7 +125,7 @@ public class AppXrwMaster
         // Start the window system for this app
         winSys = WindowSystemXrw.create(appInstanceName, this);
         if (winSys == null) {
-            reportLaunchError("Cannot launch " + appInstanceName + ": Cannot create window system");
+            AppXrw.logger.warning("Cannot launch " + appInstanceName + ": Cannot create window system");
             cleanup();
             throw new InstantiationException();
         }
@@ -139,6 +139,7 @@ public class AppXrwMaster
             serverSocket = createServerSocket(inetAddr);
         } catch (IOException ex) {
             AppXrw.logger.warning("Cannot create server socket for master for app " + appName);
+            cleanup();
             throw new InstantiationException();
         }
         int portNum = serverSocket.getLocalPort();
@@ -151,10 +152,9 @@ public class AppXrwMaster
                     winSys, reporter);
             ((ClientXrwMaster)client).setExitListener(this);
         } catch (InstantiationException ex) {
-            ex.printStackTrace();
-            reportLaunchError("Cannot launch " + appInstanceName + ": Cannot create Xremwin protocol client");
+            AppXrw.logger.warning("Cannot launch " + appInstanceName + ": Cannot create Xremwin protocol client");
             cleanup();
-            return;
+            throw new InstantiationException();
         }
 
         // Launch the app (this must be done after the Xremwin protocol client
@@ -164,7 +164,7 @@ public class AppXrwMaster
         env.put("DISPLAY", displayName);
         appProcess = new MonitoredProcess(appInstanceName, command, env, reporter);
         if (!appProcess.start()) {
-            reportLaunchError("Cannot launch " + appInstanceName + ": Cannot start application process: " +
+            AppXrw.logger.warning("Cannot launch " + appInstanceName + ": Cannot start application process: " +
                     command);
             cleanup();
             throw new InstantiationException();

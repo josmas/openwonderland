@@ -45,6 +45,7 @@ public interface HUDManagerSPI {
     /**
      * Gets a HUD by name
      * @param name the name of the HUD to get
+     * @return the HUD with the specified name
      */
     public HUD getHUD(String name);
 

@@ -74,9 +74,17 @@ public class AppCellXrw extends AppConventionalCell {
     /**
      * {@inheritDoc}
      */
-    protected void startSlave(String connectionInfo) {
-        app = new AppXrwSlave(appName, pixelScale,
-                ProcessReporterFactory.getFactory().create(appName),
-                new AppXrwConnectionInfo(connectionInfo), session, this);
+    protected boolean startSlave(String connectionInfo) {
+        try {
+            app = new AppXrwSlave(appName, pixelScale,
+                                  ProcessReporterFactory.getFactory().create(appName),
+                                  new AppXrwConnectionInfo(connectionInfo), session, this);
+
+        } catch (InstantiationException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+
+        return true;
     }
 }

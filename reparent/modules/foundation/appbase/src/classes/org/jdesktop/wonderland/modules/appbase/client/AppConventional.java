@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import javax.swing.JOptionPane;
 import com.jme.math.Vector2f;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -54,13 +53,6 @@ public abstract class AppConventional extends App2D {
      */
     public AppConventional(String name, ControlArb controlArb, Vector2f pixelScale) {
         super(name, controlArb, pixelScale);
-    }
-
-    /**
-     * A utility method used to report launch errors to the user.
-     */
-    protected static void reportLaunchError(String message) {
-        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     /**

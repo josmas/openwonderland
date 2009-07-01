@@ -43,6 +43,8 @@ import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager.ContextMenuListener;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -80,6 +82,8 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     // For the Window Menu
     @UsesCellComponent private ContextMenuComponent contextMenuComp = null;
     private ContextMenuFactorySPI menuFactory = null;
+    private ContextMenuListener menuListener = null;
+
 
     /** 
      * Creates a new instance of App2DCell.
@@ -191,6 +195,20 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                         };
                         contextMenuComp.addContextMenuFactory(menuFactory);
                     }
+
+                    // Also create and add a listener for context menu events
+                    // to perform special processing right before the context
+                    // menu is displayed
+                    if (menuListener == null) {
+                        menuListener = new ContextMenuListener() {
+                            public void contextMenuDisplayed(ContextEvent event) {
+                                System.out.println("CONTEXT MENU DISPLAYED");
+                                windowMenuDisplayed(event, contextMenuComp);
+                            }
+                        };
+                        ContextMenuManager cmm = ContextMenuManager.getContextMenuManager();
+                        cmm.addContextMenuListener(menuListener);
+                    }
                 }
                 break;
 
@@ -201,11 +219,31 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                         contextMenuComp.removeContextMenuFactory(menuFactory);
                         menuFactory = null;
                     }
+
+                    if (menuListener != null) {
+                        ContextMenuManager cmm = ContextMenuManager.getContextMenuManager();
+                        cmm.removeContextMenuListener(menuListener);
+                        menuListener = null;
+                    }
                 }
                 break;
         }
     }
 
+    /**
+     * Performs any special pre-processing when a context menu is about to
+     * be displayed
+     */
+   private void windowMenuDisplayed (ContextEvent event,
+                                     ContextMenuComponent contextMenuComp) {
+        if (event instanceof Window2D.WindowContextMenuEvent) {
+            Window2D.WindowContextMenuEvent windowMenuEvent = (Window2D.WindowContextMenuEvent) event;
+            windowMenuEvent.getWindow().contextMenuDisplayed(contextMenuComp);
+        } else {
+            contextMenuComp.setShowStandardMenuItems(true);
+        }
+    }
+   
     /**
      * Returns the window menu items that are appropriate for the given context event.
      */
@@ -223,7 +261,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * Return the app-specific window menu items for the case where the app doesn't have control.
      */
     private ContextMenuItem[] windowMenuItemsForNoControl (ContextMenuComponent contextMenuComp) {
-        contextMenuComp.setShowStandardMenuItems(true);
+//        contextMenuComp.setShowStandardMenuItems(true);
 
         return new ContextMenuItem[] {
             new SimpleContextMenuItem("Take Control", new ContextMenuActionListener () {

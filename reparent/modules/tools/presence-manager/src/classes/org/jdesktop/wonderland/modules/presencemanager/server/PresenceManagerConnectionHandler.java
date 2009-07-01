@@ -123,9 +123,11 @@ public class PresenceManagerConnectionHandler implements
 
 	    ArrayList<PresenceInfo> presenceInfoList = sessions.get(clientID.getID());
 
-	    presenceInfoList.add(presenceInfo);
+	    if (presenceInfoList.contains(presenceInfo) == false) {
+	        presenceInfoList.add(presenceInfo);
+	        logger.fine("PRESENCEINFOADDEDMESSAGE:  " + presenceInfo);
+	    }
 
-	    logger.fine("PRESENCEINFOADDEDMESSAGE:  " + presenceInfo);
 	    sender.send(message);
 	    return;
 	} 

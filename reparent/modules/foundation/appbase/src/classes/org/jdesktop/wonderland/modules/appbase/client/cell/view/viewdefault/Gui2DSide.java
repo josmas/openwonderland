@@ -152,7 +152,15 @@ class Gui2DSide extends Gui2D {
             if (ke3d.isPressed() &&
                 ke.getKeyCode() == KeyEvent.VK_C &&
                 (ke.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) != 0) {
-                Gui2DSide.this.view.windowCloseUser();
+
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        // Note: even though this currently doesn't invoke Swing, I'm 
+                        // doing this inside invokeLater so that the window can bring
+                        // up a swing-based confirmer dialog, if desired.
+                        Gui2DSide.this.view.windowCloseUser();
+                    }
+                });
                 return;
             }
         }

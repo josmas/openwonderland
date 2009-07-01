@@ -77,7 +77,11 @@ public class PresenceInfo implements Serializable {
 
         return "cellID=" + cellID + ", userID=" + s
             + ", clientID=" + clientID + ", callID=" + callID 
-	    + ", alias=" + usernameAlias;
+	    + ", alias=" + usernameAlias 
+	    + ", isSpeaking " + isSpeaking
+	    + ", isMuted " + isMuted
+	    + ", inConeOfSilence " + inConeOfSilence
+	    + ", inSecretChat " + inSecretChat;
     }
 
 }

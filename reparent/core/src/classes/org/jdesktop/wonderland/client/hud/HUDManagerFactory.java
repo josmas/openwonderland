@@ -35,14 +35,16 @@ public class HUDManagerFactory {
 
     /**
      * Binds a specific HUD Manager Factory service provider to this factory
-     * @param spi an instance of a HUD Manager Factory service provider
+     * @param spii an instance of a HUD Manager Factory service provider
      */
     public static void setHUDManagerFactorySPI(final HUDManagerFactorySPI spii) {
         spi = spii;
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a new instance of a HUD Manager
+     * @return a new HUD Manager instance if a HUD Manager Factory exists,
+     * null otherwise
      */
     public static HUDManager createHUDManager() {
         if (spi != null) {
@@ -53,7 +55,8 @@ public class HUDManagerFactory {
     }
 
     /**
-     * {@inheritDoc}
+     * Gets the HUD Manager instance singleton
+     * @return the HUD Manager instance if it has been created, null otherwise
      */
     public static HUDManager getHUDManager() {
         if (spi != null) {

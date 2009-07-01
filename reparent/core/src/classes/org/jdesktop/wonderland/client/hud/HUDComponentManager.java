@@ -77,6 +77,7 @@ public interface HUDComponentManager {
 
     /**
      * Gets whether a HUDComponent is visible
+     * @param component the component to check for visibility
      * @return the visibility of the component
      */
     public boolean isVisible(HUDComponent component);
@@ -107,6 +108,7 @@ public interface HUDComponentManager {
 
     /**
      * Get's the stacking order of the specified HUDComponent
+     * @param component the component to query for its z-order
      * @return the stacking order of the component
      */
     public int getComponentZOrder(HUDComponent component);
@@ -120,6 +122,7 @@ public interface HUDComponentManager {
 
     /**
      * Gets whether the specified HUDComponent is decorated
+     * @param component the component to check if it's decorated
      * @return true if the component is decorated, false if not
      */
     public boolean isComponentDecorated(HUDComponent component);

@@ -43,6 +43,7 @@ import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import javax.swing.SwingUtilities;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
@@ -278,12 +279,16 @@ public class WindowSwing extends Window2D {
                 EntityComponent comp = entity.getComponent(WindowSwing.WindowSwingViewReference.class);
                 assert comp != null;
                 View2D view = ((WindowSwing.WindowSwingViewReference) comp).getView();
-                WindowSwing windowSwing = (WindowSwing) view.getWindow();
+                final WindowSwing windowSwing = (WindowSwing) view.getWindow();
                 assert windowSwing != null;
 
                 if (windowSwing.getApp().getControlArb().hasControl()) {
                     // Only request keyboard focus for the WindowSwing if it has control
-                    windowSwing.requestFocusInWindow();
+                    SwingUtilities.invokeLater(new Runnable () {
+                        public void run () {
+                            windowSwing.requestFocusInWindow();
+                        }
+                    });
                 } else {
                     requestFocusInWindowForCanvas();
                 }
@@ -297,10 +302,14 @@ public class WindowSwing extends Window2D {
      * Request focus in the Wonderland client's canvas, provided that the top-level frame has focus.
      */
     private static void requestFocusInWindowForCanvas() {
-        Canvas canvas = JmeClientMain.getFrame().getCanvas();
-        if (!canvas.requestFocusInWindow()) {
-            logger.warning("Focus request for main canvas rejected.");
-        }
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run () {
+                Canvas canvas = JmeClientMain.getFrame().getCanvas();
+                if (!canvas.requestFocusInWindow()) {
+                    logger.warning("Focus request for main canvas rejected.");
+                }
+            }
+        });
     }
 
     /** 

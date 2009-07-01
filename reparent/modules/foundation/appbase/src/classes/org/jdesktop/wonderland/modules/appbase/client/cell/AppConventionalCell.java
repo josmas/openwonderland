@@ -51,8 +51,6 @@ public abstract class AppConventionalCell extends App2DCell {
     protected String connectionInfo;
     /** The App Conventional connection to the server. */
     private static AppConventionalConnection connection;
-    /** The current primary session. */
-    private static WonderlandSession currentPrimarySession;
     /** The app has been started. */
     private boolean appStarted;
     /** Indicates that this cell is a slave and has connectedToTheApp. */
@@ -213,13 +211,12 @@ public abstract class AppConventionalCell extends App2DCell {
     }
 
     private void startTheSlave (String connectionInfo) {
-        slaveStarted = true;
-        startSlave(connectionInfo);
-        if (app == null) {
-            logger.warning("Could not connect to slave at " + connectionInfo);
-            slaveStarted = false;
-        } else {
+        if (startSlave(connectionInfo)) {
+            slaveStarted = true;
             logger.info("Connected slave to app at " + connectionInfo);
+        } else {
+            slaveStarted = false;
+            logger.warning("Could not connect to slave at " + connectionInfo);
         }
     }
 
@@ -235,8 +232,9 @@ public abstract class AppConventionalCell extends App2DCell {
 
     /** 
      * Launch a slave client.
-     * @parem connectionInfo Subclass-specific data for making a peer-to-peer connection between 
+     * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between 
      * master and slave.
+     * @return True if the slave was successfully started.
      */
-    protected abstract void startSlave(String connectionInfo);
+    protected abstract boolean startSlave(String connectionInfo);
 }

@@ -149,8 +149,8 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
         SasServer server = (SasServer) serverRef.get();
         server.providerDisconnected(sender, clientID);
         // TODO: remove any messages in flight for the given provider client
-        // TODO: remove any running app info for the given provider client
         // Probably need to iterate through list of in flight message info looking at for all
         // messages which have this client ID as their provider clientn
+        // TODO: remove any running app info for the given provider client
     }
 }
