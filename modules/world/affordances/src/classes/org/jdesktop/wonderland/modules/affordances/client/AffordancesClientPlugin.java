@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.affordances.client;
 
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -50,20 +51,20 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     private static HUDComponent affordanceHUD = null;
 
     /**
-     * Creates the affordance HUD frame
+     * Creates the affordance HUD frame.
+     *
+     * NOTE: This method should NOT be called on the AWT Event Thread.
      */
     private void createHUD() {
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
         // create affordances Swing control
-        affordanceHUDPanel = new AffordanceHUDPanel(null);
+        affordanceHUDPanel = new AffordanceHUDPanel();
 
         // create HUD control
         affordanceHUD = mainHUD.createComponent(affordanceHUDPanel);
         affordanceHUD.setPreferredLocation(Layout.SOUTH);
-
         affordanceHUD.addComponentListener(new HUDComponentListener() {
-
             public void HUDComponentChanged(HUDComponentEvent event) {
                 /**
                  * Handles when the affordance frame is closed
@@ -81,7 +82,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     }
 
     /**
-     * @inheritDoc()
+     * {@inheritDoc}
      */
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
         final SimpleContextMenuItem editItem =
@@ -111,9 +112,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
         }
 
         // return the edit item
-        return new ContextMenuItem[]{
-                    editItem
-                };
+        return new ContextMenuItem[] { editItem };
     }
 
     private boolean canMove(SecurityComponent sc) {
@@ -132,13 +131,21 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     class EditContextListener implements ContextMenuActionListener {
 
         public void actionPerformed(ContextMenuItemEvent event) {
-            // Display the affordance HUD Panel
+            // Display the affordance HUD Panel. We need to call HUD methods
+            // on a thread OTHER than the AWT Event Thread.
             if (affordanceHUD == null) {
                 createHUD();
             }
             affordanceHUD.setVisible(true);
-            affordanceHUDPanel.setTranslationVisible(true);
-            affordanceHUDPanel.updateGUI();
+
+            // Update the states of the HUD Swing components; we must do this
+            // on the AWT Event Thread.
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    affordanceHUDPanel.setTranslationVisible(true);
+                    affordanceHUDPanel.updateGUI();
+                }
+            });
         }
     }
 }
