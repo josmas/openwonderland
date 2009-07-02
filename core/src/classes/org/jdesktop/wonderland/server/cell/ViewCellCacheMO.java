@@ -452,7 +452,18 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
             return null;
         }
     }
-        
+
+    /**
+     * Getter for the WonderlandClientID property. Needed this mapping in a
+     * proximity listener when all I had was the viewCellID and needed
+     * to know their ClientId.
+     * 
+     * @return The WonderlandClientID associated with this ViewCell.
+     */
+    public WonderlandClientID getClientID() { 
+        return this.clientID;
+    }
+
     private static class ManagedHashMap<K, V> extends HashMap<K, V> implements ManagedObject {}
     private static class ManagedLinkedList<E> extends LinkedList<E> implements ManagedObject {}
             
