@@ -41,6 +41,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
@@ -51,6 +52,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 
 /**
  * Affordance to rotate a cell along each major axis.
@@ -432,7 +434,9 @@ public class RotateAffordance extends Affordance {
             // affordance.
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D)event;
-                if (buttonEvent.isPressed() && buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+                if (buttonEvent.isPressed() &&
+                        buttonEvent.getButton() == ButtonId.BUTTON1) {
+                    
                     // Figure out where the button press is in screen and world
                     // coordinates. Also fetch the current rotation for cell.
                     MouseEvent awtButtonEvent = (MouseEvent)buttonEvent.getAwtEvent();
@@ -449,17 +453,17 @@ public class RotateAffordance extends Affordance {
                     // to the center of the affordance in world coordinates.
                     dragStartVectorWorld = dragStartWorld.subtract(centerWorld);
 
-                    // Set the initial value of the label to 0.0 and display
-                    setLabelPosition(awtMouseEvent);
-                    labelFrame.toFront();
-                    labelFrame.setVisible(true);
-                    labelFrame.repaint();
+                    // Show the rotation label, make sure we do this in an
+                    // AWT Event Thread
+                    showRotationLabel(awtMouseEvent);
 
                     // Tell the listeners that a rotation has started
                     fireRotationStarted();
                 }
                 else if (buttonEvent.isReleased() == true) {
-                    labelFrame.setVisible(false);
+                    // Hide the position label, make sure we do this in an
+                    // AWT Event Thread
+                    hideRotationLabel();
                 }
                 return;
             }
@@ -523,17 +527,9 @@ public class RotateAffordance extends Affordance {
             Vector3f crossProduct = v1.cross(v2);
             double angle = Math.atan2(normal.dot(crossProduct), dotProduct);
             
-            // Set the label with the amount that we have rotated it. We display
-            // the rotated amount to two decimal points
-            StringBuilder rotateString = new StringBuilder();
-            Formatter formatter = new Formatter(rotateString);
-            formatter.format("%.2f degrees", Math.toDegrees(angle));
-            rotationLabel.setText(rotateString.toString());
-            labelFrame.pack();
-
-            // Figure out where to place the label based upon the location of
-            // the event.
-            setLabelPosition(awtMouseEvent);
+            // Update the rotation label, make sure we do this in an AWT Event
+            // Thread
+            updateRotationLabel(angle, awtMouseEvent);
 
             // Rotate the object along the defined axis and angle.
             Quaternion q = new Quaternion().fromAngleAxis((float)angle, axis);
@@ -542,13 +538,62 @@ public class RotateAffordance extends Affordance {
 
         /**
          * Sets the location of the frame holding the label given the current
-         * mouse event, using its location
+         * mouse event, using its location.
+         *
+         * NOTE: This method assumes it is being called within the AWT Event
+         * Thread.
          */
         private void setLabelPosition(MouseEvent mouseEvent) {
             Component component = mouseEvent.getComponent();
             Point parentPoint = new Point(component.getLocationOnScreen());
             parentPoint.translate(mouseEvent.getX() + 10, mouseEvent.getY() - 15);
             labelFrame.setLocation(parentPoint);
+        }
+
+        /**
+         * Shows the rotation label, properly in an AWT Event THread
+         */
+       private void showRotationLabel(final MouseEvent mouseEvent) {
+           SwingUtilities.invokeLater(new Runnable() {
+               public void run() {
+                   setLabelPosition(mouseEvent);
+                   labelFrame.toFront();
+                   labelFrame.setVisible(true);
+                   labelFrame.repaint();
+               }
+           });
+       }
+
+
+        /**
+         * Hides the rotation label, properly in an AWT Event Thread
+         */
+        private void hideRotationLabel() {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    labelFrame.setVisible(false);
+                }
+            });
+        }
+
+        /**
+         * Updates the rotation label with the amount moved, properly in an
+         * AWT Event Thread.
+         */
+        private void updateRotationLabel(double angle, final MouseEvent mouseEvent) {
+            // Set the label with the amount that we have rotated it. We display
+            // the rotated amount to two decimal points
+            final StringBuilder rotateString = new StringBuilder();
+            Formatter formatter = new Formatter(rotateString);
+            formatter.format("%.2f degrees", Math.toDegrees(angle));
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    rotationLabel.setText(rotateString.toString());
+                    labelFrame.pack();
+                    setLabelPosition(mouseEvent);
+                }
+            });
         }
     }
 }
