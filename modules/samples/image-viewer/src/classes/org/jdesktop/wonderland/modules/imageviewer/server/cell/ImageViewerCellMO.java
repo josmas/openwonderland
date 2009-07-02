@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.imageviewer.server.cell;
 
-import java.util.Map;
 import org.jdesktop.wonderland.modules.imageviewer.common.cell.ImageViewerCellServerState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
