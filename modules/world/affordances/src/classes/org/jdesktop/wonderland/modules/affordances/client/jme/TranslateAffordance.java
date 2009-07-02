@@ -454,13 +454,11 @@ public class TranslateAffordance extends Affordance {
 
                     // Tell the listeners that a translation has started.
                     fireTranslationStarted();
-                    return;
                 }
                 else if (buttonEvent.isReleased() == true) {
                     // Hide the position label, make sure we do this in an
                     // AWT Event Thread
                     hidePositionLabel();
-                    return;
                 }
                 return;
             }

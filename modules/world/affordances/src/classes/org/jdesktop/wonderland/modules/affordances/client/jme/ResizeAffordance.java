@@ -42,6 +42,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
@@ -52,6 +53,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 
 /**
  * Visual affordance (manipulator) to resize a cell in the world.
@@ -377,7 +379,8 @@ public class ResizeAffordance extends Affordance {
             // affordance.
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D be = (MouseButtonEvent3D)event;
-                if (be.isPressed() && be.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
+                if (be.isPressed() && be.getButton() == ButtonId.BUTTON1) {
+                    
                     // Figure out where the button press is in screen and world
                     // coordinates. Also fetch the current rotation for cell.
                     MouseEvent awtButtonEvent = (MouseEvent)be.getAwtEvent();
@@ -395,16 +398,16 @@ public class ResizeAffordance extends Affordance {
                     dragStartVectorWorld = dragStartWorld.subtract(centerWorld);
                     dragStartRadius = dragStartVectorWorld.length();
 
-                    // Set the initial value of the label to 0.0 and display
-                    setLabelPosition(awtMouseEvent);
-                    labelFrame.toFront();
-                    labelFrame.setVisible(true);
-                    labelFrame.repaint();
+                    // Show the resize label, make sure we do this in an
+                    // AWT Event Thread
+                    showResizeLabel(awtMouseEvent);
 
                     // Tell the listeners that a resizing has started
                     fireResizingStarted();
                 } else if (be.isReleased() == true) {
-                    labelFrame.setVisible(false);
+                    // Hide the resize label, make sure we do this in an
+                    // AWT Event Thread
+                    hideResizeLabel();
                 }
                 return;
             }
@@ -432,17 +435,9 @@ public class ResizeAffordance extends Affordance {
             // will give us the amount to scale the cell
             float scale = dragEndRadius / dragStartRadius;
 
-            // Set the label with the amount that we have scaled it. We display
-            // the scaled amount to two decimal points
-            StringBuilder resizeString = new StringBuilder();
-            Formatter formatter = new Formatter(resizeString);
-            formatter.format("%.2fx", scale);
-            resizeLabel.setText(resizeString.toString());
-            labelFrame.pack();
-
-            // Figure out where to place the label based upon the location of
-            // the event.
-            setLabelPosition(awtMouseEvent);
+            // Update the resize label, make sure we do this in an AWT Event
+            // Thread
+            updateResizeLabel(scale, awtMouseEvent);
 
             // Rotate the object along the defined axis and angle.
             fireResizingChanged(new Vector3f(scale, scale, scale));
@@ -450,13 +445,62 @@ public class ResizeAffordance extends Affordance {
 
         /**
          * Sets the location of the frame holding the label given the current
-         * mouse event, using its location
+         * mouse event, using its location.
+         *
+         * NOTE: This method assumes it is being called within the AWT Event
+         * Thread.
          */
         private void setLabelPosition(MouseEvent mouseEvent) {
             Component component = mouseEvent.getComponent();
             Point parentPoint = new Point(component.getLocationOnScreen());
             parentPoint.translate(mouseEvent.getX() + 10, mouseEvent.getY() - 15);
             labelFrame.setLocation(parentPoint);
+        }
+
+        /**
+         * Shows the resize label, properly in an AWT Event THread
+         */
+       private void showResizeLabel(final MouseEvent mouseEvent) {
+           SwingUtilities.invokeLater(new Runnable() {
+               public void run() {
+                   setLabelPosition(mouseEvent);
+                   labelFrame.toFront();
+                   labelFrame.setVisible(true);
+                   labelFrame.repaint();
+               }
+           });
+       }
+
+
+        /**
+         * Hides the resize label, properly in an AWT Event Thread
+         */
+        private void hideResizeLabel() {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    labelFrame.setVisible(false);
+                }
+            });
+        }
+
+        /**
+         * Updates the resize label with the amount moved, properly in an
+         * AWT Event Thread.
+         */
+        private void updateResizeLabel(float scale, final MouseEvent mouseEvent) {
+            // Set the label with the amount that we have scaled it. We display
+            // the scaled amount to two decimal points
+            final StringBuilder resizeString = new StringBuilder();
+            Formatter formatter = new Formatter(resizeString);
+            formatter.format("%.2fx", scale);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    resizeLabel.setText(resizeString.toString());
+                    labelFrame.pack();
+                    setLabelPosition(mouseEvent);
+                }
+            });
         }
     }
 }
