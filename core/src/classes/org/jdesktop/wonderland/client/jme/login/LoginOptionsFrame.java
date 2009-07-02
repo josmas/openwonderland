@@ -15,23 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-/**
- * Project Wonderland
- *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
- *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
- *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
- *
- * $Revision$
- * $Date$
- * $State$
- */
 package org.jdesktop.wonderland.client.jme.login;
 
 import java.awt.event.WindowEvent;
@@ -46,7 +29,6 @@ import java.util.prefs.Preferences;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
