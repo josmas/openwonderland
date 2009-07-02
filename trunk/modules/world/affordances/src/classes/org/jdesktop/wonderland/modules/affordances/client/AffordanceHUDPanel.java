@@ -20,8 +20,8 @@ package org.jdesktop.wonderland.modules.affordances.client;
 import java.util.Hashtable;
 import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
@@ -42,10 +42,8 @@ import org.jdesktop.wonderland.modules.affordances.client.cell.TranslateAffordan
  */
 public class AffordanceHUDPanel extends javax.swing.JPanel {
 
-    private JFrame frame = null;
-
     /** Creates new form AffordanceHUDPanel */
-    public AffordanceHUDPanel(JFrame frame) {
+    public AffordanceHUDPanel() {
         initComponents();
 
         // Paint the labels on the ticks properly from 1.0 to 5.0
@@ -56,7 +54,6 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         labels.put(300, new JLabel("4.0"));
         labels.put(400, new JLabel("5.0"));
         sizeSlider.setLabelTable(labels);
-        this.frame = frame;
         
         // Listen for selections to update the HUD panel
         InputManager.inputManager().addGlobalEventListener(new SelectionListener());
@@ -191,7 +188,9 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
 
     /**
      * Updates the GUI items in this panel for the currently selected cell. If
-     * there is nothing selected, do nothing
+     * there is nothing selected, do nothing.
+     *
+     * NOTE: This method assumes it is being called in the AWT Event Thread.
      */
     public void updateGUI() {
         // Fetch the currently selected Cell. If none, then do nothing
@@ -452,8 +451,13 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
 
         @Override
         public void commitEvent(Event event) {
-            // Update the GUI based upon the newly selected Entity and Cell
-            updateGUI();
+            // Update the GUI based upon the newly selected Entity and Cell. We
+            // must do this in the AWT Event Thread
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateGUI();
+                }
+            });
         }
     }
 
