@@ -59,13 +59,13 @@ public class AvatarTestPanel extends javax.swing.JPanel {
                 }
             };
 
-        setAvatarCharactar(null);
+        setAvatarCharacter(null);
     }
 
-    public void setAvatarCharactar(WlAvatarCharacter avatar) {
+    public void setAvatarCharacter(WlAvatarCharacter avatar) {
 
         if (avatarCharacter!=null)
-            avatarCharacter.getController().removeCharacterMotionListener(motionListener);
+            avatarCharacter.getContext().getController().removeCharacterMotionListener(motionListener);
 
         avatarCharacter = avatar;
 
@@ -76,8 +76,8 @@ public class AvatarTestPanel extends javax.swing.JPanel {
             for(String anim : avatar.getAnimationNames()) {
                 actionCB.addItem(anim);
             }
-            avatarCharacter.getController().addCharacterMotionListener(motionListener);
-            motionListener.transformUpdate(avatarCharacter.getController().getPosition(), null);
+            avatarCharacter.getContext().getController().addCharacterMotionListener(motionListener);
+            motionListener.transformUpdate(avatarCharacter.getContext().getController().getPosition(), null);
         } else {
             actionCB.removeAllItems();
         }

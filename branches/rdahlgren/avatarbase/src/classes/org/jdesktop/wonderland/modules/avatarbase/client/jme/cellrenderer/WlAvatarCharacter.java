@@ -16,14 +16,10 @@
  * this code.
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
-
-import com.jme.math.Vector3f;
-import imi.character.CharacterAttributes;
+import imi.character.CharacterParams;
 import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarContext.TriggerNames;
 import imi.character.statemachine.GameContext;
-import imi.scene.PMatrix;
-import imi.scene.polygonmodel.parts.skinned.SkinnedMeshJoint;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import org.jdesktop.mtgame.WorldManager;
@@ -33,18 +29,65 @@ import org.jdesktop.mtgame.WorldManager;
  * @author paulby
  */
 public class WlAvatarCharacter extends Avatar {
-
-
+    
     /**
-     * Create the avatar character, but don't add it to wm
+     * Builder pattern impl
      */
-    public WlAvatarCharacter(CharacterAttributes attributes, WorldManager wm) {
-        super(attributes,wm, false);
-//        bigHeadMode(this);
+    public static class WlAvatarCharacterBuilder extends AvatarBuilder {
+        /**
+         * Construct a new builder using the specified configuration file and
+         * the provided world manager.
+         * @param configurationFile
+         * @param worldManager
+         */
+        public WlAvatarCharacterBuilder(URL configurationFile, WorldManager worldManager) {
+            super(configurationFile, worldManager);
+        }
+
+        /**
+         * Construct a new builder using the specified character params and the
+         * provided worldmanager.
+         * @param attributeParams
+         * @param worldManager
+         */
+        public WlAvatarCharacterBuilder(CharacterParams attributeParams, WorldManager worldManager) {
+            super(attributeParams, worldManager);
+        }
+
+        @Override
+        public WlAvatarCharacterBuilder baseURL(String baseURL) {
+            super.baseURL(baseURL);
+            return this;
+        }
+
+        @Override
+        public WlAvatarCharacterBuilder addEntity(boolean addEntity) {
+            super.addEntity(addEntity);
+            return this;
+        }
+
+
+
+
+
+        /**
+         * {@inheritDoc AvatarBuilder}
+         */
+        @Override
+        public WlAvatarCharacter build() {
+            WlAvatarCharacter result = new WlAvatarCharacter(this);
+            return result;
+        }
+
+
     }
 
-    public WlAvatarCharacter(URL configURL, WorldManager wm, String baseURL) {
-        super(configURL, wm, baseURL, new PMatrix(), false);
+    /**
+     * Builder pattern constructor
+     * @param builder
+     */
+    protected WlAvatarCharacter(WlAvatarCharacterBuilder builder) {
+        super(builder);
     }
 
     @Override
@@ -71,15 +114,7 @@ public class WlAvatarCharacter extends Avatar {
     // TESTING
     private void bigHeadMode(WlAvatarCharacter avatar)
     {
-        SkinnedMeshJoint joint = avatar.getSkeleton().getSkinnedMeshJoint("Head");
-        avatar.getSkeleton().displaceJoint("Head", new Vector3f(0, 0.07f, 0));
-        joint.getBindPose().setScale(2.0f);
-
-        joint = avatar.getSkeleton().getSkinnedMeshJoint("rightHand");
-        joint.getBindPose().setScale(2.0f);
-
-        joint = avatar.getSkeleton().getSkinnedMeshJoint("leftHand");
-        joint.getBindPose().setScale(2.0f);
+        avatar.setBigHeadMode(2.0f);
     }
 
     @Override

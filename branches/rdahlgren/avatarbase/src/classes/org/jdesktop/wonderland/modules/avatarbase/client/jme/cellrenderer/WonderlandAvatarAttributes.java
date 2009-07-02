@@ -19,8 +19,7 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import com.jme.math.Vector3f;
 import imi.character.AttachmentParams;
-import imi.character.CharacterAttributes;
-import imi.character.CharacterAttributes.SkinnedMeshParams;
+import imi.character.CharacterParams;
 import imi.scene.PMatrix;
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,15 +93,11 @@ public class WonderlandAvatarAttributes {
     }
 
     @XmlTransient
-    public CharacterAttributes getCharacterAttributes() {
-        WonderlandCharacterAttributes out = new WonderlandCharacterAttributes();
+    public CharacterParams getCharacterAttributes() {
+        WonderlandCharacterParams out = new WonderlandCharacterParams();
         for (ConfigElement element : getElements()) {
             element.apply(out);
         }
-
-        out.setLoadInstructions(out.getLoad());
-        out.setAddInstructions(out.getAdd());
-        out.setAttachmentsInstructions(out.getAttach());
 
         return out;
     }
@@ -197,34 +192,8 @@ public class WonderlandAvatarAttributes {
         }
     }
 
-    public static class WonderlandCharacterAttributes extends CharacterAttributes {
-        private final List<String[]>          load   = new ArrayList<String[]>();
-        private final List<SkinnedMeshParams> add    = new ArrayList<SkinnedMeshParams>();
-        private final List<AttachmentParams>  attach = new ArrayList<AttachmentParams>();
-
-        public void load(String[] desc) {
-            load.add(desc);
-        }
-
-        public List<String[]> getLoad() {
-            return load;
-        }
-
-        public void add(String mesh, String group) {
-            add.add(new SkinnedMeshParams(mesh, group));
-        }
-
-        public SkinnedMeshParams[] getAdd() {
-            return add.toArray(new SkinnedMeshParams[add.size()]);
-        }
-
-        public void attach(AttachmentParams params) {
-            attach.add(params);
-        }
-
-        public AttachmentParams[] getAttach() {
-            return attach.toArray(new AttachmentParams[attach.size()]);
-        }
+    public static class WonderlandCharacterParams extends CharacterParams {
+        // RED: Does this need to be a subclass?
     }
 
     public static abstract class ConfigElement {
@@ -259,7 +228,7 @@ public class WonderlandAvatarAttributes {
             this.previewImage = previewImage;
         }
 
-        public abstract void apply(WonderlandCharacterAttributes attrs);
+        public abstract void apply(WonderlandCharacterParams attrs);
 
         // compare ConfigElements by name.  Each element should have a unique
         // name.
@@ -299,9 +268,8 @@ public class WonderlandAvatarAttributes {
         }
 
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
-            attrs.setUsePhongLighting(true);
-            attrs.setGender(gender);
+        public void apply(WonderlandCharacterParams attrs) {
+            attrs.setGender(gender).setUsePhongLightingForHead(true);
         }
     }
 
@@ -320,7 +288,7 @@ public class WonderlandAvatarAttributes {
 
     public static class HeadConfigElement extends ModelConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
+        public void apply(WonderlandCharacterParams attrs) {
             attrs.setHeadAttachment(getModel());
         }
     }
@@ -340,88 +308,67 @@ public class WonderlandAvatarAttributes {
 
     public static class HairConfigElement extends ShapesConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
+        public void apply(WonderlandCharacterParams attrs) {
             PMatrix orientation = new PMatrix(new Vector3f((float)Math.toRadians(10),0,0),
                                               Vector3f.UNIT_XYZ, Vector3f.ZERO);
-            String[] szHair = new String[2];
-            szHair[0] = getModel();
-            szHair[1] = "Hair";
-            attrs.load(szHair);
-            attrs.attach(new AttachmentParams(getShapes()[0], "Head", orientation, "Hair"));
+            attrs.addLoadInstruction(getModel());
+            attrs.addAttachmentInstruction(new AttachmentParams(getModel(), "Head", orientation, "Hair", getModel()));
         }
     }
 
     public static class HandsConfigElement extends ShapesConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
+        public void apply(WonderlandCharacterParams attrs) {
             // add hands
-            String[] szHands  = new String[2];
-            szHands[0]  = getModel();
-            szHands[1]  = "Hands";
-            attrs.load(szHands);
+            attrs.addLoadInstruction(getModel());
 
             for (String shape : getShapes()) {
-                attrs.add(shape, "Hands");
+                attrs.addSkinnedMeshParams(new CharacterParams.SkinnedMeshParams(shape, "Hands", getModel()));
             }
         }
     }
 
     public static class TorsoConfigElement extends ShapesConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
-            String[] szTorso = new String[2];
-            szTorso[0] = getModel();
-            szTorso[1] = "UpperBody";
-            attrs.load(szTorso);
+        public void apply(WonderlandCharacterParams attrs) {
+            attrs.addLoadInstruction(getModel());
 
-            for (String shape : getShapes()) {
-                attrs.add(shape, "UpperBody");
-            }
+            for (String shape : getShapes())
+                attrs.addSkinnedMeshParams(new CharacterParams.SkinnedMeshParams(shape, "UpperBody", getModel()));
         }
     }
 
     public static class JacketConfigElement extends ShapesConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
+        public void apply(WonderlandCharacterParams attrs) {
             if (getModel() == null) {
                 return;
             }
 
-            String[] szTorso = new String[2];
-            szTorso[0] = getModel();
-            szTorso[1] = "UpperBody";
-            attrs.load(szTorso);
+            attrs.addLoadInstruction(getModel());
 
             for (String shape : getShapes()) {
-                attrs.add(shape, "UpperBody");
+                attrs.addSkinnedMeshParams(new CharacterParams.SkinnedMeshParams(shape, "UpperBody", getModel()));
             }
         }
     }
 
     public static class LegsConfigElement extends ShapesConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
-            String[] szLegs = new String[2];
-            szLegs[0] = getModel();
-            szLegs[1] = "LowerBody";
-            attrs.load(szLegs);
+        public void apply(WonderlandCharacterParams attrs) {
 
             for (String shape : getShapes()) {
-                attrs.add(shape, "LowerBody");
+                attrs.addSkinnedMeshParams(new CharacterParams.SkinnedMeshParams(shape, "LowerBody", getModel()));
             }
         }
     }
 
     public static class FeetConfigElement extends ShapesConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
-            String[] szFeet = new String[2];
-            szFeet[0] = getModel();
-            szFeet[1] = "Feet";
-            attrs.load(szFeet);
+        public void apply(WonderlandCharacterParams attrs) {
 
             for (String shape : getShapes()) {
-                attrs.add(shape, "Feet");
+                attrs.addSkinnedMeshParams(new CharacterParams.SkinnedMeshParams(shape, "Feet", getModel()));
             }
         }
     }
@@ -461,35 +408,35 @@ public class WonderlandAvatarAttributes {
 
     public static class SkinColorConfigElement extends ColorConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
+        public void apply(WonderlandCharacterParams attrs) {
             attrs.setSkinTone(getR(), getG(), getB());
         }
     }
 
     public static class HairColorConfigElement extends ColorConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
+        public void apply(WonderlandCharacterParams attrs) {
             attrs.setHairColor(getR(), getG(), getB());
         }
     }
 
     public static class ShirtColorConfigElement extends ColorConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
+        public void apply(WonderlandCharacterParams attrs) {
             attrs.setShirtColor(getR(), getG(), getB(), 0f, 0f, 0f);
         }
     }
 
     public static class PantsColorConfigElement extends ColorConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
+        public void apply(WonderlandCharacterParams attrs) {
             attrs.setPantsColor(getR(), getG(), getB(), 0f, 0f, 0f);
         }
     }
 
     public static class ShoeColorConfigElement extends ColorConfigElement {
         @Override
-        public void apply(WonderlandCharacterAttributes attrs) {
+        public void apply(WonderlandCharacterParams attrs) {
             attrs.setShirtColor(getR(), getG(), getB(), 0f, 0f, 0f);
         }
     }
