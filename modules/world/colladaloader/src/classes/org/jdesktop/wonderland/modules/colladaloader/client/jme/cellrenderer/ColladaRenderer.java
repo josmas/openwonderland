@@ -25,7 +25,7 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Geometry;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
-import imi.environments.ColladaEnvironment;
+//import imi.environments.ColladaEnvironment;
 import java.net.URL;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -49,57 +49,58 @@ public class ColladaRenderer extends BasicRenderer {
     
     @Override
     protected Entity createEntity() {
-        ColladaEnvironment environment=null;
-
-        /* Fetch the basic info about the cell */
-        CellTransform transform = cell.getLocalTransform();
-        Vector3f translation = transform.getTranslation(null);
-        Vector3f scaling = transform.getScaling(null);
-        Quaternion rotation = transform.getRotation(null);
-        
-        try {
-            URL modelLocation = getAssetURL(((ColladaCell)cell).getModelURI());
-            logger.warning("****** URL: " + modelLocation.toExternalForm());
-
-            WorldManager worldManager = ClientContextJME.getWorldManager();
-
-            // TODO this has the side effect of creating and adding entities to the WorldManager
-            environment = new ColladaEnvironment(worldManager, modelLocation, this.getClass().getName()+"_"+cell.getCellID());
-            worldManager.addUserData(ColladaEnvironment.class, environment);
-
-            rootNode = environment.getJMENode();
-
-            applyTransform(rootNode, cell.getWorldTransform());
-            addRenderState(rootNode);
-
-            addDefaultComponents(environment, rootNode);
-
-            // Make sure all the geometry has model bounds
-            TreeScan.findNode(rootNode, Geometry.class, new ProcessNodeInterface() {
-
-                public boolean processNode(Spatial node) {
-                    Geometry g = (Geometry)node;
-                    if (g.getModelBound()==null) {
-                        g.setModelBound(new BoundingBox());
-                        g.updateModelBound();
-                    }
-
-                    return true;
-                }
-
-            }, false, true);
-
-            logger.warning("ColladaREnderer not applying geometry offsets yet....");
-            // Adjust model origin wrt to cell
-//            if (((ColladaCell)cell).getGeometryTranslation()!=null)
-//                rootNode.setLocalTranslation(((ColladaCell)cell).getGeometryTranslation());
-//            if (((ColladaCell)cell).getGeometryRotation()!=null)
-//                rootNode.setLocalRotation(((ColladaCell)cell).getGeometryRotation());
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error loading Collada file "+((ColladaCell)cell).getModelURI(), e);
-        }
-
-        return environment;
+        throw new RuntimeException("IMI Colalda loader not used at the moment");
+//        ColladaEnvironment environment=null;
+//
+//        /* Fetch the basic info about the cell */
+//        CellTransform transform = cell.getLocalTransform();
+//        Vector3f translation = transform.getTranslation(null);
+//        Vector3f scaling = transform.getScaling(null);
+//        Quaternion rotation = transform.getRotation(null);
+//
+//        try {
+//            URL modelLocation = getAssetURL(((ColladaCell)cell).getModelURI());
+//            logger.warning("****** URL: " + modelLocation.toExternalForm());
+//
+//            WorldManager worldManager = ClientContextJME.getWorldManager();
+//
+//            // TODO this has the side effect of creating and adding entities to the WorldManager
+//            environment = new ColladaEnvironment(worldManager, modelLocation, this.getClass().getName()+"_"+cell.getCellID());
+//            worldManager.addUserData(ColladaEnvironment.class, environment);
+//
+//            rootNode = environment.getJMENode();
+//
+//            applyTransform(rootNode, cell.getWorldTransform());
+//            addRenderState(rootNode);
+//
+//            addDefaultComponents(environment, rootNode);
+//
+//            // Make sure all the geometry has model bounds
+//            TreeScan.findNode(rootNode, Geometry.class, new ProcessNodeInterface() {
+//
+//                public boolean processNode(Spatial node) {
+//                    Geometry g = (Geometry)node;
+//                    if (g.getModelBound()==null) {
+//                        g.setModelBound(new BoundingBox());
+//                        g.updateModelBound();
+//                    }
+//
+//                    return true;
+//                }
+//
+//            }, false, true);
+//
+//            logger.warning("ColladaREnderer not applying geometry offsets yet....");
+//            // Adjust model origin wrt to cell
+////            if (((ColladaCell)cell).getGeometryTranslation()!=null)
+////                rootNode.setLocalTranslation(((ColladaCell)cell).getGeometryTranslation());
+////            if (((ColladaCell)cell).getGeometryRotation()!=null)
+////                rootNode.setLocalRotation(((ColladaCell)cell).getGeometryRotation());
+//        } catch (Exception e) {
+//            logger.log(Level.SEVERE, "Error loading Collada file "+((ColladaCell)cell).getModelURI(), e);
+//        }
+//
+//        return environment;
     }
 
     @Override
