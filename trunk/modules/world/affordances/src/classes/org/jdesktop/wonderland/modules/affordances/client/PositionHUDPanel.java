@@ -19,10 +19,13 @@ package org.jdesktop.wonderland.modules.affordances.client;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JFrame;
+import javax.swing.JFormattedTextField;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -33,16 +36,8 @@ import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.scenemanager.SceneManager;
-import org.jdesktop.wonderland.client.scenemanager.event.SelectionEvent;
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
-import org.jdesktop.wonderland.common.messages.ErrorMessage;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
  * A panel to display affordance items on the HUD.
@@ -51,14 +46,9 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  */
 public class PositionHUDPanel extends javax.swing.JPanel {
 
-    private static Logger logger = Logger.getLogger(PositionHUDPanel.class.getName());
-
     /* The currently selected Cell and its movable component */
     private Cell selectedCell = null;
     private MovableComponent movableComponent = null;
-
-    /* The frame that holds this panel */
-    private JFrame frame = null;
 
     /* Various listener on the Cell and Swing JSpinners */
     private ComponentChangeListener componentListener = null;
@@ -87,12 +77,8 @@ public class PositionHUDPanel extends javax.swing.JPanel {
     private boolean setLocal = false;
 
     /** Creates new form AffordanceHUDPanel */
-    public PositionHUDPanel(JFrame frame) {
-        this.frame = frame;
+    public PositionHUDPanel() {
         initComponents();
-        
-        // Listen for selections to update the HUD panel
-        InputManager.inputManager().addGlobalEventListener(new SelectionListener());
 
         // Set the maximum and minimum values for each
         Float value = new Float(0);
@@ -111,7 +97,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         xScaleModel = new SpinnerNumberModel(value, min, max, step);
         yScaleModel = new SpinnerNumberModel(value, min, max, step);
         zScaleModel = new SpinnerNumberModel(value, min, max, step);
-        scaleXTF.setModel(xScaleModel);
+        scaleTF.setModel(xScaleModel);
 
         value = new Float(0);
         min = new Float(-360);
@@ -139,12 +125,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         // parts of this client or other clients.
         transformListener = new TransformChangeListener() {
             public void transformChanged(Cell cell, ChangeSource source) {
-//                CellTransform cellTransform = cell.getLocalTransform();
-//                Quaternion rotation = cellTransform.getRotation(null);
-//                float[] angles = rotation.toAngles(new float[3]);
-//                System.out.println("CELL TRANSFORM CHANGED NEW ROTATION VALUES " +
-//                        angles[0] + " " + angles[1] + " " + angles[2]);
-
                 updateGUI();
             }
         };
@@ -169,13 +149,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         // result. See the comments above for 'translationListener' too.
         rotationListener = new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-//                float x = (Float) xRotationModel.getValue();
-//                float y = (Float) yRotationModel.getValue();
-//                float z = (Float) zRotationModel.getValue();
-//                System.out.println("STATE CHANGED in JSPINNER VALUES setLocal=" +
-//                        setLocal + " " + x + " " + y + " " + z + " SOURCE " +
-//                        e.getSource());
-
                 if (setLocal == false) {
                     updateRotation();
                 }
@@ -198,6 +171,26 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         yScaleModel.addChangeListener(scaleListener);
         zScaleModel.addChangeListener(scaleListener);
 
+        // Listen for focus gained on the text field's of the spinners. Select
+        // all of the text
+        FocusListener focusListener = new FocusAdapter() {
+            @Override
+            public void focusGained(final FocusEvent e) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                      ((JFormattedTextField)e.getSource()).selectAll();
+                    }
+                });
+            }
+        };
+        ((JSpinner.DefaultEditor)translationXTF.getEditor()).getTextField().addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor)translationYTF.getEditor()).getTextField().addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor)translationZTF.getEditor()).getTextField().addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor)rotationXTF.getEditor()).getTextField().addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor)rotationYTF.getEditor()).getTextField().addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor)rotationZTF.getEditor()).getTextField().addFocusListener(focusListener);
+        ((JSpinner.DefaultEditor)scaleTF.getEditor()).getTextField().addFocusListener(focusListener);
+
         // Turn off the GUI initially, until we have a selected cell
         clearGUI();
         setGUIEnabled(false);
@@ -211,104 +204,183 @@ public class PositionHUDPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
+        translationPanel = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        xTranslationPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         translationXTF = new javax.swing.JSpinner();
+        yTranslationPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         translationYTF = new javax.swing.JSpinner();
+        zTranslationPanel = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         translationZTF = new javax.swing.JSpinner();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        rotationPanel = new javax.swing.JPanel();
+        jLabel10 = new javax.swing.JLabel();
+        xRotationPanel = new javax.swing.JPanel();
+        jLabel11 = new javax.swing.JLabel();
         rotationXTF = new javax.swing.JSpinner();
-        jLabel6 = new javax.swing.JLabel();
+        yRotationPanel = new javax.swing.JPanel();
+        jLabel12 = new javax.swing.JLabel();
         rotationYTF = new javax.swing.JSpinner();
-        jLabel7 = new javax.swing.JLabel();
+        zRotationPanel = new javax.swing.JPanel();
+        jLabel13 = new javax.swing.JLabel();
         rotationZTF = new javax.swing.JSpinner();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        scaleXTF = new javax.swing.JSpinner();
+        resizePanel = new javax.swing.JPanel();
+        jLabel14 = new javax.swing.JLabel();
+        resizeSubPanel = new javax.swing.JPanel();
+        scaleTF = new javax.swing.JSpinner();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
-        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Position: (");
-        add(jLabel1);
+        translationPanel.setLayout(new java.awt.GridLayout(4, 1));
 
-        translationXTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 5));
-        translationXTF.setMinimumSize(new java.awt.Dimension(60, 30));
-        translationXTF.setPreferredSize(new java.awt.Dimension(60, 30));
-        add(translationXTF);
+        jLabel4.setText("Position (meters)");
+        translationPanel.add(jLabel4);
 
-        jLabel2.setText(",");
-        add(jLabel2);
+        xTranslationPanel.setLayout(new javax.swing.BoxLayout(xTranslationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        translationYTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 5));
-        translationYTF.setMinimumSize(new java.awt.Dimension(60, 30));
-        translationYTF.setPreferredSize(new java.awt.Dimension(60, 30));
-        add(translationYTF);
+        jLabel1.setText("X:");
+        xTranslationPanel.add(jLabel1);
 
-        jLabel3.setText(",");
-        add(jLabel3);
+        translationXTF.setMinimumSize(new java.awt.Dimension(100, 30));
+        translationXTF.setPreferredSize(new java.awt.Dimension(100, 30));
+        xTranslationPanel.add(translationXTF);
 
-        translationZTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 5));
-        translationZTF.setPreferredSize(new java.awt.Dimension(60, 30));
-        add(translationZTF);
+        translationPanel.add(xTranslationPanel);
 
-        jLabel4.setText(")");
-        add(jLabel4);
+        yTranslationPanel.setLayout(new javax.swing.BoxLayout(yTranslationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        jLabel5.setText("Rotation: (");
-        jLabel5.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
-        add(jLabel5);
+        jLabel2.setText("Y:");
+        yTranslationPanel.add(jLabel2);
 
-        rotationXTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 5));
-        rotationXTF.setMinimumSize(new java.awt.Dimension(60, 30));
-        rotationXTF.setPreferredSize(new java.awt.Dimension(60, 30));
-        add(rotationXTF);
+        translationYTF.setMinimumSize(new java.awt.Dimension(100, 30));
+        translationYTF.setPreferredSize(new java.awt.Dimension(100, 30));
+        yTranslationPanel.add(translationYTF);
 
-        jLabel6.setText(",");
-        add(jLabel6);
+        translationPanel.add(yTranslationPanel);
 
-        rotationYTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 5));
-        rotationYTF.setMinimumSize(new java.awt.Dimension(60, 30));
-        rotationYTF.setPreferredSize(new java.awt.Dimension(60, 30));
-        add(rotationYTF);
+        zTranslationPanel.setLayout(new javax.swing.BoxLayout(zTranslationPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        jLabel7.setText(",");
-        add(jLabel7);
+        jLabel3.setText("Z:");
+        zTranslationPanel.add(jLabel3);
 
-        rotationZTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 5));
-        rotationZTF.setMinimumSize(new java.awt.Dimension(60, 30));
-        rotationZTF.setPreferredSize(new java.awt.Dimension(60, 30));
-        add(rotationZTF);
+        translationZTF.setMinimumSize(new java.awt.Dimension(100, 30));
+        translationZTF.setPreferredSize(new java.awt.Dimension(100, 30));
+        zTranslationPanel.add(translationZTF);
 
-        jLabel8.setText(")");
-        add(jLabel8);
+        translationPanel.add(zTranslationPanel);
 
-        jLabel9.setText("Scaling: (");
-        jLabel9.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
-        add(jLabel9);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(translationPanel, gridBagConstraints);
 
-        scaleXTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 5, 1, 5));
-        scaleXTF.setMinimumSize(new java.awt.Dimension(60, 30));
-        scaleXTF.setPreferredSize(new java.awt.Dimension(60, 30));
-        add(scaleXTF);
+        rotationPanel.setLayout(new java.awt.GridLayout(4, 1));
+
+        jLabel10.setText("Rotation (degrees)");
+        rotationPanel.add(jLabel10);
+
+        xRotationPanel.setLayout(new javax.swing.BoxLayout(xRotationPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel11.setText("X:");
+        xRotationPanel.add(jLabel11);
+
+        rotationXTF.setMinimumSize(new java.awt.Dimension(100, 30));
+        rotationXTF.setPreferredSize(new java.awt.Dimension(100, 30));
+        xRotationPanel.add(rotationXTF);
+
+        rotationPanel.add(xRotationPanel);
+
+        yRotationPanel.setLayout(new javax.swing.BoxLayout(yRotationPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel12.setText("Y:");
+        yRotationPanel.add(jLabel12);
+
+        rotationYTF.setMinimumSize(new java.awt.Dimension(100, 30));
+        rotationYTF.setPreferredSize(new java.awt.Dimension(100, 30));
+        yRotationPanel.add(rotationYTF);
+
+        rotationPanel.add(yRotationPanel);
+
+        zRotationPanel.setLayout(new javax.swing.BoxLayout(zRotationPanel, javax.swing.BoxLayout.LINE_AXIS));
+
+        jLabel13.setText("Z:");
+        zRotationPanel.add(jLabel13);
+
+        rotationZTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        rotationZTF.setMinimumSize(new java.awt.Dimension(100, 30));
+        rotationZTF.setPreferredSize(new java.awt.Dimension(100, 30));
+        zRotationPanel.add(rotationZTF);
+
+        rotationPanel.add(zRotationPanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(rotationPanel, gridBagConstraints);
+
+        resizePanel.setLayout(new java.awt.GridLayout(2, 0));
+
+        jLabel14.setText("Scale");
+        resizePanel.add(jLabel14);
+
+        resizeSubPanel.setLayout(new java.awt.GridLayout(1, 0));
+
+        scaleTF.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        scaleTF.setMinimumSize(new java.awt.Dimension(100, 30));
+        scaleTF.setPreferredSize(new java.awt.Dimension(100, 30));
+        resizeSubPanel.add(scaleTF);
+
+        resizePanel.add(resizeSubPanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_START;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(resizePanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     /**
-     * Resets the values in the GUI back to 0
+     * Resets the values in the GUI back to 0.
+     *
+     * NOTE: This method assumes it is being called in the AWT Event Thread.
      */
     private void clearGUI() {
-        translationXTF.setValue(0.0f);
-        translationYTF.setValue(0.0f);
-        translationZTF.setValue(0.0f);
+        // Says that we are changing the values of the spinners
+        // programmatically. This prevents the values from being sent
+        // back to the Cell via the movable component.
+        setLocalChanges(true);
 
-        rotationXTF.setValue(0.0f);
-        rotationYTF.setValue(0.0f);
-        rotationZTF.setValue(0.0f);
+        try {
+            translationXTF.setValue(0.0f);
+            translationYTF.setValue(0.0f);
+            translationZTF.setValue(0.0f);
 
-        scaleXTF.setValue(1.0f);
+            rotationXTF.setValue(0.0f);
+            rotationYTF.setValue(0.0f);
+            rotationZTF.setValue(0.0f);
+
+            scaleTF.setValue(1.0f);
+        } finally {
+            setLocalChanges(false);
+        }
     }
 
     /**
@@ -336,8 +408,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         float y = (Float) yRotationModel.getValue();
         float z = (Float) zRotationModel.getValue();
 
-//        System.out.println("NEW ROTATION SET IN GUI " + x + " " + y + " " + z);
-
         // Convert to radians
         x = (float)Math.toRadians(x);
         y = (float)Math.toRadians(y);
@@ -345,7 +415,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         Quaternion newRotation = new Quaternion(new float[] { x, y, z });
         if (movableComponent != null) {
-//            System.out.println("SENDING ROTATION VALUES TO SERVER");
             CellTransform cellTransform = selectedCell.getLocalTransform();
             cellTransform.setRotation(newRotation);
             movableComponent.localMoveRequest(cellTransform);
@@ -367,9 +436,9 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
     /**
      * Updates the GUI items in this panel for the currently selected cell. If
-     * there is nothing selected, do nothing. This method does not assume it
-     * is being called within the AWT Event Thread, so it does all operations
-     * that affect the GUI using SwingUtilities.
+     * there is nothing selected, do nothing.
+     *
+     * NOTE: This method assumes it is being called in the AWT Event Thread.
      */
     public void updateGUI() {
         // Fetch the currently selected Cell. If none, then do nothing
@@ -386,36 +455,28 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         final Vector3f scale = cellTransform.getScaling(null);
         final float[] angles = rotation.toAngles(new float[3]);
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                // Says that we are changing the values of the spinners
-                // programmatically. This prevents the values from being sent
-                // back to the Cell via the movable component.
-                setLocalChanges(true);
+        // Says that we are changing the values of the spinners
+        // programmatically. This prevents the values from being sent
+        // back to the Cell via the movable component.
+        setLocalChanges(true);
 
-                try {
-                    // Do all actions to update the GUI in the AWT Event Thread.
-                    // Update the translation spinners
-                    translationXTF.setValue(translation.x);
-                    translationYTF.setValue(translation.y);
-                    translationZTF.setValue(translation.z);
+        try {
+            // Do all actions to update the GUI in the AWT Event Thread.
+            // Update the translation spinners
+            translationXTF.setValue(translation.x);
+            translationYTF.setValue(translation.y);
+            translationZTF.setValue(translation.z);
 
-                    // Update the rotation spinners only if they have changed
-//        System.out.println("UPDATING GUI WITH ROTATION " +
-//                Math.toDegrees(angles[0]) + " " + Math.toDegrees(angles[1]) +
-//                " " + Math.toDegrees(angles[2]));
+            // Update the rotation spinners
+            rotationXTF.setValue((float) Math.toDegrees(angles[0]));
+            rotationYTF.setValue((float) Math.toDegrees(angles[1]));
+            rotationZTF.setValue((float) Math.toDegrees(angles[2]));
 
-                    rotationXTF.setValue((float) Math.toDegrees(angles[0]));
-                    rotationYTF.setValue((float) Math.toDegrees(angles[1]));
-                    rotationZTF.setValue((float) Math.toDegrees(angles[2]));
-
-                    // Update the scale spinners only if they have changes
-                    scaleXTF.setValue((float) scale.x);
-                } finally {
-                    setLocalChanges(false);
-                }
-            }
-        });
+            // Update the scale spinners only if they have changes
+            scaleTF.setValue((float) scale.x);
+        } finally {
+            setLocalChanges(false);
+        }
     }
 
     /**
@@ -430,7 +491,7 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         rotationXTF.setEnabled(enabled);
         rotationYTF.setEnabled(enabled);
         rotationZTF.setEnabled(enabled);
-        scaleXTF.setEnabled(enabled);
+        scaleTF.setEnabled(enabled);
     }
 
     /**
@@ -461,7 +522,6 @@ public class PositionHUDPanel extends javax.swing.JPanel {
 
         // If the newly selected Cell is null, we turn off the GUI and return
         if (cell == null) {
-            frame.setTitle("Edit Cell: <none selected>");
             setGUIEnabled(false);
             return;
         }
@@ -474,15 +534,11 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         // already been added. Set the movable component member variable.
         cell.addComponentChangeListener(componentListener);
 
-        // Set the title of the frame properly to the selected Cell
-        frame.setTitle("Edit Cell: " + cell.getName());
-
         // Fetch the movable component. For now, if it does not exist, then
         // turn off everything
         movableComponent = cell.getComponent(MovableComponent.class);
         if (movableComponent == null) {
             setGUIEnabled(false);
-            addMovableComponent(cell);
         }
         else {
             setGUIEnabled(true);
@@ -502,59 +558,32 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         return null;
     }
 
-    /**
-     * Adds the movable component to the Cell
-     */
-    private void addMovableComponent(Cell cell) {
-        String className = "org.jdesktop.wonderland.server.cell.MovableComponentMO";
-        CellID cellID = cell.getCellID();
-        CellServerComponentMessage cscm =
-                CellServerComponentMessage.newAddMessage(cellID, className);
-        ResponseMessage response = cell.sendCellMessageAndWait(cscm);
-        if (response instanceof ErrorMessage) {
-            logger.log(Level.WARNING, "Unable to add movable component " +
-                    "for Cell " + cell.getName() + " with ID " +
-                    cellID, ((ErrorMessage) response).getErrorCause());
-        }
-    }
-    /**
-     * Inner class that listens for changes to the selection and upates the
-     * state of the dialog appropriately
-     */
-    class SelectionListener extends EventClassListener {
-
-        public SelectionListener() {
-            setSwingSafe(true);
-        }
-        
-        @Override
-        public Class[] eventClassesToConsume() {
-            return new Class[] { SelectionEvent.class };
-        }
-
-        @Override
-        public void commitEvent(Event event) {
-            // Update the GUI based upon the newly selected Cell.
-            updateGUI();
-        }
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel resizePanel;
+    private javax.swing.JPanel resizeSubPanel;
+    private javax.swing.JPanel rotationPanel;
     private javax.swing.JSpinner rotationXTF;
     private javax.swing.JSpinner rotationYTF;
     private javax.swing.JSpinner rotationZTF;
-    private javax.swing.JSpinner scaleXTF;
+    private javax.swing.JSpinner scaleTF;
+    private javax.swing.JPanel translationPanel;
     private javax.swing.JSpinner translationXTF;
     private javax.swing.JSpinner translationYTF;
     private javax.swing.JSpinner translationZTF;
+    private javax.swing.JPanel xRotationPanel;
+    private javax.swing.JPanel xTranslationPanel;
+    private javax.swing.JPanel yRotationPanel;
+    private javax.swing.JPanel yTranslationPanel;
+    private javax.swing.JPanel zRotationPanel;
+    private javax.swing.JPanel zTranslationPanel;
     // End of variables declaration//GEN-END:variables
 }

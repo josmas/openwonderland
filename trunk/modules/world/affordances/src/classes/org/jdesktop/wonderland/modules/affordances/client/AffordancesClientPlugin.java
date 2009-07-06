@@ -71,7 +71,9 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
                  */
                 if (event.getEventType() == ComponentEventType.DISAPPEARED) {
                     // Tell all of the affordances to remove themselves by posting
-                    // an event to the input system as such.
+                    // an event to the input system as such. Also tell the
+                    // affordance panel it has closed
+                    affordanceHUDPanel.closed();
                     InputManager.inputManager().postEvent(new AffordanceRemoveEvent());
                 }
             }
