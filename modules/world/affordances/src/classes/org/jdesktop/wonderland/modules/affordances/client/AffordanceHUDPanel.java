@@ -25,6 +25,10 @@ import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.InputManager;
@@ -42,6 +46,10 @@ import org.jdesktop.wonderland.modules.affordances.client.cell.TranslateAffordan
  */
 public class AffordanceHUDPanel extends javax.swing.JPanel {
 
+    /* The detailed "position" panel to set the values by hand */
+    private PositionHUDPanel positionHUDPanel = null;
+    private static HUDComponent positionHUD = null;
+
     /** Creates new form AffordanceHUDPanel */
     public AffordanceHUDPanel() {
         initComponents();
@@ -54,11 +62,19 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         labels.put(300, new JLabel("4.0"));
         labels.put(400, new JLabel("5.0"));
         sizeSlider.setLabelTable(labels);
-        
+
+        // Create the Details frame for later use.
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        positionHUDPanel = new PositionHUDPanel();
+        positionHUD = mainHUD.createComponent(positionHUDPanel);
+        positionHUD.setPreferredLocation(Layout.WEST);
+
+        // add affordances HUD panel to main HUD
+        mainHUD.addComponent(positionHUD);
+
         // Listen for selections to update the HUD panel
         InputManager.inputManager().addGlobalEventListener(new SelectionListener());
     }
-
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -76,6 +92,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         sizeSlider = new javax.swing.JSlider();
         jLabel1 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        detailsButton = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
 
@@ -135,7 +152,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 12)); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 12));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Affordance Size");
         jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -143,6 +160,13 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel5.setText("5x");
         jLabel5.setIconTextGap(0);
+
+        detailsButton.setText("Details...");
+        detailsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                detailsButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -166,6 +190,8 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(75, 75, 75)
                         .add(jLabel1)))
+                .add(18, 18, 18)
+                .add(detailsButton)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -183,8 +209,19 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
                         .add(jLabel5))
                     .add(0, 0, 0))
                 .add(org.jdesktop.layout.GroupLayout.LEADING, resizeToggleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(detailsButton))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    /**
+     * Indicates that this HUD panel has been closed
+     */
+    public void closed() {
+        // Also close the Details position HUD panel
+        positionHUD.setVisible(false);
+    }
 
     /**
      * Updates the GUI items in this panel for the currently selected cell. If
@@ -193,6 +230,9 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
      * NOTE: This method assumes it is being called in the AWT Event Thread.
      */
     public void updateGUI() {
+        // Update the GUI of the Position HUD Panel
+        positionHUDPanel.updateGUI();
+
         // Fetch the currently selected Cell. If none, then do nothing
         Cell cell = getSelectedCell();
         if (cell == null) {
@@ -261,6 +301,10 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
     private void sizeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sizeSliderStateChanged
         updateAffordanceSize();
 }//GEN-LAST:event_sizeSliderStateChanged
+
+    private void detailsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detailsButtonActionPerformed
+        positionHUD.setVisible(true);
+    }//GEN-LAST:event_detailsButtonActionPerformed
 
     /**
      * Manually set whether the translation affordance is visible (true) or
@@ -462,6 +506,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton detailsButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
