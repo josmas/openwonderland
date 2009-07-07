@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.client.jme;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.Camera;
 import com.jme.scene.Spatial;
 import java.awt.event.ComponentEvent;
 import java.util.logging.Level;
@@ -30,13 +31,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CameraComponent;
-import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.ViewProperties.ViewProperty;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer.MoveProcessor;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
@@ -51,6 +52,7 @@ import org.jdesktop.mtgame.BufferUpdater;
 import org.jdesktop.mtgame.OnscreenRenderBuffer;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderBuffer;
+import org.jdesktop.wonderland.client.jme.ViewProperties.ViewPropertiesListener;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -78,7 +80,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author paulby
  */
 @ExperimentalAPI
-public class ViewManager {
+public class ViewManager implements ViewPropertiesListener {
     private static final Logger logger =
             Logger.getLogger(ViewManager.class.getName());
 
@@ -114,14 +116,22 @@ public class ViewManager {
 
     private HashSet<CameraListener> cameraListeners = null;
 
+    // The set of configurable properties for the view
+    private ViewProperties viewProperties = null;
+
     ViewManager(int width, int height) {
         this.width = width;
         this.height = height;
-        this.aspect = (float)width/(float)height;
+        this.aspect = (float) width / (float) height;
 
 //        String avatarDetail = System.getProperty("avatar.detail", "high");
 //        if (avatarDetail.equalsIgnoreCase("high") || avatarDetail.equalsIgnoreCase("medium"))
-            useAvatars=true;
+        useAvatars = true;
+
+        // Iniitliaze the view properties. Listen for changes in the properties
+        // and update the camera accordingly.
+        viewProperties = new ViewProperties();
+        viewProperties.addViewPropertiesListener(this);
     }
 
     public static void initialize(int width, int height) {
@@ -135,6 +145,15 @@ public class ViewManager {
         return viewManager;
     }
 
+    /**
+     * Returns the collection of properties for the view.
+     *
+     * @param The configurable view properties
+     */
+    public ViewProperties getViewProperties() {
+        return viewProperties;
+    }
+    
     void attachViewCanvas(JPanel panel) {
         rb = ClientContextJME.getWorldManager().getRenderManager().createRenderBuffer(RenderBuffer.Target.ONSCREEN, width, height);
         ClientContextJME.getWorldManager().getRenderManager().addRenderBuffer(rb);
@@ -379,10 +398,17 @@ public class ViewManager {
     
     protected void createCameraEntity(WorldManager wm) {
         Node cameraSG = createCameraGraph(wm);
-        
+
+        // Fetch the field-of-view and front/back clip from the view properties
+        float fov = viewProperties.getFieldOfView();
+        float frontClip = viewProperties.getFrontClip();
+        float backClip = viewProperties.getBackClip();
+
         // Add the camera
         Entity camera = new Entity("DefaultCamera");
-        cameraComponent = wm.getRenderManager().createCameraComponent(cameraSG, cameraNode, width, height, 45.0f, aspect, 1.0f, 2000.0f, true);
+        cameraComponent = wm.getRenderManager().createCameraComponent(cameraSG,
+                cameraNode, width, height, fov, aspect, frontClip, backClip,
+                true);
         cameraComponent.setCameraSceneGraph(cameraSG);
         cameraComponent.setCameraNode(cameraNode);
         camera.addComponent(CameraComponent.class, cameraComponent);
@@ -392,8 +418,8 @@ public class ViewManager {
         camera.addComponent(ProcessorComponent.class, cameraProcessor);
 
         rb.setCameraComponent(cameraComponent);
-        
-        wm.addEntity(camera);         
+
+        wm.addEntity(camera);
     }
 
     
@@ -500,6 +526,21 @@ public class ViewManager {
             }
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void viewPropertiesChange(ViewProperty property) {
+        // Update the camera properties, if it has been created already.
+        if (cameraComponent != null) {
+            Camera camera = cameraComponent.getCamera();
+            float fov = viewProperties.getFieldOfView();
+            float frontClip = viewProperties.getFrontClip();
+            float backClip = viewProperties.getBackClip();
+            camera.setFrustumPerspective(fov, aspect, frontClip, backClip);
+        }
+    }
+
 
     /**
      * Listen for movement of the view cell
