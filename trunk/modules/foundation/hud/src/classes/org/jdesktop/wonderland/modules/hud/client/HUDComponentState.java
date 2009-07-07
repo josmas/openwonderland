@@ -36,7 +36,7 @@ public class HUDComponentState {
     private HUDView2D view;
     private HUDView3D worldView;
     // HUD frame visuals
-    private HUDFrame2D frame;
+    private HUDFrameHeader2D frame;
     private Window2D frameWindow;
     private HUDView2D frameView;
     private boolean decorated;
@@ -79,7 +79,7 @@ public class HUDComponentState {
      * Sets the frame decoration for the HUD component
      * @param frame the frame
      */
-    public void setFrame(HUDFrame2D frame) {
+    public void setFrame(HUDFrameHeader2D frame) {
         this.frame = frame;
     }
 
@@ -87,7 +87,7 @@ public class HUDComponentState {
      * Gets the frame for the HUD component
      * @return the HUD component's frame
      */
-    public HUDFrame2D getFrame() {
+    public HUDFrameHeader2D getFrame() {
         return frame;
     }
 

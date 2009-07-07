@@ -17,8 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
-import org.jdesktop.mtgame.Entity;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.hud.HUDView;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
@@ -45,6 +46,7 @@ public class HUDView2D extends View2DEntity implements HUDView {
 
     /**
      * Create an instance of HUDView2D with a specified geometry node.
+     * @param displayer the entity in which the view is displayed.
      * @param window The window displayed in this view.
      * @param geometryNode The geometry node on which to display the view.
      */
@@ -66,7 +68,7 @@ public class HUDView2D extends View2DEntity implements HUDView {
      * {@inheritDoc}
      */
     protected Entity getParentEntity() {
-        return null;
+        return getEntity().getParent();
     }
 
     /**
@@ -77,12 +79,52 @@ public class HUDView2D extends View2DEntity implements HUDView {
         return false;
     }
 
+    public HUDView2D getFrameView() {
+        return null;
+    }
+
+    public Window2D getFrameWindow() {
+        return null;
+    }
+
+    public void attachView(HUDView2D view) {
+        logger.fine("attach view: " + view + "to: " + this);
+        Entity e = view.getEntity();
+        RenderComponent rcFrame = (RenderComponent) e.getComponent(RenderComponent.class);
+
+        GeometryNode node = this.getGeometryNode();
+        rcFrame.setAttachPoint(this.getGeometryNode());
+    }
+
+    public void detachView(HUDView2D view) {
+        logger.fine("detach view: " + view + "from: " + this);
+        Entity viewEntity = view.getEntity();
+        if (viewEntity == null) {
+            return;
+        }
+        entity.removeEntity(viewEntity);
+        RenderComponent rcFrame = (RenderComponent) viewEntity.getComponent(RenderComponent.class);
+        if (rcFrame != null) {
+            rcFrame.setAttachPoint(null);
+        }
+    }
+
     /**
      * {@inheritDoc}
+     */
+    @Override
+    protected void reattachFrame() {
+        logger.fine("reattach frame");
+        detachFrame();
+        attachFrame();
+    }
 
+    /**
+     * {@inheritDoc}
      */
     @Override
     protected void attachFrame() {
+        logger.fine("attach frame");
     }
 
     /**
@@ -90,6 +132,7 @@ public class HUDView2D extends View2DEntity implements HUDView {
      */
     @Override
     protected void detachFrame() {
+        logger.fine("detach frame");
     }
 
     /**
@@ -97,6 +140,7 @@ public class HUDView2D extends View2DEntity implements HUDView {
      */
     @Override
     protected void frameUpdateTitle() {
+        logger.fine("update frame title");
     }
 
     /**
@@ -104,6 +148,7 @@ public class HUDView2D extends View2DEntity implements HUDView {
      */
     @Override
     protected void frameUpdate() {
+        logger.fine("update frame");
     }
 
     /**

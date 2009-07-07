@@ -95,6 +95,7 @@ public class HUDComponent2D implements HUDComponent {
 
     public void setComponent(JComponent component) {
         this.component = component;
+        setBounds(0, 0, (int) component.getPreferredSize().getWidth(), (int) component.getPreferredSize().getHeight());
     }
 
     public JComponent getComponent() {
@@ -103,6 +104,7 @@ public class HUDComponent2D implements HUDComponent {
 
     public void setWindow(Window2D window) {
         this.window = window;
+        setBounds(getX(), getY(), window.getWidth(), window.getHeight());
     }
 
     public Window2D getWindow() {
@@ -130,7 +132,6 @@ public class HUDComponent2D implements HUDComponent {
      */
     public void setBounds(Rectangle bounds) {
         this.bounds = bounds;
-
         notifyListeners(ComponentEventType.RESIZED);
     }
 
@@ -145,9 +146,17 @@ public class HUDComponent2D implements HUDComponent {
      * {@inheritDoc}
      */
     public void setLocation(int x, int y) {
-        bounds.setRect(x, y, bounds.getWidth(), bounds.getHeight());
+        setLocation(x, y, true);
+    }
 
-        notifyListeners(ComponentEventType.MOVED);
+    /**
+     * {@inheritDoc}
+     */
+    public void setLocation(int x, int y, boolean notify) {
+        bounds.setRect(x, y, bounds.getWidth(), bounds.getHeight());
+        if (notify) {
+            notifyListeners(ComponentEventType.MOVED);
+        }
     }
 
     /**
@@ -428,7 +437,7 @@ public class HUDComponent2D implements HUDComponent {
 
     @Override
     public String toString() {
-        return "HUDComponent2D: " + 
+        return "HUDComponent2D: " +
                 ((component != null) ? component.getClass().getName() : "") +
                 ", bounds: " + bounds +
                 ", visible: " + visible +

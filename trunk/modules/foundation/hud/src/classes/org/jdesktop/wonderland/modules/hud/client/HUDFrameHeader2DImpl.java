@@ -32,6 +32,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 
@@ -39,29 +40,27 @@ import javax.swing.JFrame;
  *
  * @author nsimpson
  */
-public class HUDFrame2DImpl extends javax.swing.JPanel {
+public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
 
-    private static final Logger logger = Logger.getLogger(HUDFrame2DImpl.class.getName());
+    private static final Logger logger = Logger.getLogger(HUDFrameHeader2DImpl.class.getName());
     private Color gradientStartColor = new Color(137, 137, 137); // blue: new Color(2, 28, 109);
     private Color gradientEndColor = new Color(180, 180, 180);   // blue: new Color(134, 169, 254);
-    private List<ActionListener> listeners;
+    private List<ActionListener> actionListeners;
     private GradientPaint paint;
 
-    public HUDFrame2DImpl() {
+    public HUDFrameHeader2DImpl() {
         initComponents();
+        addListeners();
         paint = new GradientPaint(0, 0, gradientStartColor,
                 0, getHeight(), gradientEndColor);
+    }
 
+    private void addListeners() {
         minimizeButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 logger.info("minimize action performed");
-                if (listeners != null) {
-                    ActionEvent event = new ActionEvent(HUDFrame2DImpl.this, e.getID(), "minimize");
-                    for (ActionListener listener : listeners) {
-                        listener.actionPerformed(event);
-                    }
-                }
+                notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "minimize"));
             }
         });
 
@@ -69,14 +68,28 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
 
             public void actionPerformed(ActionEvent e) {
                 logger.info("close action performed");
-                if (listeners != null) {
-                    ActionEvent event = new ActionEvent(HUDFrame2DImpl.this, e.getID(), "close");
-                    for (ActionListener listener : listeners) {
-                        listener.actionPerformed(event);
-                    }
-                }
+                notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "close"));
+
             }
         });
+    }
+
+    public void addActionListener(ActionListener listener) {
+        if (actionListeners == null) {
+            actionListeners = Collections.synchronizedList(new ArrayList());
+        }
+        actionListeners.add(listener);
+    }
+
+    public void notifyActionListeners(ActionEvent e) {
+        if (actionListeners != null) {
+            ListIterator<ActionListener> iter = actionListeners.listIterator();
+            while (iter.hasNext()) {
+                ActionListener listener = iter.next();
+                listener.actionPerformed(e);
+            }
+            iter = null;
+        }
     }
 
     public void setGradientStartColor(Color gradientStartColor) {
@@ -95,20 +108,13 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
         return gradientEndColor;
     }
 
-    public void addActionListener(ActionListener listener) {
-        if (listeners == null) {
-            listeners = Collections.synchronizedList(new ArrayList());
-        }
-        listeners.add(listener);
-    }
-
     @Override
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
 
         g2.setPaint(paint);
         g2.fill(g2.getClip());
-        this.paintChildren(g);
+        paintChildren(g);
     }
 
     /** This method is called from within the constructor to
@@ -154,7 +160,6 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
             .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
     private javax.swing.JButton minimizeButton;
@@ -174,7 +179,7 @@ public class HUDFrame2DImpl extends javax.swing.JPanel {
                     public void windowClosing(java.awt.event.WindowEvent e) {
                     }
                 });
-                frame.add(new HUDFrame2DImpl());
+                frame.add(new HUDFrameHeader2DImpl());
                 frame.pack();
                 frame.setVisible(true);
             }
