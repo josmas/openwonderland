@@ -58,17 +58,27 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int result = JOptionPane.showConfirmDialog(
-                        ViewPropertiesJDialog.this,
-                        "Do you wish to apply the properties before closing?",
-                        "Apply values?", JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE);
-                if (result == JOptionPane.YES_OPTION) {
-                    okButtonActionPerformed(null);
+                if (isDirty() == true) {
+                    int result = JOptionPane.showConfirmDialog(
+                            ViewPropertiesJDialog.this,
+                            "Do you wish to apply the properties before closing?",
+                            "Apply values?", JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE);
+                    if (result == JOptionPane.YES_OPTION) {
+                        okButtonActionPerformed(null);
+                    }
+                    else {
+                        // Reset the view to the original values and close the
+                        // window. We do not dispose since we may want to use
+                        // the dialog again.
+                        viewProperties.setFieldOfView(originalFieldOfView);
+                        viewProperties.setFrontClip(originalFrontClip);
+                        viewProperties.setBackClip(originalBackClip);
+                        setVisible(false);
+                    }
+                    return;
                 }
-                else {
-                    cancelButtonActionPerformed(null);
-                }
+                setVisible(false);
             }
         });
     }
@@ -104,6 +114,33 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         rearClipField.setText("" + (int)originalBackClip);
     }
 
+    /**
+     * Sets whether the Apply button is enabled depending upon whether changes
+     * have been made to the GUI
+     */
+    private void setApplyEnabled() {
+        okButton.setEnabled(isDirty());
+    }
+
+    /**
+     * Returns true if changes have been made to the GUI different from the
+     * original values.
+     */
+    private boolean isDirty() {
+        if ((float)fovSlider.getValue() != originalFieldOfView) {
+            return true;
+        }
+
+        if ((float)frontClipSlider.getValue() != originalFrontClip) {
+            return true;
+        }
+
+        if ((float)rearClipSlider.getValue() != originalBackClip) {
+            return true;
+        }
+        return false;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -127,6 +164,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         frontClipField = new javax.swing.JTextField();
 
         okButton.setText("Apply");
+        okButton.setEnabled(false);
         okButton.setSelected(true);
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -134,7 +172,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
             }
         });
 
-        cancelButton.setText("Revert");
+        cancelButton.setText("Close");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -268,7 +306,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(341, Short.MAX_VALUE)
+                .addContainerGap(345, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(okButton)
@@ -294,10 +332,12 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         float fov = (float)fovSlider.getValue();
         fovField.setText("" + (int)fov);
         viewProperties.setFieldOfView(fov);
+        setApplyEnabled();
     }//GEN-LAST:event_fovSliderStateChanged
 
     private void fovFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fovFieldActionPerformed
         fovSlider.setValue(Integer.parseInt(fovField.getText()));
+        setApplyEnabled();
     }//GEN-LAST:event_fovFieldActionPerformed
 
     private void frontClipSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_frontClipSliderStateChanged
@@ -305,6 +345,7 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         float clip = (float)frontClipSlider.getValue();
         frontClipField.setText("" + (int)clip);
         viewProperties.setFrontClip(clip);
+        setApplyEnabled();
     }//GEN-LAST:event_frontClipSliderStateChanged
 
     private void rearClipSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rearClipSliderStateChanged
@@ -312,14 +353,17 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
         float clip = (float)rearClipSlider.getValue();
         rearClipField.setText("" + (int)clip);
         viewProperties.setBackClip(clip);
+        setApplyEnabled();
     }//GEN-LAST:event_rearClipSliderStateChanged
 
     private void frontClipFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_frontClipFieldActionPerformed
         frontClipSlider.setValue(Integer.parseInt(frontClipField.getText()));
+        setApplyEnabled();
     }//GEN-LAST:event_frontClipFieldActionPerformed
 
     private void rearClipFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rearClipFieldActionPerformed
         rearClipSlider.setValue(Integer.parseInt(rearClipField.getText()));
+        setApplyEnabled();
 }//GEN-LAST:event_rearClipFieldActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
@@ -339,11 +383,28 @@ public class ViewPropertiesJDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        // Reset the view to the original values and close the window. We do
-        // not dispose since we may want to use the dialog again
-        viewProperties.setFieldOfView(originalFieldOfView);
-        viewProperties.setFrontClip(originalFrontClip);
-        viewProperties.setBackClip(originalBackClip);
+
+        // Check to see if the values have changed from the original values. If
+        // so then ask whether we want to apply the changes or not.
+        if (isDirty() == true) {
+            int result = JOptionPane.showConfirmDialog(
+                    ViewPropertiesJDialog.this,
+                    "Do you wish to apply the properties before closing?",
+                    "Apply values?", JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            if (result == JOptionPane.YES_OPTION) {
+                okButtonActionPerformed(null);
+            }
+            else {
+                // Reset the view to the original values and close the window.
+                // We do not dispose since we may want to use the dialog again.
+                viewProperties.setFieldOfView(originalFieldOfView);
+                viewProperties.setFrontClip(originalFrontClip);
+                viewProperties.setBackClip(originalBackClip);
+                setVisible(false);
+            }
+            return;
+        }
         setVisible(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
     
