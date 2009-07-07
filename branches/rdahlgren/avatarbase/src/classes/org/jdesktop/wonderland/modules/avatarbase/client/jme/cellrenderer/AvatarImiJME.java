@@ -517,6 +517,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     private void enableInputListeners(boolean enabled) {
+        System.out.println("Enable Input Listeners called");
         if (avatarCharacter!=null) {
              WorldManager wm = ClientContextJME.getWorldManager();
 
@@ -525,6 +526,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             if (controlScheme == null && enabled) {
                 controlScheme = new DefaultCharacterControls(ClientContextJME.getWorldManager());
                 ((AvatarControls)wm.getUserData(AvatarControls.class)).setDefault(controlScheme);
+                avatarCharacter.selectForInput();
+                controlScheme.addCharacterToTeam(avatarCharacter);
+                controlScheme.setCharacter(avatarCharacter);
 //                controlScheme = (AvatarControls) ((JSceneEventProcessor) wm.getUserData(JSceneEventProcessor.class)).setDefault(new AvatarControlScheme(avatarCharacter));
             }
             if (enabled) {
@@ -575,6 +579,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     cameraChainedProcessor = null;
                 }
             }
+        } else {
+            System.out.println("The avatar was null, so nothing actually got enabled here.");
         }
     }
 

@@ -67,6 +67,7 @@ public class AvatarControls extends ViewControls {
                 if (evt instanceof KeyEvent3D) {
                     // Strip out KEY_PRESSED caused by auto repeat and ignore KEY_TYPED
                     KeyEvent ke = (KeyEvent) ((KeyEvent3D)evt).getAwtEvent();
+                    System.out.println("Key Event being sent to input group: " + ke);
                     inputGroup.processKeyEvent(ke); // give the group the event
                 } else if (evt instanceof MouseEvent3D) {
                     MouseEvent me = (MouseEvent) ((MouseEvent3D)evt).getAwtEvent();
@@ -128,7 +129,7 @@ public class AvatarControls extends ViewControls {
         
         m_scheme = defaultScheme;
         inputGroup.clearSchemes();
-        inputGroup.addScheme(m_scheme);
+        inputGroup.setScheme(m_scheme);
         return m_scheme;
     }
     
@@ -173,7 +174,7 @@ public class AvatarControls extends ViewControls {
 
         @Override
         public void computeEvent (Event event) {
-            System.out.println("evt " +event);
+//            System.out.println("evt " +event);
             // Access to events does not need to be synchronised as the commit
             // is guaranteed to happen after this computeEvent becuase the processors
             // are chained
