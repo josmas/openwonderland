@@ -57,7 +57,7 @@ public class HUDView2DDisplayer implements View2DDisplayer {
      * {@inheritDoc}
      */
     public void destroyView(View2D view) {
-        if (views.remove(view)) {
+        if (views.remove((HUDView2D)view)) {
             Window2D window = view.getWindow();
             window.removeView(view);
             view.cleanup();
@@ -95,6 +95,6 @@ public class HUDView2DDisplayer implements View2DDisplayer {
      */
     @Override
     public String toString() {
-        return "HUD2DDisplayer views: " + views;
+        return "HUDView2DDisplayer views: " + views;
     }
 }

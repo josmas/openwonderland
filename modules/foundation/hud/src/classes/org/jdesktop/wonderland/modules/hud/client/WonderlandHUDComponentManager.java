@@ -22,8 +22,12 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.RenderState;
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -59,11 +63,13 @@ import org.jdesktop.wonderland.modules.hud.client.HUDComponentState.HUDComponent
  * @author nsimpson
  */
 public class WonderlandHUDComponentManager implements HUDComponentManager,
-        HUDComponentListener {
+        HUDComponentListener, ActionListener, MouseMotionListener {
 
     private static final Logger logger = Logger.getLogger(WonderlandHUDComponentManager.class.getName());
     // a mapping between HUD components and their states
     private Map<HUDComponent, HUDComponentState> hudStateMap;
+    // a mapping between frames and HUD components
+    private Map<HUDFrameHeader2D, HUDComponent> hudFrameMap;
     // the layout manager for the HUD
     protected HUDLayoutManager layout;
     // displays HUD components on the glass
@@ -74,12 +80,13 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     protected HUDApp2D hudApp;
     protected Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
     protected Vector2f worldPixelScale = new Vector2f(0.013f, 0.013f);
-    protected Point dragStartPoint;
-    protected Point dragOffset;
-    protected Point lastPoint;
+    private boolean dragging = false;
+    private int dragX = 0;
+    private int dragY = 0;
 
     public WonderlandHUDComponentManager() {
         hudStateMap = Collections.synchronizedMap(new HashMap());
+        hudFrameMap = Collections.synchronizedMap(new HashMap());
     }
 
     public Window2D createWindow(HUDComponent component) {
@@ -111,7 +118,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         logger.fine("adding HUD component to component manager: " + component);
 
         HUDComponentState state = new HUDComponentState(component);
-        HUDComponent2D component2D = (HUDComponent2D)component;
+        HUDComponent2D component2D = (HUDComponent2D) component;
         Window2D window;
 
         if (component2D.getWindow() != null) {
@@ -186,19 +193,43 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     public void createFrame(HUDComponent component) {
+        createFrameHeader(component);
+    }
+
+    public void createFrameHeader(HUDComponent component) {
         logger.fine("adding frame to HUD component: " + component);
-        HUDFrame2DImpl frameImpl = new HUDFrame2DImpl();
-        HUDFrame2D frame = new HUDFrame2D(frameImpl, component);
+
+        HUDComponentState state = hudStateMap.get(component);
+
+        HUDFrameHeader2DImpl frameImpl = new HUDFrameHeader2DImpl();
+        frameImpl.setPreferredSize(new Dimension(component.getWidth(),
+                (int) frameImpl.getPreferredSize().getHeight()));
+        HUDFrameHeader2D frame = new HUDFrameHeader2D(frameImpl);
+
         Window2D window = createWindow(frame);
+        frame.setWindow(window);
+
+        Window2D componentWindow = state.getWindow();
+
+        HUDView2D frameView = hudDisplayer.createView(window);
+        frameView.setOrtho(true, false);
+        frameView.setPixelScaleOrtho(hudPixelScale, false);
+        frameView.setSizeApp(new Dimension((int) (window.getWidth()), frame.getHeight()));
+        frameView.setOffset(new Vector2f(0.0f, 100.0f));
+        frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * frame.getHeight() / 2 + 0.75f * componentWindow.getHeight() / 2)));
 
         // register listeners for events on the frame
         frameImpl.addActionListener(frame);
-        frameImpl.addMouseListener(frame);
-        frameImpl.addMouseMotionListener(frame);
+        frame.addActionListener(this);
 
-        HUDComponentState state = hudStateMap.get(component);
+        frameImpl.addMouseMotionListener(frame);
+        frame.addMouseMotionListener(this);
+
         state.setFrame(frame);
         state.setFrameWindow(window);
+        state.setFrameView(frameView);
+
+        hudFrameMap.put(frame, component);
     }
 
     private void moveFrame(HUDComponent2D component) {
@@ -231,6 +262,51 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
+    public void actionPerformed(ActionEvent e) {
+        logger.info("action performed: " + e);
+
+        if (e.getActionCommand().equals("close")) {
+            logger.info("close action performed: " + e);
+            HUDComponent hudComponent = hudFrameMap.get((HUDFrameHeader2D) e.getSource());
+            hudComponent.setVisible(false);
+        } else if (e.getActionCommand().equals("minimize")) {
+            logger.info("minimize action performed: " + e);
+            HUDComponent hudComponent = hudFrameMap.get((HUDFrameHeader2D) e.getSource());
+            //minimizeComponent(comp);
+        }
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        dragging = false;
+    }
+
+    public void mouseDragged(MouseEvent e) {
+        logger.finest("mouse dragged to: " + e.getPoint());
+        HUDComponent component = (HUDComponent) e.getSource();
+        if (component instanceof HUDFrameHeader2D) {
+            HUDComponent hudComponent = hudFrameMap.get((HUDFrameHeader2D) component);
+            if (hudComponent != null) {
+                if (!dragging) {
+                    dragX = e.getX();
+                    dragY = e.getY();
+                    dragging = true;
+                }
+
+                // calculate new location of HUD component
+                Point location = hudComponent.getLocation();
+                int xDelta = e.getX() - dragX;
+                int yDelta = e.getY() - dragY;
+                location.setLocation(location.getX() + xDelta, location.getY() - yDelta);
+
+                // move the HUD component
+                hudComponent.setLocation(location);
+
+                dragX = e.getX();
+                dragY = e.getY();
+            }
+        }
+    }
+
     public void decorateComponent(HUDComponent component, boolean decorate) {
         showFrame((HUDComponent2D) component, decorate);
     }
@@ -249,20 +325,10 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 }
 
                 createFrame(component);
-
-                logger.fine("creating new HUD frame view");
-                frameView = hudDisplayer.createView(state.getFrameWindow());
-                frameView.setOrtho(true, false);
-                frameView.setPixelScaleOrtho(hudPixelScale, false);
-                state.setFrameView(frameView);
+                frameView = state.getFrameView();
+                view.attachView(frameView);
             }
             if (frameView != null) {
-                // adjust the frame window to fit the width of the HUD component
-                resizeFrame(component);
-
-                // position the frame view on the HUD pane
-                moveFrame(component);
-
                 // display/hide the frame view
                 frameView.setVisibleApp(visible);
                 frameView.setVisibleUser(visible);
@@ -299,8 +365,8 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         // position the component on the screen
         Vector2f location = (layout != null) ? layout.getLocation(component) : new Vector2f(component.getX(), component.getY());
+        component.setLocation((int) (location.x - view.getDisplayerLocalWidth()/2), (int) (location.y - view.getDisplayerLocalHeight()/2), false);
         view.setLocationOrtho(location, false);
-        logger.fine("displaying HUD view at: " + location);
 
         // display the component
         view.setVisibleApp(true, false);
@@ -323,8 +389,8 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
         node.setRenderState(as);
         RenderComponent rc = entity.getComponent(RenderComponent.class);
-    //AlphaProcessor proc = new AlphaProcessor("", wm, view.getGeometryNode(), 0.01f);
-    //entity.addComponent(AlphaProcessor.class, proc);
+        //AlphaProcessor proc = new AlphaProcessor("", wm, view.getGeometryNode(), 0.01f);
+        //entity.addComponent(AlphaProcessor.class, proc);
     }
 
     private void componentInvisible(HUDComponent2D component) {
@@ -407,20 +473,20 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     private void componentMoved(HUDComponent2D component) {
-        logger.info("moving HUD component: " + component);
-
+        //logger.info("moving HUD component: " + component);
+        logger.fine("moving component to: " + component.getX() + ", " + component.getY());
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         HUDView2D view = state.getView();
         if (view != null) {
-            Vector2f location = new Vector2f(component.getX() + view.getDisplayerLocalWidth() / 2f, 
+            Vector2f location = new Vector2f(component.getX() + view.getDisplayerLocalWidth() / 2f,
                     component.getY() + view.getDisplayerLocalHeight() / 2f);
             view.setLocationOrtho(location);
-            moveFrame(component);
+            //moveFrame(component);
         }
     }
 
     private void componentMovedWorld(HUDComponent2D component) {
-        logger.info("moving HUD component in world: " + component);
+        logger.fine("moving HUD component in world: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         HUDView3D view = state.getWorldView();
@@ -432,7 +498,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     private void componentViewChanged(HUDComponent2D component) {
-        logger.info("changing HUD component view: " + component);
+        logger.fine("changing HUD component view: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         HUDView2D view = state.getView();
@@ -449,7 +515,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     }
 
     private void componentMinimized(HUDComponent2D component) {
-        logger.info("minimizing HUD component: " + component);
+        logger.fine("minimizing HUD component: " + component);
     }
 
     /**
@@ -457,7 +523,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
      */
     public void HUDComponentChanged(HUDComponentEvent event) {
         HUDComponent2D comp = (HUDComponent2D) event.getComponent();
-        logger.fine("HUD component changed: " + event);
+        //logger.fine("HUD component changed: " + event);
 
         switch (event.getEventType()) {
             case APPEARED:
@@ -550,7 +616,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state != null) {
             state.setState(HUDComponentVisualState.MINIMIZED);
-        // TODO: update display
+            // TODO: update display
         }
     }
 
@@ -561,7 +627,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state != null) {
             state.setState(HUDComponentVisualState.MAXIMIZED);
-        // TODO: update display
+            // TODO: update display
         }
     }
 
@@ -573,7 +639,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         if (state != null) {
             int zorder = state.getZOrder();
             state.setZOrder(zorder++);
-        // TODO: update component
+            // TODO: update component
         }
     }
 
@@ -585,7 +651,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         if (state != null) {
             int zorder = state.getZOrder();
             state.setZOrder(zorder--);
-        // TODO: update component
+            // TODO: update component
         }
     }
 

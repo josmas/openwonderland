@@ -76,6 +76,14 @@ public interface HUDComponent {
 
     /**
      * Moves the component to a new location
+     * @param x the new x-coordinate of this component
+     * @param y the new y-coordinate of this component
+     * @param notify whether to notify component listeners
+     */
+    public void setLocation(int x, int y, boolean notify);
+
+    /**
+     * Moves the component to a new location
      * @param p the new position of the component
      */
     public void setLocation(Point p);
