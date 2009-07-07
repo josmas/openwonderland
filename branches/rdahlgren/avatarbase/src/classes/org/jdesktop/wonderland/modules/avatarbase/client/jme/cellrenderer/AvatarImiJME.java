@@ -47,7 +47,10 @@ import imi.character.statemachine.corestates.CycleActionState;
 import imi.collision.CollisionController;
 import imi.input.DefaultCharacterControls;
 import imi.scene.PMatrix;
+import imi.scene.PScene;
 import imi.scene.PTransform;
+import imi.scene.polygonmodel.PPolygonMesh;
+import imi.scene.utils.PMeshUtils;
 import java.net.URL;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
@@ -401,8 +404,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 if (avatarConfigURL == null || avatarDetail.equalsIgnoreCase("low")) {
                     CharacterParams attributes = new MaleAvatarParams(username);
 
-                    // Setup simple model
-                    attributes.setUseSimpleStaticModel(true, null);
+                    // Setup simple model, needs to actually have something to
+                    // play well with the system
+                    PScene simpleScene = new PScene(ClientContextJME.getWorldManager());
+                    simpleScene.addMeshInstance(new PPolygonMesh("PlaceholderMesh"), new PMatrix());
+                    attributes.setUseSimpleStaticModel(true, simpleScene);
                     attributes.setBaseURL(baseURL);
                     // don't add the entity to wm
                     ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
@@ -471,6 +477,14 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         //        jscene.toggleRenderPRendererMesh();   // turn off mesh
         //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
+                // Moved to within try / catch, as catching an exception forces these
+                // lines to fail. RED 6-6-9
+                CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Default");
+
+                collisionController = new CollisionController(collisionGraph, (JMECollisionSystem)collisionSystem);
+                collisionChangeRequestListener.setCollisionController(collisionController);
+                ((AvatarController)ret.getContext().getController()).setCollisionController(collisionController);
+
             } catch(Exception e) {
                 String badURL=null;
                 if (avatarConfigURL!=null)
@@ -479,19 +493,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             } finally {
                 LoadingInfo.finishedLoading(cell.getCellID(), username);
             }
-
-
-            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Default");
-
-//            Node collisionRoot = ret.getJScene().getExternalKidsRoot();
-//            CollisionComponent cc = ((JMECollisionSystem)collisionSystem).createCollisionComponent(collisionRoot);
-//            ret.addComponent(CollisionComponent.class, cc);
-
-            collisionController = new CollisionController(collisionGraph, (JMECollisionSystem)collisionSystem);
-            collisionChangeRequestListener.setCollisionController(collisionController);
-
-            ((AvatarController)ret.getContext().getController()).setCollisionController(collisionController);
-
             return ret;
     }
 

@@ -173,7 +173,7 @@ public class AvatarControls extends ViewControls {
 
         @Override
         public void computeEvent (Event event) {
-//            System.out.println("evt " +event);
+            System.out.println("evt " +event);
             // Access to events does not need to be synchronised as the commit
             // is guaranteed to happen after this computeEvent becuase the processors
             // are chained

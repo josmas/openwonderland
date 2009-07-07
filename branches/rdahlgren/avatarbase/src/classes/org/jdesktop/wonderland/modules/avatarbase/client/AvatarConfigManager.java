@@ -262,11 +262,15 @@ public class AvatarConfigManager {
         if (underscore==-1 || ext==-1)
             return -1;
 
-        String verStr = filename.substring(underscore+1, ext);
-
         try {
+            // Moved here
+            String verStr = filename.substring(underscore+1, ext);
             return Integer.parseInt(verStr);
         } catch(NumberFormatException e) {
+            return -1;
+        } catch (StringIndexOutOfBoundsException e) {
+            Logger.getLogger(AvatarConfigManager.class.getName())
+                    .log(Level.WARNING, "Failed to substring \"" + filename + "\"");
             return -1;
         }
     }
