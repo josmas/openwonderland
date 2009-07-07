@@ -223,10 +223,6 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	}
     }
 
-    private Node orbRootNode;
-
-    
-
     Node getNameTagNode() {
         return nameTag;
     }
@@ -274,7 +270,6 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	channelComp.removeMessageReceiver(OrbSetVolumeMessage.class);
         channelComp.removeMessageReceiver(OrbSpeakingMessage.class);
 
-	orbRootNode.detachChild(nameTag);
 	nameTag.done();
 
 	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
