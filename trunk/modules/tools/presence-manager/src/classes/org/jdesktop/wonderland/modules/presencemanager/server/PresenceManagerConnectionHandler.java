@@ -120,6 +120,10 @@ public class PresenceManagerConnectionHandler implements
 
                 ArrayList<PresenceInfo> presenceInfoList = sessions.get(id);
 
+		//for (PresenceInfo info : presenceInfoList) {
+		//    System.out.println("SENDING:  " + info);
+		//}
+
                 sender.send(clientID, new ClientConnectResponseMessage(presenceInfoList));
 	    }
 	    return;
@@ -132,14 +136,14 @@ public class PresenceManagerConnectionHandler implements
 
 	    if (presenceInfoList == null) {
 		presenceInfoList = new ArrayList();
-		System.out.println("PresenceInfoAddedMessage:  new PI list for clientID " 
-		    + clientID.getID());
+		//System.out.println("PresenceInfoAddedMessage:  new PI list for clientID " 
+		//    + clientID.getID());
 	        sessions.put(clientID.getID(), presenceInfoList);
 	    }
 
 	    if (presenceInfoList.contains(presenceInfo) == false) {
 	        presenceInfoList.add(presenceInfo);
-		System.out.println("PresenceInfoAddedMessage:  added " + presenceInfo);
+		//System.out.println("PresenceInfoAddedMessage:  added " + presenceInfo);
 	        logger.fine("PRESENCEINFOADDEDMESSAGE:  " + presenceInfo);
 	    }
 
@@ -155,13 +159,13 @@ public class PresenceManagerConnectionHandler implements
 
 	    ArrayList<PresenceInfo> presenceInfoList = sessions.get(clientID.getID());
 
-	    System.out.println("PresenceInfoRemovedMessage:  removed " + presenceInfo);
+	    //System.out.println("PresenceInfoRemovedMessage:  removed " + presenceInfo);
 
 	    presenceInfoList.remove(presenceInfo);
 
 	    if (presenceInfoList.size() == 0) {
-	        System.out.println("PresenceInfoRemovedMessage:  removed list for clientID "
-		    + clientID.getID());
+	        //System.out.println("PresenceInfoRemovedMessage:  removed list for clientID "
+		//    + clientID.getID());
 		sessions.remove(clientID.getID());
 	    }
 
@@ -187,22 +191,62 @@ public class PresenceManagerConnectionHandler implements
 	ArrayList<PresenceInfo> presenceInfoArrayList = sessions.get(clientID.getID());
 
 	if (presenceInfoArrayList == null) {
-	    System.out.println("clientDisconnected:  No presence info for session " 
-		+ clientID.getID());
+	    //System.out.println("clientDisconnected:  No presence info for session " 
+	    //	+ clientID.getID());
 	    return;
 	}
 
 	PresenceInfo[] presenceInfoArray = presenceInfoArrayList.toArray(new PresenceInfo[0]);
 
+	PresenceInfo info = null;
+
 	for (int i = 0; i < presenceInfoArray.length; i++) {
-	    PresenceInfo info = presenceInfoArray[i];
+	    info = presenceInfoArray[i];
 
 	    if (info.clientID != null && info.clientID.equals(clientID.getID())) {
-		System.out.println("clientDisconnected:  removed PI " + info);
+		//System.out.println("clientDisconnected:  removed PI " + info);
 	        presenceInfoArrayList.remove(info);
 		sender.send(new PresenceInfoRemovedMessage(info));
+		break;
 	    }
 	}
+
+	sessions.remove(clientID.getID());
+
+	if (info == null) {
+	    return;
+	}
+
+	/*
+	 * Remove client presence info from other sessions
+	 */
+        Iterator<BigInteger> it = sessions.keySet().iterator();
+
+        while (it.hasNext()) {
+            BigInteger id = it.next();
+
+            ArrayList<PresenceInfo> presenceInfoList = sessions.get(id);
+
+	    presenceInfoList.remove(info);
+	}
+    }
+
+    private void dump(String msg) {
+	System.out.println("\n========  " + msg);
+
+            Iterator<BigInteger> it = sessions.keySet().iterator();
+
+            while (it.hasNext()) {
+                BigInteger id = it.next();
+
+                ArrayList<PresenceInfo> presenceInfoList = sessions.get(id);
+
+                for (PresenceInfo info : presenceInfoList) {
+		    System.out.println(id + " " + info);
+                }
+            }
+
+	System.out.println("========  " + msg + "\n");
     }
 
     public void callBeginEndNotification(CallStatus status) {
