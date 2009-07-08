@@ -53,16 +53,16 @@ class ViewCache {
     private static final Logger logger = Logger.getLogger(ViewCache.class.getName());
     private SpaceManager spaceManager;
     private SpatialCellImpl viewCell;
-    private HashMap<SpatialCell, Integer> rootCells = new HashMap(); // The rootCells visible in this cache
+    private final HashMap<SpatialCell, Integer> rootCells = new HashMap(); // The rootCells visible in this cache
 
-    private HashSet<Space> spaces = new HashSet();              // Spaces that intersect this caches world bounds
+    private final HashSet<Space> spaces = new HashSet();              // Spaces that intersect this caches world bounds
 
     private Vector3f lastSpaceValidationPoint = null;   // The view cells location on the last space revalidation
 
     private static final float REVAL_DISTANCE_SQUARED = (float) Math.pow(SpaceManagerGridImpl.SPACE_SIZE/4, 2);
 //    private static final float REVAL_DISTANCE_SQUARED = 1f;
 
-    private LinkedList<CacheUpdate> pendingCacheUpdates = new LinkedList();
+    private final LinkedList<CacheUpdate> pendingCacheUpdates = new LinkedList();
 
 //    private ScheduledExecutorService spaceLeftProcessor = Executors.newSingleThreadScheduledExecutor();
 
@@ -73,7 +73,7 @@ class ViewCache {
 
     private BoundingSphere proximityBounds = new BoundingSphere(AvatarBoundsHelper.PROXIMITY_SIZE, new Vector3f());
 
-    private LinkedList<ViewUpdateListenerContainer> viewUpdateListeners = new LinkedList();
+    private final LinkedList<ViewUpdateListenerContainer> viewUpdateListeners = new LinkedList();
 
     private Vector3f v3f = new Vector3f();      // Temporary vector
 
@@ -206,6 +206,7 @@ class ViewCache {
 
         try {
             synchronized(pendingCacheUpdates) {
+                logger.fine("ViewCache childCellAdded");
                 pendingCacheUpdates.add(new CacheUpdate(child, (SpatialCellImpl) child.getParent(), true));
             }
         } finally {
@@ -219,6 +220,7 @@ class ViewCache {
 
         try {
             synchronized(pendingCacheUpdates) {
+                logger.fine("ViewCache childCellRemoved "+child.getCellID());
                 pendingCacheUpdates.add(new CacheUpdate(child, parent, false));
             }
         } finally {
@@ -237,6 +239,7 @@ class ViewCache {
 
         try {
             synchronized(pendingCacheUpdates) {
+                logger.fine("ViewCache rootCellAdded");
                 pendingCacheUpdates.add(new CacheUpdate(rootCell, null, true));
             }
         } finally {
@@ -249,6 +252,7 @@ class ViewCache {
 
         try {
             synchronized(pendingCacheUpdates) {
+                logger.fine("ViewCache rootCellRemoved");
                 pendingCacheUpdates.add(new CacheUpdate(rootCell, null, false));
             }
         } finally {
@@ -319,20 +323,13 @@ class ViewCache {
                 synchronized(pendingCacheUpdates) {
                     pendingCacheUpdates.add(new CacheUpdate(sp,false));
                 }
-                }
+            }
 
             if (logBuf!=null && logBuf.length()>0) {
                 logBuf.insert(0, "View Leaving spaces ");
                 logger.fine(logBuf.toString());
             }
 
-//            System.err.println(buf.toString());
-
-//            System.out.print("ViewCell moved, current spaces ");
-//            for(Space sp : spaces) {
-//                System.out.print(sp.getName()+":"+sp.getRootCells().size()+" ");
-//            }
-//            System.out.println();
         } finally {
             viewCell.releaseRootReadLock();
         }
@@ -345,7 +342,9 @@ class ViewCache {
             super(ThreadManager.getThreadGroup(),"CacheProcessor");
         }
 
+        @Override
         public void run() {
+            // TODO add update notifcation instead of just of the short sleep
             Collection<CacheUpdate> updateList;
 
             while(!quit) {
@@ -491,6 +490,7 @@ class ViewCache {
                     }
                     break;
                 case CELL_REMOVED:
+//                    System.err.println("REMOVED from parent "+parentCell);
                     if (parentCell==null) {
                         type = ViewCacheUpdateType.UNLOAD;
                         synchronized(rootCells) {
@@ -526,9 +526,13 @@ class ViewCache {
             }
 
             if (cells.size() > 0 && type != null) {
-                System.err.println("Scheduling "+type);
+//                System.err.println("Scheduling "+type);
+//                for(CellDescription c : cells) {
+//                    System.err.print(c.getCellID()+", ");
+//                }
+//                System.err.println();
                 UniverseImpl.getUniverse().scheduleQueuedTransaction(
-                        new ViewCacheUpdateTask(cells, type), identity, this);
+                        new ViewCacheUpdateTask(cells, type), identity, ViewCache.this);
             }
         }
 
@@ -555,8 +559,9 @@ class ViewCache {
          * @param newCells the cummalative set of new cells that have been added
          */
         private void addRootCellImpl(SpatialCellImpl root, List<CellDescription> newCells) {
-            Integer refCount = rootCells.get(root);
-            if (refCount==null) {
+            Integer refCountI = rootCells.get(root);
+            int refCount;
+            if (refCountI==null) {
                 root.acquireRootReadLock();
                 try {
                     newCells.add(new CellDesc(root.getCellID()));
@@ -565,10 +570,12 @@ class ViewCache {
                     root.releaseRootReadLock();
                 }
                 refCount=1;
-            } else
+            } else {
+                refCount = refCountI.intValue();
                 refCount++;
+            }
 
-//            System.err.println("Adding "+root.getCellID()+" ref count "+refCount);
+//            System.err.println("***** Adding root "+root.getCellID()+" ref count "+refCount);
 
             rootCells.put(root, refCount);
         }
@@ -579,10 +586,12 @@ class ViewCache {
          * @param oldCells the cummalative set of cells that are being removed
          */
         private void removeRootCellImpl(SpatialCellImpl root, List<CellDescription> oldCells) {
-            Integer refCount = rootCells.get(root);
+            Integer refCountI = rootCells.get(root);
 
-            if (refCount==null)
+            if (refCountI==null)
                 return;
+
+            int refCount = refCountI.intValue();
 
             if (refCount==1) {
                 root.acquireRootReadLock();
@@ -592,17 +601,19 @@ class ViewCache {
                 } finally {
                     root.releaseRootReadLock();
                 }
+                refCount = 0;
                 rootCells.remove(root);
             } else {
                 refCount--;
                 rootCells.put(root, refCount);
             }
 
-//            System.err.println("Removing "+root.getCellID()+" ref count "+refCount);
+//            System.err.println("****** Removing root "+root.getCellID()+" ref count "+refCount);
 
         }
 
         private void processChildCells(List<CellDescription> cells, SpatialCellImpl parent, CellStatus status) {
+//            System.err.println("Processing Child Cells "+parent.getCellID()+"  "+parent.getChildren());
             if (parent.getChildren()==null)
                 return;
             
@@ -633,7 +644,6 @@ class ViewCache {
 
         public void run() throws Exception {
             ViewCellCacheMO cacheMO = (ViewCellCacheMO) dataService.createReferenceForId(cellCacheId).get();
-            System.err.println("ViewCacheUpdate "+type);
             switch (type) {
                 case LOAD:
                     // Check security and generate appropriate load messages

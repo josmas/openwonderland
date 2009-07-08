@@ -228,6 +228,8 @@ public class UniverseService extends AbstractService implements UniverseManager 
         final Identity identity = txnProxy.getCurrentOwner();
         scheduleChange(new Change(rootCellMO.getCellID(), null, null) {
             public void run() {
+                if (logger.isLoggable(Level.FINE))
+                    logger.log(Level.FINE, "RUN addRootToUniverse");
                 universe.addRootSpatialCell(cellID, identity);
             }
         });
@@ -237,6 +239,8 @@ public class UniverseService extends AbstractService implements UniverseManager 
         final Identity identity = txnProxy.getCurrentOwner();
         scheduleChange(new Change(rootCellMO.getCellID(), null, null) {
             public void run() {
+                if (logger.isLoggable(Level.FINE))
+                    logger.log(Level.FINE, "RUN removeRootFromUniverse");
                 universe.removeRootSpatialCell(cellID, identity);
             }
         });
@@ -269,6 +273,8 @@ public class UniverseService extends AbstractService implements UniverseManager 
         scheduleChange(new Change(cell.getCellID(), null, null) {
 
             public void run() {
+                if (logger.isLoggable(Level.FINE))
+                    logger.log(Level.FINE, "RUN removeChild");
                 universe.removeCell(cellID);
             }
         });
@@ -278,7 +284,8 @@ public class UniverseService extends AbstractService implements UniverseManager 
         final Identity identity = txnProxy.getCurrentOwner();
         scheduleChange(new Change(parent.getCellID(), child.getCellID()) {
             public void run() {
-                System.err.println("RUN addChild");
+                if (logger.isLoggable(Level.FINE))
+                    logger.log(Level.FINE, "RUN addChild");
                 SpatialCell parent = universe.getSpatialCell(cellID);
                 parent.addChild(universe.getSpatialCell(childCellID), identity);
             }
@@ -289,7 +296,8 @@ public class UniverseService extends AbstractService implements UniverseManager 
     public void removeChild(CellMO parent, CellMO child) {
         scheduleChange(new Change(parent.getCellID(), child.getCellID()) {
             public void run() {
-                System.err.println("RUN removeChild "+cellID+"  "+childCellID);
+                if (logger.isLoggable(Level.FINE))
+                    logger.log(Level.FINE, "RUN removeChild "+cellID+"  "+childCellID);
                 SpatialCell parent = universe.getSpatialCell(cellID);
                 parent.removeChild(universe.getSpatialCell(childCellID));
             }
