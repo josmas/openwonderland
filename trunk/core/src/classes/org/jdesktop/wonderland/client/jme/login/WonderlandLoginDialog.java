@@ -315,7 +315,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             .add(gradientPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(worldNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 372, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(104, Short.MAX_VALUE))
+                .addContainerGap(57, Short.MAX_VALUE))
         );
         gradientPanel1Layout.setVerticalGroup(
             gradientPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -346,7 +346,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         buttonPanel.setPreferredSize(new java.awt.Dimension(453, 65));
 
         cancelButton.setBackground(new java.awt.Color(255, 255, 255));
-        cancelButton.setFont(new java.awt.Font("Dialog", 1, 13));
+        cancelButton.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
         cancelButton.setText("Cancel");
         cancelButton.setAlignmentX(0.5F);
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
@@ -383,16 +383,15 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             .add(buttonPanelLayout.createSequentialGroup()
                 .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(buttonPanelLayout.createSequentialGroup()
-                        .addContainerGap(208, Short.MAX_VALUE)
-                        .add(cancelButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(loginButton)
-                        .add(58, 58, 58))
-                    .add(buttonPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(statusLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 275, Short.MAX_VALUE)))
-                .add(16, 16, 16)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 277, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(cancelButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(loginButton)
+                        .add(38, 38, 38)))
                 .add(advancedButton)
                 .addContainerGap())
         );
@@ -400,12 +399,15 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(buttonPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(statusLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(advancedButton)
+                    .add(statusLabel))
+                .addContainerGap(30, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
+                .addContainerGap(30, Short.MAX_VALUE)
                 .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(loginButton)
-                    .add(cancelButton)
-                    .add(advancedButton))
+                    .add(cancelButton))
                 .addContainerGap())
         );
 
@@ -415,7 +417,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+            .add(gradientPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
             .add(gradientPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
