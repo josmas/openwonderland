@@ -85,41 +85,31 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  */
 @ExperimentalAPI
 public class ViewManager implements ViewPropertiesListener {
+
     private static final Logger logger =
             Logger.getLogger(ViewManager.class.getName());
-
-    private static ViewManager viewManager=null;
-
+    private static ViewManager viewManager = null;
     private CameraNode cameraNode;
     private CameraProcessor cameraProcessor = null;
     private CameraComponent cameraComponent = null;
     private CameraController cameraController = new ThirdPersonCameraProcessor();
-            
     /**
      * The width and height of our 3D window
      */
     private int width;
     private int height;
     private float aspect;
-    
     private Cell attachCell = null;
     private CellListener listener = null;
     private SimpleAvatarControls eventProcessor = null;
-    
     private ArrayList<ViewManagerListener> viewListeners = new ArrayList();
-
     private HashMap<WonderlandSession, ViewCell> sessionViewCells = new HashMap();
-
     private ViewCell primaryViewCell = null;
     private ViewControls avatarControls = null;
-
     // TODO remove this
     public boolean useAvatars = false;
-
     private RenderBuffer rb;
-
     private HashSet<CameraListener> cameraListeners = null;
-
     // The set of configurable properties for the view
     private ViewProperties viewProperties = null;
 
@@ -141,11 +131,12 @@ public class ViewManager implements ViewPropertiesListener {
     public static void initialize(int width, int height) {
         viewManager = new ViewManager(width, height);
     }
-    
+
     public static ViewManager getViewManager() {
-        if (viewManager==null)
+        if (viewManager == null) {
             throw new RuntimeException("View has not been initialized");
-        
+        }
+
         return viewManager;
     }
 
@@ -157,24 +148,28 @@ public class ViewManager implements ViewPropertiesListener {
     public ViewProperties getViewProperties() {
         return viewProperties;
     }
-    
+
     void attachViewCanvas(JPanel panel) {
         rb = ClientContextJME.getWorldManager().getRenderManager().createRenderBuffer(RenderBuffer.Target.ONSCREEN, width, height);
         ClientContextJME.getWorldManager().getRenderManager().addRenderBuffer(rb);
-        Canvas canvas = ((OnscreenRenderBuffer)rb).getCanvas();
+        final Canvas canvas = ((OnscreenRenderBuffer) rb).getCanvas();
 
         canvas.setVisible(true);
         canvas.setBounds(0, 0, width, height);
-
         panel.add(canvas, BorderLayout.CENTER);
 
         panel.addComponentListener(new ComponentListener() {
+
             public void componentResized(ComponentEvent e) {
-//                System.err.println("Resizing "+e);
+                logger.fine("Resizing " + e);
                 int width = e.getComponent().getWidth();
                 int height = e.getComponent().getHeight();
+                float aspectRatio = (float) width / (float) height;
+
+                canvas.setBounds(0, 0, width, height);
                 cameraComponent.setViewport(width, height);
-                cameraComponent.setAspectRatio(((float)width/(float)height));
+                cameraComponent.setAspectRatio(aspectRatio);
+                viewProperties.setFieldOfView(viewProperties.getFieldOfView());
             }
 
             public void componentMoved(ComponentEvent e) {
@@ -189,17 +184,18 @@ public class ViewManager implements ViewPropertiesListener {
 
         // Listen for (de)iconification of root window and start/stop the renderer accordingly
         Window w = SwingUtilities.getWindowAncestor(panel);
-        if (w!=null) {
+        if (w != null) {
             w.addWindowListener(new WindowAdapter() {
-                @Override
-                 public void windowDeiconified(WindowEvent e) {
-                    ClientContextJME.getWorldManager().getRenderManager().setRunning(true);
-                 }
 
                 @Override
-                 public void windowIconified(WindowEvent e) {
+                public void windowDeiconified(WindowEvent e) {
+                    ClientContextJME.getWorldManager().getRenderManager().setRunning(true);
+                }
+
+                @Override
+                public void windowIconified(WindowEvent e) {
                     ClientContextJME.getWorldManager().getRenderManager().setRunning(false);
-                 }
+                }
             });
         }
 
@@ -207,12 +203,13 @@ public class ViewManager implements ViewPropertiesListener {
 
         // Wait for the renderer to become ready
         rb.setBufferUpdater(new BufferUpdater() {
+
             public void init(RenderBuffer arg0) {
                 logger.info("RENDERER IS READY !");
                 waitForReady.release();
             }
         });
-        
+
         try {
             waitForReady.acquire();
         } catch (InterruptedException ex) {
@@ -224,9 +221,9 @@ public class ViewManager implements ViewPropertiesListener {
     }
 
     Canvas getCanvas() {
-        return ((OnscreenRenderBuffer)rb).getCanvas();
+        return ((OnscreenRenderBuffer) rb).getCanvas();
     }
-    
+
     /**
      * Register a ViewCell for a session with the ViewManager
      * 
@@ -273,7 +270,7 @@ public class ViewManager implements ViewPropertiesListener {
     public ViewCell getPrimaryViewCell() {
         return primaryViewCell;
     }
-    
+
     /**
      * Attach the 3D view to the specified cell. Note the 3D view (camera and controls) are usually attached
      * to a ViewCell, however they can be attached to any cell in the system. This can be useful for
@@ -284,19 +281,19 @@ public class ViewManager implements ViewPropertiesListener {
      */
     public void attach(Cell cell) {
         logger.fine("[ViewManager] attach " + cell + " current " + attachCell +
-                    " controls " + avatarControls);
+                " controls " + avatarControls);
 
         // if there is already a view attached, detach it
-        if (attachCell!=null) {
+        if (attachCell != null) {
             detach();
         }
-        
-        if (avatarControls==null) {
+
+        if (avatarControls == null) {
             // This will need to be updated in the future. ViewControls can
             // only drive true avatars, if the Camera is being attached to
             // another type of cell then another control system will be
             // required.
-            
+
             // Create the input listener and process to control the avatar
             if (useAvatars) {
                 avatarControls = AvatarRenderManager.getAvatarRenderManager().createViewControls(cell.getCellCache().getSession().getSessionManager());
@@ -307,16 +304,16 @@ public class ViewManager implements ViewPropertiesListener {
             avatarControls.attach((ViewCell) cell);
         }
 
-        Entity entity = ((CellRendererJME)cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
+        Entity entity = ((CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
 
         CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         avatarControls.setEnabled(true);
 
         // TODO move this into the SimpleAvatarControls
-        if (renderer!=null) {
+        if (renderer != null) {
             if (renderer instanceof BasicRenderer) {
                 BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
-                if (moveProc!=null) {
+                if (moveProc != null) {
                     moveProc.addToChain(cameraProcessor);
                     avatarControls.addToChain(moveProc);
                 }
@@ -325,36 +322,36 @@ public class ViewManager implements ViewPropertiesListener {
 
         // Set initial camera position
         cameraProcessor.viewMoved(cell.getWorldTransform());
-        
+
         entity.addComponent(ViewControls.class, avatarControls);
         attachCell = cell;
         attachCell.addTransformChangeListener(listener);
     }
-    
+
     /**
      * Detach the 3D view from the cell it's currently attached to.
      */
     public void detach() {
         logger.fine("[ViewManager] detach current " + attachCell +
-                    " controls " + avatarControls);
+                " controls " + avatarControls);
 
-        if (attachCell==null) {
+        if (attachCell == null) {
             Logger.getAnonymousLogger().warning("VIEW NOT ATTACHED TO A CELL (BUT CONTINUE ANYWAY)");
             return;
         }
-        
-        Entity entity = ((CellRendererJME)attachCell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
+
+        Entity entity = ((CellRendererJME) attachCell.getCellRenderer(RendererType.RENDERER_JME)).getEntity();
         entity.removeComponent(ViewControls.class);
-        
+
         CellRendererJME renderer = (CellRendererJME) attachCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-        if (renderer!=null) {
+        if (renderer != null) {
 //            if (renderer instanceof ViewControls.AvatarInputSelector) {
 //                ((ViewControls.AvatarInputSelector)renderer).selectForInput(false);
 //            }
 
             if (renderer instanceof BasicRenderer) {
                 BasicRenderer.MoveProcessor moveProc = (MoveProcessor) renderer.getEntity().getComponent(BasicRenderer.MoveProcessor.class);
-                if (moveProc!=null) {
+                if (moveProc != null) {
                     moveProc.removeFromChain(cameraProcessor);
                     avatarControls.removeFromChain(moveProc);
                 }
@@ -367,7 +364,7 @@ public class ViewManager implements ViewPropertiesListener {
         attachCell.removeTransformChangeListener(listener);
         attachCell = null;
     }
-    
+
     /**
      * Set the controller for the camera processor
      */
@@ -412,10 +409,11 @@ public class ViewManager implements ViewPropertiesListener {
     }
 
     private void notifyViewManagerListeners(ViewCell oldViewCell, ViewCell newViewCell) {
-        for(ViewManagerListener vListener : viewListeners)
+        for (ViewManagerListener vListener : viewListeners) {
             vListener.primaryViewCellChanged(oldViewCell, newViewCell);
+        }
     }
-    
+
     protected void createCameraEntity(WorldManager wm) {
         Node cameraSG = createCameraGraph(wm);
 
@@ -442,7 +440,6 @@ public class ViewManager implements ViewPropertiesListener {
         wm.addEntity(camera);
     }
 
-    
     /**
      * Add a camera listener.
      * The listener will be called immediately with the current camera position
@@ -450,28 +447,30 @@ public class ViewManager implements ViewPropertiesListener {
      * @param cameraListener
      */
     public void addCameraListener(CameraListener cameraListener) {
-        synchronized(cameraNode) {
-            if (cameraListeners==null)
+        synchronized (cameraNode) {
+            if (cameraListeners == null) {
                 cameraListeners = new HashSet();
-            
+            }
+
             cameraListeners.add(cameraListener);
 
             cameraListener.cameraMoved(new CellTransform(cameraNode.getWorldRotation(), cameraNode.getWorldTranslation()));
         }
     }
-    
+
     /**
      * Remove the specified camera listener
      * @param cameraListener
      */
     public void removeCameraListener(CameraListener cameraListener) {
-        synchronized(cameraNode) {
-            if (cameraListeners==null)
+        synchronized (cameraNode) {
+            if (cameraListeners == null) {
                 return;
-            
+            }
+
             cameraListeners.add(cameraListener);
         }
-        
+
     }
 
     /**
@@ -480,9 +479,10 @@ public class ViewManager implements ViewPropertiesListener {
      * @return the transform of the camera (in world coordinates) for this view
      */
     public CellTransform getCameraTransform() {
-        if (cameraNode!=null)
+        if (cameraNode != null) {
             return new CellTransform(cameraNode.getWorldRotation(), cameraNode.getWorldTranslation(), cameraNode.getWorldScale().x);
-        return new CellTransform(null, new Vector3f(0,0,0));
+        }
+        return new CellTransform(null, new Vector3f(0, 0, 0));
     }
 
     /**
@@ -505,10 +505,11 @@ public class ViewManager implements ViewPropertiesListener {
      */
     public Vector3f getCameraLookDirection(Vector3f v) {
         Quaternion rot = cameraNode.getWorldRotation();
-        if (v==null)
-            v = new Vector3f(0,0,1);
-        else
+        if (v == null) {
+            v = new Vector3f(0, 0, 1);
+        } else {
             v.set(0, 0, 1);
+        }
         rot.multLocal(v);
         v.normalizeLocal();
         return v;
@@ -523,13 +524,14 @@ public class ViewManager implements ViewPropertiesListener {
     CameraComponent getCameraComponent() {
         return cameraComponent;
     }
-    
+
     private Node createCameraGraph(WorldManager wm) {
-        Node cameraSG = new Node("MyCamera SG");        
+        Node cameraSG = new Node("MyCamera SG");
         cameraNode = new CameraNode("MyCamera", null);
         cameraSG.attachChild(cameraNode);
 
         cameraNode.addGeometricUpdateListener(new GeometricUpdateListener() {
+
             public void geometricDataChanged(Spatial arg0) {
                 notifyCameraMoved(new CellTransform(arg0.getWorldRotation(), arg0.getWorldTranslation()));
             }
@@ -539,10 +541,11 @@ public class ViewManager implements ViewPropertiesListener {
     }
 
     private void notifyCameraMoved(CellTransform worldTranform) {
-        synchronized(cameraNode) {
-            if (cameraListeners!=null) {
-                for(CameraListener cameraL : cameraListeners)
+        synchronized (cameraNode) {
+            if (cameraListeners != null) {
+                for (CameraListener cameraL : cameraListeners) {
                     cameraL.cameraMoved(worldTranform);
+                }
             }
         }
     }
@@ -561,24 +564,23 @@ public class ViewManager implements ViewPropertiesListener {
         }
     }
 
-
     /**
      * Listen for movement of the view cell
      */
     class CellListener implements TransformChangeListener {
 
         public void transformChanged(Cell cell, ChangeSource source) {
-            if (source==ChangeSource.LOCAL) {
+            if (source == ChangeSource.LOCAL) {
                 cameraProcessor.viewMoved(cell.getWorldTransform());
             }
         }
-        
     }
 
     /**
      * Listener interface for ViewManager changes
      */
     public interface ViewManagerListener {
+
         /**
          * Notification of a change in Primary ViewCell. Both the old viewCell and the new
          * view cell are provided. This notification occurs after the change of primary
@@ -594,6 +596,7 @@ public class ViewManager implements ViewPropertiesListener {
      * An interface for listening for camera changes
      */
     public interface CameraListener {
+
         /**
          * Called when the camera moves
          * @param cameraWorldTransform the world transform of the camera
