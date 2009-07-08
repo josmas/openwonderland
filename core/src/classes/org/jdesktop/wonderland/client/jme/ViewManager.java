@@ -44,10 +44,14 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.Window;
 import java.awt.event.ComponentListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashSet;
 import java.util.concurrent.Semaphore;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.BufferUpdater;
 import org.jdesktop.mtgame.OnscreenRenderBuffer;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -182,6 +186,22 @@ public class ViewManager implements ViewPropertiesListener {
             public void componentHidden(ComponentEvent e) {
             }
         });
+
+        // Listen for (de)iconification of root window and start/stop the renderer accordingly
+        Window w = SwingUtilities.getWindowAncestor(panel);
+        if (w!=null) {
+            w.addWindowListener(new WindowAdapter() {
+                @Override
+                 public void windowDeiconified(WindowEvent e) {
+                    ClientContextJME.getWorldManager().getRenderManager().setRunning(true);
+                 }
+
+                @Override
+                 public void windowIconified(WindowEvent e) {
+                    ClientContextJME.getWorldManager().getRenderManager().setRunning(false);
+                 }
+            });
+        }
 
         final Semaphore waitForReady = new Semaphore(0);
 
