@@ -97,8 +97,6 @@ public class OrbCell extends Cell {
         return orbMessageHandler.getNameTagNode();
     }
 
-
-
     /**
      * Called when the cell is initially created and any time there is a 
      * major configuration change. The cell will already be attached to it's parent

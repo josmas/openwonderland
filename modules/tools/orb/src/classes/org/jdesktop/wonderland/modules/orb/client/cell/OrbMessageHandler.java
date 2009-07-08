@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.orb.client.cell;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener.ChangeType;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
@@ -90,7 +92,8 @@ import com.jme.scene.Node;
  *
  * @author jprovino
  */
-public class OrbMessageHandler implements TransformChangeListener, FollowMeListener {
+public class OrbMessageHandler implements TransformChangeListener, FollowMeListener, 
+	PresenceManagerListener {
 
     private static final Logger logger =
             Logger.getLogger(OrbMessageHandler.class.getName());
@@ -162,36 +165,43 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
         channelComp.addMessageReceiver(OrbSetVolumeMessage.class, msgReceiver);
         channelComp.addMessageReceiver(OrbSpeakingMessage.class, msgReceiver);
 
-        pm = PresenceManagerFactory.getPresenceManager(session);
+	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
+
+	boolean realCall = playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID());
 
 	username = orbCell.getUsername();
 
-	if (username == null) {
-	    username = "No user name!";
-	} else {
-	    username = " " + username;
+	if (realCall == false) {
+	    username = username + " ";  // to distinguish between virtual calls and real calls.
 	}
 	
 	usernameAlias = username;
 
-	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
+        pm = PresenceManagerFactory.getPresenceManager(session);
 
-	WonderlandIdentity userID = new WonderlandIdentity(username, username, null);
+	PresenceInfo[] pi = pm.getUserPresenceInfo(orbCell.getUsername());
 
-	presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, 
-	    orbCell.getCallID());
+	if (pi != null && pi.length >= 1) {
+	    usernameAlias = pi[0].usernameAlias;
+	}
+
+	WonderlandIdentity userID = new WonderlandIdentity(username, usernameAlias, null);
+
+	presenceInfo = new PresenceInfo(orbCell.getCellID(), null, userID, orbCell.getCallID());
 
 	presenceInfo.usernameAlias = usernameAlias;
 
-	if (playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID())) {
+  	pm.addPresenceManagerListener(this);
+
+	if (realCall) {
 	    /*
-	     * It's a real call.  Use the actually callID and userID.
+	     * It's a real call.  Use the actual callID and userID.
 	     */
 	    pm.addPresenceInfo(presenceInfo);
 	    presenceInfoAdded = true;
 	} 
 
-        NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
+        NameTagComponent comp = new NameTagComponent(orbCell, usernameAlias, (float) .17);
 	    orbCell.addComponent(comp);
 	nameTag = comp.getNameTagNode();
 
@@ -306,7 +316,6 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
     }
 
     private void setBystanders(String[] bystanders) {
-
 	if ((bystanders == null) || (bystanders.length == 0)) {
 	    nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 	} else {
@@ -337,6 +346,12 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    return;
 	}
 
+	String alias = usernameAlias;
+
+	if (bystanders != null && bystanders.length > 0) {
+	    alias += " + " + bystanders.length;
+	}
+
 	if (message instanceof OrbSpeakingMessage) {
 	    OrbSpeakingMessage msg = (OrbSpeakingMessage) message;
 
@@ -348,9 +363,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    }
 
 	    if (msg.isSpeaking()) {
-	        nameTag.setNameTag(EventType.STARTED_SPEAKING, username, usernameAlias);
+	        nameTag.setNameTag(EventType.STARTED_SPEAKING, username, alias);
 	    } else {
-	        nameTag.setNameTag(EventType.STOPPED_SPEAKING, username, usernameAlias);
+	        nameTag.setNameTag(EventType.STOPPED_SPEAKING, username, alias);
 	    }
 
 	    return;
@@ -364,9 +379,9 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    }
 
 	    if (msg.isMuted()) {
-                nameTag.setNameTag(EventType.MUTE, username, usernameAlias);
+                nameTag.setNameTag(EventType.MUTE, username, alias);
 	    } else {
-                nameTag.setNameTag(EventType.UNMUTE, username, usernameAlias);
+                nameTag.setNameTag(EventType.UNMUTE, username, alias);
 	    }
 
 	    return;
@@ -579,6 +594,22 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 		orbDialog.setVisible(true);
 	    }
 	});
+    }
+
+    public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
+	String username = this.presenceInfo.userID.getUsername().trim();
+
+	if (presenceInfo.userID.getUsername().equals(username) == false ||
+		type.equals(ChangeType.UPDATED) == false) {
+
+	    return;
+	}
+
+	usernameAlias = presenceInfo.usernameAlias;
+
+	this.presenceInfo.usernameAlias = usernameAlias;
+
+	nameTag.setNameTag(EventType.CHANGE_NAME, presenceInfo.userID.getUsername(), usernameAlias);
     }
 
 }
