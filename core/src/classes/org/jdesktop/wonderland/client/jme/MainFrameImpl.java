@@ -697,6 +697,8 @@ public class MainFrameImpl extends JFrame implements MainFrame {
         );
 
         getContentPane().add(serverPanel, java.awt.BorderLayout.NORTH);
+
+        centerPanel.setLayout(new java.awt.BorderLayout());
         getContentPane().add(centerPanel, java.awt.BorderLayout.CENTER);
 
         fileMenu.setText(bundle.getString("File")); // NOI18N
