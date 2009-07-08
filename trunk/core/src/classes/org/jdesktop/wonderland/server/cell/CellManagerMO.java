@@ -128,8 +128,8 @@ public class CellManagerMO implements ManagedObject, Serializable {
      * @param cell the cell to remove
      */
     public void removeCellFromWorld(CellMO cell) {
-        UniverseManagerFactory.getUniverseManager().removeRootFromUniverse(cell);
         cell.setLive(false);
+        UniverseManagerFactory.getUniverseManager().removeRootFromUniverse(cell);
         rootCellsRef.getForUpdate().remove(cell.getCellID());
     }
 

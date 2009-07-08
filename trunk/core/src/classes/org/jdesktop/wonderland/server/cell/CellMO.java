@@ -449,18 +449,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 resolveAutoComponentAnnotationsForComponent(c);
             }
         } else {
-            this.live = live;
-            removeFromUniverse(UniverseManagerFactory.getUniverseManager());
-
-            // Remove the message receiver that handles messages to dynamically
-            // add and remove components, get and set the server state.
-            ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
-            if (channel != null) {
-                channel.removeMessageReceiver(CellServerComponentMessage.class);
-                channel.removeMessageReceiver(CellServerStateRequestMessage.class);
-                channel.removeMessageReceiver(CellServerStateSetMessage.class);
-                channel.removeMessageReceiver(CellServerStateUpdateMessage.class);
-            }
+            // If not live then process the children first, hence this is
+            // handled in the if (!live) block below
         }
 
 
@@ -473,6 +463,22 @@ public abstract class CellMO implements ManagedObject, Serializable {
         for(ManagedReference<CellMO> ref : getAllChildrenRefs()) {
             CellMO child = ref.get();
             child.setLive(live);
+        }
+
+        if (!live) {
+            this.live = live;
+            removeFromUniverse(UniverseManagerFactory.getUniverseManager());
+
+            // Remove the message receiver that handles messages to dynamically
+            // add and remove components, get and set the server state.
+            ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
+            if (channel != null) {
+                channel.removeMessageReceiver(CellServerComponentMessage.class);
+                channel.removeMessageReceiver(CellServerStateRequestMessage.class);
+                channel.removeMessageReceiver(CellServerStateSetMessage.class);
+                channel.removeMessageReceiver(CellServerStateUpdateMessage.class);
+            }
+
         }
     }
 

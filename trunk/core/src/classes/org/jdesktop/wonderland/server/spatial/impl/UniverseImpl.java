@@ -48,7 +48,7 @@ public class UniverseImpl implements Universe {
     private TransactionScheduler transactionScheduler;
 
     private static final Logger logger = Logger.getLogger(UniverseImpl.class.getName());
-    private HashMap<Object, TaskQueue> taskQueues = new HashMap();
+    private final HashMap<Object, TaskQueue> taskQueues = new HashMap();
 
 
     public UniverseImpl(ComponentRegistry componentRegistry, TransactionProxy transactionProxy) {
@@ -56,6 +56,7 @@ public class UniverseImpl implements Universe {
         this.dataService = transactionProxy.getService(DataService.class);
         this.transactionScheduler = componentRegistry.getComponent(TransactionScheduler.class);
         universe = this;
+        logger.setLevel(Level.ALL);
     }
 
     public static UniverseImpl getUniverse() {
@@ -103,7 +104,7 @@ public class UniverseImpl implements Universe {
         // the graph added to spaces & view caches.
         // No need to lock for this call because until it returns there
         // is no root to lock
-        cellImpl.setRoot(cellImpl, identity);        
+        cellImpl.setRoot(cellImpl, null, identity);
     }
 
     public void removeRootSpatialCell(CellID cellID, Identity identity) {
@@ -117,7 +118,7 @@ public class UniverseImpl implements Universe {
 
         // Set the root node to null. Internally this method will lock correctly
         // and ensure the graph is removed from spaces etc
-        cellImpl.setRoot(null, identity);
+        cellImpl.setRoot(null, null, identity);
 
     }
 
@@ -147,7 +148,9 @@ public class UniverseImpl implements Universe {
     public void removeCell(CellID id) {
         // TODO remove from caches
         logger.fine("removeCell "+id);
+        
         SpatialCellImpl cell = (SpatialCellImpl) getSpatialCell(id);
+//        print((SpatialCellImpl) cell, 1);
 
         if (cell.getParent()!=null) {
             cell.getParent().removeChild(cell);
@@ -155,12 +158,20 @@ public class UniverseImpl implements Universe {
 
         cell.destroy();
 
-
         synchronized(cells) {
-            System.err.println("***** REMOVING CELL "+id);
             cells.remove(id);
         }
     }
+
+//    private void print(SpatialCellImpl cell, int depth) {
+//        for(int i=0; i<depth; i++)
+//            System.err.print("  ");
+//
+//        System.err.println(cell.getCellID()+"  "+cell.viewCacheSet);
+//        if (cell.getChildren()!=null)
+//            for(SpatialCellImpl c : cell.getChildren())
+//                print(c, depth+1);
+//    }
 
     public SpatialCell getSpatialCell(CellID cellID) {
         synchronized(cells) {
