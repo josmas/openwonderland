@@ -100,6 +100,8 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
 
     private ArrayList<PresenceInfo> members = new ArrayList();
 
+    private String[] currentArray = new String[0];
+
     public void setMemberList() {
 	//System.out.println("---------AddMemberDialog----------");
 	//pm.dump();
@@ -134,7 +136,23 @@ public class AddMemberDialog extends javax.swing.JFrame implements PresenceManag
 
 	SortUsers.sort(memberArray);
 
-        memberList.setListData(memberArray);
+        boolean needToUpdate = false;
+
+        if (currentArray.length == memberArray.length) {
+            for (int i = 0; i < memberArray.length; i++) {
+                if (currentArray[i].equals(memberArray[i]) == false) {
+                    needToUpdate = true;
+                    break;
+                }
+            }
+        } else {
+	    needToUpdate = true;
+	}
+
+        if (needToUpdate) { 
+	    currentArray = memberArray;
+            memberList.setListData(memberArray);
+	}
 
 	enableButtons();
     }
