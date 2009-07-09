@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerConnectionType;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PlayerInRangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
@@ -88,6 +89,10 @@ public class PresenceManagerClient extends BaseConnection implements
         super.connect(session);
         this.session = session;
 
+	/*
+	 * Depending on timing, we may or may not have been called at viewConfigured().
+	 * We create and add the presence info for the client when viewConfigured() is called.
+	 */
         pm = (PresenceManagerImpl) PresenceManagerFactory.getPresenceManager(session);
 
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();
@@ -104,7 +109,6 @@ public class PresenceManagerClient extends BaseConnection implements
         // avatar.removeViewCellConfiguredListener(this);
         super.disconnect();
 	
-	System.out.println("disconnect:  remove PI " + presenceInfo);
 	pm.removePresenceInfo(presenceInfo);
 
 	PresenceManagerFactory.reset();
@@ -124,7 +128,6 @@ public class PresenceManagerClient extends BaseConnection implements
         session.send(this, new ClientConnectMessage());
 
         logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + pm);
-        System.out.println("viewConfigured:  sessionID " + session.getID() + " PI " + presenceInfo);
     }
 
     @Override
@@ -136,11 +139,12 @@ public class PresenceManagerClient extends BaseConnection implements
 
 	    ArrayList<String> nameTagList = new ArrayList();
 
-	    ArrayList<PresenceInfo> presenceInfoList = msg.getPresenceInfoList();
+	    PresenceInfo[] presenceInfoList = msg.getPresenceInfoList();
 
-	    for (PresenceInfo presenceInfo : presenceInfoList) {
+	    for (int i = 0; i < presenceInfoList.length; i++) {
+		PresenceInfo presenceInfo = presenceInfoList[i];
+
 		logger.fine("Client connected: " + presenceInfo);
-		System.out.println("Client connected: " + presenceInfo);
 
 		logger.fine("Got ClientConnectResponse:  adding pi " + presenceInfo);
 		pm.presenceInfoAdded(presenceInfo);
@@ -168,12 +172,26 @@ public class PresenceManagerClient extends BaseConnection implements
 	    return;
 	}
 
+        if (message instanceof PlayerInRangeMessage) {
+	    PlayerInRangeMessage msg = (PlayerInRangeMessage) message;
+
+	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
+
+	    if (info == null) {
+		System.out.println("PlayerInRangeMessage:  no presence info for callID "
+		    + msg.getCallID());
+		return;
+	    }
+
+	    pm.playerInRange(info, msg.isInRange());
+	    return;
+	}
+
         if (message instanceof PresenceInfoAddedMessage) {
             PresenceInfoAddedMessage m = (PresenceInfoAddedMessage) message;
 
             logger.fine("GOT PresenceInfoAddedMessage for " + m.getPresenceInfo());
 
-            System.out.println("PresenceInfoAddedMessage PI " + m.getPresenceInfo());
             pm.presenceInfoAdded(m.getPresenceInfo());
             return;
         }
@@ -182,7 +200,6 @@ public class PresenceManagerClient extends BaseConnection implements
             PresenceInfoRemovedMessage m = (PresenceInfoRemovedMessage) message;
 
             logger.fine("GOT PresenceInfoRemovedMessage for " + m.getPresenceInfo());
-            System.out.println("PresenceInfoRemovedMessage PI " + m.getPresenceInfo());
             pm.presenceInfoRemoved(m.getPresenceInfo());
             return;
         }

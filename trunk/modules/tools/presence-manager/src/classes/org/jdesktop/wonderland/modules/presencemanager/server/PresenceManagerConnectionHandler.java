@@ -18,8 +18,11 @@
 package org.jdesktop.wonderland.modules.presencemanager.server;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 
 import com.sun.mpk20.voicelib.app.ManagedCallBeginEndListener;
+import com.sun.mpk20.voicelib.app.ManagedPlayerInRangeListener;
+import com.sun.mpk20.voicelib.app.Player;
 
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
@@ -31,6 +34,8 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceManagerConnectionType;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PlayerInRangeMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PlayerInRangeListenerMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
@@ -38,6 +43,9 @@ import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientCon
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.ClientConnectResponseMessage;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
+
+import org.jdesktop.wonderland.server.WonderlandContext;
+
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.CommsManagerFactory;
@@ -51,6 +59,7 @@ import java.math.BigInteger;
 import java.util.logging.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -73,12 +82,15 @@ public class PresenceManagerConnectionHandler implements
     private static final Logger logger =
             Logger.getLogger(PresenceManagerConnectionHandler.class.getName());
     
-    private ConcurrentHashMap<BigInteger, ArrayList<PresenceInfo>> sessions;
+    private ConcurrentHashMap<BigInteger, PresenceInfo> presenceInfoMap = new ConcurrentHashMap();
+
+    private CopyOnWriteArrayList<PresenceInfo> presenceInfoList = new CopyOnWriteArrayList();
+
+    private ConcurrentHashMap<BigInteger, ManagedReference<PlayerInRangeNotifier>> notifiers =
+	new ConcurrentHashMap();
 
     public PresenceManagerConnectionHandler() {
         super();
-
-	sessions = new ConcurrentHashMap();
 
 	AppContext.getManager(VoiceManager.class).addCallBeginEndListener(this);
     }
@@ -100,52 +112,62 @@ public class PresenceManagerConnectionHandler implements
     public void messageReceived(WonderlandClientSender sender, 
 	    WonderlandClientID clientID, Message message) {
 
-	if (sessions == null) {
-	    sessions = new ConcurrentHashMap();
-	}
-
 	if (message instanceof ClientConnectMessage) {
-	    ClientConnectMessage msg = (ClientConnectMessage) message;
 	    /*
              * Send back all of the PresenceInfo data to the new client
              */
-            Iterator<BigInteger> it = sessions.keySet().iterator();
+	    //for (PresenceInfo info : presenceInfoList) {
+	    //    System.out.println("PI: " + info);
+	    //}
 
-            while (it.hasNext()) {
-                BigInteger id = it.next();
+            sender.send(clientID, new ClientConnectResponseMessage(
+		presenceInfoList.toArray(new PresenceInfo[0])));
+	    return;
+	}
 
-                if (clientID.getID().equals(id)) {
-                    continue;
-                }
+	if (message instanceof PlayerInRangeListenerMessage) {
+	    PlayerInRangeListenerMessage msg = (PlayerInRangeListenerMessage) message;
 
-                ArrayList<PresenceInfo> presenceInfoList = sessions.get(id);
+	    PresenceInfo info = presenceInfoMap.get(clientID.getID());
 
-		//for (PresenceInfo info : presenceInfoList) {
-		//    System.out.println("SENDING:  " + info);
-		//}
-
-                sender.send(clientID, new ClientConnectResponseMessage(presenceInfoList));
+	    if (info == null) {
+		System.out.println("PlayerInRangeListenerMessage:  No presence info for clientID "
+		    + clientID.getID());
+		return;
 	    }
+
+	    if (msg.getAdd() == true) {
+	        PlayerInRangeNotifier notifier = new PlayerInRangeNotifier(info);
+
+	        ManagedReference<PlayerInRangeNotifier> notifierRef =
+		    AppContext.getDataManager().createReference(notifier);
+
+	        notifiers.put(clientID.getID(), notifierRef);
+		return;
+	    }
+
+	    ManagedReference<PlayerInRangeNotifier> notifierRef = notifiers.remove(clientID.getID());
+
+	    if (notifierRef == null) {
+	        System.out.println("Can't find notifier for " + clientID.getID());	
+		return;
+	    }
+
+	    notifierRef.get().done();
 	    return;
 	}
 
 	if (message instanceof PresenceInfoAddedMessage) {
 	    PresenceInfo presenceInfo = ((PresenceInfoAddedMessage) message).getPresenceInfo();
 
-	    ArrayList<PresenceInfo> presenceInfoList = sessions.get(clientID.getID());
-
-	    if (presenceInfoList == null) {
-		presenceInfoList = new ArrayList();
-		//System.out.println("PresenceInfoAddedMessage:  new PI list for clientID " 
-		//    + clientID.getID());
-	        sessions.put(clientID.getID(), presenceInfoList);
+	    if (presenceInfoList.contains(presenceInfo)) {
+		return;
 	    }
 
-	    if (presenceInfoList.contains(presenceInfo) == false) {
-	        presenceInfoList.add(presenceInfo);
-		//System.out.println("PresenceInfoAddedMessage:  added " + presenceInfo);
-	        logger.fine("PRESENCEINFOADDEDMESSAGE:  " + presenceInfo);
-	    }
+	    presenceInfoMap.put(clientID.getID(), presenceInfo);
+
+	    presenceInfoList.add(presenceInfo);
+	    logger.fine("PRESENCEINFOADDEDMESSAGE:  " + presenceInfo);
 
 	    /*
 	     * Send presenceInfo to all clients
@@ -157,26 +179,14 @@ public class PresenceManagerConnectionHandler implements
 	if (message instanceof PresenceInfoRemovedMessage) {
 	    PresenceInfo presenceInfo = ((PresenceInfoRemovedMessage) message).getPresenceInfo();
 
-	    ArrayList<PresenceInfo> presenceInfoList = sessions.get(clientID.getID());
-
-	    //System.out.println("PresenceInfoRemovedMessage:  removed " + presenceInfo);
-
+	    presenceInfoMap.remove(clientID.getID());
 	    presenceInfoList.remove(presenceInfo);
-
-	    if (presenceInfoList.size() == 0) {
-	        //System.out.println("PresenceInfoRemovedMessage:  removed list for clientID "
-		//    + clientID.getID());
-		sessions.remove(clientID.getID());
-	    }
-
 	    sender.send(message);
 	    return;
 	}
 
 	if (message instanceof PresenceInfoChangeMessage) {
 	    PresenceInfo presenceInfo = ((PresenceInfoChangeMessage) message).getPresenceInfo();
-
-	    ArrayList<PresenceInfo> presenceInfoList = sessions.get(clientID.getID());
 
 	    presenceInfoList.remove(presenceInfo);
 	    presenceInfoList.add(presenceInfo);
@@ -188,67 +198,31 @@ public class PresenceManagerConnectionHandler implements
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-	System.out.println("PRESENCE:  clientDisconnected");
-
-	ArrayList<PresenceInfo> presenceInfoArrayList = sessions.get(clientID.getID());
-
-	if (presenceInfoArrayList == null) {
-	    //System.out.println("clientDisconnected:  No presence info for session " 
-	    //	+ clientID.getID());
-	    return;
-	}
-
-	PresenceInfo[] presenceInfoArray = presenceInfoArrayList.toArray(new PresenceInfo[0]);
-
-	PresenceInfo info = null;
-
-	for (int i = 0; i < presenceInfoArray.length; i++) {
-	    info = presenceInfoArray[i];
-
-	    if (info.clientID != null && info.clientID.equals(clientID.getID())) {
-		//System.out.println("clientDisconnected:  removed PI " + info);
-	        presenceInfoArrayList.remove(info);
-		sender.send(new PresenceInfoRemovedMessage(info));
-		break;
-	    }
-	}
-
-	sessions.remove(clientID.getID());
+	PresenceInfo info = presenceInfoMap.get(clientID.getID());
 
 	if (info == null) {
+	    logger.fine("PRESENCE:  No PresenceInfo for " + clientID.getID());
 	    return;
 	}
 
-	/*
-	 * Remove client presence info from other sessions
-	 */
-        Iterator<BigInteger> it = sessions.keySet().iterator();
+	ManagedReference<PlayerInRangeNotifier> notifierRef = notifiers.remove(clientID.getID());
 
-        while (it.hasNext()) {
-            BigInteger id = it.next();
-
-            ArrayList<PresenceInfo> presenceInfoList = sessions.get(id);
-
-	    presenceInfoList.remove(info);
+	if (notifierRef == null) {
+	    System.out.println("Can't find notifier for " + clientID.getID());	
+	} else {
+	    notifierRef.get().done();
 	}
 
-	System.out.println("PRESENCE:  clientDisconnected complete");
+	presenceInfoList.remove(info);
+	sender.send(new PresenceInfoRemovedMessage(info));
     }
 
     private void dump(String msg) {
 	System.out.println("\n========  " + msg);
 
-            Iterator<BigInteger> it = sessions.keySet().iterator();
-
-            while (it.hasNext()) {
-                BigInteger id = it.next();
-
-                ArrayList<PresenceInfo> presenceInfoList = sessions.get(id);
-
-                for (PresenceInfo info : presenceInfoList) {
-		    System.out.println(id + " " + info);
-                }
-            }
+	for (PresenceInfo info : presenceInfoList) {
+	    System.out.println("PI: " + info);
+        }
 
 	System.out.println("========  " + msg + "\n");
     }
@@ -262,7 +236,54 @@ public class PresenceManagerConnectionHandler implements
 	    return;
 	}
 
-	sessions = new ConcurrentHashMap();
+	/*
+	 * For some reason, we don't get called at clientDisconnected()
+	 * during warm start, so we cleanup here.
+	 */
+	presenceInfoList.clear();
+    }
+
+    static class PlayerInRangeNotifier implements ManagedPlayerInRangeListener {
+
+	private PresenceInfo presenceInfo;
+	
+	public PlayerInRangeNotifier(PresenceInfo presenceInfo) {
+	    this.presenceInfo = presenceInfo;
+
+            VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	    Player player = vm.getPlayer(presenceInfo.callID);
+
+	    if (player == null) {
+	        System.out.println("PlayerInRangeListener:  No player for " + presenceInfo.callID);
+		return;
+	    }
+
+	    player.addPlayerInRangeListener(this);
+	}
+
+	public void done() {
+            VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	    Player player = vm.getPlayer(presenceInfo.callID);
+
+	    if (player == null) {
+	        System.out.println("PRESENCE clientDisconnected:  No player for " + presenceInfo.callID);
+	    } else {
+	        player.removePlayerInRangeListener(this);
+	    }
+	}
+	
+        public void playerInRange(Player player, Player playerInRange, boolean isInRange) {
+	    WonderlandClientSender sender =
+                WonderlandContext.getCommsManager().getSender(PresenceManagerConnectionType.CONNECTION_TYPE);
+    	    
+	    WonderlandClientID clientID =
+               CommsManagerFactory.getCommsManager().getWonderlandClientID(presenceInfo.clientID);
+
+	    sender.send(clientID, new PlayerInRangeMessage(playerInRange.getId(), isInRange));
+        }
+
     }
 
 }
