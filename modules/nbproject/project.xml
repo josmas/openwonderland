@@ -6,7 +6,13 @@
             <!-- Do not use Project Properties customizer when editing this file manually. -->
             <name>wonderland-core-modules</name>
             <properties/>
-            <folders/>
+            <folders>
+                <source-folder>
+                    <label>world/avatarbase/src</label>
+                    <type>java</type>
+                    <location>world/avatarbase/src</location>
+                </source-folder>
+            </folders>
             <ide-actions>
                 <action name="build">
                     <target>dist</target>
@@ -21,6 +27,10 @@
             </ide-actions>
             <view>
                 <items>
+                    <source-folder style="packages">
+                        <label>world/avatarbase/src</label>
+                        <location>world/avatarbase/src</location>
+                    </source-folder>
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
@@ -31,10 +41,13 @@
                     <ide-action name="clean"/>
                 </context-menu>
             </view>
-            <subprojects>
-                <project>src/modules/apps/2d/pdfviewer</project>
-            </subprojects>
+            <subprojects/>
         </general-data>
-        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1"/>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+            <compilation-unit>
+                <package-root>world/avatarbase/src</package-root>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+        </java-data>
     </configuration>
 </project>

@@ -3,26 +3,21 @@
     <Attributes>
         <Name>nameless</Name>
         <Gender>1</Gender>
-        <HeadAttachment>assets/models/collada/Heads/MaleHead/FG_MaleLowPoly_01.bhf</HeadAttachment>
+        <HeadAttachment>imi/character/data/FG_MaleLowPoly_01.bhf</HeadAttachment>
         <LoadingInstructions>
-            <item>assets/models/collada/Clothing/MaleClothing/Jeans.dae</item>
-            <item>LowerBody</item>
+		assets/models/collada/Clothing/MaleClothing/Jeans.dae
         </LoadingInstructions>
         <LoadingInstructions>
-            <item>assets/models/collada/Clothing/MaleClothing/MaleTennisShoes.dae</item>
-            <item>Feet</item>
+		assets/models/collada/Clothing/MaleClothing/MaleTennisShoes.dae
         </LoadingInstructions>
         <LoadingInstructions>
-            <item>assets/models/collada/Avatars/MaleAvatar/Male_Hands.dae</item>
-            <item>Hands</item>
+		assets/models/collada/Avatars/MaleAvatar/Male_Hands.dae
         </LoadingInstructions>
         <LoadingInstructions>
-            <item>assets/models/collada/Clothing/MaleClothing/MaleSweater.dae</item>
-            <item>UpperBody</item>
+		assets/models/collada/Clothing/MaleClothing/MaleSweater.dae
         </LoadingInstructions>
         <LoadingInstructions>
-            <item>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</item>
-            <item>Hair</item>
+		assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae
         </LoadingInstructions>
         <AdditionInstructions>
             <SkinnedMeshName>RHandShape</SkinnedMeshName>
@@ -3009,7 +3004,7 @@
         <SpecularColor alpha="1.0" blue="0.10744" green="0.10744" red="0.10744"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.PhongFleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.PhongFleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3055,7 +3050,7 @@
         <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.PhongFleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.PhongFleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3100,7 +3095,7 @@
         <SpecularColor alpha="0.0" blue="0.0" green="0.0" red="0.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3141,7 +3136,7 @@
         <SpecularColor alpha="0.0" blue="0.0" green="0.0" red="0.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3182,7 +3177,7 @@
         <SpecularColor alpha="1.0" blue="0.10744" green="0.10744" red="0.10744"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3223,7 +3218,7 @@
         <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3264,7 +3259,7 @@
         <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3316,7 +3311,7 @@
         <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
             </Program>
             <Properties PropertyName="baseColor">
                 <Type>GLSL_VEC3</Type>
@@ -3380,7 +3375,7 @@
         <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
             </Program>
             <Properties PropertyName="baseColor">
                 <Type>GLSL_VEC3</Type>
@@ -3455,7 +3450,7 @@
         <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.FleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.FleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3530,7 +3525,7 @@
         <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.FleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.FleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3594,7 +3589,7 @@
         <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
             </Program>
             <Properties PropertyName="baseColor">
                 <Type>GLSL_VEC3</Type>
@@ -3658,7 +3653,7 @@
         <SpecularColor alpha="1.0" blue="0.0625" green="0.0625" red="0.0625"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.HairShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.HairShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>

@@ -314,7 +314,7 @@ dereferenceXRefs=1;cameraXFov=0;cameraYFov=1</comments>
       </extra>
     </image>
     <image id="skin_hiFile" name="skin_hiFile">
-      <init_from>./female2_skin_HI.png</init_from>
+      <init_from>./female2_skin_Hi.png</init_from>
       <extra>
         <technique profile="MAYA">
           <dgnode_type>kFile</dgnode_type>

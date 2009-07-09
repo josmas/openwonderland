@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
-import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
@@ -28,30 +27,30 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.Renderer;
-import com.jme.scene.BillboardNode;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import com.jme.util.export.binary.BinaryImporter;
-import com.jme.util.geom.BufferUtils;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
-import imi.character.CharacterAttributes;
+import imi.character.CharacterAnimationProcessor;
 import imi.character.CharacterMotionListener;
+import imi.character.CharacterParams;
+import imi.character.CharacterProcessor;
+import imi.character.MaleAvatarParams;
 import imi.character.avatar.AvatarController;
-import imi.character.avatar.CollisionController;
-import imi.character.avatar.MaleAvatarAttributes;
 import imi.character.statemachine.GameContextListener;
 import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.CycleActionState;
+import imi.collision.CollisionController;
+import imi.input.DefaultCharacterControls;
 import imi.scene.PMatrix;
+import imi.scene.PScene;
 import imi.scene.PTransform;
-import imi.scene.processors.CharacterAnimationProcessor;
-import imi.scene.processors.CharacterProcessor;
-import imi.scene.processors.JSceneEventProcessor;
-import imi.utils.input.AvatarControlScheme;
+import imi.scene.polygonmodel.PPolygonMesh;
+import imi.scene.utils.PMeshUtils;
 import java.net.URL;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
@@ -101,7 +100,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private float positionMinDistanceForPull = 0.1f;
     private float positionMaxDistanceForPull = 3.0f;
     private String username;
-    private AvatarControlScheme controlScheme = null;
+    private DefaultCharacterControls controlScheme = null;
     private NameTagNode nameTag;
 
     private ProcessorComponent cameraChainedProcessor = null;  // The processor to which the camera is chained
@@ -350,18 +349,19 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     public void cellTransformUpdate(CellTransform transform) {
         // Don't call super, we don't use a MoveProcessor for avatars
 
-        if (!selectedForInput && avatarCharacter != null && avatarCharacter.getController().getModelInstance()!=null ) {
+        if (!selectedForInput && avatarCharacter != null && avatarCharacter.getContext().getController().getModelInstance()!=null ) {
             // If the user is being steered by AI, do not mess it up
             // (objects that the AI is dealing with gota be synced)
 //            System.err.println("Steering "+avatarCharacter.getContext().getSteering().isEnabled()+"  "+avatarCharacter.getContext().getSteering().getCurrentTask());
-            if (avatarCharacter.getContext().getSteering().isEnabled() && avatarCharacter.getContext().getSteering().getCurrentTask() != null) {
+            if (avatarCharacter.getContext().getBehaviorManager().isEnabled()
+                    && avatarCharacter.getContext().getBehaviorManager().getCurrentTask() != null) {
                 System.err.println("Avatar steering !");
             } else {
                 Vector3f pos = transform.getTranslation(null);
                 Vector3f dir = new Vector3f(0, 0, -1);
                 transform.getRotation(null).multLocal(dir);
 //                System.err.println("Setting pos "+pos);
-                PMatrix local = avatarCharacter.getController().getModelInstance().getTransform().getLocalMatrix(true);
+                PMatrix local = avatarCharacter.getContext().getController().getModelInstance().getTransform().getLocalMatrix(true);
                 final Vector3f currentPosition = local.getTranslation();
                 float currentDistance = currentPosition.distance(pos);
                 if (currentDistance < positionMaxDistanceForPull) {
@@ -399,15 +399,20 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
             LoadingInfo.startedLoading(cell.getCellID(), username);
             try {
-                // Create the character, but don't add the entity to wm
+                // Create the character
                 String avatarDetail = System.getProperty("avatar.detail", "high");
                 if (avatarConfigURL == null || avatarDetail.equalsIgnoreCase("low")) {
-                    CharacterAttributes attributes = new MaleAvatarAttributes(username, false);
+                    CharacterParams attributes = new MaleAvatarParams(username);
 
-                    // Setup simple model
-                    attributes.setUseSimpleStaticModel(true, null);
+                    // Setup simple model, needs to actually have something to
+                    // play well with the system
+                    PScene simpleScene = new PScene(ClientContextJME.getWorldManager());
+                    simpleScene.addMeshInstance(new PPolygonMesh("PlaceholderMesh"), new PMatrix());
+                    attributes.setUseSimpleStaticModel(true, simpleScene);
                     attributes.setBaseURL(baseURL);
-                    ret = new WlAvatarCharacter(attributes, wm);
+                    // don't add the entity to wm
+                    ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
+
 //                    Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(new URL(baseURL+"assets/models/collada/Avatars/placeholder.bin"));
 
                     URL url = new URL(baseURL+"assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
@@ -424,7 +429,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
                     ret.getJScene().getExternalKidsRoot().attachChild(placeHolder);
                 } else {
-                    ret = new WlAvatarCharacter(avatarConfigURL, wm, "wla://avatarbaseart@" + serverHostAndPort + "/");
+                    ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(avatarConfigURL, wm)
+                                .baseURL("wla://avatarbaseart@" + serverHostAndPort + "/")
+                                .build();
                     collisionGraph = new Box("AvatarCollision", new Vector3f(0f,0.92f,0f), 0.4f, 0.6f, 0.3f);
                 }
 
@@ -438,7 +445,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
 
                 Node external = ret.getJScene().getExternalKidsRoot();
-                ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+                ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.ZBuffer);
                 zbuf.setEnabled(true);
                 zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
                 external.setRenderState(zbuf);
@@ -470,6 +477,14 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         //        jscene.toggleRenderPRendererMesh();   // turn off mesh
         //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
+                // Moved to within try / catch, as catching an exception forces these
+                // lines to fail. RED 6-6-9
+                CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Default");
+
+                collisionController = new CollisionController(collisionGraph, (JMECollisionSystem)collisionSystem);
+                collisionChangeRequestListener.setCollisionController(collisionController);
+                ((AvatarController)ret.getContext().getController()).setCollisionController(collisionController);
+
             } catch(Exception e) {
                 String badURL=null;
                 if (avatarConfigURL!=null)
@@ -478,19 +493,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             } finally {
                 LoadingInfo.finishedLoading(cell.getCellID(), username);
             }
-
-
-            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Default");
-
-//            Node collisionRoot = ret.getJScene().getExternalKidsRoot();
-//            CollisionComponent cc = ((JMECollisionSystem)collisionSystem).createCollisionComponent(collisionRoot);
-//            ret.addComponent(CollisionComponent.class, cc);
-
-            collisionController = new CollisionController(collisionGraph, (JMECollisionSystem)collisionSystem);
-            collisionChangeRequestListener.setCollisionController(collisionController);
-
-            ((AvatarController)ret.getController()).setCollisionController(collisionController);
-
             return ret;
     }
 
@@ -518,20 +520,25 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         if (avatarCharacter!=null) {
              WorldManager wm = ClientContextJME.getWorldManager();
 
-            ((WlAvatarContext) avatarCharacter.getContext()).getSteering().setEnable(false);
+            ((WlAvatarContext) avatarCharacter.getContext()).getBehaviorManager().setEnable(false);
 
             if (controlScheme == null && enabled) {
-                controlScheme = (AvatarControlScheme) ((JSceneEventProcessor) wm.getUserData(JSceneEventProcessor.class)).setDefault(new AvatarControlScheme(avatarCharacter));
+                controlScheme = new DefaultCharacterControls(ClientContextJME.getWorldManager());
+                ((AvatarControls)wm.getUserData(AvatarControls.class)).setDefault(controlScheme);
+                avatarCharacter.selectForInput();
+                controlScheme.addCharacterToTeam(avatarCharacter);
+                controlScheme.setCharacter(avatarCharacter);
+//                controlScheme = (AvatarControls) ((JSceneEventProcessor) wm.getUserData(JSceneEventProcessor.class)).setDefault(new AvatarControlScheme(avatarCharacter));
             }
             if (enabled) {
                 // Listen for avatar movement and update the cell
-                avatarCharacter.getController().addCharacterMotionListener(characterMotionListener);
+                avatarCharacter.getContext().getController().addCharacterMotionListener(characterMotionListener);
 
                 // Listen for game context changes
                 avatarCharacter.getContext().addGameContextListener(gameContextListener);
                 avatarCharacter.selectForInput();
-                controlScheme.getAvatarTeam().add(avatarCharacter);
-                controlScheme.setAvatar(avatarCharacter);
+                controlScheme.addCharacterToTeam(avatarCharacter);
+                controlScheme.setCharacter(avatarCharacter);
 
                 // Chain the camera processor to the avatar motion processor for
                 // smooth animation. For animated avatars we use CharacterAnimationProcessor for the simple
@@ -560,11 +567,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 }
 
             } else {
-                avatarCharacter.getController().removeCharacterMotionListener(characterMotionListener);
+                avatarCharacter.getContext().getController().removeCharacterMotionListener(characterMotionListener);
                 avatarCharacter.getContext().removeGameContextListener(gameContextListener);
                 if (controlScheme!=null) {
-                    controlScheme.getAvatarTeam().remove(avatarCharacter);
-                    controlScheme.setAvatar(null);
+                    controlScheme.clearCharacterTeam();
                 }
 
                 if (cameraChainedProcessor!=null) {
@@ -572,6 +578,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     cameraChainedProcessor = null;
                 }
             }
+        } else {
+//            System.out.println("The avatar was null during enableInputListeners().");
         }
     }
 
