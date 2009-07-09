@@ -46,7 +46,7 @@
         </wl-compile>
     </target>
 
-    <target name="dist" depends="build">
+    <target name="dist" depends="build, -security-session-create-persistence-xml">
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="${module.name}" version="1" minorversion="1"
@@ -68,12 +68,11 @@
                         <include name="org/jdesktop/wonderland/modules/securitysession/web/**"/>
                     </zipfileset>
 
-                    <!-- include the persistence.xml file from security-groups, since
-                         we depend on that to do group resolution -->
+                    <!-- include the persistence.xml file built earlier -->
                     <fileset dir="${current.dir}/web">
                         <exclude name="WEB-INF/persistence.xml"/>
                     </fileset>
-                    <zipfileset dir="${current.dir}/../security-group/web/WEB-INF"
+                    <zipfileset dir="${current.dir}/build/web_xml"
                                 prefix="WEB-INF/classes/META-INF">
                         <include name="persistence.xml"/>
                     </zipfileset>
@@ -90,11 +89,49 @@
                     <zipfileset dir="${security.common.dir}/build/classes">
                         <include name="org/jdesktop/wonderland/modules/securitysession/weblib/**"/>
                     </zipfileset>
+
+                    <!-- include the persistence.xml file -->
+                    <zipfileset dir="${current.dir}/build/web_xml" prefix="META-INF">
+                        <include name="persistence.xml"/>
+                    </zipfileset>
                 </jar>
             </part>
+
+            <part name="properties" dir="${current.dir}/src/properties"/>
         </module>
     </target>                                  
-                                           
+
+    <target name="-security-session-create-persistence-xml">
+        <!-- combine our persistence.xml with the one in security-groups,
+             since we use both -->
+        <mkdir dir="${current.dir}/build/web_xml"/>
+        <copy file="${current.dir}/../security-group/web/WEB-INF/persistence.xml"
+              tofile="${current.dir}/build/web_xml/group_persistence.xml">
+            <filterchain>
+                <linecontainsregexp negate="true">
+                    <regexp pattern="^./persistence"/>
+                </linecontainsregexp>
+            </filterchain>
+        </copy>
+        <copy file="${current.dir}/web/WEB-INF/persistence.xml"
+              tofile="${current.dir}/build/web_xml/user_persistence.xml">
+            <filterchain>
+                <linecontainsregexp negate="true">
+                    <regexp pattern="^..xml"/>
+                </linecontainsregexp>
+                <linecontainsregexp negate="true">
+                    <regexp pattern="^.persistence"/>
+                </linecontainsregexp>
+            </filterchain>
+        </copy>
+        <concat destfile="${current.dir}/build/web_xml/persistence.xml">
+            <filelist dir="${current.dir}/build/web_xml">
+                <file name="group_persistence.xml"/>
+                <file name="user_persistence.xml"/>
+            </filelist>
+        </concat>
+    </target>
+
     <target name="deploy" depends="dist, -module-deploy"/>
     <target name="clean" depends="-module-clean"/>
 </project>

@@ -448,6 +448,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
                     // success
                     dispose();
                 } else {
+                    statusLabel.setText("Error connecting: " + res);
                     loginButton.setEnabled(true);
                 }
             }
@@ -475,10 +476,6 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         public JPanel getPanel();
 
         public LoginControl getLoginControl();
-
-        public void setUsername(String username);
-
-        public void setFullname(String fullname);
 
         public void setServer(String server);
 

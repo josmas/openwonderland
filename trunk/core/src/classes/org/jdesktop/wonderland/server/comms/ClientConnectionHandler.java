@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.server.comms;
 
-import com.sun.sgs.app.ClientSession;
 import java.util.Properties;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
@@ -25,6 +24,15 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  * Handles client connections to the given client type.
+ * <p>
+ * ClientConnectionHandlers are stored in the Darkstar data store, so must be
+ * either Serializable or a ManagedObject.  If a handler is a ManagedObject,
+ * only a single copy of the handler will exist, and all messages will
+ * be forwarded to this object.  If the handler is not a managed object,
+ * a separate copy of the handler will be created in each WonderlandSession
+ * that connects a client of the given type.  It is recommended that
+ * handlers that expect a large number messages be Serializable.
+ * 
  * @author jkaplan
  */
 @ExperimentalAPI

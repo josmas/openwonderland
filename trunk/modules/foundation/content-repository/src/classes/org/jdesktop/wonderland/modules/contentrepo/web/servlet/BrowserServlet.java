@@ -376,6 +376,7 @@ public class BrowserServlet extends HttpServlet
         ServletContext sc = sce.getServletContext();
         ar = new AdminRegistration("Content Repository",
                                    "/content-repository/wonderland-content-repository/browse");
+        ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, sc);
     }
 

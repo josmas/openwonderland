@@ -324,6 +324,7 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener,
         context = sce.getServletContext();
         ar = new AdminRegistration("X Apps",
                                    "/xapps-config/wonderland-xapps-config/browse");
+        ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, context);
 
         // add ourselves as a listener for when the Darkstar server changes

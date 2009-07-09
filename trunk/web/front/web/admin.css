@@ -11,3 +11,28 @@
   padding-left:14em;
   height: 100%;
 }
+
+/* Tables in the admin UI */
+
+table.installed {
+        width: 100%;
+        text-align: left;
+}
+
+td.installed {
+        text-align: left;
+        padding: 3px 3px 3px 3px;
+}
+
+tr.installed_a {
+        background-color: #f2f2f2;
+}
+
+tr.installed_b {
+        background-color:#ffffff;
+}
+
+tr.header {
+        background-color: #6b7f93;
+        color: white;
+}

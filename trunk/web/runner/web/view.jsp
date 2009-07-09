@@ -102,7 +102,7 @@
     }
     
     function setStatus(service, action) {
-        new Ajax.Request('services/' + service + "/" + action, { 
+        new Ajax.Request('services/runner/' + service + "/" + action, {
             method:'get', 
             requestHeaders: { Accept:'application/json' },
             onSuccess: function(response){

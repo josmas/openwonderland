@@ -40,8 +40,11 @@ public class ServerAuthentication {
     // properties we read
     private static final String AUTH_URL_PROP = "wonderland.authentication.url";
     private static final String SERVER_URL_PROP = "wonderland.web.server.url";
-    private static final String AUTH_SERVICE_PATH =
+    private static final String NOAUTH_SERVICE_PATH =
             "security-session-noauth/security-session-noauth/identity";
+    private static final String AUTH_SERVICE_PATH =
+            "security-session-auth/security-session-auth/identity";
+
 
     private static final String DARKSTAR_USERNAME = "sgs.auth.username";
     private static final String DARKSTAR_USERNAME_DEFAULT = "darkstar";
@@ -64,7 +67,6 @@ public class ServerAuthentication {
         if (authUrl == null) {
             // fall back to the default, based on the web server URL
             authUrl = System.getProperty(SERVER_URL_PROP);
-            authUrl += AUTH_SERVICE_PATH;
         }
 
         // the login username
@@ -102,6 +104,11 @@ public class ServerAuthentication {
     protected AuthenticationService noAuthLogin(String authUrl, String username)
         throws AuthenticationException
     {
+        if (!authUrl.endsWith("/")) {
+            authUrl += "/";
+        }
+        authUrl += NOAUTH_SERVICE_PATH;
+
         AuthenticationInfo info = new AuthenticationInfo(
                 AuthenticationInfo.Type.NONE, authUrl);
         return AuthenticationManager.login(info, username, "Darkstar server");
@@ -116,6 +123,11 @@ public class ServerAuthentication {
                                               String passwordFile)
             throws AuthenticationException
     {
+        if (!authUrl.endsWith("/")) {
+            authUrl += "/";
+        }
+        authUrl += AUTH_SERVICE_PATH;
+
         String password;
 
         // read the password from the password file

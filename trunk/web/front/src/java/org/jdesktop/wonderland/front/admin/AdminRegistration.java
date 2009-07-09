@@ -19,12 +19,14 @@ package org.jdesktop.wonderland.front.admin;
 
 import java.util.List;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Used to register new entries on the Wonderland admin page
  * @author jkaplan
  */
-public class AdminRegistration {
+public class AdminRegistration implements Comparable {
     public static final String ADMIN_REGISTRY_PROP = "AdminRegistry";
     private static final String ADMIN_CONTEXT = "/wonderland-web-front";
    
@@ -32,7 +34,9 @@ public class AdminRegistration {
     private String displayName;
     private String url;
     private boolean absolute;
-    
+    private RegistrationFilter filter;
+    private int position = Integer.MAX_VALUE / 2;
+
     /**
      * Register a new admin entry
      * @param reg the registration to register
@@ -78,33 +82,19 @@ public class AdminRegistration {
     public AdminRegistration(String displayName, String url) {
         this (null, displayName, url);
     }
-    
+
     /**
      * Create a new registration for the given name and URL
-     * @param shortName an optional short name for this registration
+     * @param shortName the short version of this registration's name
      * @param displayName the registration name to display on the admin page
      * @param url the URL to link to
      */
     public AdminRegistration(String shortName, String displayName, String url) {
-        this (shortName, displayName, url, false);
-    }
-
-    /**
-     * Create a new registration for the given name and URL
-     * @param shortName an optional short name for this registration
-     * @param displayName the registration name to display on the admin page
-     * @param url the URL to link to
-     * @param absolute whether or not the registration URL is absolute
-     */
-    public AdminRegistration(String shortName, String displayName, String url,
-                             boolean absolute)
-    {
         this.shortName = shortName;
         this.displayName = displayName;
         this.url = url;
-        this.absolute = absolute;
     }
-
+    
     public String getDisplayName() {
         return displayName;
     }
@@ -136,4 +126,70 @@ public class AdminRegistration {
     public void setAbsolute(boolean absolute) {
         this.absolute = absolute;
     }
+
+    public RegistrationFilter getFilter() {
+        return filter;
+    }
+
+    public void setFilter(RegistrationFilter filter) {
+        this.filter = filter;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    public int compareTo(Object o) {
+        if (!(o instanceof AdminRegistration)) {
+            return 0;
+        }
+
+        AdminRegistration ao = (AdminRegistration) o;
+
+        // first compare positions
+        int posComp = Integer.valueOf(getPosition()).compareTo(
+                        Integer.valueOf(ao.getPosition()));
+        if (posComp != 0) {
+            return posComp;
+        }
+
+        // next, alphabetical
+        return getDisplayName().compareTo(ao.getDisplayName());
+    }
+
+    /**
+     * A filter that determines if the given menu item is visible for the
+     * given request and response. The request will be for the admin
+     * page, and will have username and group information if the user
+     * is logged in.
+     */
+    public interface RegistrationFilter {
+        /**
+         * Return true if the menu item should be visible, or false if not.
+         */
+        public boolean isVisible(HttpServletRequest request,
+                                 HttpServletResponse response);
+    }
+
+    /** a filter that is only visible to admins */
+    public static final RegistrationFilter ADMIN_FILTER = new RegistrationFilter() {
+        public boolean isVisible(HttpServletRequest request,
+                                 HttpServletResponse response)
+        {
+            return request.isUserInRole("admin");
+        }
+    };
+
+    /** a filter that is only visible to logged in users */
+    public static final RegistrationFilter LOGGED_IN_FILTER = new RegistrationFilter() {
+        public boolean isVisible(HttpServletRequest request,
+                                 HttpServletResponse response)
+        {
+            return (request.getUserPrincipal() != null);
+        }
+    };
 }

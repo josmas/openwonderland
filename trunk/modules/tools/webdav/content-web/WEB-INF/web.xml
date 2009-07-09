@@ -21,11 +21,13 @@
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
     <security-constraint>
-        <display-name>RequireAuth</display-name>
+        <display-name>Optional Authentication</display-name>
         <web-resource-collection>
-            <web-resource-name>Access to group resources</web-resource-name>
-            <description>Access to group resources requires a login</description>
+            <web-resource-name>Access to webdav resources</web-resource-name>
+            <description>Access to webdav resources uses optional login</description>
             <url-pattern>/*</url-pattern>
+            <url-pattern>/users/*</url-pattern>
+            <url-pattern>/groups/*</url-pattern>
             <http-method>GET</http-method>
             <http-method>POST</http-method>
             <http-method>HEAD</http-method>
@@ -34,10 +36,6 @@
             <http-method>TRACE</http-method>
             <http-method>DELETE</http-method>
         </web-resource-collection>
-        <auth-constraint>
-            <description>Require a login</description>
-            <role-name>user</role-name>
-        </auth-constraint>
     </security-constraint>
     <security-role>
         <description>A regular user of the system</description>

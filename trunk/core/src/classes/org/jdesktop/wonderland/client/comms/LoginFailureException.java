@@ -49,7 +49,7 @@ public class LoginFailureException extends Exception {
      * @param cause the cause of this error.
      */
     public LoginFailureException(Throwable cause) {
-        super (cause);
+        super (cause.getMessage(), cause);
     }
 
     /**

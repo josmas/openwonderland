@@ -75,8 +75,30 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
         });
     }
 
-    public void requestLogin(UserPasswordLoginControl control) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void requestLogin(final UserPasswordLoginControl control) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // see if we have properties for automatic login
+                String username = System.getProperty("auth.username");
+                String password = System.getProperty("auth.password");
+                if (username != null && password != null) {
+                    try {
+                        control.authenticate(username, password);
+                        return;
+                    } catch (LoginFailureException lfe) {
+                        // error trying to login in.  Fall back to
+                        // showing a dialog
+                    }
+                }
+
+                LoginPanel lp = new WebServiceAuthLoginPanel(control.getServerURL(),
+                                                             control);
+                WonderlandLoginDialog dialog = new WonderlandLoginDialog(
+                                                   parent.getFrame(), true, lp);
+                dialog.setLocationRelativeTo(parent.getFrame());
+                dialog.setVisible(true);
+            }
+        });
     }
 
     public void requestLogin(WebURLLoginControl control) {

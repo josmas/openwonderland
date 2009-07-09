@@ -16,15 +16,17 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.securitysession.noauth.weblib.db;
+package org.jdesktop.wonderland.modules.securitysession.auth.weblib.db;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
 import javax.transaction.UserTransaction;
 import org.apache.catalina.util.Base64;
 
@@ -52,6 +54,59 @@ public class UserDAO {
     public UserEntity getUser(String userId) {
         EntityManager em = emf.createEntityManager();
         return em.find(UserEntity.class, userId);
+    }
+
+    /**
+     * Get all users
+     * @return the list of all users
+     */
+    public List<UserEntity> getUsers() {
+        EntityManager em = emf.createEntityManager();
+        Query q = em.createNamedQuery("allUsers");
+        return (List<UserEntity>) q.getResultList();
+    }
+
+    /**
+     * Get the count of users
+     * @return the number of users defined
+     */
+    public long getUserCount() {
+        EntityManager em = emf.createEntityManager();
+        Query q = em.createNamedQuery("userCount");
+        return (Long) q.getSingleResult();
+    }
+
+    /**
+     * Find all users matching the given pattern for user id
+     * @param userId the id to match, which may contain wild cards
+     * @return the list of users matching the given pattern
+     */
+    public List<UserEntity> getUsersById(String userId) {
+        EntityManager em = emf.createEntityManager();
+        Query q = em.createNamedQuery("findUsersById").setParameter("id", userId);
+        return (List<UserEntity>) q.getResultList();
+    }
+
+    /**
+     * Find all users matching the given pattern for full name
+     * @param fullname the name to match, which may contain wild cards
+     * @return the list of users matching the given pattern
+     */
+    public List<UserEntity> getUsersByName(String fullname) {
+        EntityManager em = emf.createEntityManager();
+        Query q = em.createNamedQuery("findUsersByName").setParameter("fullname", fullname);
+        return (List<UserEntity>) q.getResultList();
+    }
+
+    /**
+     * Find all users matching the given pattern for email
+     * @param email the email address to match, which may contain wild cards
+     * @return the list of users matching the given pattern
+     */
+    public List<UserEntity> getUsersByEmail(String email) {
+        EntityManager em = emf.createEntityManager();
+        Query q = em.createNamedQuery("findUsersByEmail").setParameter("email", email);
+        return (List<UserEntity>) q.getResultList();
     }
 
     /**

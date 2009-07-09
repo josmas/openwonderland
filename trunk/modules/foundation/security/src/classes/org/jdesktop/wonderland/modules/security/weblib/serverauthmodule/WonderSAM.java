@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 package org.jdesktop.wonderland.modules.security.weblib.serverauthmodule;
 
@@ -28,7 +41,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.jdesktop.wonderland.modules.security.weblib.UserGroupPrincipal;
-import org.jdesktop.wonderland.utils.Constants;
 
 /**
  *
@@ -51,10 +63,7 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
     
     private SessionResolver sessionManager;
     private GroupResolver groupManager;
-    private String loginPage;
-
-    private boolean authEnabled;
-
+    
     public void initialize(MessagePolicy reqPolicy, MessagePolicy resPolicy,
             CallbackHandler cBH, Map opts)
             throws AuthException
@@ -81,20 +90,6 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
             logger.log(Level.WARNING, "Error instantiating helper", ise);
             throw ise;
         }
-
-
-        // get the login page to redirect to
-        loginPage = (String) opts.get(LOGIN_PAGE_OPT);
-
-        // determine whether or not authentication is enabled
-        // this will override the app's notion of authentication constraint --
-        // if a user auth constraint is set to true, and this property is
-        // false, the authentication will succeed, and the user will be
-        // given default credentials.
-        // This is a session property, not an option to the login manager,
-        // since it is needed in lots of places
-        authEnabled = Boolean.parseBoolean(
-                               System.getProperty(Constants.WEBSERVER_LOGIN_ENABLED));
     }
 
     public Class[] getSupportedMessageTypes() {
@@ -108,11 +103,11 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
     {
         HttpServletRequest req = (HttpServletRequest) msgInfo.getRequestMessage();
         HttpServletResponse res = (HttpServletResponse) msgInfo.getResponseMessage();
+        boolean mandatory = requestPolicy.isMandatory();
 
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Processing request for " + req.getRequestURI() +
-                        " client: " + client + " server: " + server +
-                        " security required: " + requestPolicy.isMandatory() +
+                        " security required: " + mandatory +
                         " secure: " + req.isSecure());
         }
 
@@ -125,10 +120,11 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
                 userId = processSessionAuth(req.getSession(false));
             }
 
-            // if we couldn't find a user ID, but authentication is disabled,
-            // use a default user id
-            if (!authEnabled && userId == null) {
-                userId = "unauthenticated";
+            // if we still haven't found a user id, ask the session manager
+            // to find one for us.  If this returns null, don't do any more
+            // work, assume the session manager took care of it
+            if (userId == null) {
+                userId = sessionManager.handleUnauthenticated(req, mandatory, res);
             }
 
             // if we found a valid user, initialize user id and groups
@@ -140,23 +136,9 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
                     ae.initCause(uce);
                     throw ae;
                 }
-            }
-
-            // if authentication is required, and we couldn't find a cookie
-            // to map to the user id, then the request has failed.  Notify
-            // the caller
-            if (authEnabled && userId == null && requestPolicy.isMandatory()) {
-                if (loginPage != null) {
-                    // if there is a login page, redirect there
-                    res.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                    res.sendRedirect(loginPage);
-                } else {
-                    // send an error
-                    res.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                    res.sendError(HttpServletResponse.SC_FORBIDDEN,
-                                            "No authentication token found.");
-                }
-                
+            } else if (requestPolicy.isMandatory()) {
+                // otherwise, if the login is mandatory, it's a failure, since
+                // there was no user id
                 return AuthStatus.SEND_FAILURE;
             }
         } catch (IOException ioe) {
@@ -225,7 +207,7 @@ public class WonderSAM implements ServerAuthModule, ServerAuthContext {
     {
         // get the set of groups from the resolver
         String[] groupNames = groupManager.getGroupsForUser(userId);
-        
+
         // create a principal with the user and the groups they belong to
         Principal p = new UserGroupPrincipal(userId, groupNames);
 
