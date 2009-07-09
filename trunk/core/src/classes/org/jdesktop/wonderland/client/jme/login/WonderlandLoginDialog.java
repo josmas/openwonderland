@@ -352,7 +352,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
         });
 
         loginButton.setBackground(new java.awt.Color(255, 255, 255));
-        loginButton.setFont(new java.awt.Font("Dialog", 1, 13)); // NOI18N
+        loginButton.setFont(new java.awt.Font("Dialog", 1, 13));
         loginButton.setText("Login");
         loginButton.setAlignmentX(0.5F);
         loginButton.addActionListener(new java.awt.event.ActionListener() {
@@ -361,11 +361,11 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             }
         });
 
-        statusLabel.setFont(new java.awt.Font("Arial", 1, 12));
+        statusLabel.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
         statusLabel.setForeground(new java.awt.Color(45, 45, 45));
         statusLabel.setText("Status:");
 
-        advancedButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        advancedButton.setFont(new java.awt.Font("Dialog", 0, 13));
         advancedButton.setText("Advanced");
         advancedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -381,14 +381,14 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
                 .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(buttonPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(statusLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 277, Short.MAX_VALUE))
+                        .add(statusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(10, 10, 10))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
-                        .addContainerGap()
+                        .addContainerGap(107, Short.MAX_VALUE)
                         .add(cancelButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(loginButton)
-                        .add(38, 38, 38)))
+                        .add(40, 40, 40)))
                 .add(advancedButton)
                 .addContainerGap())
         );
@@ -397,8 +397,8 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             .add(buttonPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(advancedButton)
-                    .add(statusLabel))
+                    .add(statusLabel)
+                    .add(advancedButton))
                 .addContainerGap(30, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
                 .addContainerGap(30, Short.MAX_VALUE)
