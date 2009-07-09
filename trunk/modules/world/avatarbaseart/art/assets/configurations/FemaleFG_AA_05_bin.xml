@@ -3,26 +3,21 @@
     <Attributes>
         <Name>AvatarJaneDoe</Name>
         <Gender>2</Gender>
-        <HeadAttachment>assets/models/collada/Heads/FemaleHead/FG_Female01HighPoly.bhf</HeadAttachment>
+        <HeadAttachment>imi/character/data/FG_Female02HighPoly.bhf</HeadAttachment>
         <LoadingInstructions>
-            <item>assets/models/collada/Clothing/FemaleClothing/FemaleBlouse.dae</item>
-            <item>UpperBody</item>
+		assets/models/collada/Clothing/FemaleClothing/FemaleBlouse.dae
         </LoadingInstructions>
         <LoadingInstructions>
-            <item>assets/models/collada/Clothing/FemaleClothing/FemaleShorts.dae</item>
-            <item>LowerBody</item>
+		assets/models/collada/Clothing/FemaleClothing/FemaleShorts.dae
         </LoadingInstructions>
         <LoadingInstructions>
-            <item>assets/models/collada/Clothing/FemaleClothing/Female_ConverseShoes.dae</item>
-            <item>Feet</item>
+		assets/models/collada/Clothing/FemaleClothing/Female_ConverseShoes.dae
         </LoadingInstructions>
         <LoadingInstructions>
-            <item>assets/models/collada/Avatars/FemaleAvatar/Female_Hands.dae</item>
-            <item>Hands</item>
+		assets/models/collada/Avatars/FemaleAvatar/Female_Hands.dae
         </LoadingInstructions>
         <LoadingInstructions>
-            <item>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</item>
-            <item>Hair</item>
+		assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae
         </LoadingInstructions>
         <AdditionInstructions>
             <SkinnedMeshName>Hands_NudeShape</SkinnedMeshName>
@@ -91,22 +86,22 @@
         <TargetJointName>Hips</TargetJointName>
         <LocalModifierMatrix>
             <RowOne>
-                <X>1.0799999</X>
+                <X>0.9599999</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>1.0799999</Y>
+                <Y>0.9599999</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.0</Y>
-                <Z>1.0799999</Z>
-                <W>0.0011999999</W>
+                <Z>0.9599999</Z>
+                <W>-5.9999997E-4</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -146,7 +141,7 @@
         <TargetJointName>leftUpLeg</TargetJointName>
         <LocalModifierMatrix>
             <RowOne>
-                <X>1.09</X>
+                <X>0.88</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
@@ -160,7 +155,7 @@
             <RowThree>
                 <X>0.0</X>
                 <Y>0.0</Y>
-                <Z>1.09</Z>
+                <Z>0.88</Z>
                 <W>0.0</W>
             </RowThree>
             <RowFour>
@@ -201,22 +196,22 @@
         <TargetJointName>Spine</TargetJointName>
         <LocalModifierMatrix>
             <RowOne>
-                <X>1.0799999</X>
+                <X>0.9599999</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>1.0799999</Y>
+                <Y>0.9599999</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.0</Y>
-                <Z>1.0799999</Z>
-                <W>0.0011999999</W>
+                <Z>0.9599999</Z>
+                <W>-5.9999997E-4</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -256,7 +251,7 @@
         <TargetJointName>rightUpLeg</TargetJointName>
         <LocalModifierMatrix>
             <RowOne>
-                <X>1.09</X>
+                <X>0.88</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
@@ -270,7 +265,7 @@
             <RowThree>
                 <X>0.0</X>
                 <Y>0.0</Y>
-                <Z>1.09</Z>
+                <Z>0.88</Z>
                 <W>0.0</W>
             </RowThree>
             <RowFour>
@@ -311,7 +306,7 @@
         <TargetJointName>leftUpLegRoll</TargetJointName>
         <LocalModifierMatrix>
             <RowOne>
-                <X>1.09</X>
+                <X>0.88</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
@@ -325,7 +320,7 @@
             <RowThree>
                 <X>0.0</X>
                 <Y>0.0</Y>
-                <Z>1.09</Z>
+                <Z>0.88</Z>
                 <W>0.0</W>
             </RowThree>
             <RowFour>
@@ -366,7 +361,7 @@
         <TargetJointName>Spine1</TargetJointName>
         <BindPoseMatrix>
             <RowOne>
-                <X>1.04</X>
+                <X>1.1199999</X>
                 <Y>-0.0</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
@@ -374,13 +369,13 @@
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.9465572</Y>
-                <Z>-0.33543748</Z>
+                <Z>-0.36124027</Z>
                 <W>0.169114</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.32253608</Y>
-                <Z>0.98441947</Z>
+                <Z>1.060144</Z>
                 <W>0.001159</W>
             </RowThree>
             <RowFour>
@@ -395,7 +390,7 @@
         <TargetJointName>rightUpLegRoll</TargetJointName>
         <LocalModifierMatrix>
             <RowOne>
-                <X>1.09</X>
+                <X>0.88</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
@@ -409,7 +404,7 @@
             <RowThree>
                 <X>0.0</X>
                 <Y>0.0</Y>
-                <Z>1.09</Z>
+                <Z>0.88</Z>
                 <W>0.0</W>
             </RowThree>
             <RowFour>
@@ -566,21 +561,21 @@
         <TargetJointName>leftShoulder</TargetJointName>
         <BindPoseMatrix>
             <RowOne>
-                <X>0.474834</X>
-                <Y>-0.83612543</Y>
-                <Z>-0.33993888</Z>
+                <X>0.47483394</X>
+                <Y>-0.71435964</Y>
+                <Z>-0.33993885</Z>
                 <W>0.022055</W>
             </RowOne>
             <RowTwo>
                 <X>0.879313</X>
-                <Y>0.43417403</Y>
+                <Y>0.3709448</Y>
                 <Z>0.22163692</Z>
                 <W>0.084396</W>
             </RowTwo>
             <RowThree>
-                <X>-0.036624</X>
-                <Y>-0.4162777</Y>
-                <Z>0.9139577</Z>
+                <X>-0.036623992</X>
+                <Y>-0.35565478</Y>
+                <Z>0.91395754</Z>
                 <W>-0.008654</W>
             </RowThree>
             <RowFour>
@@ -595,21 +590,21 @@
         <TargetJointName>Neck</TargetJointName>
         <BindPoseMatrix>
             <RowOne>
-                <X>0.64397</X>
+                <X>0.643971</X>
                 <Y>0.129747</Y>
                 <Z>-0.753968</Z>
                 <W>0.042396</W>
             </RowOne>
             <RowTwo>
-                <X>-0.764388</X>
-                <Y>0.150132</Y>
-                <Z>-0.627034</Z>
+                <X>-0.764387</X>
+                <Y>0.150131</Y>
+                <Z>-0.627035</Z>
                 <W>0.0391869</W>
             </RowTwo>
             <RowThree>
-                <X>0.031839</X>
+                <X>0.031838</X>
                 <Y>0.980115</Y>
-                <Z>0.195858</Z>
+                <Z>0.195857</Z>
                 <W>0.0832983</W>
             </RowThree>
             <RowFour>
@@ -624,21 +619,21 @@
         <TargetJointName>rightShoulder</TargetJointName>
         <BindPoseMatrix>
             <RowOne>
-                <X>-0.8942631</X>
-                <Y>0.4454749</Y>
-                <Z>0.11505102</Z>
+                <X>-0.894263</X>
+                <Y>0.3806</Y>
+                <Z>0.115051016</Z>
                 <W>0.087204</W>
             </RowOne>
             <RowTwo>
-                <X>-0.44715405</X>
-                <Y>-0.9003826</Y>
-                <Z>-0.18947804</Z>
+                <X>-0.44715402</X>
+                <Y>-0.769259</Y>
+                <Z>-0.189478</Z>
                 <W>0.007065</W>
             </RowTwo>
             <RowThree>
                 <X>0.018623</X>
-                <Y>-0.22751561</Y>
-                <Z>0.97512126</Z>
+                <Y>-0.19438231</Y>
+                <Z>0.97512114</Z>
                 <W>-0.005435</W>
             </RowThree>
             <RowFour>
@@ -766,21 +761,21 @@
         <TargetJointName>Head</TargetJointName>
         <BindPoseMatrix>
             <RowOne>
-                <X>0.97</X>
+                <X>0.8800001</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>0.97</Y>
+                <Y>0.8800001</Y>
                 <Z>0.0</Z>
                 <W>0.104604</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.0</Y>
-                <Z>0.97</Z>
+                <Z>0.8800001</Z>
                 <W>0.0350234</W>
             </RowThree>
             <RowFour>
@@ -1050,22 +1045,22 @@
         <TargetJointName>EyeL_Adjust</TargetJointName>
         <BindPoseMatrix>
             <RowOne>
-                <X>-0.94000006</X>
+                <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.025569502</W>
+                <W>-0.0265695</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>0.9855142</Y>
-                <Z>0.16959305</Z>
-                <W>0.0019567</W>
+                <Y>1.044645</Y>
+                <Z>0.17976862</Z>
+                <W>0.0035236678</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
-                <Y>0.16959305</Y>
-                <Z>-0.9855142</Z>
-                <W>-0.100852</W>
+                <Y>0.17976862</Y>
+                <Z>-1.044645</Z>
+                <W>-0.10058235</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1081,20 +1076,20 @@
             <RowOne>
                 <X>0.0</X>
                 <Y>0.0</Y>
-                <Z>-1.1199999</Z>
-                <W>0.0</W>
+                <Z>-1.1799998</Z>
+                <W>6.720009E-4</W>
             </RowOne>
             <RowTwo>
-                <X>-1.1151446</X>
-                <Y>0.09580244</Y>
+                <X>-1.1748846</X>
+                <Y>0.09580242</Y>
                 <Z>0.0</Z>
-                <W>-0.0175084</W>
+                <W>-0.014832053</W>
             </RowTwo>
             <RowThree>
-                <X>0.10417351</X>
+                <X>0.109754264</X>
                 <Y>1.0255349</Y>
                 <Z>0.0</Z>
-                <W>-0.136213</W>
+                <W>-0.13646303</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1110,17 +1105,17 @@
             <RowOne>
                 <X>0.0</X>
                 <Y>0.0</Y>
-                <Z>-0.9600003</Z>
+                <Z>-1.0</Z>
                 <W>0.0</W>
             </RowOne>
             <RowTwo>
-                <X>-0.9584749</X>
+                <X>-0.998411</X>
                 <Y>0.0563518</Y>
                 <Z>0.0</Z>
                 <W>-0.0445715</W>
             </RowTwo>
             <RowThree>
-                <X>0.05409776</X>
+                <X>0.0563518</X>
                 <Y>0.998411</Y>
                 <Z>0.0</Z>
                 <W>-0.133612</W>
@@ -1166,22 +1161,22 @@
         <TargetJointName>EyeR_Adjust</TargetJointName>
         <BindPoseMatrix>
             <RowOne>
-                <X>-0.93999994</X>
+                <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.025569504</W>
+                <W>0.026569502</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>0.9855142</Y>
-                <Z>-0.16959305</Z>
-                <W>0.00195598</W>
+                <Y>1.044645</Y>
+                <Z>-0.17976862</Z>
+                <W>0.0035229474</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
-                <Y>-0.16959305</Y>
-                <Z>-0.9855142</Z>
-                <W>-0.100852</W>
+                <Y>-0.17976862</Y>
+                <Z>-1.044645</Z>
+                <W>-0.10112165</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1421,21 +1416,21 @@
         <TargetJointName>LowerLip_Adjust</TargetJointName>
         <BindPoseMatrix>
             <RowOne>
-                <X>-1.04</X>
+                <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
                 <W>0.0</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>0.9855141</Y>
-                <Z>0.17637776</Z>
+                <Y>0.985514</Y>
+                <Z>0.169594</Z>
                 <W>-0.0295466</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
-                <Y>0.16959402</Y>
-                <Z>-1.0249345</Z>
+                <Y>0.169594</Y>
+                <Z>-0.985514</Z>
                 <W>-0.102327</W>
             </RowThree>
             <RowFour>
@@ -1477,6 +1472,32 @@
     </SkeletonDetails>
     <SkeletonDetails>
         <TargetJointName>leftEyeLid</TargetJointName>
+        <LocalModifierMatrix>
+            <RowOne>
+                <X>1.0</X>
+                <Y>-0.0</Y>
+                <Z>0.0</Z>
+                <W>0.0</W>
+            </RowOne>
+            <RowTwo>
+                <X>0.0</X>
+                <Y>0.7040062</Y>
+                <Z>0.7101939</Z>
+                <W>0.0</W>
+            </RowTwo>
+            <RowThree>
+                <X>-0.0</X>
+                <Y>-0.7101939</Y>
+                <Z>0.7040062</Z>
+                <W>0.0</W>
+            </RowThree>
+            <RowFour>
+                <X>0.0</X>
+                <Y>0.0</Y>
+                <Z>0.0</Z>
+                <W>1.0</W>
+            </RowFour>
+        </LocalModifierMatrix>
         <BindPoseMatrix>
             <RowOne>
                 <X>-1.0</X>
@@ -1610,7 +1631,7 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.030412808</W>
+                <W>0.0316128</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1668,7 +1689,7 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.030412808</W>
+                <W>-0.0316128</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1709,6 +1730,32 @@
     </SkeletonDetails>
     <SkeletonDetails>
         <TargetJointName>rightEyeLid</TargetJointName>
+        <LocalModifierMatrix>
+            <RowOne>
+                <X>1.0</X>
+                <Y>-0.0</Y>
+                <Z>0.0</Z>
+                <W>0.0</W>
+            </RowOne>
+            <RowTwo>
+                <X>0.0</X>
+                <Y>0.7040062</Y>
+                <Z>0.7101939</Z>
+                <W>0.0</W>
+            </RowTwo>
+            <RowThree>
+                <X>-0.0</X>
+                <Y>-0.7101939</Y>
+                <Z>0.7040062</Z>
+                <W>0.0</W>
+            </RowThree>
+            <RowFour>
+                <X>0.0</X>
+                <Y>0.0</Y>
+                <Z>0.0</Z>
+                <W>1.0</W>
+            </RowFour>
+        </LocalModifierMatrix>
         <BindPoseMatrix>
             <RowOne>
                 <X>-1.0</X>
@@ -2050,21 +2097,21 @@
         <TargetJointName>leftHand</TargetJointName>
         <BindPoseMatrix>
             <RowOne>
-                <X>0.603163</X>
-                <Y>0.785194</Y>
-                <Z>0.140231</Z>
+                <X>0.56697315</X>
+                <Y>0.7380823</Y>
+                <Z>0.13181712</Z>
                 <W>-0.044163</W>
             </RowOne>
             <RowTwo>
-                <X>-0.795886</X>
-                <Y>0.604059</Y>
-                <Z>0.040972</Z>
+                <X>-0.7481328</X>
+                <Y>0.56781536</Y>
+                <Z>0.038513683</Z>
                 <W>0.130345</W>
             </RowTwo>
             <RowThree>
-                <X>-0.052536</X>
-                <Y>-0.136321</Y>
-                <Z>0.989271</Z>
+                <X>-0.049383838</X>
+                <Y>-0.12814173</Y>
+                <Z>0.92991465</Z>
                 <W>0.004868</W>
             </RowThree>
             <RowFour>
@@ -2079,21 +2126,21 @@
         <TargetJointName>rightHand</TargetJointName>
         <BindPoseMatrix>
             <RowOne>
-                <X>0.603164</X>
-                <Y>-0.785203</Y>
-                <Z>-0.140176</Z>
+                <X>0.56697416</X>
+                <Y>-0.7380908</Y>
+                <Z>-0.13176544</Z>
                 <W>0.044163</W>
             </RowOne>
             <RowTwo>
-                <X>0.795882</X>
-                <Y>0.604071</Y>
-                <Z>0.040868</Z>
+                <X>0.74812907</X>
+                <Y>0.5678267</Y>
+                <Z>0.03841592</Z>
                 <W>0.130345</W>
             </RowTwo>
             <RowThree>
-                <X>0.052585</X>
-                <Y>-0.136214</Y>
-                <Z>0.989283</Z>
+                <X>0.049429897</X>
+                <Y>-0.12804115</Y>
+                <Z>0.92992604</Z>
                 <W>0.004874</W>
             </RowThree>
             <RowFour>
@@ -3324,7 +3371,7 @@
     </SkeletonDetails>
     <Materials TargetMeshName="ShadowQuad" AlphaState="1" Name="MysteryNode!">
         <Textures>
-            <RelativePath>/Users/ptruong/SunSuperland/src/imi/character/shadow.png</RelativePath>
+            <RelativePath>/Users/ptruong/Avatars/src/imi/character/shadow.png</RelativePath>
             <TextureUnit>0</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>
@@ -3342,25 +3389,25 @@
         <ColorMaterial>None</ColorMaterial>
         <CullFace>Back</CullFace>
     </Materials>
-    <Materials TargetMeshName="rightEyeGeoShape" AlphaState="0" Name="eyeColor01.pngMaterial">
+    <Materials TargetMeshName="rightEyeGeoShape" AlphaState="0" Name="MysteryNode!">
         <Textures>
-            <RelativePath>assets/models/collada/Heads/EyeTextures/eyeColor01.png</RelativePath>
+            <RelativePath>assets/models/collada/Heads/EyeTextures/Blue_Eye.png</RelativePath>
             <TextureUnit>0</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>
             <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
+            <MinificationFilter>BilinearNoMipMaps</MinificationFilter>
             <MagnificationFilter>Bilinear</MagnificationFilter>
             <AnisotropicValue>0.0</AnisotropicValue>
             <TextureApplyMode>Modulate</TextureApplyMode>
         </Textures>
         <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <EmissiveColor alpha="0.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="0.0" blue="0.0" green="0.0" red="0.0"/>
+        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3379,29 +3426,29 @@
                 <Value>0.3</Value>
             </Properties>
         </Shaders>
-        <Shininess>0</Shininess>
+        <Shininess>20</Shininess>
         <ColorMaterial>None</ColorMaterial>
         <CullFace>Back</CullFace>
     </Materials>
-    <Materials TargetMeshName="leftEyeGeoShape" AlphaState="0" Name="eyeColor01.pngMaterial">
+    <Materials TargetMeshName="leftEyeGeoShape" AlphaState="0" Name="MysteryNode!">
         <Textures>
-            <RelativePath>assets/models/collada/Heads/EyeTextures/eyeColor01.png</RelativePath>
+            <RelativePath>assets/models/collada/Heads/EyeTextures/Blue_Eye.png</RelativePath>
             <TextureUnit>0</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>
             <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
+            <MinificationFilter>BilinearNoMipMaps</MinificationFilter>
             <MagnificationFilter>Bilinear</MagnificationFilter>
             <AnisotropicValue>0.0</AnisotropicValue>
             <TextureApplyMode>Modulate</TextureApplyMode>
         </Textures>
         <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <EmissiveColor alpha="0.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="0.0" blue="0.0" green="0.0" red="0.0"/>
+        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3420,7 +3467,7 @@
                 <Value>0.3</Value>
             </Properties>
         </Shaders>
-        <Shininess>0</Shininess>
+        <Shininess>20</Shininess>
         <ColorMaterial>None</ColorMaterial>
         <CullFace>Back</CullFace>
     </Materials>
@@ -3442,7 +3489,7 @@
         <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3483,7 +3530,7 @@
         <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3508,7 +3555,7 @@
     </Materials>
     <Materials TargetMeshName="TongueGeoShape" AlphaState="0" Name="MysteryNode!">
         <Textures>
-            <RelativePath>assets/models/collada/Heads/FemaleHead/Teeth.png</RelativePath>
+            <RelativePath>assets/models/collada/Heads/FemaleHead/female3_skin_Hi.png</RelativePath>
             <TextureUnit>0</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>
@@ -3521,10 +3568,10 @@
         <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.15702" green="0.15702" red="0.15702"/>
+        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3543,7 +3590,7 @@
                 <Value>0.3</Value>
             </Properties>
         </Shaders>
-        <Shininess>0</Shininess>
+        <Shininess>20</Shininess>
         <ColorMaterial>None</ColorMaterial>
         <CullFace>Back</CullFace>
     </Materials>
@@ -3562,10 +3609,10 @@
         <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.06612" green="0.06612" red="0.06612"/>
+        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.PhongFleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.PhongFleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3588,11 +3635,11 @@
                 <Value>0.45</Value>
             </Properties>
         </Shaders>
-        <Shininess>2</Shininess>
+        <Shininess>20</Shininess>
         <ColorMaterial>None</ColorMaterial>
         <CullFace>Back</CullFace>
     </Materials>
-    <Materials TargetMeshName="HeadShapesubMesh314629290" AlphaState="1" Name="MysteryNode!">
+    <Materials TargetMeshName="EyeAO_LashesShape" AlphaState="1" Name="MysteryNode!">
         <Textures>
             <RelativePath>assets/models/collada/Heads/FemaleHead/EyeShadow.png</RelativePath>
             <TextureUnit>0</TextureUnit>
@@ -3611,32 +3658,40 @@
         <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.PhongFleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
             </Program>
-            <Properties PropertyName="specularComponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>1.2</Value>
-            </Properties>
-            <Properties PropertyName="materialColor">
+            <Properties PropertyName="baseColor">
                 <Type>GLSL_VEC3</Type>
-                <Value> 0.7137255 0.5372549 0.45490196</Value>
+                <Value> 1.0 1.0 1.0</Value>
             </Properties>
-            <Properties PropertyName="DiffuseMapIndex">
+            <Properties PropertyName="SpecularComponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>0.24</Value>
+            </Properties>
+            <Properties PropertyName="SpecularExponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>1.8</Value>
+            </Properties>
+            <Properties PropertyName="BaseDiffuseMapIndex">
                 <Type>GLSL_SAMPLER2D</Type>
                 <Value>0</Value>
             </Properties>
-            <Properties PropertyName="specularExponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>8.0</Value>
+            <Properties PropertyName="specColor">
+                <Type>GLSL_VEC3</Type>
+                <Value> 1.0 1.0 1.0</Value>
+            </Properties>
+            <Properties PropertyName="NormalMapIndex">
+                <Type>GLSL_SAMPLER2D</Type>
+                <Value>1</Value>
             </Properties>
             <Properties PropertyName="ambientPower">
                 <Type>GLSL_FLOAT</Type>
-                <Value>0.45</Value>
+                <Value>0.2</Value>
             </Properties>
         </Shaders>
         <Shininess>0</Shininess>
         <ColorMaterial>None</ColorMaterial>
-        <CullFace>Back</CullFace>
+        <CullFace>None</CullFace>
     </Materials>
     <Materials TargetMeshName="Hands_NudeShape" AlphaState="0" Name="MysteryNode!">
         <Textures>
@@ -3678,7 +3733,7 @@
         <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.FleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.FleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3690,7 +3745,7 @@
             </Properties>
             <Properties PropertyName="materialColor">
                 <Type>GLSL_VEC3</Type>
-                <Value> 0.49019608 0.29411766 0.18039216</Value>
+                <Value> 0.47058824 0.23529412 0.10980392</Value>
             </Properties>
             <Properties PropertyName="NormalMapIndex">
                 <Type>GLSL_SAMPLER2D</Type>
@@ -3742,7 +3797,7 @@
         <SpecularColor alpha="1.0" blue="0.13282" green="0.13282" red="0.13282"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
             </Program>
             <Properties PropertyName="baseColor">
                 <Type>GLSL_VEC3</Type>
@@ -3806,7 +3861,7 @@
         <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.FleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.FleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3818,7 +3873,7 @@
             </Properties>
             <Properties PropertyName="materialColor">
                 <Type>GLSL_VEC3</Type>
-                <Value> 0.49019608 0.29411766 0.18039216</Value>
+                <Value> 0.47058824 0.23529412 0.10980392</Value>
             </Properties>
             <Properties PropertyName="NormalMapIndex">
                 <Type>GLSL_SAMPLER2D</Type>
@@ -3870,7 +3925,7 @@
         <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.FleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.FleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3882,7 +3937,7 @@
             </Properties>
             <Properties PropertyName="materialColor">
                 <Type>GLSL_VEC3</Type>
-                <Value> 0.49019608 0.29411766 0.18039216</Value>
+                <Value> 0.47058824 0.23529412 0.10980392</Value>
             </Properties>
             <Properties PropertyName="NormalMapIndex">
                 <Type>GLSL_SAMPLER2D</Type>
@@ -3934,7 +3989,7 @@
         <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
             </Program>
             <Properties PropertyName="baseColor">
                 <Type>GLSL_VEC3</Type>
@@ -3998,11 +4053,11 @@
         <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
             </Program>
             <Properties PropertyName="baseColor">
                 <Type>GLSL_VEC3</Type>
-                <Value> 0.96862745 0.043137256 0.36862746</Value>
+                <Value> 1.0 1.0 1.0</Value>
             </Properties>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -4062,7 +4117,7 @@
         <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.HairShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.HairShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="SpecularComponent">
                 <Type>GLSL_FLOAT</Type>

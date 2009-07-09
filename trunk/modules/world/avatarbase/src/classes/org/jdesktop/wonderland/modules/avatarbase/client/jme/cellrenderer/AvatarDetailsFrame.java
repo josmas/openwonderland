@@ -17,7 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
-import imi.character.CharacterAttributes;
+
+import imi.character.CharacterParams;
 import java.awt.Color;
 import java.awt.Cursor;
 import javax.swing.JColorChooser;
@@ -94,7 +95,7 @@ public class AvatarDetailsFrame extends javax.swing.JFrame {
 
                 WlAvatarCharacter avatarCharacter;
 
-                CharacterAttributes ca = attributes.getCharacterAttributes();
+                CharacterParams ca = attributes.getCharacterAttributes();
                 WonderlandSession session = cell.getCellCache().getSession();
                 ServerSessionManager manager = session.getSessionManager();
                 String serverHostAndPort = manager.getServerNameAndPort();
@@ -103,7 +104,7 @@ public class AvatarDetailsFrame extends javax.swing.JFrame {
                 LoadingInfo.startedLoading(cell.getCellID(), name);
                 try {
                     WorldManager wm = ClientContextJME.getWorldManager();
-                    avatarCharacter = new WlAvatarCharacter(ca, wm);
+                    avatarCharacter = new WlAvatarCharacter.WlAvatarCharacterBuilder(ca, wm).build();
                 } finally {
                     LoadingInfo.finishedLoading(cell.getCellID(), name);
                 }

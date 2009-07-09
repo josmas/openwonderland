@@ -18,10 +18,10 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import com.jme.math.Vector3f;
-import imi.character.CharacterSteeringHelm;
+import imi.character.behavior.CharacterBehaviorManager;
+import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
-import imi.character.steering.GoTo;
-import imi.loaders.repository.Repository;
+import imi.repository.Repository;
 import imi.utils.instruments.DefaultInstrumentation;
 import imi.utils.instruments.Instrumentation;
 import java.awt.event.ActionEvent;
@@ -116,7 +116,7 @@ public class AvatarPlugin extends BaseClientPlugin
                     f.pack();
                     f.setVisible(true);
                     f.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-                    test.setAvatarCharactar(curAvatar.getAvatarCharacter());
+                    test.setAvatarCharacter(curAvatar.getAvatarCharacter());
                     testPanelRef = new WeakReference(test);
                 } else {
                     SwingUtilities.getRoot(testPanelRef.get().getParent()).setVisible(true);
@@ -183,7 +183,7 @@ public class AvatarPlugin extends BaseClientPlugin
 
             public void actionPerformed(ActionEvent e) {
                 GameContext context = curAvatar.getAvatarCharacter().getContext();
-                CharacterSteeringHelm helm = curAvatar.getAvatarCharacter().getContext().getSteering();
+                CharacterBehaviorManager helm = curAvatar.getAvatarCharacter().getContext().getBehaviorManager();
                 helm.addTaskToTop(new GoTo(new Vector3f(0, 0, 0), context));
                 helm.setEnable(true);
             }
@@ -252,7 +252,7 @@ public class AvatarPlugin extends BaseClientPlugin
         if (testPanelRef == null || testPanelRef.get() == null) {
             // Do nothing
         } else {
-            testPanelRef.get().setAvatarCharactar(curAvatar.getAvatarCharacter());
+            testPanelRef.get().setAvatarCharacter(curAvatar.getAvatarCharacter());
         }
         if (gestureHUDRef == null || gestureHUDRef.get() == null) {
             // Do nothing

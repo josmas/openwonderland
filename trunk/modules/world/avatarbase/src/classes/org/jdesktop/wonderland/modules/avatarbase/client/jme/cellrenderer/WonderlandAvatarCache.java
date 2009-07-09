@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import com.jme.image.Texture;
 import com.jme.util.TextureManager;
-import imi.cache.CacheBehavior;
+import imi.repository.CacheBehavior;
 import imi.utils.MD5HashUtils;
 import java.io.File;
 import java.io.FileInputStream;

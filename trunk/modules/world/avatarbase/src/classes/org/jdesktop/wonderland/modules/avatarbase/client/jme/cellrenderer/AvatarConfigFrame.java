@@ -17,17 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
-import com.jme.math.Vector3f;
-import com.jme.scene.Spatial;
-import com.jme.scene.shape.Box;
-import com.jme.util.export.binary.BinaryImporter;
-import com.jme.util.resource.ResourceLocator;
-import com.jme.util.resource.ResourceLocatorTool;
-import imi.character.CharacterAttributes;
-import imi.character.avatar.FemaleAvatarAttributes;
-import imi.character.avatar.MaleAvatarAttributes;
-import imi.gui.JPanel_BasicOptions;
-import imi.gui.SceneEssentials;
+import imi.character.CharacterParams;
+import imi.character.FemaleAvatarParams;
+import imi.character.MaleAvatarParams;
+import imi.character.Manipulator;
+import imi.gui.JFrame_AdvOptions;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.io.IOException;
@@ -41,16 +35,12 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
-import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager.AvatarManagerListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME.RelativeResourceLocator;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 
 /**
@@ -122,20 +112,18 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
     public AvatarConfigFrame(AvatarImiJME avatarRenderer) {
         this.avatarRenderer = avatarRenderer;
         initComponents();
-        SceneEssentials scene = new SceneEssentials();
-        scene.setAvatar(avatarRenderer.getAvatarCharacter());
-        scene.setWM(ClientContextJME.getWorldManager());
 
         // Disable the import button, it requires the assets dir to be simlinked in core
         importB.setEnabled(false);
 
         // Test code using IMI BasicOptions panel to customise avatar
         if (enableCustomisation) {
-            JPanel_BasicOptions basicOptions = new JPanel_BasicOptions(this);
-            basicOptions.setSceneData(scene);
-            basicOptions.avatarCheck();
-            basicOptions.setBaseURL(avatarRenderer.getAvatarCharacter().getAttributes().getBaseURL());
-            scrollPane.getViewport().add(basicOptions);
+            JFrame_AdvOptions options = new JFrame_AdvOptions.Builder(ClientContextJME.getWorldManager())
+                                                .character(avatarRenderer.getAvatarCharacter())
+                                                .loadEyePanel(true)
+                                                .windowTitle("Avatar Configuration Panel")
+                                                .build();
+            scrollPane.getViewport().add(options);
             customiseB.setEnabled(true);
         }
 
@@ -452,46 +440,47 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
 
         Runnable r = new Runnable() {
             public void run() {
-
-                WlAvatarCharacter avatarCharacter=null;
+//
+//                WlAvatarCharacter avatarCharacter=null;
                 String name = avatarNameTF.getText();
-
+//
                 WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
                 ServerSessionManager manager = session.getSessionManager();
                 String serverHostAndPort = manager.getServerNameAndPort();
-                
-                try {
-                    LoadingInfo.startedLoading(avatarRenderer.getCell().getCellID(), name);
-                    // Choose a random config from the default configs
-                    String configName = null;
-                    if (femaleRB.isSelected()) {
-                        int i = (int) Math.round(Math.random()*(defaultFemaleConfigs.length-1));
-                        configName = "assets/configurations/"+defaultFemaleConfigs[i];
-                    } else {
-                        int i = (int) Math.round(Math.random()*(defaultMaleConfigs.length-1));
-                        configName = "assets/configurations/"+defaultMaleConfigs[i];
-                    }
-                    try {
-                        String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
-                        URL avatarConfigURL = AssetUtils.getAssetURL(baseURL + configName, avatarRenderer.getCell());
-                        avatarCharacter = new WlAvatarCharacter(avatarConfigURL, ClientContextJME.getWorldManager(), baseURL);
-                    } catch (MalformedURLException ex) {
-                        Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+//
+//                try {
+//                    LoadingInfo.startedLoading(avatarRenderer.getCell().getCellID(), name);
+//                    // Choose a random config from the default configs
+//                    String configName = null;
+//                    if (femaleRB.isSelected()) {
+//                        int i = (int) Math.round(Math.random()*(defaultFemaleConfigs.length-1));
+//                        configName = "assets/configurations/"+defaultFemaleConfigs[i];
+//                    } else {
+//                        int i = (int) Math.round(Math.random()*(defaultMaleConfigs.length-1));
+//                        configName = "assets/configurations/"+defaultMaleConfigs[i];
+//                    }
+//                    try {
+//                        String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
+//                        URL avatarConfigURL = AssetUtils.getAssetURL(baseURL + configName, avatarRenderer.getCell());
+//                        avatarCharacter = new WlAvatarCharacter.WlAvatarCharacterBuilder(avatarConfigURL, ClientContextJME.getWorldManager())
+//                                                                .baseURL(baseURL).build();
+////                        avatarCharacter = new WlAvatarCharacter(avatarConfigURL, ClientContextJME.getWorldManager(), baseURL);
+//                    } catch (MalformedURLException ex) {
+//                        Logger.getLogger(AvatarConfigFrame.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
 
                 // Choose random components
-//                CharacterAttributes attributes;
-//                if (femaleRB.isSelected())
-//                    attributes = new FemaleAvatarAttributes(name, true);
-//                else
-//                    attributes = new MaleAvatarAttributes(name, true);
-//
-//                attributes.setBaseURL("wla://avatarbaseart@"+serverHostAndPort+"/");
-
-//                    avatarCharacter = new WlAvatarCharacter(attributes, ClientContextJME.getWorldManager());
-                } finally {
-                    LoadingInfo.finishedLoading(avatarRenderer.getCell().getCellID(), name);
-                }
+                CharacterParams attributes;
+                if (femaleRB.isSelected())
+                    attributes = new FemaleAvatarParams(name).build();
+                else
+                    attributes = new MaleAvatarParams(name).build();
+                attributes.setBaseURL("wla://avatarbaseart@"+serverHostAndPort+"/");
+                WlAvatarCharacter avatarCharacter = new WlAvatarCharacter.
+                        WlAvatarCharacterBuilder(attributes, ClientContextJME.getWorldManager()).build();
+//                } finally {
+//                    LoadingInfo.finishedLoading(avatarRenderer.getCell().getCellID(), name);
+//                }
 
                 avatarRenderer.changeAvatar(avatarCharacter);
                 f.setCursor(normalCursor);
@@ -513,7 +502,7 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
                 }
             }
 
-            avatarRenderer.getAvatarCharacter().getAttributes().setName(avatarNameTF.getText());
+            Manipulator.setName(avatarRenderer.getAvatarCharacter(), avatarNameTF.getText());
             avatarManager.saveAvatar(avatarNameTF.getText(), avatarRenderer.getAvatarCharacter());
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -595,9 +584,10 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
         WonderlandSession session = avatarRenderer.getCell().getCellCache().getSession();
         ServerSessionManager manager = session.getSessionManager();
         String serverHostAndPort = manager.getServerNameAndPort();
-        final WlAvatarCharacter avatarCharacter = new WlAvatarCharacter(selectedURL,
-                ClientContextJME.getWorldManager(),
-                "wla://avatarbaseart@"+serverHostAndPort+"/");
+        final WlAvatarCharacter avatarCharacter = new WlAvatarCharacter
+                                            .WlAvatarCharacterBuilder(selectedURL, ClientContextJME.getWorldManager())
+                                            .baseURL("wla://avatarbaseart@"+serverHostAndPort+"/")
+                                            .build();
 
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -625,9 +615,9 @@ public class AvatarConfigFrame extends javax.swing.JFrame {
             URL selectedURL;
             try {
                 selectedURL = chooser.getSelectedFile().toURI().toURL();
-                final WlAvatarCharacter avatarCharacter = new WlAvatarCharacter(selectedURL,
-                        ClientContextJME.getWorldManager(),
-                        "");
+                final WlAvatarCharacter avatarCharacter = new WlAvatarCharacter
+                                            .WlAvatarCharacterBuilder(selectedURL, ClientContextJME.getWorldManager())
+                                            .build();
                 final JFrame f = this;
                 f.setCursor(waitCursor);
                 EventQueue.invokeLater(new Runnable() {
