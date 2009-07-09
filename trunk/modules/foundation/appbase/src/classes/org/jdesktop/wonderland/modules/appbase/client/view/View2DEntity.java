@@ -2011,7 +2011,6 @@ public abstract class View2DEntity implements View2D {
     /** {@inheritDoc} */
     public void addEntityComponent(Class clazz, EntityComponent comp) {
         entity.addComponent(clazz, comp);
-        comp.setEntity(entity);
     }
 
     /** {@inheritDoc} */
