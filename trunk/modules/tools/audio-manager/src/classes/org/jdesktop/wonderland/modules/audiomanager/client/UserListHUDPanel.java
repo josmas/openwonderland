@@ -178,6 +178,8 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         userListScrollPane = new javax.swing.JScrollPane();
         userList = new javax.swing.JList();
 
+        setPreferredSize(new java.awt.Dimension(177, 310));
+
         editButton.setText("Edit");
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -216,7 +218,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 .addContainerGap()
                 .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(volumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
-                    .add(volumeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+                    .add(volumeLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 165, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(controlPanelLayout.createSequentialGroup()
                         .add(editButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -237,6 +239,8 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 .addContainerGap())
         );
 
+        userListScrollPane.setPreferredSize(new java.awt.Dimension(260, 300));
+
         userList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 userListValueChanged(evt);
@@ -248,13 +252,11 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 177, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
             .add(controlPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 300, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
                 .add(0, 0, 0)
