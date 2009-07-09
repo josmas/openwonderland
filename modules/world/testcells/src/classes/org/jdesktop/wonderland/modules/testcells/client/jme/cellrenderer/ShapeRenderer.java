@@ -113,9 +113,4 @@ public class ShapeRenderer extends BasicRenderer {
 
     }
 
-    @Override
-    protected float getMass() {
-        return ((SimpleShapeCell)cell).getMass();
-    }
-
 }
