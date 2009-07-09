@@ -37,6 +37,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.NewFrameCondition;
+import org.jdesktop.mtgame.ProcessorArmingCollection;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.SkyboxComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -64,6 +68,7 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
 
     private ViewCell curViewCell = null;
     private ServerSessionManager loginManager;
+    private SkyboxProcessor skyboxProcessor;
 
     public DefaultEnvironment(ServerSessionManager loginManager) {
         this.loginManager = loginManager;
@@ -169,7 +174,13 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
             logger.fine("[DefaultEnvironment] transform changed for " + this);
         }
 
-        skybox.setLocalTranslation(cell.getWorldTransform().getTranslation(translation));
+        skyboxProcessor.viewMoved(cell.getWorldTransform().getTranslation(translation));
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater(){
+            public void update(Object arg0) {
+
+            }
+        }, cell);
     }
 
     private Entity createSkyboxEntity() {
@@ -219,6 +230,9 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
             SkyboxComponent sbc = wm.getRenderManager().createSkyboxComponent(skybox, true);
             e.addComponent(SkyboxComponent.class, sbc);
 
+            skyboxProcessor = new SkyboxProcessor(wm);
+            e.addComponent(SkyboxProcessor.class, skyboxProcessor);
+
             return e;
 
         } catch (MalformedURLException ex) {
@@ -256,5 +270,44 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
 //        }
 //
 //    }
+
+    class SkyboxProcessor extends ProcessorComponent {
+
+        private Vector3f translation=new Vector3f();
+        private boolean translationDirty = false;
+        private final WorldManager worldManager;
+
+        public SkyboxProcessor(WorldManager worldManager) {
+            this.worldManager = worldManager;
+        }
+
+        @Override
+        public void compute(ProcessorArmingCollection arg0) {
+        }
+
+        @Override
+        public void commit(ProcessorArmingCollection arg0) {
+            synchronized(translation) {
+                if (translationDirty) {
+                    skybox.setLocalTranslation(translation);
+                    worldManager.addToUpdateList(skybox);
+                    translationDirty = false;
+                }
+            }
+        }
+
+        @Override
+        public void initialize() {
+            setArmingCondition(new NewFrameCondition(this));
+        }
+
+        private void viewMoved(Vector3f translation) {
+            synchronized(translation) {
+                this.translation.set(translation);
+                translationDirty = true;
+            }
+        }
+
+    }
 
 }
