@@ -188,6 +188,8 @@ public class PresenceManagerConnectionHandler implements
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
+	System.out.println("PRESENCE:  clientDisconnected");
+
 	ArrayList<PresenceInfo> presenceInfoArrayList = sessions.get(clientID.getID());
 
 	if (presenceInfoArrayList == null) {
@@ -229,6 +231,8 @@ public class PresenceManagerConnectionHandler implements
 
 	    presenceInfoList.remove(info);
 	}
+
+	System.out.println("PRESENCE:  clientDisconnected complete");
     }
 
     private void dump(String msg) {
