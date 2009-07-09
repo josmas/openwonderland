@@ -41,13 +41,13 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.dnd.DragAndDropManager;
+import org.jdesktop.wonderland.client.jme.utils.GUIUtils;
 
 /**
  * The Main JFrame for the wonderland jme client
@@ -73,11 +73,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     private HUDComponent fpsComponent;
     private WorldManager wm;
 
-
     static {
         new LogControl(MainFrameImpl.class, "/org/jdesktop/wonderland/client/jme/resources/logging.properties");
     }
-
     // variables for the location field
     private String serverURL;
     private ServerURLListener serverListener;
@@ -85,35 +83,9 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     /** Creates new form MainFrame */
     public MainFrameImpl(WorldManager wm, int width, int height) {
         this.wm = wm;
-        try {
+       
 
-            boolean hasNimbus = false;
-
-            try {
-                Class.forName("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-                hasNimbus = true;
-            } catch (ClassNotFoundException e) {
-            }
-
-            // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
-            // For now, force the cross-platform (metal) LAF to be used, or Nimbus
-            // Also workaround bug 10.
-            if (hasNimbus) {
-                UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-            } else {
-                // Workaround for bug 15: Embedded Swing on Mac: SwingTest: radio button image problems
-                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-            }
-
-            if ("Mac OS X".equals(System.getProperty("os.name"))) {
-                //to workaround popup clipping on the mac we force top-level popups
-                //note: this is implemented in scenario's EmbeddedPopupFactory
-                javax.swing.UIManager.put("PopupFactory.forceHeavyWeight", Boolean.TRUE);
-            }
-        } catch (Exception ex) {
-            logger.warning("Loading of " + UIManager.getCrossPlatformLookAndFeelClassName() + " look-and-feel failed, exception = " + ex);
-        }
-
+        GUIUtils.initLookAndFeel();
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
         ToolTipManager.sharedInstance().setLightWeightPopupEnabled(false);
 
@@ -146,127 +118,132 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     }
 
     private void initMenus() {
-        // File menu
-        // Log out
-        logoutMI = new JMenuItem(bundle.getString("Log out"));
-        logoutMI.addActionListener(new ActionListener() {
+        SwingUtilities.invokeLater(new Runnable() {
 
-            public void actionPerformed(ActionEvent evt) {
-                logoutMIActionPerformed(evt);
+            public void run() {
+                // File menu
+                // Log out
+                logoutMI = new JMenuItem(bundle.getString("Log out"));
+                logoutMI.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent evt) {
+                        logoutMIActionPerformed(evt);
+                    }
+                });
+                addToFileMenu(logoutMI, 2);
+
+                // Exit
+                exitMI = new JMenuItem(bundle.getString("Exit"));
+                exitMI.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent evt) {
+                        exitMIActionPerformed(evt);
+                    }
+                });
+                addToFileMenu(exitMI, 3);
+
+                // View menu
+                firstPersonRB = new JRadioButtonMenuItem(bundle.getString("First Person Camera"));
+                firstPersonRB.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        cameraChangedActionPerformed(evt);
+                    }
+                });
+                addToViewMenu(firstPersonRB, 0);
+                cameraButtonGroup.add(firstPersonRB);
+
+                thirdPersonRB = new JRadioButtonMenuItem(bundle.getString("Third Person Camera"));
+                thirdPersonRB.setSelected(true);
+                thirdPersonRB.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        cameraChangedActionPerformed(evt);
+                    }
+                });
+                addToViewMenu(thirdPersonRB, 1);
+                cameraButtonGroup.add(thirdPersonRB);
+
+                frontPersonRB = new JRadioButtonMenuItem(bundle.getString("Front Camera"));
+                frontPersonRB.setToolTipText("A camera looking at the front of the avatar (for testing only)");
+                frontPersonRB.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        cameraChangedActionPerformed(evt);
+                    }
+                });
+                addToViewMenu(frontPersonRB, 2);
+                cameraButtonGroup.add(frontPersonRB);
+
+                // Frame Rate menu
+                frameRateMenu = new JMenu(bundle.getString("Max Frame Rate"));
+
+                JMenuItem fps15 = new JCheckBoxMenuItem(bundle.getString("15 fps"));
+                JMenuItem fps30 = new JCheckBoxMenuItem(bundle.getString("30 fps (default)"));
+                JMenuItem fps60 = new JCheckBoxMenuItem(bundle.getString("60 fps"));
+                JMenuItem fps120 = new JCheckBoxMenuItem(bundle.getString("120 fps"));
+                JMenuItem fps200 = new JCheckBoxMenuItem(bundle.getString("200 fps"));
+
+                frameRateMenu.add(fps15);
+                frameRateMenu.add(fps30);
+                frameRateMenu.add(fps60);
+                frameRateMenu.add(fps120);
+                frameRateMenu.add(fps200);
+
+                addToViewMenu(frameRateMenu, 4);
+
+                fps15.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        frameRateActionPerformed(evt);
+                    }
+                });
+                fps30.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        frameRateActionPerformed(evt);
+                    }
+                });
+                fps60.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        frameRateActionPerformed(evt);
+                    }
+                });
+                fps120.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        frameRateActionPerformed(evt);
+                    }
+                });
+                fps200.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        frameRateActionPerformed(evt);
+                    }
+                });
+
+                // frame rate meter
+                fpsMI = new JCheckBoxMenuItem(bundle.getString("FPS_Meter"));
+                fpsMI.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        if ((fpsComponent == null) || !fpsComponent.isVisible()) {
+                            showFPSMeter(true);
+                        } else {
+                            showFPSMeter(false);
+                        }
+                    }
+                });
+
+                addToWindowMenu(fpsMI, -1);
+
+                // Help menu
+                HelpSystem helpSystem = new HelpSystem();
+                JMenu helpMenu = helpSystem.getHelpJMenu();
+                mainMenuBar.add(helpMenu);
             }
         });
-        addToFileMenu(logoutMI, 2);
-
-        // Exit
-        exitMI = new JMenuItem(bundle.getString("Exit"));
-        exitMI.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent evt) {
-                exitMIActionPerformed(evt);
-            }
-        });
-        addToFileMenu(exitMI, 3);
-
-        // View menu
-        firstPersonRB = new JRadioButtonMenuItem(bundle.getString("First Person Camera"));
-        firstPersonRB.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cameraChangedActionPerformed(evt);
-            }
-        });
-        addToViewMenu(firstPersonRB, 0);
-        cameraButtonGroup.add(firstPersonRB);
-
-        thirdPersonRB = new JRadioButtonMenuItem(bundle.getString("Third Person Camera"));
-        thirdPersonRB.setSelected(true);
-        thirdPersonRB.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cameraChangedActionPerformed(evt);
-            }
-        });
-        addToViewMenu(thirdPersonRB, 1);
-        cameraButtonGroup.add(thirdPersonRB);
-
-        frontPersonRB = new JRadioButtonMenuItem(bundle.getString("Front Camera"));
-        frontPersonRB.setToolTipText("A camera looking at the front of the avatar (for testing only)");
-        frontPersonRB.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cameraChangedActionPerformed(evt);
-            }
-        });
-        addToViewMenu(frontPersonRB, 2);
-        cameraButtonGroup.add(frontPersonRB);
-
-        // Frame Rate menu
-        frameRateMenu = new JMenu(bundle.getString("Max Frame Rate"));
-
-        JMenuItem fps15 = new JCheckBoxMenuItem(bundle.getString("15 fps"));
-        JMenuItem fps30 = new JCheckBoxMenuItem(bundle.getString("30 fps (default)"));
-        JMenuItem fps60 = new JCheckBoxMenuItem(bundle.getString("60 fps"));
-        JMenuItem fps120 = new JCheckBoxMenuItem(bundle.getString("120 fps"));
-        JMenuItem fps200 = new JCheckBoxMenuItem(bundle.getString("200 fps"));
-
-        frameRateMenu.add(fps15);
-        frameRateMenu.add(fps30);
-        frameRateMenu.add(fps60);
-        frameRateMenu.add(fps120);
-        frameRateMenu.add(fps200);
-
-        addToViewMenu(frameRateMenu, 4);
-
-        fps15.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                frameRateActionPerformed(evt);
-            }
-        });
-        fps30.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                frameRateActionPerformed(evt);
-            }
-        });
-        fps60.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                frameRateActionPerformed(evt);
-            }
-        });
-        fps120.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                frameRateActionPerformed(evt);
-            }
-        });
-        fps200.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                frameRateActionPerformed(evt);
-            }
-        });
-
-        // frame rate meter
-        fpsMI = new JCheckBoxMenuItem(bundle.getString("FPS_Meter"));
-        fpsMI.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                if ((fpsComponent == null) || !fpsComponent.isVisible()) {
-                    showFPSMeter(true);
-                } else {
-                    showFPSMeter(false);
-                }
-            }
-        });
-
-        addToWindowMenu(fpsMI, -1);
-
-        // Help menu
-        HelpSystem helpSystem = new HelpSystem();
-        JMenu helpMenu = helpSystem.getHelpJMenu();
-        mainMenuBar.add(helpMenu);
     }
 
     private void logoutMIActionPerformed(ActionEvent evt) {
@@ -605,12 +582,12 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     public FrameRateListener addFrameRateListener(int frameRate) {
         FrameRateListener listener = new FrameRateListener() {
 
-                public void currentFramerate(float fps) {
-                    if (chart != null) {
-                        chart.setValue(fps);
-                    }
+            public void currentFramerate(float fps) {
+                if (chart != null) {
+                    chart.setValue(fps);
                 }
-            };
+            }
+        };
         ClientContextJME.getWorldManager().getRenderManager().setFrameRateListener(listener, frameRate);
 
         return listener;
@@ -741,7 +718,6 @@ private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         serverListener.serverURLChanged(serverField.getText());
     }
 }//GEN-LAST:event_goButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu editMenu;
