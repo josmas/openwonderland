@@ -352,7 +352,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             editButton.setEnabled(false);
             volumeLabel.setText("Private volume");
             volumeSlider.setEnabled(false);
-        //controlPanel.setVisible(false);
+            controlPanel.setVisible(false);
         } else if (selectedValues.length == 1) {
             // one user (self or someone else)
             controlPanel.setVisible(true);
