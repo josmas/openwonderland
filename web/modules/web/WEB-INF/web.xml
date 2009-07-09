@@ -8,7 +8,6 @@
     <servlet>
         <servlet-name>ModuleUploadServlet</servlet-name>
         <servlet-class>org.jdesktop.wonderland.modules.servlets.ModuleUploadServlet</servlet-class>
-        <url-pattern>/ModuleUploadServlet</url-pattern>
     </servlet>
     <servlet-mapping>
         <servlet-name>ServletAdaptor</servlet-name>
@@ -18,6 +17,35 @@
         <servlet-name>ModuleUploadServlet</servlet-name>
         <url-pattern>/ModuleUploadServlet</url-pattern>
     </servlet-mapping>
+
+    <security-constraint>
+        <display-name>Require Admin</display-name>
+        <web-resource-collection>
+            <web-resource-name>Access to module manager servlet</web-resource-name>
+            <description>Access to module editor requires admin login</description>
+            <url-pattern>/ModuleUploadServlet</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>PUT</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <description>Require a admin</description>
+            <role-name>admin</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-role>
+        <description>A regular user of the system</description>
+        <role-name>user</role-name>
+    </security-role>
+    <security-role>
+        <description>A system administrator</description>
+        <role-name>admin</role-name>
+    </security-role>
+
     <session-config>
         <session-timeout>
             30

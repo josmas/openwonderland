@@ -38,7 +38,7 @@ public class RunnerTask extends Task {
     
     // url for restarting the server
     private static final String SERVICES_URL =
-            "wonderland-web-runner/services";
+            "wonderland-web-runner/services/runner";
  
     public void setServerUrl(URL serverUrl) {
         this.serverUrl = serverUrl;

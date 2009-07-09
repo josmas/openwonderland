@@ -81,6 +81,7 @@ public class GroupContextListener
         // register with the UI
         ar = new AdminRegistration("Group Editor",
                                    "/security-groups/security-groups/editor");
+        ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, this.context);
     }
 

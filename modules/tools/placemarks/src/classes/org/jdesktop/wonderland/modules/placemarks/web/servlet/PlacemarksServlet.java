@@ -337,6 +337,7 @@ public class PlacemarksServlet extends HttpServlet implements ServletContextList
         context = sce.getServletContext();
         ar = new AdminRegistration("Placemarks",
                                    "/placemarks/wonderland-placemarks/browse");
+        ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, context);
 
         // add ourselves as a listener for when the Darkstar server changes

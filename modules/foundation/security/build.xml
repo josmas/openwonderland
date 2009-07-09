@@ -15,6 +15,7 @@
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client,
+                                                -module-compile-web,
                                                 -security-compile-weblib"/>
 
     <target name="-security-compile-weblib" depends="-module-init">

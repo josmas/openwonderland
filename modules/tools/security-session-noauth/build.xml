@@ -92,6 +92,8 @@
                     </zipfileset>
                 </jar>
             </part>
+
+            <part name="properties" dir="${current.dir}/src/properties"/>
         </module>
     </target>                                  
                                            

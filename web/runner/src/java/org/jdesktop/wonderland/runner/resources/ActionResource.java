@@ -41,7 +41,7 @@ import org.jdesktop.wonderland.runner.StatusWaiter;
  * 
  * @author jkaplan
  */
-@Path(value="/all/{action}")
+@Path(value="/runner/all/{action}")
 public class ActionResource {
     private static final Logger logger =
             Logger.getLogger(ActionResource.class.getName());

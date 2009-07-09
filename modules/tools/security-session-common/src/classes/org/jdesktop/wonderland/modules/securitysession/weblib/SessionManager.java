@@ -17,11 +17,13 @@
  */
 package org.jdesktop.wonderland.modules.securitysession.weblib;
 
+import org.jdesktop.wonderland.modules.security.weblib.serverauthmodule.SessionResolver;
+
 /**
  *
  * @author jkaplan
  */
-public interface SessionManager {
+public interface SessionManager extends SessionResolver {
     /**
      * Login to the session with the given credentials.  This will return
      * a UserRecord for the given user on success, or null if the

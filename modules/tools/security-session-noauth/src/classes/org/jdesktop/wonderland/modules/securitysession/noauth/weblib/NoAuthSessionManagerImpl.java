@@ -17,12 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.securitysession.noauth.weblib;
 
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.naming.directory.BasicAttribute;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.util.Base64;
 import org.jdesktop.wonderland.modules.securitysession.weblib.SessionLoginException;
 import org.jdesktop.wonderland.modules.securitysession.weblib.SessionManager;
@@ -38,6 +41,9 @@ public class NoAuthSessionManagerImpl implements SessionManager {
     private final Map<String, UserRecord> byToken =
             new LinkedHashMap<String, UserRecord>();
 
+    public void initialize(Map opts) {
+        // nothing to do
+    }
 
     public synchronized UserRecord login(String userId, Object... credentials)
             throws SessionLoginException
@@ -82,6 +88,17 @@ public class NoAuthSessionManagerImpl implements SessionManager {
         return byToken.get(token);
     }
 
+    public String getUserId(String token) {
+        String out = null;
+
+        UserRecord rec = getByToken(token);
+        if (rec != null) {
+            out = rec.getUserId();
+        }
+
+        return out;
+    }
+
     public synchronized UserRecord logout(String token) {
         UserRecord rec = byToken.remove(token);
         if (rec != null) {
@@ -89,6 +106,15 @@ public class NoAuthSessionManagerImpl implements SessionManager {
         }
 
         return rec;
+    }
+
+    public String handleUnauthenticated(HttpServletRequest request,
+                                        boolean mandatory,
+                                        HttpServletResponse response)
+        throws IOException
+    {
+        // unauthenticated users are treated as admin so the web UI works
+        return "admin";
     }
 
     /**

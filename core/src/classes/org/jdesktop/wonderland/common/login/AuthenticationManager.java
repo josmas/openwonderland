@@ -193,7 +193,7 @@ public class AuthenticationManager {
         String password = null;
 
         if (credentials.length == 1) {
-            // only full name specified
+            // only password specified
             password = (String) credentials[0];
         } else {
             throw new AuthenticationException("Expected 1 argument " +
@@ -202,7 +202,7 @@ public class AuthenticationManager {
         }
 
         try {
-            URL u = new URL(url + "/noauth");
+            URL u = new URL(url + "/authenticate");
             HttpURLConnection uc = (HttpURLConnection) u.openConnection();
             uc.setRequestMethod("POST");
             uc.setRequestProperty("Content-Type",
@@ -219,6 +219,10 @@ public class AuthenticationManager {
 
             logger.fine("WebServiceLogin Response: " + uc.getResponseCode() +
                         " : " + uc.getResponseMessage());
+
+            if (uc.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+                throw new AuthenticationException("Invalid username or password");
+            }
 
             BufferedReader br = new BufferedReader(
                                     new InputStreamReader(uc.getInputStream()));

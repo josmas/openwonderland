@@ -22,6 +22,7 @@ package org.jdesktop.wonderland.common.login;
  * @author jkaplan
  */
 public class AuthenticationException extends Exception {
+    private String message;
 
     /**
      * Creates a new instance of <code>AuthenticationException</code>
@@ -36,7 +37,7 @@ public class AuthenticationException extends Exception {
      * @param msg the detail message.
      */
     public AuthenticationException(String msg) {
-        super (msg);
+        this.message = msg;
     }
 
     /**
@@ -55,6 +56,17 @@ public class AuthenticationException extends Exception {
      * @param cause the exception cause
      */
     public AuthenticationException(String msg, Throwable cause) {
-        super (msg, cause);
+        super (cause);
+
+        this.message = msg;
+    }
+
+    /**
+     * Override so we don't include the class name in the message
+     * @return
+     */
+    @Override
+    public String getMessage() {
+        return message;
     }
 }

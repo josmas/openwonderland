@@ -42,7 +42,7 @@ import org.jdesktop.wonderland.runner.RunnerException;
  * 
  * @author jkaplan
  */
-@Path(value="/{runner}/{action}")
+@Path(value="/runner/{runner}/{action}")
 public class RunnerActionResource {
     private static final Logger logger =
             Logger.getLogger(RunnerActionResource.class.getName());

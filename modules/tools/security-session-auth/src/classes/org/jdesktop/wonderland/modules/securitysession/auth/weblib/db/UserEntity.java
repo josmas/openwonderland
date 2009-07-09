@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.securitysession.noauth.weblib.db;
+package org.jdesktop.wonderland.modules.securitysession.auth.weblib.db;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -29,8 +29,17 @@ import javax.persistence.Transient;
  */
 @Entity
 @NamedQueries({
-    @NamedQuery(name="findUser",
-                query="SELECT g FROM GroupEntity g WHERE g.id like :id")})
+    @NamedQuery(name="userCount",
+                query="SELECT count(u) FROM UserEntity u"),
+    @NamedQuery(name="allUsers",
+                query="SELECT u FROM UserEntity u"),
+    @NamedQuery(name="findUsersById",
+                query="SELECT u FROM UserEntity u WHERE u.id like :id"),
+    @NamedQuery(name="findUsersByName",
+                query="SELECT u FROM UserEntity u WHERE u.fullname like :fullname"),
+    @NamedQuery(name="findUsersByEmail",
+                query="SELECT u FROM UserEntity u WHERE u.email like :email")
+})
 public class UserEntity {
     private String id;
     private String fullname;

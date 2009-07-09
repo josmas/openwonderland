@@ -24,17 +24,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import org.jdesktop.wonderland.modules.security.weblib.serverauthmodule.WonderSAM;
-import org.jdesktop.wonderland.utils.Constants;
 
 /**
  *
  * @author jkaplan
  */
 public class GroupEditorServlet extends HttpServlet {
-    private static boolean authEnabled = Boolean.parseBoolean(
-                               System.getProperty(Constants.WEBSERVER_LOGIN_ENABLED));
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
@@ -45,8 +40,6 @@ public class GroupEditorServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException
     {
-        setupNoauthSession(request);
-
         // get the action
         String action = request.getParameter("action");
         if (action == null) {
@@ -75,17 +68,6 @@ public class GroupEditorServlet extends HttpServlet {
         RequestDispatcher rd = request.getRequestDispatcher(redirect);
         rd.forward(request, response);
     } 
-
-    /**
-     * If authentication is disabled, make sure this user is in the admin
-     * group so they can actually edit groups.
-     */
-    private void setupNoauthSession(HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        if (!authEnabled && session.getAttribute(WonderSAM.USERID_SESSION_ATTR) == null) {
-            session.setAttribute(WonderSAM.USERID_SESSION_ATTR, "admin");
-        }
-    }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /** 

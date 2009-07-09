@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.sample.client;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentClientState;
@@ -34,6 +35,9 @@ public class SampleCellComponent extends CellComponent {
 
     private static Logger logger = Logger.getLogger(SampleCellComponent.class.getName());
     private String info = null;
+
+    @UsesCellComponent
+    private SampleCellSubComponent component;
 
     public SampleCellComponent(Cell cell) {
         super(cell);

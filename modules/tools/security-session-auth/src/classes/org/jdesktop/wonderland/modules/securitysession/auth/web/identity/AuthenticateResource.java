@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.securitysession.noauth.web.identity;
+package org.jdesktop.wonderland.modules.securitysession.auth.web.identity;
 
 import com.sun.jersey.api.Responses;
 import java.io.UnsupportedEncodingException;
@@ -56,7 +56,7 @@ public class AuthenticateResource {
         // decode arguments
         try {
             username = URLDecoder.decode(username, "UTF-8");
-            password = URLDecoder.decode(username, "UTF-8");
+            password = URLDecoder.decode(password, "UTF-8");
         } catch (UnsupportedEncodingException uee) {
             logger.log(Level.WARNING, "Decoding error", uee);
             throw new WebApplicationException(uee,

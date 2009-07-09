@@ -36,10 +36,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.servlets.WebdavServlet;
-import org.apache.naming.resources.CacheEntry;
 import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
-import org.apache.naming.resources.ResourceAttributes;
 import org.jdesktop.wonderland.modules.security.weblib.UserGroupPrincipal;
 import org.jdesktop.wonderland.utils.RunUtil;
 
@@ -323,7 +321,7 @@ public class WonderlandWebdavServlet extends WebdavServlet {
 
             if (logger.isLoggable(Level.FINEST)) {
                 logger.finest("[PermissionsDirContext] CheckRead User: " +
-                    requestLocal.get().getUserPrincipal().getName() + "" +
+                    getUserName() + " " +
                     "Path: " + path + " Category: " + type.getType() +
                     " User: " + type.getUser() +
                     " Private " + type.isPrivate() +
@@ -332,7 +330,7 @@ public class WonderlandWebdavServlet extends WebdavServlet {
 
             if (type.isPrivate() && !isOwner(type)) {
                 System.out.println("[WebdavServlet] Permission denied reading " + file +
-                               " by " + requestLocal.get().getUserPrincipal().getName());
+                               " by " + getUserName());
                 throw new NamingException("Permission denied");
             }
         }
@@ -353,7 +351,7 @@ public class WonderlandWebdavServlet extends WebdavServlet {
 
             if (logger.isLoggable(Level.FINEST)) {
                 logger.finest("[PermissionsDirContext] CheckWrite User: " +
-                    requestLocal.get().getUserPrincipal().getName() + "" +
+                    getUserName() + " " +
                     "Path: " + path + " Category: " + type.getType() +
                     " User: " + type.getUser() +
                     " Private " + type.isPrivate() +
@@ -388,7 +386,7 @@ public class WonderlandWebdavServlet extends WebdavServlet {
                 return false;
             } else if (type.getType().equalsIgnoreCase(USERS_DIR)) {
                 return (type.getUser() != null) &&
-                        type.getUser().equalsIgnoreCase(p.getName());
+                        type.getUser().equalsIgnoreCase(getUserName());
             } else if (type.getType().equalsIgnoreCase(GROUPS_DIR)) {
                 if (!(p instanceof UserGroupPrincipal)) {
                     return false;
@@ -402,6 +400,23 @@ public class WonderlandWebdavServlet extends WebdavServlet {
             }
 
             return false;
+        }
+
+        /**
+         * Get the name of the current user.  If the current user is not
+         * authenticated, return null as the user name.
+         * @return the current user name, or null if the current user
+         * does not have an authenticated principal.
+         */
+        protected String getUserName() {
+            HttpServletRequest req = requestLocal.get();
+            Principal p = req.getUserPrincipal();
+
+            if (p == null) {
+                return null;
+            }
+
+            return p.getName();
         }
 
         /**

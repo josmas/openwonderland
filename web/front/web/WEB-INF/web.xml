@@ -13,6 +13,10 @@
         <servlet-class>org.jdesktop.wonderland.front.servlet.AdminServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>DefaultPageServlet</servlet-name>
+        <servlet-class>org.jdesktop.wonderland.front.servlet.DefaultPageServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
         <servlet-class>com.sun.jersey.impl.container.servlet.ServletAdaptor</servlet-class>
         <load-on-startup>1</load-on-startup>
@@ -34,7 +38,10 @@
         <servlet-name>AdminServlet</servlet-name>
         <url-pattern>/admin</url-pattern>
     </servlet-mapping>
-    
+    <servlet-mapping>
+        <servlet-name>DefaultPageServlet</servlet-name>
+        <url-pattern>/default</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>ClientPropertiesServlet</servlet-name>
         <url-pattern>/config/run-client.properties</url-pattern>
@@ -50,4 +57,45 @@
     <listener>
         <listener-class>org.jdesktop.wonderland.front.servlet.AdminServlet</listener-class>
     </listener>
+    <security-constraint>
+        <display-name>Optional Login</display-name>
+        <web-resource-collection>
+            <web-resource-name>Admin</web-resource-name>
+            <description>Access to the admin pages</description>
+            <url-pattern>/admin</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>PUT</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+    </security-constraint>
+    <security-constraint>
+        <display-name>Require User</display-name>
+        <web-resource-collection>
+            <web-resource-name>Admin</web-resource-name>
+            <description>Access to the admin pages</description>
+            <url-pattern>/default</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>HEAD</http-method>
+            <http-method>PUT</http-method>
+            <http-method>OPTIONS</http-method>
+            <http-method>TRACE</http-method>
+            <http-method>DELETE</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>user</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-role>
+        <description>A logged in user</description>
+        <role-name>user</role-name>
+    </security-role>
+    <security-role>
+        <description>A system administration</description>
+        <role-name>admin</role-name>
+    </security-role>
 </web-app>

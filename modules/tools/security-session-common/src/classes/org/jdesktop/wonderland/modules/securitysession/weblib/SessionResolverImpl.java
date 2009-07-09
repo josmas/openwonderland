@@ -17,28 +17,35 @@
  */
 package org.jdesktop.wonderland.modules.securitysession.weblib;
 
+import java.io.IOException;
 import java.util.Map;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.jdesktop.wonderland.modules.security.weblib.serverauthmodule.SessionResolver;
 
 /**
- *
- * @author jkaplan
+ * A wrapper implementation of SessionResolver that passes all calls through
+ * to the underlying session resolver.
+ * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 public class SessionResolverImpl implements SessionResolver {
 
     public void initialize(Map opts) {
-        // nothing to do
+        SessionManager sm = SessionManagerFactory.getSessionManager();
+        sm.initialize(opts);
     }
 
-    public String getUserId(String token) {
-        String out = null;
-        
+    public String getUserId(String token) {        
         SessionManager sm = SessionManagerFactory.getSessionManager();
-        UserRecord record = sm.getByToken(token);
-        if (record != null) {
-            out = record.getUserId();
-        }
+        return sm.getUserId(token);
+    }
 
-        return out;
+    public String handleUnauthenticated(HttpServletRequest request,
+                                        boolean mandatory,
+                                        HttpServletResponse response)
+        throws IOException
+    {
+        SessionManager sm = SessionManagerFactory.getSessionManager();
+        return sm.handleUnauthenticated(request, mandatory, response);
     }
 }

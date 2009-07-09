@@ -44,6 +44,7 @@ public class DataCollectionManager implements ServletContextListener
     
         ar = new AdminRegistration("Server Performance", 
                                    "/servermanager/servermanager-web");
+        ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, context);
     }
 
