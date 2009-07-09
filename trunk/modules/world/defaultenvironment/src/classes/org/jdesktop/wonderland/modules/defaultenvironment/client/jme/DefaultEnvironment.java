@@ -73,29 +73,42 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
      * @{@inheritDoc}
      */
     public void addGlobalLights() {
-        LightNode globalLight1 = new LightNode();
-        PointLight light = new PointLight();
-        light.setDiffuse(new ColorRGBA(0.95f, 0.95f, 0.95f, 1.0f));
-        //light.setAmbient(new ColorRGBA(0.85f, 0.85f, 0.85f, 1.0f));
-        light.setAmbient(new ColorRGBA(0.25f, 0.25f, 0.25f, 1.0f));
-        light.setEnabled(true);
-        globalLight1.setLight(light);
-        globalLight1.setLocalTranslation(0.0f, 500.0f, 500.0f);
+        LightNode globalLight1 = null;
+        LightNode globalLight2 = null;
+        LightNode globalLight3 = null;
 
-        LightNode globalLight2 = new LightNode();
-        light = new PointLight();
-        light.setDiffuse(new ColorRGBA(0.75f, 0.75f, 0.75f, 1.0f));
-        light.setAmbient(new ColorRGBA(0.25f, 0.25f, 0.25f, 1.0f));
-        light.setEnabled(true);
-        globalLight2.setLight(light);
-        globalLight2.setLocalTranslation(0.0f, -500.0f, -500.0f);
+        float radius = 75.0f;
+        float lheight = 30.0f;
+        float x = (float)(radius*Math.cos(Math.PI/6));
+        float z = (float)(radius*Math.sin(Math.PI/6));
+        globalLight1 = createLight(x, lheight, z);
+        x = (float)(radius*Math.cos(5*Math.PI/6));
+        z = (float)(radius*Math.sin(5*Math.PI/6));
+        globalLight2 = createLight(x, lheight, z);
+        x = (float)(radius*Math.cos(3*Math.PI/2));
+        z = (float)(radius*Math.sin(3*Math.PI/2));
+        globalLight3 = createLight(x, lheight, z);
 
         globalLights.add(globalLight1);
         globalLights.add(globalLight2);
+        globalLights.add(globalLight3);
 
         ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight1);
         ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight2);
+        ClientContextJME.getWorldManager().getRenderManager().addLight(globalLight3);
     }
+
+    private LightNode createLight(float x, float y, float z) {
+        LightNode lightNode = new LightNode();
+        PointLight light = new PointLight();
+        light.setDiffuse(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
+        light.setAmbient(new ColorRGBA(0.1f, 0.1f, 0.1f, 1.0f));
+        light.setSpecular(new ColorRGBA(0.4f, 0.4f, 0.4f, 1.0f));
+        light.setEnabled(true);
+        lightNode.setLight(light);
+        lightNode.setLocalTranslation(x, y, z);
+        return(lightNode);
+    } 
 
     /**
      * @{inheritDoc}
