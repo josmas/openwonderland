@@ -37,7 +37,7 @@ public class NetworkAddress {
     } 
 
     public static InetAddress getPrivateLocalAddress(String s) throws UnknownHostException {
-	return NetworkAddressManager.getPrivateLocalAddress();
+	return NetworkAddressManager.getPrivateLocalAddress(s);
     }
 
     /*
