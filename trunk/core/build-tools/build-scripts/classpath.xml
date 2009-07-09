@@ -41,13 +41,14 @@
     <pathconvert property="darkstar.server.classpath">
         <path location="${core.sgs.server.dir}/lib/sgs-server-${core.sgs.version}.jar"/>
         <path location="${core.sgs.server.dir}/lib/sgs-server-api-${core.sgs.version}.jar"/>
-        <path location="${core.sgs.server.dir}/lib/sgs-shared-1.3.jar"/>
+        <path location="${core.sgs.server.dir}/lib/sgs-server-internal-api-${core.sgs.version}.jar"/>
+        <path location="${core.sgs.server.dir}/lib/sgs-shared-${core.sgs.shared.version}.jar"/>
         <path location="${core.sgs.server.dir}/lib/db-4.5.20.jar"/>
     </pathconvert>
 
     <pathconvert property="darkstar.client.classpath">
         <path location="${core.sgs.client.dir}/lib/sgs-client.jar"/>
-        <path location="${core.sgs.client.dir}/lib/sgs-shared-1.3.jar"/>
+        <path location="${core.sgs.client.dir}/lib/sgs-shared-${core.sgs.shared.version}.jar"/>
         <path location="${core.sgs.client.dir}/lib/mina-core-1.1.0.jar"/>
         <path location="${core.sgs.client.dir}/lib/slf4j-api-1.4.0.jar"/>
         <path location="${core.sgs.client.dir}/lib/slf4j-jdk14-1.4.0.jar"/>
