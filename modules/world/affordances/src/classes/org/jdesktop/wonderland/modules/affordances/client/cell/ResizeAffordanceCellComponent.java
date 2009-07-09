@@ -66,15 +66,15 @@ public class ResizeAffordanceCellComponent extends AffordanceCellComponent {
      */
     private class ResizingAffordanceListener implements ResizingListener {
 
-        private Vector3f scalingOnPress = null;
+        private float scalingOnPress = 0.0f;
 
         /**
          * @inheritDoc()
          */
-        public void resizingPerformed(Vector3f resizing) {
+        public void resizingPerformed(float scale) {
             // Move the cell via the moveable comopnent
             CellTransform transform = cell.getLocalTransform();
-            Vector3f newResizing = scalingOnPress.mult(resizing);
+            float newResizing = scalingOnPress * scale;
             transform.setScaling(newResizing);
             movableComp.localMoveRequest(transform);
         }
@@ -84,7 +84,7 @@ public class ResizeAffordanceCellComponent extends AffordanceCellComponent {
          */
         public void resizingStarted() {
             CellTransform transform = cell.getLocalTransform();
-            scalingOnPress = transform.getScaling(null);
+            scalingOnPress = transform.getScaling();
         }
     }
 }

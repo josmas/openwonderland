@@ -291,10 +291,10 @@ public class ResizeAffordance extends Affordance {
     /**
      * Informs all of the listeners of the new resizing
      */
-    private void fireResizingChanged(Vector3f resizing) {
+    private void fireResizingChanged(float scale) {
         synchronized (listenerSet) {
             for (ResizingListener listener : listenerSet) {
-                listener.resizingPerformed(resizing);
+                listener.resizingPerformed(scale);
             }
         }
     }
@@ -310,11 +310,11 @@ public class ResizeAffordance extends Affordance {
 
         /**
          * Indicates that the resize affordance has been moved by a certain
-         * amount, giving a Vector3f of the scaling along each axis
+         * amount, giving a scalar.
          *
-         * @param resizing The resizing amount as a 3D vector
+         * @param scale The resizing amount as a fraction
          */
-        public void resizingPerformed(Vector3f resizing);
+        public void resizingPerformed(float scale);
     }
 
     /**
@@ -440,7 +440,7 @@ public class ResizeAffordance extends Affordance {
             updateResizeLabel(scale, awtMouseEvent);
 
             // Rotate the object along the defined axis and angle.
-            fireResizingChanged(new Vector3f(scale, scale, scale));
+            fireResizingChanged(scale);
         }
 
         /**

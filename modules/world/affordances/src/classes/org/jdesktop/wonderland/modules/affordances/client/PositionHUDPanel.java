@@ -25,7 +25,6 @@ import java.awt.event.FocusListener;
 import java.util.List;
 import javax.swing.JFormattedTextField;
 import javax.swing.JSpinner;
-import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -116,7 +115,14 @@ public class PositionHUDPanel extends javax.swing.JPanel {
             public void componentChanged(Cell cell, ChangeType type, CellComponent component) {
                 if (type == ChangeType.ADDED && component instanceof MovableComponent) {
                     movableComponent = (MovableComponent)component;
-                    setGUIEnabled(true);
+
+                    // We must enable the GUI components in the AWT Event
+                    // Thread.
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            setGUIEnabled(true);
+                        }
+                    });
                 }
             }
         };
@@ -125,7 +131,12 @@ public class PositionHUDPanel extends javax.swing.JPanel {
         // parts of this client or other clients.
         transformListener = new TransformChangeListener() {
             public void transformChanged(Cell cell, ChangeSource source) {
-                updateGUI();
+                // We must call this in the AWT Event Thread
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        updateGUI();
+                    }
+                });
             }
         };
 
@@ -482,6 +493,8 @@ public class PositionHUDPanel extends javax.swing.JPanel {
     /**
      * Sets whether the GUI components are active (enabled).
      *
+     * NOTE: This method assumes it is being called in the AWT Event Thread.
+     * 
      * @param enabled True to make the GUI components enabled, false to not
      */
     private void setGUIEnabled(boolean enabled) {
@@ -511,6 +524,8 @@ public class PositionHUDPanel extends javax.swing.JPanel {
      * Handles when a new Cell is selected in the world. This removes the
      * listeners from the old Cell, adds the listeners to the new Cell and
      * updates the GUI.
+     *
+     * NOTE: This method assumes it is being called in the AWT Event Thread.
      */
     private void setSelectedCell(Cell cell) {
         // First remove the listeners from the old Cell if such a Cell exists.
