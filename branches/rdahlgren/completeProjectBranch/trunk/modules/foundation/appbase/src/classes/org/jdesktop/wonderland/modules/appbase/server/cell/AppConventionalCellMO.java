@@ -249,8 +249,9 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
                 appServerLauncher.appLaunch(this, "xremwin", serverState.getAppName(), serverState.getCommand());
             } catch (InstantiationException ex) {
                 // TODO: jon: what should this exception be?
-                RuntimeException re = new RuntimeException();
-                re.initCause(ex);
+                logger.warning("App launch for app " + serverState.getAppName() + " failed with an exception.");
+                logger.warning("Exception = " + ex);
+                RuntimeException re = new RuntimeException("App launch for app " + serverState.getAppName() + " failed");
                 throw re;
             }
 

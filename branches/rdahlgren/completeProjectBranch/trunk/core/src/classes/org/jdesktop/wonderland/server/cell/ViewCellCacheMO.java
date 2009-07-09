@@ -156,8 +156,18 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     protected void logout(WonderlandClientID clientID) {
         logger.warning("DEBUG - logout");
         ViewCellMO view = viewRef.get();
+        try {
         UniverseManagerFactory.getUniverseManager().viewLogout(view);
+        } catch(RuntimeException e) {
+            System.err.println("UNIVERSE MGR logout timeout "+e);
+            throw e;
+        }
+        try {
         WonderlandContext.getCellManager().removeCellFromWorld(view);
+        } catch(RuntimeException e) {
+            System.err.println("REMOVE CELL FROM WORLD logout timeout "+e);
+            throw e;
+        }
     }
      
 
@@ -177,6 +187,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
 
         // get the resource for each cell and add it to the appropriate map
         for (CellDescription cell : cells) {
+//        System.err.println("GenerateLoad "+cell.getCellID());
+
             Resource resource = crm.getCellResource(cell.getCellID());
             if (resource == null) {
                 // don't need to check this cell
@@ -378,6 +390,8 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
                 CellLoadOp op = new CellLoadOp(cellDescription, clientID,
                                                viewCellCacheRef, capabilities);
                 scheduler.schedule(op);
+            } else {
+                logger.warning("Cell already loaded "+cellDescription.getCellID()+" msg send aborted");
             }
         }
         scheduler.endRevalidate();

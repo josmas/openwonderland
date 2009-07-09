@@ -177,7 +177,7 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             
             // Fetch the server-side cell class name and create the cell
             String className = setup.getServerClassName();
-            logger.warning("Attempting to load cell mo: " + className);
+            logger.fine("Attempting to load cell mo: " + className);
             CellMO cellMO = CellMOFactory.loadCellMO(className);
             if (cellMO == null) {
                 /* Log a warning and move onto the next cell */
@@ -285,7 +285,7 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             CellID cellID = ((CellReparentMessage)editMessage).getCellID();
             CellID newParentID = ((CellReparentMessage)editMessage).getParentCellID();
 
-            logger.warning("REPARENT CELL " + cellID + " " + newParentID);
+//            logger.warning("REPARENT CELL " + cellID + " " + newParentID);
 
             // Figure out the new local coordinates of the cell wrt the new
             // parent
@@ -295,10 +295,10 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             CellMO oldParent = child.getParent();
             CellMO newParent = CellManagerMO.getCell(newParentID);
 
-            System.err.println("ORIGINAL LOC "+child.getWorldTransform(null).getTranslation(null));
-
-            System.err.println("NEW PARENT "+newParent);
-            System.err.println("OLD PARENT "+oldParent);
+//            System.err.println("ORIGINAL LOC "+child.getWorldTransform(null).getTranslation(null));
+//
+//            System.err.println("NEW PARENT "+newParent);
+//            System.err.println("OLD PARENT "+oldParent);
 
             if (oldParent==null) {
                 CellManagerMO.getCellManager().removeCellFromWorld(child);
@@ -319,13 +319,12 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
             } else {
                 try {
                     newParent.addChild(child);
-                    System.err.println("PArented "+child.getParent());
                 } catch (MultipleParentException ex) {
                     Logger.getLogger(CellEditConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             
-            System.err.println("REPARENTED LOC "+child.getWorldTransform(null).getTranslation(null));
+//            System.err.println("REPARENTED LOC "+child.getWorldTransform(null).getTranslation(null));
 
 
         }

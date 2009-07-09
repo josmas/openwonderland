@@ -104,6 +104,7 @@ public class PresenceManagerClient extends BaseConnection implements
         // avatar.removeViewCellConfiguredListener(this);
         super.disconnect();
 	
+	System.out.println("disconnect:  remove PI " + presenceInfo);
 	pm.removePresenceInfo(presenceInfo);
 
 	PresenceManagerFactory.reset();
@@ -123,6 +124,7 @@ public class PresenceManagerClient extends BaseConnection implements
         session.send(this, new ClientConnectMessage());
 
         logger.fine("[PresenceManagerClient] view configured fpr " + cellID + " in " + pm);
+        System.out.println("viewConfigured:  sessionID " + session.getID() + " PI " + presenceInfo);
     }
 
     @Override
@@ -138,6 +140,7 @@ public class PresenceManagerClient extends BaseConnection implements
 
 	    for (PresenceInfo presenceInfo : presenceInfoList) {
 		logger.fine("Client connected: " + presenceInfo);
+		System.out.println("Client connected: " + presenceInfo);
 
 		logger.fine("Got ClientConnectResponse:  adding pi " + presenceInfo);
 		pm.presenceInfoAdded(presenceInfo);
@@ -170,6 +173,7 @@ public class PresenceManagerClient extends BaseConnection implements
 
             logger.fine("GOT PresenceInfoAddedMessage for " + m.getPresenceInfo());
 
+            System.out.println("PresenceInfoAddedMessage PI " + m.getPresenceInfo());
             pm.presenceInfoAdded(m.getPresenceInfo());
             return;
         }
@@ -178,6 +182,7 @@ public class PresenceManagerClient extends BaseConnection implements
             PresenceInfoRemovedMessage m = (PresenceInfoRemovedMessage) message;
 
             logger.fine("GOT PresenceInfoRemovedMessage for " + m.getPresenceInfo());
+            System.out.println("PresenceInfoRemovedMessage PI " + m.getPresenceInfo());
             pm.presenceInfoRemoved(m.getPresenceInfo());
             return;
         }

@@ -99,7 +99,7 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
         setBuddyList();
     }
 
-    private ArrayList<String> userList = new ArrayList();
+    private String[] currentArray = new String[0];
 
     private void setBuddyList() {
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
@@ -121,9 +121,23 @@ public class VoiceChatDialog extends javax.swing.JFrame implements PresenceManag
 
 	SortUsers.sort(userArray);
 
-	this.userList = userList;
+	boolean needToUpdate = false;
 
-        buddyList.setListData(userArray);
+	if (currentArray.length == userArray.length) {
+	    for (int i = 0; i < currentArray.length; i++) {
+	        if (currentArray[i].equals(userArray[i]) == false) {
+		    needToUpdate = true;
+		    break;
+		}
+	    }
+	} else {
+	    needToUpdate = true;
+	}
+
+	if (needToUpdate) {
+	    currentArray = userArray;
+            buddyList.setListData(userArray);
+	}
 
 	enableButtons();
     }
@@ -351,31 +365,22 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_joinButtonActionPerformed
     String group = caller.userID.getUsername() + "-" + groupNumber++;
 
-    String chatters = "";
+    ArrayList<PresenceInfo> chattersInfo = new ArrayList();
 
     Object[] selectedValues = buddyList.getSelectedValues();
 
     for (int i = 0; i < selectedValues.length; i++) {
-        if (i > 0) {
-            chatters += " ";
-        }
+	PresenceInfo[] info = pm.getAliasPresenceInfo((String) selectedValues[i]);
 
-	chatters += NameTagNode.getUsername((String) selectedValues[i]);
+	if (info == null || info.length == 0) {
+	    System.out.println("No PresenceInfo for " + (String) selectedValues[i]);
+	    continue;
+	}
+
+	chattersInfo.add(info[0]);
     }
 
     String callerString = caller.usernameAlias;
-
-    chatters = chatters.replaceAll(" " + callerString, "");
-    chatters = chatters.replaceAll(callerString + " ", "");
-    chatters = chatters.replaceAll(callerString, "");
-
-    logger.info("JOIN audio group " + group + " caller " + caller + " chatters " + chatters + " chatType " + chatType);
-
-    PresenceInfo[] chattersInfo = new PresenceInfo[0];
-
-    if (chatters.length() > 0) {
-        chattersInfo = getPresenceInfo(pm, chatters);
-    }
 
     InCallDialog inCallDialog = new InCallDialog(client, session, cellID, group, chatType);
 
@@ -383,7 +388,7 @@ private void joinButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
     String name = nameTextField.getText();
 
-    session.send(client, new VoiceChatJoinMessage(group, caller, chattersInfo, chatType));
+    session.send(client, new VoiceChatJoinMessage(group, caller, chattersInfo.toArray(new PresenceInfo[0]), chatType));
 
     logger.info("Sent join message, about to enable leave button");
 
@@ -460,37 +465,6 @@ public void keypadPressed(char key) {
     }
 
     session.send(client, new PlayTreatmentMessage(mostRecentDialout.callID, "dtmf:" + key));
-}
-
-public static PresenceInfo[] getPresenceInfo(PresenceManager pm, String users) {
-    String[] tokens = users.split(" ");
-
-    PresenceInfo[] info = new PresenceInfo[tokens.length];
-
-    for (int i = 0; i < tokens.length; i++) {
-        PresenceInfo[] userInfo = pm.getUserPresenceInfo(tokens[i]);
-
-        if (userInfo == null) {
-            logger.warning("No PresenceInfo for " + tokens[i]);
-            return null;
-        }
-
-        info[i] = userInfo[0];
-
-        checkLength(userInfo);
-    }
-
-    return info;
-}
-
-private static void checkLength(PresenceInfo[] info) {
-    if (info.length > 1) {
-        logger.info("More than one PresenceInfo, using first:");
-
-        for (int i = 0; i < info.length; i++) {
-            logger.info("  " + info[i]);
-        }
-    }
 }
 
     /**

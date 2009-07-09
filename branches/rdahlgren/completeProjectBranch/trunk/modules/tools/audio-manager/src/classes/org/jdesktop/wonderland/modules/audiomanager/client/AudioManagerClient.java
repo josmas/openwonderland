@@ -352,6 +352,12 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void mute(boolean isMuted) {
+	if (this.isMuted == isMuted) {
+	    return;
+	}
+
+	this.isMuted = isMuted;
+
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
         sc.mute(isMuted);
 
@@ -377,7 +383,15 @@ public class AudioManagerClient extends BaseConnection implements
     public void softphoneVisible(boolean isVisible) {
     }
 
+    private boolean isMuted = true;
+
     public void softphoneMuted(boolean isMuted) {
+	if (isMuted == this.isMuted) {
+	    return;
+	}
+
+	this.isMuted = isMuted;
+
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
         if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
@@ -691,8 +705,12 @@ public class AudioManagerClient extends BaseConnection implements
 
         isMuted = !isMuted;
 
+	this.isMuted = isMuted;
+
         sc.mute(isMuted);
+
         session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
     }
+
 }
 

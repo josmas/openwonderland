@@ -308,8 +308,7 @@ public class AudioManagerConnectionHandler
         sessionCallIDMap.put(clientID.getID(), callID);
 
         try {
-            setupCall(callID, setup, msg.getX(),
-                    msg.getY(), msg.getZ(), msg.getDirection());
+            setupCall(callID, setup, msg.getX(), msg.getY(), msg.getZ(), msg.getDirection());
         } catch (IOException e) {
             logger.warning("Unable to place call " + cp + " " + e.getMessage());
             sessionCallIDMap.remove(clientID.getID());

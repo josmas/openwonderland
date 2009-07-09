@@ -180,6 +180,8 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 	return false;
     }
 
+    private String[] currentArray = new String[0];
+
     private int setMemberList() {
 	//System.out.println("-----------InCallDialog------------");
 	//pm.dump();
@@ -229,7 +231,24 @@ public class InCallDialog extends javax.swing.JFrame implements KeypadListener,
 	String[] selectableMemberArray = selectableMemberData.toArray(new String[0]);
 
 	SortUsers.sort(selectableMemberArray);
-        selectableMemberList.setListData(selectableMemberArray);
+
+        boolean needToUpdate = false;
+
+        if (currentArray.length == selectableMemberArray.length) {
+            for (int i = 0; i < selectableMemberArray.length; i++) {
+                if (currentArray[i].equals(selectableMemberArray[i]) == false) {
+                    needToUpdate = true;
+                    break;
+                }
+            }
+        } else {
+	    needToUpdate = true;
+	}
+
+        if (needToUpdate) {
+	    currentArray = selectableMemberArray;
+            selectableMemberList.setListData(selectableMemberArray);
+	}
 
 	return selectableMemberData.size();
     }
@@ -511,26 +530,27 @@ private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private void endCall() {
         Object[] selectedValues = selectableMemberList.getSelectedValues();
 
-        String members = "";
-	
-        for (int i = 0; i < selectedValues.length; i++) {
-            if (i > 0) {
-                members += " ";
-            }
+        ArrayList<PresenceInfo> membersInfo = new ArrayList();
 
-            members += NameTagNode.getUsername((String) selectedValues[i]);
+        for (int i = 0; i < selectedValues.length; i++) {
+            String usernameAlias = NameTagNode.getUsername((String) selectedValues[i]);
+
+	    PresenceInfo[] info = pm.getAliasPresenceInfo(usernameAlias);
+
+	    if (info == null || info.length == 0) {
+		System.out.println("No presence info for " + (String) selectedValues[i]);
+		continue;
+	    }
+
+	    membersInfo.add(info[0]);
         }
 
-        if (members.length() == 0) {
+        if (membersInfo.size() == 0) {
             session.send(client, new VoiceChatLeaveMessage(group, presenceInfo));
 	    return;
         }
 
-        PresenceInfo[] membersInfo = VoiceChatDialog.getPresenceInfo(pm, members);
-
-        for (int i = 0; i < membersInfo.length; i++) {
-	    PresenceInfo info = membersInfo[i];
-
+	for (PresenceInfo info : membersInfo) {
 	    /*
 	     * You can only select yourself or outworlders
 	     */
@@ -567,26 +587,25 @@ private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:even
     private void changePrivacy(ChatType chatType) {
         Object[] selectedValues = selectableMemberList.getSelectedValues();
 
-        String members = "";
-	
-        for (int i = 0; i < selectedValues.length; i++) {
-            if (i > 0) {
-                members += " ";
-            }
+	ArrayList<PresenceInfo> membersInfo = new ArrayList();
 
-            members += NameTagNode.getUsername((String) selectedValues[i]);
+        for (int i = 0; i < selectedValues.length; i++) {
+            String usernameAlias = NameTagNode.getUsername((String) selectedValues[i]);
+
+	    PresenceInfo[] info = pm.getAliasPresenceInfo(usernameAlias);
+
+	    if (info == null || info.length == 0) {
+		System.out.println("No presence info for " + usernameAlias);
+		continue;
+	    }
         }
 
-        if (members.length() == 0) {
+        if (membersInfo.size() == 0) {
             session.send(client, new VoiceChatJoinMessage(group, presenceInfo, new PresenceInfo[0], chatType));
 	    return;
         }
 
-        PresenceInfo[] membersInfo = VoiceChatDialog.getPresenceInfo(pm, members);
-
-        for (int i = 0; i < membersInfo.length; i++) {
-	    PresenceInfo info = membersInfo[i];
-
+	for (PresenceInfo info : membersInfo) {
 	    /*
 	     * You can only select yourself or outworlders
 	     */
