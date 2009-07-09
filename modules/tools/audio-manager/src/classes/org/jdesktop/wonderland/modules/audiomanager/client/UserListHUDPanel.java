@@ -150,11 +150,12 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 usernameMap.remove(username);
             }
         }
-    //SortUsers.sort(userData);
+        //SortUsers.sort(userData);
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
         setUserList();
+        userListValueChanged(null);
     }
 
     public void usernameAliasChanged(PresenceInfo info) {
@@ -311,7 +312,6 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
 
         namePropertiesHUDComponent.setVisible(true);
 }//GEN-LAST:event_propertiesButtonActionPerformed
-
     private ConcurrentHashMap<PresenceInfo, Integer> volumeChangeMap = new ConcurrentHashMap();
 
     private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
@@ -333,7 +333,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 logger.info("changing volume for " + username + " to: " + volume);
                 PresenceInfo pi = info[0];
                 volumeChanged(pi.cellID, pi.callID, volume);
-		volumeChangeMap.put(pi, new Integer(volume));
+                volumeChangeMap.put(pi, new Integer(volume));
             }
         }
 }//GEN-LAST:event_volumeSliderStateChanged
@@ -378,18 +378,18 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 editButton.setEnabled(false);
             }
 
-	    if (presenceInfo != null) {
-		Integer v = volumeChangeMap.get(presenceInfo);
+            if (presenceInfo != null) {
+                Integer v = volumeChangeMap.get(presenceInfo);
 
-		if (v != null) {
-		    volumeSlider.setValue(v.intValue());
-		}
-	    }
+                if (v != null) {
+                    volumeSlider.setValue(v.intValue());
+                }
+            }
         } else {
             // multiple users
             volumeLabel.setText("Private volume for " + selectedValues.length + " users");
             volumeSlider.setEnabled(true);
-	    volumeSlider.setValue(5);
+            volumeSlider.setValue(5);
         }
 }//GEN-LAST:event_userListValueChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
