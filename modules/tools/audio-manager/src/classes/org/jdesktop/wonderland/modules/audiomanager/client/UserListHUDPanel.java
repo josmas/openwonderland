@@ -25,6 +25,7 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,6 +65,8 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
     private HUDComponent namePropertiesHUDComponent;
     private String[] selection = null;
     private DefaultListModel userListModel;
+
+    private ArrayList<PresenceInfo> usersInRange = new ArrayList();
 
     public UserListHUDPanel(PresenceManager pm, Cell cell) {
         this.pm = pm;
@@ -154,6 +157,14 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
+	if (type.equals(ChangeType.USER_IN_RANGE)) {
+	    System.out.println("USER IN RANGE:  " + info);
+	    usersInRange.add(info);
+	} else if (type.equals(ChangeType.USER_OUT_OF_RANGE)) {
+	    System.out.println("USER OUT OF RANGE:  " + info);
+	    usersInRange.remove(info);
+	}
+
         setUserList();
         userListValueChanged(null);
     }

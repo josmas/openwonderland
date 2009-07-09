@@ -24,20 +24,20 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- * Message indicating a client has connected or disconnected
+ * Message indicating a player has come into range.
  * @author jprovino
  */
 @ExperimentalAPI
-public class ClientConnectResponseMessage extends Message {
+public class PlayerInRangeListenerMessage extends Message {
 
-    private PresenceInfo[] presenceInfoList;
+    private boolean add;
 
-    public ClientConnectResponseMessage(PresenceInfo[] presenceInfoList) {
-	this.presenceInfoList = presenceInfoList;
+    public PlayerInRangeListenerMessage(boolean add) {
+	this.add = add;
     }
 
-    public PresenceInfo[] getPresenceInfoList() {
-	return presenceInfoList;
+    public boolean getAdd() {
+	return add;
     }
 
 }

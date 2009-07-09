@@ -26,7 +26,9 @@ public interface PresenceManagerListener {
     public enum ChangeType {
 	USER_ADDED,
 	USER_REMOVED,
-	UPDATED
+	UPDATED,
+	USER_IN_RANGE,
+	USER_OUT_OF_RANGE
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type);

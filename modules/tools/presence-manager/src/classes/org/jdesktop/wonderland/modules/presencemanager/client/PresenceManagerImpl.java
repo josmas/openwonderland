@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.messages.PlayerInRangeListenerMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoAddedMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoChangeMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.messages.PresenceInfoRemovedMessage;
@@ -244,16 +245,16 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param WonderlandIdentity userID
      * @return PresenceInfo PresenceInfo associated with the WonderlandIdentity.
     public PresenceInfo getPresenceInfo(WonderlandIdentity userID) {
-    synchronized (userIDMap) {
-    PresenceInfo info = userIDMap.get(userID);
+        synchronized (userIDMap) {
+            PresenceInfo info = userIDMap.get(userID);
 
-    if (info == null) {
-    logger.warning("No presence info for userID " + userID);
-    return null;
-    }
+            if (info == null) {
+                logger.warning("No presence info for userID " + userID);
+    	        return null;
+            }
 
-    return info;
-    }
+            return info;
+        }
     }
 
     /**
@@ -280,9 +281,20 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param BoundingVolume The BoundingBox or BoundingSphere specifying the range.
      * @return WonderlandIdentity[] the array of user ID's.
      */
+    private ArrayList<PresenceInfo> usersInRange = new ArrayList();
+
+    public void playerInRange(PresenceInfo info, boolean isInRange) {
+	if (isInRange) {
+	    usersInRange.add(info);
+	    notifyListeners(info, ChangeType.USER_IN_RANGE);
+	} else {
+	    usersInRange.remove(info);
+	    notifyListeners(info, ChangeType.USER_OUT_OF_RANGE);
+	}
+    }
+
     public PresenceInfo[] getUsersInRange(CellID cellID, BoundingVolume bounds) {
-        // TODO:  Return only users in range.
-        return getAllUsers();
+        return usersInRange.toArray(new PresenceInfo[0]);
     }
 
     /**
@@ -453,6 +465,9 @@ public class PresenceManagerImpl implements PresenceManager {
             info = cellIDMap.values().toArray(new PresenceInfo[0]);
         }
 
+        session.send(PresenceManagerClient.getInstance(),
+	    new PlayerInRangeListenerMessage(true));
+
         for (int i = 0; i < info.length; i++) {
             listener.presenceInfoChanged(info[i], ChangeType.USER_ADDED);
         }
@@ -463,6 +478,9 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param PresenceManagerListener the listener to be removed
      */
     public void removePresenceManagerListener(PresenceManagerListener listener) {
+        session.send(PresenceManagerClient.getInstance(),
+	    new PlayerInRangeListenerMessage(false));
+
         synchronized (listeners) {
             listeners.remove(listener);
         }
