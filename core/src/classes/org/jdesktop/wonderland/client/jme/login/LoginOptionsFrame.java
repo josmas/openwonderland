@@ -171,12 +171,13 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         setTitle("Advanced Properties");
         setAlwaysOnTop(true);
         setBounds(new java.awt.Rectangle(0, 0, 0, 0));
+        setResizable(false);
 
         jTabbedPane1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         jTabbedPane1.setMaximumSize(new java.awt.Dimension(426, 287));
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Web Proxies"));
-        jPanel2.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        jPanel2.setFont(new java.awt.Font("Dialog", 0, 13));
 
         proxyBG.add(noProxyRB);
         noProxyRB.setFont(new java.awt.Font("Dialog", 0, 13));
@@ -467,13 +468,13 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .add(131, 131, 131)
+                .add(132, 132, 132)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(okButton)
-                .addContainerGap(138, Short.MAX_VALUE))
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+                .addContainerGap(137, Short.MAX_VALUE))
         );
 
         layout.linkSize(new java.awt.Component[] {cancelButton, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
