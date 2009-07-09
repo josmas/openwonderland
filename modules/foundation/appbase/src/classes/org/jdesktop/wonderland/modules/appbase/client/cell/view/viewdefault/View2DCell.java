@@ -99,7 +99,9 @@ public class View2DCell extends View2DEntity {
         this.cell = cell;
 
         changeMask = CHANGED_ALL;
-        update();
+
+        // Note: first-visible optimization: don't update now because not visible.
+        // A later set visible to true will update everything.
     }
 
     /** Clean up resources. */
@@ -149,11 +151,6 @@ public class View2DCell extends View2DEntity {
     }
 
     public synchronized void userRotateYFinish () {
-    }
-
-    /** {@inheritDoc} */
-    public synchronized void update () {
-        super.update();
     }
 
     // Uses: type, parent
