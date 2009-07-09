@@ -30,7 +30,6 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
 import org.jdesktop.wonderland.client.ClientContext;
 
@@ -39,6 +38,9 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import com.sun.stun.NetworkAddressManager;
 import com.sun.stun.NetworkAddressManager.NetworkAddress;
+import java.util.logging.Logger;
+import javax.swing.UIManager;
+import org.jdesktop.wonderland.client.jme.utils.GUIUtils;
 
 /**
  *
@@ -47,15 +49,14 @@ import com.sun.stun.NetworkAddressManager.NetworkAddress;
  */
 public class LoginOptionsFrame extends javax.swing.JDialog {
 
-    public LoginOptionsFrame() {
-	super((JDialog) null, true);
+    private static final Logger logger = Logger.getLogger(LoginOptionsFrame.class.getName());
 
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-        }
+    public LoginOptionsFrame() {
+        super((JDialog) null, true);
+
+        GUIUtils.initLookAndFeel();
         initComponents();
-        
+
         // set the OK button as the default
         getRootPane().setDefaultButton(okButton);
 
@@ -73,23 +74,23 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
                 new DefaultComboBoxModel(AudioQuality.values()));
         //audioQualityComboBox.setSelectedItem(wcc.getAudioQuality());
 
-	AudioQuality audioQuality = AudioQuality.VPN;
+        AudioQuality audioQuality = AudioQuality.VPN;
 
-	Preferences prefs = Preferences.userNodeForPackage(LoginOptionsFrame.class);
+        Preferences prefs = Preferences.userNodeForPackage(LoginOptionsFrame.class);
 
-	String s = prefs.get(
-	    "org.jdesktop.wonderland.modules.audiomanager.client.AUDIO_QUALITY", null);
+        String s = prefs.get(
+                "org.jdesktop.wonderland.modules.audiomanager.client.AUDIO_QUALITY", null);
 
-	if (s != null) {
-	    AudioQuality[] AudioQualityValues = AudioQuality.values();
+        if (s != null) {
+            AudioQuality[] AudioQualityValues = AudioQuality.values();
 
-	    for (int i = 0; i < AudioQualityValues.length; i++) {
-		if (AudioQualityValues[i].toString().equals(s)) {
-		    audioQuality = AudioQualityValues[i];
-		    break;
-		}
-	    }
-	}
+            for (int i = 0; i < AudioQualityValues.length; i++) {
+                if (AudioQualityValues[i].toString().equals(s)) {
+                    audioQuality = AudioQualityValues[i];
+                    break;
+                }
+            }
+        }
 
         audioQualityComboBox.setSelectedItem(audioQuality);
 
@@ -98,7 +99,7 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         // read in proxy information
         //switch (wcc.getProxyType()) {
         //    case NONE:
-                noProxyRB.setSelected(true);
+        noProxyRB.setSelected(true);
         //        break;
         //    case SYSTEM:
         //        systemProxyRB.setSelected(true);
@@ -116,7 +117,7 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         // get the right initial value for the http proxy
         updateHttpProxy();
 
-	systemProxyRB.setEnabled(false);
+        systemProxyRB.setEnabled(false);
         wlProxyRB.setEnabled(false);
 
         // set the cache directory
@@ -157,6 +158,7 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         audioQualityComboBox = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
         phoneNumber = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
         cachePanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         cacheLocation = new javax.swing.JTextField();
@@ -166,13 +168,15 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
 
         jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        setTitle("Wonderland Options");
+        setTitle("Advanced Properties");
         setAlwaysOnTop(true);
+        setBounds(new java.awt.Rectangle(0, 0, 0, 0));
 
-        jTabbedPane1.setFont(new java.awt.Font("Dialog", 0, 13));
+        jTabbedPane1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        jTabbedPane1.setMaximumSize(new java.awt.Dimension(426, 287));
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Web Proxies"));
-        jPanel2.setFont(new java.awt.Font("Dialog", 0, 13));
+        jPanel2.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
 
         proxyBG.add(noProxyRB);
         noProxyRB.setFont(new java.awt.Font("Dialog", 0, 13));
@@ -186,7 +190,7 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
 
         proxyBG.add(systemProxyRB);
         systemProxyRB.setFont(new java.awt.Font("Dialog", 0, 13));
-        systemProxyRB.setText("Use system proxy");
+        systemProxyRB.setText("Use system proxy settings");
         systemProxyRB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 systemProxyRBActionPerformed(evt);
@@ -195,19 +199,19 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
 
         proxyBG.add(wlProxyRB);
         wlProxyRB.setFont(new java.awt.Font("Dialog", 0, 13));
-        wlProxyRB.setText("Specify a proxy:");
+        wlProxyRB.setText("Manual proxy configuration:");
         wlProxyRB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 wlProxyRBActionPerformed(evt);
             }
         });
 
-        httpProxyTFLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        httpProxyTFLabel.setFont(new java.awt.Font("Dialog", 0, 13));
         httpProxyTFLabel.setText("HTTP Proxy:");
 
         httpProxyTF.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        httpProxyPortTFLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        httpProxyPortTFLabel.setFont(new java.awt.Font("Dialog", 0, 13));
         httpProxyPortTFLabel.setText("Port:");
 
         httpProxyPortTF.setFont(new java.awt.Font("Dialog", 0, 13));
@@ -217,17 +221,17 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
             }
         });
 
-        httpsProxyTFLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        httpsProxyTFLabel.setFont(new java.awt.Font("Dialog", 0, 13));
         httpsProxyTFLabel.setText("HTTPS Proxy:");
 
         httpsProxyTF.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        httpsProxyPortTFLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        httpsProxyPortTFLabel.setFont(new java.awt.Font("Dialog", 0, 13));
         httpsProxyPortTFLabel.setText("Port:");
 
         httpsProxyPortTF.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        noProxyTFLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        noProxyTFLabel.setFont(new java.awt.Font("Dialog", 0, 13));
         noProxyTFLabel.setText("No Proxy For:");
 
         noProxyTF.setFont(new java.awt.Font("Dialog", 0, 13));
@@ -239,11 +243,9 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
             .add(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(noProxyRB)
-                    .add(systemProxyRB)
                     .add(jPanel2Layout.createSequentialGroup()
+                        .add(29, 29, 29)
                         .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(wlProxyRB)
                             .add(httpProxyTFLabel)
                             .add(jPanel2Layout.createSequentialGroup()
                                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -251,24 +253,26 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
                                     .add(noProxyTFLabel))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                         .add(6, 6, 6)
-                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(jPanel2Layout.createSequentialGroup()
                                 .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, httpsProxyTF)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, httpProxyTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE))
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, httpProxyTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 168, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                                     .add(jPanel2Layout.createSequentialGroup()
                                         .add(httpProxyPortTFLabel)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(httpProxyPortTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 48, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                        .add(httpProxyPortTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 67, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                     .add(jPanel2Layout.createSequentialGroup()
                                         .add(httpsProxyPortTFLabel)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(httpsProxyPortTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 48, Short.MAX_VALUE))))
-                            .add(noProxyTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                .add(149, 149, 149))
+                                        .add(httpsProxyPortTF))))
+                            .add(noProxyTF)))
+                    .add(noProxyRB)
+                    .add(systemProxyRB)
+                    .add(wlProxyRB))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -314,8 +318,8 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(ipAddressComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 188, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(242, Short.MAX_VALUE))
+                .add(ipAddressComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 167, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(128, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -338,40 +342,53 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
             .add(networkPanelLayout.createSequentialGroup()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Network", networkPanel);
 
-        jLabel4.setFont(new java.awt.Font("Dialog", 1, 13));
+        audioPanel.setMaximumSize(new java.awt.Dimension(426, 287));
+        audioPanel.setMinimumSize(new java.awt.Dimension(426, 287));
+        audioPanel.setPreferredSize(new java.awt.Dimension(426, 287));
+
+        jLabel4.setFont(new java.awt.Font("Dialog", 0, 13));
         jLabel4.setText("Audio Quality:");
 
         audioQualityComboBox.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        jLabel3.setText("Phone number to use instead of Softphone:");
+        jLabel3.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel3.setText("Phone number:");
 
+        phoneNumber.setFont(new java.awt.Font("Dialog", 0, 13));
         phoneNumber.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 phoneNumberKeyTyped(evt);
             }
         });
 
+        jLabel5.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel5.setText("Use this phone number instead of the softphone");
+
         org.jdesktop.layout.GroupLayout audioPanelLayout = new org.jdesktop.layout.GroupLayout(audioPanel);
         audioPanel.setLayout(audioPanelLayout);
         audioPanelLayout.setHorizontalGroup(
             audioPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(audioPanelLayout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, audioPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(audioPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(audioPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel4)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(audioPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel5)
                     .add(audioPanelLayout.createSequentialGroup()
-                        .add(jLabel4)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(audioQualityComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 187, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .add(1, 1, 1)
-                .add(phoneNumber, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 186, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(76, Short.MAX_VALUE))
+                        .add(phoneNumber, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
+                        .add(119, 119, 119))
+                    .add(audioPanelLayout.createSequentialGroup()
+                        .add(audioQualityComboBox, 0, 186, Short.MAX_VALUE)
+                        .add(119, 119, 119)))
+                .add(200, 200, 200))
         );
         audioPanelLayout.setVerticalGroup(
             audioPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -380,22 +397,24 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
                 .add(audioPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
                     .add(audioQualityComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(46, 46, 46)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(audioPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel3)
                     .add(phoneNumber, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(169, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel5)
+                .addContainerGap(198, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Audio", audioPanel);
 
-        jLabel2.setFont(new java.awt.Font("Dialog", 1, 13));
+        jLabel2.setFont(new java.awt.Font("Dialog", 0, 13));
         jLabel2.setText("Cache Directory:");
 
         cacheLocation.setEditable(false);
         cacheLocation.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        clearCacheButton.setFont(new java.awt.Font("Dialog", 1, 13));
+        clearCacheButton.setFont(new java.awt.Font("Dialog", 0, 13));
         clearCacheButton.setText("Clear Cache");
         clearCacheButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -413,8 +432,8 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cachePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(clearCacheButton)
-                    .add(cacheLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 254, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(182, Short.MAX_VALUE))
+                    .add(cacheLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE))
+                .addContainerGap())
         );
         cachePanelLayout.setVerticalGroup(
             cachePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -425,12 +444,11 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
                     .add(cacheLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(clearCacheButton)
-                .addContainerGap(199, Short.MAX_VALUE))
+                .addContainerGap(218, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Cache", cachePanel);
 
-        okButton.setFont(new java.awt.Font("Dialog", 1, 13));
         okButton.setText("OK");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -438,7 +456,6 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
             }
         });
 
-        cancelButton.setFont(new java.awt.Font("Dialog", 1, 13));
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -450,22 +467,25 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(274, Short.MAX_VALUE)
-                .add(okButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+            .add(layout.createSequentialGroup()
+                .add(131, 131, 131)
                 .add(cancelButton)
-                .add(209, 209, 209))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(okButton)
+                .addContainerGap(138, Short.MAX_VALUE))
+            .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
         );
+
+        layout.linkSize(new java.awt.Component[] {cancelButton, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 310, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(okButton)
-                    .add(cancelButton))
+                    .add(cancelButton)
+                    .add(okButton))
                 .addContainerGap())
         );
 
@@ -473,109 +493,109 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 private void wlProxyRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wlProxyRBActionPerformed
-        updateHttpProxy();
+    updateHttpProxy();
 }//GEN-LAST:event_wlProxyRBActionPerformed
 
 private void systemProxyRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_systemProxyRBActionPerformed
-        updateHttpProxy();
+    updateHttpProxy();
 }//GEN-LAST:event_systemProxyRBActionPerformed
 
 private void noProxyRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noProxyRBActionPerformed
-        updateHttpProxy();
+    updateHttpProxy();
 }//GEN-LAST:event_noProxyRBActionPerformed
 
 private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        setVisible(false);
+    setVisible(false);
 }//GEN-LAST:event_cancelButtonActionPerformed
 
 private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        //WonderlandClientConfig wcc = WonderlandClientConfig.getDefault();
+    //WonderlandClientConfig wcc = WonderlandClientConfig.getDefault();
 
-        // store the audio quality
-        //wcc.setAudioQuality((AudioQuality) audioQualityComboBox.getSelectedItem());
+    // store the audio quality
+    //wcc.setAudioQuality((AudioQuality) audioQualityComboBox.getSelectedItem());
 
-	Preferences prefs = Preferences.userNodeForPackage(LoginOptionsFrame.class);
+    Preferences prefs = Preferences.userNodeForPackage(LoginOptionsFrame.class);
 
-	prefs.put("org.jdesktop.wonderland.modules.audiomanager.client.AUDIO_QUALITY",
+    prefs.put("org.jdesktop.wonderland.modules.audiomanager.client.AUDIO_QUALITY",
             ((AudioQuality) audioQualityComboBox.getSelectedItem()).toString());
 
-	SoftphoneControlImpl.getInstance().setAudioQuality((AudioQuality) audioQualityComboBox.getSelectedItem());
-        
-	// store the phone number
-	//wcc.setPhoneNumber(phoneNumber.getText());
+    SoftphoneControlImpl.getInstance().setAudioQuality((AudioQuality) audioQualityComboBox.getSelectedItem());
 
-	System.setProperty("org.jdesktop.wonderland.modules.audiomanager.client.PHONE_NUMBER",
-	    phoneNumber.getText());
-	
-        // store proxy properties
-        //WonderlandClientConfig.ProxyType proxyType = WonderlandClientConfig.ProxyType.NONE;
-        //if (systemProxyRB.isSelected()) {
-        //    proxyType = WonderlandClientConfig.ProxyType.SYSTEM;
-        //} else if (wlProxyRB.isSelected()) {
-        //    proxyType = WonderlandClientConfig.ProxyType.USER;
-        //    
-        //    if (httpProxyTF.getText().trim().length() == 0 ||
-        //        httpProxyPortTF.getText().trim().length() == 0)
-        //    {
-        //         JOptionPane.showMessageDialog(this, "Invalid proxy settings", 
-        //                                       "Error", JOptionPane.ERROR_MESSAGE);
-        //         return;
-        //    }
-        //        
-        //    wcc.setHttpProxyHost(httpProxyTF.getText());
-        //    wcc.setHttpProxyPort(Integer.parseInt(httpProxyPortTF.getText()));
-        //    wcc.setHttpsProxyHost(httpsProxyTF.getText());
-        //    wcc.setHttpsProxyPort(Integer.parseInt(httpsProxyPortTF.getText()));
-        //    wcc.setNoProxyHosts(noProxyTF.getText());
-        //
-        //}
-        //wcc.setProxyType(proxyType);
-        
-        // write out the user configuration
-        //WonderlandConfigUtil.writeUserConfig(wcc);
+    // store the phone number
+    //wcc.setPhoneNumber(phoneNumber.getText());
 
-	NetworkAddress na = null;
+    System.setProperty("org.jdesktop.wonderland.modules.audiomanager.client.PHONE_NUMBER",
+            phoneNumber.getText());
 
-        // store the network preferences
-	if (ipAddressComboBox.getSelectedItem() instanceof String) {
-	    String ipAddress = (String) ipAddressComboBox.getSelectedItem();
+    // store proxy properties
+    //WonderlandClientConfig.ProxyType proxyType = WonderlandClientConfig.ProxyType.NONE;
+    //if (systemProxyRB.isSelected()) {
+    //    proxyType = WonderlandClientConfig.ProxyType.SYSTEM;
+    //} else if (wlProxyRB.isSelected()) {
+    //    proxyType = WonderlandClientConfig.ProxyType.USER;
+    //
+    //    if (httpProxyTF.getText().trim().length() == 0 ||
+    //        httpProxyPortTF.getText().trim().length() == 0)
+    //    {
+    //         JOptionPane.showMessageDialog(this, "Invalid proxy settings",
+    //                                       "Error", JOptionPane.ERROR_MESSAGE);
+    //         return;
+    //    }
+    //
+    //    wcc.setHttpProxyHost(httpProxyTF.getText());
+    //    wcc.setHttpProxyPort(Integer.parseInt(httpProxyPortTF.getText()));
+    //    wcc.setHttpsProxyHost(httpsProxyTF.getText());
+    //    wcc.setHttpsProxyPort(Integer.parseInt(httpsProxyPortTF.getText()));
+    //    wcc.setNoProxyHosts(noProxyTF.getText());
+    //
+    //}
+    //wcc.setProxyType(proxyType);
 
-	    try {
-		InetAddress ia = InetAddress.getByName(ipAddress);
-		na = new NetworkAddress("", ia);
-	    } catch (UnknownHostException e) {
-		System.out.println("Unknown host:  " + ipAddress);
-	    }
-	} else {
-	    na = (NetworkAddress) ipAddressComboBox.getSelectedItem();
-	}
+    // write out the user configuration
+    //WonderlandConfigUtil.writeUserConfig(wcc);
 
-	if (na != null) {
-            NetworkAddressManager.setDefaultNetworkAddress(na);
-	}
-        
-        // close the dialog
-        setVisible(false);
+    NetworkAddress na = null;
+
+    // store the network preferences
+    if (ipAddressComboBox.getSelectedItem() instanceof String) {
+        String ipAddress = (String) ipAddressComboBox.getSelectedItem();
+
+        try {
+            InetAddress ia = InetAddress.getByName(ipAddress);
+            na = new NetworkAddress("", ia);
+        } catch (UnknownHostException e) {
+            System.out.println("Unknown host:  " + ipAddress);
+        }
+    } else {
+        na = (NetworkAddress) ipAddressComboBox.getSelectedItem();
+    }
+
+    if (na != null) {
+        NetworkAddressManager.setDefaultNetworkAddress(na);
+    }
+
+    // close the dialog
+    setVisible(false);
 }//GEN-LAST:event_okButtonActionPerformed
 
 private void clearCacheButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearCacheButtonActionPerformed
-        String cacheDir = cacheLocation.getText() + File.separator + "cache";
-        String assetDBDir = cacheLocation.getText() + File.separator + "AssetDB";
-	String avatarCacheDir = cacheLocation.getText() + File.separator + "AvatarCache";
-        
-        int result = JOptionPane.showConfirmDialog(this, 
-                "WARNING\n" +
-                "The contents of the following directories will be deleted: \n\n" +
-                "    " + cacheDir + "\n    " + assetDBDir + "\n    " + avatarCacheDir + "\n\n" + 
-                "Would you like to continue?",
-                "Confirm delete directories",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE);
-        if (result == JOptionPane.YES_OPTION) {
-            deleteTree(new File(cacheDir));
-            deleteTree(new File(assetDBDir));
-            deleteTree(new File(avatarCacheDir));
-        }
+    String cacheDir = cacheLocation.getText() + File.separator + "cache";
+    String assetDBDir = cacheLocation.getText() + File.separator + "AssetDB";
+    String avatarCacheDir = cacheLocation.getText() + File.separator + "AvatarCache";
+
+    int result = JOptionPane.showConfirmDialog(this,
+            "WARNING\n" +
+            "The contents of the following directories will be deleted: \n\n" +
+            "    " + cacheDir + "\n    " + assetDBDir + "\n    " + avatarCacheDir + "\n\n" +
+            "Would you like to continue?",
+            "Confirm delete directories",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+    if (result == JOptionPane.YES_OPTION) {
+        deleteTree(new File(cacheDir));
+        deleteTree(new File(assetDBDir));
+        deleteTree(new File(avatarCacheDir));
+    }
 }//GEN-LAST:event_clearCacheButtonActionPerformed
 
 private void httpProxyPortTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_httpProxyPortTFActionPerformed
@@ -591,12 +611,12 @@ private void phoneNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         audioQualityComboBox.setEnabled(false);
     }
 }//GEN-LAST:event_phoneNumberKeyTyped
-    
+
     private void deleteTree(File file) {
         if (!file.exists() || !file.isDirectory()) {
             return;
         }
-        
+
         for (File child : file.listFiles()) {
             if (child.isDirectory()) {
                 deleteTree(child);
@@ -604,13 +624,13 @@ private void phoneNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
                 child.delete();
             }
         }
-        
+
         file.delete();
     }
 
     private void updateHttpProxy() {
         boolean selected = wlProxyRB.isSelected();
-            
+
         httpProxyTF.setEnabled(selected);
         httpProxyTFLabel.setEnabled(selected);
         httpProxyPortTF.setEnabled(selected);
@@ -628,21 +648,22 @@ private void phoneNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
      */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 LoginOptionsFrame lfe = new LoginOptionsFrame();
                 lfe.addWindowStateListener(new WindowStateListener() {
+
                     public void windowStateChanged(WindowEvent evt) {
                         if (evt.getNewState() == WindowEvent.WINDOW_CLOSED) {
                             System.exit(0);
                         }
                     }
                 });
-                
+
                 lfe.setVisible(true);
             }
         });
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel audioPanel;
     private javax.swing.JComboBox audioQualityComboBox;
@@ -664,6 +685,7 @@ private void phoneNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTabbedPane jTabbedPane1;
@@ -677,5 +699,4 @@ private void phoneNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     private javax.swing.JRadioButton systemProxyRB;
     private javax.swing.JRadioButton wlProxyRB;
     // End of variables declaration//GEN-END:variables
-    
 }
