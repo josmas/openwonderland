@@ -61,13 +61,13 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
             isAdd = true;
             okButton.setText("Create");
             tableModel.addRow(new Object[] { cm.getUsername(), true });
-            setTitle("Create group");
+            setTitle("New Group");
         } else {
             isAdd = false;
             groupnameTF.setText(group.getId());
             groupnameTF.setEditable(false);
             populateTable(group);
-            setTitle("Edit group " + group.getId());
+            setTitle("Edit Group " + group.getId());
         }
     }
 
@@ -124,6 +124,8 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
         jLabel1 = new javax.swing.JLabel();
         groupnameTF = new javax.swing.JTextField();
 
+        jScrollPane1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+
         memberTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -150,13 +152,15 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
         memberTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(memberTable);
 
-        addButton.setText("Add...");
+        addButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        addButton.setText("Add User...");
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
+        removeButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         removeButton.setText("Remove");
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -165,6 +169,7 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
             }
         });
 
+        cancelButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -172,6 +177,7 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
             }
         });
 
+        okButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         okButton.setText("OK");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -179,7 +185,10 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
             }
         });
 
+        jLabel1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         jLabel1.setText("Group name:");
+
+        groupnameTF.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -193,16 +202,19 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(groupnameTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(okButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cancelButton))
                     .add(layout.createSequentialGroup()
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton)))
+                        .add(removeButton))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(cancelButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(okButton)))
                 .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {cancelButton, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -216,7 +228,7 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(removeButton)
                     .add(addButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(okButton)
                     .add(cancelButton))
@@ -260,7 +272,7 @@ public class GroupEditorFrame extends JFrame implements ListSelectionListener {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        String username = JOptionPane.showInputDialog(this, "Enter user name");
+        String username = JOptionPane.showInputDialog(this, "Enter user name", "Add User", JOptionPane.QUESTION_MESSAGE);
         tableModel.addRow(new Object[] { username, false });
     }//GEN-LAST:event_addButtonActionPerformed
 

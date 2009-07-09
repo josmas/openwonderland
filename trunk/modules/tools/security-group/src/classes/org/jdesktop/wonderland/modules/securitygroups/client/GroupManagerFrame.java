@@ -147,10 +147,15 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
         groupTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(groupTable);
 
+        jLabel1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         jLabel1.setText("Groups:");
 
+        filterTF.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+
+        jLabel2.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         jLabel2.setText("Filter:");
 
+        filterButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         filterButton.setText("Refresh");
         filterButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -158,13 +163,15 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
             }
         });
 
-        addButton.setText("Add...");
+        addButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        addButton.setText("New Group...");
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
+        editButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         editButton.setText("Edit...");
         editButton.setEnabled(false);
         editButton.addActionListener(new java.awt.event.ActionListener() {
@@ -173,6 +180,7 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
             }
         });
 
+        removeButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         removeButton.setText("Remove");
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -181,6 +189,7 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
             }
         });
 
+        closeButton.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
         closeButton.setText("Close");
         closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -196,11 +205,11 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 229, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 272, Short.MAX_VALUE)
                         .add(jLabel2)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(filterTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 116, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -208,16 +217,19 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
                         .add(filterButton)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)
+                        .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 84, Short.MAX_VALUE)
+                        .add(editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
+                        .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(261, 261, 261))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(closeButton)
                         .addContainerGap())))
         );
+
+        layout.linkSize(new java.awt.Component[] {closeButton, editButton, filterButton, removeButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -234,7 +246,7 @@ public class GroupManagerFrame extends JFrame implements ListSelectionListener {
                     .add(addButton)
                     .add(editButton)
                     .add(removeButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(closeButton)
                 .addContainerGap())
         );
