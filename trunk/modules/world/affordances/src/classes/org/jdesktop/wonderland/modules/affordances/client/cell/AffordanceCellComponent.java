@@ -201,10 +201,8 @@ public abstract class AffordanceCellComponent extends CellComponent {
      * Updates the scene graph to add this affordance
      */
     private synchronized void updateSceneGraph() {
-        // Since we are updating the scene graph, we need to put this in a
-        // special update thread. Also this method is synchronized and we keep
-        // track of whether it has been added in a boolean. This ensures that
-        // it only gets added once.
+        // This method is synchronized and we keep track of whether it has been
+        // added in a boolean. This ensures that it only gets added once.
         if (addedToSceneGraph == false) {
             affordance.setVisible(true);
             addedToSceneGraph = true;
