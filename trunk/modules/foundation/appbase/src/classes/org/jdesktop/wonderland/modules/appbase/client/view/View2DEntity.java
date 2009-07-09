@@ -447,12 +447,13 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setVisibleApp (boolean visible, boolean update) {
+        if (visibleApp == visible) return;
         logger.info("view = " + this);
         logger.info("change visibleApp = " + visible);
         visibleApp = visible;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
-            update();
+             update();
         }
     }
 
@@ -610,6 +611,8 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setSizeApp (Dimension size, boolean update) {
+        if (size.width == sizeApp.width && size.height == sizeApp.height) return;
+
         logger.info("view = " + this);
         logger.info("change sizeApp = " + sizeApp);
 
@@ -1081,14 +1084,24 @@ public abstract class View2DEntity implements View2D {
         }
     }
 
-    /** Processes attribute changes. Should be called within a synchronized block. */
-    protected void processChanges () {
+    /** {@inheritDoc} */
+    public synchronized void update () {
+       
+        // Only-Update-When-Visible Optimization
+        // 1. Always perform any visibility or size changes immediately.
+        if ((changeMask & (CHANGED_VISIBLE | CHANGED_SIZE_APP)) == 0) {
+            // 2. Don't perform other changes unless the view if both the app and the user 
+            // have made it visible.
+            if (!visibleApp || !visibleUser) {
+                return;
+            }
+        }
 
         // Note: all of the scene graph changes are queued up and executed at the end
         boolean windowNeedsValidate = false;
 
-        logger.fine("------------------ Processing changes for view " + this);
-        logger.fine("type " + type);
+        logger.info("------------------ Processing changes for view " + this);
+        logger.info("type " + type);
         logChangeMask(changeMask);
 
         // React to topology related changes
@@ -1420,11 +1433,7 @@ public abstract class View2DEntity implements View2D {
                 child.update();
             }
         }
-    }
 
-    /** {@inheritDoc} */
-    public synchronized void update () {
-        processChanges();
         changeMask = 0;
     }
 
