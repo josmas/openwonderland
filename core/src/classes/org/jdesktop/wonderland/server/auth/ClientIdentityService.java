@@ -75,7 +75,6 @@ public class ClientIdentityService implements Service {
     public void ready() throws Exception {
     }
 
-    public boolean shutdown() {
-        return true;
+    public void shutdown() {
     }
 }
