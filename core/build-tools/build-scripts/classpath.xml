@@ -35,7 +35,7 @@
         <path location="${core.common.dir}/jbullet.jar"/>
         <path location="${core.common.dir}/vecmath.jar"/>
         <path location="${core.common.dir}/javolution.jar"/>
-        <path location="${core.common.dir}/TimingFramework.jar"/>
+        <path location="${core.common.dir}/trident.jar"/>
     </pathconvert>
     
     <pathconvert property="darkstar.server.classpath">
