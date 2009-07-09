@@ -318,7 +318,6 @@ public class SwingContextMenu implements MenuItemRepaintListener {
             // Highlight the menu item with a color, but only if it is enabled
             JMenuItem item = (JMenuItem)e.getSource();
             if (item.isEnabled() == true) {
-                System.out.println("MOUSE ENTERED");
                 item.setBackground(WL_LIGHT_GREEN);
                 item.setOpaque(true);
                 item.repaint();
@@ -329,7 +328,6 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         @Override
         public void mouseExited(MouseEvent e) {
             // De-highlight the menu item with a color, but only if it is enabled
-            System.out.println("MOUSE EXITED");
             JMenuItem item = (JMenuItem) e.getSource();
             if (item.isEnabled() == true) {
                 item.setBackground(Color.white);
