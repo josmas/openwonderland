@@ -18,6 +18,9 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import com.jme.math.Vector3f;
+import imi.camera.CameraModels;
+import imi.camera.ChaseCamModel;
+import imi.camera.ChaseCamState;
 import imi.character.behavior.CharacterBehaviorManager;
 import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
@@ -47,6 +50,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.FlexibleCameraAdapter;
 
 /**
  *
@@ -68,9 +72,12 @@ public class AvatarPlugin extends BaseClientPlugin
     private JMenuItem avatarMI;
     private JMenuItem avatarSettingsMI;
     private JMenuItem startingLocationMI;
+    private JMenuItem testCameraMI;
     private JCheckBoxMenuItem collisionEnabledMI;
     private JCheckBoxMenuItem gravityEnabledMI;
     private AvatarImiJME curAvatar;
+    private ChaseCamState camState;
+    private ChaseCamModel camModel;
     private boolean menusAdded = false;
     private boolean gestureHUDEnabled = false;
     private final SessionLifecycleListener lifecycleListener;
@@ -178,6 +185,18 @@ public class AvatarPlugin extends BaseClientPlugin
 //            }
 //        });
 
+        testCameraMI = new JMenuItem(bundle.getString("Use_Chase_Camera"));
+        testCameraMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                // change camera hook
+                camModel = (ChaseCamModel)CameraModels.getCameraModel(ChaseCamModel.class);
+                camState = new ChaseCamState(new Vector3f(0.0f, 4.0f, -10.0f), new Vector3f(0.0f, 1.8f, 0.0f));
+                camState.setTargetCharacter(curAvatar.getAvatarCharacter());
+                camModel.reset(camState);
+                ClientContextJME.getViewManager().setCameraController(new FlexibleCameraAdapter(camModel, camState));
+            }
+        });
+
         startingLocationMI = new JMenuItem(bundle.getString("Starting_Location"));
         startingLocationMI.addActionListener(new ActionListener() {
 
@@ -233,6 +252,7 @@ public class AvatarPlugin extends BaseClientPlugin
                 JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
             }
             JmeClientMain.getFrame().removeFromPlacemarksMenu(startingLocationMI);
+            JmeClientMain.getFrame().removeFromPlacemarksMenu(testCameraMI);
 
             menusAdded = false;
         }
@@ -249,6 +269,12 @@ public class AvatarPlugin extends BaseClientPlugin
 
         // set the current avatar
         curAvatar = (AvatarImiJME) rend;
+
+        if (camState != null) {
+            camState.setTargetCharacter(curAvatar.getAvatarCharacter());
+            camModel.reset(camState);
+        }
+
         if (testPanelRef == null || testPanelRef.get() == null) {
             // Do nothing
         } else {
@@ -269,6 +295,7 @@ public class AvatarPlugin extends BaseClientPlugin
             JmeClientMain.getFrame().addToWindowMenu(gestureMI, 0);
             JmeClientMain.getFrame().addToToolsMenu(gravityEnabledMI, -1);
             JmeClientMain.getFrame().addToToolsMenu(collisionEnabledMI, -1);
+            JmeClientMain.getFrame().addToToolsMenu(testCameraMI, -1);
             JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
             if (avatarSettingsMI != null) {
                 JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
