@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.client.jme.utils;
 
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import java.util.HashMap;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 
@@ -45,6 +47,28 @@ public class ScenegraphUtils {
         TreeScan.findNode(rootNode, listener);
 
         return listener.getResult();
+    }
+
+    /**
+     * Scan the graph and add all named nodes (non null names only) to the nodeMap.
+     * If there are duplicate names a logger warning will be printed and previous
+     * name/node will be overwritten
+     *
+     * @param rootNode root of graph
+     * @param nodeMap the HashMap to which nodes are added
+     */
+    public static void getNamedNodes(Node rootNode, final HashMap<String, Spatial> nodeMap) {
+        TreeScan.findNode(rootNode, new ProcessNodeInterface() {
+
+            public boolean processNode(Spatial node) {
+                if (node.getName()!=null) {
+                    Spatial old = nodeMap.put(node.getName(), node);
+                    if (old!=null)
+                        Logger.getLogger(ScenegraphUtils.class.getName()).warning("Duplicate node name in scene "+node.getName());
+                }
+                return true;
+            }
+        });
     }
 
     static class FindNamedNodeListener implements ProcessNodeInterface {
