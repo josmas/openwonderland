@@ -60,7 +60,9 @@ public class WebServiceAuthLoginPanel extends JPanel implements LoginPanel {
         }
          */
         // populate with defaults
-        setUsername(System.getProperty("user.name"));
+        String userName = System.getProperty("user.name");
+        userName = userName.replaceAll("\\s", "_");
+        setUsername(userName);
 
         // override with any saved credentials
         loadCredentials();
