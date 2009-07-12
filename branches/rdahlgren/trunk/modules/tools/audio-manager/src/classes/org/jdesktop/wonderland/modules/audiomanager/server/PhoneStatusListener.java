@@ -1,0 +1,122 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
+ */
+package org.jdesktop.wonderland.modules.audiomanager.server;
+
+import com.sun.sgs.app.ManagedReference;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.CallEndedResponseMessage;
+
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
+import com.sun.mpk20.voicelib.app.Call;
+import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
+import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.VoiceManager;
+
+import com.sun.sgs.app.AppContext;
+
+import com.sun.voip.client.connector.CallStatus;
+
+import org.jdesktop.wonderland.server.WonderlandContext;
+
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+
+import org.jdesktop.wonderland.server.comms.CommsManager;
+
+import org.jdesktop.wonderland.common.cell.CellChannelConnectionType;
+
+import java.io.IOException;
+import java.io.Serializable;
+
+import java.util.logging.Logger;
+
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.jdesktop.wonderland.common.messages.Message;
+
+import org.jdesktop.wonderland.common.cell.CellTransform;
+
+import org.jdesktop.wonderland.server.cell.CellMO;
+
+import com.jme.math.Vector3f;
+
+/**
+ * @author jprovino
+ */
+public class PhoneStatusListener implements ManagedCallStatusListener, Serializable {
+
+    private static final Logger logger =
+        Logger.getLogger(PhoneStatusListener.class.getName());
+     
+    private String group;
+    private PresenceInfo presenceInfo;
+    private String externalCallID;
+
+    public PhoneStatusListener(String group, PresenceInfo presenceInfo, 
+	    String externalCallID) {
+
+	this.group = group;
+	this.presenceInfo = presenceInfo;
+	this.externalCallID = externalCallID;
+
+	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, 
+	    externalCallID);
+    }
+
+    public void callStatusChanged(CallStatus status) {    
+	logger.finer("got status " + status);
+
+	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        if (status.getCode() == CallStatus.ESTABLISHED) {
+	    stopRinging(vm);
+        } else if (status.getCode() == CallStatus.ENDED) {
+	    stopRinging(vm);
+	    vm.removeCallStatusListener(this);
+                
+            WonderlandClientSender sender = WonderlandContext.getCommsManager().getSender(
+	        AudioManagerConnectionType.CONNECTION_TYPE);
+
+	    Player player = vm.getPlayer(externalCallID);
+
+	    if (player != null) {
+		vm.removePlayer(player);
+	    }
+
+            sender.send(new CallEndedResponseMessage(group, presenceInfo, 
+		status.getOption("Reason")));
+	}
+    }
+
+    private void stopRinging(VoiceManager vm) {
+        //Stop the ringing
+	Call softphoneCall = vm.getCall(presenceInfo.callID);
+
+	if (softphoneCall != null) {
+	    try {
+                softphoneCall.stopTreatment("ring_tone.au");
+	    } catch (IOException e) {
+		logger.warning("Unable to stop treatment " + softphoneCall + ":  "
+		    + e.getMessage());
+	    }
+	}
+    }
+
+}

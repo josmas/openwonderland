@@ -1,0 +1,239 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath" 
+ * exception as provided by Sun in the License file that accompanied 
+ * this code.
+ */
+package org.jdesktop.wonderland.modules.appbase.client;
+
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+/**
+ * A user input control arbiter. Implementations of this interface
+ * decide how application control is to be delegated among users.
+ * All ControlArbs support the notion of one or more users controlling
+ * an app and the rest of the users not controlling the app. When
+ * a user has control of an app user input events are sent from
+ * app windows to the app. When a user does not control an app 
+ * user input events are ignored by its windows.
+ *
+ * @author deronj
+ */
+@ExperimentalAPI
+public abstract class ControlArb {
+
+    private static final Logger logger = Logger.getLogger(ControlArb.class.getName());
+
+    /** A list of controllers in the Wonderland client session */
+    private static final LinkedList<ControlArb> controlArbs = new LinkedList<ControlArb>();
+    /** A list of components to notify of a state change in the control arb */
+    protected final LinkedList<ControlChangeListener> listeners = new LinkedList<ControlChangeListener>();
+    /** The application controlled by this arbiter */
+    protected App2D app;
+    /** Has the user enabled app control? */
+    protected boolean appControl;
+
+    /** 
+     * The interface that components interested in being notified of a state change in the control arb 
+     * must implement.
+     */
+    public interface ControlChangeListener {
+
+        /**
+         * The state of a control arb you are subscribed to may have changed. The state of whether this user 
+         * has control or the current set of controlling users may have changed.
+         *
+         * @param controlArb The control arb that changed.
+         */
+        public void updateControl(ControlArb controlArb);
+    }
+
+    /** 
+     * Create a new instance of ControlArb.
+     */
+    public ControlArb() {
+        synchronized (controlArbs) {
+            controlArbs.add(this);
+        }
+    }
+
+    /**
+     * Clean up resources held.
+     */
+    public void cleanup() {
+        if (hasControl()) {
+            releaseControl();
+        }
+        synchronized (controlArbs) {
+            controlArbs.remove(this);
+        }
+        listeners.clear();
+        app = null;
+        appControl = false;
+    }
+
+    /**
+     * Specify the app the controlArb controls.
+     *
+     * @param app The app.
+     */
+    public void setApp(App2D app) {
+        this.app = app;
+    }
+
+    /**
+     * Return the app the controlArb controls.
+     */
+    public App2D getApp() {
+        return app;
+    }
+
+    /**
+     * Is the user of this client currently an controller of the ControlArb's app?
+     */
+    public boolean hasControl() {
+        return appControl;
+    }
+
+    /**
+     * Tell the arbiter that this user is take control of the app.
+     * Note that the attempt to take control may be refused. This method
+     * doesn't report whether the attempt succeeded or failed--this is
+     * is reported via the controller change listener.
+     *
+     * Note: depending on the implementation, this may cause other users with control 
+     * to lose it.
+     */
+    public void takeControl() {
+        if (!hasControl()) {
+            appControl = true;
+            updateControl();
+        } 
+    }
+
+    /**
+     * Tell the arbiter that you are releasing control of the app.
+     */
+    public void releaseControl() {
+        if (hasControl()) {
+            appControl = false;
+            updateControl();
+        }
+    }
+
+    /**
+     * Release control of all applications in the Wonderland client session.
+     */
+    public static void releaseControlAll() {
+
+        // This method is implemented this way because releasing control might cause the 
+        // removeControlAllButton to disappear. Currently, the HUD actually (and probably 
+        // spuriously creates a window when this happens. This can result in a new HUD app,
+        // and a new control arb being created. This results in a ConcurrentComodification
+        // exception
+
+        LinkedList<ControlArb> controlArbsCopy;
+        synchronized (controlArbs) {
+            controlArbsCopy = (LinkedList<ControlArb>) controlArbs.clone();
+        }
+        for (ControlArb controlArb : controlArbsCopy) {
+            if (controlArb.hasControl()) {
+                controlArb.releaseControl();
+            }
+        }
+    }
+
+    /**
+     * Returns the current controlling users.
+     * @return An array of user names who are currently controlling this control arb's app.
+     * This array is null if there are currently no controlling users.
+     */
+    public String[] getControllers() {
+        return null;
+    }
+
+    /**
+     * Add a control change listener.
+     * 
+     * @param listener The control change listener.
+     */
+    public synchronized void addListener(ControlChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Remove a controller change listener.
+     * 
+     * @param listener The control change listener.
+     */
+    public synchronized void removeListener(ControlChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
+     * Returns an iterator over all control change listeners.
+     */
+    public synchronized Iterator<ControlChangeListener> getListeners() {
+        return listeners.iterator();
+    }
+
+    /**
+     * Send a key event to an app window, if the user has control.
+     *
+     * @param window The window to which to send the event.
+     * @param event The event to send.
+     */
+    public void deliverEvent(Window2D window, KeyEvent event) {
+        if (hasControl()) {
+            window.deliverEvent(event);
+        }
+    }
+
+    /**
+     * Send a mouse event to an app window, if the user has control.
+     *
+     * @param window The window to which to send the event.
+     * @param event The event to send.
+     */
+    public void deliverEvent(Window2D window, MouseEvent event) {
+        if (hasControl()) {
+            window.deliverEvent(event);
+        }
+    }
+
+    /**
+     * Informs the control change listeners that the control arb state has been updated.
+     */
+    protected synchronized void updateControl() {
+        for (ControlChangeListener listener : listeners) {
+            listener.updateControl(this);
+        }
+    }
+
+    /**
+     * Informs the control change listeners of all control arbs that the state has been updated.
+     */
+    protected static void updateControlAll() {
+        synchronized (controlArbs) {
+            for (ControlArb controlArb : controlArbs) {
+                controlArb.updateControl();
+            }
+        }
+    }
+}
