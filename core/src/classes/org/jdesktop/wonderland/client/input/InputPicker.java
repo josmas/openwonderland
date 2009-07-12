@@ -45,6 +45,7 @@ import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
@@ -754,7 +755,7 @@ public abstract class InputPicker {
      * Calculates the ray to use for picking, based on the given screen coordinates.
      */
     Ray calcPickRayWorld (int x, int y) {
-
+        Ray result = null;
 	// Get the world space coordinates of the eye position
 	Camera camera = cameraComp.getCamera();
 	Vector3f eyePosWorld = camera.getLocation();
@@ -766,11 +767,16 @@ public abstract class InputPicker {
 
 	// Get the world space coordinates of the screen space point from the event
 	// (The glass plate of the screen is considered to be at at z = 0 in world space
-	camera.getWorldCoordinates(eventPointScreen, 0f, eventPointWorld);
-
-	// Compute the diff and create the ray
-	eventPointWorld.subtract(eyePosWorld, directionWorld);
-	return new Ray(eyePosWorld, directionWorld.normalize());
+        try { // May fail if jME thinks the camera matrix is singular
+            camera.getWorldCoordinates(eventPointScreen, 0f, eventPointWorld);
+            // Compute the diff and create the ray
+            eventPointWorld.subtract(eyePosWorld, directionWorld);
+            result = new Ray(eyePosWorld, directionWorld.normalize());
+        } catch (ArithmeticException ex) {
+            logger.log(Level.SEVERE,"Problem getting world space coords for pick ray.", ex);
+            result = new Ray();
+        }
+        return result;
     }
 
     /**
