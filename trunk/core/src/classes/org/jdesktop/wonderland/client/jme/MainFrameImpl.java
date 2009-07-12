@@ -446,6 +446,14 @@ public class MainFrameImpl extends JFrame implements MainFrame {
     }
 
     /**
+     *
+     * @param menuItem
+     */
+    public void addToViewMenuCameraGroup(JRadioButtonMenuItem menuItem) {
+
+    }
+
+    /**
      * {@inheritDoc}
      */
     public void removeFromViewMenu(JMenuItem menuItem) {
@@ -547,6 +555,42 @@ public class MainFrameImpl extends JFrame implements MainFrame {
 
     public void connected(boolean connected) {
         //showFPSMeter(connected);
+    }
+
+    /**
+     * Add a camera menu item to the end of the View menu.
+     *
+     * @param cameraMenuItem
+     */
+    public void addToCameraChoices(JRadioButtonMenuItem cameraMenuItem) {
+        addToCameraChoices(cameraMenuItem, -1);
+    }
+
+    /**
+     * Add a camera menu item to the View menu at the specified index, where -1 adds
+     * to the end of the menu
+     *
+     * @param cameraMenuItem
+     */
+    public void addToCameraChoices(JRadioButtonMenuItem cameraMenuItem, int index) {
+        final int indexFinal = index;
+        final JRadioButtonMenuItem itemFinal = cameraMenuItem;
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                addToViewMenu(itemFinal, indexFinal);
+                cameraButtonGroup.add(itemFinal);
+            }
+        });
+    }
+
+    /**
+     * Removes the specified camera choice
+     * @param menuItem
+     */
+    public void removeFromCameraChoices(JRadioButtonMenuItem menuItem) {
+        cameraButtonGroup.remove(menuItem);
+        removeFromViewMenu(menuItem);
     }
 
     public void showFPSMeter(boolean visible) {
