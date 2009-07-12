@@ -50,8 +50,9 @@ import imi.scene.PMatrix;
 import imi.scene.PScene;
 import imi.scene.PTransform;
 import imi.scene.polygonmodel.PPolygonMesh;
-import imi.scene.utils.PMeshUtils;
+import java.lang.ref.WeakReference;
 import java.net.URL;
+import javolution.util.FastList;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.Entity;
@@ -90,6 +91,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
     private WlAvatarCharacter pendingAvatar = null;
     private WlAvatarCharacter avatarCharacter = null;
+
     private boolean selectedForInput = false;
 
 //    private AvatarRendererChangeRequestEvent.AvatarQuality quality = AvatarRendererChangeRequestEvent.AvatarQuality.High;
@@ -111,6 +113,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
     private CollisionController collisionController = null;
     private CollisionChangeRequestListener collisionChangeRequestListener;
+    /** Collection of listeners **/
+    private final FastList<WeakReference<AvatarChangedListener>> avatarChangedListeners
+            = new FastList<WeakReference<AvatarChangedListener>>();
 
     public AvatarImiJME(Cell cell) {
         super(cell);
@@ -335,7 +340,14 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             rootEntity.addEntity(avatarCharacter);
 
             selectForInput(selectedForInput);
-
+            // Notify listeners
+            for (WeakReference<AvatarChangedListener> listenerRef : avatarChangedListeners) {
+                AvatarChangedListener listener = listenerRef.get();
+                if (listener != null)
+                    listener.avatarChanged(avatarCharacter);
+                else
+                    avatarChangedListeners.remove(listenerRef);
+            }
             LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
         }
     }
@@ -611,6 +623,47 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
         }
     }
+    
+    /**
+     * Add an avatar changed listener to the list. Duplicate checking is not 
+     * performed. This method is thread-safe.
+     * @param listener A non-null listener
+     * @throws NullPointerException If listener == null
+     */
+    public synchronized void addAvatarChangedListener(AvatarChangedListener listener) {
+        if (listener == null)
+            throw new NullPointerException("Null listener provided!");
+        avatarChangedListeners.add(new WeakReference<AvatarChangedListener>(listener));
+    }
+    
+    /**
+     * Remove an avatar changed listener from the list. This method will remove
+     * erroneously added duplicates if any exist.
+     * @param remove A non-null listener to remove
+     * @throws NullPointerException If (remove == null)
+     */
+    public synchronized void removeAvatarChangedListener(AvatarChangedListener remove) {
+        if (remove == null)
+            throw new NullPointerException("Null listener provided!");
+        for (WeakReference<AvatarChangedListener> listenerRef : avatarChangedListeners) {
+            AvatarChangedListener listener = listenerRef.get();
+            if (listener == null || listener == remove)
+                avatarChangedListeners.remove(listenerRef);
+        }
+    }
+
+    /**
+     * This interface is used to receive call-backs whenever the underlying avatar
+     * is changed
+     */
+    public static interface AvatarChangedListener {
+        /**
+         * The avatar has changed.
+         * @param newAvatar The newly assigned avatar.
+         */
+        public void avatarChanged(WlAvatarCharacter newAvatar);
+    }
+
     /**
      * Hack for the binary loader, this will need to be made general purpose once
      * we implement a core binary loader

@@ -46,6 +46,8 @@ import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.jme.MainFrame;
+import org.jdesktop.wonderland.client.jme.MainFrameImpl;
 import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
@@ -73,12 +75,13 @@ public class AvatarPlugin extends BaseClientPlugin
     private JMenuItem avatarMI;
     private JMenuItem avatarSettingsMI;
     private JMenuItem startingLocationMI;
-    private JMenuItem testCameraMI;
+    private JRadioButtonMenuItem testCameraMI;
     private JCheckBoxMenuItem collisionEnabledMI;
     private JCheckBoxMenuItem gravityEnabledMI;
     private AvatarImiJME curAvatar;
     private ChaseCamState camState;
     private ChaseCamModel camModel;
+    private AvatarImiJME.AvatarChangedListener avatarChangedListener;
     private boolean menusAdded = false;
     private boolean gestureHUDEnabled = false;
     private final SessionLifecycleListener lifecycleListener;
@@ -88,10 +91,26 @@ public class AvatarPlugin extends BaseClientPlugin
 
             public void sessionCreated(WonderlandSession session) {
             }
-
+        
             public void primarySession(WonderlandSession session) {
                 // We need a primary session, so wait for it
                 AvatarConfigManager.getAvatarConfigManager().addServer(AvatarPlugin.this.loginManager);
+            }
+        };
+        
+        this.avatarChangedListener = new AvatarImiJME.AvatarChangedListener() {
+
+            public void avatarChanged(WlAvatarCharacter newAvatar) {
+                if (camState != null) {
+                    // stop listener for changes from the old avatar
+                    curAvatar.removeAvatarChangedListener(avatarChangedListener);
+                    if (newAvatar.getContext() != null)
+                        camState.setTargetCharacter(newAvatar);
+                    else
+                        camState.setTargetCharacter(null);
+                    // force an update
+                    camState.setCameraPosition(curAvatar.getCell().getLocalTransform().getTranslation(null));
+                }
             }
         };
     }
@@ -186,14 +205,19 @@ public class AvatarPlugin extends BaseClientPlugin
 //            }
 //        });
 
-        testCameraMI = new JMenuItem(bundle.getString("Chase_Camera"));
+        testCameraMI = new JRadioButtonMenuItem(bundle.getString("Chase_Camera"));
         testCameraMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
+                Vector3f offsetVec = new Vector3f(0.0f, 4.0f, -10.0f);
                 // change camera hook
-                camModel = (ChaseCamModel)CameraModels.getCameraModel(ChaseCamModel.class);
-                camState = new ChaseCamState(new Vector3f(0.0f, 4.0f, -10.0f), new Vector3f(0.0f, 1.8f, 0.0f));
+                if (camState == null) {
+                    camModel = (ChaseCamModel)CameraModels.getCameraModel(ChaseCamModel.class);
+                    camState = new ChaseCamState(offsetVec, new Vector3f(0.0f, 1.8f, 0.0f));
+                    camState.setDamping(1.7f);
+                    camState.setLookAtDamping(1.7f);
+                }
+                camState.setCameraPosition(curAvatar.getCell().getLocalTransform().getTranslation(null).add(offsetVec));
                 camState.setTargetCharacter(curAvatar.getAvatarCharacter());
-                camModel.reset(camState);
                 ClientContextJME.getViewManager().setCameraController(new FlexibleCameraAdapter(camModel, camState));
             }
         });
@@ -244,16 +268,20 @@ public class AvatarPlugin extends BaseClientPlugin
     protected void deactivate() {
         // remove menus
         if (menusAdded) {
-            JmeClientMain.getFrame().removeFromWindowMenu(avatarControlsMI);
-            JmeClientMain.getFrame().removeFromWindowMenu(gestureMI);
-            JmeClientMain.getFrame().removeFromToolsMenu(collisionEnabledMI);
-            JmeClientMain.getFrame().removeFromToolsMenu(gravityEnabledMI);
-            JmeClientMain.getFrame().removeFromEditMenu(avatarMI);
+            MainFrame frame = JmeClientMain.getFrame();
+            frame.removeFromWindowMenu(avatarControlsMI);
+            frame.removeFromWindowMenu(gestureMI);
+            frame.removeFromToolsMenu(collisionEnabledMI);
+            frame.removeFromToolsMenu(gravityEnabledMI);
+            frame.removeFromEditMenu(avatarMI);
             if (avatarSettingsMI != null) {
-                JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
+                frame.removeFromEditMenu(avatarSettingsMI);
             }
-            JmeClientMain.getFrame().removeFromPlacemarksMenu(startingLocationMI);
-            JmeClientMain.getFrame().removeFromViewMenu(testCameraMI);
+            frame.removeFromPlacemarksMenu(startingLocationMI);
+            if (frame instanceof MainFrameImpl) // Until MainFrame gets this method added
+                ((MainFrameImpl)frame).removeFromCameraChoices(testCameraMI);
+            else
+                frame.removeFromViewMenu(testCameraMI);
 
             menusAdded = false;
         }
@@ -268,8 +296,14 @@ public class AvatarPlugin extends BaseClientPlugin
             return;
         }
 
+        // stop listener for changes from the old avatar
+        if (curAvatar != null)
+            curAvatar.removeAvatarChangedListener(avatarChangedListener);
         // set the current avatar
         curAvatar = (AvatarImiJME) rend;
+
+        // start listener for new changes
+        ((AvatarImiJME)rend).addAvatarChangedListener(avatarChangedListener);
 
         if (camState != null) {
             camState.setTargetCharacter(curAvatar.getAvatarCharacter());
@@ -292,16 +326,20 @@ public class AvatarPlugin extends BaseClientPlugin
 
         // add menus
         if (!menusAdded) {
-            JmeClientMain.getFrame().addToWindowMenu(avatarControlsMI, 0);
-            JmeClientMain.getFrame().addToWindowMenu(gestureMI, 0);
-            JmeClientMain.getFrame().addToToolsMenu(gravityEnabledMI, -1);
-            JmeClientMain.getFrame().addToToolsMenu(collisionEnabledMI, -1);
-            JmeClientMain.getFrame().addToViewMenu(testCameraMI, 3);
-            JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
+            MainFrame frame = JmeClientMain.getFrame();
+            frame.addToWindowMenu(avatarControlsMI, 0);
+            frame.addToWindowMenu(gestureMI, 0);
+            frame.addToToolsMenu(gravityEnabledMI, -1);
+            frame.addToToolsMenu(collisionEnabledMI, -1);
+            if (frame instanceof MainFrameImpl) // Only until the MainFrame interface gets this method
+                ((MainFrameImpl)frame).addToCameraChoices(testCameraMI, 3);
+            else
+                frame.addToViewMenu(testCameraMI, 3);
+            frame.addToEditMenu(avatarMI, 0);
             if (avatarSettingsMI != null) {
-                JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
+                frame.addToEditMenu(avatarSettingsMI, 1);
             }
-            JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
+            frame.addToPlacemarksMenu(startingLocationMI, 0);
 
             menusAdded = true;
         }
