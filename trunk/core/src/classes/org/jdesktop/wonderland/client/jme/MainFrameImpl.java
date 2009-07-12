@@ -190,7 +190,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                 frameRateMenu.add(fps120);
                 frameRateMenu.add(fps200);
 
-                addToViewMenu(frameRateMenu, 4);
+                addToViewMenu(frameRateMenu, 5);
 
                 fps15.addActionListener(new java.awt.event.ActionListener() {
 
