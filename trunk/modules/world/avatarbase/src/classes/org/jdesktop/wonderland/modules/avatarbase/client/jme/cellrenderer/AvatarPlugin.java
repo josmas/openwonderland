@@ -34,6 +34,7 @@ import java.util.ResourceBundle;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
@@ -185,7 +186,7 @@ public class AvatarPlugin extends BaseClientPlugin
 //            }
 //        });
 
-        testCameraMI = new JMenuItem(bundle.getString("Use_Chase_Camera"));
+        testCameraMI = new JMenuItem(bundle.getString("Chase_Camera"));
         testCameraMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
                 // change camera hook
@@ -252,7 +253,7 @@ public class AvatarPlugin extends BaseClientPlugin
                 JmeClientMain.getFrame().removeFromEditMenu(avatarSettingsMI);
             }
             JmeClientMain.getFrame().removeFromPlacemarksMenu(startingLocationMI);
-            JmeClientMain.getFrame().removeFromPlacemarksMenu(testCameraMI);
+            JmeClientMain.getFrame().removeFromViewMenu(testCameraMI);
 
             menusAdded = false;
         }
@@ -295,7 +296,7 @@ public class AvatarPlugin extends BaseClientPlugin
             JmeClientMain.getFrame().addToWindowMenu(gestureMI, 0);
             JmeClientMain.getFrame().addToToolsMenu(gravityEnabledMI, -1);
             JmeClientMain.getFrame().addToToolsMenu(collisionEnabledMI, -1);
-            JmeClientMain.getFrame().addToToolsMenu(testCameraMI, -1);
+            JmeClientMain.getFrame().addToViewMenu(testCameraMI, 3);
             JmeClientMain.getFrame().addToEditMenu(avatarMI, 0);
             if (avatarSettingsMI != null) {
                 JmeClientMain.getFrame().addToEditMenu(avatarSettingsMI, 1);
