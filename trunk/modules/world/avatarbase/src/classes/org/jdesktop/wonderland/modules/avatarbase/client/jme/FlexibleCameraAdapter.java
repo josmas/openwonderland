@@ -18,11 +18,14 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.jme;
 
 
+import com.jme.math.Vector3f;
 import com.jme.scene.CameraNode;
 import imi.camera.AbstractCameraState;
 import imi.camera.CameraModel;
+import imi.character.CharacterMotionListener;
 import imi.scene.PMatrix;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.logging.Logger;
 import javolution.util.FastList;
 import org.jdesktop.mtgame.WorldManager;
@@ -68,7 +71,7 @@ public class FlexibleCameraAdapter implements CameraController {
     }
 
     public void setEnabled(boolean enabled, CameraNode cameraNode) {
-        deltaTime = oldTime = 0;
+        deltaTime = oldTime = System.nanoTime() / 1000000000.0;
         inputEvents.clear();
 
         if (enabled) {
@@ -112,7 +115,7 @@ public class FlexibleCameraAdapter implements CameraController {
     }
 
     public void viewMoved(CellTransform worldTransform) {
-        // Do Nothing
+        // Do nothing!
     }
 
     public void setBehavior(CameraModel model, AbstractCameraState state) {
