@@ -333,7 +333,9 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
                 int index = 0;
                 for (index = 0; index < menuFinal.getItemCount(); index++) {
                     JMenuItem curItem = menuFinal.getItem(index);
-                    int curWeight = menuWeights.get(curItem);
+                    int curWeight = 0;
+                    if (menuWeights.get(curItem) != null)
+                        curWeight = menuWeights.get(curItem);
                     if (curWeight > weightFinal) {
                         break;
                     } else if (curWeight == weightFinal) {
@@ -371,21 +373,21 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
      * {@inheritDoc}
      */
     public void addToFileMenu(JMenuItem menuItem) {
-        addToMenu(fileMenu, menuItem, -1);
+//        addToMenu(fileMenu, menuItem, -1);
     }
 
     /**
      * {@inheritDoc}
      */
     public void addToFileMenu(JMenuItem menuItem, int index) {
-        addToMenu(fileMenu, menuItem, index);
+//        addToMenu(fileMenu, menuItem, index);
     }
 
     /**
      * {@inheritDoc}
      */
     public void removeFromFileMenu(JMenuItem menuItem) {
-        removeFromMenu(fileMenu, menuItem);
+//        removeFromMenu(fileMenu, menuItem);
     }
 
     /**
@@ -558,6 +560,8 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
             public void run() {
                 viewMenu.add(itemFinal);
                 cameraButtonGroup.add(itemFinal);
+                if (itemFinal.isSelected())
+                    cameraButtonGroup.setSelected(itemFinal.getModel(), true);
             }
         });
     }

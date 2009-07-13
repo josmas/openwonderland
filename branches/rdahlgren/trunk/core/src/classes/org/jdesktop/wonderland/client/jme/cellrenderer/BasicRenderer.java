@@ -489,12 +489,12 @@ public abstract class BasicRenderer implements CellRendererJME {
 
             synchronized(this) {
                 if (dirty) {
-                    node.setLocalTranslation(cellTransform.getTranslation(tmpV3f));
-                    node.setLocalRotation(cellTransform.getRotation(tmpQuat));
-                    node.setLocalScale(cellTransform.getScaling(tmp2V3f));
-//                    System.err.println("BasicRenderer.cellMoved "+tmpV3f+"  "+arg0.size());
-                    dirty = false;
-                    worldManager.addToUpdateList(node);
+//                    node.setLocalTranslation(cellTransform.getTranslation(tmpV3f));
+//                    node.setLocalRotation(cellTransform.getRotation(tmpQuat));
+//                    node.setLocalScale(cellTransform.getScaling(tmp2V3f));
+////                    System.err.println("BasicRenderer.cellMoved "+tmpV3f+"  "+arg0.size());
+//                    dirty = false;
+//                    worldManager.addToUpdateList(node);
 //            System.err.println("--------------------------------");
                 }
             }
