@@ -23,6 +23,9 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -33,6 +36,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.DefaultListCellRenderer;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -57,6 +64,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         VolumeChangeListener, UsernameAliasChangeListener {
 
     private static final Logger logger = Logger.getLogger(UserListHUDPanel.class.getName());
+    private Cell cell;
     private ChannelComponent channelComp;
     private PresenceManager pm;
     private PresenceInfo presenceInfo;
@@ -65,16 +73,20 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
     private HUDComponent namePropertiesHUDComponent;
     private String[] selection = null;
     private DefaultListModel userListModel;
-
     private ArrayList<PresenceInfo> usersInRange = new ArrayList();
+    private int outOfRangeIndex = 0;
+    private Font inRangeFont = new Font("SansSerif", Font.PLAIN, 13);
+    private Font outOfRangeFont = new Font("SansSerif", Font.PLAIN, 13);
 
     public UserListHUDPanel(PresenceManager pm, Cell cell) {
         this.pm = pm;
+        this.cell = cell;
 
         initComponents();
 
         userListModel = new DefaultListModel();
         userList.setModel(userListModel);
+        userList.setCellRenderer(new UserListCellRenderer());
 
         channelComp = cell.getComponent(ChannelComponent.class);
 
@@ -82,10 +94,9 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         presenceInfo = pm.getPresenceInfo(cell.getCellID());
 
         if (presenceInfo == null) {
-            logger.warning("No Presence info for cell " + cell.getCellID());
+            logger.warning("no presence info for cell " + cell.getCellID());
             return;
         }
-
         controlPanel.setVisible(false);
         volumeSlider.setEnabled(false);
         editButton.setEnabled(false);
@@ -98,6 +109,17 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
 
     public void done() {
         setVisible(false);
+    }
+
+    private boolean isMe(PresenceInfo info) {
+        if ((presenceInfo == null) && (cell != null) && (pm != null)) {
+            presenceInfo = pm.getPresenceInfo(cell.getCellID());
+        }
+        return ((presenceInfo != null) && presenceInfo.equals(info));
+    }
+
+    private boolean isInRange(PresenceInfo info) {
+        return isMe(info) || (usersInRange.contains(info));
     }
 
     public synchronized void setUserList() {
@@ -114,20 +136,74 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             String displayName = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
                     info.isMuted);
 
-            if (!usernameMap.containsKey(username)) {
-                // new user
-                // add to list model
-                userListModel.addElement(displayName);
-                // remember username and position in list model
+            boolean inRange = isInRange(info);
+            //displayName = (inRange ? "\u25B8 " : "") + displayName;
+
+            int desiredPosition;
+            boolean newUser = !usernameMap.containsKey(username);
+
+            if (newUser) {
+                if (isMe(info)) {
+                    // this user always goes at the top of the list
+                    desiredPosition = 0;
+                } else {
+                    // some other user
+                    if (inRange) {
+                        // new in range user
+                        // put them at the bottom of the in range list
+                        desiredPosition = outOfRangeIndex;
+                    } else {
+                        // new out of range user
+                        // add them to the end of the out of range list (bottom of user list)
+                        desiredPosition = userListModel.size();
+                    }
+                }
+                logger.finest("inserting new user: " + username + " at position: " + desiredPosition);
+                if (inRange) {
+                    outOfRangeIndex++;
+                }
+
                 usernameMap.put(username, displayName);
+                userListModel.insertElementAt(displayName, desiredPosition);
             } else {
                 // existing user
                 // update entry in list model
                 String oldName = usernameMap.get(username);
+                int currentIndex = userListModel.indexOf(usernameMap.get(username));
+                boolean wasInRange = currentIndex < outOfRangeIndex;
+
+                if (inRange != wasInRange) {
+                    boolean reselect = userList.isSelectedIndex(currentIndex);
+                    logger.finest("user in range: " + username + ": " + wasInRange + " -> " + inRange);
+                    logger.finest("removing: " + username + " at " + currentIndex);
+                    userListModel.removeElementAt(currentIndex);
+
+                    if (wasInRange) {
+                        // user has gone out of range
+                        // add them to the end of the out of range list (at the bottom of user list)
+                        outOfRangeIndex--;
+                        desiredPosition = outOfRangeIndex;
+                        logger.finest("inserting out of range: " + username + " at " + desiredPosition);
+                    } else {
+                        // user has come in range
+                        // put them at the bottom of the in range list
+                        desiredPosition = outOfRangeIndex;
+                        outOfRangeIndex++;
+                        logger.finest("inserting in range: " + username + " at " + desiredPosition);
+                    }
+                    userListModel.insertElementAt(displayName, desiredPosition);
+                    if (reselect) {
+                        userList.setSelectedIndex(desiredPosition);
+                    }
+                } else {
+                    // user range didn't change
+                    desiredPosition = currentIndex;
+                }
+                // update name
                 if (!displayName.equals(oldName)) {
+                    logger.finest("name change: " + oldName + " -> " + displayName);
                     usernameMap.replace(username, displayName);
-                    int index = userListModel.indexOf(oldName);
-                    userListModel.setElementAt(displayName, index);
+                    userListModel.setElementAt(displayName, desiredPosition);
                 }
             }
         }
@@ -149,21 +225,48 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             }
             if (!found) {
                 // user is no longer present, remove them from the user list
+                logger.finest("removing user: " + username);
+                int index = userListModel.indexOf(usernameMap.get(username));
+                boolean wasInRange = index < outOfRangeIndex;
+
                 userListModel.removeElement(usernameMap.get(username));
                 usernameMap.remove(username);
+                if (wasInRange) {
+                    outOfRangeIndex--;
+                }
             }
         }
-    //SortUsers.sort(userData);
+        //logger.finest("map: " + usernameMap);
+        //logger.finest("out of range index: " + outOfRangeIndex);
+    }
+
+    private class UserListCellRenderer implements ListCellRenderer {
+
+        protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+
+        public Component getListCellRendererComponent(JList list, Object value, int index,
+                boolean isSelected, boolean cellHasFocus) {
+            JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index,
+                    isSelected, cellHasFocus);
+            if (index < outOfRangeIndex) {
+                renderer.setFont(inRangeFont);
+                renderer.setForeground(Color.BLUE);
+            } else {
+                renderer.setFont(outOfRangeFont);
+                renderer.setForeground(Color.BLACK);
+            }
+            return renderer;
+        }
     }
 
     public void presenceInfoChanged(PresenceInfo info, ChangeType type) {
-	if (type.equals(ChangeType.USER_IN_RANGE)) {
-	    System.out.println("USER IN RANGE:  " + info);
-	    usersInRange.add(info);
-	} else if (type.equals(ChangeType.USER_OUT_OF_RANGE)) {
-	    System.out.println("USER OUT OF RANGE:  " + info);
-	    usersInRange.remove(info);
-	}
+        if (type.equals(ChangeType.USER_IN_RANGE)) {
+            logger.fine("user in range:  " + info);
+            usersInRange.add(info);
+        } else if (type.equals(ChangeType.USER_OUT_OF_RANGE)) {
+            logger.fine("user out of range:  " + info);
+            usersInRange.remove(info);
+        }
 
         setUserList();
     }
@@ -188,6 +291,8 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         volumeSlider = new javax.swing.JSlider();
         userListScrollPane = new javax.swing.JScrollPane();
         userList = new javax.swing.JList();
+
+        setPreferredSize(new java.awt.Dimension(177, 310));
 
         editButton.setText("Edit");
         editButton.addActionListener(new java.awt.event.ActionListener() {
@@ -227,7 +332,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 .addContainerGap()
                 .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(volumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
-                    .add(volumeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE)
+                    .add(volumeLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 165, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(controlPanelLayout.createSequentialGroup()
                         .add(editButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -248,6 +353,9 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 .addContainerGap())
         );
 
+        userListScrollPane.setPreferredSize(new java.awt.Dimension(260, 300));
+
+        userList.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
         userList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 userListValueChanged(evt);
@@ -259,15 +367,13 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 177, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
             .add(controlPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 300, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                 .add(0, 0, 0)
                 .add(controlPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -320,7 +426,6 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
 
         namePropertiesHUDComponent.setVisible(true);
 }//GEN-LAST:event_propertiesButtonActionPerformed
-
     private ConcurrentHashMap<PresenceInfo, Integer> volumeChangeMap = new ConcurrentHashMap();
 
     private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
@@ -342,7 +447,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 logger.info("changing volume for " + username + " to: " + volume);
                 PresenceInfo pi = info[0];
                 volumeChanged(pi.cellID, pi.callID, volume);
-		volumeChangeMap.put(pi, new Integer(volume));
+                volumeChangeMap.put(pi, new Integer(volume));
             }
         }
 }//GEN-LAST:event_volumeSliderStateChanged
@@ -361,7 +466,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             editButton.setEnabled(false);
             volumeLabel.setText("Private volume");
             volumeSlider.setEnabled(false);
-        //controlPanel.setVisible(false);
+            controlPanel.setVisible(false);
         } else if (selectedValues.length == 1) {
             // one user (self or someone else)
             controlPanel.setVisible(true);
@@ -377,7 +482,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 return;
             }
 
-            if ((presenceInfo != null) && presenceInfo.equals(info[0])) {
+            if (isMe(info[0])) {
                 // this user
                 volumeLabel.setText("Master volume for " + username);
                 editButton.setEnabled(true);
@@ -387,18 +492,18 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 editButton.setEnabled(false);
             }
 
-	    if (presenceInfo != null) {
-		Integer v = volumeChangeMap.get(presenceInfo);
+            if (presenceInfo != null) {
+                Integer v = volumeChangeMap.get(presenceInfo);
 
-		if (v != null) {
-		    volumeSlider.setValue(v.intValue());
-		}
-	    }
+                if (v != null) {
+                    volumeSlider.setValue(v.intValue());
+                }
+            }
         } else {
             // multiple users
             volumeLabel.setText("Private volume for " + selectedValues.length + " users");
             volumeSlider.setEnabled(true);
-	    volumeSlider.setValue(5);
+            volumeSlider.setValue(5);
         }
 }//GEN-LAST:event_userListValueChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
