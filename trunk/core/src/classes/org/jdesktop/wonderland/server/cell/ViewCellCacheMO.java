@@ -427,6 +427,16 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
         scheduler.endRevalidate();
     }
 
+
+    /**
+     * Gets the ViewCellMO associated with this ViewCellCacheMO.
+     * 
+     * @return
+     */
+    public ViewCellMO getViewCell() {
+        return viewRef.get();
+    }
+
     void setConnectionProperties(Properties connectionProperties) {
         this.connectionProperties = connectionProperties;
     }
