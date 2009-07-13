@@ -21,6 +21,9 @@ import com.jme.math.Vector3f;
 import imi.camera.CameraModels;
 import imi.camera.ChaseCamModel;
 import imi.camera.ChaseCamState;
+import imi.character.CharacterParams;
+import imi.character.FemaleAvatarParams;
+import imi.character.MaleAvatarParams;
 import imi.character.behavior.CharacterBehaviorManager;
 import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
@@ -36,6 +39,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -45,6 +49,7 @@ import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.IMIDemoFrame;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.client.jme.MainFrameImpl;
@@ -73,6 +78,8 @@ public class AvatarPlugin extends BaseClientPlugin
     private JMenuItem avatarControlsMI;
     private JMenuItem gestureMI;
     private JMenuItem avatarMI;
+    private JMenuItem femaleAvatarMI;
+    private JMenuItem maleAvatarMI;
     private JMenuItem avatarSettingsMI;
     private JMenuItem startingLocationMI;
     private JRadioButtonMenuItem testCameraMI;
@@ -110,7 +117,8 @@ public class AvatarPlugin extends BaseClientPlugin
                         camState.setTargetCharacter(null);
                     // force an update
                     camState.setCameraPosition(curAvatar.getCell().getLocalTransform().getTranslation(null));
-                }
+                } else
+                    setChaseCam();
             }
         };
     }
@@ -205,22 +213,64 @@ public class AvatarPlugin extends BaseClientPlugin
 //            }
 //        });
 
+        //// Avatar selection menu items
+        femaleAvatarMI = new JMenuItem("Female");
+        femaleAvatarMI.setToolTipText("Select a random female avatar");
+        femaleAvatarMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                if (curAvatar != null) {
+                    new Thread(new Runnable() {
+
+                        public void run() {
+                            LoadingInfo.startedLoading(curAvatar.getCell().getCellID(), curAvatar.getCell().getName());
+                            CharacterParams params = new FemaleAvatarParams(curAvatar.getCell().getName()).build().setBaseURL(baseURL);
+                            curAvatar.changeAvatar(new WlAvatarCharacter.WlAvatarCharacterBuilder(params, ClientContextJME.getWorldManager()).build());
+                            LoadingInfo.finishedLoading(curAvatar.getCell().getCellID(), curAvatar.getCell().getName());
+                        }
+                    }).start();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            femaleAvatarMI.setEnabled(false);
+                            maleAvatarMI.setEnabled(false);
+                        }
+                    });
+                }
+            }
+        });
+
+
+        maleAvatarMI = new JMenuItem("Male");
+        maleAvatarMI.setToolTipText("Select a random male avatar");
+        maleAvatarMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                if (curAvatar != null) {
+                    new Thread(new Runnable() {
+
+                        public void run() {
+                            LoadingInfo.startedLoading(curAvatar.getCell().getCellID(), curAvatar.getCell().getName());
+                            CharacterParams params = new MaleAvatarParams(curAvatar.getCell().getName()).build().setBaseURL(baseURL);
+                            curAvatar.changeAvatar(new WlAvatarCharacter.WlAvatarCharacterBuilder(params, ClientContextJME.getWorldManager()).build());
+                            LoadingInfo.finishedLoading(curAvatar.getCell().getCellID(), curAvatar.getCell().getName());
+                        }
+                    }).start();
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            femaleAvatarMI.setEnabled(false);
+                            maleAvatarMI.setEnabled(false);
+                        }
+                    });
+                }
+            }
+        });
+
         testCameraMI = new JRadioButtonMenuItem(bundle.getString("Chase_Camera"));
         testCameraMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                Vector3f offsetVec = new Vector3f(0.0f, 4.0f, -10.0f);
-                // change camera hook
-                if (camState == null) {
-                    camModel = (ChaseCamModel)CameraModels.getCameraModel(ChaseCamModel.class);
-                    camState = new ChaseCamState(offsetVec, new Vector3f(0.0f, 1.8f, 0.0f));
-                    camState.setDamping(1.7f);
-                    camState.setLookAtDamping(1.7f);
-                }
-                camState.setCameraPosition(curAvatar.getCell().getLocalTransform().getTranslation(null).add(offsetVec));
-                camState.setTargetCharacter(curAvatar.getAvatarCharacter());
-                ClientContextJME.getViewManager().setCameraController(new FlexibleCameraAdapter(camModel, camState));
+                setChaseCam();
             }
         });
+        testCameraMI.setSelected(true);
 
         startingLocationMI = new JMenuItem(bundle.getString("Starting_Location"));
         startingLocationMI.addActionListener(new ActionListener() {
@@ -279,7 +329,12 @@ public class AvatarPlugin extends BaseClientPlugin
             }
             frame.removeFromPlacemarksMenu(startingLocationMI);
             if (frame instanceof MainFrameImpl) // Until MainFrame gets this method added
-                ((MainFrameImpl)frame).removeFromCameraChoices(testCameraMI);
+            {
+                IMIDemoFrame imiFrame = (IMIDemoFrame)frame;
+                imiFrame.removeFromCameraChoices(testCameraMI);
+                imiFrame.removeFromAvatarsMenu(femaleAvatarMI);
+                imiFrame.removeFromAvatarsMenu(maleAvatarMI);
+            }
             else
                 frame.removeFromViewMenu(testCameraMI);
 
@@ -331,8 +386,13 @@ public class AvatarPlugin extends BaseClientPlugin
             frame.addToWindowMenu(gestureMI, 0);
             frame.addToToolsMenu(gravityEnabledMI, -1);
             frame.addToToolsMenu(collisionEnabledMI, -1);
-            if (frame instanceof MainFrameImpl) // Only until the MainFrame interface gets this method
-                ((MainFrameImpl)frame).addToCameraChoices(testCameraMI, 3);
+            if (frame instanceof IMIDemoFrame) // Only until the MainFrame interface gets this method
+            {
+                IMIDemoFrame imiFrame = (IMIDemoFrame)frame;
+                imiFrame.addToCameraChoices(testCameraMI, 3);
+                imiFrame.addToAvatarsMenu(femaleAvatarMI);
+                imiFrame.addToAvatarsMenu(maleAvatarMI);
+            }
             else
                 frame.addToViewMenu(testCameraMI, 3);
             frame.addToEditMenu(avatarMI, 0);
@@ -343,5 +403,20 @@ public class AvatarPlugin extends BaseClientPlugin
 
             menusAdded = true;
         }
+    }
+
+    private void setChaseCam() {
+        Vector3f offsetVec = new Vector3f(0.0f, 4.0f, -10.0f);
+        // change camera hook
+        if (camState == null) {
+            camModel = (ChaseCamModel)CameraModels.getCameraModel(ChaseCamModel.class);
+            camState = new ChaseCamState(offsetVec, new Vector3f(0.0f, 1.8f, 0.0f));
+            camState.setDamping(1.7f);
+            camState.setLookAtDamping(1.7f);
+            camState.setyModifier(0.0f); // Disable Y move for this demo
+        }
+        camState.setCameraPosition(curAvatar.getCell().getLocalTransform().getTranslation(null).add(offsetVec));
+        camState.setTargetCharacter(curAvatar.getAvatarCharacter());
+        ClientContextJME.getViewManager().setCameraController(new FlexibleCameraAdapter(camModel, camState));
     }
 }

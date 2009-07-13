@@ -73,7 +73,8 @@ public class ViewPropertiesClientPlugin extends BaseClientPlugin {
     @Override
     protected void activate() {
         // Add to the View menu
-        JmeClientMain.getFrame().addToViewMenu(propertiesMI, -1);
+        // Disabled for demo
+//        JmeClientMain.getFrame().addToViewMenu(propertiesMI, -1);
 
         // Attempt to load the stored properties from the user's local
         // repository and set the initial values in the view manager's

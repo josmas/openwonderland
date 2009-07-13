@@ -201,7 +201,8 @@ public class SwingContextMenu implements MenuItemRepaintListener {
      * @param menuItem The new context menu item
      */
     private void addContextMenuItem(ContextMenuItem menuItem, Cell cell) {
-
+        if (true) // DISABLED FOR DEMO
+            return;
         // Only support SimpleContextMenuItems for now!
         if (!(menuItem instanceof SimpleContextMenuItem)) {
             logger.warning("Menu item type not supported: " + menuItem);

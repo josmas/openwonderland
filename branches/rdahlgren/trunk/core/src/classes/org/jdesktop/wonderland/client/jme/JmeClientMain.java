@@ -435,8 +435,9 @@ public class JmeClientMain {
      * Create all of the Swing windows - and the 3D window
      */
     private void createUI(WorldManager wm) {
-
-        frame = new MainFrameImpl(wm, width, height);
+        // DAHLGREN : Changed to stripped down version
+        frame = new IMIDemoFrame(wm, width, height);
+//        frame = new MainFrameImpl(wm, width, height);
         // center the frame
         frame.getFrame().setLocationRelativeTo(null);
 
