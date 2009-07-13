@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.Math3DUtils;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  *
@@ -165,13 +164,6 @@ public class ProximityListenerRecord implements Serializable {
                 }
             }
         }
-    }
-
-    // This is implemented on the server, but not on the client because the data
-    // we need to do it properly doesn't really exist. Check ServerProximityListenerRecord
-    // to see what the process should look like on the client.
-    public void userLoggedOut(WonderlandClientID wcid) {
-        throw new UnsupportedOperationException("Not supported yet. This feature only works properly on the server.");
     }
 
     @Override
