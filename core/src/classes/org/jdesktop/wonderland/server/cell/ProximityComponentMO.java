@@ -23,6 +23,8 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.util.HashMap;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
 
 /**
@@ -55,9 +57,11 @@ import org.jdesktop.wonderland.server.spatial.UniverseManager;
 @ExperimentalAPI
 public class ProximityComponentMO extends CellComponentMO {
 
-    private HashMap<ProximityListenerSrv, ServerProximityListenerRecord> proximityListeners = null;
-    private HashMap<ManagedReference<ProximityListenerSrv>, ServerProximityListenerRecord> proximityListenersRef = null;
+    protected HashMap<ProximityListenerSrv, ServerProximityListenerRecord> proximityListeners = null;
+    protected HashMap<ManagedReference<ProximityListenerSrv>, ServerProximityListenerRecord> proximityListenersRef = null;
     private boolean isLive = false;
+
+//    private ManagedReference<UserLeftListener> userListenerRef;
     
     /**
      * Set a list of bounds for which the system will track view enter/exit for
@@ -139,6 +143,39 @@ public class ProximityComponentMO extends CellComponentMO {
             rec.setLive(false, cell, mgr);
         }
     }
+
+    /**
+     * Updates the bounds of the specified listener to be the specified local bounds.
+     *
+     * If the specified listener object is not a registered listener, this method
+     * will have no effect.
+     * 
+     * @param listener The listener object who's bounds you want to change.
+     * @param localBounds The new bounds list.
+     */
+    public void setProximityListenerBounds(ProximityListenerSrv listener, BoundingVolume[] localBounds) {
+        if(listener instanceof ManagedObject) {
+
+            ManagedReference listenerRef = AppContext.getDataManager().createReference(listener);
+
+            // Check if the specified listener is actually registered.
+            if(this.proximityListenersRef.containsKey(listenerRef)) {
+
+                // If so, update the ListenerRecord with new bounds.
+                ProximityListenerRecord proxListRec = this.proximityListenersRef.get(listenerRef);
+                proxListRec.setProximityBounds(localBounds);
+            }
+
+            // Otherwise, just ignore it.
+        } else {
+            
+            // As above, but with the non referenced store.
+            if(this.proximityListeners.containsKey(listener)) {
+                ProximityListenerRecord proxListRec = this.proximityListeners.get(listener);
+                proxListRec.setProximityBounds(localBounds);
+            }
+        }
+    }
     
     @Override
     public void setLive(boolean isLive) {
@@ -156,6 +193,16 @@ public class ProximityComponentMO extends CellComponentMO {
                 for(ServerProximityListenerRecord rec : proximityListenersRef.values()) {
                     rec.setLive(isLive, cell, mgr);
                 }
+
+        // Register for user join/leave events, so we can make sure to fire
+        // EXIT events when someone logs out from within a cell.
+
+        // These lines are commented out until we have a fix for Issue 295.
+        // UserLeftListener userListener = new UserLeftListener(this);
+        // WonderlandContext.getUserManager().addUserListener(userListener);
+
+        // this.userListenerRef = AppContext.getDataManager().createReference(userListener);
+
         } else {
             UniverseManager mgr = AppContext.getManager(UniverseManager.class);
             CellMO cell = cellRef.get();
@@ -167,6 +214,13 @@ public class ProximityComponentMO extends CellComponentMO {
                 for(ServerProximityListenerRecord rec : proximityListenersRef.values()) {
                     rec.setLive(isLive, cell, mgr);
                 }
+
+              // See above comments about UserLeftListener related issues. 
+//            if(this.userListenerRef!=null) {
+//                WonderlandContext.getUserManager().removeUserListener(this.userListenerRef.get());
+//                this.userListenerRef = null;
+//            }
+
          }
 
     }
