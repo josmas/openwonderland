@@ -140,7 +140,7 @@ public class MainFrameImpl extends JFrame implements MainFrame {
                         exitMIActionPerformed(evt);
                     }
                 });
-                fileMenu.add(exitMI);
+                addToFileMenu(exitMI, 3);
 
                 // View menu
                 firstPersonRB = new JRadioButtonMenuItem(bundle.getString("First Person Camera"));

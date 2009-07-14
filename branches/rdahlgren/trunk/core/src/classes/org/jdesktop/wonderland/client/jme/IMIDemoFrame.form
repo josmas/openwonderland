@@ -21,6 +21,11 @@
             <Property name="text" type="java.lang.String" value="View"/>
           </Properties>
         </Menu>
+        <Menu class="javax.swing.JMenu" name="windowMenu">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Window"/>
+          </Properties>
+        </Menu>
         <Menu class="javax.swing.JMenu" name="avatarsMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="Change Avatar"/>

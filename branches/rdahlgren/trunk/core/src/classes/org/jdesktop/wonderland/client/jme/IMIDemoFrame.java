@@ -508,14 +508,15 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
      * {@inheritDoc}
      */
     public void addToWindowMenu(JMenuItem menuItem) {
-     
+        addToWindowMenu(menuItem, -1);
     }
 
     /**
      * {@inheritDoc}
      */
     public void addToWindowMenu(JMenuItem menuItem, int index) {
-     
+        if (menuItem.getActionCommand() == "IMI_HACK_FILTER")
+            addToMenu(windowMenu, menuItem, index);
     }
 
     /**
@@ -649,6 +650,7 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
         mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         viewMenu = new javax.swing.JMenu();
+        windowMenu = new javax.swing.JMenu();
         avatarsMenu = new javax.swing.JMenu();
 
         jLabel1.setText("jLabel1");
@@ -680,6 +682,9 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
         viewMenu.setText("View");
         mainMenuBar.add(viewMenu);
 
+        windowMenu.setText("Window");
+        mainMenuBar.add(windowMenu);
+
         avatarsMenu.setText("Change Avatar");
         avatarsMenu.setToolTipText("Select an Avatar");
         mainMenuBar.add(avatarsMenu);
@@ -697,5 +702,6 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JPanel serverPanel;
     private javax.swing.JMenu viewMenu;
+    private javax.swing.JMenu windowMenu;
     // End of variables declaration//GEN-END:variables
 }
