@@ -67,6 +67,9 @@ import org.jdesktop.wonderland.client.softphone.AudioQuality;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 
@@ -116,7 +119,6 @@ public class AudioManagerClient extends BaseConnection implements
     private JMenuItem userListJMenuItem;
     private ArrayList<DisconnectListener> disconnectListeners = new ArrayList();
     private HashMap<String, ArrayList<MemberChangeListener>> memberChangeListeners = new HashMap();
-    private HashMap<String, InCallDialog> inCallDialogs = new HashMap();
     private HUDComponent userListHUDComponent;
     private UserListHUDPanel userListHUDPanel;
     private boolean usersMenuSelected = false;
@@ -213,10 +215,12 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         if (userListHUDComponent == null) {
-            userListHUDPanel = new UserListHUDPanel(pm, cell);
+            userListHUDPanel = new UserListHUDPanel(this, session, pm, cell);
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             userListHUDComponent = mainHUD.createComponent(userListHUDPanel);
+	    userListHUDPanel.setHUDComponent(userListHUDComponent);
             userListHUDComponent.setPreferredLocation(Layout.NORTHWEST);
+
             mainHUD.addComponent(userListHUDComponent);
             userListHUDComponent.addComponentListener(new HUDComponentListener() {
 
@@ -231,6 +235,7 @@ public class AudioManagerClient extends BaseConnection implements
 
         userListHUDPanel.setUserList();
         userListHUDComponent.setVisible(usersMenuSelected);
+        System.out.println("U LOcation:  " + userListHUDComponent.getLocation());
     }
 
     public synchronized void execute(final Runnable r) {
@@ -373,11 +378,64 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
-        try {
-            new VoiceChatDialog(this, session, cell.getCellID(), presenceInfo);
-        } catch (IOException e) {
-            logger.warning("Unable to get voice chat dialog:  " + e.getMessage());
+	ArrayList<PresenceInfo> usersToInvite = new ArrayList();
+
+        InviteHUDPanel inviteHUDPanel = 
+	    new InviteHUDPanel(this, session, presenceInfo, usersToInvite);
+
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        final HUDComponent inviteHUDComponent = mainHUD.createComponent(inviteHUDPanel);
+	inviteHUDPanel.setHUDComponent(inviteHUDComponent);
+        inviteHUDComponent.setPreferredLocation(Layout.NORTH);
+        mainHUD.addComponent(inviteHUDComponent);
+        inviteHUDComponent.addComponentListener(new HUDComponentListener() {
+            public void HUDComponentChanged(HUDComponentEvent e) {
+                if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                }
+            }
+        });
+
+	PropertyChangeListener plistener = new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pe) {
+                if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
+                    inviteHUDComponent.setVisible(false);
+                }
+            }
+        };
+        inviteHUDPanel.addPropertyChangeListener(plistener);
+	inviteHUDComponent.setVisible(true);
+    }
+
+    public void personalPhone() {
+        if (presenceInfo == null) {
+            return;
         }
+
+        CallHUDPanel callHUDPanel = new CallHUDPanel(this, session, presenceInfo);
+
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        final HUDComponent callHUDComponent = mainHUD.createComponent(callHUDPanel);
+	callHUDPanel.setHUDComponent(callHUDComponent);
+        callHUDComponent.setPreferredLocation(Layout.NORTHEAST);
+        mainHUD.addComponent(callHUDComponent);
+        callHUDComponent.addComponentListener(new HUDComponentListener() {
+            public void HUDComponentChanged(HUDComponentEvent e) {
+                if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                }
+            }
+        });
+
+	PropertyChangeListener plistener = new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pe) {
+                if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
+                    callHUDComponent.setVisible(false);
+                }
+            }
+        };
+        callHUDPanel.addPropertyChangeListener(plistener);
+	callHUDComponent.setVisible(true);
     }
 
     public void softphoneVisible(boolean isVisible) {
@@ -649,22 +707,6 @@ public class AudioManagerClient extends BaseConnection implements
 
             throw new UnsupportedOperationException("Not supported yet.");
         }
-    }
-
-    public InCallDialog[] getInCallDialogs() {
-        return inCallDialogs.values().toArray(new InCallDialog[0]);
-    }
-
-    public InCallDialog getInCallDialog(String group) {
-        return inCallDialogs.get(group);
-    }
-
-    public void addInCallDialog(String group, InCallDialog inCallDialog) {
-        inCallDialogs.put(group, inCallDialog);
-    }
-
-    public void removeInCallDialog(String group) {
-        inCallDialogs.remove(group);
     }
 
     public ConnectionType getConnectionType() {

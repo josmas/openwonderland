@@ -40,7 +40,7 @@ public interface AudioMenuListener {
 
     public void logAudioProblem();
 
-    public void voiceChat();
+    public void personalPhone();
 
     public void microphoneVolume();
 
