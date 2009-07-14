@@ -276,6 +276,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     private void handleAvatarRendererChangeRequest(AvatarRendererChangeRequestEvent event) {
+        // Hack workaround?
+        if (avatarCharacter.getCharacterParams() != null &&
+                avatarCharacter.getCharacterParams().isUseSimpleStaticModel() == false)
+            return;
         switch (event.getQuality()) {
             case High :
                 URL avatarConfigURL = null;

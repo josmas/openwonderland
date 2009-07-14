@@ -165,6 +165,7 @@ public class AvatarPlugin extends BaseClientPlugin
 
         gestureMI = new JCheckBoxMenuItem(bundle.getString("Gesture_UI"));
         gestureMI.setSelected(false);
+        gestureMI.setActionCommand("IMI_HACK_FILTER");
         gestureMI.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -175,7 +176,6 @@ public class AvatarPlugin extends BaseClientPlugin
                 }
                 gestureHUDEnabled = !gestureHUDEnabled;
                 gestureMI.setSelected(gestureHUDEnabled);
-                gestureMI.setActionCommand("IMI_HACK_FILTER");
                 ((GestureHUD)gestureHUDRef.get()).setVisible(gestureHUDEnabled);
             }
         });
@@ -237,8 +237,8 @@ public class AvatarPlugin extends BaseClientPlugin
                     }).start();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            femaleAvatarMI.setEnabled(false);
-                            maleAvatarMI.setEnabled(false);
+//                            femaleAvatarMI.setEnabled(false);
+//                            maleAvatarMI.setEnabled(false);
                         }
                     });
                 }
@@ -265,8 +265,8 @@ public class AvatarPlugin extends BaseClientPlugin
 
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            femaleAvatarMI.setEnabled(false);
-                            maleAvatarMI.setEnabled(false);
+//                            femaleAvatarMI.setEnabled(false);
+//                            maleAvatarMI.setEnabled(false);
                         }
                     });
                 }
@@ -325,7 +325,7 @@ public class AvatarPlugin extends BaseClientPlugin
                 if (selectedURL!=null)
                     configComponent.requestConfigChange(selectedURL);
                 else
-                    Logger.getLogger(AvatarConfigFrame.class.getName()).warning(bundle.getString("Unable_to_apply_null_default_avatar"));
+                    Logger.getLogger(AvatarPlugin.class.getName()).warning(bundle.getString("Unable_to_apply_null_default_avatar"));
             }
         };
         t.start();
@@ -451,6 +451,7 @@ public class AvatarPlugin extends BaseClientPlugin
         if (camState == null) {
             camModel = (ChaseCamModel)CameraModels.getCameraModel(ChaseCamModel.class);
             camState = new ChaseCamState(offsetVec, new Vector3f(0.0f, 1.8f, 0.0f));
+            camState.setDisableLookatSpringOnMouseDrag(true);
             camState.setDamping(1.7f);
             camState.setLookAtDamping(1.7f);
             camState.setyModifier(0.0f); // Disable Y move for this demo
