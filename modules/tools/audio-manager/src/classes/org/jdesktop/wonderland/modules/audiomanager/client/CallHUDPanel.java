@@ -99,6 +99,7 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 
 	userList.setEnabled(false);
 
+	//getRootPane.setDefaultButton(inviteButton);
 	inviteButton.setEnabled(false);
 	setVisible(true);
     }
@@ -132,7 +133,7 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 
     private ArrayList<PresenceInfo> members = new ArrayList();
 
-    private void setUserList() {
+    private synchronized void setUserList() {
 	PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
         ArrayList<String> userList = new ArrayList();
@@ -153,14 +154,21 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
                 logger.finer("members already has " + info);
                 continue;
             }
-
-            userListModel.removeElement(info.usernameAlias);
-            userListModel.addElement(info.usernameAlias);
+	
+	    synchronized (userListModel) {
+                userListModel.removeElement(info.usernameAlias);
+                userListModel.addElement(info.usernameAlias);
+	    }
         }
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
-	System.out.println("PI CHANGED " + presenceInfo);
+	if (type.equals(ChangeType.USER_REMOVED)) {
+	    synchronized (userListModel) {
+		userListModel.removeElement(presenceInfo.usernameAlias);
+	    }
+	}
+
         setUserList();
     }
 
@@ -464,10 +472,10 @@ private void inviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     inCallHUDComponent.setVisible(true);
 
-    System.out.println("Call x,y " + callHUDComponent.getX() + ", " + callHUDComponent.getY()
-        + " width " + callHUDComponent.getWidth() + " height " + callHUDComponent.getHeight()
-        + " Incall x,y " + (callHUDComponent.getX() - callHUDComponent.getWidth())
-        + ", " + (callHUDComponent.getY() + callHUDComponent.getHeight() - inCallHUDComponent.getHeight()));
+    //System.out.println("Call x,y " + callHUDComponent.getX() + ", " + callHUDComponent.getY()
+    //    + " width " + callHUDComponent.getWidth() + " height " + callHUDComponent.getHeight()
+    //    + " Incall x,y " + (callHUDComponent.getX() - callHUDComponent.getWidth())
+    //    + ", " + (callHUDComponent.getY() + callHUDComponent.getHeight() - inCallHUDComponent.getHeight()));
 }//GEN-LAST:event_inviteButtonActionPerformed
 
 
