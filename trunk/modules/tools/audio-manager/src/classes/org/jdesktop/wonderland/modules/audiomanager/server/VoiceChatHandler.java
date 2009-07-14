@@ -266,7 +266,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    return;
 	}
 
-	if (message instanceof VoiceChatJoinAcceptedMessage == true) {
+	if (message instanceof VoiceChatJoinAcceptedMessage) {
 	    if (audioGroup == null) {
 		logger.warning("Join accepted:  Audio group " + group + " no longer exists");
 		return;
@@ -286,7 +286,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    return;
 	}
 
-	if (message instanceof VoiceChatHoldMessage == true) {
+	if (message instanceof VoiceChatHoldMessage) {
 	    VoiceChatHoldMessage msg = (VoiceChatHoldMessage) message;
 
 	    if (audioGroup == null) {
@@ -310,7 +310,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	
 	    if (msg.isOnHold()) {
 		playerInfo.isSpeaking = false;
-		playerInfo.listenAttenuation = 0;
+		playerInfo.listenAttenuation = msg.getVolume();
 	    } else {
 		playerInfo.isSpeaking = true;
 		playerInfo.speakingAttenuation = AudioGroup.DEFAULT_SPEAKING_ATTENUATION;

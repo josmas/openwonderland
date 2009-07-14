@@ -17,6 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
+import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
+import org.jdesktop.wonderland.client.hud.HUDComponentListener;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
@@ -26,6 +34,7 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.awt.Point;
 
@@ -68,6 +77,8 @@ public class IncomingCallDialog extends javax.swing.JFrame {
         PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
 
         callee = pm.getPresenceInfo(cellID);
+
+	System.out.println("NEW INCOMING FOR " + callee);
 
         setVisible(true);
     }
@@ -199,15 +210,35 @@ public class IncomingCallDialog extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+private HUDComponent inCallHUDComponent;
+
 private void answerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_answerButtonActionPerformed
     logger.info("Sent join message");
 
-    InCallDialog inCallDialog = client.getInCallDialog(group);
+    InCallHUDPanel inCallHUDPanel = InCallHUDPanel.getInCallHUDPanel(group);
 
-    if (inCallDialog == null) {
-        inCallDialog = new InCallDialog(client, session, cellID, group, chatType);
-        inCallDialog.setLocation(new Point((int) (getLocation().getX() + getWidth()), (int) getLocation().getY()));
+    if (inCallHUDPanel == null) {
+        inCallHUDPanel = new InCallHUDPanel(client, session, caller, new ArrayList<PresenceInfo>(),
+	    chatType == ChatType.SECRET ? true : false);
+
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        inCallHUDComponent = mainHUD.createComponent(inCallHUDPanel);
+
+	inCallHUDPanel.setHUDComponent(inCallHUDComponent);
+
+        inCallHUDComponent.setPreferredLocation(Layout.NORTHWEST);
+
+        mainHUD.addComponent(inCallHUDComponent);
+
+        inCallHUDComponent.addComponentListener(new HUDComponentListener() {
+            public void HUDComponentChanged(HUDComponentEvent e) {
+                if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                }
+            }
+        });
     }
+
+    inCallHUDComponent.setVisible(true);
 
     session.send(client, new VoiceChatJoinAcceptedMessage(group, callee, chatType));
     setVisible(false);

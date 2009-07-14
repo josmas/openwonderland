@@ -37,7 +37,7 @@ public class AudioMenu extends javax.swing.JPanel {
     private AudioMenuListener audioMenuListener;
     private static AudioMenu audioM = null;
     private JMenuItem softphoneMenuItem;
-    private JMenuItem voiceChatMenuItem;
+    private JMenuItem personalPhoneMenuItem;
     private JCheckBoxMenuItem muteCheckBox;
 
     /** Creates new form AudioMenu */
@@ -67,12 +67,12 @@ public class AudioMenu extends javax.swing.JPanel {
             }
         });
 
-        voiceChatMenuItem = new JMenuItem("Voice Chat");
-        voiceChatMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        personalPhoneMenuItem = new JMenuItem("Personal phone");
+        personalPhoneMenuItem.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 if (audioMenuListener != null) {
-                    audioMenuListener.voiceChat();
+                    audioMenuListener.personalPhone();
                 }
             }
         });
@@ -83,19 +83,19 @@ public class AudioMenu extends javax.swing.JPanel {
         audioMenu.setEnabled(enabled);
         softphoneMenuItem.setEnabled(enabled);
         muteCheckBox.setEnabled(enabled);
-        voiceChatMenuItem.setEnabled(enabled);
+        personalPhoneMenuItem.setEnabled(enabled);
     }
 
     public void addMenus() {
-        JmeClientMain.getFrame().addToWindowMenu(softphoneMenuItem, 4);
+        JmeClientMain.getFrame().addToWindowMenu(softphoneMenuItem, 5);
         JmeClientMain.getFrame().addToToolsMenu(muteCheckBox, 0);
-        JmeClientMain.getFrame().addToWindowMenu(voiceChatMenuItem, 3);
+        JmeClientMain.getFrame().addToWindowMenu(personalPhoneMenuItem, 3);
     }
 
     public void removeMenus() {
         JmeClientMain.getFrame().removeFromWindowMenu(softphoneMenuItem);
         JmeClientMain.getFrame().removeFromToolsMenu(muteCheckBox);
-        JmeClientMain.getFrame().removeFromWindowMenu(voiceChatMenuItem);
+        JmeClientMain.getFrame().removeFromWindowMenu(personalPhoneMenuItem);
     }
 
     public static AudioMenu getAudioMenu(AudioMenuListener audioMenuListener) {
