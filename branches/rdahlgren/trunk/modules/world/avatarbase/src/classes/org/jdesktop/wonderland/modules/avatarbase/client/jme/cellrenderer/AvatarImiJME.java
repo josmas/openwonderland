@@ -145,7 +145,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
         characterMotionListener = new CharacterMotionListener() {
             public void transformUpdate(Vector3f translation, PMatrix rotation) {
-                ((MovableAvatarComponent) c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
+//                ((MovableAvatarComponent) c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
                 };
             
         };

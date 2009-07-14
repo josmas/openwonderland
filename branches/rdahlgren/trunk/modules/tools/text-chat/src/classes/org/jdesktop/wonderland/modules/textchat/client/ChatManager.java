@@ -61,6 +61,8 @@ public class ChatManager implements TextChatListener {
 
         // Create a new Chat menu underneath the "Tools" menu
         menu = new JMenu("Chat");
+        // Dahlgren Hack
+        menu.setActionCommand("IMI_HACK_FILTER");
 
         // First create the text chat frame and keep a weak reference to it so
         // that it gets garbage collected

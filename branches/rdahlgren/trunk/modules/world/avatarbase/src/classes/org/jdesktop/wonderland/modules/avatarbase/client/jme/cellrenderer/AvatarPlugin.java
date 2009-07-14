@@ -32,14 +32,16 @@ import imi.utils.instruments.DefaultInstrumentation;
 import imi.utils.instruments.Instrumentation;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -58,7 +60,9 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.FlexibleCameraAdapter;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 
 /**
  *
@@ -171,6 +175,7 @@ public class AvatarPlugin extends BaseClientPlugin
                 }
                 gestureHUDEnabled = !gestureHUDEnabled;
                 gestureMI.setSelected(gestureHUDEnabled);
+                gestureMI.setActionCommand("IMI_HACK_FILTER");
                 ((GestureHUD)gestureHUDRef.get()).setVisible(gestureHUDEnabled);
             }
         });
@@ -225,6 +230,8 @@ public class AvatarPlugin extends BaseClientPlugin
                             LoadingInfo.startedLoading(curAvatar.getCell().getCellID(), curAvatar.getCell().getName());
                             CharacterParams params = new FemaleAvatarParams(curAvatar.getCell().getName()).build().setBaseURL(baseURL);
                             curAvatar.changeAvatar(new WlAvatarCharacter.WlAvatarCharacterBuilder(params, ClientContextJME.getWorldManager()).build());
+                            addConfigToServer(params.getName());
+                            applyToServer(params.getName());
                             LoadingInfo.finishedLoading(curAvatar.getCell().getCellID(), curAvatar.getCell().getName());
                         }
                     }).start();
@@ -250,6 +257,8 @@ public class AvatarPlugin extends BaseClientPlugin
                             LoadingInfo.startedLoading(curAvatar.getCell().getCellID(), curAvatar.getCell().getName());
                             CharacterParams params = new MaleAvatarParams(curAvatar.getCell().getName()).build().setBaseURL(baseURL);
                             curAvatar.changeAvatar(new WlAvatarCharacter.WlAvatarCharacterBuilder(params, ClientContextJME.getWorldManager()).build());
+                            addConfigToServer(params.getName());
+                            applyToServer(params.getName());
                             LoadingInfo.finishedLoading(curAvatar.getCell().getCellID(), curAvatar.getCell().getName());
                         }
                     }).start();
@@ -289,6 +298,37 @@ public class AvatarPlugin extends BaseClientPlugin
         ClientContextJME.getAvatarRenderManager().registerRenderer(loginManager, AvatarImiJME.class, AvatarControls.class);
 
         super.initialize(loginManager);
+    }
+    
+    private void addConfigToServer(String name) {
+        try {
+            AvatarConfigManager.getAvatarConfigManager()
+                    .saveAvatar(name, curAvatar.getAvatarCharacter());
+        } catch (ContentRepositoryException ex) {
+            Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Caught a content repository exception! " + ex.getMessage());
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Caught an IO exception! " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+    
+    private void applyToServer(String name) {
+        final String finalName = name;
+        Thread t = new Thread() {
+            public void run() {
+                AvatarConfigManager.getAvatarConfigManager().setDefaultAvatarName(finalName);
+                AvatarConfigComponent configComponent = curAvatar.getCell().getComponent(AvatarConfigComponent.class);
+                URL selectedURL = AvatarConfigManager.getAvatarConfigManager().getNamedAvatarServerURL(
+                                finalName,
+                                curAvatar.getCell().getCellCache().getSession().getSessionManager());
+                if (selectedURL!=null)
+                    configComponent.requestConfigChange(selectedURL);
+                else
+                    Logger.getLogger(AvatarConfigFrame.class.getName()).warning(bundle.getString("Unable_to_apply_null_default_avatar"));
+            }
+        };
+        t.start();
     }
 
     @Override
