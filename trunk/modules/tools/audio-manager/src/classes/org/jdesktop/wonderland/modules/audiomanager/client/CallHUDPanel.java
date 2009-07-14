@@ -406,7 +406,7 @@ private void inviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     ArrayList<PresenceInfo> usersToInvite = new ArrayList();
 
-    if (selectedValues.length > 0) {
+    if (inWorldRadioButton.isSelected() && selectedValues.length > 0) {
 	for (int i = 0; i < selectedValues.length; i++) {
             String username = NameTagNode.getUsername((String) selectedValues[i]);
 
@@ -456,7 +456,9 @@ private void inviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 	    callHUDComponent.getY() + callHUDComponent.getHeight() - inCallHUDComponent.getHeight());
     }
 
-    if (nameTextField.getText().length() > 0 && numberTextField.getText().length() > 0) {
+    if (phoneNumberRadioButton.isSelected() && nameTextField.getText().length() > 0 && 
+	    numberTextField.getText().length() > 0) {
+
 	inCallHUDPanel.callUser(nameTextField.getText(), numberTextField.getText());
     }
 
