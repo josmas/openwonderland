@@ -123,7 +123,9 @@ public class InviteHUDPanel extends javax.swing.JPanel implements PresenceManage
                 continue;
             }
 
-            userListModel.addElement(info.usernameAlias);
+	    synchronized (userListModel) {
+                userListModel.addElement(info.usernameAlias);
+	    }
         }
     }
 
@@ -273,10 +275,10 @@ private void InviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     inCallHUDPanel.setHUDComponent(inCallHUDComponent);
 
-    System.out.println("I x,y " + inviteHUDComponent.getX() + ", " + inviteHUDComponent.getY()
-        + " width " + inviteHUDComponent.getWidth() + " height " + inviteHUDComponent.getHeight()
-        + " InCall x,y " + (inviteHUDComponent.getX() + inviteHUDComponent.getWidth())
-        + ", " + (inviteHUDComponent.getY() + inviteHUDComponent.getHeight() - inCallHUDComponent.getHeight()));
+    //System.out.println("I x,y " + inviteHUDComponent.getX() + ", " + inviteHUDComponent.getY()
+    //    + " width " + inviteHUDComponent.getWidth() + " height " + inviteHUDComponent.getHeight()
+    //    + " InCall x,y " + (inviteHUDComponent.getX() + inviteHUDComponent.getWidth())
+    //    + ", " + (inviteHUDComponent.getY() + inviteHUDComponent.getHeight() - inCallHUDComponent.getHeight()));
 
     mainHUD.addComponent(inCallHUDComponent);
     inCallHUDComponent.addComponentListener(new HUDComponentListener() {

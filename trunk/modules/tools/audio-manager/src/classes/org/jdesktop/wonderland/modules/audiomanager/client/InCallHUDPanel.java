@@ -98,7 +98,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         this.usersToInvite = usersToInvite;
 	this.callHUDPanel = callHUDPanel;
 
-	System.out.println("My PI " + myPresenceInfo);
         initComponents();
 
 	if (isSecretChat) {
@@ -110,9 +109,11 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 	userListModel = new DefaultListModel();
         userList.setModel(userListModel);
 
-	for (PresenceInfo info : usersToInvite) {
-            userListModel.addElement(info.usernameAlias);
-        }
+        synchronized (userListModel) {
+	    for (PresenceInfo info : usersToInvite) {
+                userListModel.addElement(info.usernameAlias);
+            }
+	}
 
 	hangupButton.setEnabled(false);
 
@@ -132,12 +133,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
         setVisible(true);
 
-	System.out.println("MY PI " + myPresenceInfo);
-
-	for (PresenceInfo info : usersToInvite) {
-	    System.out.println("INVITE " + info);
-	}
-
 	inviteUsers(usersToInvite);
     }
 
@@ -146,10 +141,12 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     }
 
     public void addUsers(ArrayList<PresenceInfo> usersToInvite, boolean isSecret) {
-	for (PresenceInfo info : usersToInvite) {
-	    removeUser(info.usernameAlias);
-            userListModel.addElement(info.usernameAlias);
-        }
+        synchronized (userListModel) {
+	    for (PresenceInfo info : usersToInvite) {
+	        removeUser(info.usernameAlias);
+                userListModel.addElement(info.usernameAlias);
+            }
+	}
 
 	inviteUsers(usersToInvite);
     }
@@ -161,7 +158,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
 	PresenceInfo info = new PresenceInfo(null, null, new WonderlandIdentity(name, name, null), callID);
 
-	System.out.println("INVITE USER " + info);
         session.send(client, new VoiceChatDialOutMessage(group, callID, ChatType.PRIVATE, info, number));
     }
 
@@ -169,8 +165,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo, 
 	    usersToInvite.toArray(new PresenceInfo[0]), 
 	    secretRadioButton.isSelected() ? ChatType.SECRET : ChatType.PRIVATE));
-
-        System.out.println("Sent join message");
     }
 
     public String getGroup() {
@@ -181,7 +175,7 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 	return inCallHUDPanelMap.get(group);
     }
 
-    private void setMemberList() {
+    private synchronized void setMemberList() {
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
         ArrayList<String> userList = new ArrayList();
@@ -194,9 +188,12 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
                 continue;
             }
 
-	    removeUser(info.usernameAlias);
-	    String name = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking, info.isMuted);
-            userListModel.addElement(name);
+	    synchronized(userListModel) {
+	        removeUser(info.usernameAlias);
+	        String name = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking, info.isMuted);
+
+                userListModel.addElement(name);
+	    }
         }
     }
 
@@ -215,7 +212,11 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
-	System.out.println("PI Changed " + presenceInfo + " changeType " + type);
+	if (type.equals(ChangeType.USER_REMOVED)) {
+	    synchronized(userListModel) {
+		removeUser(presenceInfo.usernameAlias);
+	    }
+	}
         setMemberList();
     }
 
@@ -244,7 +245,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
             members.clear();
 
             for (int i = 0; i < memberList.length; i++) {
-                //System.out.println("InCall adding to members " + memberList[i]);
                 members.add(memberList[i]);
             }
         }
@@ -265,8 +265,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 	    hold(false);
 	}
 
-	//System.out.println("InCall addMember " + member);
-
         synchronized (members) {
             if (memberscontains(member) == false) {
                 members.add(member);
@@ -277,8 +275,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     }
 
     private void removeMember(PresenceInfo member) {
-	//System.out.println("InCall remove Member " + member);
-
         synchronized (members) {
             members.remove(member);
         }
@@ -440,8 +436,6 @@ private CallHUDPanel callHUDPanel;
 private HUDComponent callHUDComponent;
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-    System.out.println("ADD " + callHUDPanel);
-
     if (callHUDPanel == null) {
         callHUDPanel = new CallHUDPanel(client, session, myPresenceInfo, this);
 
@@ -450,10 +444,10 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
 	callHUDPanel.setHUDComponent(callHUDComponent);
 
-        System.out.println("InCall x,y " + inCallHUDComponent.getX() + ", " + inCallHUDComponent.getY()
-            + " width " + inCallHUDComponent.getWidth() + " height " + inCallHUDComponent.getHeight()
-            + " Call x,y " + (inCallHUDComponent.getX() + inCallHUDComponent.getWidth())
-            + ", " + (inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - callHUDComponent.getHeight()));
+        //System.out.println("InCall x,y " + inCallHUDComponent.getX() + ", " + inCallHUDComponent.getY()
+        //    + " width " + inCallHUDComponent.getWidth() + " height " + inCallHUDComponent.getHeight()
+        //    + " Call x,y " + (inCallHUDComponent.getX() + inCallHUDComponent.getWidth())
+        //    + ", " + (inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - callHUDComponent.getHeight()));
 
         mainHUD.addComponent(callHUDComponent);
         callHUDComponent.addComponentListener(new HUDComponentListener() {
@@ -480,7 +474,6 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 }//GEN-LAST:event_addButtonActionPerformed
 
 private void hangupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hangupButtonActionPerformed
-    System.out.println("END CALL");
     hangup();
 }//GEN-LAST:event_hangupButtonActionPerformed
 

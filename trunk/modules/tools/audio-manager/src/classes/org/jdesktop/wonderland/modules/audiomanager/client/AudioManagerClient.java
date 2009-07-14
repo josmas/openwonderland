@@ -643,7 +643,9 @@ public class AudioManagerClient extends BaseConnection implements
                 new CallStatusJFrame(reason);
             }
 
-            //pm.removePresenceInfo(info);
+	    if (info.clientID == null) {
+                pm.removePresenceInfo(info);	// it's an outworlder
+	    }
 
             notifyMemberChangeListeners(msg.getGroup(), info, false);
         } else if (message instanceof ConeOfSilenceEnterExitMessage) {

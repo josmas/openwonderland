@@ -592,7 +592,6 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 		    continue;
 		}
 
-	        System.out.println("ADDING " + info[0] + " my pI " + presenceInfo);
                 usersToInvite.add(info[0]);
             }
 	}
@@ -605,10 +604,10 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 
 	inviteHUDPanel.setHUDComponent(inviteHUDComponent);
 
-	System.out.println("U x,y " + userListHUDComponent.getX() + ", " + userListHUDComponent.getY()
-	    + " width " + userListHUDComponent.getWidth() + " height " + userListHUDComponent.getHeight()
-	    + " I x,y " + (userListHUDComponent.getX() + userListHUDComponent.getWidth())
-	    + ", " + (userListHUDComponent.getY() + userListHUDComponent.getHeight() - inviteHUDComponent.getHeight()));
+	//System.out.println("U x,y " + userListHUDComponent.getX() + ", " + userListHUDComponent.getY()
+	//    + " width " + userListHUDComponent.getWidth() + " height " + userListHUDComponent.getHeight()
+	//    + " I x,y " + (userListHUDComponent.getX() + userListHUDComponent.getWidth())
+	//    + ", " + (userListHUDComponent.getY() + userListHUDComponent.getHeight() - inviteHUDComponent.getHeight()));
 
         mainHUD.addComponent(inviteHUDComponent);
         inviteHUDComponent.addComponentListener(new HUDComponentListener() {
