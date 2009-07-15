@@ -65,7 +65,7 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     private WonderlandSession session;
     private PresenceManager pm;
     private PresenceInfo myPresenceInfo;
-    private ArrayList<PresenceInfo> usersToInvite;
+    private PresenceInfo caller;
 
     private DefaultListModel userListModel;
 
@@ -83,36 +83,30 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     }
 
     public InCallHUDPanel(AudioManagerClient client, WonderlandSession session, 
-	    PresenceInfo myPresenceInfo, ArrayList<PresenceInfo> usersToInvite, boolean isSecretChat) {
+	    PresenceInfo myPresenceInfo, PresenceInfo caller) {
 
-	this(client, session, myPresenceInfo, usersToInvite, isSecretChat, null);
+	this(client, session, myPresenceInfo, caller, null);
     }
 
     public InCallHUDPanel(AudioManagerClient client, WonderlandSession session, 
-	    PresenceInfo myPresenceInfo, ArrayList<PresenceInfo> usersToInvite, boolean isSecretChat,
-	    CallHUDPanel callHUDPanel) {
+	    PresenceInfo myPresenceInfo, PresenceInfo caller, String group) {
 
 	this.client = client;
 	this.session = session;
         this.myPresenceInfo = myPresenceInfo;
-        this.usersToInvite = usersToInvite;
-	this.callHUDPanel = callHUDPanel;
+	this.caller = caller;
 
         initComponents();
-
-	if (isSecretChat) {
-	    secretRadioButton.setSelected(true);
-	} else {
-	    privateRadioButton.setSelected(true);
-	}
 
 	userListModel = new DefaultListModel();
         userList.setModel(userListModel);
 
-        synchronized (userListModel) {
-	    for (PresenceInfo info : usersToInvite) {
-                userListModel.addElement(info.usernameAlias);
-            }
+	members.add(myPresenceInfo);
+	addToUserList(myPresenceInfo);
+
+	if (caller.equals(myPresenceInfo) == false) {
+	    members.add(caller);
+	    addToUserList(caller);
 	}
 
 	hangupButton.setEnabled(false);
@@ -123,7 +117,11 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
 	client.addDisconnectListener(this);
 
-	group = myPresenceInfo.userID.getUsername() + "-" + groupNumber++;
+	if (group == null) {
+	    group = caller.userID.getUsername() + "-" + groupNumber++;
+	}
+
+	this.group = group;
 
 	inCallJLabel.setText("InCall " + group);
 
@@ -132,23 +130,14 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 	client.addMemberChangeListener(group, this);
 
         setVisible(true);
+    }
 
-	inviteUsers(usersToInvite);
+    public void setCallHUDPanel(CallHUDPanel callHUDPanel) {
+	this.callHUDPanel = callHUDPanel;
     }
 
     public void setHUDComponent(HUDComponent inCallHUDComponent) {
 	this.inCallHUDComponent = inCallHUDComponent;
-    }
-
-    public void addUsers(ArrayList<PresenceInfo> usersToInvite, boolean isSecret) {
-        synchronized (userListModel) {
-	    for (PresenceInfo info : usersToInvite) {
-	        removeUser(info.usernameAlias);
-                userListModel.addElement(info.usernameAlias);
-            }
-	}
-
-	inviteUsers(usersToInvite);
     }
 
     public void callUser(String name, String number) {
@@ -158,128 +147,109 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
 	PresenceInfo info = new PresenceInfo(null, null, new WonderlandIdentity(name, name, null), callID);
 
+	addToUserList(info);
         session.send(client, new VoiceChatDialOutMessage(group, callID, ChatType.PRIVATE, info, number));
     }
 
-    private void inviteUsers(ArrayList<PresenceInfo> usersToInvite) {
+    public void inviteUsers(ArrayList<PresenceInfo> usersToInvite) {
+	inviteUsers(usersToInvite, secretRadioButton.isSelected());
+    }
+
+    public void inviteUsers(ArrayList<PresenceInfo> usersToInvite, boolean isSecretChat) {
+	for (PresenceInfo info : usersToInvite) {
+	    addToUserList(info);
+	    members.add(info);
+	}
+
+	if (isSecretChat) {
+	    secretRadioButton.setSelected(true);
+	} else {
+	    privateRadioButton.setSelected(true);
+	}
+
         session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo, 
 	    usersToInvite.toArray(new PresenceInfo[0]), 
-	    secretRadioButton.isSelected() ? ChatType.SECRET : ChatType.PRIVATE));
+	    isSecretChat ? ChatType.SECRET : ChatType.PRIVATE));
+    }
+
+    public PresenceInfo getCaller() {
+	return caller;
     }
 
     public String getGroup() {
 	return group;
     }
 
+    public HUDComponent getHUDComponent() {
+	return inCallHUDComponent;
+    }
+
     public static InCallHUDPanel getInCallHUDPanel(String group) {
 	return inCallHUDPanelMap.get(group);
     }
 
-    private synchronized void setMemberList() {
-        PresenceInfo[] presenceInfoList = pm.getAllUsers();
+    private void addToUserList(PresenceInfo info) {
+	removeFromUserList(info);
 
-        ArrayList<String> userList = new ArrayList();
+	String name = NameTagNode.getDisplayName(info.usernameAlias,
+	    info.isSpeaking, info.isMuted);
 
-        for (int i = 0; i < presenceInfoList.length; i++) {
-            PresenceInfo info = presenceInfoList[i];
+	System.out.println("ADDING " + name);
 
-            if (info.callID == null) {
-                // It's a virtual player, skip it.
-                continue;
-            }
-
-	    synchronized(userListModel) {
-	        removeUser(info.usernameAlias);
-	        String name = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking, info.isMuted);
-
-                userListModel.addElement(name);
-	    }
-        }
+	synchronized (userListModel) {
+	    userListModel.addElement(name);
+	}
     }
 
-    private void removeUser(String usernameAlias) {
-	String name = NameTagNode.getDisplayName(usernameAlias, false, false);
-        userListModel.removeElement(name);
+    private void removeFromUserList(PresenceInfo info) {
+	synchronized (userListModel) {
+	    String name = NameTagNode.getDisplayName(info.usernameAlias, false, false);
+            userListModel.removeElement(name);
 
-	name = NameTagNode.getDisplayName(usernameAlias, false, true);
-        userListModel.removeElement(name);
+	    name = NameTagNode.getDisplayName(info.usernameAlias, false, true);
+            userListModel.removeElement(name);
 
-	name = NameTagNode.getDisplayName(usernameAlias, true, false);
-        userListModel.removeElement(name);
+	    name = NameTagNode.getDisplayName(info.usernameAlias, true, false);
+            userListModel.removeElement(name);
 
-	name = NameTagNode.getDisplayName(usernameAlias, true, true);
-        userListModel.removeElement(name);
+	    name = NameTagNode.getDisplayName(info.usernameAlias, true, true);
+            userListModel.removeElement(name);
+	}
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
-	if (type.equals(ChangeType.USER_REMOVED)) {
-	    synchronized(userListModel) {
-		removeUser(presenceInfo.usernameAlias);
-	    }
+	removeFromUserList(presenceInfo);
+
+	if (members.contains(presenceInfo) == false) {
+	    return;
 	}
-        setMemberList();
-    }
-
-    private boolean memberscontains(PresenceInfo presenceInfo) {
-        for (PresenceInfo info : members) {
-            //if (info.usernameAlias.equals(presenceInfo.userNameAlias())
-            if (info.callID.equals(presenceInfo.callID)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void disconnected() {
-	inCallHUDPanelMap.remove(group);
-        setVisible(false);
+ 
+	if (type.equals(ChangeType.USER_REMOVED) == false) {
+	    addToUserList(presenceInfo);
+	}
     }
 
     private ArrayList<PresenceInfo> members = new ArrayList();
 
     public void setMemberList(PresenceInfo[] memberList) {
-        //pm.dump();
-
-        synchronized (members) {
-            members.clear();
-
-            for (int i = 0; i < memberList.length; i++) {
-                members.add(memberList[i]);
-            }
-        }
-
-        setMemberList();
     }
 
     public void memberChange(PresenceInfo member, boolean added) {
-	if (added) {
-	    addMember(member);
-	} else {
-	    removeMember(member);
- 	}
-    }
+	System.out.println("memberChange " + member + " added " + added);
 
-    private void addMember(PresenceInfo member) {
-	if (holdHUDPanel != null && holdHUDPanel.isVisible()) {
-	    hold(false);
+	if (added == true) {
+	    return;
 	}
 
-        synchronized (members) {
-            if (memberscontains(member) == false) {
-                members.add(member);
-	    }
-        }
-
-	setMemberList();
+	synchronized (members) {
+	    members.remove(member);
+	}
+	removeFromUserList(member);
     }
 
-    private void removeMember(PresenceInfo member) {
-        synchronized (members) {
-            members.remove(member);
-        }
-
-	setMemberList();
+    public void disconnected() {
+	inCallHUDPanelMap.remove(group);
+        inCallHUDComponent.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -397,7 +367,7 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
                                             .add(holdButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                             .add(hangupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)))
                                     .add(chatTextField))))))
-                .add(129, 129, 129))
+                .add(53, 53, 53))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -428,7 +398,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     }// </editor-fold>//GEN-END:initComponents
 
 private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
-    holdButton.setEnabled(userList.getSelectedValues().length > 0);
     setEnableHangupButton();
 }//GEN-LAST:event_userListValueChanged
 
@@ -436,41 +405,45 @@ private CallHUDPanel callHUDPanel;
 private HUDComponent callHUDComponent;
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-    if (callHUDPanel == null) {
-        callHUDPanel = new CallHUDPanel(client, session, myPresenceInfo, this);
+    if (callHUDPanel != null) {
+        callHUDComponent.setVisible(true);
+        return;
+    }
 
-        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-        callHUDComponent = mainHUD.createComponent(callHUDPanel);
+    callHUDPanel = new CallHUDPanel(client, session, myPresenceInfo, this);
 
-	callHUDPanel.setHUDComponent(callHUDComponent);
+    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+    callHUDComponent = mainHUD.createComponent(callHUDPanel);
 
-        //System.out.println("InCall x,y " + inCallHUDComponent.getX() + ", " + inCallHUDComponent.getY()
-        //    + " width " + inCallHUDComponent.getWidth() + " height " + inCallHUDComponent.getHeight()
-        //    + " Call x,y " + (inCallHUDComponent.getX() + inCallHUDComponent.getWidth())
-        //    + ", " + (inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - callHUDComponent.getHeight()));
+    callHUDPanel.setHUDComponent(callHUDComponent);
 
-        mainHUD.addComponent(callHUDComponent);
-        callHUDComponent.addComponentListener(new HUDComponentListener() {
-            public void HUDComponentChanged(HUDComponentEvent e) {
-                if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
-                }
+    //System.out.println("InCall x,y " + inCallHUDComponent.getX() + ", " + inCallHUDComponent.getY()
+    //    + " width " + inCallHUDComponent.getWidth() + " height " + inCallHUDComponent.getHeight()
+    //    + " Call x,y " + (inCallHUDComponent.getX() + inCallHUDComponent.getWidth())
+    //    + ", " + (inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - callHUDComponent.getHeight()));
+
+    mainHUD.addComponent(callHUDComponent);
+    callHUDComponent.addComponentListener(new HUDComponentListener() {
+        public void HUDComponentChanged(HUDComponentEvent e) {
+            if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
             }
-        });
-
-	PropertyChangeListener plistener = new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent pe) {
-                if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                    callHUDComponent.setVisible(false);
-                }
-            }
-        };
-        callHUDPanel.addPropertyChangeListener(plistener);
-    } 
+        }
+    });
 
     callHUDComponent.setVisible(true);
     callHUDComponent.setLocation(inCallHUDComponent.getX() + inCallHUDComponent.getWidth(), 
 	inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - callHUDComponent.getHeight());
+
+    PropertyChangeListener plistener = new PropertyChangeListener() {
+
+        public void propertyChange(PropertyChangeEvent pe) {
+            if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
+                callHUDComponent.setVisible(false);
+            }
+        }
+    };
+    callHUDPanel.addPropertyChangeListener(plistener);
+    callHUDComponent.setVisible(true);
 }//GEN-LAST:event_addButtonActionPerformed
 
 private void hangupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hangupButtonActionPerformed
@@ -535,10 +508,6 @@ private void hold(boolean onHold) {
     } 
 
     holdHUDComponent.setVisible(onHold);
-
-    //if (memberscontains(myPresenceInfo) == false) {
-    //    return;
-    //}
 
     inCallHUDComponent.setVisible(!onHold);
     setHold(onHold, 1);
@@ -614,15 +583,20 @@ public void holdOtherCalls() {
     private void hangup() {
 	ArrayList<PresenceInfo> membersInfo = getSelectedMembers();
 
-        if (membersInfo.size() == 0) {
-            session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
-            return;
-        }
+	boolean hide = false;
 
         for (PresenceInfo info : membersInfo) {
             session.send(client, new VoiceChatLeaveMessage(group, info));
-	    inCallHUDComponent.setVisible(false);
+	    if (info.equals(myPresenceInfo)) {
+		hide = true;
+	    }
         }
+
+	if (hide) {
+	    inCallHUDComponent.setVisible(false);
+	    System.out.println("Removing map entry for " + group);
+	    inCallHUDPanelMap.remove(group);
+	}
     }
 
     public void endHeldCall() {
