@@ -18,9 +18,17 @@ import java.util.HashMap;
 
 import java.util.logging.Logger;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
 import java.awt.Point;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+
 import javax.swing.JPanel;
 
 import java.beans.PropertyChangeEvent;
@@ -100,8 +108,9 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
 	userListModel = new DefaultListModel();
         userList.setModel(userListModel);
+	userList.setCellRenderer(new UserListCellRenderer());
 
-	members.add(myPresenceInfo);
+	invitedMembers.add(myPresenceInfo);
 	addToUserList(myPresenceInfo);
 
 	if (caller.equals(myPresenceInfo) == false) {
@@ -158,7 +167,7 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     public void inviteUsers(ArrayList<PresenceInfo> usersToInvite, boolean isSecretChat) {
 	for (PresenceInfo info : usersToInvite) {
 	    addToUserList(info);
-	    members.add(info);
+	    invitedMembers.add(info);
 	}
 
 	if (isSecretChat) {
@@ -218,7 +227,9 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
 	removeFromUserList(presenceInfo);
 
-	if (members.contains(presenceInfo) == false) {
+	if (members.contains(presenceInfo) == false && 
+		invitedMembers.contains(presenceInfo) == false) {
+
 	    return;
 	}
  
@@ -228,18 +239,25 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     }
 
     private ArrayList<PresenceInfo> members = new ArrayList();
+    private ArrayList<PresenceInfo> invitedMembers = new ArrayList();
 
     public void setMemberList(PresenceInfo[] memberList) {
     }
 
     public void memberChange(PresenceInfo member, boolean added) {
+        invitedMembers.remove(member);
+
 	if (added == true) {
+	    System.out.println("ADDED " + member);
+	    members.add(member);
+	    addToUserList(member);
 	    return;
 	}
 
 	synchronized (members) {
 	    members.remove(member);
 	}
+
 	removeFromUserList(member);
     }
 
@@ -600,6 +618,37 @@ public void holdOtherCalls() {
         inCallHUDComponent.setVisible(false);
     }
 
+    private class UserListCellRenderer implements ListCellRenderer {
+
+        protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+
+	private Font font = new Font("SansSerif", Font.PLAIN, 13);
+
+        public Component getListCellRendererComponent(JList list, Object value, int index,
+                boolean isSelected, boolean cellHasFocus) {
+
+            JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index,
+                    isSelected, cellHasFocus);
+
+            String usernameAlias = NameTagNode.getUsername((String) value);
+
+            PresenceInfo[] info = pm.getAliasPresenceInfo(usernameAlias);
+
+            if (info == null || info.length == 0) {
+                System.out.println("No presence info for " + usernameAlias);
+		return renderer;
+            }
+
+            if (members.contains(info[0])) {
+		renderer.setFont(font);
+                renderer.setForeground(Color.BLACK);
+            } else {
+		renderer.setFont(font);
+                renderer.setForeground(Color.BLUE);
+            }
+            return renderer;
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
