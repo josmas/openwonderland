@@ -225,10 +225,11 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
         cancelButton = new javax.swing.JButton();
         inviteButton = new javax.swing.JButton();
 
-        callJLabel.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
+        callJLabel.setFont(callJLabel.getFont().deriveFont(callJLabel.getFont().getStyle() | java.awt.Font.BOLD));
         callJLabel.setText("Place Call");
 
         buttonGroup1.add(phoneNumberRadioButton);
+        phoneNumberRadioButton.setFont(phoneNumberRadioButton.getFont());
         phoneNumberRadioButton.setSelected(true);
         phoneNumberRadioButton.setText("External user");
         phoneNumberRadioButton.addActionListener(new java.awt.event.ActionListener() {
@@ -237,9 +238,11 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
             }
         });
 
+        jLabel2.setFont(jLabel2.getFont());
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         jLabel2.setText("Name:");
 
+        nameTextField.setFont(nameTextField.getFont());
         nameTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 nameTextFieldActionPerformed(evt);
@@ -251,9 +254,11 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
             }
         });
 
+        jLabel3.setFont(jLabel3.getFont());
         jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        jLabel3.setText("Phone Number:");
+        jLabel3.setText("Phone #:");
 
+        numberTextField.setFont(numberTextField.getFont());
         numberTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 numberTextFieldActionPerformed(evt);
@@ -266,6 +271,7 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
         });
 
         buttonGroup1.add(inWorldRadioButton);
+        inWorldRadioButton.setFont(inWorldRadioButton.getFont());
         inWorldRadioButton.setText("In-world user");
         inWorldRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -280,12 +286,15 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
         });
         jScrollPane1.setViewportView(userList);
 
+        jLabel4.setFont(jLabel4.getFont());
         jLabel4.setText("Privacy:");
 
         buttonGroup2.add(secretRadioButton);
+        secretRadioButton.setFont(secretRadioButton.getFont());
         secretRadioButton.setText("Secret");
 
         buttonGroup2.add(privateRadioButton);
+        privateRadioButton.setFont(privateRadioButton.getFont());
         privateRadioButton.setSelected(true);
         privateRadioButton.setText("Private");
 
@@ -307,46 +316,37 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(10, 10, 10)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(inWorldRadioButton)
                     .add(layout.createSequentialGroup()
-                        .add(20, 20, 20)
+                        .add(27, 27, 27)
+                        .add(cancelButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(inviteButton))
+                    .add(callJLabel)
+                    .add(phoneNumberRadioButton)
+                    .add(layout.createSequentialGroup()
+                        .add(21, 21, 21)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(inWorldRadioButton)
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(jLabel3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 54, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 39, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)
+                                    .add(numberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)))
                             .add(layout.createSequentialGroup()
                                 .add(jLabel4)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(secretRadioButton)
-                                    .add(privateRadioButton)))
-                            .add(layout.createSequentialGroup()
-                                .add(21, 21, 21)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 190, Short.MAX_VALUE)
-                                    .add(layout.createSequentialGroup()
-                                        .add(jLabel3)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(numberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE))
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                        .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE))))))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(10, 10, 10)
-                                .add(phoneNumberRadioButton))
-                            .add(callJLabel)))
-                    .add(layout.createSequentialGroup()
-                        .add(52, 52, 52)
-                        .add(cancelButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(inviteButton)))
+                                .add(privateRadioButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(secretRadioButton)))))
                 .addContainerGap())
         );
-
-        layout.linkSize(new java.awt.Component[] {jLabel2, jLabel3}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {cancelButton, inviteButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
@@ -355,7 +355,7 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(callJLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(7, 7, 7)
                 .add(phoneNumberRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -368,18 +368,17 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(inWorldRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 126, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
+                    .add(privateRadioButton)
                     .add(secretRadioButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(privateRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(3, 3, 3)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(inviteButton)
                     .add(cancelButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
