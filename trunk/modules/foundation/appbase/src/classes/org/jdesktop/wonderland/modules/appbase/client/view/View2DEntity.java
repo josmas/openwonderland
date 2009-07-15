@@ -86,6 +86,7 @@ public abstract class View2DEntity implements View2D {
     protected static final int CHANGED_ORTHO            = 0x0800;
     protected static final int CHANGED_LOCATION_ORTHO   = 0x1000;
     protected static final int CHANGED_TEX_COORDS       = 0x2000;
+    protected static final int CHANGED_USER_RESIZABLE   = 0x4000;
 
     protected static final int CHANGED_ALL = -1;
 
@@ -133,6 +134,9 @@ public abstract class View2DEntity implements View2D {
 
     /** Whether this view should be decorated by a frame. */
     private boolean decorated;
+
+    /** Whether this view's frame resize corner is enabled. */
+    private boolean userResizable = false;
 
     /** The frame title. */
     private String title;
@@ -441,16 +445,16 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized void setVisibleApp (boolean visible) {
-        setVisibleApp(visible, true);
+    public synchronized void setVisibleApp (boolean visibleApp) {
+        setVisibleApp(visibleApp, true);
     }
 
     /** {@inheritDoc} */
-    public synchronized void setVisibleApp (boolean visible, boolean update) {
-        if (visibleApp == visible) return;
+    public synchronized void setVisibleApp (boolean visibleApp, boolean update) {
+        if (this.visibleApp == visibleApp) return;
         logger.info("view = " + this);
-        logger.info("change visibleApp = " + visible);
-        visibleApp = visible;
+        logger.info("change visibleApp = " + visibleApp);
+        this.visibleApp = visibleApp;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
              update();
@@ -463,16 +467,16 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized void setVisibleUser (boolean visible) {
-        setVisibleUser(visible, true);
+    public synchronized void setVisibleUser (boolean visibleUser) {
+        setVisibleUser(visibleUser, true);
     }
 
     /** {@inheritDoc} */
-    public synchronized void setVisibleUser (boolean visible, boolean update) {
-        if (visibleUser == visible) return;
+    public synchronized void setVisibleUser (boolean visibleUser, boolean update) {
+        if (this.visibleUser == visibleUser) return;
         logger.info("view = " + this);
-        logger.info("change visibleUser = " + visible);
-        visibleUser = visible;
+        logger.info("change visibleUser = " + visibleUser);
+        this.visibleUser = visibleUser;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
             update();
@@ -506,6 +510,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setDecorated (boolean decorated, boolean update) {
+        if (this.decorated == decorated) return;
         logger.info("view = " + this);
         logger.info("change decorated = " + decorated);
         this.decorated = decorated;
@@ -537,6 +542,28 @@ public abstract class View2DEntity implements View2D {
     /** {@inheritDoc} */
     public String getTitle () {
         return title;
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void setUserResizable (boolean userResizable) {
+        setUserResizable(userResizable, true);
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void setUserResizable (boolean userResizable, boolean update) {
+        if (this.userResizable == userResizable) return;
+        logger.info("view = " + this);
+        logger.info("change userResizable = " + userResizable);
+        this.userResizable = userResizable;
+        changeMask |= CHANGED_USER_RESIZABLE;
+        if (update) {
+            update();
+        }
+    }
+
+    /** {@inheritDoc} */
+    public boolean isUserResizable () {
+        return userResizable;
     }
 
     /** 
@@ -778,9 +805,10 @@ public abstract class View2DEntity implements View2D {
      * within the world is derived from WFS and other input. 
      */
     public synchronized void setLocationOrtho (Vector2f location, boolean update) {
+        if (locationOrtho.x == location.x && locationOrtho.y == location.y) return;
         logger.info("view = " + this);
         logger.info("change location ortho = " + location);
-        this.locationOrtho = location.clone();
+        locationOrtho = location.clone();
         changeMask |= CHANGED_LOCATION_ORTHO;
         if (update) {
             update();
@@ -801,6 +829,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setOffset(Vector2f offset, boolean update) {
+        if (this.offset.x == offset.x && this.offset.y == offset.y) return;
         logger.info("view = " + this);
         logger.info("change offset = " + offset);
         this.offset = (Vector2f) offset.clone();
@@ -822,6 +851,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setPixelOffset(Point pixelOffset, boolean update) {
+        if (this.pixelOffset.x == pixelOffset.x && this.pixelOffset.y == pixelOffset.y) return;
         logger.info("view = " + this);
         logger.info("change pixelOffset = " + pixelOffset);
         this.pixelOffset = (Point) pixelOffset.clone();
@@ -1027,6 +1057,9 @@ public abstract class View2DEntity implements View2D {
                 case CHANGED_TEX_COORDS:
                     str = "CHANGED_TEX_COORDS";
                     break;
+                case CHANGED_USER_RESIZABLE:
+                    str = "CHANGED_USER_RESIZABLE";
+                    break;
                 default:
                     continue;
                 }
@@ -1072,6 +1105,9 @@ public abstract class View2DEntity implements View2D {
                     str2 = ": locationOrtho = " + locationOrtho;
                     break;
                 case CHANGED_TEX_COORDS:
+                    break;
+                case CHANGED_USER_RESIZABLE:
+                    str2 = ": userResizable = " + userResizable;
                     break;
                 }
 
@@ -1244,7 +1280,7 @@ public abstract class View2DEntity implements View2D {
 
         // React to frame changes (must do before handling size changes)
         if ((changeMask & (CHANGED_DECORATED | CHANGED_TITLE | CHANGED_ORTHO | CHANGED_TYPE |
-                           CHANGED_PIXEL_SCALE)) != 0) { 
+                           CHANGED_PIXEL_SCALE | CHANGED_USER_RESIZABLE)) != 0) { 
             logger.fine("Update frame for view " + this);
             logger.fine("decorated " + decorated);
 
@@ -1273,7 +1309,11 @@ public abstract class View2DEntity implements View2D {
                     reattachFrame();
                 }
             }
-
+            if ((changeMask & CHANGED_USER_RESIZABLE) != 0) {
+                if (decorated && !ortho) {
+                    frameUpdateUserResizable();
+                }
+            }
         }            
 
         if ((changeMask & (CHANGED_STACK | CHANGED_ORTHO)) != 0) {
@@ -2051,6 +2091,13 @@ public abstract class View2DEntity implements View2D {
      */
     protected void frameUpdateTitle () {
     }
+
+    /**
+     * Update this frame's userResizable attribute
+     */
+    protected void frameUpdateUserResizable () {
+    }
+
 
     /**
      * Update the frame.

@@ -158,6 +158,8 @@ public abstract class App2D {
      * Returns the pixel scale 
      */
     public Vector2f getPixelScale() {
+        // Note: pixelScale may be null (e.g. on the SAS)
+        if (pixelScale == null) return null;
         return new Vector2f(pixelScale);
     }
 

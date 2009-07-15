@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.sas.provider;
 
-import com.jme.math.Vector2f;
 import java.util.List;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
@@ -89,9 +88,7 @@ public class SasProviderConnection extends BaseConnection {
         }
 
         logger.warning("Attempting to launch X app");
-        String connInfo = listener.launch(msg.getAppName(), msg.getCommand(), 
-                                          new Vector2f(0.01f, 0.01f)/*TODO: msg.getPixelScale()*/,
-                                          this, msg.getMessageID());
+        String connInfo = listener.launch(msg.getAppName(), msg.getCommand(), this, msg.getMessageID());
         logger.warning("connInfo = " + connInfo);
         sendResponse(msg.getMessageID(), connInfo);
     }

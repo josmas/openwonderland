@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.sasxremwin.provider;
 
-import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporterFactory;
 import org.jdesktop.wonderland.modules.sas.provider.SasProvider;
@@ -112,11 +111,11 @@ public class SasXrwProviderMain
     /**
      * {@inheritDoc}
      */
-    public String launch (String appName, String command, Vector2f pixelScale, 
-                          SasProviderConnection connection, MessageID launchMessageID) {
+    public String launch (String appName, String command, SasProviderConnection connection, 
+                          MessageID launchMessageID) {
         AppXrwMaster app = null;
         try {
-            app = new AppXrwMaster(appName, command, pixelScale, 
+            app = new AppXrwMaster(appName, command, null, 
                                    ProcessReporterFactory.getFactory().create(appName), session, true);
         } catch (InstantiationException ex) {
             return null;

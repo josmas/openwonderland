@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.sas.provider;
 
-import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.messages.MessageID;
 
@@ -37,6 +36,6 @@ public interface SasProviderConnectionListener {
      * Launch the specified app.
      * TODO: params
      */
-    public String launch (String appName, String command, Vector2f pixelScale, 
-                          SasProviderConnection connection, MessageID launchMessageID);
+    public String launch (String appName, String command, SasProviderConnection connection, 
+                          MessageID launchMessageID);
 }

@@ -292,6 +292,14 @@ public class View2DCell extends View2DEntity {
 
     /** {@inheritDoc} */
     @Override
+    protected void frameUpdateUserResizable () {
+        if (frame != null) {
+            frame.setUserResizable(isUserResizable());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected void frameUpdate () {
         if (frame != null) {
             try {
