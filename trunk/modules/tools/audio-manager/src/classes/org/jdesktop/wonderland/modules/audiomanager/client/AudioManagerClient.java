@@ -234,7 +234,6 @@ public class AudioManagerClient extends BaseConnection implements
 
         userListHUDPanel.setUserList();
         userListHUDComponent.setVisible(usersMenuSelected);
-        System.out.println("U LOcation:  " + userListHUDComponent.getLocation());
     }
 
     public synchronized void execute(final Runnable r) {
