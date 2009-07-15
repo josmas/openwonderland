@@ -48,11 +48,11 @@ import java.io.Serializable;
 
 import java.util.logging.Logger;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.Properties;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.util.ScalableHashMap;
 
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.BridgeInfo;
@@ -79,8 +79,9 @@ public class AudioManagerConnectionHandler
 
     private static final Logger logger =
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
-    private ConcurrentHashMap<BigInteger, String> sessionCallIDMap =
-            new ConcurrentHashMap();
+
+    private ManagedReference<ScalableHashMap<BigInteger, String>> sessionCallIDMapRef;
+
     private static AudioManagerConnectionHandler handler;
 
     public static AudioManagerConnectionHandler getInstance() {
@@ -93,6 +94,10 @@ public class AudioManagerConnectionHandler
 
     private AudioManagerConnectionHandler() {
         super();
+
+	ScalableHashMap<BigInteger, String> sessionCallIDMap = new ScalableHashMap();
+
+	sessionCallIDMapRef = AppContext.getDataManager().createReference(sessionCallIDMap);
     }
 
     public ConnectionType getConnectionType() {
@@ -305,13 +310,13 @@ public class AudioManagerConnectionHandler
         cp.setVoiceDetectionWhileMuted(true);
         cp.setHandleSessionProgress(true);
 
-        sessionCallIDMap.put(clientID.getID(), callID);
+        sessionCallIDMapRef.get().put(clientID.getID(), callID);
 
         try {
             setupCall(callID, setup, msg.getX(), msg.getY(), msg.getZ(), msg.getDirection());
         } catch (IOException e) {
             logger.warning("Unable to place call " + cp + " " + e.getMessage());
-            sessionCallIDMap.remove(clientID.getID());
+            sessionCallIDMapRef.get().remove(clientID.getID());
         }
     }
 
@@ -380,14 +385,14 @@ public class AudioManagerConnectionHandler
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         BigInteger sessionID = clientID.getID();
 
-        String callID = sessionCallIDMap.get(sessionID);
+        String callID = sessionCallIDMapRef.get().get(sessionID);
 
         if (callID == null) {
             logger.warning("Unable to find callID for client session " + sessionID);
             return;
         }
 
-        sessionCallIDMap.remove(sessionID);
+        sessionCallIDMapRef.get().remove(sessionID);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
