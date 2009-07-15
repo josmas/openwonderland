@@ -115,7 +115,6 @@ public class AudioManagerClient extends BaseConnection implements
     private PresenceManager pm;
     private PresenceInfo presenceInfo;
     private Cell cell;
-    private final MyEventListener muteListener = new MyEventListener();
     private JMenuItem userListJMenuItem;
     private ArrayList<DisconnectListener> disconnectListeners = new ArrayList();
     private HashMap<String, ArrayList<MemberChangeListener>> memberChangeListeners = new HashMap();
@@ -258,7 +257,6 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
-        InputManager.inputManager().addGlobalEventListener(muteListener);
 
         // enable the menus
         AudioMenu.getAudioMenu(this).setEnabled(true);
@@ -277,7 +275,6 @@ public class AudioManagerClient extends BaseConnection implements
         SoftphoneControlImpl.getInstance().removeSoftphoneListener(this);
         SoftphoneControlImpl.getInstance().sendCommandToSoftphone("endCalls");
         //JmeClientMain.getFrame().removeAudioMenuListener(this);
-        InputManager.inputManager().removeGlobalEventListener(muteListener);
         notifyDisconnectListeners();
     }
 
@@ -357,10 +354,6 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void mute(boolean isMuted) {
-	if (this.isMuted == isMuted) {
-	    return;
-	}
-
 	this.isMuted = isMuted;
 
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
@@ -444,19 +437,11 @@ public class AudioManagerClient extends BaseConnection implements
     private boolean isMuted = true;
 
     public void softphoneMuted(boolean isMuted) {
-	if (isMuted == this.isMuted) {
+	if (this.isMuted == isMuted) {
 	    return;
 	}
 
-	this.isMuted = isMuted;
-
-        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-
-        if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
-            session.send(this, new MuteCallMessage(sc.getCallID(), sc.isMuted()));
-        } else {
-            logger.warning("Unabled to send MuteCallMessage.  Session is not connected.");
-        }
+	mute(isMuted);
     }
 
     public void softphoneConnected(boolean connected) {
@@ -715,46 +700,4 @@ public class AudioManagerClient extends BaseConnection implements
         return AudioManagerConnectionType.CONNECTION_TYPE;
     }
 
-    /**
-     * Global listener for keyboard and mouse events. Reports back to the Selection
-     * Manager on any updates.
-     */
-    class MyEventListener extends EventClassFocusListener {
-
-        @Override
-        public Class[] eventClassesToConsume() {
-            return new Class[]{KeyEvent3D.class, MouseEvent3D.class};
-        }
-
-        // Note: we don't override computeEvent because we don't do any computation in this listener.
-        @Override
-        public void commitEvent(Event event) {
-            inputEvent(event);
-        }
-    }
-
-    private void inputEvent(Event event) {
-        if (event instanceof KeyEvent3D == false) {
-            return;
-        }
-
-        KeyEvent3D e = (KeyEvent3D) event;
-
-        if (e.isPressed() == false || e.getKeyChar() != '[') {
-            return;
-        }
-
-        SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
-        boolean isMuted = sc.isMuted();
-
-        isMuted = !isMuted;
-
-	this.isMuted = isMuted;
-
-        sc.mute(isMuted);
-
-        session.send(this, new MuteCallMessage(sc.getCallID(), isMuted));
-    }
-
 }
-
