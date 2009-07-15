@@ -194,8 +194,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 	String name = NameTagNode.getDisplayName(info.usernameAlias,
 	    info.isSpeaking, info.isMuted);
 
-	System.out.println("ADDING " + name);
-
 	synchronized (userListModel) {
 	    userListModel.addElement(name);
 	}
@@ -235,8 +233,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     }
 
     public void memberChange(PresenceInfo member, boolean added) {
-	System.out.println("memberChange " + member + " added " + added);
-
 	if (added == true) {
 	    return;
 	}
@@ -594,7 +590,6 @@ public void holdOtherCalls() {
 
 	if (hide) {
 	    inCallHUDComponent.setVisible(false);
-	    System.out.println("Removing map entry for " + group);
 	    inCallHUDPanelMap.remove(group);
 	}
     }
