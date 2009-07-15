@@ -371,17 +371,15 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
-	ArrayList<PresenceInfo> usersToInvite = new ArrayList();
-
-        InviteHUDPanel inviteHUDPanel = 
-	    new InviteHUDPanel(this, session, presenceInfo, usersToInvite);
+        InCallHUDPanel inCallHUDPanel = 
+	    new InCallHUDPanel(this, session, presenceInfo, presenceInfo);
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-        final HUDComponent inviteHUDComponent = mainHUD.createComponent(inviteHUDPanel);
-	inviteHUDPanel.setHUDComponent(inviteHUDComponent);
-        inviteHUDComponent.setPreferredLocation(Layout.NORTH);
-        mainHUD.addComponent(inviteHUDComponent);
-        inviteHUDComponent.addComponentListener(new HUDComponentListener() {
+        final HUDComponent inCallHUDComponent = mainHUD.createComponent(inCallHUDPanel);
+	inCallHUDPanel.setHUDComponent(inCallHUDComponent);
+        inCallHUDComponent.setPreferredLocation(Layout.NORTH);
+        mainHUD.addComponent(inCallHUDComponent);
+        inCallHUDComponent.addComponentListener(new HUDComponentListener() {
             public void HUDComponentChanged(HUDComponentEvent e) {
                 if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
                 }
@@ -392,12 +390,12 @@ public class AudioManagerClient extends BaseConnection implements
 
             public void propertyChange(PropertyChangeEvent pe) {
                 if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                    inviteHUDComponent.setVisible(false);
+                    inCallHUDComponent.setVisible(false);
                 }
             }
         };
-        inviteHUDPanel.addPropertyChangeListener(plistener);
-	inviteHUDComponent.setVisible(true);
+        inCallHUDPanel.addPropertyChangeListener(plistener);
+	inCallHUDComponent.setVisible(true);
     }
 
     public void personalPhone() {
@@ -580,6 +578,7 @@ public class AudioManagerClient extends BaseConnection implements
             VoiceChatBusyMessage msg = (VoiceChatBusyMessage) message;
 
             new VoiceChatBusyDialog(msg.getGroup(), msg.getCallee());
+            notifyMemberChangeListeners(msg.getGroup(), msg.getCallee(), false);
         } else if (message instanceof VoiceChatInfoResponseMessage) {
             VoiceChatInfoResponseMessage msg = (VoiceChatInfoResponseMessage) message;
             notifyMemberChangeListeners(msg.getGroup(), msg.getChatters());

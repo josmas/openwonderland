@@ -52,7 +52,7 @@ public class IncomingCallDialog extends javax.swing.JFrame {
     private CellID cellID;
     private String group;
     private PresenceInfo caller;
-    private PresenceInfo callee;
+    private PresenceInfo myPresenceInfo;
 
     /** Creates new form IncomingCallDialog */
     public IncomingCallDialog() {
@@ -76,9 +76,9 @@ public class IncomingCallDialog extends javax.swing.JFrame {
 
         PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
 
-        callee = pm.getPresenceInfo(cellID);
+        myPresenceInfo = pm.getPresenceInfo(cellID);
 
-	System.out.println("NEW INCOMING FOR " + callee);
+	System.out.println("NEW INCOMING FOR " + myPresenceInfo);
 
         setVisible(true);
     }
@@ -218,8 +218,7 @@ private void answerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     InCallHUDPanel inCallHUDPanel = InCallHUDPanel.getInCallHUDPanel(group);
 
     if (inCallHUDPanel == null) {
-        inCallHUDPanel = new InCallHUDPanel(client, session, caller, new ArrayList<PresenceInfo>(),
-	    chatType == ChatType.SECRET ? true : false);
+        inCallHUDPanel = new InCallHUDPanel(client, session, myPresenceInfo, caller, group);
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         inCallHUDComponent = mainHUD.createComponent(inCallHUDPanel);
@@ -240,12 +239,13 @@ private void answerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     inCallHUDComponent.setVisible(true);
 
-    session.send(client, new VoiceChatJoinAcceptedMessage(group, callee, chatType));
+    session.send(client, new VoiceChatJoinAcceptedMessage(group, myPresenceInfo, chatType));
     setVisible(false);
 }//GEN-LAST:event_answerButtonActionPerformed
 
 private void busyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_busyButtonActionPerformed
-    session.send(client, new VoiceChatBusyMessage(group, caller, callee, chatType));
+    session.send(client, new VoiceChatBusyMessage(group, caller, myPresenceInfo, chatType));
+    setVisible(false);
 }//GEN-LAST:event_busyButtonActionPerformed
 
 private void ignoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreButtonActionPerformed

@@ -693,21 +693,18 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
     }
 
-    InviteHUDPanel inviteHUDPanel =
-            new InviteHUDPanel(client, session, presenceInfo, usersToInvite);
+    InCallHUDPanel inCallHUDPanel =
+	new InCallHUDPanel(client, session, presenceInfo, presenceInfo);
+
+    inCallHUDPanel.inviteUsers(usersToInvite);
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-    final HUDComponent inviteHUDComponent = mainHUD.createComponent(inviteHUDPanel);
+    final HUDComponent inCallHUDComponent = mainHUD.createComponent(inCallHUDPanel);
 
-    inviteHUDPanel.setHUDComponent(inviteHUDComponent);
+    inCallHUDPanel.setHUDComponent(inCallHUDComponent);
 
-    //System.out.println("U x,y " + userListHUDComponent.getX() + ", " + userListHUDComponent.getY()
-    //    + " width " + userListHUDComponent.getWidth() + " height " + userListHUDComponent.getHeight()
-    //    + " I x,y " + (userListHUDComponent.getX() + userListHUDComponent.getWidth())
-    //    + ", " + (userListHUDComponent.getY() + userListHUDComponent.getHeight() - inviteHUDComponent.getHeight()));
-
-    mainHUD.addComponent(inviteHUDComponent);
-    inviteHUDComponent.addComponentListener(new HUDComponentListener() {
+    mainHUD.addComponent(inCallHUDComponent);
+    inCallHUDComponent.addComponentListener(new HUDComponentListener() {
 
         public void HUDComponentChanged(HUDComponentEvent e) {
             if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
@@ -719,15 +716,21 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         public void propertyChange(PropertyChangeEvent pe) {
             if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                inviteHUDComponent.setVisible(false);
+                inCallHUDComponent.setVisible(false);
             }
         }
     };
 
-    inviteHUDPanel.addPropertyChangeListener(plistener);
-    inviteHUDComponent.setVisible(true);
-    inviteHUDComponent.setLocation(userListHUDComponent.getX() + userListHUDComponent.getWidth(),
-            userListHUDComponent.getY() + userListHUDComponent.getHeight() - inviteHUDComponent.getHeight());
+    inCallHUDPanel.addPropertyChangeListener(plistener);
+    inCallHUDComponent.setVisible(true);
+
+    //System.out.println("U x,y " + userListHUDComponent.getX() + ", " + userListHUDComponent.getY()
+    //    + " width " + userListHUDComponent.getWidth() + " height " + userListHUDComponent.getHeight()
+    //    + " I x,y " + (userListHUDComponent.getX() + userListHUDComponent.getWidth())
+    //    + ", " + (userListHUDComponent.getY() + userListHUDComponent.getHeight() - inCallHUDComponent.getHeight()));
+
+    inCallHUDComponent.setLocation(userListHUDComponent.getX() + userListHUDComponent.getWidth(),
+            userListHUDComponent.getY() + userListHUDComponent.getHeight() - inCallHUDComponent.getHeight());
 }//GEN-LAST:event_voiceChatButtonActionPerformed
 
 private void muteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_muteButtonActionPerformed
