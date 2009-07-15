@@ -354,7 +354,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         jPanel1 = new javax.swing.JPanel();
         panelToggleButton = new javax.swing.JButton();
 
-        setPreferredSize(new java.awt.Dimension(164, 300));
+        setPreferredSize(new java.awt.Dimension(174, 300));
 
         volumeLabel.setText("Volume for:");
 
@@ -438,7 +438,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             .add(controlPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(volumeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
+                    .add(volumeLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 144, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(volumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
                     .add(controlPanelLayout.createSequentialGroup()
                         .add(muteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
