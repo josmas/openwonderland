@@ -46,6 +46,9 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /** Whether the frame is currently attached to a view. */
     private boolean attached;
 
+    /** Whether the resize corner is active. */
+    private boolean userResizable;
+
     /**
      * Components who wish to be notified when the user has pressed the
      * close button should implement this interface and register themselves
@@ -91,11 +94,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /** List of listeners to notify when the frame is closed. */
     protected LinkedList<CloseListener> closeListeners = new LinkedList();
 
-    /** 
-     ** The window menu associated with this frame. 
-     */
-    private WindowMenuSwing windowMenu;
-
     /**
      * Create a new instance of FrameWorldDefault.
      *
@@ -124,8 +122,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
 
         resizeCorner = new FrameResizeCorner(view, rightSide, bottomSide);
         resizeCorner.setParentEntity(frameEntity);
-
-        windowMenu = new WindowMenuSwing(this);
 
         controlArb = view.getWindow().getApp().getControlArb();
         if (controlArb != null) {
@@ -259,6 +255,13 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
         }
     }
 
+    /** {@inheritDoc} */
+    public synchronized void setUserResizable(boolean userResizable) {
+        if (resizeCorner != null) {
+            resizeCorner.setEnabled(userResizable);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -305,27 +308,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
      */
     public synchronized Iterator<CloseListener> getCloseListeners() {
         return closeListeners.iterator();
-    }
-
-    /**
-     * Show the Window Menu at the given event position.
-     */
-    public void windowMenuShowAt (MouseEvent event) {
-        windowMenu.showAt(event);
-    }
-
-    /**
-     * Hide the Window Menu.
-     */
-    public void windowMenuHide () {
-        windowMenu.hide();
-    }
-
-    /**
-     * Enable/disable the named Window Menu item. Does nothing if the item doesn't exist in the menu.
-     */
-    public void windowMenuItemSetEnabled (String name, boolean isEnabled) {
-        windowMenu.itemSetEnabled(name, isEnabled);
     }
 
     @Override

@@ -71,6 +71,11 @@ public class FrameResizeCorner extends FrameComponent {
     private FrameSide rightSide;
     /** The bordering bottom side frame component */
     private FrameSide bottomSide;
+    /** 
+     * Whether the resize corner is enabled. When it is enabled, it responds to input events 
+     * and highlights. 
+     */
+    private boolean enabled = false;
 
     /** 
      * Create a new instance of FrameResizeCorner.
@@ -100,6 +105,22 @@ public class FrameResizeCorner extends FrameComponent {
         }
         rightSide = null;
         bottomSide = null;
+        enabled = false;
+    }
+
+    /**
+     * Specify whether this resize corner should be enabled (that is, react to input events).
+     * Default: true.
+     */
+    public void setEnabled (boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
+     * Returns whether this resize corner is enabled (that is, does it react to input events).
+     */
+    public boolean isEnabled () {
+        return enabled;
     }
 
     /**
@@ -129,6 +150,10 @@ public class FrameResizeCorner extends FrameComponent {
         vertBar.resize(vertWidth, vertHeight);
 
         super.update();
+
+        if (!enabled) {
+            setMouseOutsideColor();
+        }
     }
 
     /**
@@ -199,17 +224,21 @@ public class FrameResizeCorner extends FrameComponent {
         }
         mouseInside = inside;
 
-        if (mouseInside) {
+        if (enabled && mouseInside) {
             // Use the underlay to highlight button when mouse is inside
             setColor(MOUSE_INSIDE_COLOR);
         } else {
-            // When mouse is outside make underlay the same color as the
-            // underlaying component
-            if (controlArb.hasControl()) {
-                setColor(HAS_CONTROL_COLOR);
-            } else {
-                setColor(NO_CONTROL_COLOR);
-            }
+            setMouseOutsideColor();
+        }
+    }
+
+    private void setMouseOutsideColor () {
+        // When mouse is outside make underlay the same color as the
+        // underlaying component
+        if (controlArb.hasControl()) {
+            setColor(HAS_CONTROL_COLOR);
+        } else {
+            setColor(NO_CONTROL_COLOR);
         }
     }
 

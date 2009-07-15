@@ -83,8 +83,7 @@ public class JEditorTestCell extends App2DCell {
                     try {
                         window = new JEditorTestWindow(jetApp, clientState.getPreferredWidth(),
                                 clientState.getPreferredHeight(),
-                                /*TODO: until debugged: true*/ false,
-                                clientState.getPixelScale());
+                                true, clientState.getPixelScale());
                     } catch (InstantiationException ex) {
                         throw new RuntimeException(ex);
                     }

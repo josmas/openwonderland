@@ -78,6 +78,9 @@ public class WindowXrw extends WindowConventional {
         }
 
         setScreenPosition(x, y);
+
+        // TODO: disable resize corner until bugs are fixed
+        //setUserResizable(true);
     }
 
     /**

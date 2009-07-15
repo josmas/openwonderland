@@ -87,7 +87,8 @@ public abstract class Window2D {
     private static final int CHANGED_OFFSET      = 0x10;
     private static final int CHANGED_SIZE        = 0x20;
     private static final int CHANGED_TITLE       = 0x40;
-    private static final int CHANGED_STACK     = 0x80;
+    private static final int CHANGED_STACK       = 0x80;
+    private static final int CHANGED_USER_RESIZABLE = 0x100;
 
     /** The type of the 2D window. */
     public enum Type {
@@ -105,7 +106,7 @@ public abstract class Window2D {
     private Point pixelOffset = new Point(0, 0);
     /** The size of the window specified by the application. */
     private Dimension size = new Dimension(1, 1);
-    /** The initial size of the pixels of the window's views (specified by WFS). */
+    /** The initial size of the pixels of the window's views. */
     protected Vector2f pixelScale;
     /** The string to display as the window title */
     protected String title;
@@ -148,6 +149,12 @@ public abstract class Window2D {
     private boolean coplanar;
     /** The surface the client on which subclasses should draw. */
     protected DrawingSurface surface;
+
+    /** 
+     * Whether this window can be resized interactively by the user. This attribute only applies to decorated
+     * windows. The resize corner of the window's view frames are not enabled unless this attribute is true.
+     */
+    private boolean userResizable = false;
 
     /** A type for entries in the entityComponents list. */
     private static class EntityComponentEntry {
@@ -213,7 +220,9 @@ public abstract class Window2D {
         this.app = app;
         this.size = new Dimension(width, height);
         this.decorated = decorated;
-        this.pixelScale = new Vector2f(pixelScale);
+        if (pixelScale != null) {
+            this.pixelScale = new Vector2f(pixelScale);
+        }
         this.name = name;
 
         this.surface = surface;
@@ -740,13 +749,31 @@ public abstract class Window2D {
         return title;
     }
 
-     /**
-      * Specify whether this window is in the same local Z plane as its parent.
-      * Ignored by non-popups.
-      * <br><br>
-      * NOTE: You must set this attribute only when the window is not visible.
-      * Otherwise an exception is thrown.
-      */
+    /**
+     * Specifies whether the window is able to be interactively resized by the user.
+     */
+    public void setUserResizable (boolean userResizable) {
+        if (this.userResizable == userResizable) return;
+        this.userResizable = userResizable;
+        changeMask |= CHANGED_USER_RESIZABLE;
+        updateViews();
+    }
+
+    /**
+     * Returns whether the window can be interactively resized by the user.
+     * The default is false.
+     */
+    public boolean isUserResizable () {
+        return userResizable;
+    }
+
+    /**
+     * Specify whether this window is in the same local Z plane as its parent.
+     * Ignored by non-popups.
+     * <br><br>
+     * NOTE: You must set this attribute only when the window is not visible.
+     * Otherwise an exception is thrown.
+     */
     public synchronized void setCoplanar (boolean coplanar) {
         if (isVisibleApp()) {
             throw new RuntimeException("Cannot call setCoplanar when the window is visible.");
@@ -1390,6 +1417,9 @@ public abstract class Window2D {
             }
             if ((changeMask & CHANGED_TITLE) != 0) {
                 view.setTitle(title, false);
+            }
+            if ((changeMask & CHANGED_USER_RESIZABLE) != 0) {
+                view.setUserResizable(userResizable, false);
             }
             if ((changeMask & CHANGED_STACK) != 0) {
                 view.stackChanged(false);

@@ -71,7 +71,8 @@ public class WindowSwing extends Window2D {
     /** The size of the window */
     private Dimension size;
 
-    /** An entity component which provides a back pointer from the entity of a WindowSwing to the WindowSwing. */
+    /** An entity component which provides a back pointer from the entity of a WindowSwing to the 
+        WindowSwing. */
     static class WindowSwingViewReference extends EntityComponent {
         private View2D view;
         WindowSwingViewReference (View2D view) {
@@ -234,6 +235,7 @@ public class WindowSwing extends Window2D {
 
         addEventListener(new MySwingEnterExitListener());
 
+        // TODO: low: does this need to be on the EDT? I'm not going to do it for now.
         embeddedPeer.validate();
         embeddedPeer.repaint();
     }

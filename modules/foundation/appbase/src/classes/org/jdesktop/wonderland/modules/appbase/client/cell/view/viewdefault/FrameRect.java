@@ -83,7 +83,7 @@ public class FrameRect extends FrameComponent {
             logger.warning("Cannot update FrameRect component");
         }
 
-        // TODO: eventually remove when world lights are working
+        // TODO: someday: eventually remove when world lights are working
         initLightState();
     }
 
@@ -130,7 +130,7 @@ public class FrameRect extends FrameComponent {
         return height;
     }
 
-    // TODO: temp: until sync up with global light change
+    // TODO: someday: temporary: until sync up with global light change
     /**
      * Initialize the light state.
      */
