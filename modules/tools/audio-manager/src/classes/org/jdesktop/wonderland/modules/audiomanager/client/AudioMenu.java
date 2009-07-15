@@ -86,6 +86,10 @@ public class AudioMenu extends javax.swing.JPanel {
         personalPhoneMenuItem.setEnabled(enabled);
     }
 
+    public void mute(boolean isMuted) {
+	muteCheckBox.setState(isMuted);
+    }
+
     public void addMenus() {
         JmeClientMain.getFrame().addToWindowMenu(softphoneMenuItem, 5);
         JmeClientMain.getFrame().addToToolsMenu(muteCheckBox, 0);

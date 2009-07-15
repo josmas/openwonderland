@@ -441,6 +441,7 @@ public class AudioManagerClient extends BaseConnection implements
 	    return;
 	}
 
+        AudioMenu.getAudioMenu(this).mute(isMuted);
 	mute(isMuted);
     }
 
