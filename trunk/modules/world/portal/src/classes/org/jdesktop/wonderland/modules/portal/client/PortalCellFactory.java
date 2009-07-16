@@ -44,7 +44,7 @@ public class PortalCellFactory implements CellFactorySPI {
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
 
-        ModelLoader loader = LoaderManager.getLoaderManager().getLoader("dae");
+        ModelLoader loader = LoaderManager.getLoaderManager().getLoader("kmz");
         ModelCellServerState cellState = loader.getCellServerState(
                 "wla://portal/portal.kmz/models/portal.dae",
                 new Vector3f(-1.5f, 1.3f, 0f),
