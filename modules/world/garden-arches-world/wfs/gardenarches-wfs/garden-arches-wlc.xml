@@ -1,23 +1,43 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<jme-collada-cell>
-    <name>garden-arches</name>
+<model-cell>
+    <name>14</name>
     <metadata/>
+    <jme-collada-cell-component>
+        <model>wla://garden-arches/walled_garden_2_noexplode.kmz/models/walled_garden_2_noexplode.dae.gz</model>
+        <model-translation>
+            <x>-130</x>
+            <y>-13</y>
+            <z>230</z>
+        </model-translation>
+        <model-scale>
+            <x>0.08</x>
+            <y>0.08</y>
+            <z>0.08</z>
+        </model-scale>
+        <model-rotation>
+            <x>-1.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+            <angle>1.570796251296997</angle>
+        </model-rotation>
+        <model-loader-classname>org.jdesktop.wonderland.modules.kmzloader.client.KmzLoader</model-loader-classname>
+    </jme-collada-cell-component>
     <position-component>
-        <origin>
+        <translation>
             <x>-9.680023193359375</x>
             <y>13.699996948242188</y>
             <z>19.000015258789062</z>
-        </origin>
+        </translation>
         <bounds>
             <type>BOX</type>
-            <x>139.67999267578125</x>
-            <y>13.69999885559082</y>
-            <z>247.0800018310547</z>
+            <x>139</x>
+            <y>13</y>
+            <z>247</z>
         </bounds>
         <scale>
-            <x>1.0</x>
-            <y>1.0</y>
-            <z>1.0</z>
+            <x>1</x>
+            <y>1</y>
+            <z>1</z>
         </scale>
         <rotation>
             <x>1.0</x>
@@ -26,21 +46,4 @@
             <angle>0.0</angle>
         </rotation>
     </position-component>
-    <model>wla://garden-arches/walled_garden_2_noexplode.kmz/models/walled_garden_2_noexplode.dae.gz</model>
-    <geometry-translation>
-        <x>-130.31997680664062</x>
-        <y>-13.699996948242188</y>
-        <z>230.99998474121094</z>
-    </geometry-translation>
-    <geometry-scale>
-        <x>0.08</x>
-        <y>0.08</y>
-        <z>0.08</z>
-    </geometry-scale>
-    <geometry-rotation>
-        <x>-1</x>
-        <y>0.0</y>
-        <z>0.0</z>
-        <angle>1.570796251296997</angle>
-    </geometry-rotation>
-</jme-collada-cell>
+</model-cell>
