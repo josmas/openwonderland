@@ -532,11 +532,22 @@ public class AudioManagerClient extends BaseConnection implements
 
                 try {
                     InetAddress ia = NetworkAddress.getPrivateLocalAddress(
-                            "server:" + tokens[2] + ":" + tokens[4] + ":10000");
+                        "server:" + tokens[2] + ":" + tokens[4] + ":10000");
 
                     localAddress = ia.getHostAddress();
                 } catch (UnknownHostException ee) {
                     logger.warning(ee.getMessage());
+
+		    /*
+		     * One last try to the ssh port 22.
+		     */
+		    try {
+                        InetAddress ia = NetworkAddress.getPrivateLocalAddress(
+                            "server:" + tokens[2] + ":" + 22 + ":10000");
+
+                        localAddress = ia.getHostAddress();
+                    } catch (UnknownHostException eee) {
+		    }
                 }
             }
 
