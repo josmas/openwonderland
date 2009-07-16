@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,17 +40,20 @@ import javax.xml.bind.annotation.XmlTransient;
  *
  * @author paulby
  */
-@XmlRootElement(name="jme-collada-deployment-data")
-public class JmeModelDeploymentData {
+@XmlRootElement(name="model-deployment-data")
+public class ModelDeploymentData {
 
     private static JAXBContext jaxbContext = null;
     static {
         try {
-            jaxbContext = JAXBContext.newInstance(JmeModelDeploymentData.class);
+            jaxbContext = JAXBContext.newInstance(ModelDeploymentData.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
     }
+
+    @XmlElement(name="modelLoaderClassname")
+    private String modelLoaderClassname;
 
     @XmlElement(name="author")
     private String author;
@@ -62,7 +64,7 @@ public class JmeModelDeploymentData {
         @XmlElement(name="deployedTextures")
     })
     private Attribute[] attributes = new Attribute[] {};
-
+    
     /**
      * @return the deployedTextures
      */
@@ -92,6 +94,20 @@ public class JmeModelDeploymentData {
     }
 
     /**
+     * @return the modelLoaderClassname
+     */
+    @XmlTransient public String getModelLoaderClassname() {
+        return modelLoaderClassname;
+    }
+
+    /**
+     * @param modelLoaderClassname the modelLoaderClassname to set
+     */
+    public void setModelLoaderClassname(String modelLoaderClassname) {
+        this.modelLoaderClassname = modelLoaderClassname;
+    }
+
+    /**
      * Writes the ModuleInfo class to an output stream.
      * <p>
      * @param os The output stream to write to
@@ -113,10 +129,10 @@ public class JmeModelDeploymentData {
         marshaller.marshal(this, os);
     }
 
-    public static JmeModelDeploymentData decode(InputStream in) throws JAXBException {
+    public static ModelDeploymentData decode(InputStream in) throws JAXBException {
         /* Read in from stream */
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        JmeModelDeploymentData info = (JmeModelDeploymentData)unmarshaller.unmarshal(in);
+        ModelDeploymentData info = (ModelDeploymentData)unmarshaller.unmarshal(in);
 
         /* Convert array into hash map */
         info.deployedTextures = new HashMap();
@@ -125,6 +141,7 @@ public class JmeModelDeploymentData {
         }
         return info;
     }
+
 
     /**
      * The Attribute inner class stores a string key-value pair

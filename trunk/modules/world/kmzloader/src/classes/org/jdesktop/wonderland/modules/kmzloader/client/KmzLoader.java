@@ -188,6 +188,7 @@ class KmzLoader extends JmeColladaLoader {
                 if (entry.getName().endsWith(".dae")) {
                     File target = new File(targetDir, "/"+entry.getName());
                     target.getParentFile().mkdirs();
+                    System.err.println("Creating file "+target.getAbsolutePath());
                     target.createNewFile();
                     
                     copyAsset(zipFile, entry, target, false);

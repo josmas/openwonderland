@@ -19,12 +19,12 @@ package org.jdesktop.wonderland.modules.kmzloader.client;
 
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.content.ContentImportManager;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.ModelDndContentImporter;
 
 /**
  *
@@ -35,9 +35,11 @@ public class KmzLoaderFactory extends ModelLoaderFactory
 {
     /** A BaseClientPlugin that delegate activate and deactivate to the parent */
     private BaseClientPlugin plugin;
+    private ModelDndContentImporter importer;
 
     public void initialize(ServerSessionManager loginManager) {
         LoaderManager.getLoaderManager().registerLoader(this);
+        this.importer = new ModelDndContentImporter(loginManager, new String[] {getFileExtension()});
         this.plugin = new BaseClientPlugin() {
             @Override
             protected void activate() {
@@ -60,10 +62,14 @@ public class KmzLoaderFactory extends ModelLoaderFactory
 
     protected void register() {
         LoaderManager.getLoaderManager().activateLoader(this);
+        ContentImportManager cim = ContentImportManager.getContentImportManager();
+        cim.registerContentImporter(importer);
     }
 
     protected void unregister() {
         LoaderManager.getLoaderManager().deactivateLoader(this);
+        ContentImportManager cim = ContentImportManager.getContentImportManager();
+        cim.unregisterContentImporter(importer);
     }
 
     public String getFileExtension() {
