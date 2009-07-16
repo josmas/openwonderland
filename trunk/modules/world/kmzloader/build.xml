@@ -14,6 +14,7 @@
     <!-- kmzload is dependent on the jmecolladaloader and content-repo -->
     <pathconvert property="module-client.classpath">
         <path location="${current.dir}/../jmecolladaloader/build/classes"/>
+        <path location="${current.dir}/../../tools/artimport/build/classes"/>
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
     </pathconvert>
        

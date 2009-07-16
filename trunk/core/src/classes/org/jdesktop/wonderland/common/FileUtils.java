@@ -55,4 +55,21 @@ public class FileUtils {
         }
 
     }
+
+    /**
+     * Replace the extension of the filename with newExtension and return
+     * @param filename
+     * @param oldExtension
+     * @param newExtension
+     * @return
+     */
+    public static String replaceFileExtension(String filename, String oldExtension, String newExtension) {
+        if (!filename.endsWith(oldExtension))
+            throw new RuntimeException("Extension does not match");
+
+        String ret = filename.substring(0, filename.length()-oldExtension.length());
+        ret += newExtension;
+
+        return ret;
+    }
 }

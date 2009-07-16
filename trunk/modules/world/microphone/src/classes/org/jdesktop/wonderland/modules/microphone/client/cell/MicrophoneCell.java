@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.modules.microphone.client.cell;
 
 import com.sun.sgs.client.ClientChannel;
 
+import java.net.MalformedURLException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.messages.Message;
@@ -30,6 +32,7 @@ import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
@@ -38,6 +41,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
+import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellClientState;
 
 /**
@@ -94,7 +98,11 @@ public class MicrophoneCell extends Cell implements CellStatusChangeListener {
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
-            return new MicrophoneCellRenderer(this);
+            try {
+                return new ModelRenderer(this, AssetUtils.getAssetURL("wla://microphone/models/Microphone.dae"));
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(MicrophoneCell.class.getName()).log(Level.SEVERE, "Failed to load microphone model", ex);
+            }
         }
 
         logger.warning(this.getClass().getName() + " does not support " + rendererType);

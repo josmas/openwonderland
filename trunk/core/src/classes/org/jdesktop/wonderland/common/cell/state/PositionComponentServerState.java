@@ -38,9 +38,9 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlRootElement(name="position-component")
 public class PositionComponentServerState extends CellComponentServerState {
 
-    /* The (x, y, z) origin of the cell */
-    @XmlElement(name="origin")
-    public Origin origin = new Origin();
+    /* The (x, y, z) translation of the cell */
+    @XmlElement(name="translation")
+    public Translation translation = new Translation();
 
     /* The cell bounds */
     @XmlElement(name="bounds")
@@ -54,22 +54,26 @@ public class PositionComponentServerState extends CellComponentServerState {
     @XmlElement(name="rotation")
     public Rotation rotation = new Rotation();
         /**
-     * The Origin static inner class simply stores (x, y, z) cell origin.
+     * The Translation static inner class simply stores (x, y, z) cell origin.
      */
-    public static class Origin implements Serializable {
+    public static class Translation implements Serializable {
         /* The (x, y, z) origin components */
         @XmlElement(name="x") public double x = 0;
         @XmlElement(name="y") public double y = 0;
         @XmlElement(name="z") public double z = 0;
 
         /** Default constructor */
-        public Origin() {
+        public Translation() {
         }
 
-        public Origin(Vector3f origin) {
+        public Translation(Vector3f origin) {
             this.x = origin.x;
             this.y = origin.y;
             this.z = origin.z;
+        }
+
+        public Vector3f asVector3f() {
+            return new Vector3f((float)x,(float)y,(float)z);
         }
     }
 
@@ -123,6 +127,10 @@ public class PositionComponentServerState extends CellComponentServerState {
             y = scaling.y;
             z = scaling.z;
         }
+
+        public Vector3f asVector3f() {
+            return new Vector3f((float)x,(float)y,(float)z);
+        }
     }
 
     /**
@@ -158,6 +166,12 @@ public class PositionComponentServerState extends CellComponentServerState {
             angle = angleRadians;
 
         }
+
+        public Quaternion asQuaternion() {
+            Quaternion ret = new Quaternion();
+            ret.fromAngleAxis((float)angle, new Vector3f((float)x,(float)y,(float)z));
+            return ret;
+        }
     }
 
     @Override
@@ -166,22 +180,22 @@ public class PositionComponentServerState extends CellComponentServerState {
     }
 
     /**
-     * Returns the cell origin.
+     * Returns the cell translation.
      *
-     * @return The cell origin
+     * @return The cell translation
      */
-    @XmlTransient public Origin getOrigin() {
-        return this.origin;
+    @XmlTransient public Translation getTranslation() {
+        return this.translation;
     }
 
     /**
-     * Sets the cell origin. If null, then this property will not be written
+     * Sets the cell translation. If null, then this property will not be written
      * out to the file.
      *
-     * @param origin The new cell origin
+     * @param translation The new cell translation
      */
-    public void setOrigin(Origin origin) {
-        this.origin = origin;
+    public void setTranslation(Translation translation) {
+        this.translation = translation;
     }
 
     /**
@@ -247,8 +261,8 @@ public class PositionComponentServerState extends CellComponentServerState {
 
     @Override
     public String toString() {
-        return "[BasicCellSetup] origin=(" + this.origin.x + "," + this.origin.y +
-                "," + this.origin.z + ") rotation=(" + this.rotation.x + "," +
+        return "[BasicCellSetup] origin=(" + this.translation.x + "," + this.translation.y +
+                "," + this.translation.z + ") rotation=(" + this.rotation.x + "," +
                 this.rotation.y + "," + this.rotation.z + ") @ " + this.rotation.angle +
                 " scaling=(" + this.scaling.x + "," + this.scaling.y + "," +
                 this.scaling.z + ") bounds=" + this.bounds.type + "@" +

@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentClientState;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
@@ -40,7 +40,7 @@ public class PortalComponentMO extends CellComponentMO {
     private static Logger logger = Logger.getLogger(PortalComponentMO.class.getName());
     
     private String serverURL;
-    private Origin location;
+    private Translation location;
     private Rotation look;
 
     public PortalComponentMO(CellMO cell) {

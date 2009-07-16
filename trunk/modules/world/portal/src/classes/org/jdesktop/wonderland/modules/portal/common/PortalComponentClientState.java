@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.portal.common;
 
 import javax.xml.bind.annotation.XmlElement;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 
 /**
@@ -30,14 +30,14 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Ro
  */
 public class PortalComponentClientState extends CellComponentClientState {
     private String serverURL;
-    private Origin location;
+    private Translation location;
     private Rotation look;
 
     /** Default constructor */
     public PortalComponentClientState() {
     }
 
-    public PortalComponentClientState(String serverURL, Origin location,
+    public PortalComponentClientState(String serverURL, Translation location,
                                       Rotation look)
     {
         this.serverURL = serverURL;
@@ -55,11 +55,11 @@ public class PortalComponentClientState extends CellComponentClientState {
     }
 
     @XmlElement
-    public Origin getLocation() {
+    public Translation getLocation() {
         return location;
     }
 
-    public void setLocation(Origin location) {
+    public void setLocation(Translation location) {
         this.location = location;
     }
 

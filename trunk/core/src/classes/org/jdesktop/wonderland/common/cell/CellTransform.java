@@ -83,7 +83,7 @@ public class CellTransform implements Serializable {
         if (scale == null) {
             this.scale = 0.0f;
         }
-        else { 
+        else {
             this.scale = scale.x;
             Logger.getLogger(CellTransform.class.getName()).warning("Non uniform scale is not supported, please use another CellTransform constructor");
             Thread.dumpStack();

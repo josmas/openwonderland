@@ -22,7 +22,7 @@ import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
 
 /**
  *
@@ -36,13 +36,14 @@ public class JmeColladaCellFactory implements CellFactorySPI {
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
-        JmeColladaCellServerState state = new JmeColladaCellServerState();
+        ModelCellServerState state = new ModelCellServerState();
 
        // Look for the content-uri field and set if so
        if (props != null) {
            String uri = props.getProperty("content-uri");
            if (uri != null) {
-               state.setModel(uri);
+               System.err.println("JmeColladaCellFactory.getDefaultCellServerState needs updating to new API ! "+uri);
+//               state.setModel(uri);
            }
        }
         return (T)state;

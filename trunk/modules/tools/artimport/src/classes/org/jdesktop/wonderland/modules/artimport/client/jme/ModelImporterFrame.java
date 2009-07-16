@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.artimport.client.jme;
 
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
+import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
@@ -66,6 +66,7 @@ import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -90,8 +91,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
     private ImportSessionFrame sessionFrame;
     
-    private ImportedModel importedModel=null;
-    private Entity entity;
+    private ImportSettings importSettings=null;
+    private ImportedModel importedModel = null;
     private TransformProcessorComponent transformProcessor;
 
     /** Creates new form ModelImporterFrame */
@@ -275,11 +276,9 @@ public class ModelImporterFrame extends javax.swing.JFrame {
      * @param model
      */
     void editModel(ImportedModel model) {
-        File origFile = new File(model.getOrigModel());
-        
-        texturePrefixTF.setText(model.getTexturePrefix());
-        modelX3dTF.setText(model.getOrigModel());
-        modelNameTF.setText(model.getWonderlandName());
+//        texturePrefixTF.setText(model.getTexturePrefix());
+        modelX3dTF.setText(model.getOriginalURL().toExternalForm());
+//        modelNameTF.setText(model.getWonderlandName());
         currentTranslation.set(model.getTranslation());
         currentRotationValues.set(model.getOrientation());
         calcCurrentRotationMatrix();
@@ -305,20 +304,17 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         avatarMoveCB.setSelected(attachToAvatar);
         
         modelX3dTF.setText(origFile.getAbsolutePath());
-        importedModel = new ImportedModel(origFile.getAbsolutePath(),
-                                                null,
-                                                null,
-                                                new Vector3f(0,0,0),
-                                                new Vector3f(),
-                                                null, 
-                                                null);
-        sessionFrame.asyncLoadModel(importedModel, new ImportSessionFrame.LoadCompleteListener() {
+        importSettings = new ImportSettings(origFile.toURI().toURL());
 
-            public void loadComplete(Entity entity) {
+        sessionFrame.asyncLoadModel(importSettings, new ImportSessionFrame.LoadCompleteListener() {
+
+            public void loadComplete(ImportedModel importedModel) {
+                ModelImporterFrame.this.importedModel = importedModel;
+                Entity entity = importedModel.getEntity();
                 transformProcessor = (TransformProcessorComponent) entity.getComponent(TransformProcessorComponent.class);
                 setSpinners(importedModel.getModelBG(), importedModel.getRootBG());
 
-                entity.addComponent(LoadCompleteProcessor.class, new LoadCompleteProcessor(entity));
+                entity.addComponent(LoadCompleteProcessor.class, new LoadCompleteProcessor(importedModel));
                 
                 String dir = origFile.getAbsolutePath();
                 dir = dir.substring(0,dir.lastIndexOf(File.separatorChar));
@@ -860,8 +856,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 (Float)rotationYTF.getValue(), 
                 (Float)rotationZTF.getValue());
         
-        importedModel.setWonderlandName(modelNameTF.getText());
-        importedModel.setTexturePrefix(texturePrefixTF.getText());
+//        importedModel.setWonderlandName(modelNameTF.getText());
+//        importedModel.setTexturePrefix(texturePrefixTF.getText());
         
         sessionFrame.loadCompleted(importedModel);
 }//GEN-LAST:event_okBActionPerformed
@@ -1114,10 +1110,10 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     
     class LoadCompleteProcessor extends ProcessorComponent {
 
-        private Entity entity;
+        private ImportedModel importedModel;
 
-        public LoadCompleteProcessor(Entity entity) {
-            this.entity = entity;
+        public LoadCompleteProcessor(ImportedModel importedModel) {
+            this.importedModel = importedModel;
 
         }
 
@@ -1127,7 +1123,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
             populateTextureList(importedModel.getModelBG());
 
-            entity.removeComponent(LoadCompleteProcessor.class);
+            importedModel.getEntity().removeComponent(LoadCompleteProcessor.class);
             setArmingCondition(null);
         }
 

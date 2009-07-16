@@ -17,10 +17,15 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.io.File;
 import java.io.IOException;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import java.util.Map;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.ModelCellComponent;
+import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
 
 /**
  * Interface for Model loader code. Provides support for inital import of the 
@@ -37,45 +42,53 @@ public interface ModelLoader {
      * @param file
      * @return
      */
-    public Node importModel(File file) throws IOException;
+    public ImportedModel importModel(ImportSettings settings) throws IOException;
     
+    /**
+     * Given a previously deploy ImportedModel, load the model
+     * @param model
+     */
+    public Node loadDeployedModel(DeployedModel model);
+
     /**
      * Deploy the art content to the module.
      * @param rootDir the art root directory of the module (usually <module>/art)
      */
-    public ModelDeploymentInfo deployToModule(File moduleRootDir, ImportedModel model) throws IOException;
+    public DeployedModel deployToModule(File moduleRootDir, ImportedModel importedModel) throws IOException;
+
+    /**
+     * Return a cell server state object that will cause the appropriate cell
+     * for the model to be create on the server.
+     *
+     * @param deployedURL the url of the deployed art file
+     * @param modelTranslation the translation of the model, relative to the cell
+     * @param modelRotation the rotation of the model, relative to the cell
+     * @param modelScale the scale of the model, relative to the cell
+     * @param properties set of loader specific properties, may be null
+     *
+     * @return a cell server state object
+     */
+    public ModelCellServerState getCellServerState(String deployedURL, 
+            Vector3f modelTranslation,
+            Quaternion modelRotation,
+            Vector3f modelScale,
+            Map<String, Object> properties);
     
     /**
-     * Runtime load of the model from a module
+     * Add a model loader component for the specified deployed model to the cell. Use this method if
+     * you have your own cell, but you would like the loader system to manage
+     * the loading of model. You will also need to add a ModelCellRenderer to your cell.
+     * 
+     * @param deployedURL the url of the deployed art file
+     * @param modelTranslation the translation of the model, relative to the cell
+     * @param modelRotation the rotation of the model, relative to the cell
+     * @param modelScale the scale of the model, relative to the cell
+     * @param properties set of loader specific properties, may be null
+     * @return
      */
-//    public Node loadModel(URL url);
-    
-
-    public class ModelDeploymentInfo {
-//        private String assetURL;
-//
-//        /**
-//         * @return the assetURL
-//         */
-//        public String getAssetURL() {
-//            return assetURL;
-//        }
-//
-//        /**
-//         * @param assetURL the assetURL to set
-//         */
-//        public void setAssetURL(String assetURL) {
-//            this.assetURL = assetURL;
-//        }
-        
-        private CellServerState setup;
-        
-        public CellServerState getCellSetup() {
-            return setup;
-        }
-        
-        public void setCellSetup(CellServerState setup) {
-            this.setup = setup;
-        }
-    }
+//    public ModelCellComponentServerState getModeCellComponentServerState(String deployedURL,
+//            Vector3f modelTranslation,
+//            Quaternion modelRotation,
+//            Vector3f modelScale,
+//            Map<String, Object> properties);
 }

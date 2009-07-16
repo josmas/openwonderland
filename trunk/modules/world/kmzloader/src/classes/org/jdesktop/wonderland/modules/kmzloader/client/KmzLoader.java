@@ -17,9 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.kmzloader.client;
 
-import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
@@ -32,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -40,19 +39,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader;
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
+import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
-import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
-import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
-import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
 
 /**
  *
@@ -60,30 +58,42 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeCol
  * 
  * @author paulby
  */
-class KmzLoader implements ModelLoader {
+class KmzLoader extends JmeColladaLoader {
 
     private static final Logger logger = Logger.getLogger(KmzLoader.class.getName());
         
     private HashMap<URL, ZipEntry> textureFiles = new HashMap();
     
-    // The original file the user loaded
-    private File origFile;
     
     private ArrayList<String> modelFiles = new ArrayList();
 
-    private Node modelNode = null;
-    
     /**
-     * Load a SketchUP KMZ file and return the graph root
+     * Load a SketchUP KMZ file and return the ImportedModel object
      * @param file
      * @return
      */
-    public Node importModel(File file) throws IOException {
-        modelNode = null;
-        origFile = file;
-        
+    @Override
+    public ImportedModel importModel(ImportSettings settings) throws IOException {
+        ImportedModel importedModel;
+        URL modelURL = settings.getModelURL();
+
+        if (!modelURL.getProtocol().equalsIgnoreCase("file")) {
+            final String modelURLStr = modelURL.toExternalForm();
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    JOptionPane.showConfirmDialog(null,
+                            "Unable to load KMZ from this url "+modelURLStr+
+                            "\nPlease use a local kmz file.",
+                            "Deploy Error", JOptionPane.OK_OPTION);
+                }
+            });
+            return null;
+        }
+
         try {
-            ZipFile zipFile = new ZipFile(file);
+            File f = new File(modelURL.getFile());
+            ZipFile zipFile = new ZipFile(f);
             ZipEntry docKmlEntry = zipFile.getEntry("doc.kml");
 
             KmlParser parser = new KmlParser();
@@ -95,14 +105,25 @@ class KmzLoader implements ModelLoader {
             }
             List<KmlParser.KmlModel> models = parser.getModels();
 
+            HashMap<URL, String> textureFilesMapping = new HashMap();
+            importedModel = new KmzImportedModel(modelURL, models.get(0).getHref(), textureFilesMapping);
+
+            String zipHost = WlzipManager.getWlzipManager().addZip(zipFile);
+            ZipResourceLocator zipResource = new ZipResourceLocator(zipHost, zipFile, textureFilesMapping);
+            ResourceLocatorTool.addThreadResourceLocator(
+                ResourceLocatorTool.TYPE_TEXTURE,
+                zipResource);
             if (models.size()==1) {
-                modelNode = load(zipFile, models.get(0));
+                importedModel.setModelBG(load(zipFile, models.get(0)));
             } else {
-                modelNode = new Node();
+                Node modelBG = new Node();
                 for(KmlParser.KmlModel model : models) {
-                    modelNode.attachChild(load(zipFile, model));
+                    modelBG.attachChild(load(zipFile, model));
                 }
+                importedModel.setModelBG(modelBG);
             }
+            ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, zipResource);
+            WlzipManager.getWlzipManager().removeZip(zipHost, zipFile);
             
         } catch (ZipException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -110,19 +131,17 @@ class KmzLoader implements ModelLoader {
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
             throw ex;
-        } 
+        }
+
+        importedModel.setModelLoader(this);
+        importedModel.setImportSettings(settings);
         
-        return modelNode;
+        return importedModel;
     }
     
     private Node load(ZipFile zipFile, KmlParser.KmlModel model) throws IOException {
 
         String filename = model.getHref();
-        String zipHost = WlzipManager.getWlzipManager().addZip(zipFile);
-        ZipResourceLocator zipResource = new ZipResourceLocator(zipHost, zipFile);
-        ResourceLocatorTool.addThreadResourceLocator(
-                ResourceLocatorTool.TYPE_TEXTURE,
-                zipResource);
 
         logger.info("Loading MODEL " + filename);
         modelFiles.add(filename);
@@ -131,7 +150,7 @@ class KmzLoader implements ModelLoader {
         BufferedInputStream in = new BufferedInputStream(zipFile.getInputStream(modelEntry));
 
         ColladaImporter.load(in, filename);
-        modelNode = ColladaImporter.getModel();
+        Node modelNode = ColladaImporter.getModel();
 
         // Adjust the scene transform to match the scale and axis specified in
         // the collada file
@@ -146,116 +165,32 @@ class KmzLoader implements ModelLoader {
         } // Y_UP is the Wonderland default
 
         ColladaImporter.cleanUp();
-        
-        ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, zipResource);
-        WlzipManager.getWlzipManager().removeZip(zipHost, zipFile);
 
         return modelNode;
     }
 
-    public ModelDeploymentInfo deployToModule(File moduleRootDir, ImportedModel model) throws IOException {
-        try {
-            String modelName = origFile.getName();
-            ZipFile zipFile = new ZipFile(origFile);
-            
-            // TODO replace getName with getModuleName(moduleRootDir)
-            String moduleName = moduleRootDir.getName();
-
-            String targetDirName = moduleRootDir.getAbsolutePath()+File.separator+"art"+ File.separator + modelName;
-            File targetDir = new File(targetDirName);
-            targetDir.mkdir();
-
-            deployTextures(zipFile, targetDir);
-            deployModels(zipFile, targetDir);
-
-//            TreeScan.findNode(model.getModelBG(), Geometry.class, new ProcessNodeInterface() {
-//                public boolean processNode(Spatial node) {
-//                    TextureState st = (TextureState)((Geometry)node).getRenderState(StateType.Texture);
-//                    if (st!=null) {
-//                        Texture t = st.getTexture();
-//                        TextureKey key = t.getTextureKey();
-//                        System.err.println("Texture "+t.getImageLocation());
-//                        String filename = t.getImageLocation().substring(t.getImageLocation().lastIndexOf('/')+1);
-//                        t.setImageLocation("../images/"+filename);
-//                        System.err.println("NEW "+t.getImageLocation());
-//                    }
-//                    return true;
-//                }
-//            }, false, true);
-//
-//            BinaryExporter.getInstance().save(model.getModelBG(), new File(targetDir, origFile.getName()+".wbm"));
-//
-            if (modelFiles.size() > 1) {
-                logger.warning("Multiple models not supported during deploy");
-            }
-
-            // XXX There should not be a direct reference to another module
-            // from here.
-            JmeColladaCellServerState setup = new JmeColladaCellServerState();
-            setup.setModel("wla://"+moduleName+"/"+modelName+"/"+modelFiles.get(0));
-            setup.setGeometryRotation(new Rotation(modelNode.getLocalRotation()));
-            setup.setGeometryScale(new Scale(modelNode.getLocalScale()));
-
-            Vector3f offset = model.getRootBG().getLocalTranslation();
-            PositionComponentServerState position = new PositionComponentServerState();
-            Vector3f boundsCenter = model.getRootBG().getWorldBound().getCenter();
-
-            offset.subtractLocal(boundsCenter);
-
-            setup.setGeometryTranslation(new Origin(offset));
-
-//            System.err.println("BOUNDS CENTER "+boundsCenter);
-//            System.err.println("OFfset "+offset);
-//            System.err.println("Cell origin "+boundsCenter);
-            position.setOrigin(new Origin(boundsCenter));
-
-            // The cell bounds already have the rotation and scale applied, so these
-            // values must not go in the Cell transform. Instead they go in the
-            // JME cell setup so that the model is correctly oriented and thus
-            // matches the bounds in the cell.
-            
-            // Center the worldBounds on the cell (ie 0,0,0)
-            BoundingVolume worldBounds = modelNode.getWorldBound();
-            worldBounds.setCenter(new Vector3f(0,0,0));
-            position.setBounds(worldBounds);
-
-//            System.err.println("Deploying with bounds "+worldBounds);
-
-            setup.addComponentServerState(position);
-
-            ModelDeploymentInfo deploymentInfo = new ModelDeploymentInfo();
-            deploymentInfo.setCellSetup(setup);
-            return deploymentInfo;
-        } catch (ZipException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw new IOException("Zip error");
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
-            throw ex;
-        }        
+    @Override
+    protected ResourceLocator getDeployedResourceLocator(Map<String, String> deployedTextures, String baseURL) {
+        return new RelativeResourceLocator(baseURL);
     }
-    
+
     /**
      * KMZ files keep all the models in the /models directory, copy all the
      * models into the module
      * @param moduleArtRootDir
      */
-    private void deployModels(ZipFile zipFile, File targetDir) {
-        
-        // TODO update collada files with module relative texture paths
+    private void deployZipModels(ZipFile zipFile, File targetDir) {
         
         try {
-            String targetDirName = targetDir.getAbsolutePath();
-            
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while(entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
                 if (entry.getName().endsWith(".dae")) {
-                    File target = new File(targetDirName+File.separator+entry.getName());
+                    File target = new File(targetDir, "/"+entry.getName());
                     target.getParentFile().mkdirs();
                     target.createNewFile();
                     
-                    copyAsset(zipFile, entry, target);
+                    copyAsset(zipFile, entry, target, false);
                 }
             }
             
@@ -267,23 +202,92 @@ class KmzLoader implements ModelLoader {
         }
         
     }
-    
+
+    @Override
+    protected void deployModels(File targetDir,
+            String moduleName,
+            DeployedModel deployedModel,
+            ImportedModel importedModel,
+            HashMap<String, String> deploymentMapping) {
+        URL modelURL = importedModel.getImportSettings().getModelURL();
+        
+
+        if (!modelURL.getProtocol().equalsIgnoreCase("file")) {
+            final String modelURLStr = modelURL.toExternalForm();
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    JOptionPane.showConfirmDialog(null,
+                            "Unable to deploy KMZ from this url "+modelURLStr+
+                            "\nPlease use a local kmz file.",
+                            "Deploy Error", JOptionPane.OK_OPTION);
+                }
+            });
+            return;
+        }
+        try {
+            ZipFile zipFile = new ZipFile(new File(modelURL.toURI()));
+            deployZipModels(zipFile, targetDir);
+            String kmzFilename = modelURL.toExternalForm();
+            kmzFilename = kmzFilename.substring(kmzFilename.lastIndexOf('/')+1);
+            deployedModel.setDeployedURL("wla://"+moduleName+"/"+kmzFilename+"/"+((KmzImportedModel)importedModel).getPrimaryModel());
+            deployDeploymentData(targetDir, deployedModel, kmzFilename);
+        } catch (ZipException ex) {
+            Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+
+    @Override
+    protected void deployTextures(File targetDir, Map<String, String> deploymentMapping, ImportedModel importedModel) {
+        URL modelURL = importedModel.getImportSettings().getModelURL();
+
+        if (!modelURL.getProtocol().equalsIgnoreCase("file")) {
+            final String modelURLStr = modelURL.toExternalForm();
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    JOptionPane.showConfirmDialog(null,
+                            "Unable to deploy KMZ from this url "+modelURLStr+
+                            "\nPlease use a local kmz file.",
+                            "Deploy Error", JOptionPane.OK_OPTION);
+                }
+            });
+            return;
+        }
+        try {
+            ZipFile zipFile = new ZipFile(new File(modelURL.toURI()));
+            deployZipTextures(zipFile, targetDir);
+        } catch (ZipException ex) {
+            Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+
     /**
      * Deploys the textures into the art directory, placing them in a directory
      * with the name of the original model.
      * @param moduleArtRootDir
      */
-    private void deployTextures(ZipFile zipFile, File targetDir) {
+    private void deployZipTextures(ZipFile zipFile, File targetDir) {
         try {
             // TODO generate checksums to check for image duplication
-            String targetDirName = targetDir.getAbsolutePath();
+//            String targetDirName = targetDir.getAbsolutePath();
 
             for (Map.Entry<URL, ZipEntry> t : textureFiles.entrySet()) {
-                File target = new File(targetDirName + File.separator + t.getKey().getPath());
+                File target = new File(targetDir, "/"+t.getKey().getPath());
                 target.getParentFile().mkdirs();
                 target.createNewFile();
 //                logger.fine("Texture file " + target.getAbsolutePath());
-                copyAsset(zipFile, t.getValue(), target);
+                copyAsset(zipFile, t.getValue(), target, false);
             }
         } catch (ZipException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -298,16 +302,17 @@ class KmzLoader implements ModelLoader {
      * @param zipEntry entry to copy from
      * @param target file to copy to
      */
-    private void copyAsset(ZipFile zipFile, ZipEntry zipEntry, File target) {
+    private void copyAsset(ZipFile zipFile, ZipEntry zipEntry, File target, boolean compress) {
         InputStream in = null;
         OutputStream out = null;
         try {
             in = new BufferedInputStream(zipFile.getInputStream(zipEntry));
-            out = new BufferedOutputStream(new FileOutputStream(target));
+            if (compress)
+                out = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(target)));
+            else
+                out = new BufferedOutputStream(new FileOutputStream(target));
             
             org.jdesktop.wonderland.common.FileUtils.copyFile(in, out);
-            
-            
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
         } finally {
@@ -326,30 +331,41 @@ class KmzLoader implements ModelLoader {
 
         private String zipHost;
         private ZipFile zipFile;
+        private Map<URL, String> resourceSet;
         
-        public ZipResourceLocator(String zipHost, ZipFile zipFile) {
+        public ZipResourceLocator(String zipHost, ZipFile zipFile, Map<URL, String> resourceSet) {
             this.zipHost = zipHost;
             this.zipFile = zipFile;
+            this.resourceSet = resourceSet;
         }
         
-        public URL locateResource(String filename) {
+        public URL locateResource(String resourceName) {
             // Texture paths seem to be relative to the model directory....
-            if (filename.startsWith("../")) {
-                filename = filename.substring(3);
+            if (resourceName.startsWith("../")) {
+                resourceName = resourceName.substring(3);
             }
-            if (filename.startsWith("/")) {
-                filename = filename.substring(1);
+            if (resourceName.startsWith("/")) {
+                resourceName = resourceName.substring(1);
             }
-            
-            ZipEntry entry = zipFile.getEntry(filename);
+
+            ZipEntry entry = zipFile.getEntry(resourceName);
             if (entry==null) {
-                logger.severe("Unable to locate texture "+filename);
+                logger.severe("Unable to locate texture "+resourceName);
                 return null;
             }
             
             try {
-                URL url = new URL("wlzip", zipHost, "/"+filename);
+                URL url = new URL("wlzip", zipHost, "/"+resourceName);
+                try {
+                    url.openStream();
+                } catch (IOException ex) {
+                    Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.printStackTrace();
+                }
                 textureFiles.put(url, entry);
+                if (!resourceSet.containsKey(url)) {
+                    resourceSet.put(url, resourceName);
+                }
                 return url;
             } catch (MalformedURLException ex) {
                 Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
@@ -357,6 +373,68 @@ class KmzLoader implements ModelLoader {
             return null;
         }
     }
-    
 
+    class RelativeResourceLocator implements ResourceLocator {
+
+        private String baseURL;
+        private HashMap<String, URL> processed = new HashMap();
+
+        /**
+         * Locate resources for the given file
+         * @param url
+         */
+        public RelativeResourceLocator(String baseURL) {
+            this.baseURL = baseURL;
+        }
+
+        public URL locateResource(String resource) {
+            try {
+                URL url = processed.get(resource);
+                if (url!=null)
+                    return url;
+                
+                String urlStr = trimUrlStr(baseURL+"/" + resource);
+
+                url = AssetUtils.getAssetURL(urlStr);
+                processed.put(url.getPath(), url);
+
+                return url;
+
+            } catch (MalformedURLException ex) {
+                logger.log(Level.SEVERE, "Unable to locateResource "+resource, ex);
+                return null;
+            }
+        }
+
+        /**
+         * Trim ../ from url
+         * @param urlStr
+         */
+        private String trimUrlStr(String urlStr) {
+            // replace /dir/../ with /
+            return urlStr.replaceAll("/[^/]*/\\.\\./", "/");
+        }
+    }
+    
+    class KmzImportedModel extends ImportedModel {
+        private String primaryModel;
+
+        /**
+         *
+         * @param originalFile
+         * @param primaryModel  the name of the primary dae file in the kmz.
+         * @param textureFilesMapping
+         */
+        public KmzImportedModel(URL originalFile, String primaryModel, Map<URL, String> textureFilesMapping) {
+            super(originalFile, textureFilesMapping);
+            this.primaryModel = primaryModel;
+        }
+
+        /**
+         * @return the primaryModel
+         */
+        public String getPrimaryModel() {
+            return primaryModel;
+        }
+    }
 }

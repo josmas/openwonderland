@@ -41,7 +41,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellReparentMessage;
 import org.jdesktop.wonderland.common.cell.security.ChildrenAction;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.security.Action;
@@ -255,9 +255,9 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                 return;
             }
             Vector3f offset = new Vector3f(1, 1, 1);
-            Origin origin = position.getOrigin();
-            Origin newOrigin = new Origin(offset.add(new Vector3f((float)origin.x, (float)origin.y, (float)origin.z)));
-            position.setOrigin(newOrigin);
+            Translation origin = position.getTranslation();
+            Translation newOrigin = new Translation(offset.add(new Vector3f((float)origin.x, (float)origin.y, (float)origin.z)));
+            position.setTranslation(newOrigin);
             state.addComponentServerState(position);
 
             // Set the desired name of the cell contained within the message

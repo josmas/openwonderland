@@ -33,6 +33,7 @@ import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JBulletCollisionComponent;
+import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
@@ -44,6 +45,7 @@ import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.component.CellPhysicsPropertiesComponent;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
@@ -55,6 +57,7 @@ import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.component.state.PhysicsProperties;
 
 /**
  *
@@ -99,7 +102,6 @@ public abstract class BasicRenderer implements CellRendererJME {
     }
 
     public void setStatus(CellStatus status,boolean increasing) {
-        System.err.println("*** BASIC REND "+status+"  "+this);
         this.status = status;
         switch(status) {
             case ACTIVE :
@@ -250,37 +252,26 @@ public abstract class BasicRenderer implements CellRendererJME {
             rootNode.updateWorldBound();
 
             CollisionComponent cc=null;
-//            if (rootNode.getWorldBound()==null) {
-//                logger.warning("No INACTIVE FOR "+this.getClass().getName());
-//            } else {
-                cc = setupCollision(collisionSystem, rootNode);
-                if (cc!=null)
-                    entity.addComponent(CollisionComponent.class, cc);
 
-                // TODO Physics setup, not ready of dev1
-//                PhysicsSystem physicsSystem = ClientContextJME.getPhysicsSystem(LoginManager.find(session), "Default");
-//                if (cc!=null) {
-//                    PhysicsComponent pc = setupPhysics(cc, physicsSystem, rootNode);
-//                    entity.addComponent(PhysicsComponent.class, pc);
-//                }
-//            }
+            cc = setupCollision(collisionSystem, rootNode);
+            if (cc!=null) {
+                entity.addComponent(CollisionComponent.class, cc);
+            }
+
+            PhysicsSystem jBulletPhysicsSystem = ClientContextJME.getPhysicsSystem(session.getSessionManager(), "Physics");
+            CollisionSystem jBulletCollisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Physics");
+            if (jBulletPhysicsSystem!=null) {
+                CollisionComponent jBulletCollisionComponent = setupPhysicsCollision(jBulletCollisionSystem, rootNode);
+                PhysicsComponent pc = setupPhysics(jBulletCollisionComponent, jBulletPhysicsSystem, rootNode);
+                entity.addComponent(JBulletCollisionComponent.class, jBulletCollisionComponent);
+                entity.addComponent(JBulletPhysicsComponent.class, pc);
+            }
         } else {
             logger.warning("**** BASIC RENDERER - ROOT NODE WAS NULL !");
         }
 
     }
 
-    // JBullet collision not fully implemented yet
-//    protected CollisionComponent setupCollision(CollisionSystem collisionSystem, Node rootNode) {
-//        CollisionComponent cc=null;
-//        if (collisionSystem instanceof JBulletDynamicCollisionSystem) {
-//            cc = ((JBulletDynamicCollisionSystem)collisionSystem).createCollisionComponent(rootNode);
-//        } else {
-//            logger.warning("Unsupported CollisionSystem "+collisionSystem);
-//        }
-//
-//        return cc;
-//    }
 
     protected CollisionComponent setupCollision(CollisionSystem collisionSystem, Node rootNode) {
         CollisionComponent cc=null;
@@ -293,10 +284,17 @@ public abstract class BasicRenderer implements CellRendererJME {
         return cc;
     }
 
-    protected PhysicsComponent setupPhysics(CollisionComponent cc, PhysicsSystem physicsSystem, Node rootNode) {
-        if (cc!=null && physicsSystem instanceof JBulletPhysicsSystem) {
-            JBulletPhysicsComponent pc = ((JBulletPhysicsSystem)physicsSystem).createPhysicsComponent((JBulletCollisionComponent)cc);
-            pc.setMass(getMass());
+    protected PhysicsComponent setupPhysics(CollisionComponent physicsCC, PhysicsSystem physicsSystem, Node rootNode) {
+        if (physicsCC!=null && physicsCC instanceof JBulletCollisionComponent && physicsSystem instanceof JBulletPhysicsSystem) {
+            JBulletPhysicsComponent pc = ((JBulletPhysicsSystem)physicsSystem).createPhysicsComponent((JBulletCollisionComponent)physicsCC);
+            CellPhysicsPropertiesComponent prop = cell.getComponent(CellPhysicsPropertiesComponent.class);
+            if (prop!=null) {
+                PhysicsProperties phy = prop.getPhysicsProperties(CellPhysicsPropertiesComponent.DEFAULT_NAME);
+                if (phy!=null) {
+                    System.err.println("---------------> setting mass on "+this);
+                    pc.setMass(phy.getMass());
+                }
+            }
             return pc;
         } else {
             logger.warning("Unsupported PhysicsSystem "+physicsSystem);
@@ -305,12 +303,15 @@ public abstract class BasicRenderer implements CellRendererJME {
         return null;
     }
 
-    /**
-     * Experimental, THIS WILL CHANGE !
-     * @return
-     */
-    protected float getMass() {
-        return 0f;
+    protected CollisionComponent setupPhysicsCollision(CollisionSystem collisionSystem, Node rootNode) {
+        CollisionComponent cc=null;
+        if (collisionSystem instanceof JBulletDynamicCollisionSystem) {
+            cc = ((JBulletDynamicCollisionSystem)collisionSystem).createCollisionComponent(rootNode);
+        } else {
+            logger.warning("Unsupported CollisionSystem "+collisionSystem);
+        }
+
+        return cc;
     }
 
     /**
@@ -329,7 +330,6 @@ public abstract class BasicRenderer implements CellRendererJME {
      * @param transform
      */
     public static void applyTransform(Spatial node, CellTransform transform) {
-        logger.warning("APPLY TRANSFORM " + transform.getTranslation(null));
         node.setLocalRotation(transform.getRotation(null));
         node.setLocalScale(transform.getScaling(null));
         node.setLocalTranslation(transform.getTranslation(null));

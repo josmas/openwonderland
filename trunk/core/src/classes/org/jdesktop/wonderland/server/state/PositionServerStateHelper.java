@@ -25,7 +25,7 @@ import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Bounds.BoundsType;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 
@@ -71,7 +71,7 @@ public class PositionServerStateHelper {
      */
     public static CellTransform getCellTransform(PositionComponentServerState setup) {
         /* Fetch the raw values from the setup class */
-        Origin origin = setup.getOrigin();
+        Translation origin = setup.getTranslation();
         Rotation rotation = setup.getRotation();
         Scale scaling = setup.getScaling();
         
@@ -116,15 +116,15 @@ public class PositionServerStateHelper {
     }
 
     /**
-     * Given a (non-null) CellTranform class, returns the Origin class that
+     * Given a (non-null) CellTranform class, returns the Translation class that
      * is used in the cell setup information.
      * 
      * @param transform The cell's transform
      * @return The origin used in the cell setup information
      */
-    public static PositionComponentServerState.Origin getSetupOrigin(CellTransform transform) {
+    public static PositionComponentServerState.Translation getSetupOrigin(CellTransform transform) {
         Vector3f trans = transform.getTranslation(null);
-        PositionComponentServerState.Origin origin = new PositionComponentServerState.Origin();
+        PositionComponentServerState.Translation origin = new PositionComponentServerState.Translation();
         origin.x = (double)trans.getX();
         origin.y = (double)trans.getY();
         origin.z = (double)trans.getZ();

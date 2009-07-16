@@ -17,13 +17,15 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
+import org.jdesktop.wonderland.client.content.spi.ContentImporterSPI;
+
 /**
  * Provides a container for a model loader, allowing multiple loaders that
  * support the same file extensions to be available in the system.
  * 
  * @author paulby
  */
-public abstract class ModelLoaderFactory {
+public abstract class ModelLoaderFactory { //implements ContentImporterSPI {
 
     private boolean enabled;
     
@@ -40,6 +42,8 @@ public abstract class ModelLoaderFactory {
      */
     public abstract ModelLoader getLoader();
     
+    public abstract String getLoaderClassname();
+
     /**
      * 
      * @return true if this loader is enabled

@@ -29,6 +29,11 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
+import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
+import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
+import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.content.AbstractContentImporter;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.FileUtils;
@@ -77,10 +82,19 @@ public class KmzContentImporter extends AbstractContentImporter {
      */
     @Override
     public String uploadContent(File file) throws IOException {
-        KmzModelLoader loader = new KmzModelLoader();
-        loader.importModel(file);
-        Map<URL, ZipEntry> textureMap = loader.getTextureMap();
-        ZipFile zipFile = new ZipFile(file);
+        URL url = file.toURI().toURL();
+        ModelLoader loader = LoaderManager.getLoaderManager().getLoader(url);
+        ImportSettings importSettings = new ImportSettings(url);
+        ImportedModel importedModel = loader.importModel(importSettings);
+
+        File tmpDir = File.createTempFile("dndart", null);
+        tmpDir.mkdir();
+
+        DeployedModel deployedModel = loader.deployToModule(tmpDir, importedModel);
+
+        System.err.println("DONE deploy, now copy ------------------------------------------");
+
+        // Now copy the temporarte files into webdav
 
         // Create the directory to hold the contents of the model. We place it
         // in a directory named after the kmz file. If the directory already
@@ -99,18 +113,69 @@ public class KmzContentImporter extends AbstractContentImporter {
             throw new IOException("Unable to create content directory for " +
                     "model " + fileName);
         }
+        try {
+            copyFiles(tmpDir, modelRoot);
+        } catch (ContentRepositoryException ex) {
+            Logger.getLogger(KmzContentImporter.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
-        // Deploy the models and the textures beneath this root directory
-        deployModels(modelRoot, zipFile);
-        deployTextures(modelRoot, zipFile, textureMap);
+        System.err.println("DEPLOYED TO "+deployedModel.getDeployedURL());
 
-        // We fetch the model file from the loader and form up the URL based
-        // upon that
-        String modelFile = loader.getModelFiles().get(0);
-        
-        // Returns the
+        String modelFile = null;
+
         return "wlcontent://users/" + loginInfo.getUsername() + "/" +
                 fileName + "/" + modelFile;
+        
+//        KmzModelLoader loader = new KmzModelLoader();
+//        loader.importModel(file);
+//        Map<URL, ZipEntry> textureMap = loader.getTextureMap();
+//        ZipFile zipFile = new ZipFile(file);
+//
+//        // Create the directory to hold the contents of the model. We place it
+//        // in a directory named after the kmz file. If the directory already
+//        // exists, then just use it.
+//        ContentCollection modelRoot = null;
+//        String fileName = file.getName();
+//        try {
+//            ContentCollection root = getUserRoot();
+//            modelRoot = (ContentCollection)root.getChild(fileName);
+//            if (modelRoot == null) {
+//                modelRoot = (ContentCollection) root.createChild(fileName, Type.COLLECTION);
+//            }
+//        } catch (ContentRepositoryException excp) {
+//            logger.log(Level.WARNING, "Unable to create content directory for" +
+//                    " model " + fileName, excp);
+//            throw new IOException("Unable to create content directory for " +
+//                    "model " + fileName);
+//        }
+//
+//        // Deploy the models and the textures beneath this root directory
+//        deployModels(modelRoot, zipFile);
+//        deployTextures(modelRoot, zipFile, textureMap);
+//
+//        // We fetch the model file from the loader and form up the URL based
+//        // upon that
+//        String modelFile = loader.getModelFiles().get(0);
+//
+//        // Returns the
+//        return "wlcontent://users/" + loginInfo.getUsername() + "/" +
+//                fileName + "/" + modelFile;
+    }
+
+    private void copyFiles(File f, ContentCollection n) throws ContentRepositoryException, IOException {
+        if (f.isDirectory()) {
+            System.err.println("CREATE DIR "+f.getName());
+            ContentCollection dir = (ContentCollection) n.createChild(f.getName(), Type.COLLECTION);
+            File[] subdirs = f.listFiles();
+            if (subdirs!=null) {
+                for(File child : subdirs)
+                    copyFiles(child, dir);
+            }
+        } else {
+            System.err.println("CREATE FILE "+f.getName());
+            ContentResource r = (ContentResource) n.createChild(f.getName(), Type.COLLECTION);
+            r.put(f);
+        }
     }
 
     /**

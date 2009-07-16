@@ -21,7 +21,7 @@ import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerSta
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.FullVolumeArea;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.ActiveArea;
 
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 
 //import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
 
@@ -194,7 +194,7 @@ public class MicrophoneCellProperties extends JPanel /*implements CellProperties
 	fullVolumeYModel.setValue((Double) originalFullVolumeY);
 	fullVolumeZModel.setValue((Double) originalFullVolumeZ);
 
-	Origin activeOrigin = activeArea.origin;
+	Translation activeOrigin = activeArea.origin;
 
 	originalActiveOriginX = activeOrigin.x;
 	originalActiveOriginY = activeOrigin.y;
@@ -232,7 +232,7 @@ public class MicrophoneCellProperties extends JPanel /*implements CellProperties
 
 	state.setFullVolumeArea(fullVolumeArea);
 
-	Origin activeOrigin = new Origin();
+	Translation activeOrigin = new Translation();
 	activeOrigin.x = (Double) activeOriginXModel.getValue();
 	activeOrigin.y = (Double) activeOriginYModel.getValue();
 	activeOrigin.z = (Double) activeOriginZModel.getValue();

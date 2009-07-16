@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentClientState;
@@ -70,7 +70,7 @@ public class PortalComponent extends CellComponent
 
         serverURL = ((PortalComponentClientState) clientState).getServerURL();
         
-        Origin o = ((PortalComponentClientState) clientState).getLocation();
+        Translation o = ((PortalComponentClientState) clientState).getLocation();
         location = new Vector3f((float) o.x, (float) o.y, (float) o.z);
         
         Rotation r = ((PortalComponentClientState) clientState).getLook();

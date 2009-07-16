@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 
 /**
  * The MicrophoneCellServerState class is the cell that renders a microphone cell in
@@ -136,7 +136,7 @@ public class MicrophoneCellServerState extends CellServerState {
 
     public static class ActiveArea implements Serializable {
 
-	@XmlElement(name="origin") public Origin origin;
+	@XmlElement(name="origin") public Translation origin;
 	@XmlElement(name="areaType") public String areaType = "BOX";
 	@XmlElement(name="xExtent") public double xExtent;
 	@XmlElement(name="yExtent") public double yExtent;
@@ -146,7 +146,7 @@ public class MicrophoneCellServerState extends CellServerState {
 	public ActiveArea() {
 	}
 
-	public ActiveArea (Origin origin, String areaType, double xExtent,
+	public ActiveArea (Translation origin, String areaType, double xExtent,
                 double yExtent, double zExtent) {
 
 	    this.origin = origin;
