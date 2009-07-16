@@ -28,6 +28,7 @@ import imi.character.behavior.CharacterBehaviorManager;
 import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
 import imi.repository.Repository;
+import imi.scene.utils.visualizations.InternalRendererEntity;
 import imi.utils.instruments.DefaultInstrumentation;
 import imi.utils.instruments.Instrumentation;
 import java.awt.event.ActionEvent;
@@ -71,7 +72,8 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
 @Plugin
 public class AvatarPlugin extends BaseClientPlugin
         implements ViewManagerListener {
-
+    /** Logger ref **/
+    private static final Logger logger = Logger.getLogger(AvatarPlugin.class.getName());
     private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/avatarbase/client/resources/Bundle");
     private ServerSessionManager loginManager;
     private String baseURL;
@@ -115,10 +117,16 @@ public class AvatarPlugin extends BaseClientPlugin
                 if (camState != null) {
                     // stop listener for changes from the old avatar
                     curAvatar.removeAvatarChangedListener(avatarChangedListener);
-                    if (newAvatar.getContext() != null)
+                    if (newAvatar.getContext() != null && newAvatar != null)
+                    {
+                        logger.severe("Setting new camera target: " + newAvatar);
                         camState.setTargetCharacter(newAvatar);
-                    else
+                    }
+                    else // need to know when this happens
+                    {
                         camState.setTargetCharacter(null);
+                        logger.severe("Setting a null target. Character had no context, character is " + newAvatar);
+                    }
                     // force an update
                     camState.setCameraPosition(curAvatar.getCell().getLocalTransform().getTranslation(null));
                 } else
@@ -301,15 +309,19 @@ public class AvatarPlugin extends BaseClientPlugin
     }
     
     private void addConfigToServer(String name) {
+        System.out.print("Adding config to the server, name is " + name + "...");
         try {
             AvatarConfigManager.getAvatarConfigManager()
                     .saveAvatar(name, curAvatar.getAvatarCharacter());
+            System.out.print(" Success.");
         } catch (ContentRepositoryException ex) {
             Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Caught a content repository exception! " + ex.getMessage());
             ex.printStackTrace();
         } catch (IOException ex) {
             Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Caught an IO exception! " + ex.getMessage());
             ex.printStackTrace();
+        } finally {
+            System.out.println("\n");
         }
     }
     
@@ -322,10 +334,15 @@ public class AvatarPlugin extends BaseClientPlugin
                 URL selectedURL = AvatarConfigManager.getAvatarConfigManager().getNamedAvatarServerURL(
                                 finalName,
                                 curAvatar.getCell().getCellCache().getSession().getSessionManager());
-                if (selectedURL!=null)
+                if (selectedURL!=null) {
+                    System.out.println("Requested config change: " + selectedURL);
+                    curAvatar.setCurrentConfigURL(selectedURL);
                     configComponent.requestConfigChange(selectedURL);
-                else
-                    Logger.getLogger(AvatarPlugin.class.getName()).warning(bundle.getString("Unable_to_apply_null_default_avatar"));
+                }
+                else {
+                    System.out.println("The selectedURL is null. curAvatar is " + curAvatar);
+//                    Logger.getLogger(AvatarPlugin.class.getName()).warning(bundle.getString("Unable_to_apply_null_default_avatar"));
+                }
             }
         };
         t.start();
@@ -352,6 +369,10 @@ public class AvatarPlugin extends BaseClientPlugin
             // fake a view cell changed event
             primaryViewCellChanged(null, ClientContextJME.getViewManager().getPrimaryViewCell());
         }
+        // Create an internal renderer entity to show the origin
+        // Internal Rendering TNG
+        InternalRendererEntity ir = new InternalRendererEntity(ClientContextJME.getWorldManager());
+        ir.setOriginVisible(true);
     }
 
     @Override
@@ -457,7 +478,11 @@ public class AvatarPlugin extends BaseClientPlugin
             camState.setyModifier(0.0f); // Disable Y move for this demo
         }
         camState.setCameraPosition(curAvatar.getCell().getLocalTransform().getTranslation(null).add(offsetVec));
-        camState.setTargetCharacter(curAvatar.getAvatarCharacter());
+        imi.character.Character target = curAvatar.getAvatarCharacter();
+        if (target != null)
+            camState.setTargetCharacter(curAvatar.getAvatarCharacter());
+        else
+            logger.severe("Instantiated chase camera without a target, curAvatar: " + curAvatar);
         ClientContextJME.getViewManager().setCameraController(new FlexibleCameraAdapter(camModel, camState));
     }
 }

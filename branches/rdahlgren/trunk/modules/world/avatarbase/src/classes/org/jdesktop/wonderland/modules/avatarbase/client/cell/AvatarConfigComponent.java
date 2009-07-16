@@ -114,6 +114,8 @@ public class AvatarConfigComponent extends CellComponent {
     }
 
     private void notifyConfigUpdate(AvatarConfigMessage msg) {
+        System.out.println("AvatarConfigComponent got a notifyConfigUpdate message. my url is "
+                + avatarConfigURL + ", url from message is " + msg.getModelConfigURL());
         if ((avatarConfigURL!=null && avatarConfigURL.toExternalForm().equals(msg.getModelConfigURL())
                 || msg.getModelConfigURL()==null))
             return;
@@ -133,6 +135,10 @@ public class AvatarConfigComponent extends CellComponent {
 
     public URL getAvatarConfigURL() {
         return avatarConfigURL;
+    }
+
+    public void setAvatarConfigURL(URL url) {
+        avatarConfigURL = url;
     }
 
     public void addAvatarConfigChageListener(AvatarConfigChangeListener listener) {
