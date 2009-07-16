@@ -49,7 +49,7 @@ public class KmzLoaderFactory extends ModelLoaderFactory
                 KmzLoaderFactory.this.unregister();
             }
         };
-        
+
         plugin.initialize(loginManager);
     }
 
@@ -72,5 +72,10 @@ public class KmzLoaderFactory extends ModelLoaderFactory
 
     public ModelLoader getLoader() {
         return (ModelLoader) new KmzLoader();
+    }
+
+    @Override
+    public String getLoaderClassname() {
+        return KmzLoader.class.getName();
     }
 }

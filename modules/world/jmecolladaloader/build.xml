@@ -34,8 +34,8 @@
                 </serverjar>
             </server>
 
-            <art dir="${current.dir}/art"/>
-            <part name="wfs" dir="${current.dir}/wfs"/>
+            <!--<art dir="${current.dir}/art"/>
+            <part name="wfs" dir="${current.dir}/wfs"/>-->
         </module>
     </target>                                                       
                                            

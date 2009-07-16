@@ -19,10 +19,7 @@ package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import org.jdesktop.wonderland.modules.orb.server.cell.Orb;
 
-import com.sun.sgs.app.ManagedReference;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.CallEndedResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatDialOutMessage;
@@ -31,30 +28,18 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoi
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import com.sun.mpk20.voicelib.app.AudioGroup;
-import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
-import com.sun.mpk20.voicelib.app.AudioGroupSetup;
 import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
-import com.sun.mpk20.voicelib.app.DefaultSpatializer;
-import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
-import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
-import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
-import com.sun.mpk20.voicelib.app.ZeroVolumeSpatializer;
 
 import com.sun.sgs.app.AppContext;
 
 import com.sun.voip.CallParticipant;
-import com.sun.voip.client.connector.CallStatus;
 
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
-import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 
@@ -63,27 +48,13 @@ import java.io.Serializable;
 
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.common.messages.Message;
 
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
 
-import org.jdesktop.wonderland.server.UserManager;
 
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.CellMOFactory;
 
-import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 
-import com.jme.bounding.BoundingVolume;
 
-import com.jme.math.Vector3f;
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 

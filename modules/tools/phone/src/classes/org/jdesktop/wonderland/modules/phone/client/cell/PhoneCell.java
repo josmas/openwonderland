@@ -17,35 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
+import java.net.MalformedURLException;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
-
-import com.sun.sgs.client.ClientChannel;
-
 import java.util.logging.Logger;
-
-import org.jdesktop.wonderland.common.messages.Message;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.CellManager;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellClientState;
 import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
-
-import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 /**
@@ -127,7 +112,11 @@ public class PhoneCell extends Cell {
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
-            return new PhoneCellRenderer(this);
+            try {
+                return new PhoneCellRenderer(this, AssetUtils.getAssetURL("wla://microphone/models/Microphone.dae"));
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(PhoneCell.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
         return super.createCellRenderer(rendererType);

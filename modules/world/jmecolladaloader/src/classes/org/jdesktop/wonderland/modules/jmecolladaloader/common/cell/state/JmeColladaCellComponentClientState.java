@@ -17,39 +17,26 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state;
 
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 /**
- * The CalladaCellConfig class represents the information communicated
- * between the client and Darkstar server for collada model cells.
- *
- * @author Jordan Slott <jslott@dev.java.net>
+ * A cell component that encapsulates all the information required to load a
+ * collada model.
  */
-public class JmeColladaCellClientState extends CellClientState {
+public class JmeColladaCellComponentClientState extends CellComponentClientState {
     /* The unique URL that describes the model data */
     private String modelURI = null;
     private String modelGroupURI = null;
-    private Vector3f geometryTranslation;
-    private Quaternion geometryRotation;
-    private Vector3f geometryScale=null;
+    private Vector3f modelTranslation;
+    private Quaternion modelRotation;
+    private Vector3f modelScale=null;
+    private String modelLoaderClassname = null;
     
     /** Default constructor */
-    public JmeColladaCellClientState() {
+    public JmeColladaCellComponentClientState() {
     }
-    
-    /** Constructor, takes the model URI */
-//    public JmeColladaCellClientState(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation) {
-//        this(modelURI, geometryTranslation, geometryRotation, null);
-//    }
-
-//    public JmeColladaCellClientState(String modelURI, Vector3f geometryTranslation, Quaternion geometryRotation, Vector3f geometryScale) {
-//        this.modelURI = modelURI;
-//        this.geometryRotation = geometryRotation;
-//        this.geometryTranslation = geometryTranslation;
-//        this.geometryScale = geometryScale;
-//    }
     
     /**
      * Returns the unique model URI, null if none.
@@ -69,28 +56,28 @@ public class JmeColladaCellClientState extends CellClientState {
         this.modelURI = modelURI;
     }
 
-    public Vector3f getGeometryTranslation() {
-        return geometryTranslation;
+    public Vector3f getModelTranslation() {
+        return modelTranslation;
     }
 
-    public void setGeometryRotation(Quaternion geometryRotation) {
-        this.geometryRotation = geometryRotation;
+    public void setModelRotation(Quaternion modelRotation) {
+        this.modelRotation = modelRotation;
     }
 
-    public void setGeometryTranslation(Vector3f geometryTranslation) {
-        this.geometryTranslation = geometryTranslation;
+    public void setModelTranslation(Vector3f modelTranslation) {
+        this.modelTranslation = modelTranslation;
     }
 
-    public Quaternion getGeometryRotation() {
-        return geometryRotation;
+    public Quaternion getModelRotation() {
+        return modelRotation;
     }
 
-    public Vector3f getGeometryScale() {
-        return geometryScale;
+    public Vector3f getModelScale() {
+        return modelScale;
     }
 
-    public void setGeometryScale(Vector3f geometryScale) {
-        this.geometryScale = geometryScale;
+    public void setModelScale(Vector3f modelScale) {
+        this.modelScale = modelScale;
     }
 
     /**
@@ -105,6 +92,20 @@ public class JmeColladaCellClientState extends CellClientState {
      */
     public void setModelGroupURI(String modelSetURI) {
         this.modelGroupURI = modelSetURI;
+    }
+
+    /**
+     * @return the modelLoaderClassname
+     */
+    public String getModelLoaderClassname() {
+        return modelLoaderClassname;
+    }
+
+    /**
+     * @param modelLoaderClassname the modelLoaderClassname to set
+     */
+    public void setModelLoaderClassname(String modelLoaderClassname) {
+        this.modelLoaderClassname = modelLoaderClassname;
     }
 
 }

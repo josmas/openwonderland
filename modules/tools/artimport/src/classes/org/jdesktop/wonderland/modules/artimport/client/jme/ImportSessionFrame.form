@@ -402,6 +402,7 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Save as source..."/>
             <Property name="toolTipText" type="java.lang.String" value="Create a module source base, with build.xml etc"/>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveAsSrcBActionPerformed"/>
@@ -411,6 +412,7 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Save as module..."/>
             <Property name="toolTipText" type="java.lang.String" value="Save the module jar file"/>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveAsModuleBActionPerformed"/>

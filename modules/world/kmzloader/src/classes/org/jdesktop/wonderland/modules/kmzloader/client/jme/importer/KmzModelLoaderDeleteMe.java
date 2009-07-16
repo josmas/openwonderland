@@ -48,9 +48,9 @@ import org.jdesktop.wonderland.modules.kmzloader.client.KmlParser.KmlModel;
  * 
  * @author paulby
  */
-public class KmzModelLoader {
+public class KmzModelLoaderDeleteMe {
 
-    private static final Logger logger = Logger.getLogger(KmzModelLoader.class.getName());
+    private static final Logger logger = Logger.getLogger(KmzModelLoaderDeleteMe.class.getName());
         
     private Map<URL, ZipEntry> textureFiles = new HashMap();
     
@@ -91,7 +91,7 @@ public class KmzModelLoader {
             try {
                 parser.decodeKML(in);
             } catch (Exception ex) {
-                Logger.getLogger(KmzModelLoader.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(KmzModelLoaderDeleteMe.class.getName()).log(Level.SEVERE, null, ex);
             }
             List<KmlParser.KmlModel> models = parser.getModels();
             if (models.size()==0) {
@@ -212,7 +212,7 @@ public class KmzModelLoader {
                 textureFiles.put(url, entry);
                 return url;
             } catch (MalformedURLException ex) {
-                Logger.getLogger(KmzModelLoader.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(KmzModelLoaderDeleteMe.class.getName()).log(Level.SEVERE, null, ex);
             }
             return null;
         }

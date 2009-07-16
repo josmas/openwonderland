@@ -11,108 +11,56 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
-import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import java.io.Serializable;
+import java.net.URL;
+import java.util.Map;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
 
-public class ImportedModel implements Serializable {
-    private String origModel;
-    private String wonderlandName;
-    private String texturePrefix;
-    private Vector3f translation;
-    private Vector3f orientation;
-    private transient Node modelBG;
-    private transient Node rootBG;
-    private transient Entity entity;
-    private transient ModelLoader modelLoader;
+/**
+ *
+ * @author paulby
+ */
+public class ImportedModel extends Model {
 
-    public ImportedModel(String origModel,
-                 String wonderlandName,
-                 String texturePrefix,
-                 Vector3f translation,
-                 Vector3f orientation,
-                 Node modelBG,
-                 Node rootBG) {
-        this.origModel = origModel;
-        this.wonderlandName = wonderlandName;
-        this.translation = translation;
-        this.orientation = orientation;
-        this.modelBG = modelBG;
-        this.rootBG = rootBG;
-        this.texturePrefix = texturePrefix;
+    private Map<URL, String> textureFiles; // Mapping between url in loaded file and actual location of file
+    private ImportSettings importSettings = null;
+    private ModelLoader modelLoader;  // Loader used
+    private Node modelBG;  // Root of scene created by loader
+    private Entity entity;    // Entity for the model
+
+    public ImportedModel(URL originalFile, Map<URL, String> textureFileMapping) {
+        super(originalFile);
+        this.textureFiles = textureFileMapping;
     }
 
-    public Node getModelBG() {
-        return modelBG;
+    /**
+     * @return the textureFiles
+     */
+    public Map<URL, String> getTextureFiles() {
+        return textureFiles;
     }
 
-    public void setModelBG(Node modelBG) {
-        this.modelBG = modelBG;
+
+    /**
+     * @return the importSettings
+     */
+    public ImportSettings getImportSettings() {
+        return importSettings;
     }
 
-    public Node getRootBG() {
-        return rootBG;
+    /**
+     * @param importSettings the importSettings to set
+     */
+    public void setImportSettings(ImportSettings importSettings) {
+        this.importSettings = importSettings;
     }
-
-    public void setRootBG(Node rootBG) {
-        this.rootBG = rootBG;
-    }
-
-    public String getOrigModel() {
-        return origModel;
-    }
-
-    public void setOrigModel(String origModel) {
-        this.origModel = origModel;
-    }
-
-    public String getWonderlandName() {
-        return wonderlandName;
-    }
-
-    public void setWonderlandName(String wonderlandName) {
-        this.wonderlandName = wonderlandName;
-    }
-
-    public String getTexturePrefix() {
-        return texturePrefix;
-    }
-
-    public void setTexturePrefix(String texturePrefix) {
-        this.texturePrefix = texturePrefix;
-    }
-
-    public Vector3f getTranslation() {
-        return translation;
-    }
-
-    public void setTranslation(Vector3f translation) {
-        this.translation = translation;
-    }
-
-    public Vector3f getOrientation() {
-        return orientation;
-    }
-
-    public void setOrientation(Vector3f orientation) {
-        this.orientation = orientation;
-    }
-
-    public Entity getEntity() {
-        return entity;
-    }
-
-    public void setEntity(Entity entity) {
-        this.entity = entity;
-    }
-
     /**
      * @return the modelLoader
      */
@@ -125,6 +73,42 @@ public class ImportedModel implements Serializable {
      */
     public void setModelLoader(ModelLoader modelLoader) {
         this.modelLoader = modelLoader;
+    }
+
+    /**
+     * @return the loadedRoot
+     */
+    public Node getModelBG() {
+        return modelBG;
+    }
+
+    /**
+     * Get the root node for this scene, this will be a parent (or grand parent) of modelBG
+     * @return
+     */
+    public Node getRootBG() {
+        return entity.getComponent(RenderComponent.class).getSceneRoot();
+    }
+
+    /**
+     * @param loadedRoot the loadedRoot to set
+     */
+    public void setModelBG(Node loadedRoot) {
+        this.modelBG = loadedRoot;
+    }
+
+    /**
+     * @return the entity
+     */
+    public Entity getEntity() {
+        return entity;
+    }
+
+    /**
+     * @param entity the entity to set
+     */
+    public void setEntity(Entity entity) {
+        this.entity = entity;
     }
 
 }

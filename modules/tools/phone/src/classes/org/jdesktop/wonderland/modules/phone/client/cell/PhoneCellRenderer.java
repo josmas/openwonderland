@@ -17,55 +17,33 @@
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
-import com.jme.scene.Node;
 
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-
-import org.jdesktop.wonderland.modules.jmecolladaloader.client.jme.cellrenderer.JmeColladaRenderer;
-
-import java.lang.reflect.Method;
-
-import java.net.MalformedURLException;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.URL;
+import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 
 /**
  * @author jkaplan
  */
-public class PhoneCellRenderer extends JmeColladaRenderer {
+public class PhoneCellRenderer extends ModelRenderer {
 
-    public PhoneCellRenderer(Cell cell) {
-        super(cell);
-    }
-
-    @Override
-    protected Node createSceneGraph(Entity entity) {
-        new MyMouseListener().addToEntity(entity);
-
-        try {
-            Node ret = loadColladaAsset(cell.getCellID().toString(), getAssetURL("wla://phone/conference_phone.dae"));
-            ret.setName("PhoneRoot");
-            return ret;
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(PhoneCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return null;
+    public PhoneCellRenderer(Cell cell, URL deployedModelURL) {
+        super(cell, deployedModelURL);
     }
 
     class MyMouseListener extends EventClassListener {
 
+        @Override
         public Class[] eventClassesToConsume() {
             return new Class[]{MouseEvent3D.class};
         }
 
+        @Override
         public void commitEvent(Event event) {
             if (event instanceof MouseButtonEvent3D) {
                 MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;

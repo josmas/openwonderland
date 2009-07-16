@@ -76,4 +76,8 @@ public class JmeColladaLoaderFactory extends ModelLoaderFactory
     public ModelLoader getLoader() {
         return (ModelLoader) new JmeColladaLoader();
     }
+
+    public String getLoaderClassname() {
+        return JmeColladaLoader.class.getName();
+    }
 }

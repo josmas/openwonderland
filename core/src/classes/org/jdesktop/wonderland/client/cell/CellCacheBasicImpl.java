@@ -152,9 +152,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             cells.put(cellId, cell);
 
             // record the set of root cells
-            logger.warning("-----> LOADING CELL " + cell.getName());
+            logger.fine("-----> LOADING CELL " + cell.getName());
             if (parent == null) {
-                logger.warning("------> LOADING ROOT CELL " + cell.getName());
+                logger.fine("------> LOADING ROOT CELL " + cell.getName());
                 rootCells.add(cell);
             }
 
@@ -259,6 +259,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
     }
 
     /**
+     * TODO - this is not used yet, we are reparenting by removing and adding
+     * nodes as a test to ensure there are no threading issues
+     *
      * {@inheritDoc}
      */
     public void changeParent(CellID cellID, CellID parentCellID, CellTransform cellTransform) {

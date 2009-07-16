@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
 
@@ -91,7 +91,7 @@ public class PortalComponentProperties extends javax.swing.JPanel
                 urlTF.setText(origServerURL);
             }
             
-            Origin origin = state.getLocation();
+            Translation origin = state.getLocation();
             if (origin != null) {
                 origX = String.valueOf(origin.x);
                 origY = String.valueOf(origin.y);
@@ -141,7 +141,7 @@ public class PortalComponentProperties extends javax.swing.JPanel
         }
         state.setServerURL(serverURL);
         
-        Origin location = new Origin();
+        Translation location = new Translation();
         String xstr = locX.getText().trim();
         String ystr = locY.getText().trim();
         String zstr = locZ.getText().trim();

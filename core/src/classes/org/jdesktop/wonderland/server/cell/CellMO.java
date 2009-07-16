@@ -821,7 +821,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
         // and add a PositionComponentServerState with all of this information
         PositionComponentServerState position = new PositionComponentServerState();
         position.setBounds(PositionServerStateHelper.getSetupBounds(localBounds));
-        position.setOrigin(PositionServerStateHelper.getSetupOrigin(localTransform));
+        position.setTranslation(PositionServerStateHelper.getSetupOrigin(localTransform));
         position.setRotation(PositionServerStateHelper.getSetupRotation(localTransform));
         position.setScaling(PositionServerStateHelper.getSetupScaling(localTransform));
         setup.addComponentServerState(position);

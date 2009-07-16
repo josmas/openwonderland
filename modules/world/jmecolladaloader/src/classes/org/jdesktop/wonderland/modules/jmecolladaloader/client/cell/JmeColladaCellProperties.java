@@ -23,7 +23,7 @@ import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 //import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellServerState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
 
 /**
  * A property sheet for the sample cell type
@@ -85,7 +85,7 @@ public class JmeColladaCellProperties extends javax.swing.JPanel /*implements Ce
     // End of variables declaration//GEN-END:variables
 
     public Class getServerCellStateClass() {
-       return JmeColladaCellServerState.class;
+       return ModelCellServerState.class;
     }
 
     public String getDisplayName() {
@@ -98,7 +98,7 @@ public class JmeColladaCellProperties extends javax.swing.JPanel /*implements Ce
 ////    }
 
     public <T extends CellServerState> void updateGUI(T cellServerState) {
-        authorTF.setText(((JmeColladaCellServerState)cellServerState).getModelAuthor());
+//        authorTF.setText(((JmeColladaCellServerState)cellServerState).getModelAuthor());
     }
 
     public <T extends CellServerState> void getCellServerState(T state) {

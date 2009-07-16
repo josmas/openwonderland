@@ -40,6 +40,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.CameraComponent;
+import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PhysicsSystem;
@@ -271,14 +272,17 @@ public class JmeClientMain {
         // get the login manager for the given server
         ServerSessionManager lm = LoginManager.getSessionManager(serverURL);
 
-        // Register default collision and physics systems for this session
-//        JBulletDynamicCollisionSystem collisionSystem = (JBulletDynamicCollisionSystem)
-//                ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JBulletDynamicCollisionSystem.class);
-//        JBulletPhysicsSystem physicsSystem = (JBulletPhysicsSystem)
-//                ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, collisionSystem);
+        // Register physics and phyiscs collision systems for this session
+        JBulletDynamicCollisionSystem jBulletCollisionSystem = (JBulletDynamicCollisionSystem)
+                ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JBulletDynamicCollisionSystem.class);
+        JBulletPhysicsSystem jBulletPhysicsSystem = (JBulletPhysicsSystem)
+                ClientContextJME.getWorldManager().getPhysicsManager().loadPhysicsSystem(JBulletPhysicsSystem.class, jBulletCollisionSystem);
+        ClientContextJME.addCollisionSystem(lm, "Physics", jBulletCollisionSystem);
+        ClientContextJME.addPhysicsSystem(lm, "Physics", jBulletPhysicsSystem);
+
+        // Register default collision system for this session
         JMECollisionSystem collisionSystem = (JMECollisionSystem) ClientContextJME.getWorldManager().getCollisionManager().loadCollisionSystem(JMECollisionSystem.class);
         ClientContextJME.addCollisionSystem(lm, "Default", collisionSystem);
-//        ClientContextJME.addPhysicsSystem(lm, "Default", physicsSystem);
 
         // set the initial position, which will bne sent with the initial
         // connection properties of the cell cache connection

@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.jme.artimport;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -30,6 +31,7 @@ public class LoaderManager {
 
     private ArrayList<ModelLoaderFactory> loaders = new ArrayList();
     private HashMap<String, ModelLoaderFactory> activeLoaders = new HashMap();
+    private HashMap<String, ModelLoaderFactory> classnameToLoader = new HashMap();
     private static LoaderManager loaderManager;
     
     private LoaderManager() {
@@ -48,6 +50,7 @@ public class LoaderManager {
      */
     public void registerLoader(ModelLoaderFactory loader) {
         loaders.add(loader);
+        classnameToLoader.put(loader.getLoaderClassname(), loader);
     }
 
     /**
@@ -57,6 +60,7 @@ public class LoaderManager {
      */
     public void unregisterLoader(ModelLoaderFactory loader) {
         loaders.remove(loader);
+        classnameToLoader.remove(loader.getLoaderClassname());
 
         // if the loader is enabled, remove it from the active set.
         if (loader.isEnabled()) {
@@ -93,12 +97,21 @@ public class LoaderManager {
         }
     }
     
-    public ModelLoader getLoader(File file) {
-        ModelLoaderFactory loaderFactory = activeLoaders.get(org.jdesktop.wonderland.common.FileUtils.getFileExtension(file.getName()).toLowerCase());
+    public ModelLoader getLoader(URL url) {
+        ModelLoaderFactory loaderFactory = activeLoaders.get(org.jdesktop.wonderland.common.FileUtils.getFileExtension(url.toExternalForm()).toLowerCase());
         
         return loaderFactory.getLoader();
     }
-    
+
+    public ModelLoader getLoader(DeployedModel model) {
+        return classnameToLoader.get(model.getModelLoaderClassname()).getLoader();
+    }
+
+    public ModelLoader getLoader(String fileextension) {
+        ModelLoaderFactory loaderFactory = activeLoaders.get(fileextension);
+        return loaderFactory.getLoader();
+    }
+
     /**
      *  Return the set of file extensions that can be loaded
      * @return
