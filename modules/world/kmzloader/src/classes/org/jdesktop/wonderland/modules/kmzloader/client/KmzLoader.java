@@ -174,6 +174,12 @@ class KmzLoader extends JmeColladaLoader {
         return new RelativeResourceLocator(baseURL);
     }
 
+    protected String getDeploymentDataURL(DeployedModel model) {
+        String str = model.getDeployedURL()+".dep";
+
+        // For kmz files the dep file is in the directory above the dae file
+        return str.replaceFirst("/model", "");
+    }
     /**
      * KMZ files keep all the models in the /models directory, copy all the
      * models into the module
