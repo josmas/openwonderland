@@ -82,7 +82,7 @@ public class CallMigrationForm extends javax.swing.JFrame implements DisconnectL
             }
         });
 
-        closeButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        closeButton.setFont(closeButton.getFont());
         closeButton.setText("Close");
         closeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -90,7 +90,7 @@ public class CallMigrationForm extends javax.swing.JFrame implements DisconnectL
             }
         });
 
-        transferButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        transferButton.setFont(transferButton.getFont());
         transferButton.setText("Transfer");
         transferButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -98,13 +98,13 @@ public class CallMigrationForm extends javax.swing.JFrame implements DisconnectL
             }
         });
 
-        callStatusLabel.setFont(new java.awt.Font("Dialog", 0, 13));
+        callStatusLabel.setFont(callStatusLabel.getFont());
         callStatusLabel.setText("call status");
 
         radioButtonGroup1.add(phoneTransferRadioButton);
-        phoneTransferRadioButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        phoneTransferRadioButton.setFont(phoneTransferRadioButton.getFont());
         phoneTransferRadioButton.setSelected(true);
-        phoneTransferRadioButton.setText("Phone number:");
+        phoneTransferRadioButton.setText("Phone #:");
         phoneTransferRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 phoneTransferRadioButtonActionPerformed(evt);
@@ -112,7 +112,7 @@ public class CallMigrationForm extends javax.swing.JFrame implements DisconnectL
         });
 
         radioButtonGroup1.add(connectSoftphoneRadioButton);
-        connectSoftphoneRadioButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        connectSoftphoneRadioButton.setFont(connectSoftphoneRadioButton.getFont());
         connectSoftphoneRadioButton.setText("Softphone");
         connectSoftphoneRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -120,7 +120,7 @@ public class CallMigrationForm extends javax.swing.JFrame implements DisconnectL
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD));
         jLabel1.setText("Transfer call to:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
@@ -131,41 +131,44 @@ public class CallMigrationForm extends javax.swing.JFrame implements DisconnectL
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel1)
-                    .add(callStatusLabel)
                     .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
+                        .add(10, 10, 10)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(transferButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
-                                .add(18, 18, 18)
-                                .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 145, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(layout.createSequentialGroup()
                                 .add(connectSoftphoneRadioButton)
-                                .add(195, 195, 195))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE)
+                                .add(closeButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(transferButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 73, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(layout.createSequentialGroup()
                                 .add(phoneTransferRadioButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(phoneNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)))))
+                                .add(phoneNumberTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE))))
+                    .add(callStatusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 228, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
                 .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(phoneTransferRadioButton)
                     .add(phoneNumberTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(connectSoftphoneRadioButton)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(transferButton)
-                    .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(callStatusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(9, 9, 9))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(connectSoftphoneRadioButton))
+                    .add(layout.createSequentialGroup()
+                        .add(22, 22, 22)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(closeButton)
+                            .add(transferButton))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                .add(9, 9, 9)
+                .add(callStatusLabel)
+                .addContainerGap())
         );
 
         pack();
