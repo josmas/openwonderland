@@ -139,12 +139,22 @@ public class JmeColladaLoader implements ModelLoader {
         return modelNode;
     }
 
+    /**
+     * Get the url for the deployment data file associated with this model
+     * 
+     * @param model
+     * @return
+     */
+    protected String getDeploymentDataURL(DeployedModel model) {
+        return model.getDeployedURL()+".dep";
+    }
+
     public Node loadDeployedModel(DeployedModel model) {
         InputStream in = null;
         try {
             ModelDeploymentData data=null;
             System.err.println("LOADING DEPLOYED MODEL "+model.getDeployedURL());
-            URL url = AssetUtils.getAssetURL(model.getDeployedURL()+".dep");
+            URL url = AssetUtils.getAssetURL(getDeploymentDataURL(model));
             in = url.openStream();
             if (in==null) {
                 logger.severe("Unabled to get deployment data "+url.toExternalForm());
