@@ -56,7 +56,7 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Tr
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellComponentServerState;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeModelDeploymentData;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.ModelDeploymentData;
 
 /**
  *
@@ -142,14 +142,15 @@ public class JmeColladaLoader implements ModelLoader {
     public Node loadDeployedModel(DeployedModel model) {
         InputStream in = null;
         try {
-            JmeModelDeploymentData data=null;
+            ModelDeploymentData data=null;
+            System.err.println("LOADING DEPLOYED MODEL "+model.getDeployedURL());
             URL url = AssetUtils.getAssetURL(model.getDeployedURL()+".dep");
             in = url.openStream();
             if (in==null) {
                 logger.severe("Unabled to get deployment data "+url.toExternalForm());
             } else {
                 try {
-                    data = JmeModelDeploymentData.decode(in);
+                    data = ModelDeploymentData.decode(in);
                 } catch (JAXBException ex) {
                     Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, "Error parsing deployment data "+url.toExternalForm(), ex);
                 }
@@ -211,8 +212,9 @@ public class JmeColladaLoader implements ModelLoader {
             
             HashMap<String, String> textureDeploymentMapping = new HashMap();
             DeployedModel deployedModel = new DeployedModel(importedModel.getOriginalURL(), this);
-            JmeModelDeploymentData data = new JmeModelDeploymentData();
+            ModelDeploymentData data = new ModelDeploymentData();
             data.setDeployedTextures(textureDeploymentMapping);
+            data.setModelLoaderClassname(this.getClass().getName());
             deployedModel.setLoaderData(data);
             
             // TODO replace getName with getModuleName(moduleRootDir)
@@ -272,7 +274,7 @@ public class JmeColladaLoader implements ModelLoader {
     }
 
     protected void deployDeploymentData(File targetDir, DeployedModel deployedModel, String filename) {
-        JmeModelDeploymentData data = (JmeModelDeploymentData) deployedModel.getLoaderData();
+        ModelDeploymentData data = (ModelDeploymentData) deployedModel.getLoaderData();
         data.setAuthor("unknown");
         File deploymentDataFile = new File(targetDir, filename+".dep");
         try {

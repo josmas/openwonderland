@@ -78,6 +78,7 @@ import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
+import org.jdesktop.wonderland.common.FileUtils;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
@@ -649,7 +650,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         try {
             File tmpDir = File.createTempFile("wlart", null);
             if (tmpDir.isDirectory()) {
-                deleteDirContents(tmpDir);
+                FileUtils.deleteDirContents(tmpDir);
             } else {
                 tmpDir.delete();
             }
@@ -776,7 +777,7 @@ private void saveAsSrcBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 int res = JOptionPane.showConfirmDialog(this, "Module Directory exists, replace ?", "Module exists !", JOptionPane.YES_NO_OPTION);
                 if (res==JOptionPane.NO_OPTION)
                     return;
-                deleteDirContents(srcDir);
+                FileUtils.deleteDirContents(srcDir);
             }
         } else {
             srcDir.mkdir();
@@ -785,7 +786,6 @@ private void saveAsSrcBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         ModuleSourceManager moduleMgr = new ModuleSourceManager();
         moduleMgr.createModule(moduleName, "Art Module", parentDir, true, false, false);
 
-            // Compile the target module
         for(ImportedModel model : imports) {
             try {
                 deploymentInfo.add(model.getModelLoader().deployToModule(srcDir, model));
@@ -812,19 +812,6 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     imports.clear();
     tableModel.setRowCount(0);
 }//GEN-LAST:event_okBActionPerformed
-
-    /**
-     * Recursively delete the content of the supplied directory
-     * @param dir
-     */
-    private void deleteDirContents(File dir) {
-        for(File content : dir.listFiles()) {
-            if (content.isDirectory())
-                deleteDirContents(content);
-            content.delete();
-        }
-    }
-
 
     synchronized void asyncLoadModel(final ImportSettings settings, final LoadCompleteListener listener) {
         final JDialog loadingDialog = new JDialog(importFrame);

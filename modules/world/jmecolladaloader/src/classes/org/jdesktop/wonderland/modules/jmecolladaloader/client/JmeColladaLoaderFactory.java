@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientPlugin;
+import org.jdesktop.wonderland.client.content.ContentImportManager;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoaderFactory;
@@ -38,9 +39,11 @@ public class JmeColladaLoaderFactory extends ModelLoaderFactory
      * the superclass
      */
     private BaseClientPlugin plugin;
+    private ModelDndContentImporter importer;
 
     public void initialize(ServerSessionManager manager) {
         LoaderManager.getLoaderManager().registerLoader(this);
+        this.importer = new ModelDndContentImporter(manager, new String[] {getFileExtension()});
         this.plugin = new BaseClientPlugin() {
             @Override
             protected void activate() {
@@ -63,10 +66,14 @@ public class JmeColladaLoaderFactory extends ModelLoaderFactory
 
     public void register() {
         LoaderManager.getLoaderManager().activateLoader(this);
+        ContentImportManager cim = ContentImportManager.getContentImportManager();
+        cim.registerContentImporter(importer);
     }
 
     public void unregister() {
         LoaderManager.getLoaderManager().deactivateLoader(this);
+        ContentImportManager cim = ContentImportManager.getContentImportManager();
+        cim.unregisterContentImporter(importer);
     }
 
     public String getFileExtension() {
