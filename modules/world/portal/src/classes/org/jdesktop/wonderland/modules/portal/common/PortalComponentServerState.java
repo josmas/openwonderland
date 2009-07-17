@@ -18,12 +18,15 @@
 
 package org.jdesktop.wonderland.modules.portal.common;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
+import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
  * Server state for portal cell component
@@ -34,15 +37,15 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class PortalComponentServerState extends CellComponentServerState {
     private String serverURL;
-    private Translation location = new Translation();
-    private Rotation look = new Rotation();
+    private Vector3f location = new Vector3f();
+    private Quaternion look = new Quaternion();
 
     /** Default constructor */
     public PortalComponentServerState() {
     }
 
-    public PortalComponentServerState(String serverURL, Translation location,
-                                      Rotation look)
+    public PortalComponentServerState(String serverURL, Vector3f location,
+                                      Quaternion look)
     {
         this.serverURL = serverURL;
         this.location = location;
@@ -64,20 +67,22 @@ public class PortalComponentServerState extends CellComponentServerState {
     }
 
     @XmlElement
-    public Translation getLocation() {
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
+    public Vector3f getLocation() {
         return location;
     }
 
-    public void setLocation(Translation location) {
+    public void setLocation(Vector3f location) {
         this.location = location;
     }
 
     @XmlElement
-    public Rotation getLook() {
+    @XmlJavaTypeAdapter(QuaternionAdapter.class)
+    public Quaternion getLook() {
         return look;
     }
 
-    public void setLook(Rotation look) {
+    public void setLook(Quaternion look) {
         this.look = look;
     }
 }

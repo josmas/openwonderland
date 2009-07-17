@@ -174,8 +174,8 @@ class KmzLoader extends JmeColladaLoader {
         return new RelativeResourceLocator(baseURL);
     }
 
-    protected String getDeploymentDataURL(DeployedModel model) {
-        String str = model.getDeployedURL()+".dep";
+    protected String getLoaderDataURL(DeployedModel model) {
+        String str = model.getDeployedURL()+".ldr";
 
         // For kmz files the dep file is in the directory above the dae file
         return str.replaceFirst("/model", "");

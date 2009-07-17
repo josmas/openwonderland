@@ -17,15 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.microphone.client.cell;
 
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.FullVolumeArea;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.ActiveArea;
-
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
-
-//import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
-
-//import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
 
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 
@@ -194,7 +189,7 @@ public class MicrophoneCellProperties extends JPanel /*implements CellProperties
 	fullVolumeYModel.setValue((Double) originalFullVolumeY);
 	fullVolumeZModel.setValue((Double) originalFullVolumeZ);
 
-	Translation activeOrigin = activeArea.origin;
+	Vector3f activeOrigin = activeArea.origin;
 
 	originalActiveOriginX = activeOrigin.x;
 	originalActiveOriginY = activeOrigin.y;
@@ -232,10 +227,10 @@ public class MicrophoneCellProperties extends JPanel /*implements CellProperties
 
 	state.setFullVolumeArea(fullVolumeArea);
 
-	Translation activeOrigin = new Translation();
-	activeOrigin.x = (Double) activeOriginXModel.getValue();
-	activeOrigin.y = (Double) activeOriginYModel.getValue();
-	activeOrigin.z = (Double) activeOriginZModel.getValue();
+	Vector3f activeOrigin = new Vector3f();
+	activeOrigin.x = (Float) activeOriginXModel.getValue();
+	activeOrigin.y = (Float) activeOriginYModel.getValue();
+	activeOrigin.z = (Float) activeOriginZModel.getValue();
 	    
 	ActiveArea activeArea = new ActiveArea(activeOrigin, "BOX", (Double) activeExtentXModel.getValue(),
 	    (Double) activeExtentYModel.getValue(), (Double) activeExtentZModel.getValue());

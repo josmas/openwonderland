@@ -25,9 +25,6 @@ import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Bounds.BoundsType;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 
 /**
  * The BasicPositionComponentServerStateHelper class implements a collection of utility routines
@@ -70,21 +67,9 @@ public class PositionServerStateHelper {
      * @return A CellTranform class representing the origin, rotation, scaling
      */
     public static CellTransform getCellTransform(PositionComponentServerState setup) {
-        /* Fetch the raw values from the setup class */
-        Translation origin = setup.getTranslation();
-        Rotation rotation = setup.getRotation();
-        Scale scaling = setup.getScaling();
-        
-        /* Create a Quaternion object for the rotation */
-        Vector3f axis  = new Vector3f((float)rotation.x, (float)rotation.y, (float)rotation.z);
-        Quaternion quat = new Quaternion().fromAngleAxis((float)rotation.angle, axis);
-        
-        /* Create a Vector3f object for the origin and scale */
-        Vector3f origin3f = new Vector3f((float)origin.x, (float)origin.y, (float)origin.z);
-        Vector3f scale3f = new Vector3f((float)scaling.x, (float)scaling.y, (float)scaling.z);
         
         /* Create an return a new CellTransform class */
-        return new CellTransform(quat, origin3f, scale3f.x);
+        return new CellTransform(setup.getRotation(), setup.getTranslation(), setup.getScaling().x);
     }
     
     /**
@@ -121,14 +106,10 @@ public class PositionServerStateHelper {
      * 
      * @param transform The cell's transform
      * @return The origin used in the cell setup information
+     * @deprecated
      */
-    public static PositionComponentServerState.Translation getSetupOrigin(CellTransform transform) {
-        Vector3f trans = transform.getTranslation(null);
-        PositionComponentServerState.Translation origin = new PositionComponentServerState.Translation();
-        origin.x = (double)trans.getX();
-        origin.y = (double)trans.getY();
-        origin.z = (double)trans.getZ();
-        return origin;
+    public static Vector3f getSetupOrigin(CellTransform transform) {
+        return transform.getTranslation(null);
     }
     
     /**
@@ -137,18 +118,10 @@ public class PositionServerStateHelper {
      * 
      * @param transform The cell's transform
      * @return The rotation used in the cell setup information
+     * @deprecated
      */
-    public static PositionComponentServerState.Rotation getSetupRotation(CellTransform transform) {
-        Quaternion quat = transform.getRotation(null);
-        Vector3f axis  = new Vector3f();
-        double angle = (double)quat.toAngleAxis(axis);
-        
-        PositionComponentServerState.Rotation rotation = new PositionComponentServerState.Rotation();
-        rotation.x = (double)axis.getX();
-        rotation.y = (double)axis.getY();
-        rotation.z = (double)axis.getZ();
-        rotation.angle = angle;
-        return rotation;
+    public static Quaternion getSetupRotation(CellTransform transform) {
+        return transform.getRotation(null);
     }
     
     /**
@@ -157,14 +130,10 @@ public class PositionServerStateHelper {
      * 
      * @param transform The cell's transform
      * @return The scaling used in the cell setup information
+     * @deprecated
      */
-    public static PositionComponentServerState.Scale getSetupScaling(CellTransform transform) {
-        Vector3f scale = transform.getScaling(null);
-        
-        PositionComponentServerState.Scale scaling = new PositionComponentServerState.Scale();
-        scaling.x = (double)scale.getX();
-        scaling.y = (double)scale.getY();
-        scaling.z = (double)scale.getZ();
-        return scaling;
+    public static Vector3f getSetupScaling(CellTransform transform) {
+        return transform.getScaling(null);
+
     }
 } 

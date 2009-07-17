@@ -18,12 +18,12 @@
 
 package org.jdesktop.wonderland.modules.portal.server;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentClientState;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
@@ -40,8 +40,8 @@ public class PortalComponentMO extends CellComponentMO {
     private static Logger logger = Logger.getLogger(PortalComponentMO.class.getName());
     
     private String serverURL;
-    private Translation location;
-    private Rotation look;
+    private Vector3f location;
+    private Quaternion look;
 
     public PortalComponentMO(CellMO cell) {
         super(cell);

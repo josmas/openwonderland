@@ -20,43 +20,83 @@ package org.jdesktop.wonderland.client.jme.artimport;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
-import java.util.Map;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
+import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
  *
  * @author paulby
  */
-public class DeployedModel extends Model {
+@XmlRootElement(name="deployed-model")
+public class DeployedModel {
 
+    private static JAXBContext jaxbContext = null;
+    static {
+        try {
+            jaxbContext = JAXBContext.newInstance(DeployedModel.class);
+        } catch (javax.xml.bind.JAXBException excp) {
+            System.out.println(excp.toString());
+        }
+    }
+
+    // Version number for the xml
+    @XmlElement(name="version")
+    private short version = 1;
+
+    @XmlElement(name="deployedURL")
     private String deployedURL = null;
 
+    @XmlElement(name="modelBGScale", nillable=true)
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
     private Vector3f modelBGScale = null;
+
+    @XmlElement(name="modelBGTranslation", nillable=true)
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
     private Vector3f modelBGTranslation = null;
+
+    @XmlElement(name="modelBGRotation", nillable=true)
+    @XmlJavaTypeAdapter(QuaternionAdapter.class)
     private Quaternion modelBGRotation = null;
 
+    @XmlElement(name="modelLoaderClassname")
     private String modelLoaderClassname;
-    private CellServerState cellServerState;
 
-    private ModelLoader modelLoader;
+    @XmlElement(name="author")
+    private String author;
 
-    private Object loaderData=null;
+    @XmlTransient private CellServerState cellServerState;
+
+    @XmlTransient private ModelLoader modelLoader;
+
+    @XmlTransient private Object loaderData=null;
+
+    public DeployedModel() {
+    }
 
     public DeployedModel(URL originalFile, ModelLoader modelLoader) {
-        super(originalFile);
         this.modelLoaderClassname = modelLoader.getClass().getName();
     }
 
     public DeployedModel(String modelLoaderClassname) {
-        super(null);
         this.modelLoaderClassname = modelLoaderClassname;
     }
 
     /**
      * @return the deployedURL
      */
-    public String getDeployedURL() {
+    @XmlTransient public String getDeployedURL() {
         return deployedURL;
     }
 
@@ -91,7 +131,7 @@ public class DeployedModel extends Model {
      * Return the classname of the model loader used to load this model.
      * @return
      */
-    public String getModelLoaderClassname() {
+    @XmlTransient public String getModelLoaderClassname() {
         return modelLoaderClassname;
     }
 
@@ -111,11 +151,11 @@ public class DeployedModel extends Model {
         this.cellServerState = cellServerState;
     }
 
-    public CellServerState getCellServerState() {
+    @XmlTransient public CellServerState getCellServerState() {
         return cellServerState;
     }
 
-    public ModelLoader getModelLoader() {
+    @XmlTransient public ModelLoader getModelLoader() {
         if (modelLoader==null) {
            modelLoader = LoaderManager.getLoaderManager().getLoader(this);
         }
@@ -126,7 +166,7 @@ public class DeployedModel extends Model {
     /**
      * @return the modelBGScale
      */
-    public Vector3f getModelScale() {
+    @XmlTransient public Vector3f getModelScale() {
         return modelBGScale;
     }
 
@@ -140,7 +180,7 @@ public class DeployedModel extends Model {
     /**
      * @return the modelBGTranslation
      */
-    public Vector3f getModelTranslation() {
+    @XmlTransient public Vector3f getModelTranslation() {
         return modelBGTranslation;
     }
 
@@ -154,7 +194,7 @@ public class DeployedModel extends Model {
     /**
      * @return the modelBGRotation
      */
-    public Quaternion getModelRotation() {
+    @XmlTransient public Quaternion getModelRotation() {
         return modelBGRotation;
     }
 
@@ -168,7 +208,7 @@ public class DeployedModel extends Model {
     /**
      * @return the loaderDeploymentData
      */
-    public Object getLoaderData() {
+    @XmlTransient public Object getLoaderData() {
         return loaderData;
     }
 
@@ -178,4 +218,46 @@ public class DeployedModel extends Model {
     public void setLoaderData(Object loaderDeploymentData) {
         this.loaderData = loaderDeploymentData;
     }
+
+    /**
+     * @return the author
+     */
+    @XmlTransient public String getAuthor() {
+        return author;
+    }
+
+    /**
+     * @param author the author to set
+     */
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    /**
+     * Writes the ModuleInfo class to an output stream.
+     * <p>
+     * @param os The output stream to write to
+     * @throw JAXBException Upon error writing the XML file
+     */
+    public void encode(OutputStream os) throws JAXBException {
+        /* Write out to the stream */
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, os);
+    }
+
+    public static DeployedModel decode(InputStream in) throws JAXBException {
+        /* Read in from stream */
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        DeployedModel info = (DeployedModel)unmarshaller.unmarshal(in);
+
+        return info;
+    }
+
+    void setModelLoader(ModelLoader loader) {
+        this.modelLoader = loader;
+    }
+
+
+
 }

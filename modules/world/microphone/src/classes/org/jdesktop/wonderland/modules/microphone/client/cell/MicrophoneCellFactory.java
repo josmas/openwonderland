@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.microphone.client.cell;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.FullVolumeArea;
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneCellServerState.ActiveArea;
@@ -50,7 +49,7 @@ public class MicrophoneCellFactory implements CellFactorySPI {
         cellServerState.setMicrophoneName("MICROPHONE");
         cellServerState.setFullVolumeArea(new FullVolumeArea("BOX", 11.0, 11.0, 11.0));
 	
-        Translation origin = new Translation(new Vector3f(0F, 0F, 0F));
+        Vector3f origin = new Vector3f(0F, 0F, 0F);
 
 	cellServerState.setActiveArea(new ActiveArea(origin, "BOX", 2., 2., 2.));
 

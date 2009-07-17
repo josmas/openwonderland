@@ -52,11 +52,8 @@ import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellComponentServerState;
-import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.ModelDeploymentData;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.LoaderData;
 
 /**
  *
@@ -145,22 +142,22 @@ public class JmeColladaLoader implements ModelLoader {
      * @param model
      * @return
      */
-    protected String getDeploymentDataURL(DeployedModel model) {
-        return model.getDeployedURL()+".dep";
+    protected String getLoaderDataURL(DeployedModel model) {
+        return model.getDeployedURL()+".ldr";
     }
 
     public Node loadDeployedModel(DeployedModel model) {
         InputStream in = null;
         try {
-            ModelDeploymentData data=null;
+            LoaderData data=null;
             System.err.println("LOADING DEPLOYED MODEL "+model.getDeployedURL());
-            URL url = AssetUtils.getAssetURL(getDeploymentDataURL(model));
+            URL url = AssetUtils.getAssetURL(getLoaderDataURL(model));
             in = url.openStream();
             if (in==null) {
                 logger.severe("Unabled to get deployment data "+url.toExternalForm());
             } else {
                 try {
-                    data = ModelDeploymentData.decode(in);
+                    data = LoaderData.decode(in);
                 } catch (JAXBException ex) {
                     Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, "Error parsing deployment data "+url.toExternalForm(), ex);
                 }
@@ -222,7 +219,7 @@ public class JmeColladaLoader implements ModelLoader {
             
             HashMap<String, String> textureDeploymentMapping = new HashMap();
             DeployedModel deployedModel = new DeployedModel(importedModel.getOriginalURL(), this);
-            ModelDeploymentData data = new ModelDeploymentData();
+            LoaderData data = new LoaderData();
             data.setDeployedTextures(textureDeploymentMapping);
             data.setModelLoaderClassname(this.getClass().getName());
             deployedModel.setLoaderData(data);
@@ -248,8 +245,9 @@ public class JmeColladaLoader implements ModelLoader {
             cellSetup.addComponentServerState(setup);
 
             setup.setModel(deployedModel.getDeployedURL());
-            setup.setModelScale(new Scale(importedModel.getModelBG().getLocalScale()));
-            setup.setModelRotation(new Rotation(importedModel.getModelBG().getLocalRotation()));
+            System.err.println("****** SCALE "+importedModel.getModelBG().getLocalScale());
+            setup.setModelScale(importedModel.getModelBG().getLocalScale());
+            setup.setModelRotation(importedModel.getModelBG().getLocalRotation());
 
             Vector3f offset = importedModel.getRootBG().getLocalTranslation();
             PositionComponentServerState position = new PositionComponentServerState();
@@ -257,13 +255,13 @@ public class JmeColladaLoader implements ModelLoader {
 
             offset.subtractLocal(boundsCenter);
 
-            setup.setModelTranslation(new Translation(offset));
+            setup.setModelTranslation(offset);
             setup.setModelLoaderClassname(importedModel.getModelLoader().getClass().getName());
 
 //            System.err.println("BOUNDS CENTER "+boundsCenter);
 //            System.err.println("OFfset "+offset);
 //            System.err.println("Cell origin "+boundsCenter);
-            position.setTranslation(new Translation(boundsCenter));
+            position.setTranslation(boundsCenter);
 
             // The cell bounds already have the rotation and scale applied, so these
             // values must not go in the Cell transform. Instead they go in the
@@ -279,16 +277,30 @@ public class JmeColladaLoader implements ModelLoader {
             deployedModel.recordModelBGTransform(importedModel.getModelBG());
             deployedModel.addCellServerState(cellSetup);
 
+            System.err.println("DEPLOYING "+deployedModel);
+
             return deployedModel;
     
     }
 
     protected void deployDeploymentData(File targetDir, DeployedModel deployedModel, String filename) {
-        ModelDeploymentData data = (ModelDeploymentData) deployedModel.getLoaderData();
-        data.setAuthor("unknown");
+        LoaderData data = (LoaderData) deployedModel.getLoaderData();
         File deploymentDataFile = new File(targetDir, filename+".dep");
+        File loaderDataFile = new File(targetDir, filename+".ldr");
         try {
             BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(deploymentDataFile));
+            try {
+                deployedModel.encode(out);
+            } catch (JAXBException ex) {
+                Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            out.close();
+        } catch(IOException e) {
+
+        }
+
+        try {
+            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(loaderDataFile));
             try {
                 data.encode(out);
             } catch (JAXBException ex) {
@@ -463,9 +475,9 @@ public class JmeColladaLoader implements ModelLoader {
         cellSetup.addComponentServerState(setup);
 
         setup.setModel(deployedURL);
-        setup.setModelScale(new Scale(modelScale));
-        setup.setModelRotation(new Rotation(modelRotation));
-        setup.setModelTranslation(new Translation(modelTranslation));
+        setup.setModelScale(modelScale);
+        setup.setModelRotation(modelRotation);
+        setup.setModelTranslation(modelTranslation);
         setup.setModelLoaderClassname(this.getClass().getName());
 
         return cellSetup;

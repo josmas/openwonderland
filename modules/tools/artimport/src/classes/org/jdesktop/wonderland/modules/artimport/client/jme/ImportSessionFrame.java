@@ -442,7 +442,6 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         saveAsModuleB.setText("Save as module...");
         saveAsModuleB.setToolTipText("Save the module jar file");
-        saveAsModuleB.setEnabled(false);
         saveAsModuleB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsModuleBActionPerformed(evt);
