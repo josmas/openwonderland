@@ -31,7 +31,7 @@ public class QuaternionAdapter extends XmlAdapter<QuaternionHandler, Quaternion>
 
     @Override
     public Quaternion unmarshal(QuaternionHandler q) throws Exception {
-        if (q.isNull)
+        if (q==null)
             return null;
         Vector3f axis = new Vector3f(q.x, q.y, q.z);
         Quaternion ret = new Quaternion();
@@ -41,6 +41,9 @@ public class QuaternionAdapter extends XmlAdapter<QuaternionHandler, Quaternion>
 
     @Override
     public QuaternionHandler marshal(Quaternion q) throws Exception {
+            if (q==null) {
+                return null;
+            }
         return new QuaternionHandler(q);
     }
 
@@ -53,17 +56,11 @@ public class QuaternionAdapter extends XmlAdapter<QuaternionHandler, Quaternion>
         private float z;
         @XmlElement
         private float angle;
-        @XmlElement
-        private boolean isNull = false;
 
         public QuaternionHandler() {
         }
 
         public QuaternionHandler(Quaternion q) {
-            if (q==null) {
-                isNull = true;
-                return;
-            }
             Vector3f axis=new Vector3f();
             float a = q.toAngleAxis(axis);
 
