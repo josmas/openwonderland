@@ -38,7 +38,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
 
 /**
  * A component that provides audio audio treatments
@@ -70,7 +70,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
         switch (status) {
             case DISK:
                 if (msgReceiver != null) {
-                    channelComp.removeMessageReceiver(AudioTreatmentMessage.class);
+                    channelComp.removeMessageReceiver(AudioTreatmentRequestMessage.class);
                     msgReceiver = null;
                 }
                 break;
@@ -85,7 +85,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
                         };
 
                         channelComp = cell.getComponent(ChannelComponent.class);
-                        channelComp.addMessageReceiver(AudioTreatmentMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(AudioTreatmentRequestMessage.class, msgReceiver);
                     }
 
                     if (menuItemAdded == false) {
@@ -142,13 +142,13 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
                 event.getContextMenuItem().getLabel().equals("Resume")) {
 
             addMenuItems("Stop", "Pause");
-            channelComp.send(new AudioTreatmentMessage(cell.getCellID(), false, false));
+            channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), false, false));
             return;
         }
 
         if (event.getContextMenuItem().getLabel().equals("Pause")) {
             addMenuItems("Stop", "Resume");
-            channelComp.send(new AudioTreatmentMessage(cell.getCellID(), false, true));
+            channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), false, true));
             return;
         }
 
@@ -157,7 +157,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent {
         }
 
         addMenuItems("Play", null);
-        channelComp.send(new AudioTreatmentMessage(cell.getCellID(), true, true));
+        channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, true));
     }
 
     /**

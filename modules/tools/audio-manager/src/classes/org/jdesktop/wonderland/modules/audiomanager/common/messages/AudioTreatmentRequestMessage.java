@@ -17,31 +17,34 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
 import org.jdesktop.wonderland.common.messages.Message;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  *
  * @author jprovino
  */
-public class AudioParticipantSpeakingMessage extends CellMessage {
+public class AudioTreatmentRequestMessage extends CellMessage {
     
-    private CellID cellID;
-    private boolean isSpeaking;
+    private boolean restartTreatment;
+    private boolean isPaused;
 
-    public AudioParticipantSpeakingMessage(CellID cellID, boolean isSpeaking) {
+    public AudioTreatmentRequestMessage(CellID cellID, boolean restartTreatment, boolean isPaused) {
 	super(cellID);
 	
-	this.isSpeaking = isSpeaking;
+	this.restartTreatment = restartTreatment;
+	this.isPaused = isPaused;
     }
     
-    public boolean isSpeaking() {
-	return isSpeaking;
+    public boolean restartTreatment() {
+	return restartTreatment;
+    }
+
+    public boolean isPaused() {
+	return isPaused;
     }
 
 }

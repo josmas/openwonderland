@@ -19,11 +19,9 @@ package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import org.jdesktop.wonderland.modules.orb.server.cell.Orb;
 
-
-
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.CallEndedResponseMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatDialOutMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatCallEndedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatDialOutMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatJoinAcceptedMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
@@ -38,23 +36,12 @@ import com.sun.sgs.app.AppContext;
 
 import com.sun.voip.CallParticipant;
 
-
-
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-
 
 import java.io.IOException;
 import java.io.Serializable;
 
 import java.util.logging.Logger;
-
-
-
-
-
-
-
-
 
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -62,24 +49,24 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * A server cell that provides conference phone functionality
  * @author jprovino
  */
-public class PhoneMessageHandler implements Serializable {
+public class VoiceChatPhoneMessageHandler implements Serializable {
 
     private static final Logger logger =
-        Logger.getLogger(PhoneMessageHandler.class.getName());
+        Logger.getLogger(VoiceChatPhoneMessageHandler.class.getName());
      
     private int callNumber = 0;
 
-    private static PhoneMessageHandler phoneMessageHandler;
+    private static VoiceChatPhoneMessageHandler voiceChatPhoneMessageHandler;
 
-    public static PhoneMessageHandler getInstance() {
-	if (phoneMessageHandler == null) {
-	    phoneMessageHandler = new PhoneMessageHandler();
+    public static VoiceChatPhoneMessageHandler getInstance() {
+	if (voiceChatPhoneMessageHandler == null) {
+	    voiceChatPhoneMessageHandler = new VoiceChatPhoneMessageHandler();
 	}
 
-	return phoneMessageHandler;
+	return voiceChatPhoneMessageHandler;
     }
 
-    public PhoneMessageHandler() {
+    public VoiceChatPhoneMessageHandler() {
     }
 
     public void dialOut(final WonderlandClientSender sender, 
@@ -107,7 +94,7 @@ public class PhoneMessageHandler implements Serializable {
         
  	if (softphonePlayer == null) {
 	    logger.warning("Softphone player is not connected!");
-            sender.send(clientID, new CallEndedResponseMessage(
+            sender.send(clientID, new VoiceChatCallEndedMessage(
 	        group, presenceInfo, "Softphone is not connected!"));
 	    return;
 	}
@@ -138,7 +125,7 @@ public class PhoneMessageHandler implements Serializable {
 	} catch (IOException e) {
 	    logger.warning("Unable to get voice bridge for call " + cp + ":  "
 		+ e.getMessage());
-            sender.send(clientID, new CallEndedResponseMessage(
+            sender.send(clientID, new VoiceChatCallEndedMessage(
 	        group, presenceInfo, "No voice bridge available!"));
 	    return;
 	}
@@ -147,7 +134,7 @@ public class PhoneMessageHandler implements Serializable {
 
 	if (audioGroup == null) {
 	    logger.warning("No audio group " + group);
-            sender.send(clientID, new CallEndedResponseMessage(
+            sender.send(clientID, new VoiceChatCallEndedMessage(
 	        group, presenceInfo, "Audio group not found!"));
 	    return;
 	}
@@ -161,7 +148,7 @@ public class PhoneMessageHandler implements Serializable {
 	cp.setVoiceDetectionWhileMuted(true);
 	cp.setHandleSessionProgress(true);
 
-	new PhoneStatusListener(group, presenceInfo, externalCallID);
+	new VoiceChatPhoneStatusListener(group, presenceInfo, externalCallID);
 	
 	Call externalCall;
 
@@ -170,7 +157,7 @@ public class PhoneMessageHandler implements Serializable {
 	} catch (IOException e) {
 	    logger.warning("Unable to create call " + cp + ":  "
 		+ e.getMessage());
-            sender.send(clientID, new CallEndedResponseMessage(
+            sender.send(clientID, new VoiceChatCallEndedMessage(
 	        group, presenceInfo, "Can't create call!"));
 	    return;
 	}

@@ -15,35 +15,45 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
-
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
-import org.jdesktop.wonderland.common.ExperimentalAPI;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 /**
- * Message indicating whether someone is muted or unmuted
+ *
  * @author jprovino
  */
-@ExperimentalAPI
-public class MuteCallMessage extends Message {
+public class VoiceChatHoldMessage extends VoiceChatMessage {
+    
+    private PresenceInfo callee;
+    private boolean onHold;
+    private double volume;
 
-    private String callID;
-    private boolean isMuted;
+    /*
+     * Put call on hold
+     */
+    public VoiceChatHoldMessage(String group, PresenceInfo callee, boolean onHold, 
+	    double volume) {
 
-    public MuteCallMessage(String callID, boolean isMuted) {
-	this.callID = callID;
-	this.isMuted = isMuted;
+	super(group);
+
+	this.callee = callee;
+	this.onHold = onHold;
+	this.volume = volume;
+    }
+	 
+    public PresenceInfo getCallee() {
+	return callee;
     }
 
-    public String getCallID() {
-	return callID;
+    public boolean isOnHold() {
+	return onHold;
     }
 
-    public boolean isMuted() {
-	return isMuted;
+    public double getVolume() {
+	return volume;
     }
 
 }

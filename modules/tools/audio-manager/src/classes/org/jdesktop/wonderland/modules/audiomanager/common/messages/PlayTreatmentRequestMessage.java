@@ -17,38 +17,28 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  *
  * @author jprovino
  */
-public class VoiceChatUserMessage extends VoiceChatMessage {
+public class PlayTreatmentRequestMessage extends Message {
     
-    private PresenceInfo caller;
-    private PresenceInfo[] calleeList;
-    private ChatType chatType;
+    private String callID;
+    private String treatment;
 
-    public VoiceChatUserMessage(String group, PresenceInfo caller, 
-	    PresenceInfo[] calleeList, ChatType chatType) {
-
-	super(group);
-
-	this.caller = caller;
-	this.calleeList = calleeList;
-	this.chatType = chatType;
+    public PlayTreatmentRequestMessage(String callID, String treatment) {
+	this.callID = callID;
+	this.treatment = treatment;
     }
     
-    public PresenceInfo getCaller() {
-	return caller;
+    public String getCallID() {
+	return callID;
     }
 
-    public PresenceInfo[] getCalleeList() {
-	return calleeList;
-    }
-    
-    public ChatType getChatType() {
-	return chatType;
+    public String getTreatment() {
+	return treatment;
     }
 
 }

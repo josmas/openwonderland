@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.common.messages.Message;
  * @author jprovino
  */
 @ExperimentalAPI
-public class PlaceCallMessage extends Message {
+public class PlaceCallRequestMessage extends Message {
 
     private PresenceInfo presenceInfo;
     private String sipURL;	      // URL of softphone to call
@@ -39,7 +39,7 @@ public class PlaceCallMessage extends Message {
     private double direction;	      // direction of avatar
     private boolean confirmAnswered;  // user has to press 1
 
-    public PlaceCallMessage(PresenceInfo presenceInfo, 
+    public PlaceCallRequestMessage(PresenceInfo presenceInfo, 
 	    String sipURL, double x, double y,
 	    double z, double direction, boolean confirmAnswered) {
 

@@ -17,11 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatDialOutMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatHoldMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatDialOutMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatHoldMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatJoinMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatLeaveMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -149,9 +149,21 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
     public void setHUDComponent(HUDComponent inCallHUDComponent) {
         this.inCallHUDComponent = inCallHUDComponent;
+
+        inCallHUDComponent.addComponentListener(new HUDComponentListener() {
+
+	    public void HUDComponentChanged(HUDComponentEvent e) {
+                if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+            	    session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
+                }
+            }
+        });
     }
 
     public void callUser(String name, String number) {
+       session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
+                new PresenceInfo[0], ChatType.PRIVATE));
+
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
         String callID = sc.getCallID();
@@ -179,8 +191,8 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         }
 
         session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
-                usersToInvite.toArray(new PresenceInfo[0]),
-                isSecretChat ? ChatType.SECRET : ChatType.PRIVATE));
+            usersToInvite.toArray(new PresenceInfo[0]),
+            isSecretChat ? ChatType.SECRET : ChatType.PRIVATE));
     }
 
     public PresenceInfo getCaller() {
@@ -249,7 +261,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         invitedMembers.remove(member);
 
         if (added == true) {
-            System.out.println("ADDED " + member);
             members.add(member);
             addToUserList(member);
             return;
@@ -354,11 +365,11 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(jLabel2)
@@ -368,18 +379,18 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
                                 .add(secretRadioButton))
                             .add(inCallJLabel))
                         .add(7, 7, 7))
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel3)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(chatTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(chatTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                             .add(speakerButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(addButton))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(holdButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
-                            .add(hangupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .add(hangupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 

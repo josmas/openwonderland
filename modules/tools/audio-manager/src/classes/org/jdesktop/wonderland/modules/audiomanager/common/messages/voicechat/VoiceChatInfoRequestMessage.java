@@ -15,20 +15,16 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
-
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat;
 
 /**
  *
  * @author jprovino
  */
-public class VoiceChatJoinMessage extends VoiceChatUserMessage {
+public class VoiceChatInfoRequestMessage extends VoiceChatMessage {
     
-    public VoiceChatJoinMessage(String group, PresenceInfo caller, 
-	    PresenceInfo[] calleeList, ChatType chatType) {
-
-	super(group, caller, calleeList, chatType);
+    public VoiceChatInfoRequestMessage(String group) {
+	super(group);
     }
 
 }

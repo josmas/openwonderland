@@ -15,30 +15,20 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat;
 
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  *
  * @author jprovino
  */
-public class PlayTreatmentMessage extends Message {
+public class VoiceChatJoinRequestMessage extends VoiceChatUserMessage {
     
-    private String callID;
-    private String treatment;
+    public VoiceChatJoinRequestMessage(String group, PresenceInfo caller, 
+	    PresenceInfo[] calleeList, ChatType chatType) {
 
-    public PlayTreatmentMessage(String callID, String treatment) {
-	this.callID = callID;
-	this.treatment = treatment;
-    }
-    
-    public String getCallID() {
-	return callID;
-    }
-
-    public String getTreatment() {
-	return treatment;
+        super(group, caller, calleeList, chatType);
     }
 
 }

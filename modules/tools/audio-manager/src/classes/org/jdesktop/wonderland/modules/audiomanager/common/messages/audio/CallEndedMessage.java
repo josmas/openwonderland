@@ -15,20 +15,35 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.audio;
 
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- *
+ * Message indicating call ended
  * @author jprovino
  */
-public class AudioParticipantCallEstablishedMessage extends CellMessage {
-    
-    public AudioParticipantCallEstablishedMessage(CellID cellID) {
-	super(cellID);
+@ExperimentalAPI
+public class CallEndedMessage extends Message {
+
+    private String callID;
+    private String reason;
+
+    public CallEndedMessage(String callID, String reason) {
+	this.callID = callID;
+	this.reason = reason;
     }
-    
+
+    public String getCallID() {
+	return callID;
+    }
+
+    public String getReason() {
+	return reason;
+    }
+
 }

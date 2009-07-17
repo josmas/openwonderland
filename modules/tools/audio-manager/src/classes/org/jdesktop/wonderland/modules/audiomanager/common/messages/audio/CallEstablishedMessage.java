@@ -15,20 +15,29 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.audio;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+import org.jdesktop.wonderland.common.messages.Message;
+
 /**
- *
+ * Message indicating call is established
  * @author jprovino
  */
-public class VoiceChatJoinRequestMessage extends VoiceChatUserMessage {
-    
-    public VoiceChatJoinRequestMessage(String group, PresenceInfo caller, 
-	    PresenceInfo[] calleeList, ChatType chatType) {
+@ExperimentalAPI
+public class CallEstablishedMessage extends Message {
 
-        super(group, caller, calleeList, chatType);
+    private String callID;
+
+    public CallEstablishedMessage(String callID) {
+	this.callID = callID;
+    }
+
+    public String getCallID() {
+	return callID;
     }
 
 }

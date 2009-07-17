@@ -15,32 +15,16 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
-
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
-import org.jdesktop.wonderland.common.messages.Message;
-
-import org.jdesktop.wonderland.common.cell.CellID;
-
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat;
 
 /**
  *
  * @author jprovino
  */
-public class AudioParticipantCallEndedMessage extends CellMessage {
+public class VoiceChatEndMessage extends VoiceChatMessage {
     
-    private String reason;
-
-    public AudioParticipantCallEndedMessage(CellID cellID, String reason) {
-	super(cellID);
-
-	this.reason = reason;
-    }
-    
-    public String getReason() {
-	return reason;
+    public VoiceChatEndMessage(String group) {
+	super(group);
     }
 
 }

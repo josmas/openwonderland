@@ -15,36 +15,34 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat;
 
-import org.jdesktop.wonderland.common.messages.Message;
-
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  *
  * @author jprovino
  */
-public class AudioTreatmentMessage extends CellMessage {
+public class VoiceChatJoinAcceptedMessage extends VoiceChatMessage {
+ 
+    private PresenceInfo callee;
+    private ChatType chatType;
     
-    private boolean restartTreatment;
-    private boolean isPaused;
+    public VoiceChatJoinAcceptedMessage(String group, PresenceInfo callee, 
+	    ChatType chatType) {
 
-    public AudioTreatmentMessage(CellID cellID, boolean restartTreatment, boolean isPaused) {
-	super(cellID);
-	
-	this.restartTreatment = restartTreatment;
-	this.isPaused = isPaused;
+	super(group);
+
+	this.callee = callee;
+	this.chatType = chatType;
+    }
+
+    public PresenceInfo getCallee() {
+	return callee;
+    }
+
+    public ChatType getChatType() {
+	return chatType;
     }
     
-    public boolean restartTreatment() {
-	return restartTreatment;
-    }
-
-    public boolean isPaused() {
-	return isPaused;
-    }
-
 }
