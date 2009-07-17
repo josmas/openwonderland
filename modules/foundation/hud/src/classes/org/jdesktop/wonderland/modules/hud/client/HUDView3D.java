@@ -21,8 +21,8 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUDView;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
-import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.App2DCellRendererJME;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
@@ -71,7 +71,7 @@ public class HUDView3D extends View2DEntity implements HUDView {
      * {@inheritDoc}
      */
     protected Entity getParentEntity() {
-        Entity cellEntity = ((App2DCellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME)).getEntity();
+        Entity cellEntity = ((CellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME)).getEntity();
         switch (type) {
 
             case UNKNOWN:
