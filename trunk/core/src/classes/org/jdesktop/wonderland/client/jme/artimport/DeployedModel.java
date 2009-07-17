@@ -85,8 +85,9 @@ public class DeployedModel {
     public DeployedModel() {
     }
 
-    public DeployedModel(URL originalFile, ModelLoader modelLoader) {
+    public DeployedModel(URL deployedURL, ModelLoader modelLoader) {
         this.modelLoaderClassname = modelLoader.getClass().getName();
+        this.deployedURL = deployedURL.toExternalForm();
     }
 
     public DeployedModel(String modelLoaderClassname) {

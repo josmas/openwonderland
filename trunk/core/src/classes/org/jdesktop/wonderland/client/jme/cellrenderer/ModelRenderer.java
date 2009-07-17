@@ -80,7 +80,7 @@ public class ModelRenderer extends BasicRenderer {
             return deployedModel.getModelLoader().loadDeployedModel(deployedModel);
 
         ModelLoader loader = LoaderManager.getLoaderManager().getLoader(deployedModelURL);
-        DeployedModel deployedModel = new DeployedModel(deployedModelURL, loader);
+        deployedModel = new DeployedModel(deployedModelURL, loader);
         deployedModel.setModelTranslation(modelTranslation);
         deployedModel.setModelRotation(modelRotation);
         deployedModel.setModelScale(modelScale);
