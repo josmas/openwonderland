@@ -33,6 +33,9 @@ public class Model implements Serializable {
     private Vector3f orientation;
     private String wonderlandName;
 
+    protected Model() {
+    }
+
     public Model(URL originalFile) {
         this.originalFile = originalFile;
     }

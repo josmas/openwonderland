@@ -17,10 +17,16 @@
  */
 package org.jdesktop.wonderland.client.jme.artimport;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.bind.JAXBException;
 
 /**
  * Manage the various loaders available to the system
@@ -110,6 +116,24 @@ public class LoaderManager {
     public ModelLoader getLoader(String fileextension) {
         ModelLoaderFactory loaderFactory = activeLoaders.get(fileextension);
         return loaderFactory.getLoader();
+    }
+
+    /**
+     * Load the specified deployment file (.dep) and return the DeployedModel object
+     * which includes the model loader
+     * @param url url of .dep file
+     * @return DeployedModel, or null
+     */
+    public DeployedModel getLoaderFromDeployment(URL url) throws IOException {
+        InputStream in = new BufferedInputStream(url.openStream());
+        try {
+            DeployedModel deployedModel = DeployedModel.decode(in);
+            deployedModel.setModelLoader(getLoader(deployedModel));
+            return deployedModel;
+        } catch (JAXBException ex) {
+            Logger.getLogger(LoaderManager.class.getName()).log(Level.SEVERE, "Error parsing dep "+url.toExternalForm(), ex);
+            return null;
+        }
     }
 
     /**

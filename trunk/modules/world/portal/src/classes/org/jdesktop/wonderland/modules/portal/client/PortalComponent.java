@@ -18,13 +18,10 @@
 
 package org.jdesktop.wonderland.modules.portal.client;
 
-import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -36,9 +33,6 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentClientState;
 
 /**
@@ -70,11 +64,9 @@ public class PortalComponent extends CellComponent
 
         serverURL = ((PortalComponentClientState) clientState).getServerURL();
         
-        Translation o = ((PortalComponentClientState) clientState).getLocation();
-        location = new Vector3f((float) o.x, (float) o.y, (float) o.z);
+        location = ((PortalComponentClientState) clientState).getLocation();
         
-        Rotation r = ((PortalComponentClientState) clientState).getLook();
-        look = new Quaternion((float) r.x, (float) r.y, (float) r.z, (float) r.angle);
+        look = ((PortalComponentClientState) clientState).getLook();
     }
 
     @Override

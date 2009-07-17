@@ -18,10 +18,13 @@
 
 package org.jdesktop.wonderland.modules.portal.common;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
+import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
+import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
  * Client state for portal cell component
@@ -30,15 +33,15 @@ import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Ro
  */
 public class PortalComponentClientState extends CellComponentClientState {
     private String serverURL;
-    private Translation location;
-    private Rotation look;
+    private Vector3f location;
+    private Quaternion look;
 
     /** Default constructor */
     public PortalComponentClientState() {
     }
 
-    public PortalComponentClientState(String serverURL, Translation location,
-                                      Rotation look)
+    public PortalComponentClientState(String serverURL, Vector3f location,
+                                      Quaternion look)
     {
         this.serverURL = serverURL;
         this.location = location;
@@ -55,20 +58,22 @@ public class PortalComponentClientState extends CellComponentClientState {
     }
 
     @XmlElement
-    public Translation getLocation() {
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
+    public Vector3f getLocation() {
         return location;
     }
 
-    public void setLocation(Translation location) {
+    public void setLocation(Vector3f location) {
         this.location = location;
     }
 
     @XmlElement
-    public Rotation getLook() {
+    @XmlJavaTypeAdapter(QuaternionAdapter.class)
+    public Quaternion getLook() {
         return look;
     }
 
-    public void setLook(Rotation look) {
+    public void setLook(Quaternion look) {
         this.look = look;
     }
 }

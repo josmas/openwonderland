@@ -40,25 +40,25 @@ import javax.xml.bind.annotation.XmlTransient;
  *
  * @author paulby
  */
-@XmlRootElement(name="model-deployment-data")
-public class ModelDeploymentData {
+@XmlRootElement(name="loader-data")
+public class LoaderData {
 
     private static JAXBContext jaxbContext = null;
     static {
         try {
-            jaxbContext = JAXBContext.newInstance(ModelDeploymentData.class);
+            jaxbContext = JAXBContext.newInstance(LoaderData.class);
         } catch (javax.xml.bind.JAXBException excp) {
             System.out.println(excp.toString());
         }
     }
+    @XmlElement(name="version")
+    private short version=1;
 
     @XmlElement(name="modelLoaderClassname")
     private String modelLoaderClassname;
 
-    @XmlElement(name="author")
-    private String author;
-
     @XmlTransient private Map<String, String> deployedTextures; // Mapping between url in loaded file and actual location of file
+
     /* A table of key-value parameters for the module */
     @XmlElements({
         @XmlElement(name="deployedTextures")
@@ -77,20 +77,6 @@ public class ModelDeploymentData {
      */
     public void setDeployedTextures(Map<String, String> deployedTextures) {
         this.deployedTextures = deployedTextures;
-    }
-
-    /**
-     * @return the author
-     */
-    @XmlTransient public String getAuthor() {
-        return author;
-    }
-
-    /**
-     * @param author the author to set
-     */
-    public void setAuthor(String author) {
-        this.author = author;
     }
 
     /**
@@ -129,10 +115,10 @@ public class ModelDeploymentData {
         marshaller.marshal(this, os);
     }
 
-    public static ModelDeploymentData decode(InputStream in) throws JAXBException {
+    public static LoaderData decode(InputStream in) throws JAXBException {
         /* Read in from stream */
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        ModelDeploymentData info = (ModelDeploymentData)unmarshaller.unmarshal(in);
+        LoaderData info = (LoaderData)unmarshaller.unmarshal(in);
 
         /* Convert array into hash map */
         info.deployedTextures = new HashMap();

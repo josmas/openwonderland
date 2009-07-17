@@ -41,6 +41,7 @@ public class ModelRenderer extends BasicRenderer {
     private Vector3f modelScale = null;
 
     private ModelCellComponent modelComponent = null;
+    private DeployedModel deployedModel = null;
 
     public ModelRenderer(Cell cell, URL deployedModelURL) {
         this(cell, deployedModelURL, null, null, null, null);
@@ -49,6 +50,11 @@ public class ModelRenderer extends BasicRenderer {
     public ModelRenderer(Cell cell, ModelCellComponent modelComponent) {
         super(cell);
         this.modelComponent = modelComponent;
+    }
+
+    public ModelRenderer(Cell cell, DeployedModel deployedModel) {
+        super(cell);
+        this.deployedModel = deployedModel;
     }
 
     public ModelRenderer(Cell cell,
@@ -70,11 +76,18 @@ public class ModelRenderer extends BasicRenderer {
             return modelComponent.loadModel();
         }
 
+        if (deployedModel!=null)
+            return deployedModel.getModelLoader().loadDeployedModel(deployedModel);
+
         ModelLoader loader = LoaderManager.getLoaderManager().getLoader(deployedModelURL);
         DeployedModel deployedModel = new DeployedModel(deployedModelURL, loader);
         deployedModel.setModelTranslation(modelTranslation);
         deployedModel.setModelRotation(modelRotation);
         deployedModel.setModelScale(modelScale);
+
+        System.err.println("CREATE SG ROTATION "+modelRotation);
+        System.err.println("CELL ROT "+cell.getLocalTransform().getRotation(null));
+
         return loader.loadDeployedModel(deployedModel);
     }
 

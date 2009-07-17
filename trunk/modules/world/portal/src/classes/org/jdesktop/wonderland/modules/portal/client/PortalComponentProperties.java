@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.portal.client;
 
 import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -26,8 +27,6 @@ import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
 import org.jdesktop.wonderland.modules.portal.common.PortalComponentServerState;
 
 /**
@@ -91,7 +90,7 @@ public class PortalComponentProperties extends javax.swing.JPanel
                 urlTF.setText(origServerURL);
             }
             
-            Translation origin = state.getLocation();
+            Vector3f origin = state.getLocation();
             if (origin != null) {
                 origX = String.valueOf(origin.x);
                 origY = String.valueOf(origin.y);
@@ -105,9 +104,9 @@ public class PortalComponentProperties extends javax.swing.JPanel
             locY.setText(origY);
             locZ.setText(origZ);
             
-            Rotation r = state.getLook();
+            Quaternion r = state.getLook();
             if (r != null) {
-                origAngle = String.valueOf(r.angle);
+                origAngle = String.valueOf(r.toAngleAxis(new Vector3f()));
             } else {
                 origAngle = "";
             }
@@ -141,7 +140,7 @@ public class PortalComponentProperties extends javax.swing.JPanel
         }
         state.setServerURL(serverURL);
         
-        Translation location = new Translation();
+        Vector3f location = new Vector3f();
         String xstr = locX.getText().trim();
         String ystr = locY.getText().trim();
         String zstr = locZ.getText().trim();
@@ -154,14 +153,14 @@ public class PortalComponentProperties extends javax.swing.JPanel
         }
         state.setLocation(location);
         
-        Rotation look = new Rotation();
+        Quaternion look = new Quaternion();
         String anglestr = angleTF.getText().trim();
         if (anglestr.length() == 0) {
             look = null;
         } else {
             Quaternion q = new Quaternion(0.0f, 1.0f, 0.0f,
                                           Float.parseFloat(anglestr));
-            look = new Rotation(q);
+            look = new Quaternion(q);
         }
         state.setLook(look);
         editor.addToUpdateList(state);

@@ -17,17 +17,18 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Scale;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
+import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
  * The ColladaCellSetup class is the cell that renders a collada model cell in
@@ -51,14 +52,17 @@ public class JmeColladaCellComponentServerState extends CellComponentServerState
 
     /* The translation for the geometry -- really should be done on the cell level */
     @XmlElement(name="model-translation")
-    public PositionComponentServerState.Translation modelTranslation = null;
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
+    public Vector3f modelTranslation = null;
 
     @XmlElement(name="model-scale")
-    public PositionComponentServerState.Scale modelScale = null;
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
+    public Vector3f modelScale = null;
 
     /* The rotation for the geometry -- really should be done on the cell level */
     @XmlElement(name="model-rotation")
-    public PositionComponentServerState.Rotation modelRotation = null;
+    @XmlJavaTypeAdapter(QuaternionAdapter.class)
+    public Quaternion modelRotation = null;
 
     @XmlElement(name="model-loader-classname")
     private String modelLoaderClassname = null;
@@ -86,27 +90,27 @@ public class JmeColladaCellComponentServerState extends CellComponentServerState
         this.model = model;
     }
 
-    @XmlTransient public Rotation getModelRotation() {
+    @XmlTransient public Quaternion getModelRotation() {
         return modelRotation;
     }
 
-    public void setModelRotation(Rotation geometryRotation) {
+    public void setModelRotation(Quaternion geometryRotation) {
         this.modelRotation = geometryRotation;
     }
 
-    @XmlTransient public Translation getModelTranslation() {
+    @XmlTransient public Vector3f getModelTranslation() {
         return modelTranslation;
     }
 
-    public void setModelTranslation(Translation geometryTranslation) {
+    public void setModelTranslation(Vector3f geometryTranslation) {
         this.modelTranslation = geometryTranslation;
     }
     
-    @XmlTransient public Scale getModelScale() {
+    @XmlTransient public Vector3f getModelScale() {
         return modelScale;
     }
 
-    public void setModelScale(Scale geometryScale) {
+    public void setModelScale(Vector3f geometryScale) {
         this.modelScale = geometryScale;
     }
     
@@ -171,9 +175,9 @@ public class JmeColladaCellComponentServerState extends CellComponentServerState
 
     public CellComponentClientState setClientState(JmeColladaCellComponentClientState state) {
         state.setModelGroupURI(modelGroup);
-        state.setModelRotation((modelRotation==null ? null : modelRotation.asQuaternion()));
-        state.setModelScale((modelScale==null ? null : modelScale.asVector3f()));
-        state.setModelTranslation((modelTranslation==null ? null : modelTranslation.asVector3f()));
+        state.setModelRotation(modelRotation);
+        state.setModelScale(modelScale);
+        state.setModelTranslation(modelTranslation);
         state.setModelURI(model);
         state.setModelLoaderClassname(getModelLoaderClassname());
 

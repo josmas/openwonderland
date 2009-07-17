@@ -18,14 +18,15 @@
 package org.jdesktop.wonderland.modules.microphone.common;
 
 
+import com.jme.math.Vector3f;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
-
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
+import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
  * The MicrophoneCellServerState class is the cell that renders a microphone cell in
@@ -136,7 +137,9 @@ public class MicrophoneCellServerState extends CellServerState {
 
     public static class ActiveArea implements Serializable {
 
-	@XmlElement(name="origin") public Translation origin;
+	@XmlElement(name="origin")
+        @XmlJavaTypeAdapter(Vector3fAdapter.class)
+        public Vector3f origin;
 	@XmlElement(name="areaType") public String areaType = "BOX";
 	@XmlElement(name="xExtent") public double xExtent;
 	@XmlElement(name="yExtent") public double yExtent;
@@ -146,7 +149,7 @@ public class MicrophoneCellServerState extends CellServerState {
 	public ActiveArea() {
 	}
 
-	public ActiveArea (Translation origin, String areaType, double xExtent,
+	public ActiveArea (Vector3f origin, String areaType, double xExtent,
                 double yExtent, double zExtent) {
 
 	    this.origin = origin;
