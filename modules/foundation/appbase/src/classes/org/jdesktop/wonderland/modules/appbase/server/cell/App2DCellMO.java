@@ -18,10 +18,13 @@
 package org.jdesktop.wonderland.modules.appbase.server.cell;
 
 import com.jme.math.Vector2f;
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
+import com.jme.bounding.BoundingBox;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * An abstract server-side app.base cell for 2D apps. 
@@ -37,7 +40,15 @@ public abstract class App2DCellMO extends AppCellMO {
 
     /** Create an instance of App2DCellMO. */
     public App2DCellMO() {
-        super();
+        // Unfortunately, the bounds cannot be modified later, so we need to leave
+        // enough space for a fairly large window. A window can easily be 1K x 1K,
+        // 4K x 4K is the max, so 2K x 2K seems like a reasonable number. Also 
+        // unfortunately, we don't know the pixel scale at this point so, out of 
+        // desparation, we choose the default value of 0.01 meters per pixel.
+        // This gives values of approx. 21 x 21 for the local width and height
+        // of the bounds. 10 meters should be reasonable for the depth because the 
+        // step per window stack level is only 0.01 meter and the stack never gets too large.
+        super(new BoundingBox(new Vector3f(), 21, 21, 10), new CellTransform(null, null));
     }
 
     /**

@@ -224,7 +224,7 @@ public class View2DCell extends View2DEntity {
     // Apply any pending rotation delta to the given user transform.
     protected void userTransformApplyDeltaRotation (CellTransform userTransform) {
         if (deltaRotationToApply != null) {
-            CellTransform transform = new CellTransform(null, null, null);
+            CellTransform transform = new CellTransform(null, null);
             transform.setRotation(deltaRotationToApply);
             userTransform.mul(transform);
             deltaRotationToApply = null;

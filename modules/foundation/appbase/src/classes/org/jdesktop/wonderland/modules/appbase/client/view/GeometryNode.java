@@ -362,7 +362,7 @@ public abstract class GeometryNode extends Node {
         int width = (int) v2e.getDisplayerLocalWidth();
         int height = (int) v2e.getDisplayerLocalHeight();
 
-        // TODO: must handle subwindow case
+        // TODO: must handle subwindow case (bug 218)
         Vector2f locOrtho = v2e.getLocationOrtho();
 
         // Compute top left in canvas coords

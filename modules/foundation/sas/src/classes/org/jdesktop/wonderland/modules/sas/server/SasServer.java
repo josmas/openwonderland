@@ -258,7 +258,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             if (providers == null || providers.size() <= 0) {
                 continue;
             }
-            // TODO: weed out providers already tried
+            // TODO: someday: weed out providers already tried
             ProviderProxy provider = providers.getFirst();
 
             // Remove request from pending list while it is in flight */

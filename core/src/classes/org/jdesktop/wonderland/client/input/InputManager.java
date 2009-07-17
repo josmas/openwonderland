@@ -165,6 +165,8 @@ public abstract class InputManager
 	// Note: the global focus entity must be initialized early so that the Wonderland client can register 
 	// global listeners. The Wonderland client does this before it calls initialize.
 	initializeGlobalFocus(ClientContextJME.getWorldManager());
+
+        EventListenerBaseImpl.initializeEventListeners();
     }
 
     /**

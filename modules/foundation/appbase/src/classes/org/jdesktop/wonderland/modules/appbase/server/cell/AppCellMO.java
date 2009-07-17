@@ -21,6 +21,8 @@ import org.jdesktop.wonderland.modules.appbase.server.*;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import com.jme.bounding.BoundingVolume;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * A server-side <code>app.base</code> app cell.
@@ -35,5 +37,10 @@ public abstract class AppCellMO extends CellMO {
     /** Create an instance of AppCellMO. */
     public AppCellMO() {
         super();
+    }
+
+    /** Create an instance of AppCellMO. */
+    public AppCellMO(BoundingVolume localBounds, CellTransform transform) {
+        super(localBounds, transform);
     }
 }
