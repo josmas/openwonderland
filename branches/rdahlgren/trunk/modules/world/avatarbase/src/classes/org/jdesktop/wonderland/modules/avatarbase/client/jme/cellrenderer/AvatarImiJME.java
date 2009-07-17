@@ -141,18 +141,13 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     return;
                 }
                 // testing support; fix code is commented out below
-                changeAvatar(loadAvatar(configURL));
+//                changeAvatar(loadAvatar(configURL));
                 // check to see if this is our URL
-//                if ((configURL == null || currentConfigURL == null) || !currentConfigURL.toExternalForm().equals(configURL.toExternalForm()))
-//                {
-//                    System.out.println("Got a valid change request myurl " + currentConfigURL + ", msg url " + configURL);
-//                    currentConfigURL = configURL;
-//                    changeAvatar(loadAvatar(configURL));
-//                }
-//                else {
-//                    notifyListenersOfAvatarChange();
-//                    System.out.println("Got a request to change the config I already have");
-//                }
+                if ((configURL == null || currentConfigURL == null) || !currentConfigURL.toExternalForm().equals(configURL.toExternalForm()))
+                {
+                    currentConfigURL = configURL;
+                    changeAvatar(loadAvatar(configURL));
+                }
             }
         });
 
@@ -329,6 +324,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
      */
     void changeAvatar(WlAvatarCharacter newAvatar) {
         synchronized(this) {
+            if (newAvatar == avatarCharacter) {
+                System.out.println("Duplicate avatar. Doing nothing.");
+                return;
+            }
             // Bring up loading panel
             LoadingInfo.startedLoading(cell.getCellID(), newAvatar.getName());
 
@@ -374,7 +373,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
             selectForInput(selectedForInput);
             notifyListenersOfAvatarChange();
-            // Turn off loading panel
+            
             // update the bounds if necessary
             if (avatarCharacter.getJScene() != null) {
                 ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
@@ -388,6 +387,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 }, null);
             }
 
+            // Turn off loading panel
             LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
         }
     }
@@ -443,7 +443,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
      * @return
      */
     protected WlAvatarCharacter loadAvatar(URL avatarConfigURL) {
-        logger.info("Load avatar called! Dumping the stack trace...");
 
         // Get the old location from the cell
         WlAvatarCharacter ret=null;
@@ -490,16 +489,18 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
                 collisionGraph = new Box("AvatarCollision", new Vector3f(0f,0.92f,0f), 0.4f, 0.6f, 0.3f);
             } else {
-                // High def case, fails almost every time.
+                System.out.println("LOADING A HIGH DEF AVATAR from loadAvatar in AvatarImiJME. URL is " + avatarConfigURL.toExternalForm());
+                // High def case, fails to load material every time it seems.
                 ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(avatarConfigURL, wm)
                             .baseURL(baseURL)
                             .build();
+                collisionGraph = new Box("AvatarCollision", new Vector3f(0f,0.92f,0f), 0.4f, 0.6f, 0.3f);
                 ////////////////////////////////////////////////////////////////////////////////
                 // Hardcoding the avatar fixes the ambient thing, not the bounding volume thing
                 ////////////////////////////////////////////////////////////////////////////////
+                
 //                CharacterParams female = new FemaleAvatarParams("DudeBro").build().setBaseURL("wla://avatarbaseart@" + serverHostAndPort + "/");
 //                ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(female, wm).build();
-                collisionGraph = new Box("AvatarCollision", new Vector3f(0f,0.92f,0f), 0.4f, 0.6f, 0.3f);
             
             }
 

@@ -116,19 +116,14 @@ public class AvatarPlugin extends BaseClientPlugin
             public void avatarChanged(WlAvatarCharacter newAvatar) {
                 if (camState != null) {
                     // stop listener for changes from the old avatar
-                    curAvatar.removeAvatarChangedListener(avatarChangedListener);
                     if (newAvatar.getContext() != null && newAvatar != null)
-                    {
-                        logger.severe("Setting new camera target: " + newAvatar);
                         camState.setTargetCharacter(newAvatar);
-                    }
                     else // need to know when this happens
-                    {
                         camState.setTargetCharacter(null);
-                        logger.severe("Setting a null target. Character had no context, character is " + newAvatar);
-                    }
                     // force an update
-                    camState.setCameraPosition(curAvatar.getCell().getLocalTransform().getTranslation(null));
+                    Vector3f offset = new Vector3f();
+                    camState.getDesiredPositionOffset(offset);
+                    camState.setCameraPosition(curAvatar.getCell().getLocalTransform().getTranslation(null).add(offset));
                 } else
                     setChaseCam();
             }
@@ -243,12 +238,6 @@ public class AvatarPlugin extends BaseClientPlugin
                             LoadingInfo.finishedLoading(curAvatar.getCell().getCellID(), curAvatar.getCell().getName());
                         }
                     }).start();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-//                            femaleAvatarMI.setEnabled(false);
-//                            maleAvatarMI.setEnabled(false);
-                        }
-                    });
                 }
             }
         });
@@ -309,19 +298,15 @@ public class AvatarPlugin extends BaseClientPlugin
     }
     
     private void addConfigToServer(String name) {
-        System.out.print("Adding config to the server, name is " + name + "...");
         try {
             AvatarConfigManager.getAvatarConfigManager()
                     .saveAvatar(name, curAvatar.getAvatarCharacter());
-            System.out.print(" Success.");
         } catch (ContentRepositoryException ex) {
             Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Caught a content repository exception! " + ex.getMessage());
             ex.printStackTrace();
         } catch (IOException ex) {
             Logger.getLogger(AvatarConfigFrame.class.getName()).warning("Caught an IO exception! " + ex.getMessage());
             ex.printStackTrace();
-        } finally {
-            System.out.println("\n");
         }
     }
     
@@ -335,13 +320,8 @@ public class AvatarPlugin extends BaseClientPlugin
                                 finalName,
                                 curAvatar.getCell().getCellCache().getSession().getSessionManager());
                 if (selectedURL!=null) {
-                    System.out.println("Requested config change: " + selectedURL);
                     curAvatar.setCurrentConfigURL(selectedURL);
                     configComponent.requestConfigChange(selectedURL);
-                }
-                else {
-                    System.out.println("The selectedURL is null. curAvatar is " + curAvatar);
-//                    Logger.getLogger(AvatarPlugin.class.getName()).warning(bundle.getString("Unable_to_apply_null_default_avatar"));
                 }
             }
         };
