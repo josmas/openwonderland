@@ -15,33 +15,20 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-
-import org.jdesktop.wonderland.common.messages.Message;
-
-import org.jdesktop.wonderland.common.cell.CellID;
-
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
  *
  * @author jprovino
  */
-public class AudioParticipantMuteCallMessage extends CellMessage {
+public class VoiceChatJoinMessage extends VoiceChatUserMessage {
     
-    private CellID cellID;
-    private boolean isMuted;
+    public VoiceChatJoinMessage(String group, PresenceInfo caller, 
+	    PresenceInfo[] calleeList, ChatType chatType) {
 
-    public AudioParticipantMuteCallMessage(CellID cellID, boolean isMuted) {
-	super(cellID);
-	
-	this.isMuted = isMuted;
-    }
-    
-    public boolean isMuted() {
-	return isMuted;
+	super(group, caller, calleeList, chatType);
     }
 
 }

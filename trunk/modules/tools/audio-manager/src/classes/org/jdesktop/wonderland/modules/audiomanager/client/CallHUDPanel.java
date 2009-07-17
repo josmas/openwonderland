@@ -21,7 +21,7 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFac
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatInfoRequestMessage;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
@@ -87,26 +87,47 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
   	userList.setEnabled(false);
 
 	if (inCallHUDPanel != null) {
-	    caller = inCallHUDPanel.getCaller();
-	    group = inCallHUDPanel.getGroup();
-
-	    inCallHUDComponent = inCallHUDPanel.getHUDComponent();
-
-	    callJLabel.setText("Call " + group);
-	    client.addMemberChangeListener(group, this);
 	    secretRadioButton.setEnabled(false);
 	    privateRadioButton.setEnabled(false);
 	    session.send(client, new VoiceChatInfoRequestMessage(group));
 	} else {
-	    caller = myPresenceInfo;
+            this.inCallHUDPanel = new InCallHUDPanel(client, session, myPresenceInfo, myPresenceInfo);
+	    this.inCallHUDPanel.setCallHUDPanel(this);
+
+	    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+	    inCallHUDComponent = mainHUD.createComponent(this.inCallHUDPanel);
+
+	    this.inCallHUDPanel.setHUDComponent(inCallHUDComponent);
+
+	    mainHUD.addComponent(inCallHUDComponent);
+	    inCallHUDComponent.addComponentListener(new HUDComponentListener() {
+	        public void HUDComponentChanged(HUDComponentEvent e) {
+	            if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+	            }
+	        }
+	    });
+
+            //inCallHUDComponent.setVisible(true);
+
+            //System.out.println("Call x,y " + callHUDComponent.getX() + ", " + callHUDComponent.getY()
+            //    + " width " + callHUDComponent.getWidth() + " height " + callHUDComponent.getHeight()
+            //    + " Incall x,y " + (callHUDComponent.getX() - callHUDComponent.getWidth())
+            //    + ", " + (callHUDComponent.getY() + callHUDComponent.getHeight() - inCallHUDComponent.getHeight()));
 	}
+
+        caller = this.inCallHUDPanel.getCaller();
+	group = this.inCallHUDPanel.getGroup();
+
+	inCallHUDComponent = this.inCallHUDPanel.getHUDComponent();
+
+	callJLabel.setText("Call " + group);
+	client.addMemberChangeListener(group, this);
 
         pm = PresenceManagerFactory.getPresenceManager(session);
 	pm.addPresenceManagerListener(this);
 
 	userList.setEnabled(false);
 
-	//getRootPane.setDefaultButton(inviteButton);
 	inviteButton.setEnabled(false);
 	setVisible(true);
     }
@@ -143,6 +164,9 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 	    return;
 	}
 
+	System.out.println("ADDING " + presenceInfo);
+
+	userListModel.removeElement(presenceInfo.usernameAlias);
 	userListModel.addElement(presenceInfo.usernameAlias);
     }
 
@@ -153,19 +177,35 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 	    }
 	} else if (type.equals(ChangeType.USER_ADDED)) {
 	    synchronized (userListModel) {
-		addToUserList(presenceInfo);
+		System.out.println("PI " + presenceInfo);
+
+		for (PresenceInfo info : members) {
+		    System.out.println("Member:  " + info);
+		}
+		if (members.contains(presenceInfo)) {
+		    userListModel.removeElement(presenceInfo.usernameAlias);
+		} else {
+		    System.out.println("PI USER_ADDED:  " + presenceInfo);
+		    addToUserList(presenceInfo);
+		}
 	    }
 	} 
     }
+
+    ArrayList<PresenceInfo> members = new ArrayList();
 
     public void memberChange(PresenceInfo presenceInfo, boolean added) {
 	logger.finer("memberChange " + presenceInfo + " added " + added);
 
 	if (added) {
+	    members.add(presenceInfo);
+	    System.out.println("MEMBER ADDED removing " + presenceInfo);
 	    synchronized (userListModel) {
 		userListModel.removeElement(presenceInfo.usernameAlias);
 	    }
 	} else {
+	    members.remove(presenceInfo);
+	    System.out.println("MEMBER REMOVED adding " + presenceInfo);
 	    synchronized (userListModel) {
 		addToUserList(presenceInfo);
 	    }
@@ -180,7 +220,8 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 	synchronized (userListModel) {
 	    for (int i = 0; i < presenceInfoList.length; i++) {
 	        if (contains(members, presenceInfoList[i]) == false) {
-		    addToUserList(presenceInfoList[i]);
+		    System.out.println("SET MEMBERLIST removing " + presenceInfoList[i]);
+		    userListModel.removeElement(presenceInfoList[i].usernameAlias);
 		}
 	    }
 	}
@@ -420,6 +461,8 @@ private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
 private HUDComponent inCallHUDComponent;
 
+private boolean locationSet;
+
 private void inviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inviteButtonActionPerformed
     Object[] selectedValues = userList.getSelectedValues();
 
@@ -447,39 +490,6 @@ private void inviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
     }
 
-    secretRadioButton.setEnabled(false);
-    privateRadioButton.setEnabled(false);
-
-    if (inCallHUDPanel == null) {
-        inCallHUDPanel = new InCallHUDPanel(client, session, myPresenceInfo, caller);
-
-	inCallHUDPanel.setCallHUDPanel(this);
-
-	HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-	inCallHUDComponent = mainHUD.createComponent(inCallHUDPanel);
-
-	inCallHUDPanel.setHUDComponent(inCallHUDComponent);
-
-	//inCallHUDComponent.setPreferredLocation(Layout.NORTH);
-	mainHUD.addComponent(inCallHUDComponent);
-	inCallHUDComponent.addComponentListener(new HUDComponentListener() {
-	    public void HUDComponentChanged(HUDComponentEvent e) {
-	        if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
-	        }
-	    }
-	});
-
-        inCallHUDComponent.setVisible(true);
-
-        //System.out.println("Call x,y " + callHUDComponent.getX() + ", " + callHUDComponent.getY()
-        //    + " width " + callHUDComponent.getWidth() + " height " + callHUDComponent.getHeight()
-        //    + " Incall x,y " + (callHUDComponent.getX() - callHUDComponent.getWidth())
-        //    + ", " + (callHUDComponent.getY() + callHUDComponent.getHeight() - inCallHUDComponent.getHeight()));
-
-        inCallHUDComponent.setLocation(callHUDComponent.getX() - callHUDComponent.getWidth(), 
-	    callHUDComponent.getY() + callHUDComponent.getHeight() - inCallHUDComponent.getHeight());
-    }
-
     if (inWorldRadioButton.isSelected()) {
 	if (secretRadioButton.isEnabled()) {
 	    inCallHUDPanel.inviteUsers(usersToInvite, secretRadioButton.isSelected());
@@ -491,6 +501,13 @@ private void inviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 
     inCallHUDComponent.setVisible(true);
+
+    if (locationSet == false) {
+	locationSet = true;
+   
+        inCallHUDComponent.setLocation(callHUDComponent.getX() - callHUDComponent.getWidth(), 
+	    callHUDComponent.getY() + callHUDComponent.getHeight() - inCallHUDComponent.getHeight());
+    }
 }//GEN-LAST:event_inviteButtonActionPerformed
 
 private void numberTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_numberTextFieldActionPerformed

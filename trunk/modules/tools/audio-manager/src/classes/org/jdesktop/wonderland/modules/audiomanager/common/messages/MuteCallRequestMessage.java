@@ -19,30 +19,31 @@ package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-/*
- *
- * @author: jprovino
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+import org.jdesktop.wonderland.common.messages.Message;
+
+/**
+ * Message indicating whether someone is muted or unmuted
+ * @author jprovino
  */
-public class CallEndedResponseMessage extends VoiceChatMessage {
-    
-    private PresenceInfo presenceInfo;
-    private String reasonCallEnded;
+@ExperimentalAPI
+public class MuteCallRequestMessage extends Message {
 
-    public CallEndedResponseMessage(String group, PresenceInfo presenceInfo,
-	    String reasonCallEnded) {
+    private String callID;
+    private boolean isMuted;
 
-	super(group);
-
-	this.presenceInfo = presenceInfo;
-	this.reasonCallEnded = reasonCallEnded;
+    public MuteCallRequestMessage(String callID, boolean isMuted) {
+	this.callID = callID;
+	this.isMuted = isMuted;
     }
 
-    public PresenceInfo getPresenceInfo() {
-	return presenceInfo;
+    public String getCallID() {
+	return callID;
     }
 
-    public String getReasonCallEnded() {
-	return reasonCallEnded;
+    public boolean isMuted() {
+	return isMuted;
     }
 
 }

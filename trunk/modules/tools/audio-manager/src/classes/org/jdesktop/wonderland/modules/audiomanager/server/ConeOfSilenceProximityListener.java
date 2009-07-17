@@ -56,8 +56,10 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
             Logger.getLogger(ConeOfSilenceProximityListener.class.getName());
 
     private CellID cellID;
+    private String callID;
     private String name;
     private double outsideAudioVolume;
+    private boolean entered;
 
     public ConeOfSilenceProximityListener(CellMO cellMO, String name, double outsideAudioVolume) {
 	cellID = cellMO.getCellID();
@@ -71,6 +73,9 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
 
 	logger.info("viewEnterExit:  " + entered + " cellID " + cellID
 	    + " viewCellID " + viewCellID);
+
+	this.entered = entered;
+	this.callID = CallID.getCallID(viewCellID);
 
 	if (entered) {
 	    cellEntered(viewCellID);
@@ -171,6 +176,15 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         }
 
 	VoiceChatHandler.updateAttenuation(player);
+
+	if (entered) {
+	    entered = false;
+
+	    WonderlandClientSender sender =
+                WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
+
+	    sender.send(new ConeOfSilenceEnterExitMessage(callID, false));
+	}
     }
 
 }

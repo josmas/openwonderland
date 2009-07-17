@@ -19,12 +19,9 @@ package org.jdesktop.wonderland.modules.audiomanager.server;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
-import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
@@ -141,6 +138,7 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         super.setLive(live);
 
 	addProximityListener(live);
+	System.out.println("setLive " + live);
     }
 
     private void addProximityListener(boolean live) {

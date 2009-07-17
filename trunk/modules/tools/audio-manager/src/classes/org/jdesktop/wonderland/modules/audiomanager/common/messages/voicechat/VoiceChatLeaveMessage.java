@@ -15,32 +15,31 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
-
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat;
 
 import org.jdesktop.wonderland.common.messages.Message;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  *
  * @author jprovino
  */
-public class AudioParticipantMigrateMessage extends CellMessage {
+public class VoiceChatLeaveMessage extends VoiceChatMessage {
     
-    private boolean isSuccessful;
+    private PresenceInfo callee;
 
-    public AudioParticipantMigrateMessage(CellID cellID, boolean isSuccessful) {
-	super(cellID);
+    /*
+     * Leave group
+     */
+    public VoiceChatLeaveMessage(String group, PresenceInfo callee) {
+	super(group);
 
-	this.isSuccessful = isSuccessful;
+	this.callee = callee;
     }
-    
-    public boolean isSuccessful() {
-	return isSuccessful;
+	 
+    public PresenceInfo getCallee() {
+	return callee;
     }
 
 }

@@ -15,9 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
-
-import org.jdesktop.wonderland.common.messages.Message;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
@@ -25,35 +23,32 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  *
  * @author jprovino
  */
-public class VoiceChatHoldMessage extends VoiceChatMessage {
+public class VoiceChatBusyMessage extends VoiceChatMessage {
     
+    private PresenceInfo caller;
     private PresenceInfo callee;
-    private boolean onHold;
-    private double volume;
+    private ChatType chatType;
 
-    /*
-     * Put call on hold
-     */
-    public VoiceChatHoldMessage(String group, PresenceInfo callee, boolean onHold, 
-	    double volume) {
+    public VoiceChatBusyMessage(String group, PresenceInfo caller, 
+	    PresenceInfo callee, ChatType chatType) {
 
 	super(group);
 
+	this.caller = caller;
 	this.callee = callee;
-	this.onHold = onHold;
-	this.volume = volume;
+	this.chatType = chatType;
     }
-	 
+
+    public PresenceInfo getCaller() {
+	return caller;
+    }
+
     public PresenceInfo getCallee() {
 	return callee;
     }
 
-    public boolean isOnHold() {
-	return onHold;
+    public ChatType getChatType() {
+	return chatType;
     }
-
-    public double getVolume() {
-	return volume;
-    }
-
+    
 }

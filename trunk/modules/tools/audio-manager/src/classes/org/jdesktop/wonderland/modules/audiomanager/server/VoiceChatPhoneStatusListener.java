@@ -21,7 +21,7 @@ import com.sun.sgs.app.ManagedReference;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.CallEndedResponseMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatCallEndedMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
@@ -60,16 +60,16 @@ import com.jme.math.Vector3f;
 /**
  * @author jprovino
  */
-public class PhoneStatusListener implements ManagedCallStatusListener, Serializable {
+public class VoiceChatPhoneStatusListener implements ManagedCallStatusListener, Serializable {
 
     private static final Logger logger =
-        Logger.getLogger(PhoneStatusListener.class.getName());
+        Logger.getLogger(VoiceChatPhoneStatusListener.class.getName());
      
     private String group;
     private PresenceInfo presenceInfo;
     private String externalCallID;
 
-    public PhoneStatusListener(String group, PresenceInfo presenceInfo, 
+    public VoiceChatPhoneStatusListener(String group, PresenceInfo presenceInfo, 
 	    String externalCallID) {
 
 	this.group = group;
@@ -78,6 +78,8 @@ public class PhoneStatusListener implements ManagedCallStatusListener, Serializa
 
 	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, 
 	    externalCallID);
+
+	new AudioCallStatusListener(null, externalCallID);
     }
 
     public void callStatusChanged(CallStatus status) {    
@@ -85,9 +87,12 @@ public class PhoneStatusListener implements ManagedCallStatusListener, Serializa
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        if (status.getCode() == CallStatus.ESTABLISHED) {
+	switch (status.getCode()) {
+        case CallStatus.ESTABLISHED:
 	    stopRinging(vm);
-        } else if (status.getCode() == CallStatus.ENDED) {
+	    break;
+
+        case CallStatus.ENDED:
 	    stopRinging(vm);
 	    vm.removeCallStatusListener(this);
                 
@@ -100,8 +105,9 @@ public class PhoneStatusListener implements ManagedCallStatusListener, Serializa
 		vm.removePlayer(player);
 	    }
 
-            sender.send(new CallEndedResponseMessage(group, presenceInfo, 
+            sender.send(new VoiceChatCallEndedMessage(group, presenceInfo, 
 		status.getOption("Reason")));
+	    break;
 	}
     }
 

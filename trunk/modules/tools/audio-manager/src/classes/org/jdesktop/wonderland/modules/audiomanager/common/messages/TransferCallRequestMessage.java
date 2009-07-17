@@ -29,13 +29,13 @@ import org.jdesktop.wonderland.common.messages.Message;
  * @author jprovino
  */
 @ExperimentalAPI
-public class TransferCallMessage extends Message {
+public class TransferCallRequestMessage extends Message {
 
     private PresenceInfo presenceInfo;
     private String phoneNumber;
     private boolean cancel;
 
-    public TransferCallMessage(PresenceInfo presenceInfo, String phoneNumber, boolean cancel) {
+    public TransferCallRequestMessage(PresenceInfo presenceInfo, String phoneNumber, boolean cancel) {
 	this.presenceInfo = presenceInfo;
 	this.phoneNumber = phoneNumber;
 	this.cancel = cancel;

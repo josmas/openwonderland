@@ -15,7 +15,9 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
@@ -23,26 +25,39 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  *
  * @author jprovino
  */
-public class VoiceChatJoinAcceptedMessage extends VoiceChatMessage {
- 
-    private PresenceInfo callee;
-    private ChatType chatType;
+public class VoiceChatDialOutMessage extends VoiceChatMessage {   
     
-    public VoiceChatJoinAcceptedMessage(String group, PresenceInfo callee, 
-	    ChatType chatType) {
+    String group;
+    String softphoneCallID;
+    ChatType chatType;
+    PresenceInfo presenceInfo;
+    String phoneNumber;
+
+    public VoiceChatDialOutMessage(String group, String softphoneCallID, ChatType chatType, 
+	    PresenceInfo presenceInfo, String phoneNumber) {
 
 	super(group);
 
-	this.callee = callee;
+	this.softphoneCallID = softphoneCallID;
 	this.chatType = chatType;
-    }
-
-    public PresenceInfo getCallee() {
-	return callee;
+	this.presenceInfo = presenceInfo;
+	this.phoneNumber = phoneNumber;	
     }
 
     public ChatType getChatType() {
 	return chatType;
     }
-    
+
+    public String getSoftphoneCallID() {
+	return softphoneCallID;
+    }
+
+    public PresenceInfo getPresenceInfo() {
+	return presenceInfo;
+    }
+
+    public String getPhoneNumber() {
+	return phoneNumber;
+    }
+
 }

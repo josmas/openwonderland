@@ -17,24 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common.messages;
 
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.comms.ProtocolVersion;
+
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- *
+ * The initial message that a client must send to the Wonderland server
+ * in order to specify a communications protocol to use.
  * @author jprovino
  */
-public class VoiceChatInfoResponseMessage extends VoiceChatMessage {
-    
-    private PresenceInfo[] chatters;
+@ExperimentalAPI
+public class GetVoiceBridgeRequestMessage extends Message {
 
-    public VoiceChatInfoResponseMessage(String group, PresenceInfo[] chatters) {
-	super(group);
-
-	this.chatters = chatters;
+    public GetVoiceBridgeRequestMessage() {
     }
-    
-    public PresenceInfo[] getChatters() {
-	return chatters;
-    } 
 
 }

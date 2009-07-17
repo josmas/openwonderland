@@ -15,31 +15,35 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.common.messages;
-
-import org.jdesktop.wonderland.common.messages.Message;
+package org.jdesktop.wonderland.modules.audiomanager.common.messages.audio;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+
+import org.jdesktop.wonderland.common.messages.Message;
+
 /**
- *
+ * Message indicating whether someone started or stopped speaking.
  * @author jprovino
  */
-public class VoiceChatLeaveMessage extends VoiceChatMessage {
-    
-    private PresenceInfo callee;
+@ExperimentalAPI
+public class CallMutedMessage extends Message {
 
-    /*
-     * Leave group
-     */
-    public VoiceChatLeaveMessage(String group, PresenceInfo callee) {
-	super(group);
+    private String callID;
+    private boolean isMuted;
 
-	this.callee = callee;
+    public CallMutedMessage(String callID, boolean isMuted) {
+	this.callID = callID;
+	this.isMuted = isMuted;
     }
-	 
-    public PresenceInfo getCallee() {
-	return callee;
+
+    public String getCallID() {
+	return callID;
+    }
+
+    public boolean isMuted() {
+	return isMuted;
     }
 
 }
