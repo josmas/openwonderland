@@ -85,9 +85,6 @@ public class ModelRenderer extends BasicRenderer {
         deployedModel.setModelRotation(modelRotation);
         deployedModel.setModelScale(modelScale);
 
-        System.err.println("CREATE SG ROTATION "+modelRotation);
-        System.err.println("CELL ROT "+cell.getLocalTransform().getRotation(null));
-
         return loader.loadDeployedModel(deployedModel);
     }
 
