@@ -91,7 +91,7 @@ public class SasProvider {
         curSession.addSessionStatusListener(new SessionStatusListener() {
                 public void sessionStatusChanged(WonderlandSession session, WonderlandSession.Status status) {
                     if (status==WonderlandSession.Status.DISCONNECTED) {
-                        // TODO: Do nothing for now
+                        logger.warning("Server disconnected.");
                     }
                 }
             });

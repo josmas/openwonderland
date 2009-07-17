@@ -53,8 +53,6 @@ public class WindowSystemXrw
      */
     private static SmallIntegerAllocator displayNumAllocator = new SmallIntegerAllocator(2);
 
-    // TODO: change this name
-    public static final String XREMWIN_WEBSTART_DIR_PROP = "appshare.xremwinWebStartDir";
     /** The name of the app instance */
     private String appInstanceName;
     /** The X display number of the X server started. This number is valid when it is non-zero */

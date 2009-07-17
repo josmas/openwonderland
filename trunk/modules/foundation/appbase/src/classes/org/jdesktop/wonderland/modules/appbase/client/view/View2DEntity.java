@@ -172,10 +172,10 @@ public abstract class View2DEntity implements View2D {
     private Vector3f deltaTranslationToApply;
 
     /** A copy of the current view node's user transformation in world (aka non-ortho) mode. */
-    private CellTransform userTransformCell = new CellTransform(null, null, null);
+    private CellTransform userTransformCell = new CellTransform(null, null);
 
     /** A copy of the current view node's user transformation in ortho mode. */
-    private CellTransform userTransformOrtho = new CellTransform(null, null, null);
+    private CellTransform userTransformOrtho = new CellTransform(null, null);
 
     /** The event listeners which are attached to this view while the view is attached to its cell */
     private LinkedList<EventListener> eventListeners = new LinkedList<EventListener>();
@@ -1375,7 +1375,7 @@ public abstract class View2DEntity implements View2D {
             switch (type) {
             case UNKNOWN:
             case PRIMARY:
-                transform = new CellTransform(null, null, null);
+                transform = new CellTransform(null, null);
                 if (ortho) { 
                     Vector3f orthoLocTranslation = new Vector3f();
                     orthoLocTranslation.x = locationOrtho.x;
@@ -1424,7 +1424,7 @@ public abstract class View2DEntity implements View2D {
                 break;
             case POPUP:
                 // Always set to identity
-                sgChangeTransformUserSet(viewNode, new CellTransform(null, null, null));
+                sgChangeTransformUserSet(viewNode, new CellTransform(null, null));
             }
         }
 
@@ -1487,7 +1487,7 @@ public abstract class View2DEntity implements View2D {
     // Uses: type, parent, pixelscale, size, offset
     // View2DCell subclass uses: type, ortho, parent, stack
     private CellTransform calcOffsetStackTransform () {
-        CellTransform transform = new CellTransform(null, null, null);
+        CellTransform transform = new CellTransform(null, null);
 
         // Uses: parent, pixelScale, size, offset, ortho
         Vector3f offsetTranslation = calcOffsetTranslation();
@@ -1567,7 +1567,7 @@ public abstract class View2DEntity implements View2D {
     // Apply any pending translation delta to the given user transform.
     protected void userTransformApplyDeltaTranslation (CellTransform userTransform) {
         if (deltaTranslationToApply != null) {
-            CellTransform transform = new CellTransform(null, null, null);
+            CellTransform transform = new CellTransform(null, null);
             transform.setTranslation(deltaTranslationToApply);
             //System.err.println("******* delta translation transform = " + transform);
             userTransform.mul(transform);

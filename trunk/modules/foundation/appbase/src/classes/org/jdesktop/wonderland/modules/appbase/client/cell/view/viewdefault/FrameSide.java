@@ -108,10 +108,10 @@ public class FrameSide extends FrameComponent {
 
         super.update();
 
-    /* TODO: debug
-    rect.printRenderState();
-    rect.printGeometry();
-     */
+        /* For debug
+        rect.printRenderState();
+        rect.printGeometry();
+        */
     }
 
     /**

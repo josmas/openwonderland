@@ -44,10 +44,6 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
     private static final Logger logger = Logger.getLogger(EventListenerBaseImpl.class.getName());
 
-    /** The mtgame event used to wake up the this collection for computation on the Event */
-    // TODO: need a way to ensure this is unique throughout the client
-    private static long MTGAME_EVENT_ID = 0;
-
     /** The input event queue for this collection. The listeners will be called for these. */
     private LinkedBlockingQueue<Event> inputQueue = new LinkedBlockingQueue<Event>();
 
@@ -59,6 +55,16 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
     /** The list of events which was encountered when computeEvent was last called. */
     private LinkedList<Event> computedEvents = new LinkedList<Event>();
+
+    /** The MTGame event used by the input system. */
+    private static long mtgameEventID;
+
+    /**
+     * Called during input system initialization.
+     */
+    static void initializeEventListeners () {
+        mtgameEventID = ClientContextJME.getWorldManager().allocateEvent();
+    }
 
     /**
      * {@inheritDoc}
@@ -200,7 +206,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     public void postEvent (Event event) {
 	if (!enabled) return;
 	inputQueue.add(event);
-	ClientContextJME.getWorldManager().postEvent(MTGAME_EVENT_ID);
+	ClientContextJME.getWorldManager().postEvent(mtgameEventID);
     }
 
     /**
@@ -259,7 +265,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
 
     /** Arm the listener's processor. */
     void arm () {
-	ProcessorArmingCondition condition = new PostEventCondition(this, new long[] { MTGAME_EVENT_ID});
+	ProcessorArmingCondition condition = new PostEventCondition(this, new long[] { mtgameEventID});
 	setArmingCondition(condition);
     }
 
