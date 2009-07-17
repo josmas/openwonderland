@@ -31,13 +31,16 @@ public class Vector3fAdapter extends XmlAdapter<Vector3fHandler, Vector3f> {
 
     @Override
     public Vector3f unmarshal(Vector3fHandler v) throws Exception {
-        if (v.isNull)
+        if (v==null)
             return null;
         return new Vector3f(v.x, v.y, v.z);
     }
 
     @Override
     public Vector3fHandler marshal(Vector3f v) throws Exception {
+        if (v==null) {
+            return null;
+        }
         return new Vector3fHandler(v);
     }
 
@@ -48,17 +51,11 @@ public class Vector3fAdapter extends XmlAdapter<Vector3fHandler, Vector3f> {
         private float y;
         @XmlElement
         private float z;
-        @XmlElement
-        private boolean isNull = false;
 
         public Vector3fHandler() {
         }
 
         public Vector3fHandler(Vector3f v) {
-            if (v==null) {
-                isNull = true;
-                return;
-            }
             x = v.x;
             y = v.y;
             z = v.z;
