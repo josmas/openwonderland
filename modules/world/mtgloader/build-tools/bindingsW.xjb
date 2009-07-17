@@ -1,0 +1,35 @@
+<jxb:bindings version="1.0" xmlns:jxb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <jxb:bindings schemaLocation="http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd" node="/xs:schema">
+    <jxb:schemaBindings>
+      <jxb:package name="org.jdesktop.wonderland.modules.kmzloader.client.kml_22" />
+    </jxb:schemaBindings>
+
+    <!-- Rename Java names of elements with naming conflicts (elements exist with names "scale", "Scale", "snippet" and "Snippet") -->
+    <jxb:bindings node="//xs:element[@name='scale']">
+      <jxb:class name="ScaleScalar"/>
+    </jxb:bindings>
+    <jxb:bindings node="//xs:element[@name='name']">
+      <jxb:class name="KmlName"/>
+    </jxb:bindings>
+    <jxb:bindings node="//xs:element[@name='Snippet']">
+      <jxb:class name="SnippetDeprecated"/>
+      <jxb:property name="SnippetDeprecated"/>
+    </jxb:bindings>
+
+  </jxb:bindings>
+
+
+  <jxb:bindings schemaLocation="http://schemas.opengis.net/kml/2.2.0/atom-author-link.xsd" node="/xs:schema">
+    <jxb:schemaBindings>
+      <jxb:package name="org.my.schema.external.org.w3.atom" />
+    </jxb:schemaBindings>
+  </jxb:bindings>
+
+
+  <jxb:bindings schemaLocation="http://docs.oasis-open.org/election/external/xAL.xsd" node="/xs:schema">
+    <jxb:schemaBindings>
+      <jxb:package name="org.my.schema.external.oasis.names.tc.ciq.xsdschema.xal" />
+    </jxb:schemaBindings>
+  </jxb:bindings>
+</jxb:bindings>
