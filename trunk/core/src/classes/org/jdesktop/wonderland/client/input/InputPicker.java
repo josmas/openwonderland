@@ -243,7 +243,7 @@ public abstract class InputPicker {
     public InputManager.PickEventReturn pickMouseEventSwing (MouseEvent awtMouseEvent) {
 	boolean inSwingRegion = false;
 
-	logger.fine("Picker Swing: received awt event = " + awtMouseEvent);
+	logger.info("Picker Swing: received awt event = " + awtMouseEvent);
 
 	// Determine the destination pick info by performing a pick, considering grabs. etc.
 	PickInfo hitPickInfo;
@@ -310,6 +310,7 @@ public abstract class InputPicker {
 		consumesEvent = false;
 		propagatesToUnder = false;
 	    } else {
+                
 		event.setPickDetails(pickDetails);
 		if (eventID == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null) {
 		    MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) event;
@@ -322,18 +323,19 @@ public abstract class InputPicker {
                     EventListener listener = it.next();
 		    if (listener.isEnabled()) {
 			Event distribEvent = EventDistributor.createEventForEntity(event, entity);
-			logger.finest("Invoke event listener consumesEvent");
-			logger.finest("Listener = " + listener);
-			logger.finest("Event = " + distribEvent);
+			logger.fine("Invoke event listener consumesEvent");
+			logger.fine("Listener = " + listener);
+			logger.fine("Event = " + distribEvent);
 			consumesEvent |= listener.consumesEvent(distribEvent);
 			// TODO: someday: decommit for now
 			//propagatesToUnder |= listener.propagatesToUnder(distribEvent);
-			logger.finest("consumesEvent = " + consumesEvent);
+			logger.fine("consumesEvent = " + consumesEvent);
 		    }
 		}
 	    }
 
-	    logger.finest("isWindowSwingEntity(entity) = " + isWindowSwingEntity(entity));
+	    logger.info("********* isWindowSwingEntity(entity) = " + isWindowSwingEntity(entity));
+	    logger.info("consumesEvent = " + consumesEvent);
 	    if (consumesEvent && isWindowSwingEntity(entity)) {
 		// WindowSwing pick semantics: Stop at the first WindowSwing which has any listener which
 		// will consume the event. Note that because of single-threaded nature of the Embedded Swing 

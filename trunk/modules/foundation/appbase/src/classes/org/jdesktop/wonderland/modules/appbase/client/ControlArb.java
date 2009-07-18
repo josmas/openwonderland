@@ -48,6 +48,8 @@ public abstract class ControlArb {
     protected App2D app;
     /** Has the user enabled app control? */
     protected boolean appControl;
+    /** When false, this control arb will be released during a call to releaseControlAll. */
+    private boolean releaseWithAll = true;
 
     /** 
      * The interface that components interested in being notified of a state change in the control arb 
@@ -105,6 +107,24 @@ public abstract class ControlArb {
     }
 
     /**
+     * This attribute controls whether this control arb is released as a part
+     * of the <code>releaseControlAll</code> method. If the argument is true,
+     * this control arb is released along with all others. Otherwise it is 
+     * not released. Default: true. You should set this to false for a 
+     * control arb you want to always have control. For example: the HUD control arb.
+     */
+    public void setReleaseWithAll (boolean releaseWithAll) {
+        this.releaseWithAll = releaseWithAll;
+    }
+
+    /**
+     * Returns the value of the releaseWithAll attribute.
+     */
+    public boolean getReleaseWithAll () {
+        return releaseWithAll;
+    }
+
+    /**
      * Is the user of this client currently an controller of the ControlArb's app?
      */
     public boolean hasControl() {
@@ -153,7 +173,7 @@ public abstract class ControlArb {
             controlArbsCopy = (LinkedList<ControlArb>) controlArbs.clone();
         }
         for (ControlArb controlArb : controlArbsCopy) {
-            if (controlArb.hasControl()) {
+            if (controlArb.getReleaseWithAll() && controlArb.hasControl()) {
                 controlArb.releaseControl();
             }
         }
