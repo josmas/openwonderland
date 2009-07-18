@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.server;
 
 import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -27,16 +28,19 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author paulby
  */
 public interface UserListener extends Serializable, ManagedObject {
+    /**
+     * Notification that a client has logged in.
+     * @param clientID of the client that has logged in
+     * @param userRef a reference to the user who logged in.
+     */
+    public void userLoggedIn(WonderlandClientID clientID,
+                             ManagedReference<UserMO> userRef);
 
     /**
      * Notification that a client has logged out.
      * @param clientID of the client that has logged out
+     * @param userRef a reference to the user who logged out
      */
-    public void userLoggedOut(WonderlandClientID clientID);
-
-    /**
-     * Notification that a client has logged in.
-     * @param clientID of the client that has logged in
-     */
-    public void userLoggedIn(WonderlandClientID clientID);
+    public void userLoggedOut(WonderlandClientID clientID,
+                              ManagedReference<UserMO> userRef);
 }

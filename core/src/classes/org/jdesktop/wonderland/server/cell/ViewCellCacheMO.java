@@ -156,21 +156,11 @@ public class ViewCellCacheMO implements ManagedObject, Serializable {
     protected void logout(WonderlandClientID clientID) {
         logger.warning("DEBUG - logout");
         ViewCellMO view = viewRef.get();
-        try {
-        UniverseManagerFactory.getUniverseManager().viewLogout(view);
-        } catch(RuntimeException e) {
-            System.err.println("UNIVERSE MGR logout timeout "+e);
-            throw e;
-        }
-        try {
-        WonderlandContext.getCellManager().removeCellFromWorld(view);
-        } catch(RuntimeException e) {
-            System.err.println("REMOVE CELL FROM WORLD logout timeout "+e);
-            throw e;
-        }
-    }
-     
 
+        UniverseManagerFactory.getUniverseManager().viewLogout(view);
+        WonderlandContext.getCellManager().removeCellFromWorld(view);
+    }
+    
     public void generateLoadMessagesService(Collection<CellDescription> cells) {
         // check if this user has permission to view the cells in this
         // collection, and then generate load messages for any that we

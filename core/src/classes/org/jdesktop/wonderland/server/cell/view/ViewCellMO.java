@@ -22,6 +22,7 @@ import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * ViewCell defines the view into the virtual world for a specific window
@@ -51,7 +52,15 @@ public abstract class ViewCellMO extends CellMO {
      * @return
      */
     public abstract UserMO getUser();
-    
+
+    /**
+     * Get the WonderlandClientID of the user session that owns this view.
+     * May return null if the view is not associated with a client
+     * session.
+     * @return the client ID for the session associated with this view
+     */
+    public abstract WonderlandClientID getClientID();
+
     /**
      * Return the cell cache managed object for this view, or null if there
      * is no associated cache.

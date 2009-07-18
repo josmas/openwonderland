@@ -109,7 +109,7 @@ class ViewCache {
                 new KernelRunnable() {
 
             public String getBaseTaskType() {
-                return KernelRunnable.class.getName();
+                return ViewCache.class.getName() + ".MoveNotifier";
             }
 
             public void run() throws Exception {
@@ -125,6 +125,22 @@ class ViewCache {
     void login() {
         // Trigger a revalidation
         cellMoved(viewCell, viewCell.getWorldTransform());
+
+        // notify listener of login
+        UniverseImpl.getUniverse().scheduleTransaction(
+                new KernelRunnable() {
+
+            public String getBaseTaskType() {
+                return ViewCache.class.getName() + ".LoginNotifier";
+            }
+
+            public void run() throws Exception {
+                synchronized(viewUpdateListeners) {
+                    for(ViewUpdateListenerContainer cont : viewUpdateListeners)
+                        cont.notifyListenersLogin();
+                }
+            }
+        }, identity);
     }
 
     void logout() {
@@ -140,6 +156,22 @@ class ViewCache {
         synchronized(pendingCacheUpdates) {
             pendingCacheUpdates.clear();
         }
+
+        // notify listener of logout
+        UniverseImpl.getUniverse().scheduleTransaction(
+                new KernelRunnable() {
+
+            public String getBaseTaskType() {
+                return ViewCache.class.getName() + ".LogoutNotifier";
+            }
+
+            public void run() throws Exception {
+                synchronized(viewUpdateListeners) {
+                    for(ViewUpdateListenerContainer cont : viewUpdateListeners)
+                        cont.notifyListenersLogout();
+                }
+            }
+        }, identity);
         
 //        System.err.println("-----------------> LOGOUT");
     }
@@ -692,8 +724,16 @@ class ViewCache {
             }
         }
 
+        public void notifyListenersLogin() {
+            viewUpdateListener.viewLoggedIn(cellID, viewCell.getCellID());
+        }
+
         public void notifyListeners(final CellTransform viewWorldTransform) {
             viewUpdateListener.viewTransformChanged(cellID, viewCell.getCellID(), viewWorldTransform);
+        }
+
+        public void notifyListenersLogout() {
+            viewUpdateListener.viewLoggedOut(cellID, viewCell.getCellID());
         }
 
         @Override

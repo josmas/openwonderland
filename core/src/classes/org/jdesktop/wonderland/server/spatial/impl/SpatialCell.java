@@ -114,4 +114,9 @@ public interface SpatialCell {
      * @param viewUpdateListener listener to remove
      */
     public void removeViewUpdateListener(ViewUpdateListener viewUpdateListener);
+
+    /**
+     * Re-notify each listener of the position of this cell
+     */
+    public void revalidateListeners(Identity identity);
 }

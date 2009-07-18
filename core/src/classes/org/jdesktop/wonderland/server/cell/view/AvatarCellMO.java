@@ -42,13 +42,16 @@ public class AvatarCellMO extends ViewCellMO {
     
     private ManagedReference<ViewCellCacheMO> avatarCellCacheRef;
     private ManagedReference<UserMO> userRef;
+    private WonderlandClientID clientID;
+
 //    private String avatarConfigURL="test.xml";
 
-    public AvatarCellMO(UserMO user) {
+    public AvatarCellMO(UserMO user, WonderlandClientID clientID) {
         super(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()),
               new CellTransform(null, new Vector3f())  );
         this.userRef = AppContext.getDataManager().createReference(user);
-        
+        this.clientID = clientID;
+
         Vector3f location = new Vector3f(0,0,0);
         Vector3f lookDirection = new Vector3f(0,0,1);
 
@@ -81,6 +84,13 @@ public class AvatarCellMO extends ViewCellMO {
      */
     public UserMO getUser() {
         return userRef.get();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public WonderlandClientID getClientID() {
+        return clientID;
     }
     
     /**

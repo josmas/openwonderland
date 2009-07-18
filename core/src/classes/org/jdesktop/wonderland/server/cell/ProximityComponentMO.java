@@ -19,12 +19,13 @@ package org.jdesktop.wonderland.server.cell;
 
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
-import com.sun.sgs.app.ManagedReference;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.ProximityListenerRecord;
-import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.server.cell.ServerProximityListenerRecord.ServerProximityListenerWrapper;
 import org.jdesktop.wonderland.server.spatial.UniverseManager;
 
 /**
@@ -57,9 +58,10 @@ import org.jdesktop.wonderland.server.spatial.UniverseManager;
 @ExperimentalAPI
 public class ProximityComponentMO extends CellComponentMO {
 
-    protected HashMap<ProximityListenerSrv, ServerProximityListenerRecord> proximityListeners = null;
-    protected HashMap<ManagedReference<ProximityListenerSrv>, ServerProximityListenerRecord> proximityListenersRef = null;
+    protected final Map<ProximityListenerSrv, ServerProximityListenerRecord> proximityListeners =
+        new LinkedHashMap<ProximityListenerSrv, ServerProximityListenerRecord>();
     private boolean isLive = false;
+    private int nextID = 0;
 
 //    private ManagedReference<UserLeftListener> userListenerRef;
     
@@ -107,20 +109,17 @@ public class ProximityComponentMO extends CellComponentMO {
      * @param localBounds the set of bounds, in the local coordinate system of the cell
      */
     public void addProximityListener(ProximityListenerSrv listener, BoundingVolume[] localBounds) {
+        String id = getNextID();
 
-        ServerProximityListenerRecord rec = new ServerProximityListenerRecord(new ServerProximityListenerWrapper(cellID, listener), localBounds);
         if (listener instanceof ManagedObject) {
-            if (proximityListenersRef==null)
-                proximityListenersRef = new HashMap();
-                proximityListenersRef.put(AppContext.getDataManager().createReference(listener), rec);
-
-        } else {
-            if (proximityListeners==null)
-                proximityListeners = new HashMap();
-                proximityListeners.put(listener, rec);
+            listener = new ManagedProximityListenerWrapper(listener, id);
         }
 
-
+        ServerProximityListenerRecord rec = new ServerProximityListenerRecord(
+                        new ServerProximityListenerWrapper(cellID, listener, id),
+                        localBounds, id);
+        proximityListeners.put(listener, rec);
+       
         UniverseManager mgr = AppContext.getManager(UniverseManager.class);
         CellMO cell = cellRef.get();
         rec.setLive(isLive, cell, mgr);
@@ -131,13 +130,8 @@ public class ProximityComponentMO extends CellComponentMO {
      * @param listener
      */
     public void removeProximityListener(ProximityListenerSrv listener) {
-        ServerProximityListenerRecord rec;
-        if (listener instanceof ManagedObject) {
-            rec = proximityListenersRef.remove(AppContext.getDataManager().createReference(listener));
-        } else {
-            rec = proximityListeners.remove(listener);
-        }
-        if (rec!=null) {
+        ServerProximityListenerRecord rec = proximityListeners.remove(listener);
+        if (rec != null) {
             UniverseManager mgr = AppContext.getManager(UniverseManager.class);
             CellMO cell = cellRef.get();
             rec.setLive(false, cell, mgr);
@@ -154,26 +148,9 @@ public class ProximityComponentMO extends CellComponentMO {
      * @param localBounds The new bounds list.
      */
     public void setProximityListenerBounds(ProximityListenerSrv listener, BoundingVolume[] localBounds) {
-        if(listener instanceof ManagedObject) {
-
-            ManagedReference listenerRef = AppContext.getDataManager().createReference(listener);
-
-            // Check if the specified listener is actually registered.
-            if(this.proximityListenersRef.containsKey(listenerRef)) {
-
-                // If so, update the ListenerRecord with new bounds.
-                ProximityListenerRecord proxListRec = this.proximityListenersRef.get(listenerRef);
-                proxListRec.setProximityBounds(localBounds);
-            }
-
-            // Otherwise, just ignore it.
-        } else {
-            
-            // As above, but with the non referenced store.
-            if(this.proximityListeners.containsKey(listener)) {
-                ProximityListenerRecord proxListRec = this.proximityListeners.get(listener);
-                proxListRec.setProximityBounds(localBounds);
-            }
+        ServerProximityListenerRecord rec = this.proximityListeners.get(listener);
+        if (rec != null) {
+            rec.setProximityBounds(localBounds);
         }
     }
     
@@ -185,44 +162,16 @@ public class ProximityComponentMO extends CellComponentMO {
         if (isLive) {
             UniverseManager mgr = AppContext.getManager(UniverseManager.class);
             CellMO cell = cellRef.get();
-            if (proximityListeners!=null)
-                for(ServerProximityListenerRecord rec : proximityListeners.values()) {
-                    rec.setLive(isLive, cell, mgr);
-                }
-            if (proximityListenersRef!=null)
-                for(ServerProximityListenerRecord rec : proximityListenersRef.values()) {
-                    rec.setLive(isLive, cell, mgr);
-                }
-
-        // Register for user join/leave events, so we can make sure to fire
-        // EXIT events when someone logs out from within a cell.
-
-        // These lines are commented out until we have a fix for Issue 295.
-        // UserLeftListener userListener = new UserLeftListener(this);
-        // WonderlandContext.getUserManager().addUserListener(userListener);
-
-        // this.userListenerRef = AppContext.getDataManager().createReference(userListener);
-
+            for (ServerProximityListenerRecord rec : proximityListeners.values()) {
+                rec.setLive(isLive, cell, mgr);
+            }
         } else {
             UniverseManager mgr = AppContext.getManager(UniverseManager.class);
             CellMO cell = cellRef.get();
-            if (proximityListeners!=null)
-                for(ServerProximityListenerRecord rec : proximityListeners.values()) {
-                    rec.setLive(isLive, cell, mgr);
-                }
-            if (proximityListenersRef!=null)
-                for(ServerProximityListenerRecord rec : proximityListenersRef.values()) {
-                    rec.setLive(isLive, cell, mgr);
-                }
-
-              // See above comments about UserLeftListener related issues. 
-//            if(this.userListenerRef!=null) {
-//                WonderlandContext.getUserManager().removeUserListener(this.userListenerRef.get());
-//                this.userListenerRef = null;
-//            }
-
+             for (ServerProximityListenerRecord rec : proximityListeners.values()) {
+                rec.setLive(isLive, cell, mgr);
+             }
          }
-
     }
 
     @Override
@@ -230,4 +179,44 @@ public class ProximityComponentMO extends CellComponentMO {
         return null;
     }
 
+    public String getNextID() {
+        return cellID + "." + nextID++;
+    }
+
+    static class ManagedProximityListenerWrapper implements ProximityListenerSrv {
+        private static final String BINDING_NAME =
+                ManagedProximityListenerWrapper.class.getName();
+        private String id;
+
+        public ManagedProximityListenerWrapper(ProximityListenerSrv listener, String id) {
+            this.id = id;
+
+            DataManager dm = AppContext.getDataManager();
+            dm.setBinding(BINDING_NAME + id, listener);
+        }
+
+        public void viewEnterExit(boolean entered, CellID cell, CellID viewCellID,
+                                  BoundingVolume proximityVolume, int proximityIndex)
+        {
+            DataManager dm = AppContext.getDataManager();
+            ProximityListenerSrv listener = (ProximityListenerSrv)
+                    dm.getBinding(BINDING_NAME + id);
+            listener.viewEnterExit(entered, cell, viewCellID,
+                                            proximityVolume, proximityIndex);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof ManagedProximityListenerWrapper)) {
+                return false;
+            }
+
+            return id.equals(((ManagedProximityListenerWrapper) o).id);
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
+        }
+    }
 }

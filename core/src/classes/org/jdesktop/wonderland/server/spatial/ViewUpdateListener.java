@@ -27,6 +27,12 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author paulby
  */
 public interface ViewUpdateListener {
+    /**
+     * Notification that a view that is displaying this cell logged in.
+     * @param cellID the cell that is being monitored
+     * @param viewCellID the view that has this cell in its cache
+     */
+    public void viewLoggedIn(CellID cell, CellID viewCellID);
 
     /**
      * This may be called concurrently from multiple threads, so implentations must
@@ -36,4 +42,11 @@ public interface ViewUpdateListener {
      * @param viewWorldTransform
      */
     public void viewTransformChanged(CellID cell, CellID viewCellID, CellTransform viewWorldTransform);
+
+    /**
+     * Notification that a view logged out
+     * @param cell the cell that is being monitored
+     * @param viewCellID the view cell that logged out
+     */
+    public void viewLoggedOut(CellID cell, CellID viewCellID);
 }

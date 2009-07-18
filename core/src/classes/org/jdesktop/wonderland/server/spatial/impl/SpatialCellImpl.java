@@ -26,6 +26,7 @@ import com.sun.sgs.kernel.KernelRunnable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -226,6 +227,13 @@ public class SpatialCellImpl implements SpatialCell {
             return null;
 
         return viewUpdateListeners.iterator();
+    }
+
+    /**
+     * Re-notify each listener of the position of this cell
+     */
+    public void revalidateListeners(Identity identity) {
+        notifyTransformChangeListeners(identity);
     }
 
     /**

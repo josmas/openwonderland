@@ -112,6 +112,9 @@ public class PresenceManagerConnectionHandler implements
     public void messageReceived(WonderlandClientSender sender, 
 	    WonderlandClientID clientID, Message message) {
 
+        // mark ourself for update
+        AppContext.getDataManager().markForUpdate(this);
+
 	if (message instanceof ClientConnectMessage) {
 	    /*
              * Send back all of the PresenceInfo data to the new client
@@ -204,6 +207,9 @@ public class PresenceManagerConnectionHandler implements
 	    logger.fine("PRESENCE:  No PresenceInfo for " + clientID.getID());
 	    return;
 	}
+
+        // mark ourself for update
+        AppContext.getDataManager().markForUpdate(this);
 
 	ManagedReference<PlayerInRangeNotifier> notifierRef = notifiers.remove(clientID.getID());
 
