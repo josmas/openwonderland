@@ -32,6 +32,7 @@ public class ControlArbHUD extends ControlArbAppFocus {
 
     public ControlArbHUD() {
         inputManager = InputManager3D.getInputManager();
+        setReleaseWithAll(false);
     }
 
     /**

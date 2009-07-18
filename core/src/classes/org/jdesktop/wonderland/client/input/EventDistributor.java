@@ -177,17 +177,17 @@ public abstract class EventDistributor implements Runnable {
      * for global listeners are ignored.
      */
     protected void tryGlobalListeners (Event event) {
-        logger.fine("tryGlobalListeners event = " + event);
+        logger.info("tryGlobalListeners event = " + event);
         synchronized (globalEventListeners) {
                 Iterator<EventListener> it = globalEventListeners.iterator();
             while (it.hasNext()) {
 		EventListener listener = it.next();
 		if (listener.isEnabled()) {
-		    logger.fine("Calling consume for listener " + listener);
+		    logger.info("Calling consume for listener " + listener);
 		    Event distribEvent = createEventForGlobalListener(event);
 		    if (listener.consumesEvent(distribEvent)) {
-                        logger.fine("CONSUMED event: " + event);
-                        logger.fine("Consuming listener " + listener);
+                        logger.info("CONSUMED event: " + event);
+                        logger.info("Consuming listener " + listener);
 			listener.postEvent(distribEvent);
 		    }
 		}
@@ -201,10 +201,10 @@ public abstract class EventDistributor implements Runnable {
      * and the OR of propagatesToUnder for all enabled listeners in propState.
      */
     protected void tryListenersForEntity (Entity entity, Event event, PropagationState propState) {
-        logger.fine("tryListenersForEntity, entity = " + entity + ", event = " + event);
+        logger.info("tryListenersForEntity, entity = " + entity + ", event = " + event);
         EventListenerCollection listeners = (EventListenerCollection) entity.getComponent(EventListenerCollection.class);
         if (listeners == null || listeners.size() <= 0) {
-            logger.fine("Entity has no listeners");
+            logger.info("Entity has no listeners");
             // propagatesToParent is true, so OR makes no change to its accumulator
             // propagatesToUnder is false, so OR makes its accumulator is false
             propState.toUnder = false;
@@ -213,12 +213,12 @@ public abstract class EventDistributor implements Runnable {
             while (it.hasNext()) {
             EventListener listener = it.next();
             if (listener.isEnabled()) {
-                logger.fine("Calling consume for listener " + listener);
+                logger.info("Calling consume for listener " + listener);
                 Event distribEvent = createEventForEntity(event, entity);
                 if (listener.consumesEvent(distribEvent)) {
-                    logger.fine("CONSUMED event: " + event);
-                    logger.fine("Consuming entity " + entity);
-                    logger.fine("Consuming listener " + listener);
+                    logger.info("CONSUMED event: " + event);
+                    logger.info("Consuming entity " + entity);
+                    logger.info("Consuming listener " + listener);
 		    listener.postEvent(distribEvent);
                 }
                 propState.toParent |= listener.propagatesToParent(distribEvent);
