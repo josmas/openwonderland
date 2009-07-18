@@ -69,6 +69,6 @@ public interface Universe {
 
     public void viewRevalidate(CellID viewCellId);
 
-    public void viewLogout(CellID viewCellId);
+    public void viewLogout(CellID viewCellId, Identity identity);
 
 }

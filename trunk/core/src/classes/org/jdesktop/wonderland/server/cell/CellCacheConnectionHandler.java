@@ -17,6 +17,11 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.DataManager;
+import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.Task;
+import com.sun.sgs.app.TaskManager;
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import java.io.Serializable;
 import java.util.Properties;
@@ -74,11 +79,31 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
             logger.severe("clientDetached has null avatar for session");
             return;
         }
-
+        
         avatar.detach();    // Detach avatar from world
-        avatar.getCellCache().logout(clientID);
+
+        ViewCellCacheMO acc = avatar.getCellCache();
+
+        TaskManager tm = AppContext.getTaskManager();
+        tm.scheduleTask(new LogoutTask(acc, clientID));
     }
-    
+
+    private static final class LogoutTask implements Task, Serializable {
+        private ManagedReference<ViewCellCacheMO> cacheRef;
+        private WonderlandClientID clientID;
+
+        public LogoutTask(ViewCellCacheMO cache, WonderlandClientID clientID) {
+            this.clientID = clientID;
+
+            DataManager dm = AppContext.getDataManager();
+            cacheRef = dm.createReference(cache);
+        }
+
+        public void run() throws Exception {
+            cacheRef.getForUpdate().logout(clientID);
+        }
+    }
+
     public void messageReceived(WonderlandClientSender sender,
                                 WonderlandClientID clientID,
                                 Message message)
@@ -126,7 +151,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
         AvatarCellMO avatar = user.getAvatar(clientID, msg.getViewID());
         if (avatar == null) {
             user.getReference().getForUpdate(); // Mark for update
-            avatar = new AvatarCellMO(user);
+            avatar = new AvatarCellMO(user, clientID);
             viewID = msg.getViewID();
             user.putAvatar(clientID, viewID, avatar);
         }

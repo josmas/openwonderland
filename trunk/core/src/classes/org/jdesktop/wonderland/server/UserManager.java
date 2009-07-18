@@ -22,10 +22,14 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
+import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
@@ -39,10 +43,11 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ExperimentalAPI
 public class UserManager implements ManagedObject, Serializable {
     
-    private HashMap<WonderlandClientID, ManagedReference<UserMO>> clientToUser =
+    private final Map<WonderlandClientID, ManagedReference<UserMO>> clientToUser =
 	    new HashMap<WonderlandClientID, ManagedReference<UserMO>>();
 
-    private HashSet<ManagedReference<UserListener>> userListeners = new HashSet();
+    private final Set<ManagedReference<UserListener>> userListeners =
+            new LinkedHashSet();
     
     /**
      * Name used in binding this object in DataManager
@@ -50,6 +55,10 @@ public class UserManager implements ManagedObject, Serializable {
     private static final String BINDING_NAME="USER_MANAGER";
 
     private int userLimit = Integer.MAX_VALUE;
+
+    enum NotificationType {
+        LOGIN, LOGOUT
+    }
 
     /**
      * Creates a new instance of UserManager
@@ -138,7 +147,8 @@ public class UserManager implements ManagedObject, Serializable {
      */
     public void login(WonderlandClientID clientID) {
         DataManager dm = AppContext.getDataManager();
-        
+        dm.markForUpdate(this);
+
         // find the user object from the database, create it if necessary
         UserMO user = getUserMO(clientID.getSession().getName());
         if (user==null) {
@@ -150,7 +160,14 @@ public class UserManager implements ManagedObject, Serializable {
         
         // add this session to our map
         clientToUser.put(clientID, user.getReference());
-        notifyUserListenersLogin(clientID);
+
+        // notify listeners for just this user
+        notifyUserListeners(user.getUserListeners(), clientID,
+                            dm.createReference(user), NotificationType.LOGIN);
+
+        // notify listeners for all users
+        notifyUserListeners(userListeners, clientID, dm.createReference(user),
+                            NotificationType.LOGIN);
     }
     
     /**
@@ -164,28 +181,42 @@ public class UserManager implements ManagedObject, Serializable {
         if (user != null) {
             user.logout(clientID);
         }
-        
+
+        DataManager dm = AppContext.getDataManager();
+        dm.markForUpdate(this);
         clientToUser.remove(clientID);
-        notifyUserListenersLogout(clientID);
+
+        // notify listeners for just this user
+        notifyUserListeners(user.getUserListeners(), clientID,
+                            dm.createReference(user), NotificationType.LOGOUT);
+
+        // notify listeners for all users
+        notifyUserListeners(userListeners, clientID, dm.createReference(user),
+                            NotificationType.LOGOUT);
     }
 
     /**
-     * Notify listeners that client is logging out
-     * @param clientID
+     * Notify listeners that of a change to a user's status.  Notifications will
+     * each be done in separate tasks.
+     * @param listeners the set of listeners to update
+     * @param clientID the ID of the client that changed
+     * @param userRef a reference to the user object that changed
+     * @param type the type of change
      */
-    private void notifyUserListenersLogout(WonderlandClientID clientID) {
-        for(ManagedReference<UserListener> listener : userListeners) {
-            AppContext.getTaskManager().scheduleTask(new UserListenerNotifier(listener, clientID, UserListenerNotifier.LOGOUT));
-        }
-    }
-
-    /**
-     * Notify listeners that a client is logging in.
-     * @param clientID
-     */
-    private void notifyUserListenersLogin(WonderlandClientID clientID) {
-        for(ManagedReference<UserListener> listener : userListeners) {
-            AppContext.getTaskManager().scheduleTask(new UserListenerNotifier(listener, clientID, UserListenerNotifier.LOGIN));
+    static void notifyUserListeners(Set<ManagedReference<UserListener>> listeners,
+                                    WonderlandClientID clientID,
+                                    ManagedReference<UserMO> userRef,
+                                    NotificationType type)
+    {
+        for (ManagedReference<UserListener> listener : listeners) {
+            switch (type) {
+                case LOGIN:
+                    listener.get().userLoggedIn(clientID, userRef);
+                    break;
+                case LOGOUT:
+                    listener.get().userLoggedOut(clientID, userRef);
+                    break;
+            }
         }
     }
 
@@ -228,20 +259,55 @@ public class UserManager implements ManagedObject, Serializable {
     }
 
     /**
-     * Add a listener to the set of listeners which are notified when a user
-     * logs out
-     * @param listener
+     * Add a listener to the set of listeners which are notified when any user
+     * logs out.  In most cases, you should use add a listener to a specific
+     * UserMO instead.
+     * @param listener the listener to remove
      */
     public void addUserListener(UserListener listener) {
+        AppContext.getDataManager().markForUpdate(this);
         userListeners.add(AppContext.getDataManager().createReference(listener));
     }
 
     /**
-     * Removed a UserListener listener
-     * 
-     * @param listener
+     * Removed a user listener that is listening to all users.
+     * @param listener the listener to remove
      */
     public void removeUserListener(UserListener listener) {
+        AppContext.getDataManager().markForUpdate(this);
         userListeners.remove(AppContext.getDataManager().createReference(listener));
+    }
+
+    /**
+     * A task to notify listeners when a user logs in or out
+     */
+    static class UserListenerNotifier implements Task, Serializable {
+        private ManagedReference<UserListener> listenerRef;
+        private ManagedReference<UserMO> userRef;
+        private WonderlandClientID clientID;
+        private NotificationType notificationType;
+
+
+        public UserListenerNotifier(ManagedReference<UserListener> listenerRef,
+                                    ManagedReference<UserMO> userRef,
+                                    WonderlandClientID clientID,
+                                    NotificationType notificationType)
+        {
+            this.listenerRef = listenerRef;
+            this.userRef = userRef;
+            this.clientID = clientID;
+            this.notificationType = notificationType;
+        }
+
+        public void run() throws Exception {
+            switch (notificationType) {
+                case LOGIN:
+                    listenerRef.get().userLoggedIn(clientID, userRef);
+                    break;
+                case LOGOUT:
+                    listenerRef.get().userLoggedOut(clientID, userRef);
+                    break;
+            }
+        }
     }
 }

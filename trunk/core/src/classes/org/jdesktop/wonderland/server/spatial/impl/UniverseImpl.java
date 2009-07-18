@@ -21,12 +21,16 @@ import com.sun.sgs.auth.Identity;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.kernel.TaskQueue;
-import com.sun.sgs.kernel.TaskScheduler;
 import com.sun.sgs.kernel.TransactionScheduler;
 import com.sun.sgs.service.DataService;
 import com.sun.sgs.service.TransactionProxy;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -50,6 +54,10 @@ public class UniverseImpl implements Universe {
     private static final Logger logger = Logger.getLogger(UniverseImpl.class.getName());
     private final HashMap<Object, TaskQueue> taskQueues = new HashMap();
 
+    // keep track of all update listeners so we can send logout messages
+    // properly even if the cell cache doesn't exist
+    private final Map<ViewUpdateListener, Set<CellID>> updateListeners =
+            new HashMap<ViewUpdateListener, Set<CellID>>();
 
     public UniverseImpl(ComponentRegistry componentRegistry, TransactionProxy transactionProxy) {
         this.transactionProxy = transactionProxy;
@@ -207,7 +215,7 @@ public class UniverseImpl implements Universe {
         }
     }
 
-    public void viewLogout(CellID viewCellID) {
+    public void viewLogout(CellID viewCellID, Identity identity) {
         logger.fine("ViewLogout viewCell="+viewCellID);
         ViewCellImpl viewCell;
         synchronized(cells) {
@@ -220,6 +228,13 @@ public class UniverseImpl implements Universe {
         // fine, just ignore the request.
         if (viewCell != null && viewCell.getViewCache() != null) {
             viewCell.getViewCache().logout();
+        } else {
+            // if the view or cache doesn't exist for any reason, we still
+            // need to notify listeners that the view logged out (for
+            // example in a warm start).  Notify all listeners since we
+            // can't limit it to only listeners in a particular cell's
+            // cache.
+            notifyLogout(viewCellID, identity);
         }
     }
 
@@ -240,6 +255,16 @@ public class UniverseImpl implements Universe {
     }
 
     public void addViewUpdateListener(CellID cellID, ViewUpdateListener viewUpdateListener) {
+        // keep a list of cells for each update listener
+        synchronized (updateListeners) {
+            Set<CellID> cellIDs = updateListeners.get(viewUpdateListener);
+            if (cellIDs == null) {
+                cellIDs = new LinkedHashSet<CellID>();
+                updateListeners.put(viewUpdateListener, cellIDs);
+            }
+            cellIDs.add(cellID);
+        }
+
         synchronized(cells) {
             SpatialCell cell = cells.get(cellID);
             if (cell!=null)
@@ -248,6 +273,20 @@ public class UniverseImpl implements Universe {
     }
 
     public void removeViewUpdateListener(CellID cellID, ViewUpdateListener viewUpdateListener) {
+        // update list of cells for this listener
+        synchronized (updateListeners) {
+            Set<CellID> cellIDs = updateListeners.get(viewUpdateListener);
+            if (cellIDs == null) {
+                return;
+            }
+            
+            cellIDs.remove(cellID);
+            
+            if (cellIDs.isEmpty()) {
+                updateListeners.remove(viewUpdateListener);
+            }
+        }
+
         synchronized(cells) {
             SpatialCell cell = cells.get(cellID);
             if (cell!=null)
@@ -255,6 +294,42 @@ public class UniverseImpl implements Universe {
         }
     }
 
+    private void notifyLogout(final CellID viewCellID,
+                              final Identity identity)
+    {
+        // collect all listeners and cells to notify
+        List<ListenerNotification> notifications =
+                new LinkedList<ListenerNotification>();
+        synchronized (updateListeners) {
+            for (Map.Entry<ViewUpdateListener, Set<CellID>> e :
+                 updateListeners.entrySet())
+            {
+                for (CellID cellID : e.getValue()) {
+                    ListenerNotification ln = new ListenerNotification();
+                    ln.listener = e.getKey();
+                    ln.cellID = cellID;
 
+                    notifications.add(ln);
+                }
+            }
+        }
 
+        // notify each listener in a separate task
+        for (final ListenerNotification ln : notifications) {
+            scheduleTransaction(new KernelRunnable() {
+                public String getBaseTaskType() {
+                    return UniverseImpl.class.getName() + ".LogoutNotifier";
+                }
+
+                public void run() throws Exception {
+                    ln.listener.viewLoggedOut(ln.cellID, viewCellID);
+                }
+            }, identity);
+        }
+    }
+
+    private class ListenerNotification {
+        ViewUpdateListener listener;
+        CellID cellID;
+    }
 }

@@ -54,7 +54,10 @@ public class UserMO implements ManagedObject, Serializable {
     private Set<WonderlandClientID> activeClients = null;
     private Map<String, Serializable> extendedData = null;
     private Map<WonderlandClientID, Map<String, ManagedReference<AvatarCellMO>>> avatars = new HashMap();
-    
+
+    private final Set<ManagedReference<UserListener>> userListeners =
+            new LinkedHashSet<ManagedReference<UserListener>>();
+
     protected static Logger logger = Logger.getLogger(UserMO.class.getName());
 
     /**
@@ -92,6 +95,8 @@ public class UserMO implements ManagedObject, Serializable {
         if (extendedData==null) {
             extendedData = new HashMap();
         }
+
+        AppContext.getDataManager().markForUpdate(this);
         extendedData.put(name, object);
     }
     
@@ -154,6 +159,8 @@ public class UserMO implements ManagedObject, Serializable {
         Map<String, ManagedReference<AvatarCellMO>> clientAvatars = avatars.get(clientID);
         if (clientAvatars==null) {
             clientAvatars = new HashMap();
+
+            dm.markForUpdate(this);
             avatars.put(clientID, clientAvatars);
         }
         clientAvatars.put(avatarName, dm.createReference(avatar));
@@ -166,7 +173,8 @@ public class UserMO implements ManagedObject, Serializable {
      */
     void login(WonderlandClientID clientID) {
         DataManager dm = AppContext.getDataManager();
-                
+        dm.markForUpdate(this);
+
         if (activeClients==null) {
             activeClients = new HashSet<WonderlandClientID>();
         }
@@ -182,17 +190,47 @@ public class UserMO implements ManagedObject, Serializable {
      * @param protocol
      */
     void logout(WonderlandClientID clientID) {
+        AppContext.getDataManager().markForUpdate(this);
         activeClients.remove(clientID);
     }
-    
+
     /**
      * Return true if this user is logged in, false otherwise
      * @return
      */
     boolean isLoggedIn() {
-        return activeClients.size()>0;
+        return activeClients.size() > 0;
     }
     
+    /**
+     * Add a listener to be notified when clients of this user log in or out.
+     * @param listener the listener to notify on log in or log out.  Listener
+     * must implement ManagedObject.
+     */
+    public void addUserListener(UserListener listener) {
+        DataManager dm = AppContext.getDataManager();
+        dm.markForUpdate(this);
+        userListeners.add(dm.createReference(listener));
+    }
+
+    /**
+     * Remove a user listener from this user
+     * @param listener the listener to remove
+     */
+    public void removeUserListener(UserListener listener) {
+        DataManager dm = AppContext.getDataManager();
+        dm.markForUpdate(this);
+        userListeners.remove(dm.createReference(listener));
+    }
+
+    /**
+     * Get user listeners
+     * @return the user listeners
+     */
+    Set<ManagedReference<UserListener>> getUserListeners() {
+        return userListeners;
+    }
+
     /**
      * Convenience method that returns the ManagedReference to this ManagedObject
      * @return
@@ -202,11 +240,6 @@ public class UserMO implements ManagedObject, Serializable {
     }
     
     /**
-     * Get the user secutiry context associated with this user, or null
-     * if there is no security context
-     * @return
+     * A task that will be executed when this user logs out.
      */
-    public UserSecurityContextMO getUserSecurityContext() {
-        return null;
-    }
 }

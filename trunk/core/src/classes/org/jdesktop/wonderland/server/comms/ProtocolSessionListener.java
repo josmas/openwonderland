@@ -74,7 +74,7 @@ public class ProtocolSessionListener
     
     /** the wrapped session, or null if no wrapped session exists yet */
     private ClientSessionListener wrapped;
-    
+
     /**
      * Create a new instance of WonderlandSessionListener for the given
      * session
@@ -183,7 +183,7 @@ public class ProtocolSessionListener
         if (protocol != null) {
             recordDisconnect(protocol, getSession());
         }
-        
+
         // XXX acording to the Darkstar docs, this is our responsibility,
         // but it throws an exception if we remove the session here.  Hopefully
         // Darkstar cleans this up for us
