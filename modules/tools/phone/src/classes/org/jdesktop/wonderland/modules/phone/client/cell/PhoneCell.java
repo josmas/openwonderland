@@ -113,7 +113,7 @@ public class PhoneCell extends Cell {
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
             try {
-                return new PhoneCellRenderer(this, AssetUtils.getAssetURL("wla://microphone/models/Microphone.dae"));
+                return new PhoneCellRenderer(this, AssetUtils.getAssetURL("wla://phone/conference_phone.dae"));
             } catch (MalformedURLException ex) {
                 Logger.getLogger(PhoneCell.class.getName()).log(Level.SEVERE, null, ex);
             }
