@@ -507,14 +507,47 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
 	if (message instanceof VoiceChatJoinRequestMessage) {
-            new IncomingCallDialog(this, session, cell.getCellID(), (VoiceChatJoinRequestMessage) message);
+            IncomingCallHUDPanel incomingCallHUDPanel = new IncomingCallHUDPanel(this, 
+		session, cell.getCellID(), (VoiceChatJoinRequestMessage) message);
+
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+            HUDComponent incomingCallHUDComponent = mainHUD.createComponent(incomingCallHUDPanel);
+	    incomingCallHUDPanel.setHUDComponent(incomingCallHUDComponent);
+            incomingCallHUDComponent.setPreferredLocation(Layout.CENTER);
+
+            mainHUD.addComponent(incomingCallHUDComponent);
+            incomingCallHUDComponent.addComponentListener(new HUDComponentListener() {
+
+                public void HUDComponentChanged(HUDComponentEvent e) {
+                    if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                    }
+                }
+            });
+
+	    incomingCallHUDComponent.setVisible(true);
 	    return;
 	}
 
         if (message instanceof VoiceChatBusyMessage) {
             VoiceChatBusyMessage msg = (VoiceChatBusyMessage) message;
 
-            new VoiceChatBusyDialog(msg.getGroup(), msg.getCallee());
+            VoiceChatBusyHUDPanel voiceChatBusyHUDPanel = new VoiceChatBusyHUDPanel(msg.getCallee());
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+            HUDComponent voiceChatBusyHUDComponent = mainHUD.createComponent(voiceChatBusyHUDPanel);
+	    voiceChatBusyHUDPanel.setHUDComponent(voiceChatBusyHUDComponent);
+            voiceChatBusyHUDComponent.setPreferredLocation(Layout.CENTER);
+
+            mainHUD.addComponent(voiceChatBusyHUDComponent);
+            voiceChatBusyHUDComponent.addComponentListener(new HUDComponentListener() {
+
+                public void HUDComponentChanged(HUDComponentEvent e) {
+                    if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                    }
+                }
+            });
+
+	    voiceChatBusyHUDComponent.setVisible(true);
+
             notifyMemberChangeListeners(msg.getGroup(), msg.getCallee(), false);
 	    return;
 	}
