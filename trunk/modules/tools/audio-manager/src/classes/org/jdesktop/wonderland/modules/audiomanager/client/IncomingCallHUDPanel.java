@@ -208,13 +208,13 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_publicRadioButtonActionPerformed
 
     private void ignoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreButtonActionPerformed
-        inCallHUDComponent.setVisible(true);
+        incomingCallHUDComponent.setVisible(false);
     }//GEN-LAST:event_ignoreButtonActionPerformed
 
     private void BusyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BusyButtonActionPerformed
         session.send(client, new VoiceChatBusyMessage(group, caller, myPresenceInfo, chatType));
 
-        inCallHUDComponent.setVisible(true);
+        incomingCallHUDComponent.setVisible(false);
     }//GEN-LAST:event_BusyButtonActionPerformed
 
     private HUDComponent inCallHUDComponent;
@@ -247,6 +247,8 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
         inCallHUDComponent.setVisible(true);
 
         session.send(client, new VoiceChatJoinAcceptedMessage(group, myPresenceInfo, chatType));
+
+        incomingCallHUDComponent.setVisible(false);
     }//GEN-LAST:event_AnswerButtonActionPerformed
     
     
