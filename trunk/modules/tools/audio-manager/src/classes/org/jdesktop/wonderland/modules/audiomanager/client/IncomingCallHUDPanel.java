@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 public class IncomingCallHUDPanel extends javax.swing.JPanel {
     
     private static final Logger logger =
-            Logger.getLogger(IncomingCallDialog.class.getName());
+            Logger.getLogger(IncomingCallHUDPanel.class.getName());
     private ChatType chatType = ChatType.PRIVATE;
     private AudioManagerClient client;
     private WonderlandSession session;
