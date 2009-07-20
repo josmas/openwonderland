@@ -21,7 +21,7 @@ import java.net.URL;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- * A message indicating that the avatar model has been updated
+ * A message indicating that the avatar model has been updated.
  *
  * @author paulby
  */
@@ -30,7 +30,9 @@ public class AvatarConfigMessage extends CellMessage {
     public enum ActionType { REQUEST, APPLY };
     private ActionType actionType;
 
-    private String modelConfigURL;
+    // The URL of the configuration file on the server that describes the
+    // avatar. If null, use the "default" avatar.
+    private String modelConfigURL = null;
 
     AvatarConfigMessage(ActionType actionType, String modelConfigURL) {
         this.modelConfigURL = modelConfigURL;
@@ -54,7 +56,8 @@ public class AvatarConfigMessage extends CellMessage {
         return new AvatarConfigMessage(ActionType.APPLY, requestMessage.getModelConfigURL());
     }
 
-    public static AvatarConfigMessage newRequestMessage(URL modelConfigURL) {
-        return new AvatarConfigMessage(ActionType.REQUEST, modelConfigURL.toExternalForm());
+    public static AvatarConfigMessage newRequestMessage(URL newURL) {
+        String url = (newURL != null) ? newURL.toExternalForm() : null;
+        return new AvatarConfigMessage(ActionType.REQUEST, url);
     }
 }

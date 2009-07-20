@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 import com.jme.bounding.BoundingSphere;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
@@ -52,6 +51,7 @@ import imi.scene.PTransform;
 import imi.scene.polygonmodel.PPolygonMesh;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.List;
 import javolution.util.FastList;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
@@ -59,6 +59,8 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.ProcessorCollectionComponent;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -70,6 +72,7 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
@@ -82,9 +85,10 @@ import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigCompon
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
 
 /**
- * Renderer for Avatars, using the new avatar system
+ * Cell renderer for Avatars, using the IMI avatar system.
  * 
  * @author paulby
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 @ExperimentalAPI
 public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
@@ -114,8 +118,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private CollisionController collisionController = null;
     private CollisionChangeRequestListener collisionChangeRequestListener;
     /** Collection of listeners **/
-    private final FastList<WeakReference<AvatarChangedListener>> avatarChangedListeners
-            = new FastList<WeakReference<AvatarChangedListener>>();
+    private final List<WeakReference<AvatarChangedListener>> avatarChangedListeners
+            = new FastList();
 
     public AvatarImiJME(Cell cell) {
         super(cell);
@@ -123,21 +127,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         final Cell c = cell;
 
         // Listen for avatar configuration changes.
-        cell.getComponent(AvatarConfigComponent.class).addAvatarConfigChageListener(new AvatarConfigChangeListener() {
-            public void AvatarConfigChanged(AvatarConfigMessage msg) {
-                URL configURL=null;
-                try {
-                    configURL = new URL(msg.getModelConfigURL());
-                    logger.info("Config " + configURL + "  user="+username+"  "+selectedForInput);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, null, ex);
-                    return;
-                }
+        AvatarConfigComponent comp = cell.getComponent(AvatarConfigComponent.class);
+        comp.addAvatarConfigChangeListener(new AvatarChangeListener());
 
-                changeAvatar(loadAvatar(configURL));
-            }
-        });
-
+        // XXX NPC HACK XXX
         if (cell instanceof AvatarCell)
             username = ((AvatarCell) cell).getIdentity().getUsername();
         else
@@ -214,6 +207,23 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     /**
+     * Returns the avatar renderer for the primary view cell, or null if none
+     * exists.
+     *
+     * @return An instance of this class that is the avatar cell renderer
+     */
+    public static AvatarImiJME getPrimaryAvatarRenderer() {
+        // Fetch the primary view cell, make sure it is an avatar and then get
+        // its cell renderer.
+        ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
+        if (cell instanceof AvatarCell) {
+            AvatarCell avatarCell = (AvatarCell) cell;
+            return (AvatarImiJME) avatarCell.getCellRenderer(ClientContext.getRendererType());
+        }
+        return null;
+    }
+
+    /**
      * @param status
      */
     @Override
@@ -268,9 +278,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Entity createEntity() {
-        assert(rootEntity==null);
+        assert (rootEntity == null);
         rootEntity = new Entity("AvatarRoot");
         return rootEntity;
     }
@@ -292,11 +305,25 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     /**
+     * Changes the avatar to the given avatar on the MT Game Render Thread
+     */
+    public void changeAvatar(final WlAvatarCharacter avatar) {
+        RenderUpdater updater = new RenderUpdater() {
+            public void update(Object arg0) {
+                changeAvatarInternal(avatar);
+            }
+        };
+        WorldManager wm = ClientContextJME.getWorldManager();
+        wm.addRenderUpdater(updater, null);
+    }
+
+    /**
      * Change the current avatar to the newAvatar
-     * 
+     * XXX Does this need to happen in a render thread? XXX
      * @param newAvatar
      */
-    void changeAvatar(WlAvatarCharacter newAvatar) {
+    private void changeAvatarInternal(WlAvatarCharacter newAvatar) {
+        
         synchronized(this) {
             WorldManager wm = ClientContextJME.getWorldManager();
 
@@ -340,6 +367,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             rootEntity.addEntity(avatarCharacter);
 
             selectForInput(selectedForInput);
+            
             // Notify listeners
             for (WeakReference<AvatarChangedListener> listenerRef : avatarChangedListeners) {
                 AvatarChangedListener listener = listenerRef.get();
@@ -347,6 +375,18 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     listener.avatarChanged(avatarCharacter);
                 else
                     avatarChangedListeners.remove(listenerRef);
+            }
+            // update the bounds if necessary
+            if (avatarCharacter.getJScene() != null) {
+                // Some of these ops must be done on the render thread
+                ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+                    public void update(Object arg0) {
+                        avatarCharacter.getPScene().submitTransformsAndGeometry(); // Make sure the geometry is attached to the jscene
+                        avatarCharacter.getJScene().setModelBound(new BoundingSphere()); // No more null bounding volumes
+                        avatarCharacter.getJScene().updateModelBound();
+                        avatarCharacter.getJScene().updateWorldBound();
+                    }
+                }, null);
             }
             LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
         }
@@ -393,121 +433,130 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
      */
     protected WlAvatarCharacter loadAvatar(URL avatarConfigURL) {
         WlAvatarCharacter ret=null;
-            WorldManager wm = ClientContextJME.getWorldManager();
-            PMatrix origin = new PMatrix();
-            CellTransform transform = cell.getLocalTransform();
-            origin.setTranslation(transform.getTranslation(null));
-            origin.setRotation(transform.getRotation(null));
+        WorldManager wm = ClientContextJME.getWorldManager();
+        PMatrix origin = new PMatrix();
+        CellTransform transform = cell.getLocalTransform();
+        origin.setTranslation(transform.getTranslation(null));
+        origin.setRotation(transform.getRotation(null));
 
-            // Set the base URL
-            WonderlandSession session = cell.getCellCache().getSession();
-            ServerSessionManager manager = session.getSessionManager();
-            String serverHostAndPort = manager.getServerNameAndPort();
-            String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
+        // Set the base URL
+        WonderlandSession session = cell.getCellCache().getSession();
+        ServerSessionManager manager = session.getSessionManager();
+        String serverHostAndPort = manager.getServerNameAndPort();
+        String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
 
-            Spatial collisionGraph = null;
+        Spatial collisionGraph = null;
 
-            logger.info("[AvatarImiJme] AVATAR CONFIG URL "+avatarConfigURL);
+        logger.warning("[AvatarImiJme] AVATAR CONFIG URL " + avatarConfigURL);
 
-            LoadingInfo.startedLoading(cell.getCellID(), username);
-            try {
-                // Create the character
-                String avatarDetail = System.getProperty("avatar.detail", "high");
-                if (avatarConfigURL == null || avatarDetail.equalsIgnoreCase("low")) {
-                    CharacterParams attributes = new MaleAvatarParams(username);
+        LoadingInfo.startedLoading(cell.getCellID(), username);
+        try {
+            // Create the character
+            String avatarDetail = System.getProperty("avatar.detail", "high");
 
-                    // Setup simple model, needs to actually have something to
-                    // play well with the system
-                    PScene simpleScene = new PScene(ClientContextJME.getWorldManager());
-                    simpleScene.addMeshInstance(new PPolygonMesh("PlaceholderMesh"), new PMatrix());
-                    attributes.setUseSimpleStaticModel(true, simpleScene);
-                    attributes.setBaseURL(baseURL);
-                    // don't add the entity to wm
-                    ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
+            // Check to see if the system supports OpenGL 2.0. If not, then
+            // always use the low-detail avatar character
+            RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+            if (rm.supportsOpenGL20() == false) {
+                avatarDetail = "low";
+            }
+
+            if (avatarConfigURL == null || avatarDetail.equalsIgnoreCase("low")) {
+                CharacterParams attributes = new MaleAvatarParams(username);
+
+                // Setup simple model, needs to actually have something to
+                // play well with the system
+                PScene simpleScene = new PScene(ClientContextJME.getWorldManager());
+                simpleScene.addMeshInstance(new PPolygonMesh("PlaceholderMesh"), new PMatrix());
+                attributes.setUseSimpleStaticModel(true, simpleScene);
+                attributes.setBaseURL(baseURL);
+                // don't add the entity to wm
+                ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
 
 //                    Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(new URL(baseURL+"assets/models/collada/Avatars/placeholder.bin"));
 
-                    URL url = new URL(baseURL+"assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
-                    ResourceLocator resourceLocator = new RelativeResourceLocator(url);
+                URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
+                ResourceLocator resourceLocator = new RelativeResourceLocator(url);
 
-                    ResourceLocatorTool.addThreadResourceLocator(
-                            ResourceLocatorTool.TYPE_TEXTURE,
-                            resourceLocator);
-                    Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
-                    ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
+                ResourceLocatorTool.addThreadResourceLocator(
+                        ResourceLocatorTool.TYPE_TEXTURE,
+                        resourceLocator);
+                Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
+                ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
 //                    placeHolder = new Box("AvatarTest", new Vector3f(0f,0.92f,0f), 0.4f, 0.9f, 0.3f);
-                    collisionGraph = new Box("AvatarCollision", new Vector3f(0f,0.92f,0f), 0.4f, 0.6f, 0.3f);
+                collisionGraph = new Box("AvatarCollision", new Vector3f(0f, 0.92f, 0f), 0.4f, 0.6f, 0.3f);
 
-                    ret.getJScene().getExternalKidsRoot().attachChild(placeHolder);
-                } else {
-                    ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(avatarConfigURL, wm)
-                                .baseURL("wla://avatarbaseart@" + serverHostAndPort + "/")
-                                .build();
-                    collisionGraph = new Box("AvatarCollision", new Vector3f(0f,0.92f,0f), 0.4f, 0.6f, 0.3f);
-                }
+                ret.getJScene().getExternalKidsRoot().attachChild(placeHolder);
+            } else {
+                ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(avatarConfigURL, wm).baseURL("wla://avatarbaseart@" + serverHostAndPort + "/").addEntity(false).build();
+                collisionGraph = new Box("AvatarCollision", new Vector3f(0f, 0.92f, 0f), 0.4f, 0.6f, 0.3f);
+            }
 
-                ret.getModelInst().getTransform().getLocalMatrix(true).set(origin);
+            ret.getModelInst().getTransform().getLocalMatrix(true).set(origin);
 
-                // TODO - remove hardcoded npc support
-                if (username.equals("npc") && avatarConfigURL!=null) {
-                    String u = avatarConfigURL.getFile();
-                    username=u.substring(u.lastIndexOf('/')+1, u.lastIndexOf('.'));
-                }
+            // TODO - remove hardcoded npc support
+            if (username.equals("npc") && avatarConfigURL != null) {
+                String u = avatarConfigURL.getFile();
+                username = u.substring(u.lastIndexOf('/') + 1, u.lastIndexOf('.'));
+            }
 
+            Node external = ret.getJScene().getExternalKidsRoot();
+            ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.ZBuffer);
+            zbuf.setEnabled(true);
+            zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+            external.setRenderState(zbuf);
 
-                Node external = ret.getJScene().getExternalKidsRoot();
-                ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.ZBuffer);
-                zbuf.setEnabled(true);
-                zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-                external.setRenderState(zbuf);
+            NameTagComponent nameTagComp = cell.getComponent(NameTagComponent.class);
+            if (nameTagComp == null) {
+                nameTagComp = new NameTagComponent(cell, username, 2);
+                cell.addComponent(nameTagComp);
 
-                NameTagComponent nameTagComp = cell.getComponent(NameTagComponent.class);
-                if (nameTagComp==null) {
-                    nameTagComp = new NameTagComponent(cell, username, 2);
-                    cell.addComponent(nameTagComp);
-                }
                 nameTag = nameTagComp.getNameTagNode();
                 external.attachChild(nameTag);
                 external.setModelBound(new BoundingSphere());
                 external.updateModelBound();
                 external.updateGeometricState(0, true);
-
-                collisionGraph.setModelBound(new BoundingSphere());
-                collisionGraph.updateModelBound();
-
-                // JSCENE HAS NOT CHILDREN, so this does nothing
-                ret.getJScene().updateGeometricState(0, true);
-
-                System.err.println("JSCENE CREATED "+ret.getJScene().getWorldBound());
-                GraphicsUtils.printGraphBounds(ret.getJScene());
-
-        //        JScene jscene = avatar.getJScene();
-        //        jscene.renderToggle();      // both renderers
-        //        jscene.renderToggle();      // jme renderer only
-        //        jscene.setRenderPRendererMesh(true);  // Force pRenderer to be instantiated
-        //        jscene.toggleRenderPRendererMesh();   // turn off mesh
-        //        jscene.toggleRenderBoundingVolume();  // turn off bounds
-
-                // Moved to within try / catch, as catching an exception forces these
-                // lines to fail. RED 6-6-9
-                CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Default");
-
-                collisionController = new CollisionController(collisionGraph, (JMECollisionSystem)collisionSystem);
-                collisionChangeRequestListener.setCollisionController(collisionController);
-                ((AvatarController)ret.getContext().getController()).setCollisionController(collisionController);
-
-            } catch(Exception e) {
-                String badURL=null;
-                if (avatarConfigURL!=null)
-                    badURL = avatarConfigURL.toExternalForm();
-                Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, "Error loading avatar "+badURL, e);
-            } finally {
-                LoadingInfo.finishedLoading(cell.getCellID(), username);
             }
-            return ret;
+            
+            collisionGraph.setModelBound(new BoundingSphere());
+            collisionGraph.updateModelBound();
+
+            // JSCENE HAS NOT CHILDREN, so this does nothing
+            ret.getJScene().updateGeometricState(0, true);
+            GraphicsUtils.printGraphBounds(ret.getJScene());
+
+            //        JScene jscene = avatar.getJScene();
+            //        jscene.renderToggle();      // both renderers
+            //        jscene.renderToggle();      // jme renderer only
+            //        jscene.setRenderPRendererMesh(true);  // Force pRenderer to be instantiated
+            //        jscene.toggleRenderPRendererMesh();   // turn off mesh
+            //        jscene.toggleRenderBoundingVolume();  // turn off bounds
+
+            // Moved to within try / catch, as catching an exception forces these
+            // lines to fail. RED 6-6-9
+            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Default");
+
+            collisionController = new CollisionController(collisionGraph, (JMECollisionSystem) collisionSystem);
+            collisionChangeRequestListener.setCollisionController(collisionController);
+            ((AvatarController) ret.getContext().getController()).setCollisionController(collisionController);
+
+        } catch (Exception e) {
+            String badURL = null;
+            if (avatarConfigURL != null) {
+                badURL = avatarConfigURL.toExternalForm();
+            }
+            logger.log(Level.SEVERE, "Error loading avatar " + badURL, e);
+            return null;
+        } finally {
+            LoadingInfo.finishedLoading(cell.getCellID(), username);
+        }
+        return ret;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Node createSceneGraph(Entity entity) {
         // Nothing to do here
@@ -623,7 +672,32 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
         }
     }
-    
+
+    /**
+     * Avatar model configuration listener, re-loads the avatar whenever a
+     * reconfiguration happens
+     */
+    private class AvatarChangeListener implements AvatarConfigChangeListener {
+        public void avatarConfigChanged(AvatarConfigMessage message) {
+            // Fetch the new URL and try to load it. The null case is handled
+            // by loadAvatar, and loads the system default avatar.
+            String newURL = message.getModelConfigURL();
+            URL url = null;
+            if (newURL != null) {
+                try {
+                    url = new URL(newURL);
+                } catch (MalformedURLException excp) {
+                    logger.log(Level.WARNING, "Unable to form URL " + newURL, excp);
+                    return;
+                }
+            }
+
+            // Go ahead and change the avatar
+            logger.warning("Changing avatar to url " + newURL);
+            changeAvatar(loadAvatar(url));
+        }
+    }
+
     /**
      * Add an avatar changed listener to the list. Duplicate checking is not 
      * performed. This method is thread-safe.
