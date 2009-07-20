@@ -70,11 +70,14 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
 
     // We need to call this method reflectively because it isn't available in Java 5
     // BTW: we don't support Java 5 on Linux, so this is okay.
-    private static boolean isLinux = System.getProperty("os.name").equals("Linux");
     private static Method isAWTLockHeldByCurrentThreadMethod;
 
     static {
-        if (isLinux) {
+        String osName = System.getProperty("os.name");
+        //System.err.println("******* osName = " + osName);
+        boolean isUnix = "Linux".equals(osName) || "SunOS".equals(osName);
+        //System.err.println("******* isUnix = " + isUnix);
+        if (isUnix) {
             try {
                 Class awtToolkitClass = Class.forName("sun.awt.SunToolkit");
                 isAWTLockHeldByCurrentThreadMethod =
