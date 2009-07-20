@@ -27,13 +27,30 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 import java.net.URL;
 import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 
+import org.jdesktop.mtgame.Entity;
+
+import com.jme.scene.Node;
+
 /**
  * @author jkaplan
  */
 public class PhoneCellRenderer extends ModelRenderer {
 
+    private MyMouseListener listener;
+
     public PhoneCellRenderer(Cell cell, URL deployedModelURL) {
         super(cell, deployedModelURL);
+    }
+
+    @Override
+    protected Node createSceneGraph(Entity entity) {
+	listener = new MyMouseListener();
+	listener.addToEntity(entity);
+	return super.createSceneGraph(entity);
+    }
+
+    public void removeMouseListener() {
+        listener.removeFromEntity(entity);
     }
 
     class MyMouseListener extends EventClassListener {
