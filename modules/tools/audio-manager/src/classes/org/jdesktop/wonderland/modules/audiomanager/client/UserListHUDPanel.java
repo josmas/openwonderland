@@ -151,7 +151,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
     }
 
     public void changeUsernameAlias(PresenceInfo info) {
-        channelComp.send(new ChangeUsernameAliasMessage(info.cellID, info));
+        session.send(client, new ChangeUsernameAliasMessage(info.cellID, info));
     }
 
     public void updateMuteButton() {
@@ -589,6 +589,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
 
                 if (info == null) {
                     logger.warning("no PresenceInfo for " + username);
+                    System.out.println("no PresenceInfo for " + username);
                     continue;
                 }
                 logger.info("changing volume for " + username + " to: " + volume);
@@ -602,7 +603,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
     public void volumeChanged(CellID cellID, String otherCallID, int volume) {
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
-        channelComp.send(new AudioVolumeMessage(cellID, sc.getCallID(), otherCallID,
+        session.send(client, new AudioVolumeMessage(cellID, sc.getCallID(), otherCallID,
                 VolumeUtil.getServerVolume(volume)));
     }
 
