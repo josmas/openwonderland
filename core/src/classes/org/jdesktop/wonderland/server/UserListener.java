@@ -19,7 +19,9 @@ package org.jdesktop.wonderland.server;
 
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.Task;
 import java.io.Serializable;
+import java.util.Queue;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -40,7 +42,10 @@ public interface UserListener extends Serializable, ManagedObject {
      * Notification that a client has logged out.
      * @param clientID of the client that has logged out
      * @param userRef a reference to the user who logged out
+     * @param logoutTasksRef a reference to a queue of tasks to be executed
+     * before the logout is completed
      */
     public void userLoggedOut(WonderlandClientID clientID,
-                              ManagedReference<UserMO> userRef);
+                              ManagedReference<UserMO> userRef,
+                              ManagedReference<Queue<Task>> logoutTasksRef);
 }

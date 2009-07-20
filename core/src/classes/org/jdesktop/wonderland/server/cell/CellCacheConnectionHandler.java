@@ -83,25 +83,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
         avatar.detach();    // Detach avatar from world
 
         ViewCellCacheMO acc = avatar.getCellCache();
-
-        TaskManager tm = AppContext.getTaskManager();
-        tm.scheduleTask(new LogoutTask(acc, clientID));
-    }
-
-    private static final class LogoutTask implements Task, Serializable {
-        private ManagedReference<ViewCellCacheMO> cacheRef;
-        private WonderlandClientID clientID;
-
-        public LogoutTask(ViewCellCacheMO cache, WonderlandClientID clientID) {
-            this.clientID = clientID;
-
-            DataManager dm = AppContext.getDataManager();
-            cacheRef = dm.createReference(cache);
-        }
-
-        public void run() throws Exception {
-            cacheRef.getForUpdate().logout(clientID);
-        }
+        acc.logout(clientID);
     }
 
     public void messageReceived(WonderlandClientSender sender,
