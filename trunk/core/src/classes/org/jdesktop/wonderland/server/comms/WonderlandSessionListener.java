@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -58,6 +59,8 @@ import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.common.security.annotation.Actions;
+import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
 import org.jdesktop.wonderland.server.security.ActionMap;
 import org.jdesktop.wonderland.server.security.Resource;
@@ -416,13 +419,8 @@ public class WonderlandSessionListener
      * @return the removed handler for the given ID, or null if there is no 
      * handler for the given ID
      */
-    protected ClientConnectionHandler removeHandler(Short clientID) {
-        ClientHandlerRef ref = handlers.remove(clientID);
-        if (ref == null) {
-            return null;
-        }
-        
-        return ref.get();
+    private ClientHandlerRef removeHandler(Short clientID) {
+        return handlers.remove(clientID);
     }
     
     /**
@@ -585,10 +583,36 @@ public class WonderlandSessionListener
         }
 
         // remove the handler from the map
-        removeHandler(Short.valueOf(clientID));
+        ClientHandlerRef handlerRef =
+                removeHandler(Short.valueOf(clientID));
 
         // notify the handler
-        handler.clientDisconnected(sender, getWonderlandClientID());
+        if (disconnect) {
+            // in the case of a disconnect, we don't want to do all the
+            // notifications in a single task.  Instead, we add each
+            // notification to the user's logout task list.
+            scheduleClientDisconnect(handlerRef, sender);
+        } else {
+            // a single client disconnect.  Just notify the handler directly
+            handler.clientDisconnected(sender, getWonderlandClientID());
+        }
+    }
+
+    /**
+     * Schedule a disconnect task with the user's logout task list
+     * @param handlerRef a reference to the handler to remove
+     * @param sender the sender to send responses to
+     */
+    private void scheduleClientDisconnect(ClientHandlerRef handlerRef,
+                                          WonderlandClientSender sender)
+    {
+        // get the list of logout tasks for this user
+        UserMO user = UserManager.getUserManager().getUser(getWonderlandClientID());
+        Queue<Task> tasks = user.getLogoutTasks(getWonderlandClientID());
+
+        // add a new task to notify the handler of the disconnect
+        tasks.add(new NotifyDisconnectTask(getWonderlandClientID(),
+                                           handlerRef, sender));
     }
 
     /**
@@ -1192,6 +1216,25 @@ public class WonderlandSessionListener
                 listener.sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
                         "Permission denied for " + type);
             }
+        }
+    }
+
+    private static class NotifyDisconnectTask implements Task, Serializable {
+        private WonderlandClientID clientID;
+        private ClientHandlerRef handlerRef;
+        private WonderlandClientSender sender;
+
+        public NotifyDisconnectTask(WonderlandClientID clientID,
+                                    ClientHandlerRef handlerRef,
+                                    WonderlandClientSender sender)
+        {
+            this.clientID = clientID;
+            this.handlerRef = handlerRef;
+            this.sender = sender;
+        }
+
+        public void run() throws Exception {
+            handlerRef.get().clientDisconnected(sender, clientID);
         }
     }
 }

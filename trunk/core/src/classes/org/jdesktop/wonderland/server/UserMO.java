@@ -21,7 +21,11 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedObjectRemoval;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.Task;
+import com.sun.sgs.app.util.ScalableDeque;
+import com.sun.sgs.app.util.ScalableHashMap;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -46,7 +51,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author paulby
  */
 @ExperimentalAPI
-public class UserMO implements ManagedObject, Serializable {
+public class UserMO implements ManagedObject, Serializable, ManagedObjectRemoval {
 
     private WonderlandIdentity identity;
     private ArrayList<String> groups = null;
@@ -54,6 +59,9 @@ public class UserMO implements ManagedObject, Serializable {
     private Set<WonderlandClientID> activeClients = null;
     private Map<String, Serializable> extendedData = null;
     private Map<WonderlandClientID, Map<String, ManagedReference<AvatarCellMO>>> avatars = new HashMap();
+
+    private final ManagedReference<Map<WonderlandClientID, Queue<Task>>> logoutTasksRef;
+
 
     private final Set<ManagedReference<UserListener>> userListeners =
             new LinkedHashSet<ManagedReference<UserListener>>();
@@ -67,6 +75,10 @@ public class UserMO implements ManagedObject, Serializable {
      */
     UserMO(WonderlandIdentity identity) {
         this.identity = identity;
+
+        DataManager dm = AppContext.getDataManager();
+        logoutTasksRef = dm.createReference((Map<WonderlandClientID, Queue<Task>>)
+                new ScalableHashMap<WonderlandClientID, Queue<Task>>());
     }
     
     /**
@@ -183,15 +195,57 @@ public class UserMO implements ManagedObject, Serializable {
         logger.info("User Login " + username);
         activeClients.add(clientID);
     }
-    
+
     /**
-     * User has logged out from specified session
-     * @param session
-     * @param protocol
+     * The logout process has started for the given client. Create a queue
+     * of tasks to execute before logout is complete.  When the queue is
+     * empty, the loggedOut() method will be called to clean up the mapping
+     * for the given client id.
+     * @param clientID the id to start the logout process for.
+     * @return the queue of logout tasks for the given client.
      */
-    void logout(WonderlandClientID clientID) {
+    Queue<Task> startLogout(WonderlandClientID clientID) {
+        if (!activeClients.contains(clientID)) {
+            throw new IllegalStateException("Client " + clientID +
+                                            " is not active.");
+        }
+
+        if (logoutTasksRef.get().containsKey(clientID)) {
+            throw new IllegalStateException("Client " + clientID +
+                    " has already started logout.");
+        }
+
+        // create the task queue for this id
+        Queue<Task> tasks = new ScalableDeque<Task>();
+        logoutTasksRef.get().put(clientID, tasks);
+        return tasks;
+    }
+
+    /**
+     * Get the logout tasks for a given clientID.  The client must be
+     * in the process of logging out (i.e. between when startLogout() is
+     * called and loggedOut() is called).  If the client is not in the
+     * process of logging out, this method will return null.
+     * @param clientID the client ID to get logout tasks for
+     * @return the tasks for the given user, or null if the user is not
+     * in the process of logging out
+     */
+    public Queue<Task> getLogoutTasks(WonderlandClientID clientID) {
+        return logoutTasksRef.get().get(clientID);
+    }
+
+
+    /**
+     * User has logged out from specified session.
+     * @param clientID the id of the client session that completed logout.
+     */
+    void finishLogout(WonderlandClientID clientID) {
         AppContext.getDataManager().markForUpdate(this);
         activeClients.remove(clientID);
+
+        // clean up the tasks queue for this client
+        Queue<Task> tasks = logoutTasksRef.get().remove(clientID);
+        AppContext.getDataManager().removeObject(tasks);
     }
 
     /**
@@ -238,8 +292,11 @@ public class UserMO implements ManagedObject, Serializable {
     public ManagedReference getReference() {
         return AppContext.getDataManager().createReference(this);
     }
-    
+
     /**
-     * A task that will be executed when this user logs out.
+     * Clean up managed objects we create.
      */
+    public void removingObject() {
+        AppContext.getDataManager().removeObject(logoutTasksRef.get());
+    }
 }
