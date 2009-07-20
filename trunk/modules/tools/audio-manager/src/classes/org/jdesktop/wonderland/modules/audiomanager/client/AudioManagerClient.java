@@ -413,14 +413,14 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
-        CallHUDPanel callHUDPanel = new CallHUDPanel(this, session, presenceInfo);
+        AddExternalHUDPanel addExternalHUDPanel = new AddExternalHUDPanel(this, session, presenceInfo);
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-        final HUDComponent callHUDComponent = mainHUD.createComponent(callHUDPanel);
-	callHUDPanel.setHUDComponent(callHUDComponent);
-        callHUDComponent.setPreferredLocation(Layout.NORTHEAST);
-        mainHUD.addComponent(callHUDComponent);
-        callHUDComponent.addComponentListener(new HUDComponentListener() {
+        final HUDComponent addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
+	addExternalHUDPanel.setHUDComponent(addExternalHUDComponent);
+        addExternalHUDComponent.setPreferredLocation(Layout.NORTHEAST);
+        mainHUD.addComponent(addExternalHUDComponent);
+        addExternalHUDComponent.addComponentListener(new HUDComponentListener() {
             public void HUDComponentChanged(HUDComponentEvent e) {
                 if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
                 }
@@ -431,12 +431,12 @@ public class AudioManagerClient extends BaseConnection implements
 
             public void propertyChange(PropertyChangeEvent pe) {
                 if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                    callHUDComponent.setVisible(false);
+                    addExternalHUDComponent.setVisible(false);
                 }
             }
         };
-        callHUDPanel.addPropertyChangeListener(plistener);
-	callHUDComponent.setVisible(true);
+        addExternalHUDPanel.addPropertyChangeListener(plistener);
+	addExternalHUDComponent.setVisible(true);
     }
 
     public void softphoneVisible(boolean isVisible) {
