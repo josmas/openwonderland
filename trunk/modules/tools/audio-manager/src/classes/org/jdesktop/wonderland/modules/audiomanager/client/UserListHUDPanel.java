@@ -636,10 +636,12 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             controlPanel.setVisible(false);
             textChatButton.setEnabled(false);
             voiceChatButton.setEnabled(false);
+            panelToggleButton.setIcon(upIcon);
         } else if (selectedValues.length == 1) {
             // one user (self or someone else)
             controlPanel.setVisible(true);
             volumeSlider.setEnabled(true);
+            panelToggleButton.setIcon(downIcon);
 
             String username = NameTagNode.getUsername((String) selectedValues[0]);
 
@@ -679,7 +681,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             volumeSlider.setValue(5);
             textChatButton.setEnabled(true);
             voiceChatButton.setEnabled(true);
-
+            panelToggleButton.setIcon(downIcon);
         }
 }//GEN-LAST:event_userListValueChanged
 
