@@ -74,9 +74,7 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
 
     static {
         String osName = System.getProperty("os.name");
-        //System.err.println("******* osName = " + osName);
         boolean isUnix = "Linux".equals(osName) || "SunOS".equals(osName);
-        //System.err.println("******* isUnix = " + isUnix);
         if (isUnix) {
             try {
                 Class awtToolkitClass = Class.forName("sun.awt.SunToolkit");
