@@ -554,7 +554,6 @@ public class AudioManagerClient extends BaseConnection implements
 
         if (message instanceof VoiceChatInfoResponseMessage) {
             VoiceChatInfoResponseMessage msg = (VoiceChatInfoResponseMessage) message;
-	    System.out.println("Got VoiceChatInfoResponseMessage for " + msg.getGroup());
             notifyMemberChangeListeners(msg.getGroup(), msg.getChatters());
 	    return;
 	}
