@@ -89,7 +89,6 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 	if (inCallHUDPanel != null) {
 	    secretRadioButton.setEnabled(false);
 	    privateRadioButton.setEnabled(false);
-	    session.send(client, new VoiceChatInfoRequestMessage(group));
 	} else {
             this.inCallHUDPanel = new InCallHUDPanel(client, session, myPresenceInfo, myPresenceInfo);
 	    this.inCallHUDPanel.setCallHUDPanel(this);
@@ -118,9 +117,12 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
         caller = this.inCallHUDPanel.getCaller();
 	group = this.inCallHUDPanel.getGroup();
 
+	session.send(client, new VoiceChatInfoRequestMessage(group));
+
 	inCallHUDComponent = this.inCallHUDPanel.getHUDComponent();
 
 	callJLabel.setText("Call " + group);
+
 	client.addMemberChangeListener(group, this);
 
         pm = PresenceManagerFactory.getPresenceManager(session);
@@ -164,8 +166,6 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 	    return;
 	}
 
-	System.out.println("ADDING " + presenceInfo);
-
 	userListModel.removeElement(presenceInfo.usernameAlias);
 	userListModel.addElement(presenceInfo.usernameAlias);
     }
@@ -177,15 +177,9 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 	    }
 	} else if (type.equals(ChangeType.USER_ADDED)) {
 	    synchronized (userListModel) {
-		System.out.println("PI " + presenceInfo);
-
-		for (PresenceInfo info : members) {
-		    System.out.println("Member:  " + info);
-		}
 		if (members.contains(presenceInfo)) {
 		    userListModel.removeElement(presenceInfo.usernameAlias);
 		} else {
-		    System.out.println("PI USER_ADDED:  " + presenceInfo);
 		    addToUserList(presenceInfo);
 		}
 	    }
@@ -199,13 +193,11 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 
 	if (added) {
 	    members.add(presenceInfo);
-	    System.out.println("MEMBER ADDED removing " + presenceInfo);
 	    synchronized (userListModel) {
 		userListModel.removeElement(presenceInfo.usernameAlias);
 	    }
 	} else {
 	    members.remove(presenceInfo);
-	    System.out.println("MEMBER REMOVED adding " + presenceInfo);
 	    synchronized (userListModel) {
 		addToUserList(presenceInfo);
 	    }
@@ -214,14 +206,17 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 
     public void setMemberList(PresenceInfo[] members) {
 	userListModel.clear();
+	this.members.clear();
 
 	PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
 	synchronized (userListModel) {
 	    for (int i = 0; i < presenceInfoList.length; i++) {
-	        if (contains(members, presenceInfoList[i]) == false) {
-		    System.out.println("SET MEMBERLIST removing " + presenceInfoList[i]);
-		    userListModel.removeElement(presenceInfoList[i].usernameAlias);
+		PresenceInfo info = presenceInfoList[i];
+
+	        if (contains(members, info) == false) {
+		    userListModel.addElement(info.usernameAlias);
+		    this.members.add(info);
 		}
 	    }
 	}
@@ -233,6 +228,7 @@ public class CallHUDPanel extends javax.swing.JPanel implements PresenceManagerL
 		return true;
 	    }
 	}
+
 	return false;
     }
 

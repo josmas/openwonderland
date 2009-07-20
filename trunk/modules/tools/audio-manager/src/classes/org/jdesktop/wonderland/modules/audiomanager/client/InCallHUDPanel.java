@@ -322,6 +322,7 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
         buttonGroup1.add(privateRadioButton);
         privateRadioButton.setFont(privateRadioButton.getFont());
+        privateRadioButton.setSelected(true);
         privateRadioButton.setText("Private");
 
         addButton.setText("Add User...");

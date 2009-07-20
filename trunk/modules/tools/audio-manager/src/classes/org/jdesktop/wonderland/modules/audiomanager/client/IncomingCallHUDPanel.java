@@ -106,6 +106,7 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
         });
 
         buttonGroup1.add(privateRadioButton);
+        privateRadioButton.setSelected(true);
         privateRadioButton.setText("Private");
         privateRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

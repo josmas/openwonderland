@@ -157,6 +157,7 @@
             <Font component="privateRadioButton" property="font" relativeSize="true" size="0"/>
           </FontInfo>
         </Property>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" value="Private"/>
       </Properties>
     </Component>
