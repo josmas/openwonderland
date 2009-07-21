@@ -35,6 +35,8 @@ public class VoiceChatCallEndedMessage extends VoiceChatMessage {
 
 	this.presenceInfo = presenceInfo;
 	this.reasonCallEnded = reasonCallEnded;
+
+	new Exception("FOO!").printStackTrace();
     }
 
     public PresenceInfo getPresenceInfo() {

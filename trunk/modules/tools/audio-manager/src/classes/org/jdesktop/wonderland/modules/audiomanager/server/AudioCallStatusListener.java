@@ -72,6 +72,8 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
     WonderlandClientID clientID;
     String callID;
 
+    private boolean ended;
+
     public AudioCallStatusListener(WonderlandClientID clientID, String callID) {
 	this.clientID = clientID;
 	this.callID = callID;
@@ -82,6 +84,10 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
     }
 
     public void callStatusChanged(CallStatus status) {
+	if (ended) {
+	    return;
+	}
+
 	logger.finer("AudioCallStatusListener got call status:  " + status);
 
 	String callId = status.getCallId();
@@ -196,6 +202,7 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
 	    }
 
 	    sender.send(new CallEndedMessage(callID, status.getOption("Reason")));
+	    ended = true;
             break;
 	  
 	case CallStatus.BRIDGE_OFFLINE:

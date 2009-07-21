@@ -190,6 +190,8 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
         PresenceInfo info = new PresenceInfo(null, null, new WonderlandIdentity(name, name, null), callID);
 
+	pm.addPresenceInfo(info);
+
         addToUserList(info);
         session.send(client, new VoiceChatDialOutMessage(group, callID, ChatType.PRIVATE, info, number));
     }
@@ -267,7 +269,11 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
             return;
         }
 
-        if (type.equals(ChangeType.USER_REMOVED) == false) {
+        if (type.equals(ChangeType.USER_REMOVED)) {
+	    if (presenceInfo.clientID == null) {
+		pm.removePresenceInfo(presenceInfo);
+	    }
+	} else {
             addToUserList(presenceInfo);
         }
     }
