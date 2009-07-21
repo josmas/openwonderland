@@ -770,7 +770,32 @@ private void panelToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 }//GEN-LAST:event_panelToggleButtonActionPerformed
 
 private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneButtonActionPerformed
-    // TODO add your handling code here:
+    AddExternalHUDPanel addExternalHUDPanel =
+	new AddExternalHUDPanel(client, session, presenceInfo);
+
+    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+    final HUDComponent addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
+
+    addExternalHUDComponent.setPreferredLocation(Layout.NORTHEAST);
+
+    addExternalHUDPanel.setHUDComponent(addExternalHUDComponent);
+
+    mainHUD.addComponent(addExternalHUDComponent);
+    addExternalHUDComponent.addComponentListener(new HUDComponentListener() {
+
+        public void HUDComponentChanged(HUDComponentEvent e) {
+            if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+            }
+        }
+    });
+
+    PropertyChangeListener plistener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent pe) {
+        }
+    };
+
+    addExternalHUDPanel.addPropertyChangeListener(plistener);
+    addExternalHUDComponent.setVisible(true);
 }//GEN-LAST:event_phoneButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

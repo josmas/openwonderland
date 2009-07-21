@@ -763,7 +763,7 @@ public class AudioManagerClient extends BaseConnection implements
         logger.warning("Call ended for " + info + " Reason:  " + reason);
 
         if (reason.equalsIgnoreCase("Hung up") == false) {
-            new CallStatusJFrame(reason);
+            callEnded(reason);
         }
 
 	if (info.clientID == null) {
@@ -871,13 +871,13 @@ public class AudioManagerClient extends BaseConnection implements
 	    reason = "Invalid phone number";
 
 	    if (callMigrationForm == null) {
-	        new CallEndedDialog(reason);
+	        callEnded(reason);
 	    }
 	} else if (reason.indexOf("No voip Gateway!") >= 0) {
 	    reason = "No connection to phone system";
 
 	    if (callMigrationForm == null) {
-	        new CallEndedDialog(reason);
+	        callEnded(reason);
 	    }
 	}
 
@@ -891,6 +891,38 @@ public class AudioManagerClient extends BaseConnection implements
 	    callMigrationForm.setStatus("Call ended:  " + reason);
 	}
     } 
+
+    private void callEnded(String reason) {
+	if (reason.indexOf("Not Found") >= 0) {
+	    reason = "Invalid phone number";
+
+	    if (callMigrationForm == null) {
+	        callEnded(reason);
+	    }
+	} else if (reason.indexOf("No voip Gateway!") >= 0) {
+	    reason = "No connection to phone system";
+
+	    if (callMigrationForm == null) {
+	        callEnded(reason);
+	    }
+	}
+
+	CallEndedHUDPanel callEndedHUDPanel = new CallEndedHUDPanel(reason);
+	HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        HUDComponent callEndedHUDComponent = mainHUD.createComponent(callEndedHUDPanel);
+	callEndedHUDPanel.setHUDComponent(callEndedHUDComponent);
+        callEndedHUDComponent.setPreferredLocation(Layout.CENTER);
+
+        mainHUD.addComponent(callEndedHUDComponent);
+        callEndedHUDComponent.addComponentListener(new HUDComponentListener() {
+            public void HUDComponentChanged(HUDComponentEvent e) {
+                if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                }
+            }
+        });
+
+	callEndedHUDComponent.setVisible(true);
+    }
 
     public ConnectionType getConnectionType() {
         return AudioManagerConnectionType.CONNECTION_TYPE;

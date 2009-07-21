@@ -105,6 +105,7 @@ public class VoiceChatPhoneStatusListener implements ManagedCallStatusListener, 
 		vm.removePlayer(player);
 	    }
 
+	    System.out.println("SENDING VOICECHATCALLENDED MESSAGE");
             sender.send(new VoiceChatCallEndedMessage(group, presenceInfo, 
 		status.getOption("Reason")));
 	    break;

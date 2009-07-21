@@ -35,13 +35,13 @@ public class VoiceChatMessage extends Message {
     }
 
     public static final String SECRET_DESCRIPTION =
-	"Avatar appears speaking on call";
+	"Secret: No call indicator";
 
     public static final String PRIVATE_DESCRIPTION =
-	"No call indicator";
+	"Private: Avatar appears speaking on call";
 
     public static final String PUBLIC_DESCRIPTION =
-	"Remote users appear as orbs";
+	"SpeakerPhone: Remote users appear as orbs";
 
     public VoiceChatMessage(String group) {
 	this.group = group;
