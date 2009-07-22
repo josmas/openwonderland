@@ -103,9 +103,9 @@ public interface PresenceManager {
      * Get PresenceInfo for a given username alias.  If there is more 
      * than one user with the username alias, all of them are returned;
      * @param String user name alias
-     * @return PresenceInfo[] presence information for user.  
+     * @return PresenceInfo presence information for user.  
      */
-    public PresenceInfo[] getAliasPresenceInfo(String usernameAlias);
+    public PresenceInfo getAliasPresenceInfo(String usernameAlias);
 
     /**
      * Change usernameAlias in PresenceInfo.

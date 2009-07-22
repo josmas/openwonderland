@@ -11,8 +11,14 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatInfoRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatLeaveMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
+import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
+import org.jdesktop.wonderland.client.hud.HUDComponentListener;
 
 import java.util.ArrayList;
 
@@ -20,14 +26,15 @@ import java.util.ArrayList;
  *
  * @author  jp
  */
-public class HoldHUDPanel extends javax.swing.JPanel  implements MemberChangeListener {
+public class HoldHUDPanel extends javax.swing.JPanel implements MemberChangeListener {
 
     private AudioManagerClient client;
     private WonderlandSession session;
-
     private String group;
-
     private InCallHUDPanel inCallHUDPanel;
+    private PresenceInfo myPresenceInfo;
+
+    private HUDComponent holdHUDComponent;
 
     /** Creates new form HoldHUDPanel */
     public HoldHUDPanel() {
@@ -35,12 +42,13 @@ public class HoldHUDPanel extends javax.swing.JPanel  implements MemberChangeLis
     }
 
     public HoldHUDPanel(AudioManagerClient client, WonderlandSession session,
-            String group, InCallHUDPanel inCallHUDPanel) {
+            String group, InCallHUDPanel inCallHUDPanel, PresenceInfo myPresenceInfo) {
 
 	this.client = client;
 	this.session = session;
 	this.group = group;
 	this.inCallHUDPanel = inCallHUDPanel;
+	this.myPresenceInfo = myPresenceInfo;
 
         initComponents();
 
@@ -51,19 +59,37 @@ public class HoldHUDPanel extends javax.swing.JPanel  implements MemberChangeLis
         session.send(client, new VoiceChatInfoRequestMessage(group));
     }
 
+    public void setHUDComponent(HUDComponent holdHUDComponent) {
+	this.holdHUDComponent = holdHUDComponent;
+
+	holdHUDComponent.addComponentListener(new HUDComponentListener() {
+            public void HUDComponentChanged(HUDComponentEvent e) {
+                if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+                    session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
+                }
+            }
+        });
+    }
+
     private ArrayList<PresenceInfo> members = new ArrayList();
 
     public void setMemberList() {
-	String memberText = "";
+	String s = "";
 
 	for (PresenceInfo member : members) {
-	    memberText += NameTagNode.getDisplayName(
+	    s += NameTagNode.getDisplayName(
                 member.usernameAlias, member.isSpeaking, member.isMuted);
 
-	    memberText += " ";
+	    s += " ";
 	}
 
-	this.memberText.setText(memberText);
+	final String text = s;
+
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+		memberText.setText(text);
+            }
+        });
     }
 
     public void memberChange(PresenceInfo info, boolean added) {
@@ -108,8 +134,8 @@ public class HoldHUDPanel extends javax.swing.JPanel  implements MemberChangeLis
             }
         });
 
+        volumeSlider.setMajorTickSpacing(1);
         volumeSlider.setMaximum(10);
-        volumeSlider.setMinorTickSpacing(1);
         volumeSlider.setPaintLabels(true);
         volumeSlider.setPaintTicks(true);
         volumeSlider.setSnapToTicks(true);
@@ -136,10 +162,10 @@ public class HoldHUDPanel extends javax.swing.JPanel  implements MemberChangeLis
                         .add(groupLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
                         .add(10, 10, 10))
                     .add(layout.createSequentialGroup()
-                        .add(volumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                        .add(volumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(memberText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+                        .add(memberText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(holdButton)
                         .addContainerGap())))

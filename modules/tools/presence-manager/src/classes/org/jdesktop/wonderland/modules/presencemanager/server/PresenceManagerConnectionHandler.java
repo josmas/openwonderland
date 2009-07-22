@@ -115,6 +115,7 @@ public class PresenceManagerConnectionHandler implements
         // mark ourself for update
         AppContext.getDataManager().markForUpdate(this);
 
+	dump(message.toString());
 	if (message instanceof ClientConnectMessage) {
 	    /*
              * Send back all of the PresenceInfo data to the new client
@@ -203,6 +204,8 @@ public class PresenceManagerConnectionHandler implements
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
 	PresenceInfo info = presenceInfoMap.get(clientID.getID());
 
+	logger.warning("client disconnected " + clientID.getID() + " " + info);
+
 	if (info == null) {
 	    logger.fine("PRESENCE:  No PresenceInfo for " + clientID.getID());
 	    return;
@@ -234,6 +237,8 @@ public class PresenceManagerConnectionHandler implements
     }
 
     public void callBeginEndNotification(CallStatus status) {
+	System.out.println("PI CS: " + status);
+
 	if (status.getCode() != CallStatus.ENDED) {
 	    return;
 	}
@@ -246,6 +251,7 @@ public class PresenceManagerConnectionHandler implements
 	 * For some reason, we don't get called at clientDisconnected()
 	 * during warm start, so we cleanup here.
 	 */
+	System.out.println("Clearing presence info");
 	presenceInfoList.clear();
     }
 

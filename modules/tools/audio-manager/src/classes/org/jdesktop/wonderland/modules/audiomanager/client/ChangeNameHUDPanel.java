@@ -95,6 +95,7 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
         cancelButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
         aliasLabel = new javax.swing.JLabel();
+        statusLabel = new javax.swing.JLabel();
 
         nameLabel.setText("Display name as:");
 
@@ -130,19 +131,24 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(6, 6, 6)
-                        .add(nameLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(usernameAliasTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(6, 6, 6)
+                                .add(nameLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(usernameAliasTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE))
+                            .add(aliasLabel)))
                     .add(layout.createSequentialGroup()
-                        .add(49, 49, 49)
+                        .add(46, 46, 46)
+                        .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(60, 60, 60)
                         .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(aliasLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -154,11 +160,13 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(usernameAliasTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(nameLabel))
-                .add(5, 5, 5)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(statusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(cancelButton)
-                    .add(okButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(okButton)
+                    .add(cancelButton))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -172,6 +180,23 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+        PresenceInfo[] info = pm.getAllUsers();
+
+	String alias = usernameAliasTextField.getText();
+
+        for (int i = 0; i < info.length; i++) {
+            if (info[i].usernameAlias.equals(alias) ||
+		    info[i].userID.getUsername().equals(alias)) {
+
+		if (presenceInfo.usernameAlias.equals(alias) == false) {
+		    statusLabel.setText("Alias is already being used!");
+		    return;
+		}
+            }
+        }
+
+	statusLabel.setText("");
+
         presenceInfo.usernameAlias = usernameAliasTextField.getText();
 	pm.changeUsernameAlias(presenceInfo);
         listener.changeUsernameAlias(presenceInfo);
@@ -191,6 +216,7 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JButton okButton;
+    private javax.swing.JLabel statusLabel;
     private javax.swing.JTextField usernameAliasTextField;
     // End of variables declaration//GEN-END:variables
 }

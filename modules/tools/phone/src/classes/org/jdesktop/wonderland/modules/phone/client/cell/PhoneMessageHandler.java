@@ -138,7 +138,9 @@ public class PhoneMessageHandler {
 		passwordProtected = false;
 	    }
 
-	    phoneForm = new PhoneForm(phoneCell.getCellID(), channelComp,
+	    WonderlandSession session = phoneCell.getCellCache().getSession();
+
+	    phoneForm = new PhoneForm(session, phoneCell.getCellID(), channelComp,
 		this, locked, phoneInfo.phoneNumber, passwordProtected);
 	}
 

@@ -42,6 +42,8 @@ public interface AudioMenuListener {
 
     public void personalPhone();
 
+    public void voiceChat();
+
     public void microphoneVolume();
 
 }

@@ -376,38 +376,6 @@ public class AudioManagerClient extends BaseConnection implements
         }
     }
 
-    public void voiceChat() {
-        if (presenceInfo == null) {
-            return;
-        }
-
-        InCallHUDPanel inCallHUDPanel = 
-	    new InCallHUDPanel(this, session, presenceInfo, presenceInfo);
-
-        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-        final HUDComponent inCallHUDComponent = mainHUD.createComponent(inCallHUDPanel);
-	inCallHUDPanel.setHUDComponent(inCallHUDComponent);
-        inCallHUDComponent.setPreferredLocation(Layout.NORTH);
-        mainHUD.addComponent(inCallHUDComponent);
-        inCallHUDComponent.addComponentListener(new HUDComponentListener() {
-            public void HUDComponentChanged(HUDComponentEvent e) {
-                if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
-                }
-            }
-        });
-
-	PropertyChangeListener plistener = new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent pe) {
-                if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                    inCallHUDComponent.setVisible(false);
-                }
-            }
-        };
-        inCallHUDPanel.addPropertyChangeListener(plistener);
-	inCallHUDComponent.setVisible(true);
-    }
-
     public void personalPhone() {
         if (presenceInfo == null) {
             return;
@@ -437,6 +405,37 @@ public class AudioManagerClient extends BaseConnection implements
         };
         addExternalHUDPanel.addPropertyChangeListener(plistener);
 	addExternalHUDComponent.setVisible(true);
+    }
+
+    public void voiceChat() {
+        if (presenceInfo == null) {
+            return;
+        }
+
+        AddInWorldHUDPanel addInWorldHUDPanel = new AddInWorldHUDPanel(this, session, presenceInfo);
+
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        final HUDComponent addInWorldHUDComponent = mainHUD.createComponent(addInWorldHUDPanel);
+	addInWorldHUDPanel.setHUDComponent(addInWorldHUDComponent);
+        addInWorldHUDComponent.setPreferredLocation(Layout.NORTHEAST);
+        mainHUD.addComponent(addInWorldHUDComponent);
+        addInWorldHUDComponent.addComponentListener(new HUDComponentListener() {
+            public void HUDComponentChanged(HUDComponentEvent e) {
+                if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                }
+            }
+        });
+
+	PropertyChangeListener plistener = new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pe) {
+                if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
+                    addInWorldHUDComponent.setVisible(false);
+                }
+            }
+        };
+        addInWorldHUDPanel.addPropertyChangeListener(plistener);
+	addInWorldHUDComponent.setVisible(true);
     }
 
     public void softphoneVisible(boolean isVisible) {
@@ -574,7 +573,9 @@ public class AudioManagerClient extends BaseConnection implements
 	}
 
         if (message instanceof VoiceChatCallEndedMessage) {
-	    voiceChatCallEnded((VoiceChatCallEndedMessage) message);
+	    VoiceChatCallEndedMessage msg = (VoiceChatCallEndedMessage) message;
+	    voiceChatCallEnded(msg);
+	    session.send(this, new VoiceChatLeaveMessage(msg.getGroup(), msg.getCallee()));
 	    return;
         } 
 
@@ -748,29 +749,33 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     private void leaveVoiceChat(VoiceChatLeaveMessage msg) {
-        logger.info("GOT LEAVE MESSAGE FOR " + msg.getCallee());
+        PresenceInfo callee = msg.getCallee();
 
-        PresenceInfo info = pm.getPresenceInfo(msg.getCallee().callID);
+        logger.info("GOT LEAVE MESSAGE FOR " + callee);
 
-        notifyMemberChangeListeners(msg.getGroup(), info, false);
+	notifyMemberChangeListeners(msg.getGroup(), callee, false);
+
+	if (callee.clientID == null) {
+            pm.removePresenceInfo(callee);	// it's an outworlder
+	}
     }
 
     private void voiceChatCallEnded(VoiceChatCallEndedMessage msg) {
-        PresenceInfo info = msg.getPresenceInfo();
+        PresenceInfo callee = msg.getCallee();
 
-        String reason = msg.getReasonCallEnded();
+        String reason = getUserFriendlyReason(msg.getReasonCallEnded());
 
-        logger.warning("Call ended for " + info + " Reason:  " + reason);
+        logger.warning("Call ended for " + callee + " Reason:  " + reason);
 
         if (reason.equalsIgnoreCase("Hung up") == false) {
-            callEnded(reason);
+            callEnded(callee, reason);
         }
 
-	if (info.clientID == null) {
-            pm.removePresenceInfo(info);	// it's an outworlder
+	if (callee.clientID == null) {
+            pm.removePresenceInfo(callee);	// it's an outworlder
 	}
 
-        notifyMemberChangeListeners(msg.getGroup(), info, false);
+        notifyMemberChangeListeners(msg.getGroup(), callee, false);
     }
 
     private void coneOfSilenceEnterExit(ConeOfSilenceEnterExitMessage msg) {
@@ -856,10 +861,24 @@ public class AudioManagerClient extends BaseConnection implements
         InputManager.inputManager().postEvent(avatarNameEvent);
     } 
 
+    private String getUserFriendlyReason(String reason) {
+	if (reason.indexOf("Not Found") >= 0) {
+	    return "Invalid phone number";
+	} 
+
+	if (reason.indexOf("No voip Gateway!") >= 0) {
+	    return "No connection to phone system";
+	}
+
+	return reason;
+    }
+
     private void callEnded(CallEndedMessage msg) {
         PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
-	String reason = msg.getReason();
+	if (info != null && info.clientID == null) {
+            pm.removePresenceInfo(info);	// it's an outworlder
+	}
 
 	String callID = msg.getCallID();
 
@@ -867,23 +886,11 @@ public class AudioManagerClient extends BaseConnection implements
 	    return;
 	}
 
-	if (reason.indexOf("Not Found") >= 0) {
-	    reason = "Invalid phone number";
-
-	    if (callMigrationForm == null) {
-	        callEnded(reason);
-	    }
-	} else if (reason.indexOf("No voip Gateway!") >= 0) {
-	    reason = "No connection to phone system";
-
-	    if (callMigrationForm == null) {
-	        callEnded(reason);
-	    }
-	}
-
 	if (callMigrationForm == null) {
 	    return;
 	}
+
+	String reason = getUserFriendlyReason(msg.getReason());
 
 	if (reason.equals("User requested call termination") == false && 
 		reason.indexOf("migrated") < 0) {
@@ -892,22 +899,8 @@ public class AudioManagerClient extends BaseConnection implements
 	}
     } 
 
-    private void callEnded(String reason) {
-	if (reason.indexOf("Not Found") >= 0) {
-	    reason = "Invalid phone number";
-
-	    if (callMigrationForm == null) {
-	        callEnded(reason);
-	    }
-	} else if (reason.indexOf("No voip Gateway!") >= 0) {
-	    reason = "No connection to phone system";
-
-	    if (callMigrationForm == null) {
-	        callEnded(reason);
-	    }
-	}
-
-	CallEndedHUDPanel callEndedHUDPanel = new CallEndedHUDPanel(reason);
+    private void callEnded(PresenceInfo callee, String reason) {
+	CallEndedHUDPanel callEndedHUDPanel = new CallEndedHUDPanel(callee, reason);
 	HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         HUDComponent callEndedHUDComponent = mainHUD.createComponent(callEndedHUDPanel);
 	callEndedHUDPanel.setHUDComponent(callEndedHUDComponent);

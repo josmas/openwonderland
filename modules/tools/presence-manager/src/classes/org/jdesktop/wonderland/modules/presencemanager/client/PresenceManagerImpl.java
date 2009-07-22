@@ -347,27 +347,19 @@ public class PresenceManagerImpl implements PresenceManager {
      * Get PresenceInfo for a given username alias.  If there is more 
      * than one user with the username alias, all of them are returned;
      * @param String user name alias
-     * @return PresenceInfo[] presence information for user.
+     * @return PresenceInfo presence information for user.
      */
-    public PresenceInfo[] getAliasPresenceInfo(String usernameAlias) {
+    public PresenceInfo getAliasPresenceInfo(String usernameAlias) {
         PresenceInfo[] users;
 
         synchronized (userIDMap) {
             users = userIDMap.values().toArray(new PresenceInfo[0]);
         }
 
-        ArrayList<PresenceInfo> userList = new ArrayList();
-
         for (int i = 0; i < users.length; i++) {
-            if (users[i].usernameAlias.equals(usernameAlias) == false) {
-                continue;
-            }
-
-            userList.add(users[i]);
-        }
-
-        if (userList.size() > 0) {
-            return userList.toArray(new PresenceInfo[0]);
+            if (users[i].usernameAlias.equals(usernameAlias)) {
+                return users[i];
+	    }
         }
 
         logger.warning("No presence info for " + usernameAlias);

@@ -184,10 +184,20 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
     }
 
     public synchronized void setUserList() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+		setUserListLater();
+            }
+        });
+    }
+
+    private void setUserListLater() {
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
+
 
         for (int i = 0; i < presenceInfoList.length; i++) {
             PresenceInfo info = presenceInfoList[i];
+
             if (info.callID == null) {
                 // It's a virtual player, skip it.
                 continue;
@@ -604,7 +614,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             for (int i = 0; i < selectedValues.length; i++) {
                 String username = NameTagNode.getUsername((String) selectedValues[i]);
 
-                PresenceInfo[] info = pm.getAliasPresenceInfo(username);
+                PresenceInfo info = pm.getAliasPresenceInfo(username);
 
                 if (info == null) {
                     logger.warning("no PresenceInfo for " + username);
@@ -612,7 +622,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                     continue;
                 }
                 logger.info("changing volume for " + username + " to: " + volume);
-                PresenceInfo pi = info[0];
+                PresenceInfo pi = info;
                 volumeChanged(pi.cellID, pi.callID, volume);
                 volumeChangeMap.put(pi, new Integer(volume));
             }
@@ -645,7 +655,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
 
             String username = NameTagNode.getUsername((String) selectedValues[0]);
 
-            PresenceInfo[] info = pm.getAliasPresenceInfo(username);
+            PresenceInfo info = pm.getAliasPresenceInfo(username);
 
             if (info == null) {
                 logger.warning("no PresenceInfo for " + username);
@@ -653,7 +663,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
                 return;
             }
 
-            if (isMe(info[0])) {
+            if (isMe(info)) {
                 // this user
                 volumeLabel.setText("Master volume for " + username);
                 editButton.setEnabled(true);
@@ -697,21 +707,21 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         for (int i = 0; i < selectedValues.length; i++) {
             String username = NameTagNode.getUsername((String) selectedValues[i]);
 
-            PresenceInfo[] info = pm.getAliasPresenceInfo(username);
+            PresenceInfo info = pm.getAliasPresenceInfo(username);
 
             if (info == null) {
                 System.out.println("no PresenceInfo for " + username);
                 continue;
             }
 
-            if (info[0].equals(presenceInfo)) {
+            if (info.equals(presenceInfo)) {
                 /*
                  * I'm the caller and will be added automatically
                  */
                 continue;
             }
 
-            usersToInvite.add(info[0]);
+            usersToInvite.add(info);
         }
     }
 
@@ -769,12 +779,19 @@ private void panelToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     }
 }//GEN-LAST:event_panelToggleButtonActionPerformed
 
+private HUDComponent addExternalHUDComponent;
+
 private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneButtonActionPerformed
+    if (addExternalHUDComponent != null) {
+	addExternalHUDComponent.setVisible(true);
+	return;
+    }
+
     AddExternalHUDPanel addExternalHUDPanel =
 	new AddExternalHUDPanel(client, session, presenceInfo);
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-    final HUDComponent addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
+    addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
 
     addExternalHUDComponent.setPreferredLocation(Layout.NORTHEAST);
 

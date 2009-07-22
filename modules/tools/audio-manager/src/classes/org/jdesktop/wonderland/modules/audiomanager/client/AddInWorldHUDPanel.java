@@ -84,8 +84,6 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
         userListModel = new DefaultListModel();
         userList.setModel(userListModel);
 
-  	userList.setEnabled(false);
-
 	if (inCallHUDPanel == null) {
             this.inCallHUDPanel = new InCallHUDPanel(client, session, myPresenceInfo, myPresenceInfo);
 
@@ -113,8 +111,6 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
         caller = this.inCallHUDPanel.getCaller();
 	group = this.inCallHUDPanel.getGroup();
 
-	session.send(client, new VoiceChatInfoRequestMessage(group));
-
 	inCallHUDComponent = this.inCallHUDPanel.getHUDComponent();
 
 	groupNameTextField.setText(group);
@@ -124,7 +120,7 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
         pm = PresenceManagerFactory.getPresenceManager(session);
 	pm.addPresenceManagerListener(this);
 
-	userList.setEnabled(false);
+	session.send(client, new VoiceChatInfoRequestMessage(group));
 
 	inviteButton.setEnabled(false);
 	setVisible(true);
@@ -158,27 +154,44 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
         }
     }
 
-    private void addToUserList(PresenceInfo presenceInfo) {
+    private void addElement(final String usernameAlias) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+		userListModel.removeElement(usernameAlias);
+		userListModel.addElement(usernameAlias);
+            }
+	});
+    }
+
+    private void removeElement(final String usernameAlias) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+		userListModel.removeElement(usernameAlias);
+            }
+	});
+    }
+
+    private void addToUserList(final PresenceInfo presenceInfo) {
 	if (presenceInfo.equals(myPresenceInfo)) {
 	    return;
 	}
 
-	userListModel.removeElement(presenceInfo.usernameAlias);
-	userListModel.addElement(presenceInfo.usernameAlias);
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+		removeElement(presenceInfo.usernameAlias);
+		addElement(presenceInfo.usernameAlias);
+            }
+        });
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
 	if (type.equals(ChangeType.USER_REMOVED)) {
-	    synchronized (userListModel) {
-		userListModel.removeElement(presenceInfo.usernameAlias);
-	    }
+	    removeElement(presenceInfo.usernameAlias);
 	} else if (type.equals(ChangeType.USER_ADDED)) {
-	    synchronized (userListModel) {
-		if (members.contains(presenceInfo)) {
-		    userListModel.removeElement(presenceInfo.usernameAlias);
-		} else {
-		    addToUserList(presenceInfo);
-		}
+	    if (members.contains(presenceInfo)) {
+		removeElement(presenceInfo.usernameAlias);
+	    } else {
+		addToUserList(presenceInfo);
 	    }
 	} 
     }
@@ -190,9 +203,7 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
 
 	if (added) {
 	    members.add(presenceInfo);
-	    synchronized (userListModel) {
-		userListModel.removeElement(presenceInfo.usernameAlias);
-	    }
+	    removeElement(presenceInfo.usernameAlias);
 	} else {
 	    members.remove(presenceInfo);
 	    synchronized (userListModel) {
@@ -201,22 +212,27 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
 	}
     }
 
-    public void setMemberList(PresenceInfo[] members) {
-	userListModel.clear();
+    public void setMemberList(final PresenceInfo[] members) {
 	this.members.clear();
 
-	PresenceInfo[] presenceInfoList = pm.getAllUsers();
-
-	synchronized (userListModel) {
-	    for (int i = 0; i < presenceInfoList.length; i++) {
-		PresenceInfo info = presenceInfoList[i];
-
-	        if (contains(members, info) == false) {
-		    userListModel.addElement(info.usernameAlias);
-		    this.members.add(info);
-		}
-	    }
+	for (int i = 0; i < members.length; i++) {
+	    this.members.add(members[i]);
 	}
+
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+		userListModel.clear();
+		PresenceInfo[] presenceInfoList = pm.getAllUsers();
+
+	    	for (int i = 0; i < presenceInfoList.length; i++) {
+		    PresenceInfo info = presenceInfoList[i];
+
+	            if (contains(members, info) == false) {
+		        userListModel.addElement(info.usernameAlias);
+		    }
+	        }
+	    }
+        });
     }
 
     private boolean contains(PresenceInfo[] members, PresenceInfo info) {
@@ -341,21 +357,21 @@ private void inviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 	for (int i = 0; i < selectedValues.length; i++) {
             String username = NameTagNode.getUsername((String) selectedValues[i]);
 
-            PresenceInfo[] info = pm.getAliasPresenceInfo(username);
+            PresenceInfo info = pm.getAliasPresenceInfo(username);
 
             if (info == null) {
                 logger.warning("no PresenceInfo for " + username);
                 continue;
             }
 
-	    if (info[0].equals(myPresenceInfo)) {
+	    if (info.equals(myPresenceInfo)) {
                 /*
                  * I'm the caller and will be added automatically
                  */
                 continue;
             }
 
-            usersToInvite.add(info[0]);
+            usersToInvite.add(info);
         }
     }
 

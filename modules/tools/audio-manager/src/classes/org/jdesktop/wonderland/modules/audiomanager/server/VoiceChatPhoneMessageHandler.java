@@ -76,11 +76,11 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 
 	String group = message.getGroup();
 
-	PresenceInfo presenceInfo = message.getPresenceInfo();
+	PresenceInfo callee = message.getCallee();
 
 	String externalCallID = group + "-" + callNumber++;
 
-	presenceInfo.callID = externalCallID;
+	callee.callID = externalCallID;
 
 	String softphoneCallID = message.getSoftphoneCallID();
 
@@ -95,7 +95,7 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
  	if (softphonePlayer == null) {
 	    logger.warning("Softphone player is not connected!");
             sender.send(clientID, new VoiceChatCallEndedMessage(
-	        group, presenceInfo, "Softphone is not connected!"));
+	        group, callee, "Softphone is not connected!"));
 	    return;
 	}
 
@@ -126,7 +126,7 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 	    logger.warning("Unable to get voice bridge for call " + cp + ":  "
 		+ e.getMessage());
             sender.send(clientID, new VoiceChatCallEndedMessage(
-	        group, presenceInfo, "No voice bridge available!"));
+	        group, callee, "No voice bridge available!"));
 	    return;
 	}
 
@@ -135,12 +135,12 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 	if (audioGroup == null) {
 	    logger.warning("No audio group " + group);
             sender.send(clientID, new VoiceChatCallEndedMessage(
-	        group, presenceInfo, "Audio group not found!"));
+	        group, callee, "Audio group not found!"));
 	    return;
 	}
 
 	cp.setPhoneNumber(message.getPhoneNumber());
-	cp.setName(presenceInfo.usernameAlias);
+	cp.setName(callee.usernameAlias);
 	cp.setCallId(externalCallID);
 	cp.setConferenceId(vm.getVoiceManagerParameters().conferenceId);
 	cp.setVoiceDetection(true);
@@ -148,7 +148,7 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 	cp.setVoiceDetectionWhileMuted(true);
 	cp.setHandleSessionProgress(true);
 
-	new VoiceChatPhoneStatusListener(group, presenceInfo, externalCallID);
+	new VoiceChatPhoneStatusListener(group, callee, externalCallID, clientID);
 	
 	Call externalCall;
 
@@ -158,7 +158,7 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 	    logger.warning("Unable to create call " + cp + ":  "
 		+ e.getMessage());
             sender.send(clientID, new VoiceChatCallEndedMessage(
-	        group, presenceInfo, "Can't create call!"));
+	        group, callee, "Can't create call!"));
 	    return;
 	}
 
@@ -168,12 +168,12 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 
 	externalPlayer.setCall(externalCall);
 
-	presenceInfo.callID = externalCallID;
-	presenceInfo.cellID = null;
-	presenceInfo.clientID = null;
+	callee.callID = externalCallID;
+	callee.cellID = null;
+	callee.clientID = null;
 
 	VoiceChatHandler.getInstance().addPlayerToAudioGroup(audioGroup,
-	    externalPlayer, presenceInfo, message.getChatType());
+	    externalPlayer, callee, message.getChatType());
 
 	//if (message.getChatType() == ChatType.PUBLIC) {
 	//    Vector3f center = new Vector3f((float) externalPlayer.getX(), 
@@ -186,7 +186,7 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 	 * Send VoiceChatJoinAcceptedMessage back to all the clients 
 	 * to signal success.
 	 */
-	sender.send(clientID, new VoiceChatJoinAcceptedMessage(group, presenceInfo, 
+	sender.send(clientID, new VoiceChatJoinAcceptedMessage(group, callee, 
 	    message.getChatType()));
 	return;
     }

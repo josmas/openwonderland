@@ -79,13 +79,16 @@ public class AddExternalHUDPanel extends javax.swing.JPanel implements Disconnec
 
         initComponents();
 
+	pm = PresenceManagerFactory.getPresenceManager(session);
+
 	inviteButton.setEnabled(false);
 
 	if (inCallHUDPanel != null) {
 	    locationSet = true;
             inCallHUDComponent = this.inCallHUDPanel.getHUDComponent();
 	} else {
-	    this.inCallHUDPanel = new InCallHUDPanel(client, session, myPresenceInfo, myPresenceInfo);
+	    this.inCallHUDPanel = new InCallHUDPanel(client, session, myPresenceInfo, myPresenceInfo,
+		myPresenceInfo.usernameAlias + "-phone");
 
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             inCallHUDComponent = mainHUD.createComponent(this.inCallHUDPanel);
@@ -137,7 +140,11 @@ public class AddExternalHUDPanel extends javax.swing.JPanel implements Disconnec
     }
 
     public void disconnected() {
-        addExternalHUDComponent.setVisible(false);
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	addExternalHUDComponent.setVisible(false);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -162,6 +169,7 @@ public class AddExternalHUDPanel extends javax.swing.JPanel implements Disconnec
         cancelButton = new javax.swing.JButton();
         groupNameTextField = new javax.swing.JLabel();
         privacyDescription = new javax.swing.JLabel();
+        statusLabel = new javax.swing.JLabel();
 
         addExternalUserLabel.setText("Call External User:");
 
@@ -234,34 +242,42 @@ public class AddExternalHUDPanel extends javax.swing.JPanel implements Disconnec
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
-                            .add(jLabel3))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(phoneNumberTextField)
-                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 28, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(addExternalUserLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 132, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(groupNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                        .add(layout.createSequentialGroup()
+                            .addContainerGap()
+                            .add(privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                            .addContainerGap()
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                        .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
+                                        .add(jLabel3))
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                        .add(phoneNumberTextField)
+                                        .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 28, Short.MAX_VALUE))
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                    .add(addExternalUserLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 132, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                    .add(groupNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE))
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                    .add(privateRadioButton)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(secretRadioButton)
+                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                    .add(speakerPhoneRadioButton)))))
                     .add(layout.createSequentialGroup()
+                        .add(104, 104, 104)
                         .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 78, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(inviteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(20, 20, 20))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(privateRadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(secretRadioButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(speakerPhoneRadioButton)))
+                        .add(inviteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 76, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(statusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 249, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -284,13 +300,15 @@ public class AddExternalHUDPanel extends javax.swing.JPanel implements Disconnec
                     .add(secretRadioButton)
                     .add(speakerPhoneRadioButton)
                     .add(privateRadioButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(privacyDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(12, 12, 12)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(statusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(inviteButton)
-                    .add(cancelButton))
-                .addContainerGap())
+                    .add(cancelButton)
+                    .add(inviteButton))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -320,6 +338,21 @@ private void speakerPhoneRadioButtonActionPerformed(java.awt.event.ActionEvent e
 private boolean locationSet;
 
 private void inviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inviteButtonActionPerformed
+    PresenceInfo[] info = pm.getAllUsers();
+
+    String name = nameTextField.getText();
+
+    for (int i = 0; i < info.length; i++) {
+        if (info[i].usernameAlias.equals(name) ||
+		info[i].userID.getUsername().equals(name)) {
+
+            statusLabel.setText("Name is already being used!");
+            return;
+        }
+    }
+
+    statusLabel.setText("");
+
     inCallHUDPanel.callUser(nameTextField.getText(), phoneNumberTextField.getText());
 
     inCallHUDComponent.setVisible(true);
@@ -362,6 +395,7 @@ private void phoneNumberTextFieldActionPerformed(java.awt.event.ActionEvent evt)
     private javax.swing.JRadioButton privateRadioButton;
     private javax.swing.JRadioButton secretRadioButton;
     private javax.swing.JRadioButton speakerPhoneRadioButton;
+    private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 
 }

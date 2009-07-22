@@ -95,6 +95,8 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     private AddExternalHUDPanel addExternalHUDPanel;
     private HUDComponent addExternalHUDComponent;
 
+    private boolean personalPhone;
+
     /** Creates new form InCallHUDPanel */
     public InCallHUDPanel() {
         initComponents();
@@ -120,8 +122,7 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         userList.setModel(userListModel);
         userList.setCellRenderer(new UserListCellRenderer());
 
-        invitedMembers.add(myPresenceInfo);
-        addToUserList(myPresenceInfo);
+	members.add(myPresenceInfo);
 
         if (caller.equals(myPresenceInfo) == false) {
             members.add(caller);
@@ -173,7 +174,7 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         inCallHUDComponent.addComponentListener(new HUDComponentListener() {
 
 	    public void HUDComponentChanged(HUDComponentEvent e) {
-                if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                if (e.getEventType().equals(ComponentEventType.CLOSED)) {
             	    session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
                 }
             }
@@ -181,7 +182,9 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     }
 
     public void callUser(String name, String number) {
-       session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
+	personalPhone = true;
+
+        session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
                 new PresenceInfo[0], ChatType.PRIVATE));
 
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
@@ -233,31 +236,41 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         return inCallHUDPanelMap.get(group);
     }
 
+    private void addElement(final String name) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                userListModel.removeElement(name);
+                userListModel.addElement(name);
+            }
+        });
+    }
+
+    private void removeElement(final String name) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                userListModel.removeElement(name);
+            }
+        });
+    }
+
     private void addToUserList(PresenceInfo info) {
         removeFromUserList(info);
 
         String name = NameTagNode.getDisplayName(info.usernameAlias,
                 info.isSpeaking, info.isMuted);
 
-        synchronized (userListModel) {
-            userListModel.addElement(name);
-        }
+        addElement(name);
     }
 
     private void removeFromUserList(PresenceInfo info) {
-        synchronized (userListModel) {
-            String name = NameTagNode.getDisplayName(info.usernameAlias, false, false);
-            userListModel.removeElement(name);
+        String name = NameTagNode.getDisplayName(info.usernameAlias, false, false);
+        removeElement(name);
 
-            name = NameTagNode.getDisplayName(info.usernameAlias, false, true);
-            userListModel.removeElement(name);
+        name = NameTagNode.getDisplayName(info.usernameAlias, false, true);
+        removeElement(name);
 
-            name = NameTagNode.getDisplayName(info.usernameAlias, true, false);
-            userListModel.removeElement(name);
-
-            name = NameTagNode.getDisplayName(info.usernameAlias, true, true);
-            userListModel.removeElement(name);
-        }
+        name = NameTagNode.getDisplayName(info.usernameAlias, true, false);
+        removeElement(name);
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
@@ -271,12 +284,16 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
         if (type.equals(ChangeType.USER_REMOVED)) {
 	    if (presenceInfo.clientID == null) {
-		pm.removePresenceInfo(presenceInfo);
+		if (personalPhone && members.size() == 1) {
+            	    session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
+		    inCallHUDComponent.setVisible(false);
+		}
 	    }
 	} else {
             addToUserList(presenceInfo);
         }
     }
+
     private ArrayList<PresenceInfo> members = new ArrayList();
     private ArrayList<PresenceInfo> invitedMembers = new ArrayList();
 
@@ -287,7 +304,10 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         invitedMembers.remove(member);
 
         if (added == true) {
-            members.add(member);
+	    if (members.contains(member) == false) {
+                members.add(member);
+	    } 
+
             addToUserList(member);
             return;
         }
@@ -297,11 +317,16 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         }
 
         removeFromUserList(member);
+
+	if (personalPhone && members.size() == 1) {
+	    session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
+	    inCallHUDComponent.setVisible(false);
+	}
     }
 
     public void disconnected() {
         inCallHUDPanelMap.remove(group);
-        inCallHUDComponent.setVisible(false);
+        inCallHUDComponent.setClosed();
     }
 
     /** This method is called from within the constructor to
@@ -588,11 +613,13 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
                 return;
             }
 
-            holdHUDPanel = new HoldHUDPanel(client, session, group, this);
+            holdHUDPanel = new HoldHUDPanel(client, session, group, this, myPresenceInfo);
 
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             holdHUDComponent = mainHUD.createComponent(holdHUDPanel);
             holdHUDComponent.setPreferredLocation(Layout.SOUTHWEST);
+
+	    holdHUDPanel.setHUDComponent(holdHUDComponent);
 
             mainHUD.addComponent(holdHUDComponent);
             holdHUDComponent.addComponentListener(new HUDComponentListener() {
@@ -658,14 +685,14 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
         for (int i = 0; i < selectedValues.length; i++) {
             String usernameAlias = NameTagNode.getUsername((String) selectedValues[i]);
 
-            PresenceInfo[] info = pm.getAliasPresenceInfo(usernameAlias);
+            PresenceInfo info = pm.getAliasPresenceInfo(usernameAlias);
 
-            if (info == null || info.length == 0) {
-                System.out.println("No presence info for " + (String) selectedValues[i]);
+            if (info == null) {
+                logger.warning("No presence info for " + (String) selectedValues[i]);
                 continue;
             }
 
-            membersInfo.add(info[0]);
+            membersInfo.add(info);
         }
 
         return membersInfo;
@@ -724,14 +751,14 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
 
             String usernameAlias = NameTagNode.getUsername((String) value);
 
-            PresenceInfo[] info = pm.getAliasPresenceInfo(usernameAlias);
+            PresenceInfo info = pm.getAliasPresenceInfo(usernameAlias);
 
-            if (info == null || info.length == 0) {
-                System.out.println("No presence info for " + usernameAlias);
+            if (info == null) {
+                logger.warning("No presence info for " + usernameAlias);
                 return renderer;
             }
 
-            if (members.contains(info[0])) {
+            if (members.contains(info)) {
                 renderer.setFont(font);
                 renderer.setForeground(Color.BLACK);
             } else {
@@ -741,6 +768,7 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
             return renderer;
         }
     }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addExternalButton;
     private javax.swing.JButton addInWorldButton;
