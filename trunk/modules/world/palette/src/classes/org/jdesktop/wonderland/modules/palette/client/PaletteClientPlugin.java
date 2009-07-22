@@ -245,7 +245,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
                 return;
             }
 
-            CellUtils.deleteCell(cell.getCellID());
+            CellUtils.deleteCell(cell);
         }
     }
 

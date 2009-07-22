@@ -91,9 +91,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /** The view to which this cell belongs. */
     private View2DCell view;
 
-    /** List of listeners to notify when the frame is closed. */
-    protected LinkedList<CloseListener> closeListeners = new LinkedList();
-
     /**
      * Create a new instance of FrameWorldDefault.
      *
@@ -109,7 +106,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
                 ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(frameNode);
         frameEntity.addComponent(RenderComponent.class, rc);
 
-        header = new FrameHeaderSwing(view, closeListeners);
+        header = new FrameHeaderSwing(view);
 
         leftSide = new FrameSide(view, FrameSide.Side.LEFT, new Gui2DSide(view));
         leftSide.setParentEntity(frameEntity);
@@ -135,9 +132,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     public synchronized void cleanup() {
         if (attached) {
             detachFromViewEntity();
-        }
-        if (closeListeners != null) {
-            closeListeners.clear();
         }
         if (header != null) {
             header.cleanup();
@@ -283,31 +277,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
         if (resizeCorner != null) {
             resizeCorner.updateControl(controlArb);
         }
-    }
-
-    /**
-     * Add a close listener.
-     *
-     * @param listener The listener to add.
-     */
-    public synchronized void addCloseListener(CloseListener listener) {
-        closeListeners.add(listener);
-    }
-
-    /**
-     * Remove a close listener.
-     *
-     * @param listener The listener to remove.
-     */
-    public synchronized void removeCloseListener(CloseListener listener) {
-        closeListeners.remove(listener);
-    }
-
-    /**
-     * Returns an iterator over all close listeners.
-     */
-    public synchronized Iterator<CloseListener> getCloseListeners() {
-        return closeListeners.iterator();
     }
 
     @Override

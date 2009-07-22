@@ -100,7 +100,7 @@ public class FrameHeaderSwing
      * @param view The view the frame encloses.
      * @param closeListeners The listeners to be notified when the header's close button is pressed.
      */
-    public FrameHeaderSwing(View2DCell view, LinkedList<Frame2DCell.CloseListener> closeListeners) {
+    public FrameHeaderSwing(View2DCell view) {
         super("FrameHeaderSwing for " + view, view, null);
 
         this.view = view;
@@ -392,8 +392,8 @@ public class FrameHeaderSwing
             boolean isPrimary = viewWindow.getType() == Window2D.Type.PRIMARY ||
                                 viewWindow.getType() == Window2D.Type.UNKNOWN;
             
-            // If this is a primary WindowSwing, quit the app cell as well.
-            if (viewWindow instanceof WindowSwing && isPrimary) {
+            // Clicking the close button on a primary window deletes the cell
+            if (isPrimary) {
 
                 // Display a confirmation dialog to make sure we really want to delete the cell.
                 App2D app = viewWindow.getApp();
@@ -411,8 +411,7 @@ public class FrameHeaderSwing
                 cell.destroy();
 
             } else {
-                // For non-swing windows, simply close the window. The app itself will figure out
-                // whether closing this window quits the app.
+                // Otherwise just close the window. 
                 viewWindow.closeUser();
             }
         }
