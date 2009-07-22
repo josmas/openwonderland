@@ -6,6 +6,8 @@
 
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 
 /**
@@ -17,12 +19,10 @@ public class CallEndedHUDPanel extends javax.swing.JPanel {
     private HUDComponent callEndedHUDComponent;
 
     /** Creates new form CallEndedHUDPanel */
-    public CallEndedHUDPanel(String reason) {
+    public CallEndedHUDPanel(PresenceInfo callee, String reason) {
         initComponents();
 
 	callStatusLabel.setText(reason);
-
-	new Exception("Foo!").printStackTrace();
     }
 
     public void setHUDComponent(HUDComponent callEndedHUDComponent) {
@@ -59,8 +59,8 @@ public class CallEndedHUDPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(callStatusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 268, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(

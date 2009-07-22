@@ -36,6 +36,7 @@ import com.sun.voip.client.connector.CallStatus;
 
 import org.jdesktop.wonderland.server.WonderlandContext;
 
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -68,21 +69,29 @@ public class VoiceChatPhoneStatusListener implements ManagedCallStatusListener, 
     private String group;
     private PresenceInfo presenceInfo;
     private String externalCallID;
+    private WonderlandClientID clientID;
+
+    private boolean ended;
 
     public VoiceChatPhoneStatusListener(String group, PresenceInfo presenceInfo, 
-	    String externalCallID) {
+	    String externalCallID, WonderlandClientID clientID) {
 
 	this.group = group;
 	this.presenceInfo = presenceInfo;
 	this.externalCallID = externalCallID;
+	this.clientID = clientID;
 
 	AppContext.getManager(VoiceManager.class).addCallStatusListener(this, 
 	    externalCallID);
 
-	new AudioCallStatusListener(null, externalCallID);
+	new AudioCallStatusListener(clientID, externalCallID, true);
     }
 
     public void callStatusChanged(CallStatus status) {    
+	if (ended) {
+	    return;
+	}
+
 	logger.finer("got status " + status);
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
@@ -96,17 +105,14 @@ public class VoiceChatPhoneStatusListener implements ManagedCallStatusListener, 
 	    stopRinging(vm);
 	    vm.removeCallStatusListener(this);
                 
+	    ended = true;
+
             WonderlandClientSender sender = WonderlandContext.getCommsManager().getSender(
 	        AudioManagerConnectionType.CONNECTION_TYPE);
 
-	    Player player = vm.getPlayer(externalCallID);
+	    System.out.println("Sending VoiceChatCallEndedMessage");
 
-	    if (player != null) {
-		vm.removePlayer(player);
-	    }
-
-	    System.out.println("SENDING VOICECHATCALLENDED MESSAGE");
-            sender.send(new VoiceChatCallEndedMessage(group, presenceInfo, 
+            sender.send(clientID, new VoiceChatCallEndedMessage(group, presenceInfo, 
 		status.getOption("Reason")));
 	    break;
 	}

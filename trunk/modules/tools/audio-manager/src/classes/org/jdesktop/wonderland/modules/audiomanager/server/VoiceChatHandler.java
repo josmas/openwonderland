@@ -320,7 +320,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    }
 
 	    updateAttenuation(player);
-	    sender.send(msg);
+	    sender.send(clientID, msg);
 	    return;
 	}
 

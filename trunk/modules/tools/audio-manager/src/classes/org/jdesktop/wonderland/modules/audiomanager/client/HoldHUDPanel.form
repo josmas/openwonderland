@@ -26,11 +26,11 @@
                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="volumeSlider" pref="262" max="32767" attributes="1"/>
+                      <Component id="volumeSlider" pref="290" max="32767" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="memberText" pref="159" max="32767" attributes="1"/>
+                      <Component id="memberText" pref="181" max="32767" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="holdButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -70,8 +70,8 @@
     </Component>
     <Component class="javax.swing.JSlider" name="volumeSlider">
       <Properties>
+        <Property name="majorTickSpacing" type="int" value="1"/>
         <Property name="maximum" type="int" value="10"/>
-        <Property name="minorTickSpacing" type="int" value="1"/>
         <Property name="paintLabels" type="boolean" value="true"/>
         <Property name="paintTicks" type="boolean" value="true"/>
         <Property name="snapToTicks" type="boolean" value="true"/>

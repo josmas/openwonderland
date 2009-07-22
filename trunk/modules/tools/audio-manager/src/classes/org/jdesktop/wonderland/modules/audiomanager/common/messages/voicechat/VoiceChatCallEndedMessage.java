@@ -25,22 +25,20 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  */
 public class VoiceChatCallEndedMessage extends VoiceChatMessage {
     
-    private PresenceInfo presenceInfo;
+    private PresenceInfo callee;
     private String reasonCallEnded;
 
-    public VoiceChatCallEndedMessage(String group, PresenceInfo presenceInfo,
+    public VoiceChatCallEndedMessage(String group, PresenceInfo callee,
 	    String reasonCallEnded) {
 
 	super(group);
 
-	this.presenceInfo = presenceInfo;
+	this.callee = callee;
 	this.reasonCallEnded = reasonCallEnded;
-
-	new Exception("FOO!").printStackTrace();
     }
 
-    public PresenceInfo getPresenceInfo() {
-	return presenceInfo;
+    public PresenceInfo getCallee() {
+	return callee;
     }
 
     public String getReasonCallEnded() {

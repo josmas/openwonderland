@@ -23,6 +23,12 @@ import org.jdesktop.wonderland.modules.phone.common.CallListing;
 
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
+
 import java.awt.Color;
 import java.awt.Point;
 
@@ -45,16 +51,21 @@ public class PhoneForm extends JDialog implements KeypadListener {
 
     private CellID phoneCellID;
 
+    private PresenceManager pm;
+
     public PhoneForm(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
     }
 
-    public PhoneForm(CellID phoneCellID, ChannelComponent channelComp,
-	    PhoneMessageHandler phoneMessageHandler, boolean locked, 
-	    String phoneNumber, boolean passwordProtected) {
+    public PhoneForm(WonderlandSession session, CellID phoneCellID, 
+	    ChannelComponent channelComp, PhoneMessageHandler phoneMessageHandler, 
+	    boolean locked, String phoneNumber, boolean passwordProtected) {
 
         initComponents();
+
+	pm = PresenceManagerFactory.getPresenceManager(session);
+
         getRootPane().setDefaultButton(callButton);
 
 	this.phoneCellID = phoneCellID;
@@ -215,13 +226,6 @@ public class PhoneForm extends JDialog implements KeypadListener {
         }
     }
 
-    public String getContactName() {
-        return contactNameTextField.getText();
-    }
-
-    public String getContactNumber() {
-        return contactNumberTextField.getText();
-    }
 //    public void updateCallListings(HashMap<String,CallListing> callListings, CallListing selectListing) {    
 //    //    CallListing previouslySelected = (CallListing)jListCalls.getSelectedValue();
 //        
@@ -488,9 +492,7 @@ private void callButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return;
     }
 
-    // Ask the server to place a call for us.
-    // We'll update our display lists from the phone cell once the success message echos back.
-    String privateClientName = "";
+    String name = contactNameTextField.getText();
 
     //Disallow empty contact names
     if (contactNameTextField.getText().equals("")) {
@@ -498,12 +500,29 @@ private void callButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return;
     }
 
+    PresenceInfo[] info = pm.getAllUsers();
+
+    for (int i = 0; i < info.length; i++) {
+        if (info[i].usernameAlias.equals(name) ||
+		info[i].userID.getUsername().equals(name)) {
+
+            statusMessageLabel.setText("Name is already being used!");
+	    return;
+        }
+    }
+
+    statusMessageLabel.setText("");
+
+    // Ask the server to place a call for us.
+    // We'll update our display lists from the phone cell once the success message echos back.
+    String privateClientName = "";
+
     if (privateCallCheckBox.isSelected()) {
         privateClientName = "Private"; // This is going to be updated on the server side        
         callButton.setText("End Call");
     }
 
-    CallListing listing = new CallListing(getContactName(), getContactNumber(),
+    CallListing listing = new CallListing(name, contactNumberTextField.getText(),
             privateClientName, simulationModeCheckBox.isSelected());
 
     if (simulationModeCheckBox.isSelected() == false) {

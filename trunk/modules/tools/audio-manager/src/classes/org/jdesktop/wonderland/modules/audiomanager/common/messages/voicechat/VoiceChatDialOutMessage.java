@@ -30,17 +30,17 @@ public class VoiceChatDialOutMessage extends VoiceChatMessage {
     String group;
     String softphoneCallID;
     ChatType chatType;
-    PresenceInfo presenceInfo;
+    PresenceInfo callee;
     String phoneNumber;
 
     public VoiceChatDialOutMessage(String group, String softphoneCallID, ChatType chatType, 
-	    PresenceInfo presenceInfo, String phoneNumber) {
+	    PresenceInfo callee, String phoneNumber) {
 
 	super(group);
 
 	this.softphoneCallID = softphoneCallID;
 	this.chatType = chatType;
-	this.presenceInfo = presenceInfo;
+	this.callee = callee;
 	this.phoneNumber = phoneNumber;	
     }
 
@@ -52,8 +52,8 @@ public class VoiceChatDialOutMessage extends VoiceChatMessage {
 	return softphoneCallID;
     }
 
-    public PresenceInfo getPresenceInfo() {
-	return presenceInfo;
+    public PresenceInfo getCallee() {
+	return callee;
     }
 
     public String getPhoneNumber() {

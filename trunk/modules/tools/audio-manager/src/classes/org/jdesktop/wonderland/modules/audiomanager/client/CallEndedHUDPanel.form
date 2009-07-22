@@ -19,8 +19,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                   <Component id="callStatusLabel" pref="312" max="32767" attributes="1"/>
-                  <Component id="jLabel1" alignment="0" min="-2" pref="268" max="-2" attributes="0"/>
                   <Component id="okButton" alignment="1" min="-2" pref="56" max="-2" attributes="0"/>
+                  <Component id="jLabel1" alignment="0" min="-2" pref="235" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>

@@ -69,14 +69,22 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
     private static final Logger logger =
             Logger.getLogger(AudioCallStatusListener.class.getName());
 
-    WonderlandClientID clientID;
-    String callID;
+    private WonderlandClientID clientID;
+    private String callID;
+    private boolean isExternalCall;
 
     private boolean ended;
 
     public AudioCallStatusListener(WonderlandClientID clientID, String callID) {
+	this(clientID, callID, false);
+    }
+
+    public AudioCallStatusListener(WonderlandClientID clientID, String callID,
+	    boolean isExternalCall) {
+
 	this.clientID = clientID;
 	this.callID = callID;
+	this.isExternalCall = isExternalCall;
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -171,7 +179,7 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
             break;
 
 	case CallStatus.MIGRATED:
-	    if (clientID == null) {
+	    if (isExternalCall) {
 		return;
 	    }
 
@@ -180,7 +188,7 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
 	    break;
 
 	case CallStatus.MIGRATE_FAILED:
-	    if (clientID == null) {
+	    if (isExternalCall) {
 		return;
 	    }
 
@@ -190,19 +198,21 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
 	case CallStatus.ENDED:
 	    vm.removeCallStatusListener(this);
 
-	    if (player == null) {
+	    if (player != null) {
+	        AudioGroup[] audioGroups = player.getAudioGroups();
+
+	        for (int i = 0; i < audioGroups.length; i++) {
+		    audioGroups[i].removePlayer(player);
+	        }
+
+	        vm.removePlayer(player);
+	    } else {
 		logger.warning("Couldn't find player for " + status);
-		return;
-	    }
+		System.out.println("Couldn't find player for " + status);
+	    } 
 
-	    AudioGroup[] audioGroups = player.getAudioGroups();
-
-	    for (int i = 0; i < audioGroups.length; i++) {
-		audioGroups[i].removePlayer(player);
-	    }
-
-	    sender.send(new CallEndedMessage(callID, status.getOption("Reason")));
 	    ended = true;
+	    sender.send(new CallEndedMessage(callID, status.getOption("Reason")));
             break;
 	  
 	case CallStatus.BRIDGE_OFFLINE:
