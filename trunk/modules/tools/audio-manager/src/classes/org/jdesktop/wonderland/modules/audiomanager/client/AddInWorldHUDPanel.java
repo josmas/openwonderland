@@ -72,19 +72,19 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
     }
 
     public AddInWorldHUDPanel(AudioManagerClient client, WonderlandSession session,
-	    PresenceInfo myPresenceInfo, InCallHUDPanel inCallHUDPanel) {
+	    PresenceInfo myPresenceInfo, InCallHUDPanel inCallPanel) {
 
 	this.client = client;
 	this.session = session;
         this.myPresenceInfo = myPresenceInfo;
-	this.inCallHUDPanel = inCallHUDPanel;
+	this.inCallHUDPanel = inCallPanel;
 
         initComponents();
 
         userListModel = new DefaultListModel();
         userList.setModel(userListModel);
 
-	if (inCallHUDPanel == null) {
+	if (inCallPanel == null) {
             this.inCallHUDPanel = new InCallHUDPanel(client, session, myPresenceInfo, myPresenceInfo);
 
 	    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
@@ -95,7 +95,9 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
 	    mainHUD.addComponent(inCallHUDComponent);
 	    inCallHUDComponent.addComponentListener(new HUDComponentListener() {
 	        public void HUDComponentChanged(HUDComponentEvent e) {
-	            if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+	            if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+			inCallHUDPanel = null;
+			inCallHUDComponent = null;
 	            }
 	        }
 	    });
@@ -202,6 +204,10 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
 	logger.finer("memberChange " + presenceInfo + " added " + added);
 
 	if (added) {
+	    if (members.contains(presenceInfo)) {
+		return;
+	    }
+
 	    members.add(presenceInfo);
 	    removeElement(presenceInfo.usernameAlias);
 	} else {
@@ -212,11 +218,13 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
 	}
     }
 
-    public void setMemberList(final PresenceInfo[] members) {
-	this.members.clear();
+    public void setMemberList(PresenceInfo[] memberList) {
+	members.clear();
 
-	for (int i = 0; i < members.length; i++) {
-	    this.members.add(members[i]);
+	for (int i = 0; i < memberList.length; i++) {
+	    if (members.contains(memberList[i]) == false) {
+	        members.add(memberList[i]);
+	    }
 	}
 
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -227,22 +235,14 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
 	    	for (int i = 0; i < presenceInfoList.length; i++) {
 		    PresenceInfo info = presenceInfoList[i];
 
-	            if (contains(members, info) == false) {
-		        userListModel.addElement(info.usernameAlias);
+	            if (members.contains(info)) {
+		        removeElement(info.usernameAlias);
+		    } else {
+		        addElement(info.usernameAlias);
 		    }
 	        }
 	    }
         });
-    }
-
-    private boolean contains(PresenceInfo[] members, PresenceInfo info) {
-	for (int i = 0; i < members.length; i++) {
-	    if (members[i].equals(info)) {
-		return true;
-	    }
-	}
-
-	return false;
     }
 
     public void disconnected() {

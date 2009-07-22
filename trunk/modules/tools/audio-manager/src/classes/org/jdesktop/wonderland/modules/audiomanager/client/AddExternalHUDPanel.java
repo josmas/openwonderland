@@ -70,12 +70,12 @@ public class AddExternalHUDPanel extends javax.swing.JPanel implements Disconnec
     }
 
     public AddExternalHUDPanel(AudioManagerClient client, WonderlandSession session,
-            PresenceInfo myPresenceInfo, InCallHUDPanel inCallHUDPanel) {
+            PresenceInfo myPresenceInfo, InCallHUDPanel inCallPanel) {
 
         this.client = client;
         this.session = session;
         this.myPresenceInfo = myPresenceInfo;
-        this.inCallHUDPanel = inCallHUDPanel;
+        this.inCallHUDPanel = inCallPanel;
 
         initComponents();
 
@@ -83,7 +83,7 @@ public class AddExternalHUDPanel extends javax.swing.JPanel implements Disconnec
 
 	inviteButton.setEnabled(false);
 
-	if (inCallHUDPanel != null) {
+	if (inCallPanel != null) {
 	    locationSet = true;
             inCallHUDComponent = this.inCallHUDPanel.getHUDComponent();
 	} else {
@@ -98,7 +98,9 @@ public class AddExternalHUDPanel extends javax.swing.JPanel implements Disconnec
             mainHUD.addComponent(inCallHUDComponent);
             inCallHUDComponent.addComponentListener(new HUDComponentListener() {
                 public void HUDComponentChanged(HUDComponentEvent e) {
-                    if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                    if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+			inCallHUDPanel = null;
+			inCallHUDComponent = null;
                     }
                 }
             });

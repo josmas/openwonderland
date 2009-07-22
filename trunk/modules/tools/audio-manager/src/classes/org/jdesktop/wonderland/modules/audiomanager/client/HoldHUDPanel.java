@@ -66,6 +66,7 @@ public class HoldHUDPanel extends javax.swing.JPanel implements MemberChangeList
             public void HUDComponentChanged(HUDComponentEvent e) {
                 if (e.getEventType().equals(ComponentEventType.CLOSED)) {
                     session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
+		    inCallHUDPanel.setClosed();
                 }
             }
         });
