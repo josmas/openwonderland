@@ -213,6 +213,11 @@ public interface HUDComponent {
     public boolean isWorldVisible();
 
     /**
+     * Closes the component
+     */
+    public void setClosed();
+
+    /**
      * Sets whether the component is responsive to mouse and keyboard events
      * @param enabled true if the component is to be enabled, false otherwise
      */

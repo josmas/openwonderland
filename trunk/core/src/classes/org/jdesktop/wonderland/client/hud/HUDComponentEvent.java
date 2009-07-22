@@ -90,7 +90,11 @@ public class HUDComponentEvent {
         /**
          * A HUD component is disabled
          */
-        DISABLED
+        DISABLED,
+        /**
+         * A HUD component has been closed
+         */
+        CLOSED
     };
 
     /**
