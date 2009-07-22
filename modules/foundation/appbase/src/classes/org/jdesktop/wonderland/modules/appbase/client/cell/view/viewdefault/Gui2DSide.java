@@ -135,43 +135,6 @@ class Gui2DSide extends Gui2D {
     }
 
     /**
-     * For Debug: The key listener for this GUI.
-    protected class SideKeyListener extends EventClassListener {
-
-        @Override
-        public Class[] eventClassesToConsume() {
-            return new Class[]{KeyEvent3D.class};
-        }
-
-        @Override
-        public void commitEvent(Event event) {
-
-            KeyEvent3D ke3d = (KeyEvent3D) event;
-            KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
-
-            if (ke3d.isPressed() &&
-                ke.getKeyCode() == KeyEvent.VK_C &&
-                (ke.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) != 0) {
-
-                SwingUtilities.invokeLater(new Runnable () {
-                    public void run () {
-                        // Note: even though this currently doesn't invoke Swing, I'm 
-                        // doing this inside invokeLater so that the window can bring
-                        // up a swing-based confirmer dialog, if desired.
-                        Gui2DSide.this.view.windowCloseUser();
-                    }
-                });
-                return;
-            }
-        }
-
-        public boolean propagatesToParent (Event event) {
-            return false;
-        }
-    }
-    */
-
-    /**
      * Determine if this is a window configuration action.
      *
      * @param me The AWT event for this 3D mouse event.

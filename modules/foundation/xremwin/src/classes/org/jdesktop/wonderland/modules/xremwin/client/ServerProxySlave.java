@@ -229,7 +229,7 @@ class ServerProxySlave implements ServerProxy {
         // Read the initial window state synchronization
         // part of the welcome message
         int numWins = bufQueue.nextInt();
-        AppXrw.logger.warning("numWins = " + numWins);
+        AppXrw.logger.info("numWins = " + numWins);
         for (int i = 0; i < numWins; i++) {
             syncWindowStateNext();
         }
@@ -248,7 +248,7 @@ class ServerProxySlave implements ServerProxy {
     }
 
     private void syncWindowStateNext() {
-        AppXrw.logger.warning("Enter syncWindowStateNext");
+        AppXrw.logger.info("Enter syncWindowStateNext");
 
         CreateWindowMsgArgs crtMsgArgs = new CreateWindowMsgArgs();
         WindowXrw win;
@@ -266,27 +266,27 @@ class ServerProxySlave implements ServerProxy {
         controllingUserLen = bufQueue.nextInt();
         desiredZOrder= bufQueue.nextInt();
         rotY = bufQueue.nextFloat();
-        AppXrw.logger.warning("rotY = " + rotY);
+        AppXrw.logger.info("rotY = " + rotY);
         userDispl.x = bufQueue.nextFloat();
         userDispl.y = bufQueue.nextFloat();
         userDispl.z = bufQueue.nextFloat();
-        AppXrw.logger.warning("userDispl = " + userDispl);
+        AppXrw.logger.info("userDispl = " + userDispl);
         /* TODO: 0.4 protocol:
         int transientFor = bufQueue.nextInt();
-        AppXrw.logger.warning("transientFor = " + transientFor);
+        AppXrw.logger.info("transientFor = " + transientFor);
          */
         // TODO: 0.4 protocol: skip isTransient
         int transientFor = bufQueue.nextInt();
         int typeOrdinal = bufQueue.nextInt();
         Window2D.Type type = Window2D.Type.values()[typeOrdinal];
-        AppXrw.logger.warning("type = " + type);
+        AppXrw.logger.info("type = " + type);
         int parentWid = bufQueue.nextInt();
-        AppXrw.logger.warning("parentWid = " + parentWid);
+        AppXrw.logger.info("parentWid = " + parentWid);
         
         crtMsgArgs.decorated = (bufQueue.nextByte() == 1) ? true : false;
-        AppXrw.logger.warning("client = " + client);
-        AppXrw.logger.warning("crtMsgArgs = " + crtMsgArgs);
-        AppXrw.logger.warning("desiredZOrder= " + desiredZOrder);
+        AppXrw.logger.info("client = " + client);
+        AppXrw.logger.info("crtMsgArgs = " + crtMsgArgs);
+        AppXrw.logger.info("desiredZOrder= " + desiredZOrder);
 
         // Make sure window is ready to receive data on creation
         win = client.createWindow(crtMsgArgs);
@@ -312,12 +312,12 @@ class ServerProxySlave implements ServerProxy {
          */
 
         boolean show = (bufQueue.nextByte() == 1) ? true : false;
-        AppXrw.logger.warning("show = " + show);
+        AppXrw.logger.info("show = " + show);
 
         if (controllingUserLen > 0) {
             byte[] controllingUserBuf = bufQueue.nextBuffer();
             String controllingUser = new String(controllingUserBuf);
-            AppXrw.logger.warning("controlling user = " + controllingUser);
+            AppXrw.logger.info("controlling user = " + controllingUser);
             win.setControllingUser(controllingUser);
         }
 

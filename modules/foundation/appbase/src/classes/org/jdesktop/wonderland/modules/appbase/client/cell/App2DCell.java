@@ -119,7 +119,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         cleanup();
 
         // Tell the server to remove the cell from the world
-        CellUtils.deleteCell(getCellID());
+        CellUtils.deleteCell(this);
     }
 
     /**
