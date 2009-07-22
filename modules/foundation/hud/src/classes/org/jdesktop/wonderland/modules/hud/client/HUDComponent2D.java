@@ -339,6 +339,13 @@ public class HUDComponent2D implements HUDComponent {
     /**
      * {@inheritDoc}
      */
+    public void setClosed() {
+        notifyListeners(ComponentEventType.CLOSED);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void setEnabled(boolean enabled) {
         if (this.enabled == enabled) {
             return;

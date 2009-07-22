@@ -268,7 +268,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         if (e.getActionCommand().equals("close")) {
             logger.info("close action performed: " + e);
             HUDComponent hudComponent = hudFrameMap.get((HUDFrameHeader2D) e.getSource());
-            hudComponent.setVisible(false);
+            close(hudComponent);
         } else if (e.getActionCommand().equals("minimize")) {
             logger.info("minimize action performed: " + e);
             HUDComponent hudComponent = hudFrameMap.get((HUDFrameHeader2D) e.getSource());
@@ -365,7 +365,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         // position the component on the screen
         Vector2f location = (layout != null) ? layout.getLocation(component) : new Vector2f(component.getX(), component.getY());
-        component.setLocation((int) (location.x - view.getDisplayerLocalWidth()/2), (int) (location.y - view.getDisplayerLocalHeight()/2), false);
+        component.setLocation((int) (location.x - view.getDisplayerLocalWidth() / 2), (int) (location.y - view.getDisplayerLocalHeight() / 2), false);
         view.setLocationOrtho(location, false);
 
         // display the component
@@ -518,6 +518,10 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         logger.fine("minimizing HUD component: " + component);
     }
 
+    private void componentClosed(HUDComponent2D component) {
+        logger.fine("closing HUD component: " + component);
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -549,6 +553,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 break;
             case MINIMIZED:
                 componentMinimized(comp);
+                break;
+            case CLOSED:
+                componentClosed(comp);
                 break;
             case CREATED:
             case RESIZED:
@@ -678,5 +685,10 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             decorated = state.getFrame() != null;
         }
         return decorated;
+    }
+
+    public void close(HUDComponent component) {
+        component.setVisible(false);
+        component.setClosed();
     }
 }
