@@ -168,6 +168,13 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         this.addExternalHUDComponent = addExternalHUDComponent;
     }
 
+    public void setClosed() {
+	holdHUDPanel = null;
+	holdHUDComponent = null;
+
+	inCallHUDComponent.setClosed();
+    }
+
     public void setHUDComponent(HUDComponent inCallHUDComponent) {
         this.inCallHUDComponent = inCallHUDComponent;
 
@@ -508,7 +515,9 @@ private void addInWorldButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     addInWorldHUDComponent.addComponentListener(new HUDComponentListener() {
 
         public void HUDComponentChanged(HUDComponentEvent e) {
-            if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+            if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+		addInWorldHUDPanel = null;
+		addInWorldHUDComponent = null;
             }
         }
     });
@@ -572,7 +581,9 @@ private void addExternalButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     addExternalHUDComponent.addComponentListener(new HUDComponentListener() {
 
         public void HUDComponentChanged(HUDComponentEvent e) {
-            if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+            if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+		addExternalHUDPanel = null;
+		addExternalHUDComponent = null;
             }
         }
     });

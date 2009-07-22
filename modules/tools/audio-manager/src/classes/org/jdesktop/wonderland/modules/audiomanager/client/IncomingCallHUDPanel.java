@@ -241,7 +241,8 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
 
             inCallHUDComponent.addComponentListener(new HUDComponentListener() {
                 public void HUDComponentChanged(HUDComponentEvent e) {
-                    if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                    if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+			inCallHUDComponent = null;
                     }
                 }
             });
