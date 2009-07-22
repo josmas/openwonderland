@@ -69,6 +69,8 @@ public class WFSRecording extends WFSRoot {
     /* the date formatter for writing the timestamp in the changes file */
     final private static SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
 
+    /* the date formatter for writing the dublin core date in the changes file */
+    final private static SimpleDateFormat DC_DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
 
     /* The JAXB context for later use */
     private static JAXBContext context = null;
@@ -270,7 +272,20 @@ public class WFSRecording extends WFSRoot {
 
         changesWriter = new PrintWriter(new FileOutputStream(cFile), true);
         changesWriter.println("<?xml version=\"1.0\" encoding=\"" + ENCODING + "\"?>");
-        changesWriter.println("<Wonderland_Recorder date=\"" + DATE_FORMATTER.format(new Date()) + "\">");
+        changesWriter.println("<Wonderland_Recorder date=\"" + DATE_FORMATTER.format(new Date()) + "\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">");
+         changesWriter.println("<dublinCore>");
+        changesWriter.println("<dc:title>");
+        changesWriter.println(this.getName());
+        changesWriter.println("</dc:title>");
+        if (this.getDescription() != null) {
+            changesWriter.println("<dc:description>");
+            changesWriter.println(this.getDescription());
+            changesWriter.println("</dc:description>");
+        }
+        changesWriter.println("<dc:date>");
+        changesWriter.println(DC_DATE_FORMATTER.format(new Date()));
+        changesWriter.println("</dc:date>");
+        changesWriter.println("</dublinCore>");
         changesWriter.println("<Wonderland_Changes timestamp=\"" + timestamp + "\">");
     }
 

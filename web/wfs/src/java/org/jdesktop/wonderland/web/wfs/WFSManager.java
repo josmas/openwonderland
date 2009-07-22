@@ -257,6 +257,7 @@ public class WFSManager {
             } else {
                 // set the timestamp to now
                 recording.setTimestamp(new Date());
+                recording.setDescription("WFS Recording named: " + name);
 
                 // update our internal records
                 wfsRecordings.put(recording.getName(), recording);
