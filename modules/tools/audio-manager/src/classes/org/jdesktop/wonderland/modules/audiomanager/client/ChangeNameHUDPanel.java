@@ -97,6 +97,7 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
         aliasLabel = new javax.swing.JLabel();
         statusLabel = new javax.swing.JLabel();
 
+        nameLabel.setFont(nameLabel.getFont());
         nameLabel.setText("Display name as:");
 
         usernameAliasTextField.addActionListener(new java.awt.event.ActionListener() {
@@ -124,7 +125,10 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
             }
         });
 
+        aliasLabel.setFont(aliasLabel.getFont().deriveFont(aliasLabel.getFont().getStyle() | java.awt.Font.BOLD));
         aliasLabel.setText("Change alias for user");
+
+        statusLabel.setFont(statusLabel.getFont());
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -135,19 +139,19 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(aliasLabel)
                             .add(layout.createSequentialGroup()
                                 .add(6, 6, 6)
-                                .add(nameLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(usernameAliasTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE))
-                            .add(aliasLabel)))
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                                    .add(layout.createSequentialGroup()
+                                        .add(nameLabel)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(usernameAliasTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))))))
                     .add(layout.createSequentialGroup()
-                        .add(46, 46, 46)
-                        .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(60, 60, 60)
+                        .add(66, 66, 66)
                         .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
