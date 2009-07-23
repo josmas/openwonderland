@@ -115,6 +115,8 @@ public class PresenceManagerConnectionHandler implements
         // mark ourself for update
         AppContext.getDataManager().markForUpdate(this);
 
+	//dump(message.toString());
+
 	if (message instanceof ClientConnectMessage) {
 	    /*
              * Send back all of the PresenceInfo data to the new client
@@ -167,7 +169,9 @@ public class PresenceManagerConnectionHandler implements
 		return;
 	    }
 
-	    presenceInfoMap.put(clientID.getID(), presenceInfo);
+	    if (presenceInfo.clientID != null) {
+	        presenceInfoMap.put(presenceInfo.clientID, presenceInfo);
+	    }
 
 	    presenceInfoList.add(presenceInfo);
 	    logger.fine("PRESENCEINFOADDEDMESSAGE:  " + presenceInfo);
@@ -182,7 +186,10 @@ public class PresenceManagerConnectionHandler implements
 	if (message instanceof PresenceInfoRemovedMessage) {
 	    PresenceInfo presenceInfo = ((PresenceInfoRemovedMessage) message).getPresenceInfo();
 
-	    presenceInfoMap.remove(clientID.getID());
+	    if (presenceInfo.clientID != null) {
+	        presenceInfoMap.remove(presenceInfo.clientID);
+	    }
+
 	    presenceInfoList.remove(presenceInfo);
 	    sender.send(message);
 	    return;
@@ -206,7 +213,7 @@ public class PresenceManagerConnectionHandler implements
 	logger.warning("client disconnected " + clientID.getID() + " " + info);
 
 	if (info == null) {
-	    logger.fine("PRESENCE:  No PresenceInfo for " + clientID.getID());
+	    logger.warning("PRESENCE:  No PresenceInfo for " + clientID.getID());
 	    return;
 	}
 
