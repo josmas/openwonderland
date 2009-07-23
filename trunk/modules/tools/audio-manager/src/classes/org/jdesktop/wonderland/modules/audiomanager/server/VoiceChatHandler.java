@@ -232,7 +232,6 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	        if (audioGroup.getNumberOfPlayers() == 0) {
 		    endVoiceChat(vm, audioGroup);  // cleanup
 	        }
-	        sender.send(msg);
 		return;
 	    }
 	    
@@ -254,7 +253,6 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		    player, msg.getCallee(), ChatType.PUBLIC);
 	    }
 	    
-	    sender.send(msg);
 	    return;
 	}
 
@@ -550,7 +548,15 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
 	updateAttenuation(player);
-	sendVoiceChatInfo(sender, audioGroup.getId());
+
+	PresenceInfo presenceInfo = playerMap.remove(player.getId());
+
+	if (presenceInfo == null) {
+	    logger.warning("No presence Info for " + player.getId());
+	    return;
+	}
+
+	sender.send(new VoiceChatLeaveMessage(audioGroup.getId(), presenceInfo));
     }
 
     private void sendVoiceChatInfo(WonderlandClientSender sender, String group) {
