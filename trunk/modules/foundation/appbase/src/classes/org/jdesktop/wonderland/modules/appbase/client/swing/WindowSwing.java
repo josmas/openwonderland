@@ -43,7 +43,6 @@ import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
-import javax.swing.SwingUtilities;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
@@ -226,8 +225,6 @@ public class WindowSwing extends Window2D {
         if (component != null) {
             checkContainer();
 
-        // TODO: may eventually need this
-        //FocusHandler.addNotify(this);
         }
 
 	// TODO: Uncomment this to demonstrate the embedded component enter/exit bug
@@ -276,50 +273,10 @@ public class WindowSwing extends Window2D {
             System.err.println(sb.toString());
             */
 
-            if (seeEvent.isEntered()) {
-                Entity entity = seeEvent.getEntity();
-                EntityComponent comp = entity.getComponent(WindowSwing.WindowSwingViewReference.class);
-                assert comp != null;
-                View2D view = ((WindowSwing.WindowSwingViewReference) comp).getView();
-                final WindowSwing windowSwing = (WindowSwing) view.getWindow();
-                assert windowSwing != null;
-
-                if (windowSwing.getApp().getControlArb().hasControl()) {
-                    // Only request keyboard focus for the WindowSwing if it has control
-                    SwingUtilities.invokeLater(new Runnable () {
-                        public void run () {
-                            windowSwing.requestFocusInWindow();
-                        }
-                    });
-                } else {
-                    requestFocusInWindowForCanvas();
-                }
-            } else {
-                requestFocusInWindowForCanvas();
+            // Reacquire key focus for the main window on cursor exit from swing area
+            if (!seeEvent.isEntered()) {
+                InputManager.ensureKeyFocusInMainWindow();
             }
-        }
-    }
-
-    /** 
-     * Request focus in the Wonderland client's canvas, provided that the top-level frame has focus.
-     */
-    private static void requestFocusInWindowForCanvas() {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
-                Canvas canvas = JmeClientMain.getFrame().getCanvas();
-                if (!canvas.requestFocusInWindow()) {
-                    logger.warning("Focus request for main canvas rejected.");
-                }
-            }
-        });
-    }
-
-    /** 
-     * Request focus in this window's embedded component, provided that the top-level frame has focus.
-     */
-    private void requestFocusInWindow() {
-        if (!component.requestFocusInWindow()) {
-            logger.warning("Focus request for embedded component rejected.");
         }
     }
 
@@ -355,9 +312,6 @@ public class WindowSwing extends Window2D {
                         WindowSwingEmbeddedToolkit.getWindowSwingEmbeddedToolkit();
                 embeddedPeer = embeddedToolkit.embed(embeddedParent, component);
                 embeddedPeer.setWindowSwing(this);
-
-            // TODO: may eventually need this
-            //embeddedPeer.setFocusTraversalPolicy(FocusHandler.getFocusTraversalPolicy());
             }
         }
     }
