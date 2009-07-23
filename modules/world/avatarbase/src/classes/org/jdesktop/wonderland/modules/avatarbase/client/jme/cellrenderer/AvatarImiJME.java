@@ -28,6 +28,7 @@ import com.jme.math.Vector3f;
 import com.jme.renderer.Renderer;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import com.jme.scene.Geometry;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
@@ -83,6 +84,9 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent.AvatarConfigChangeListener;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
+
+import com.jme.scene.shape.Teapot;
+import com.jme.scene.TriMesh;
 
 /**
  * Cell renderer for Avatars, using the IMI avatar system.
@@ -381,7 +385,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 // Some of these ops must be done on the render thread
                 ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
                     public void update(Object arg0) {
-                        avatarCharacter.getPScene().submitTransformsAndGeometry(); // Make sure the geometry is attached to the jscene
+                        avatarCharacter.getPScene().submitTransformsAndGeometry(true); // Make sure the geometry is attached to the jscene
                         avatarCharacter.getJScene().setModelBound(new BoundingSphere()); // No more null bounding volumes
                         avatarCharacter.getJScene().updateModelBound();
                         avatarCharacter.getJScene().updateWorldBound();
@@ -487,7 +491,14 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 //                    placeHolder = new Box("AvatarTest", new Vector3f(0f,0.92f,0f), 0.4f, 0.9f, 0.3f);
                 collisionGraph = new Box("AvatarCollision", new Vector3f(0f, 0.92f, 0f), 0.4f, 0.6f, 0.3f);
 
+                //checkBounds(placeHolder);
+                //placeHolder.updateModelBound();
+                //placeHolder.updateWorldBound();
+
+                //System.out.println("Default Model Bounds: " + placeHolder.getWorldBound());
+                //placeHolder.lockBounds();
                 ret.getJScene().getExternalKidsRoot().attachChild(placeHolder);
+                ret.getJScene().setExternalKidsChanged(true);
             } else {
                 ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(avatarConfigURL, wm).baseURL("wla://avatarbaseart@" + serverHostAndPort + "/").addEntity(false).build();
                 collisionGraph = new Box("AvatarCollision", new Vector3f(0f, 0.92f, 0f), 0.4f, 0.6f, 0.3f);
@@ -517,6 +528,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 external.setModelBound(new BoundingSphere());
                 external.updateModelBound();
                 external.updateGeometricState(0, true);
+                ret.getJScene().setExternalKidsChanged(true);
             }
             
             collisionGraph.setModelBound(new BoundingSphere());
@@ -552,6 +564,32 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             LoadingInfo.finishedLoading(cell.getCellID(), username);
         }
         return ret;
+    }
+
+    void checkBounds(Spatial placeHolder) {
+        traverseGraph(placeHolder, 0);
+    }
+
+    void traverseGraph(Spatial s, int level) {
+        //for (int i=0; i<level; i++) {
+        //    System.out.print("\t");
+        //}
+
+        if (s instanceof Geometry) {
+            Geometry g = (Geometry)s;
+            g.lockBounds();
+            //System.out.println("Bounds for " + g + " is : " + g.getWorldBound());
+        }
+        if (s instanceof Node) {
+            Node n = (Node)s;
+            //n.setModelBound(new BoundingSphere());
+            for (int i=0; i<n.getQuantity(); i++) {
+                traverseGraph(n.getChild(i), level+1);
+            }
+            //n.updateWorldBound();
+            //System.out.println("Bounds for " + n + " is : " + n.getWorldBound());
+        }
+
     }
 
     /**
