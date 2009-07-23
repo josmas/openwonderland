@@ -36,6 +36,7 @@ import com.jme.util.geom.BufferUtils;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.HashMap;
+import javax.swing.SwingWorker;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -53,6 +54,9 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
+import java.util.NoSuchElementException;
 
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
@@ -89,6 +93,7 @@ public abstract class Window2D {
     private static final int CHANGED_TITLE       = 0x40;
     private static final int CHANGED_STACK       = 0x80;
     private static final int CHANGED_USER_RESIZABLE = 0x100;
+    private static final int CHANGED_USER_TRANSFORM_CELL = 0x200;
 
     /** The type of the 2D window. */
     public enum Type {
@@ -124,6 +129,8 @@ public abstract class Window2D {
     protected ArrayList<MouseWheelListener> mouseWheelListeners = null;
     /** The views associated with this window. */
     private LinkedList<View2D> views = new LinkedList<View2D>();
+    /** The views of the window which are cell views. */
+    private LinkedList<View2DCell> cellViews = new LinkedList<View2DCell>();
     /** The app to which this window belongs */
     protected App2D app;
     /** The name of the window. */
@@ -155,6 +162,11 @@ public abstract class Window2D {
      * windows. The resize corner of the window's view frames are not enabled unless this attribute is true.
      */
     private boolean userResizable = false;
+
+    /**
+     * The user transform of the window as displayed in a cell.
+     */
+    private CellTransform userTransformCell;
 
     /** A type for entries in the entityComponents list. */
     private static class EntityComponentEntry {
@@ -1283,6 +1295,9 @@ public abstract class Window2D {
         }
 
         views.add(view);
+        if (view instanceof View2DCell) {
+            cellViews.add((View2DCell)view);
+        }
         addViewForDisplayer(view);
 
         changeMask = CHANGED_ALL;
@@ -1302,6 +1317,9 @@ public abstract class Window2D {
      */
     public synchronized void removeView(View2D view) {
         if (views.remove(view)) {
+            if (view instanceof View2DCell) {
+                cellViews.remove((View2DCell)view);
+            }
             removeViewForDisplayer(view);
 
             // Detach event listeners and entity components to this new view
@@ -1324,6 +1342,7 @@ public abstract class Window2D {
             displayer.destroyView(view);
         }
         views.clear();
+        cellViews.clear();
     }
 
     /** Add a new view for the displayer of the view. */
@@ -1350,6 +1369,73 @@ public abstract class Window2D {
      */
     public synchronized Iterator<View2D> getViews() {
         return views.iterator();
+    }
+
+    /** Change user transform of this window in all cell views. No other clients are notified. */
+    public void setUserTransformCellLocal (CellTransform transform) {
+        userTransformCell = transform;
+        changeMask |= CHANGED_USER_TRANSFORM_CELL;
+        updateViews();
+    }
+
+    /** Returns the user transform of this window in it's cell views. */
+    public CellTransform getUserTransformCell () {
+        // Note: only need to get the transform from the first cell because syncUserTransformCell
+        // makes sure that the transform is the same in all cell views.
+        View2DCell cellView = null;
+        try {
+            cellView = cellViews.getFirst();
+        } catch (NoSuchElementException ex) {}
+        if (cellView == null) {
+            // Return identity. (This happens in the SAS).
+            return new CellTransform(null, null);
+        }
+            
+        return cellView.getUserTransformCell();
+    }
+
+    /**
+     * Called by the view code when the user changes the user cell transform.
+     * @param transform The new transform.
+     * @param changingView The view the user manipulated to change the transform.
+     */
+    public void changedUserTransformCell (CellTransform transform, View2D changingView) {
+        (new UserTransformCellNotifier(transform, changingView)).execute();
+    }
+
+    /**
+     * A SwingWorker which performs the notification of a change to the user cell transform
+     * on a generic thread.
+     */
+    private class UserTransformCellNotifier extends SwingWorker<String, Object> {
+        private CellTransform transform;
+        private View2D changingView;
+
+        private UserTransformCellNotifier (CellTransform transform, View2D changingView) {
+            this.transform = transform;
+            this.changingView = changingView;
+        }
+
+        @Override
+        public String doInBackground() {
+            notifyUserTransformCell(transform, changingView);
+            return null;
+        }
+    }
+
+    /**
+     * Notifies other cell views in this client that the user has changed the user cell transform 
+     * in a view of this window.
+     * @param transform The new transform.
+     * @param changingView The view the user manipulated to change the transform.
+     */
+    public synchronized void notifyUserTransformCell (CellTransform transform, View2D changingView) {
+        for (View2DCell view : cellViews) {
+            if (view != changingView) {
+                // Notify other clients as well
+                view.setUserTransformCellLocal(transform);
+            }
+        }        
     }
 
     /** {@inheritDoc}
@@ -1423,6 +1509,12 @@ public abstract class Window2D {
             }
             if ((changeMask & CHANGED_STACK) != 0) {
                 view.stackChanged(false);
+            }
+            if ((changeMask & CHANGED_USER_TRANSFORM_CELL) != 0 && view instanceof View2DCell) {
+                // Only change on this client
+                if (userTransformCell != null) {
+                    ((View2DCell)view).setUserTransformCellLocal(userTransformCell);
+                }
             }
             view.update();
         }

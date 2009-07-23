@@ -363,13 +363,30 @@ public abstract class InputPicker {
 	    }
 	}
 
+        /* For Debug
+	System.err.println("---------------------------------------");
+	System.err.println("awtMouseEvent = " + awtMouseEvent);
+	System.err.println("hitPickInfo = " + hitPickInfo);
+        if (hitPickInfo != null && hitPickInfo.size() > 0) {
+            PickDetails hitPickDetails = hitPickInfo.get(0);
+            if (hitPickDetails != null) {
+                Entity hitEntity = hitPickDetails.getEntity();
+                System.err.println("hitEntity = " + hitEntity);
+            }
+        }
+	System.err.println("destPickInfo = " + destPickInfo);
+        if (destPickInfo != null && destPickInfo.size() > 0) {
+            PickDetails destPickDetails = destPickInfo.get(0);
+            if (destPickDetails != null) {
+                Entity destEntity = destPickDetails.getEntity();
+                System.err.println("destEntity = " + destEntity);
+            }
+        }
+        */
+
 	// We haven't found an input sensitive WindowSwing so provide the pickInfo we have calculated
 	// to pickMouseEvent3D.
 
-	logger.finest("Enqueue pick info for 3D event");
-	logger.finest("awtMouseEvent = " + awtMouseEvent);
-	logger.finest("hitPickInfo = " + hitPickInfo);
-	logger.finest("destPickInfo = " + destPickInfo);
 	swingPickInfos.add(new PickInfoQueueEntry(hitPickInfo, awtMouseEvent));
 
 	generateSwingEnterExitEvents(null);
@@ -408,6 +425,8 @@ public abstract class InputPicker {
     }
 
     /**
+     * NOTE: THIS METHOD IS OBSOLETE.
+     *
      * Mouse Event picker for non-Swing (3D) events.
      * Finds the first consuming entity and then turns the work over to the event deliverer.
      * This method does not return a result but instead enqueues an entry for the event in

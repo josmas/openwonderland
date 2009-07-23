@@ -316,6 +316,24 @@ public class View2DCell extends View2DEntity {
     protected Frame2DCell getFrame () {
         return frame;
     }
+
+    /**
+     * Immediately sets the this view's user cell transform to the given transform.
+     * Note: you must call update after calling this to have the setting take effect.
+     */
+    public void setUserTransformCellLocal (CellTransform transform) {
+        userTransformCell = transform.clone(null);
+        userTransformCellReplaced = true;
+        userTransformCellChangedLocalOnly = true;
+        changeMask |= CHANGED_USER_TRANSFORM;
+    }
+
+    /**
+     * Return the cell user transform of this view.
+     */
+    public CellTransform getUserTransformCell () {
+        return userTransformCell.clone(null);
+    }
 }
 
 

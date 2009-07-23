@@ -48,6 +48,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientSocketListener;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.SlaveClientSocket;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 // TODO: 0.4 protocol
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs;
@@ -254,8 +255,8 @@ class ServerProxySlave implements ServerProxy {
         WindowXrw win;
         int controllingUserLen;
         int desiredZOrder;
-        float rotY;
-        Vector3f userDispl = new Vector3f();
+        float rotY; // Currently ignored
+        Vector3f userTranslation = new Vector3f();
 
         crtMsgArgs.wid = bufQueue.nextInt();
         crtMsgArgs.x = (short) bufQueue.nextInt();
@@ -265,12 +266,11 @@ class ServerProxySlave implements ServerProxy {
         crtMsgArgs.borderWidth = bufQueue.nextInt();
         controllingUserLen = bufQueue.nextInt();
         desiredZOrder= bufQueue.nextInt();
-        rotY = bufQueue.nextFloat();
-        AppXrw.logger.info("rotY = " + rotY);
-        userDispl.x = bufQueue.nextFloat();
-        userDispl.y = bufQueue.nextFloat();
-        userDispl.z = bufQueue.nextFloat();
-        AppXrw.logger.info("userDispl = " + userDispl);
+        rotY = bufQueue.nextFloat();  // Just skipped
+        userTranslation.x = bufQueue.nextFloat();
+        userTranslation.y = bufQueue.nextFloat();
+        userTranslation.z = bufQueue.nextFloat();
+        AppXrw.logger.info("userTranslation = " + userTranslation);
         /* TODO: 0.4 protocol:
         int transientFor = bufQueue.nextInt();
         AppXrw.logger.info("transientFor = " + transientFor);
@@ -306,10 +306,9 @@ class ServerProxySlave implements ServerProxy {
 
         win.setDesiredZOrder(desiredZOrder);
 
-        /* TODO: window config 
-        win.setRotateY(rotY);
-        win.setUserDisplacement(userDispl);
-         */
+        CellTransform userTransformCell = new CellTransform(null, null);
+        userTransformCell.setTranslation(userTranslation);
+        win.setUserTransformCellLocal(userTransformCell);
 
         boolean show = (bufQueue.nextByte() == 1) ? true : false;
         AppXrw.logger.info("show = " + show);

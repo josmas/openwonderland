@@ -27,6 +27,8 @@ import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientS
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.MasterSocketSet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import com.jme.math.Vector3f;
 
 /**
  * The module in the master which broadcasts xremwin messages to slaves.
@@ -207,11 +209,6 @@ class SlaveForwarder {
             AppXrw.logger.info("showing = " + win.isVisibleApp());
             AppXrw.logger.info("controlling user = " + controllingUser);
             AppXrw.logger.info("zOrder = " + win.getZOrder());
-
-            /*TODO:
-            AppXrw.logger.info("rotY = " + win.getRotateY());
-            AppXrw.logger.info("userTranslation = " + win.getUserTranslation());
-             */
             
             WindowXrw.Type type = win.getType();
             AppXrw.logger.info("type = " + type);
@@ -222,6 +219,16 @@ class SlaveForwarder {
             }
             AppXrw.logger.info("parent wid = " + parentWid);
 
+            // Get the user transform from the cell and extract the translation
+            // from it and send this translation in the sync info. 
+            // TODO: someday: We can get away with this only because we currently don't
+            // support secondary rotations. When we finally do support secondary
+            // rotations we'll need to modify the sync protocol to send the entire 
+            // transform.
+            CellTransform userTransformCell = win.getUserTransformCell();
+            Vector3f userTranslation = userTransformCell.getTranslation(null);
+            AppXrw.logger.info("userTranslation = " + userTranslation);
+
             // Send basic window attributes
             encode(syncBuf, 0, win.getWid());
             encode(syncBuf, 4, win.getOffsetX());
@@ -231,12 +238,14 @@ class SlaveForwarder {
             encode(syncBuf, 20, win.getBorderWidth());
             encode(syncBuf, 24, controllingUserLen);
             encode(syncBuf, 28, win.getZOrder());
-            /* TODO:
-             encode(syncBuf, 32, win.getRotateY());
-            encode(syncBuf, 36, userDispl.x);
-            encode(syncBuf, 40, userDispl.y);
-            encode(syncBuf, 44, userDispl.z);
-             */
+
+            // Placeholder: this used to be the rotation around y axis
+            encode(syncBuf, 32, 0f);
+
+            encode(syncBuf, 36, userTranslation.x);
+            encode(syncBuf, 40, userTranslation.y);
+            encode(syncBuf, 44, userTranslation.z);
+
             /* TODO: 0.4 protocol:
             encode(syncBuf, 48, win.getTransientFor().getWid());
              */
