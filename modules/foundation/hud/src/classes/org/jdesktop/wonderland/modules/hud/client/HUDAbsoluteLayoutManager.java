@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
 import org.jdesktop.wonderland.client.hud.HUDView;
@@ -38,16 +39,15 @@ public class HUDAbsoluteLayoutManager implements HUDLayoutManager {
     private static final Logger logger = Logger.getLogger(HUDAbsoluteLayoutManager.class.getName());
     // a mapping between HUD components and their views
     protected Map<HUDComponent, HUDView> hudViewMap;
-    protected int hudWidth;
-    protected int hudHeight;
+    protected HUD hud;
 
     public HUDAbsoluteLayoutManager() {
-        this(0, 0);
+        this(null);
     }
 
-    public HUDAbsoluteLayoutManager(int hudWidth, int hudHeight) {
-        this.hudWidth = hudWidth;
-        this.hudHeight = hudHeight;
+    public HUDAbsoluteLayoutManager(HUD hud) {
+        this.hud = hud;
+        //hud.addEventListener(this);
         hudViewMap = Collections.synchronizedMap(new HashMap());
     }
 
@@ -98,7 +98,7 @@ public class HUDAbsoluteLayoutManager implements HUDLayoutManager {
             return location;
         }
 
-        HUDView2D view = (HUDView2D)hudViewMap.get(component);
+        HUDView2D view = (HUDView2D) hudViewMap.get(component);
 
         if (component != null) {
             location.set((float) component.getLocation().getX(),
@@ -106,5 +106,19 @@ public class HUDAbsoluteLayoutManager implements HUDLayoutManager {
         }
 
         return location;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void relayout() {
+        // components are positioned absolutely
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void relayout(HUDComponent component) {
+        // components are positioned absolutely
     }
 }

@@ -62,9 +62,10 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTa
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
-import org.jdesktop.wonderland.client.hud.HUDComponentListener;
+
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
@@ -178,10 +179,10 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     public void setHUDComponent(HUDComponent inCallHUDComponent) {
         this.inCallHUDComponent = inCallHUDComponent;
 
-        inCallHUDComponent.addComponentListener(new HUDComponentListener() {
+        inCallHUDComponent.addEventListener(new HUDEventListener() {
 
-	    public void HUDComponentChanged(HUDComponentEvent e) {
-                if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+	    public void HUDObjectChanged(HUDEvent e) {
+                if (e.getEventType().equals(HUDEventType.CLOSED)) {
             	    session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
                 }
             }
@@ -440,32 +441,39 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(holdButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(addExternalButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(addInWorldButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(hangupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)))
                             .add(layout.createSequentialGroup()
                                 .add(privateRadioButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(secretRadioButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(speakerPhoneRadioButton))
-                            .add(inCallJLabel))
-                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(holdButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(addExternalButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 112, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(addInWorldButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(hangupButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 107, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(inCallJLabel)
+                        .addContainerGap(168, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                            .add(groupNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 108, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 149, Short.MAX_VALUE)
+                        .add(groupNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 108, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(24, 24, 24))))
         );
+
+        layout.linkSize(new java.awt.Component[] {addInWorldButton, hangupButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -474,23 +482,28 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
                     .add(inCallJLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(groupNameTextField))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(privateRadioButton)
-                    .add(secretRadioButton)
-                    .add(speakerPhoneRadioButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 19, Short.MAX_VALUE)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addExternalButton)
-                    .add(addInWorldButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(hangupButton)
-                    .add(holdButton))
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .add(35, 35, 35)
+                        .add(privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(88, 88, 88))
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(privateRadioButton)
+                            .add(secretRadioButton)
+                            .add(speakerPhoneRadioButton))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(addExternalButton)
+                            .add(addInWorldButton))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(hangupButton)
+                            .add(holdButton))
+                        .addContainerGap())))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -517,10 +530,10 @@ private void addInWorldButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     //    + ", " + (inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - addInWorldHUDComponent.getHeight()));
 
     mainHUD.addComponent(addInWorldHUDComponent);
-    addInWorldHUDComponent.addComponentListener(new HUDComponentListener() {
+    addInWorldHUDComponent.addEventListener(new HUDEventListener() {
 
-        public void HUDComponentChanged(HUDComponentEvent e) {
-            if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+        public void HUDObjectChanged(HUDEvent e) {
+            if (e.getEventType().equals(HUDEventType.CLOSED)) {
 		addInWorldHUDPanel = null;
 		addInWorldHUDComponent = null;
             }
@@ -574,7 +587,7 @@ private void addExternalButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
-
+    addExternalHUDComponent.setName("Phone");
     addExternalHUDPanel.setHUDComponent(addExternalHUDComponent);
 
     //System.out.println("Call in progress x,y " + inCallHUDComponent.getX() + ", " + inCallHUDComponent.getY()
@@ -583,10 +596,10 @@ private void addExternalButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     //    + ", " + (inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - addExternalHUDComponent.getHeight()));
 
     mainHUD.addComponent(addExternalHUDComponent);
-    addExternalHUDComponent.addComponentListener(new HUDComponentListener() {
+    addExternalHUDComponent.addEventListener(new HUDEventListener() {
 
-        public void HUDComponentChanged(HUDComponentEvent e) {
-            if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+        public void HUDObjectChanged(HUDEvent e) {
+            if (e.getEventType().equals(HUDEventType.CLOSED)) {
 		addExternalHUDPanel = null;
 		addExternalHUDComponent = null;
             }
@@ -638,10 +651,10 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
 	    holdHUDPanel.setHUDComponent(holdHUDComponent);
 
             mainHUD.addComponent(holdHUDComponent);
-            holdHUDComponent.addComponentListener(new HUDComponentListener() {
+            holdHUDComponent.addEventListener(new HUDEventListener() {
 
-                public void HUDComponentChanged(HUDComponentEvent e) {
-                    if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+                public void HUDObjectChanged(HUDEvent e) {
+                    if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
                     }
                 }
             });

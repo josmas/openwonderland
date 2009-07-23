@@ -17,7 +17,9 @@
  */
 package org.jdesktop.wonderland.client.hud;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 
 /**
  * A service provider interface for factories which create new HUD object
@@ -31,25 +33,56 @@ import java.awt.Rectangle;
 public interface HUDFactorySPI {
 
     /**
-     * Creates a new HUD instance
-     * @return a new HUD instance with default location and size
+     * Creates a new Wonderland HUD instance the same size as the display.
+     * @param displayBounds the size of the display
+     * @param hudBounds the size and position of the HUD
+     * @return a new HUD instance, sized to the display
      */
-    public HUD createHUD();
+    public HUD createHUD(Dimension displayBounds);
 
     /**
-     * Creates a new HUD instance
-     * @param x the x-coordinate of the HUD
-     * @param y the y-coordinate of the HUD
-     * @param width the width of the HUD
-     * @param height the height of the HUD
-     * @return a new HUS instance with default location and size
+     * Creates a new Wonderland HUD instance with a fixed size.
+     * @param displayBounds the size of the display in pixels
+     * @param x the x position of the HUD relative to the x origin of the view
+     * @param y the y position of the HUD relative to the y origin of the view
+     * @param width the width of the HUD relative to the width of the view
+     * @param height the height of the HUD relative to the height of the view
+     * @return a new HUD instance with the specified fixed size
      */
-    public HUD createHUD(int x, int y, int width, int height);
+    public HUD createHUD(Dimension displayBounds, int x, int y, int width, int height);
 
     /**
-     * Creates a new HUD instance
-     * @param bounds the location and size of the HUD
-     * @return a new HUD instance with the specified location and size
+     * Creates a new Wonderland HUD instance using percentages of the display
+     * size for the bounds of the HUD.
+     * @param displayBounds the size of the display in pixels
+     * @param scalableBounds the size and position of the HUD expressed in
+     * percentages
+     * @return a new HUD instance with the specified fixed size
      */
-    public HUD createHUD(Rectangle bounds);
+    public HUD createHUD(Dimension displayBounds, Rectangle hudBounds);
+
+    /**
+     * Creates a new Wonderland HUD instance using percentages of the display
+     * size for the bounds of the HUD.
+     * @param displayBounds the size of the display in pixels
+     * @param scalableBounds the size and position of the HUD expressed in
+     * percentages
+     */
+    public HUD createHUD(Dimension displayBounds, Rectangle2D.Float scalableBounds);
+
+    /**
+     * Creates a new HUD instance with scalable bounds.
+     * @param displayBounds the size of the display in pixels
+     * @param xPercent the x-coordinate of the HUD as a percentage of the width
+     * of the display
+     * @param yPercent the y-coordinate of the HUD as a percentage of the height
+     * of the display
+     * @param widthPercent the width of the HUD as a percentage of the width of
+     * the display
+     * @param heightPercent the height of the HUD as a percentage of the height
+     * of the display
+     * @return a new HUD instance with scalable bounds.
+     */
+    public HUD createHUD(Dimension displayBounds, float xPercent, float yPercent,
+            float widthPercent, float heightPercent);
 }

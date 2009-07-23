@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.client.hud;
 
 import com.jme.math.Vector2f;
-import java.util.List;
 
 /**
  * A HUDLayoutManager lays out HUD components in a 2D rectangular space.
@@ -70,4 +69,15 @@ public interface HUDLayoutManager {
      * @return returns the location of the component on its containing HUD
      */
     public Vector2f getLocation(HUDComponent component);
+
+    /**
+     * Trigger a re-layout of all the managed HUD components
+     */
+    public void relayout();
+
+    /**
+     * Trigger a re-layout of the specified HUD component
+     * @param component the component to re-layout
+     */
+    public void relayout(HUDComponent component);
 }

@@ -145,17 +145,17 @@ public class HUDInputDialogImpl extends javax.swing.JDialog {
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("OptionPane.background"));
 
-        valueLabel.setFont(new java.awt.Font("Dialog", 1, 13));
+        valueLabel.setFont(valueLabel.getFont().deriveFont(valueLabel.getFont().getStyle() | java.awt.Font.BOLD));
         valueLabel.setText("Enter the value:");
 
-        valueTextField.setFont(new java.awt.Font("DialogInput", 0, 13));
+        valueTextField.setFont(valueTextField.getFont());
         valueTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 valueTextFieldActionPerformed(evt);
             }
         });
 
-        okButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        okButton.setFont(okButton.getFont());
         okButton.setText("OK");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -163,7 +163,7 @@ public class HUDInputDialogImpl extends javax.swing.JDialog {
             }
         });
 
-        cancelButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        cancelButton.setFont(cancelButton.getFont());
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -185,7 +185,7 @@ public class HUDInputDialogImpl extends javax.swing.JDialog {
                         .add(cancelButton)
                         .add(72, 72, 72))
                     .add(layout.createSequentialGroup()
-                        .add(valueTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                        .add(valueTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -235,7 +235,6 @@ public class HUDInputDialogImpl extends javax.swing.JDialog {
             }
         });
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton okButton;

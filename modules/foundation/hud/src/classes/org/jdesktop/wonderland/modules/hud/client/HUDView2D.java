@@ -27,7 +27,8 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 
 /**
- * A 2D view for HUD component windows
+ * A 2D view for HUD component windows.
+ *
  * @author nsimpson
  */
 public class HUDView2D extends View2DEntity implements HUDView {

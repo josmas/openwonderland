@@ -17,15 +17,18 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDFactorySPI;
 
 /**
- * The HUDFactory creates new WonderlandHUD object instances. A visual Wonderland
- * client will typically have one HUDFactory which is the source of all WonderlandHUD
- * instances.
+ * A HUD factory which creates new HUD object instances.
+ *
+ * A Wonderland client will typically have one HUDFactory which is the source
+ * of all HUD instances.
  *
  * @author nsimpson
  */
@@ -36,21 +39,41 @@ public class WonderlandHUDFactory implements HUDFactorySPI {
     /**
      * {@inheritDoc}
      */
-    public HUD createHUD() {
-        return new WonderlandHUD();
+    public HUD createHUD(Dimension displayBounds) {
+        return new WonderlandHUD(displayBounds, 0, 0,
+                (int) displayBounds.getWidth(), (int) displayBounds.getHeight());
     }
 
     /**
      * {@inheritDoc}
      */
-    public HUD createHUD(int x, int y, int width, int height) {
-        return new WonderlandHUD(x, y, width, height);
+    public HUD createHUD(Dimension displayBounds, int x, int y, int width, int height) {
+        return new WonderlandHUD(displayBounds, x, y, width, height);
+
     }
 
     /**
      * {@inheritDoc}
      */
-    public HUD createHUD(Rectangle bounds) {
-        return new WonderlandHUD(bounds);
+    public HUD createHUD(Dimension displayBounds, Rectangle hudBounds) {
+        return new WonderlandHUD(displayBounds, hudBounds);
+
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HUD createHUD(Dimension displayBounds, Rectangle2D.Float scalableBounds) {
+        return new WonderlandHUD(displayBounds, scalableBounds);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HUD createHUD(Dimension displayBounds, float xPercent, float yPercent,
+            float widthPercent, float heightPercent) {
+        return new WonderlandHUD(displayBounds, xPercent, yPercent, widthPercent, heightPercent);
+
     }
 }

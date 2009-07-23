@@ -1,25 +1,19 @@
 /*
  * Project Wonderland
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
- * 
+ *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
- * 
+ *
  * The contents of this file are subject to the GNU General Public
  * License, Version 2 (the "License"); you may not use this file
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
- * 
+ *
  * Sun designates this particular file as subject to the "Classpath"
  * exception as provided by Sun in the License file that accompanied
  * this code.
- */
-
-/*
- * HUDMessageDialogImpl.java
- *
- * Created on Jun 5, 2009, 4:10:04 PM
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
@@ -63,42 +57,42 @@ public class HUDMessageImpl extends javax.swing.JPanel {
         messageTextArea = new javax.swing.JTextArea();
 
         setBackground(new java.awt.Color(208, 208, 208));
+        setEnabled(false);
 
         iconLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/info24x24.png"))); // NOI18N
 
+        scrollPane.setBackground(new java.awt.Color(208, 208, 208));
         scrollPane.setBorder(null);
         scrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setOpaque(false);
 
         messageTextArea.setBackground(new java.awt.Color(208, 208, 208));
         messageTextArea.setColumns(20);
-        messageTextArea.setEditable(false);
-        messageTextArea.setFont(new java.awt.Font("Arial", 1, 18));
+        messageTextArea.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         messageTextArea.setForeground(new java.awt.Color(255, 255, 255));
         messageTextArea.setRows(1);
         messageTextArea.setText("Your message here");
         messageTextArea.setBorder(null);
         scrollPane.setViewportView(messageTextArea);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(iconLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
+                .addComponent(iconLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, scrollPane)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, iconLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(iconLabel)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

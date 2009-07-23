@@ -28,9 +28,9 @@ import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
-import org.jdesktop.wonderland.client.hud.HUDComponentListener;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
@@ -64,12 +64,12 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
         // create HUD control
         affordanceHUD = mainHUD.createComponent(affordanceHUDPanel);
         affordanceHUD.setPreferredLocation(Layout.SOUTH);
-        affordanceHUD.addComponentListener(new HUDComponentListener() {
-            public void HUDComponentChanged(HUDComponentEvent event) {
+        affordanceHUD.addEventListener(new HUDEventListener() {
+            public void HUDObjectChanged(HUDEvent event) {
                 /**
                  * Handles when the affordance frame is closed
                  */
-                if (event.getEventType() == ComponentEventType.DISAPPEARED) {
+                if (event.getEventType() == HUDEventType.DISAPPEARED) {
                     // Tell all of the affordances to remove themselves by posting
                     // an event to the input system as such. Also tell the
                     // affordance panel it has closed

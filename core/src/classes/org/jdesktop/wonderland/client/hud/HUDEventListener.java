@@ -18,14 +18,15 @@
 package org.jdesktop.wonderland.client.hud;
 
 /**
- * A listener for HUDComponent events
+ * A listener for HUD Component events.
+ *
  * @author nsimpson
  */
-public interface HUDComponentListener {
+public interface HUDEventListener {
 
     /**
-     * Notification interface invoked when an event occurs on a HUDComponent
-     * @param componentEvent an object describing the event
+     * Notification interface invoked when an event occurs on a HUD object
+     * @param event an event object describing the event
      */
-    public void HUDComponentChanged(HUDComponentEvent componentEvent);
+    public void HUDObjectChanged(HUDEvent event);
 }

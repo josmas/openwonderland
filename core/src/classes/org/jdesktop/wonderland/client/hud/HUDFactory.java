@@ -17,17 +17,15 @@
  */
 package org.jdesktop.wonderland.client.hud;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 
-/**
- *
- * @author nsimpson
- */
 /**
  * A HUD factory which creates new HUD object instances.
  *
- * A visual Wonderland client will typically have one HUDFactory which is
- * the source of all HUD instances.
+ * A Wonderland client will typically have one HUDFactory which is the source
+ * of all HUD instances.
  *
  * @author nsimpson
  */
@@ -36,7 +34,7 @@ public class HUDFactory {
     private static HUDFactorySPI spi;
 
     /**
-     * Binds a specific HUD factory service provider to this factory
+     * Binds a specific HUD factory service provider to this factory.
      * @param spii an instance of a HUD factory service provider
      */
     public static void setHUDFactorySPI(final HUDFactorySPI spii) {
@@ -44,41 +42,85 @@ public class HUDFactory {
     }
 
     /**
-     * Creates a new HUD instance
-     * @return a new HUD instance with default location and size
+     * Creates a new Wonderland HUD instance the same size as the display.
+     * @param displayBounds the size of the display
+     * @param hudBounds the size and position of the HUD
+     * @return a new HUD instance, sized to the display
      */
-    public static HUD createHUD() {
+    public static HUD createHUD(Dimension displayBounds) {
         if (spi != null) {
-            return spi.createHUD();
+            return spi.createHUD(displayBounds);
         } else {
             return null;
         }
     }
 
     /**
-     * Creates a new HUD instance
-     * @param x the x-coordinate of the HUD
-     * @param y the y-coordinate of the HUD
-     * @param width the width of the HUD
-     * @param height the height of the HUD
-     * @return a new HUS instance with default location and size
+     * Creates a new Wonderland HUD instance with a fixed size.
+     * @param displayBounds the size of the display in pixels
+     * @param x the x position of the HUD relative to the x origin of the view
+     * @param y the y position of the HUD relative to the y origin of the view
+     * @param width the width of the HUD relative to the width of the view
+     * @param height the height of the HUD relative to the height of the view
+     * @return a new HUD instance with the specified fixed size
      */
-    public static HUD createHUD(int x, int y, int width, int height) {
+    public static HUD createHUD(Dimension displayBounds, int x, int y, int width, int height) {
         if (spi != null) {
-            return spi.createHUD(x, y, width, height);
+            return spi.createHUD(displayBounds, x, y, width, height);
         } else {
             return null;
         }
     }
 
     /**
-     * Creates a new HUD instance
-     * @param bounds the location and size of the HUD
-     * @return a new HUD instance with the specified location and size
+     * Creates a new Wonderland HUD instance using percentages of the display
+     * size for the bounds of the HUD.
+     * @param displayBounds the size of the display in pixels
+     * @param scalableBounds the size and position of the HUD expressed in
+     * percentages
+     * @return a new HUD instance with the specified fixed size
      */
-    public static HUD createHUD(Rectangle bounds) {
+    public static HUD createHUD(Dimension displayBounds, Rectangle hudBounds) {
         if (spi != null) {
-            return spi.createHUD(bounds);
+            return spi.createHUD(displayBounds, hudBounds);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Creates a new Wonderland HUD instance using percentages of the display
+     * size for the bounds of the HUD.
+     * @param displayBounds the size of the display in pixels
+     * @param scalableBounds the size and position of the HUD expressed in
+     * percentages
+     */
+    public static HUD createHUD(Dimension displayBounds, Rectangle2D.Float scalableBounds) {
+        if (spi != null) {
+            return spi.createHUD(displayBounds, scalableBounds);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Creates a new HUD instance with scalable bounds.
+     * @param displayBounds the size of the display in pixels
+     * @param xPercent the x-coordinate of the HUD as a percentage of the width
+     * of the display
+     * @param yPercent the y-coordinate of the HUD as a percentage of the height
+     * of the display
+     * @param widthPercent the width of the HUD as a percentage of the width of
+     * the display
+     * @param heightPercent the height of the HUD as a percentage of the height
+     * of the display
+     * @return a new HUD instance with scalable bounds.
+     */
+    public static HUD createHUD(Dimension displayBounds, float xPercent, float yPercent,
+            float widthPercent, float heightPercent) {
+        if (spi != null) {
+            return spi.createHUD(displayBounds, xPercent, yPercent,
+                    widthPercent, heightPercent);
         } else {
             return null;
         }

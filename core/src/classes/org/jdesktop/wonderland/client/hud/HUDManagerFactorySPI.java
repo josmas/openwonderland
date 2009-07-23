@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.hud;
 
+import java.awt.Canvas;
+
 /**
  * A service provider interface for factories which create new HUD Manager
  * instances.
@@ -27,9 +29,10 @@ public interface HUDManagerFactorySPI {
 
     /**
      * Creates a new HUD Manager instance
+     * @param display the display to manage
      * @return a new HUD Manager instance
      */
-    public HUDManager createHUDManager();
+    public HUDManager createHUDManager(Canvas display);
 
     /**
      * Gets the HUD Manager singleton

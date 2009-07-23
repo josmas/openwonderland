@@ -15,12 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-/*
- * HUDFrame2DImpl.java
- *
- * Created on Feb 25, 2009, 2:22:20 PM
- */
 package org.jdesktop.wonderland.modules.hud.client;
 
 import java.awt.Color;
@@ -108,6 +102,14 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         return gradientEndColor;
     }
 
+    public void setTitle(String title) {
+        titleLabel.setText(title);
+    }
+
+    public String getTitle() {
+        return titleLabel.getText();
+    }
+
     @Override
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
@@ -128,6 +130,7 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
 
         minimizeButton = new javax.swing.JButton();
         closeButton = new javax.swing.JButton();
+        titleLabel = new javax.swing.JLabel();
 
         minimizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/minimize16x16.png"))); // NOI18N
         minimizeButton.setBorderPainted(false);
@@ -143,12 +146,18 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         closeButton.setMaximumSize(new java.awt.Dimension(16, 16));
         closeButton.setMinimumSize(new java.awt.Dimension(2, 2));
 
+        titleLabel.setFont(titleLabel.getFont().deriveFont(titleLabel.getFont().getStyle() | java.awt.Font.BOLD, titleLabel.getFont().getSize()+1));
+        titleLabel.setForeground(new java.awt.Color(255, 255, 255));
+        titleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(384, Short.MAX_VALUE)
+                .addContainerGap()
+                .add(titleLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0)
                 .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -158,11 +167,15 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(closeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
             .add(minimizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createSequentialGroup()
+                .add(titleLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 20, Short.MAX_VALUE)
+                .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton closeButton;
     private javax.swing.JButton minimizeButton;
+    private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
 
     /**

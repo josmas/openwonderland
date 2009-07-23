@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
+import java.awt.Canvas;
 import org.jdesktop.wonderland.client.hud.HUDManager;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactorySPI;
 
@@ -32,8 +33,8 @@ public class WonderlandHUDManagerFactory implements HUDManagerFactorySPI {
     /**
      * {@inheritDoc}
      */
-    public HUDManager createHUDManager() {
-        manager = new WonderlandHUDManager();
+    public HUDManager createHUDManager(Canvas canvas) {
+        manager = new WonderlandHUDManager(canvas);
         return manager;
     }
 

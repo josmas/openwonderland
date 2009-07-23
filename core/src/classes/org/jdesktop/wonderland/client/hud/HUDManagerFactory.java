@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.hud;
 
+import java.awt.Canvas;
+
 /**
  * A HUD Manager factory which creates new HUD Manager instances by
  * delegating to a HUD Manager Factory instance.
@@ -46,9 +48,9 @@ public class HUDManagerFactory {
      * @return a new HUD Manager instance if a HUD Manager Factory exists,
      * null otherwise
      */
-    public static HUDManager createHUDManager() {
+    public static HUDManager createHUDManager(Canvas canvas) {
         if (spi != null) {
-            return spi.createHUDManager();
+            return spi.createHUDManager(canvas);
         } else {
             return null;
         }

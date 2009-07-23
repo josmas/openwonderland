@@ -17,8 +17,8 @@
  */
 package org.jdesktop.wonderland.client.hud;
 
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.Dimension;
+import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -31,14 +31,47 @@ import org.jdesktop.wonderland.client.cell.Cell;
  * status information about the user's session, and an Audio HUD for audio
  * controls.
  * 
- * A HUD contains HUD xomponents which are visual objects such as a 2D control
+ * A HUD contains HUD components which are visual objects such as a 2D control
  * panel or a representation of a 3D object. HUD components are laid out within
  * a HUD by a HUDLayoutManager.
  *
  *
  * @author nsimpson
  */
-public interface HUD extends HUDView {
+public interface HUD extends HUDObject {
+
+    /**
+     * Sets the bounds of the display that the HUD will be displayed on.
+     * @param displayBounds the width and height of the display
+     */
+    public void setDisplayBounds(Dimension displayBounds);
+
+    /**
+     * Gets the bounds of the display
+     * @return the display bounds
+     */
+    public Dimension getDisplayBounds();
+
+    /**
+     * Sets the bounds of the HUD using percentages of the display bounds,
+     * where the x and width are expressed as percentages of the display
+     * width (in pixels) and y and height are expressed as percentages of
+     * the display height. Percentages are in range 0.0 - 1.0.
+     * @param scalableBounds the bounds of the HUD in percentages
+     */
+    public void setScalableBounds(Rectangle2D.Float scalableBounds);
+
+    /**
+     * Gets the scalable bounds of the HUD.
+     * @return the bounds of the HUD expressed in percentages
+     */
+    public Rectangle2D.Float getScalableBounds();
+
+    /**
+     * Gets whether the HUD bounds are expressed using scalable units.
+     * @return the scalable bounds of the HUD
+     */
+    public boolean hasScalableBounds();
 
     /**
      * Creates a new HUD component
@@ -118,96 +151,4 @@ public interface HUD extends HUDView {
      * @return the component manager
      */
     public HUDComponentManager getComponentManager();
-
-    /**
-     * Assigns a name to this HUD
-     * @param name the name to assign to this HUD
-     */
-    public void setName(String name);
-
-    /**
-     * Gets the name assigned to this HUD
-     * @return the name of the HUD
-     */
-    public String getName();
-
-    /**
-     * Sets the width of the HUD in pixels
-     * @param width the width of the HUD (pixels)
-     */
-    public void setWidth(int width);
-
-    /**
-     * Gets the width of the HUD in pixels
-     * @return the width of the HUD in pixels
-     */
-    public int getWidth();
-
-    /**
-     * Sets the height of the HUD in pixels
-     * @param height the height of the HUD (pixels)
-     */
-    public void setHeight(int height);
-
-    /**
-     * Gets the height of the HUD in pixels
-     * @return the height of the HUD in pixels
-     */
-    public int getHeight();
-
-    /**
-     * Sets the bounds (x, y position, width, height) of the HUD
-     * @param bounds the bounds of the HUD
-     */
-    public void setBounds(Rectangle bounds);
-
-    /**
-     * Gets the bounds of the HUD
-     * @return the bounds of the HUD
-     */
-    public Rectangle getBounds();
-
-    /**
-     * Moves the HUD to a new location
-     * @param p the new position of the HUD
-     */
-    public void setLocation(Point p);
-
-    /**
-     * Gets the location of this HUD in the form of a point specifying
-     * the component's origin
-     * @return a Point representing the origin of the HUD
-     */
-    public Point getLocation();
-
-    /**
-     * Make the HUD visible
-     */
-    public void show();
-
-    /**
-     * Make the HUD invisible
-     */
-    public void hide();
-
-    /**
-     * Gets whether the HUD is visible
-     * @return true if the HUD is visible, false otherwise
-     */
-    public boolean isShowing();
-
-    /**
-     * Sets the transparency of the HUD on a scale of 0.0f to 1.0f, where
-     * 0.0f means that the HUD is completely opaque, and 1.0f means the HUD
-     * is completely transparent.
-     * Note that transparency is independent of whether the HUD is visible or not
-     * @param transparency the transparency of the HUD
-     */
-    public void setTransparency(float transparency);
-
-    /**
-     * Gets the transparency of the HUD
-     * @return the transparency of the HUD on the scale of 0.0f to 1.0f
-     */
-    public float getTransparency();
 }

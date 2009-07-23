@@ -46,9 +46,6 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
-import org.jdesktop.wonderland.client.hud.HUDComponentListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -61,6 +58,9 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerLis
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 
 /**
@@ -563,6 +563,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             final HUDComponent comp = mainHUD.createComponent(changeNameHUDPanel);
             comp.setPreferredLocation(Layout.NORTH);
+            comp.setName("Change Alias");
             mainHUD.addComponent(comp);
             changeNameMap.put(presenceInfo, comp);
 
@@ -587,6 +588,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             namePropertiesHUDComponent = mainHUD.createComponent(namePropertiesHUDPanel);
             namePropertiesHUDComponent.setPreferredLocation(Layout.NORTH);
+            namePropertiesHUDComponent.setName("User Properties");
             mainHUD.addComponent(namePropertiesHUDComponent);
 
             PropertyChangeListener plistener = new PropertyChangeListener() {
@@ -736,10 +738,10 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     inCallHUDPanel.setHUDComponent(inCallHUDComponent);
 
     mainHUD.addComponent(inCallHUDComponent);
-    inCallHUDComponent.addComponentListener(new HUDComponentListener() {
+    inCallHUDComponent.addEventListener(new HUDEventListener() {
 
-        public void HUDComponentChanged(HUDComponentEvent e) {
-            if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+        public void HUDObjectChanged(HUDEvent e) {
+            if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
             }
         }
     });
@@ -792,16 +794,16 @@ private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
-
+    addExternalHUDComponent.setName("Phone");
     addExternalHUDComponent.setPreferredLocation(Layout.NORTHEAST);
 
     addExternalHUDPanel.setHUDComponent(addExternalHUDComponent);
 
     mainHUD.addComponent(addExternalHUDComponent);
-    addExternalHUDComponent.addComponentListener(new HUDComponentListener() {
+    addExternalHUDComponent.addEventListener(new HUDEventListener() {
 
-        public void HUDComponentChanged(HUDComponentEvent e) {
-            if (e.getEventType().equals(ComponentEventType.DISAPPEARED)) {
+        public void HUDObjectChanged(HUDEvent e) {
+            if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
             }
         }
     });
