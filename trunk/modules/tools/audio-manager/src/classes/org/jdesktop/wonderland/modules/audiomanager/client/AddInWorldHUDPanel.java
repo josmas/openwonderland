@@ -114,8 +114,6 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
 
 	inCallHUDComponent = this.inCallHUDPanel.getHUDComponent();
 
-	groupNameTextField.setText(group);
-
 	client.addMemberChangeListener(group, this);
 
         pm = PresenceManagerFactory.getPresenceManager(session);
@@ -129,6 +127,7 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
 
     public void setHUDComponent(HUDComponent addInWorldHUDComponent) {
 	this.addInWorldHUDComponent = addInWorldHUDComponent;
+	addInWorldHUDComponent.setName("Start Voice Chat");
 	inCallHUDPanel.setAddInWorldPanel(this, addInWorldHUDComponent);
     }
 
@@ -267,8 +266,6 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
         userList = new javax.swing.JList();
         cancelButton = new javax.swing.JButton();
         inviteButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        groupNameTextField = new javax.swing.JLabel();
 
         userList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -291,28 +288,20 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
             }
         });
 
-        jLabel1.setFont(jLabel1.getFont().deriveFont(jLabel1.getFont().getStyle() | java.awt.Font.BOLD));
-        jLabel1.setText("Add in-world user:");
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(groupNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE))))
                     .add(layout.createSequentialGroup()
                         .add(49, 49, 49)
                         .add(cancelButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(inviteButton)))
+                        .add(inviteButton))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -320,12 +309,8 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(groupNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -379,6 +364,8 @@ private void inviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
     }
 
+    addInWorldHUDComponent.setVisible(false);
+
     inCallHUDPanel.inviteUsers(usersToInvite) ;
 
     inCallHUDComponent.setVisible(true);
@@ -396,9 +383,7 @@ private void inviteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.ButtonGroup buttonGroup2;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JLabel groupNameTextField;
     private javax.swing.JButton inviteButton;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList userList;
     // End of variables declaration//GEN-END:variables

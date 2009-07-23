@@ -52,8 +52,6 @@ public class HoldHUDPanel extends javax.swing.JPanel implements MemberChangeList
 
         initComponents();
 
-	groupLabel.setText(group);
-
 	client.addMemberChangeListener(group, this);
 
         session.send(client, new VoiceChatInfoRequestMessage(group));
@@ -126,7 +124,6 @@ public class HoldHUDPanel extends javax.swing.JPanel implements MemberChangeList
         volumeSlider = new javax.swing.JSlider();
         jLabel1 = new javax.swing.JLabel();
         memberText = new javax.swing.JLabel();
-        groupLabel = new javax.swing.JLabel();
 
         holdButton.setText("Take Off Hold");
         holdButton.addActionListener(new java.awt.event.ActionListener() {
@@ -157,16 +154,12 @@ public class HoldHUDPanel extends javax.swing.JPanel implements MemberChangeList
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel1)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(groupLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
-                        .add(10, 10, 10))
-                    .add(layout.createSequentialGroup()
-                        .add(volumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                        .add(volumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(memberText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                        .add(memberText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(holdButton)
                         .addContainerGap())))
@@ -175,16 +168,14 @@ public class HoldHUDPanel extends javax.swing.JPanel implements MemberChangeList
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(groupLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(memberText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(holdButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -198,7 +189,6 @@ private void holdButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel groupLabel;
     private javax.swing.JButton holdButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel memberText;

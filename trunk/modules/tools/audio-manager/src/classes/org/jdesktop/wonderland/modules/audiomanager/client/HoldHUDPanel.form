@@ -19,18 +19,13 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="groupLabel" pref="223" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                  </Group>
+                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="volumeSlider" pref="319" max="32767" attributes="1"/>
+                      <Component id="volumeSlider" pref="347" max="32767" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="memberText" pref="216" max="32767" attributes="1"/>
+                      <Component id="memberText" pref="238" max="32767" attributes="1"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="holdButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -43,10 +38,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="groupLabel" pref="18" max="32767" attributes="1"/>
-                  <Component id="jLabel1" alignment="0" max="32767" attributes="1"/>
-              </Group>
+              <Component id="jLabel1" min="-2" max="-2" attributes="1"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="volumeSlider" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -54,7 +46,7 @@
                   <Component id="memberText" min="-2" pref="18" max="-2" attributes="0"/>
                   <Component id="holdButton" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="13" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -92,8 +84,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="memberText">
-    </Component>
-    <Component class="javax.swing.JLabel" name="groupLabel">
     </Component>
   </SubComponents>
 </Form>
