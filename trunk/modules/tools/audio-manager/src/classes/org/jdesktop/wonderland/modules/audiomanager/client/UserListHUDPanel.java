@@ -794,7 +794,7 @@ private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
-    addExternalHUDComponent.setName("Phone");
+    addExternalHUDComponent.setName("Call External");
     addExternalHUDComponent.setPreferredLocation(Layout.NORTHEAST);
 
     addExternalHUDPanel.setHUDComponent(addExternalHUDComponent);
