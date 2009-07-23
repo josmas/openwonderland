@@ -65,6 +65,10 @@ public class HeaderPanel extends javax.swing.JPanel {
         setMaximumSize(new java.awt.Dimension(32767, 29));
         setMinimumSize(new java.awt.Dimension(50, 29));
 
+        jLabel1.setText("Window Title");
+
+        jLabel2.setText("Controller");
+
         jButton1.setFont(new java.awt.Font("DejaVu Sans", 0, 10));
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/appbase/client/cell/view/viewdefault/resources/window-close.png"))); // NOI18N
 
