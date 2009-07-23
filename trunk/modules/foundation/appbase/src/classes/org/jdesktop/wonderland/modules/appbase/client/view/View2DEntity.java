@@ -172,7 +172,13 @@ public abstract class View2DEntity implements View2D {
     private Vector3f deltaTranslationToApply;
 
     /** A copy of the current view node's user transformation in world (aka non-ortho) mode. */
-    private CellTransform userTransformCell = new CellTransform(null, null);
+    protected CellTransform userTransformCell = new CellTransform(null, null);
+
+    /** True if the user transform cell was changed by an entire matrix replacement */
+    protected boolean userTransformCellReplaced = false;
+
+    /** True if we shouldn't bother informing other clients of modifications to the user transform cell. */
+    protected boolean userTransformCellChangedLocalOnly = false;
 
     /** A copy of the current view node's user transformation in ortho mode. */
     private CellTransform userTransformOrtho = new CellTransform(null, null);
@@ -1406,12 +1412,15 @@ public abstract class View2DEntity implements View2D {
             } else {
                 currentUserTransform = userTransformCell;
             }
-            logger.fine("currentUserTransform (before) = " + currentUserTransform);
 
-            // Apply any pending user transform deltas (by post-multiplying them
-            // into the current user transform
-            userTransformApplyDeltas(currentUserTransform);
-            logger.fine("currentUserTransform (after) = " + currentUserTransform);
+            if (!userTransformCellReplaced) {            
+                // Apply any pending user transform deltas (by post-multiplying them
+                // into the current user transform
+                logger.fine("currentUserTransform (before) = " + currentUserTransform);
+                userTransformApplyDeltas(currentUserTransform);
+            }
+
+            logger.fine("currentUserTransform (latest) = " + currentUserTransform);
 
             // Now put the update user transformation into effect
             switch (type) {
@@ -1421,11 +1430,19 @@ public abstract class View2DEntity implements View2D {
                 break;
             case SECONDARY:
                 sgChangeTransformUserSet(viewNode, currentUserTransform);
+                // Note: moving a secondary in the cell doesn't change the position
+                // of the secondary in ortho, and vice versa.
+                if (!ortho && !userTransformCellChangedLocalOnly) {
+                    window.changedUserTransformCell(userTransformCell, this);
+                }
                 break;
             case POPUP:
                 // Always set to identity
                 sgChangeTransformUserSet(viewNode, new CellTransform(null, null));
             }
+
+            userTransformCellReplaced = false;
+            userTransformCellChangedLocalOnly = false;
         }
 
         sgProcessChanges();
