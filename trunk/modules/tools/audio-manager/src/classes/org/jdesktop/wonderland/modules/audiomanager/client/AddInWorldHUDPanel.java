@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import javax.swing.DefaultListModel;
-import javax.swing.JPanel;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -27,12 +26,11 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 
-import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
-import org.jdesktop.wonderland.client.hud.HUDComponentListener;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 /**
@@ -93,9 +91,10 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
 	    this.inCallHUDPanel.setHUDComponent(inCallHUDComponent);
 
 	    mainHUD.addComponent(inCallHUDComponent);
-	    inCallHUDComponent.addComponentListener(new HUDComponentListener() {
-	        public void HUDComponentChanged(HUDComponentEvent e) {
-	            if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+
+	    inCallHUDComponent.addEventListener(new HUDEventListener() {
+	        public void HUDObjectChanged(HUDEvent e) {
+	            if (e.getEventType().equals(HUDEventType.CLOSED)) {
 			inCallHUDPanel = null;
 			inCallHUDComponent = null;
 	            }
@@ -292,27 +291,27 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
             }
         });
 
-        jLabel1.setText("Add In-world user:");
+        jLabel1.setText("Add in-world user:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(21, 21, 21)
-                        .add(jScrollPane1, 0, 0, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(43, 43, 43)
-                        .add(cancelButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(inviteButton))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(groupNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)))
+                        .add(groupNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(24, 24, 24)
+                        .add(cancelButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(inviteButton)))
                 .addContainerGap())
         );
 
@@ -325,9 +324,9 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(groupNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(23, 23, 23)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cancelButton)
                     .add(inviteButton))

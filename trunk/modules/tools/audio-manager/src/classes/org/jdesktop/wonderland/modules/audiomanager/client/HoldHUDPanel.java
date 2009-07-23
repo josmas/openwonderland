@@ -16,9 +16,9 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.Vo
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
-import org.jdesktop.wonderland.client.hud.HUDComponentListener;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 
 import java.util.ArrayList;
 
@@ -62,9 +62,9 @@ public class HoldHUDPanel extends javax.swing.JPanel implements MemberChangeList
     public void setHUDComponent(HUDComponent holdHUDComponent) {
 	this.holdHUDComponent = holdHUDComponent;
 
-	holdHUDComponent.addComponentListener(new HUDComponentListener() {
-            public void HUDComponentChanged(HUDComponentEvent e) {
-                if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+	holdHUDComponent.addEventListener(new HUDEventListener() {
+            public void HUDObjectChanged(HUDEvent e) {
+                if (e.getEventType().equals(HUDEventType.CLOSED)) {
                     session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
 		    inCallHUDPanel.setClosed();
                 }

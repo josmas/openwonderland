@@ -65,23 +65,29 @@ public abstract class HUDManager {
     public abstract HUDLayoutManager getLayoutManager();
 
     /**
-     * Show a HUD
-     * @param hud the HUD to show
+     * Force the layout manager to re-layout all the HUDs
      */
-    public abstract void showHUD(HUD hud);
+    public abstract void relayout();
 
     /**
-     * Hide a HUD
-     * @param hud the HUD to hide
+     * Force the layout manager to re-layout the specified HUD
+     * @param hud the HUD to re-layout
      */
-    public abstract void hideHUD(HUD hud);
+    public abstract void relayout(HUD hud);
 
     /**
-     * Gets whether the HUD manager is showing a specified HUD
-     * @param hud the HUD to check for visibility
-     * @return true if the HUD is showing, false if the HUD is hidden
+     * Change the visibility of a HUD
+     * @param hud the HUD to change
+     * @param visible true to make the HUD visible, false to make invisible
      */
-    public abstract boolean isHUDShowing(HUD hud);
+    public abstract void setVisible(HUD hud, boolean visible);
+
+    /**
+     * Gets whether a HUD is visible
+     * @param hud the hud to check for visibility
+     * @return the visibility of the specified HUD
+     */
+    public abstract boolean isVisible(HUD hud);
 
     /**
      * Minimize a HUD

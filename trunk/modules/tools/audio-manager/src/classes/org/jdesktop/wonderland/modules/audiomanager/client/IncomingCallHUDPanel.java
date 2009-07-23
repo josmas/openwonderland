@@ -9,9 +9,6 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
-import org.jdesktop.wonderland.client.hud.HUDComponentListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -26,8 +23,10 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import java.util.ArrayList;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 
 /**
  *
@@ -95,7 +94,7 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
         callerText = new javax.swing.JLabel();
         privacyDescription = new javax.swing.JLabel();
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel1.setText("Incoming call from:");
 
         buttonGroup1.add(secretRadioButton);
@@ -116,7 +115,7 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
         });
 
         buttonGroup1.add(speakerPhoneRadioButton);
-        speakerPhoneRadioButton.setText("speakerPhone");
+        speakerPhoneRadioButton.setText("SpeakerPhone");
         speakerPhoneRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 speakerPhoneRadioButtonActionPerformed(evt);
@@ -154,23 +153,23 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 155, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(callerText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE))
+                        .add(callerText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
-                        .add(12, 12, 12)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(layout.createSequentialGroup()
-                                .add(ignoreButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(BusyButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(AnswerButton))
+                        .add(ignoreButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(BusyButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(AnswerButton))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(secretRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(privateRadioButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(speakerPhoneRadioButton))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE))))
+                                .add(speakerPhoneRadioButton)))
+                        .add(18, 18, 18)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -189,9 +188,9 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
                 .add(privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(AnswerButton)
+                    .add(ignoreButton)
                     .add(BusyButton)
-                    .add(ignoreButton))
+                    .add(AnswerButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -239,9 +238,9 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
 
             mainHUD.addComponent(inCallHUDComponent);
 
-            inCallHUDComponent.addComponentListener(new HUDComponentListener() {
-                public void HUDComponentChanged(HUDComponentEvent e) {
-                    if (e.getEventType().equals(ComponentEventType.CLOSED)) {
+            inCallHUDComponent.addEventListener(new HUDEventListener() {
+                public void HUDObjectChanged(HUDEvent e) {
+                    if (e.getEventType().equals(HUDEventType.CLOSED)) {
 			inCallHUDComponent = null;
                     }
                 }

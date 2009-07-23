@@ -18,9 +18,15 @@
 package org.jdesktop.wonderland.modules.hud.client;
 
 import com.jme.math.Vector2f;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDView;
 
 /**
  * A layout manager which lays out HUD components according to compass point
@@ -30,9 +36,32 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
 
     private static final Logger logger = Logger.getLogger(HUDCompassLayoutManager.class.getName());
+    private static final int MIN_LEFT_MARGIN = 10;
+    private static final int MIN_RIGHT_MARGIN = 10;
+    private static final int MIN_TOP_MARGIN = 20;
+    private static final int MIN_BOTTOM_MARGIN = 10;
+    protected Map<HUDComponent, Vector2f> positionMap;
 
-    public HUDCompassLayoutManager(int hudWidth, int hudHeight) {
-        super(hudWidth, hudHeight);
+    public HUDCompassLayoutManager(HUD hud) {
+        super(hud);
+        positionMap = Collections.synchronizedMap(new HashMap());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addView(HUDComponent component, HUDView view) {
+        super.addView(component, view);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeView(HUDComponent component, HUDView view) {
+        super.removeView(component, view);
+        positionMap.remove(component);
     }
 
     /**
@@ -56,46 +85,125 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
         float compWidth = view2d.getDisplayerLocalWidth();
         float compHeight = view2d.getDisplayerLocalHeight();
 
-        // get the center of the HUD
+        // get the bounds of the HUD containing the component
+        int hudWidth = hud.getWidth();
+        int hudHeight = hud.getHeight();
+
+        // find the center of the HUD
         float hudCenterX = hudWidth / 2f;
         float hudCenterY = hudHeight / 2f;
 
-        if (component.getPreferredLocation() != Layout.NONE) {
+        if ((component.getPreferredLocation() != Layout.NONE) &&
+                (component.getX() == 0) && (component.getY() == 0)) {
+            // just for initial placement of objects using compass layout
             switch (component.getPreferredLocation()) {
                 case NORTH:
-                    location.set(hudCenterX, hudHeight - 20 - compHeight / 2f);
+                    location.set(hudCenterX - compWidth / 2f, hudHeight - MIN_TOP_MARGIN - compHeight);
                     break;
                 case SOUTH:
-                    location.set(hudCenterX, 20);
+                    location.set(hudCenterX - compWidth / 2f, MIN_BOTTOM_MARGIN);
                     break;
                 case WEST:
-                    location.set(20 + compWidth / 2f, hudCenterY - compHeight / 2f);
+                    location.set(MIN_LEFT_MARGIN, hudCenterY - compHeight / 2f);
                     break;
                 case EAST:
-                    location.set(hudWidth - 20 - compWidth / 2f, hudCenterY - compHeight / 2f);
+                    location.set(hudWidth - MIN_RIGHT_MARGIN - compWidth, hudCenterY - compHeight / 2f);
                     break;
                 case CENTER:
-                    location.set(hudCenterX, hudCenterY);
+                    location.set(hudCenterX - compWidth / 2f, hudCenterY - compHeight / 2f);
                     break;
                 case NORTHWEST:
-                    location.set(20 + compWidth / 2f, hudHeight - 20 - compHeight / 2f);
+                    location.set(MIN_LEFT_MARGIN, hudHeight - MIN_TOP_MARGIN - compHeight);
                     break;
                 case NORTHEAST:
-                    location.set(hudWidth - 20 - compWidth / 2f, hudHeight - 20 - compHeight / 2f);
+                    location.set(hudWidth - MIN_RIGHT_MARGIN - compWidth, hudHeight - MIN_TOP_MARGIN - compHeight);
                     break;
                 case SOUTHWEST:
-                    location.set(20 + compWidth / 2f, 20 + compHeight / 2f);
+                    location.set(MIN_LEFT_MARGIN, MIN_BOTTOM_MARGIN);
                     break;
                 case SOUTHEAST:
-                    location.set(hudWidth - 20 - compWidth / 2, 20 + compHeight / 2f);
+                    location.set(hudWidth - MIN_RIGHT_MARGIN - compWidth, MIN_BOTTOM_MARGIN);
                     break;
                 default:
                     logger.warning("unhandled layout type: " + component.getPreferredLocation());
                     break;
             }
+            // offset from the HUD origin
+            location.set(location.x + hud.getX(), location.y + hud.getY());
         } else {
-            location.set(component.getX() + compWidth / 2f, component.getY() + compHeight / 2f);
+            // just use the component's current location, but constrain the
+            // position of the component to fit the bounds of the HUD
+            int x = component.getX();
+            int y = component.getY();
+
+            if (x < hud.getX() + MIN_LEFT_MARGIN) {
+                x = hud.getX() + MIN_LEFT_MARGIN;
+            } else if (x + compWidth > hud.getX() + hudWidth - MIN_RIGHT_MARGIN) {
+                x = (int) (hud.getX() + hudWidth - MIN_RIGHT_MARGIN - compWidth);
+            }
+            if (y < hud.getY() + MIN_BOTTOM_MARGIN) {
+                y = hud.getY() + MIN_BOTTOM_MARGIN;
+            } else if (y + compHeight > hud.getY() + hudHeight - MIN_TOP_MARGIN) {
+                y = (int) (hud.getY() + hudHeight - MIN_TOP_MARGIN - compHeight);
+            }
+            location.set(x, y);
         }
+
+        Vector2f currentPosition = positionMap.get(component);
+        Vector2f newPosition = new Vector2f((location.x - hud.getX()) / hudWidth, (location.y - hud.getY()) / hudHeight);
+
+        if ((currentPosition == null) || (Math.abs(currentPosition.x - newPosition.x) > 0.03) || (Math.abs(currentPosition.y - newPosition.y) > 0.03)) {
+            positionMap.put(component, newPosition);
+        }
+
         return location;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void relayout() {
+        Iterator<HUDComponent> iter = hudViewMap.keySet().iterator();
+        while (iter.hasNext()) {
+            relayout(iter.next());
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void relayout(HUDComponent component) {
+        int hudWidth = hud.getWidth();
+        int hudHeight = hud.getHeight();
+
+        HUDComponent2D component2D = (HUDComponent2D) component;
+        Vector2f positionPercent = positionMap.get(component2D);
+        float compX = hud.getX() + positionPercent.x * hudWidth;
+        float compY = hud.getY() + positionPercent.y * hudHeight;
+
+        HUDView2D view = (HUDView2D) hudViewMap.get(component2D);
+        float viewWidth = view.getDisplayerLocalWidth();
+        float viewHeight = view.getDisplayerLocalHeight();
+
+        if (hud.getX() + hudWidth - (compX + viewWidth) < MIN_RIGHT_MARGIN) {
+            // component bumped right edge of HUD, move it to be visible
+            compX = hud.getX() + hudWidth - viewWidth - MIN_RIGHT_MARGIN;
+        }
+        if (compX < hud.getX() + MIN_LEFT_MARGIN) {
+            // component bumped left edge of HUD
+            compX = hud.getX() + MIN_LEFT_MARGIN;
+        }
+        if (compY < hud.getY() + MIN_BOTTOM_MARGIN) {
+            // component bumped bottom edge of HUD
+            compY = hud.getY() + MIN_BOTTOM_MARGIN;
+        }
+        if (hud.getY() + hudHeight - (compY + viewHeight) < MIN_TOP_MARGIN) {
+            // component bumped top edge of HUD
+            compY = hud.getY() + hudHeight - viewHeight - MIN_TOP_MARGIN;
+        }
+
+        component2D.setLocation((int) compX, (int) compY);
     }
 }

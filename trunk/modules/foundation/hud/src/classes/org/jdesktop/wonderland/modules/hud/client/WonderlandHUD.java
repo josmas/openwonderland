@@ -17,8 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
-import java.awt.Point;
+import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -48,33 +49,122 @@ import org.jdesktop.wonderland.client.hud.HUDMessage;
  *
  * @author nsimpson
  */
-public class WonderlandHUD implements HUD {
+public class WonderlandHUD extends HUDObject2D implements HUD {
 
     private static final Logger logger = Logger.getLogger(WonderlandHUD.class.getName());
     protected List components;
     protected HUDComponentManager componentManager;
-    protected String name;
-    protected Rectangle bounds;
-    protected boolean visible = false;
-    protected float transparency = 1.0f;
+    private Dimension displayBounds = new Dimension();
+    private Rectangle2D.Float scalableBounds = null;
     private static final int HUD_DEFAULT_X = 0;
     private static final int HUD_DEFAULT_Y = 0;
     private static final int HUD_DEFAULT_WIDTH = 800;
     private static final int HUD_DEFAULT_HEIGHT = 600;
 
     public WonderlandHUD() {
+        super();
         components = Collections.synchronizedList(new ArrayList());
         bounds = new Rectangle(HUD_DEFAULT_X, HUD_DEFAULT_Y,
                 HUD_DEFAULT_WIDTH, HUD_DEFAULT_HEIGHT);
     }
 
-    public WonderlandHUD(Rectangle bounds) {
+    /**
+     * Creates a new Wonderland HUD instance the same size as the display.
+     * @param displayBounds the size of the display
+     * @param hudBounds the size and position of the HUD
+     */
+    public WonderlandHUD(Dimension displayBounds, Rectangle hudBounds) {
         this();
-        this.bounds = bounds;
+        this.bounds = hudBounds;
+        this.displayBounds = displayBounds;
     }
 
-    public WonderlandHUD(int x, int y, int width, int height) {
-        this(new Rectangle(x, y, width, height));
+    /**
+     * Creates a new Wonderland HUD instance with a fixed size.
+     * @param displayBounds the size of the display in pixels
+     * @param x the x position of the HUD relative to the x origin of the view
+     * @param y the y position of the HUD relative to the y origin of the view
+     * @param width the width of the HUD relative to the width of the view
+     * @param height the height of the HUD relative to the height of the view
+     */
+    public WonderlandHUD(Dimension displayBounds, int x, int y, int width, int height) {
+        this(displayBounds, new Rectangle(x, y, width, height));
+    }
+
+    /**
+     * Creates a new Wonderland HUD instance using percentages of the display
+     * size for the bounds of the HUD.
+     * @param displayBounds the size of the display in pixels
+     * @param scalableBounds the size and position of the HUD expressed in
+     * percentages
+     */
+    public WonderlandHUD(Dimension displayBounds, Rectangle2D.Float scalableBounds) {
+        this();
+        setDisplayBounds(displayBounds);
+        setScalableBounds(scalableBounds);
+    }
+
+    /**
+     * Creates a new HUD instance with scalable bounds.
+     * @param displayBounds the size of the display in pixels
+     * @param xPercent the x-coordinate of the HUD as a percentage of the width
+     * of the display
+     * @param yPercent the y-coordinate of the HUD as a percentage of the height
+     * of the display
+     * @param widthPercent the width of the HUD as a percentage of the width of
+     * the display
+     * @param heightPercent the height of the HUD as a percentage of the height
+     * of the display
+     * @return a new HUD instance with default location and size
+     */
+    public WonderlandHUD(Dimension displayBounds, float xPercent, float yPercent,
+            float widthPercent, float heightPercent) {
+        this(displayBounds, new Rectangle2D.Float(xPercent, yPercent, widthPercent, heightPercent));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setDisplayBounds(Dimension displayBounds) {
+        this.displayBounds = displayBounds;
+        if (hasScalableBounds()) {
+            // recalculate scalable bounds and resize HUD
+            setScalableBounds(getScalableBounds());
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Dimension getDisplayBounds() {
+        return displayBounds;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setScalableBounds(Rectangle2D.Float scalableBounds) {
+        this.scalableBounds = scalableBounds;
+        // NOTE: triggers a resize event notification
+        setBounds(new Rectangle(
+                (int) (scalableBounds.x * displayBounds.width),
+                (int) (scalableBounds.y * displayBounds.height),
+                (int) (scalableBounds.width * displayBounds.width),
+                (int) (scalableBounds.height * displayBounds.height)));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Rectangle2D.Float getScalableBounds() {
+        return scalableBounds;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasScalableBounds() {
+        return (scalableBounds != null);
     }
 
     /**
@@ -171,7 +261,7 @@ public class WonderlandHUD implements HUD {
             if (componentManager != null) {
                 // add the components in this HUD to the new component manager
                 for (HUDComponent component : comps) {
-                    component.addComponentListener((WonderlandHUDComponentManager) componentManager);
+                    component.addEventListener((WonderlandHUDComponentManager) componentManager);
                 }
             }
         }
@@ -184,110 +274,5 @@ public class WonderlandHUD implements HUD {
      */
     public HUDComponentManager getComponentManager() {
         return componentManager;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setWidth(int width) {
-        bounds.width = width;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public int getWidth() {
-        return bounds.width;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setHeight(int height) {
-        bounds.height = height;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public int getHeight() {
-        return bounds.height;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setBounds(Rectangle bounds) {
-        bounds.setBounds(bounds);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Rectangle getBounds() {
-        return bounds;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setLocation(Point p) {
-        bounds.setLocation(p);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Point getLocation() {
-        return bounds.getLocation();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void show() {
-        this.visible = true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void hide() {
-        this.visible = false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean isShowing() {
-        return visible;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setTransparency(float transparency) {
-        this.transparency = transparency;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public float getTransparency() {
-        return transparency;
     }
 }

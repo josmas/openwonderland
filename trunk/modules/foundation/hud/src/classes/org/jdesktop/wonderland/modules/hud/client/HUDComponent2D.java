@@ -17,24 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
-import com.jme.math.Vector3f;
 import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
-import org.jdesktop.wonderland.client.hud.HUDComponentListener;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
@@ -47,66 +34,97 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
  *
  * @author nsimpson
  */
-public class HUDComponent2D implements HUDComponent {
+public class HUDComponent2D extends HUDObject2D implements HUDComponent {
 
     private static final Logger logger = Logger.getLogger(HUDComponent2D.class.getName());
-    private List<HUDComponentListener> listeners;
     private Cell cell;
     protected JComponent component;
     protected Window2D window;
-    private HUDComponentEvent event;
-    private Rectangle2D bounds;     // on-HUD location
-    private Vector3f worldLocation; // in-world location
-    private boolean visible = false;
-    private boolean worldVisible = false;
-    private boolean enabled = false;
-    private boolean decoratable = true;
-    private Layout compassPoint = Layout.NONE;
-    private DisplayMode mode = DisplayMode.HUD;
 
     public HUDComponent2D() {
-        listeners = Collections.synchronizedList(new ArrayList());
-        event = new HUDComponentEvent(this);
-        bounds = new Rectangle2D.Double();
+        super();
     }
 
+    /**
+     * Creates a new HUD component instance for a Swing component.
+     *
+     * @param component the Swing component
+     */
     public HUDComponent2D(JComponent component) {
         this();
         this.component = component;
         Dimension size = component.getPreferredSize();
         setBounds(0, 0, size.width, size.height);
         JmeClientMain.getFrame().getCanvas3DPanel().add(component);
-        event.setComponent(this);
     }
 
+    /**
+     * Creates a new HUD component instance for a Swing component, bound to
+     * a Cell.
+     *
+     * @param component the Swing component
+     * @param cell the Cell
+     */
     public HUDComponent2D(JComponent component, Cell cell) {
         this(component);
         this.cell = cell;
     }
 
+    /**
+     * Creates a new HUD component instance for a Window2D.
+     *
+     * @param component the Swing component
+     */
     public HUDComponent2D(Window2D window) {
         this.window = window;
     }
 
+    /**
+     * Creates a new HUD component instance for a Window2D, bound to
+     * a Cell.
+     *
+     * @param component the Swing component
+     * @param cell the Cell
+     */
     public HUDComponent2D(Window2D window, Cell cell) {
         this(window);
         this.cell = cell;
     }
 
+    /**
+     * Sets the Swing component of this HUD component.
+     *
+     * @param component the Swing component
+     */
     public void setComponent(JComponent component) {
         this.component = component;
         setBounds(0, 0, (int) component.getPreferredSize().getWidth(), (int) component.getPreferredSize().getHeight());
     }
 
+    /**
+     * Gets the Swing component associated with this HUD component.
+     *
+     * @return the Swing component
+     */
     public JComponent getComponent() {
         return component;
     }
 
+    /**
+     * Sets the Window2D of this HUD component.
+     *
+     * @param window the Window2D to associate with this HUD component
+     */
     public void setWindow(Window2D window) {
         this.window = window;
         setBounds(getX(), getY(), window.getWidth(), window.getHeight());
     }
 
+    /**
+     * Gets the Window2D of this HUD component.
+     *
+     * @return the Window2D
+     */
     public Window2D getWindow() {
         return window;
     }
@@ -127,328 +145,12 @@ public class HUDComponent2D implements HUDComponent {
         return cell;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void setBounds(Rectangle bounds) {
-        this.bounds = bounds;
-        notifyListeners(ComponentEventType.RESIZED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setBounds(int x, int y, int width, int height) {
-        setBounds(new Rectangle(x, y, width, height));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setLocation(int x, int y) {
-        setLocation(x, y, true);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setLocation(int x, int y, boolean notify) {
-        bounds.setRect(x, y, bounds.getWidth(), bounds.getHeight());
-        if (notify) {
-            notifyListeners(ComponentEventType.MOVED);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setLocation(Point p) {
-        setLocation(p.x, p.y);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Point getLocation() {
-        return new Point((int) bounds.getX(), (int) bounds.getY());
-    }
-
-    /**
-     * Sets the preferred location as a compass point
-     * @param compassPoint the compass point location
-     */
-    public void setPreferredLocation(Layout compassPoint) {
-        this.compassPoint = compassPoint;
-    }
-
-    /**
-     * Gets the preferred compass point location
-     * @return the preferred location as a compass point
-     */
-    public Layout getPreferredLocation() {
-        return compassPoint;
-    }
-
-    /**
-     * Sets the in-world location of the component
-     * @param location the 3D location of the component in-world
-     */
-    public void setWorldLocation(Vector3f location) {
-        this.worldLocation = location;
-
-        notifyListeners(ComponentEventType.MOVED_WORLD);
-    }
-
-    /**
-     * Gets the in-world location of the component
-     * @return the 3D location of the component in-world
-     */
-    public Vector3f getWorldLocation() {
-        return worldLocation;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setX(int x) {
-        bounds.setRect(x, bounds.getY(), bounds.getWidth(), bounds.getHeight());
-
-        notifyListeners(ComponentEventType.MOVED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public int getX() {
-        return (int) bounds.getX();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setY(int y) {
-        bounds.setRect(bounds.getX(), y, bounds.getWidth(), bounds.getHeight());
-
-        notifyListeners(ComponentEventType.MOVED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public int getY() {
-        return (int) bounds.getY();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setWidth(int width) {
-        bounds.setRect(bounds.getX(), bounds.getY(), width, bounds.getHeight());
-
-        notifyListeners(ComponentEventType.RESIZED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public int getWidth() {
-        return (int) bounds.getWidth();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setHeight(int height) {
-        bounds.setRect(bounds.getX(), bounds.getY(), bounds.getWidth(), height);
-
-        notifyListeners(ComponentEventType.RESIZED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public int getHeight() {
-        return (int) bounds.getHeight();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setSize(int width, int height) {
-        bounds.setRect(bounds.getX(), bounds.getY(), width, height);
-
-        notifyListeners(ComponentEventType.RESIZED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setSize(Dimension dimension) {
-        bounds.setRect(bounds.getX(), bounds.getY(), dimension.getWidth(), dimension.getHeight());
-
-        notifyListeners(ComponentEventType.RESIZED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Dimension getSize() {
-        return new Dimension((int) bounds.getWidth(), (int) bounds.getHeight());
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setVisible(boolean visible) {
-        if (this.visible == visible) {
-            return;
-        }
-        this.visible = visible;
-
-        notifyListeners((visible == true) ? ComponentEventType.APPEARED
-                : ComponentEventType.DISAPPEARED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean isVisible() {
-        return visible;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setWorldVisible(boolean worldVisible) {
-        if (this.worldVisible == worldVisible) {
-            return;
-        }
-        this.worldVisible = worldVisible;
-
-        notifyListeners((worldVisible == true) ? ComponentEventType.APPEARED_WORLD
-                : ComponentEventType.DISAPPEARED_WORLD);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean isWorldVisible() {
-        return worldVisible;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setClosed() {
-        notifyListeners(ComponentEventType.CLOSED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setEnabled(boolean enabled) {
-        if (this.enabled == enabled) {
-            return;
-        }
-        this.enabled = enabled;
-
-        notifyListeners((enabled == true) ? ComponentEventType.ENABLED
-                : ComponentEventType.DISABLED);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setDecoratable(boolean decoratable) {
-        this.decoratable = decoratable;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean getDecoratable() {
-        return decoratable;
-    }
-
-    /**
-     * Sets the display mode, either in-world or on-HUD
-     * @param mode the new mode
-     */
-    public void setDisplayMode(DisplayMode mode) {
-        this.mode = mode;
-
-        notifyListeners(ComponentEventType.CHANGED_MODE);
-    }
-
-    /**
-     * Gets the display mode
-     * @return the display mode: in-world or on-HUD
-     */
-    public DisplayMode getDisplayMode() {
-        return mode;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void addComponentListener(HUDComponentListener listener) {
-        listeners.add(listener);
-        // TODO: notify the new listener that the component was created?
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void removeComponentListener(HUDComponentListener listener) {
-        listeners.remove(listener);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public List<HUDComponentListener> getComponentListeners() {
-        return listeners;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void notifyListeners(HUDComponentEvent event) {
-        List<HUDComponentListener> notifiees = getComponentListeners();
-        if (notifiees != null) {
-            Iterator<HUDComponentListener> iter = notifiees.iterator();
-            while (iter.hasNext()) {
-                HUDComponentListener notifiee = iter.next();
-                notifiee.HUDComponentChanged(event);
-            }
-        }
-    }
-
-    /**
-     * Convenience methods for notifying listeners
-     * @param eventType the type of the notification event
-     */
-    private void notifyListeners(ComponentEventType eventType) {
-        event.setComponent(this);
-        event.setEventType(eventType);
-        event.setEventTime(new Date());
-        notifyListeners(event);
-    }
-
     @Override
     public String toString() {
         return "HUDComponent2D: " +
+                "cell: " + cell +
                 ((component != null) ? component.getClass().getName() : "") +
-                ", bounds: " + bounds +
-                ", visible: " + visible +
-                ", world visible: " + worldVisible +
-                ", enabled: " + enabled;
+                "window: " + window +
+                super.toString();
     }
 }
