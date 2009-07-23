@@ -25,7 +25,6 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallRequestMessage;
@@ -238,11 +237,6 @@ public class AudioManagerConnectionHandler
 	    sender.send(message);
 	    return;
 	}
-
-        if (message instanceof DisconnectCallMessage) {
-            logger.fine("got DisconnectCallMessage");
-            return;
-        }
 
         if (message instanceof VoiceChatMessage) {
             VoiceChatHandler.getInstance().processVoiceChatMessage(sender, clientID,

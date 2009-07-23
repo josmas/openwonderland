@@ -286,8 +286,11 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         if (members.contains(presenceInfo) == false &&
                 invitedMembers.contains(presenceInfo) == false) {
 
+	    //System.out.println("PI Change not a member: " + type + " " + presenceInfo);
             return;
         }
+
+	//System.out.println("PI Change for member: " + type + " " + presenceInfo);
 
         if (type.equals(ChangeType.USER_REMOVED)) {
 	    if (presenceInfo.clientID == null) {
@@ -308,6 +311,8 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     }
 
     public void memberChange(PresenceInfo member, boolean added) {
+	//System.out.println("MemberChange " + added + " " + member);
+
         invitedMembers.remove(member);
 
         if (added == true) {

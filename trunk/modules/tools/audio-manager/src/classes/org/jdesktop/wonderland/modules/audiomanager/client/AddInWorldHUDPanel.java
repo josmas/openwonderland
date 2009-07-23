@@ -246,7 +246,11 @@ public class AddInWorldHUDPanel extends javax.swing.JPanel implements PresenceMa
     }
 
     public void disconnected() {
-        addInWorldHUDComponent.setVisible(false);
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	addInWorldHUDComponent.setVisible(false);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
