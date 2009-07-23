@@ -115,7 +115,6 @@ public class PresenceManagerConnectionHandler implements
         // mark ourself for update
         AppContext.getDataManager().markForUpdate(this);
 
-	dump(message.toString());
 	if (message instanceof ClientConnectMessage) {
 	    /*
              * Send back all of the PresenceInfo data to the new client
