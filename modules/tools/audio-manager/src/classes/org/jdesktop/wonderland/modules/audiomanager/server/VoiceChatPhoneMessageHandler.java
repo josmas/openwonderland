@@ -186,7 +186,7 @@ public class VoiceChatPhoneMessageHandler implements Serializable {
 	 * Send VoiceChatJoinAcceptedMessage back to all the clients 
 	 * to signal success.
 	 */
-	sender.send(clientID, new VoiceChatJoinAcceptedMessage(group, callee, 
+	sender.send(new VoiceChatJoinAcceptedMessage(group, callee, 
 	    message.getChatType()));
 	return;
     }
