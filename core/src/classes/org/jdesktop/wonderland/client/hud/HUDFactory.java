@@ -44,7 +44,6 @@ public class HUDFactory {
     /**
      * Creates a new Wonderland HUD instance the same size as the display.
      * @param displayBounds the size of the display
-     * @param hudBounds the size and position of the HUD
      * @return a new HUD instance, sized to the display
      */
     public static HUD createHUD(Dimension displayBounds) {
@@ -76,8 +75,7 @@ public class HUDFactory {
      * Creates a new Wonderland HUD instance using percentages of the display
      * size for the bounds of the HUD.
      * @param displayBounds the size of the display in pixels
-     * @param scalableBounds the size and position of the HUD expressed in
-     * percentages
+     * @param hudBounds the size and position of the HUD expressed in pixels
      * @return a new HUD instance with the specified fixed size
      */
     public static HUD createHUD(Dimension displayBounds, Rectangle hudBounds) {
