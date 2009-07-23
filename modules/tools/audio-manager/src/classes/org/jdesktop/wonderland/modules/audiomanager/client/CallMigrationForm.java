@@ -53,7 +53,11 @@ public class CallMigrationForm extends javax.swing.JFrame implements DisconnectL
     }
 
     public void disconnected() {
-	setVisible(false);
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                setVisible(false);
+            }
+        });
     }
 
     /** This method is called from within the constructor to

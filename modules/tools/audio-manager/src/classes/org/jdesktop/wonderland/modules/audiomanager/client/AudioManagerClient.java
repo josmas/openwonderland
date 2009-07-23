@@ -279,7 +279,7 @@ public class AudioManagerClient extends BaseConnection implements
         SoftphoneControlImpl.getInstance().removeSoftphoneListener(this);
         SoftphoneControlImpl.getInstance().sendCommandToSoftphone("endCalls");
         //JmeClientMain.getFrame().removeAudioMenuListener(this);
-        notifyDisconnectListeners();
+	notifyDisconnectListeners();
     }
 
     public void addMenus() {
