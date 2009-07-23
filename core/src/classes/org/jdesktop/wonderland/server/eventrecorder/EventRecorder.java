@@ -52,5 +52,12 @@ public interface EventRecorder {
      */
     public String getName();
 
+    /**
+     * Record the metadata corresponding to the message
+     * @param message a message that's been received and recorded
+     * @param metadata the string metadata that acts as an annotation to the message
+     */
+    public void recordMetadata(CellMessage message, String metadata);
+
 
 }
