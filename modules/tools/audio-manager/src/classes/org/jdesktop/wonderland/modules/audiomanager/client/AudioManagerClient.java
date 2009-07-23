@@ -381,7 +381,7 @@ public class AudioManagerClient extends BaseConnection implements
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
         final HUDComponent addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
-        addExternalHUDComponent.setName("Phone");
+        addExternalHUDComponent.setName("Call External");
         addExternalHUDPanel.setHUDComponent(addExternalHUDComponent);
         addExternalHUDComponent.setPreferredLocation(Layout.NORTHEAST);
         mainHUD.addComponent(addExternalHUDComponent);
