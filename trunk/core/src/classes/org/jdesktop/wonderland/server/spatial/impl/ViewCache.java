@@ -686,7 +686,7 @@ class ViewCache {
                     break;
                 case UNLOAD:
                     // No need to check security, just generate unload messages
-                    cacheMO.sendUnloadMessages(cells);
+                    cacheMO.generateUnloadMessagesService(cells);
             }
 
 //            StringBuffer buf = new StringBuffer();

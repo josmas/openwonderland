@@ -39,16 +39,14 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  */
 @ExperimentalAPI
 public class AvatarCellMO extends ViewCellMO {
-    
-    private ManagedReference<ViewCellCacheMO> avatarCellCacheRef;
+    private ManagedReference<AvatarCellCacheMO> avatarCellCacheRef;
     private ManagedReference<UserMO> userRef;
     private WonderlandClientID clientID;
-
-//    private String avatarConfigURL="test.xml";
 
     public AvatarCellMO(UserMO user, WonderlandClientID clientID) {
         super(new BoundingSphere(AvatarBoundsHelper.AVATAR_CELL_SIZE, new Vector3f()),
               new CellTransform(null, new Vector3f())  );
+
         this.userRef = AppContext.getDataManager().createReference(user);
         this.clientID = clientID;
 
@@ -60,6 +58,36 @@ public class AvatarCellMO extends ViewCellMO {
         CellTransform initialLocation = new CellTransform(rotation, location);
         setLocalTransform(initialLocation);
     }
+
+    /**
+     * Get the Wonderland user object associated with this avatar.
+     * @return the user object
+     */
+    public UserMO getUser() {
+        return userRef.get();
+    }
+
+    /**
+     * Get the WonderlandClientID of the user session that owns this avatar.
+     * May return null if the avatar is not associated with a client
+     * session.
+     * @return the client ID for the session associated with this avatar.
+     */
+    public WonderlandClientID getClientID() {
+        return clientID;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public AvatarCellCacheMO getCellCache() {
+        if (avatarCellCacheRef == null) {
+            AvatarCellCacheMO cache = new AvatarCellCacheMO(this);
+            avatarCellCacheRef = AppContext.getDataManager().createReference(cache);
+        }
+
+        return avatarCellCacheRef.getForUpdate();
+    }
     
     @Override 
     protected String getClientCellClassName(WonderlandClientID clientID,
@@ -68,7 +96,6 @@ public class AvatarCellMO extends ViewCellMO {
     }
     
     @Override
-
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
             ClientCapabilities capabilities) {
 
@@ -79,34 +106,18 @@ public class AvatarCellMO extends ViewCellMO {
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public UserMO getUser() {
-        return userRef.get();
-    }
+    @Override
+    protected void setLive(boolean live) {
+        super.setLive(live);
 
-    /**
-     * {@inheritDoc}
-     */
-    public WonderlandClientID getClientID() {
-        return clientID;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public ViewCellCacheMO getCellCache() {
-        if (avatarCellCacheRef==null) {
-            ViewCellCacheMO cache = new ViewCellCacheMO(this);
-            avatarCellCacheRef = AppContext.getDataManager().createReference(cache);
+        if (live) {
+            // replace the movable component that the superclass uses
+            // with a movable avatar component
+            MovableComponentMO mc = getComponent(MovableComponentMO.class);
+            if (mc != null) {
+                removeComponent(mc);
+            }
+            addComponent(new MovableAvatarComponentMO(this));
         }
-        
-        return avatarCellCacheRef.getForUpdate();
     }
-
-    public CellMO getCell() {
-        return this;
-    }
-    
 }

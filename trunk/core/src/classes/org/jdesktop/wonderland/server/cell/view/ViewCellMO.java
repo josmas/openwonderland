@@ -21,45 +21,28 @@ import org.jdesktop.wonderland.server.cell.*;
 import com.jme.bounding.BoundingVolume;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.server.UserMO;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
 
 /**
- * ViewCell defines the view into the virtual world for a specific window
- * on a client. A client may have many ViewCells instanstantiated, however
- * there is a 1-1 correlation between the ViewCell and a rendering of the
- * virtual world.
+ * ViewCell defines the view into the virtual world. Each view cell is
+ * associated with a particular cell cache object. Any time the view
+ * cell moves, the associated cache will be updated with the set of cells
+ * that are in range or out of range of the view cell.  The cache can then
+ * send those messages to an associated client or can do other things like
+ * record the messages
  * 
  * @author paulby
  */
 @ExperimentalAPI
+@DependsOnCellComponentMO(MovableComponentMO.class)
 public abstract class ViewCellMO extends CellMO {
-
     public ViewCellMO() {
         super();
-        addComponent(new ChannelComponentMO(this), ChannelComponentMO.class);
-        //addComponent(new MovableAvatarComponentMO(this), MovableComponentMO.class);
     }
     
     public ViewCellMO(BoundingVolume localBounds, CellTransform transform) {
         super(localBounds, transform);
-        addComponent(new ChannelComponentMO(this), ChannelComponentMO.class);
-        addComponent(new MovableAvatarComponentMO(this), MovableComponentMO.class);
     }
-    
-    /**
-     * Get the user who owns this view
-     * @return
-     */
-    public abstract UserMO getUser();
-
-    /**
-     * Get the WonderlandClientID of the user session that owns this view.
-     * May return null if the view is not associated with a client
-     * session.
-     * @return the client ID for the session associated with this view
-     */
-    public abstract WonderlandClientID getClientID();
 
     /**
      * Return the cell cache managed object for this view, or null if there
@@ -68,5 +51,4 @@ public abstract class ViewCellMO extends CellMO {
      * @return the cell cache for this view, or null
      */
     public abstract ViewCellCacheMO getCellCache();
-    
 }

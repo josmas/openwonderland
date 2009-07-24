@@ -77,7 +77,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
         
         avatar.detach();    // Detach avatar from world
 
-        ViewCellCacheMO acc = avatar.getCellCache();
+        AvatarCellCacheMO acc = avatar.getCellCache();
         acc.logout(clientID);
     }
 
