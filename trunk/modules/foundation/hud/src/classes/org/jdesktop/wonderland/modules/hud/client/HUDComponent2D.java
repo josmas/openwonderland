@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.hud.client;
 
 import java.awt.Dimension;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -52,7 +54,7 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
      */
     public HUDComponent2D(JComponent component) {
         this();
-        this.component = component;
+        setComponent(component);
         Dimension size = component.getPreferredSize();
         setBounds(0, 0, size.width, size.height);
         JmeClientMain.getFrame().getCanvas3DPanel().add(component);
@@ -99,6 +101,22 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
     public void setComponent(JComponent component) {
         this.component = component;
         setBounds(0, 0, (int) component.getPreferredSize().getWidth(), (int) component.getPreferredSize().getHeight());
+        component.addComponentListener(new ComponentListener() {
+
+            public void componentShown(ComponentEvent e) {
+            }
+
+            public void componentHidden(ComponentEvent e) {
+            }
+
+            public void componentMoved(ComponentEvent e) {
+            }
+
+            public void componentResized(ComponentEvent e) {
+                // TODO: generate a resize event so the HUD frame can adapt
+                logger.fine("swing component resized: " + e);
+            }
+        });
     }
 
     /**
