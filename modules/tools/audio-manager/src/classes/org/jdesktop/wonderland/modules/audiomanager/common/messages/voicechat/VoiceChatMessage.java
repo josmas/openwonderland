@@ -35,10 +35,10 @@ public class VoiceChatMessage extends Message {
     }
 
     public static final String SECRET_DESCRIPTION =
-	"Call is visible, not audible to others";
+	"Call cannot be seen or heard by others";
 
     public static final String PRIVATE_DESCRIPTION =
-	"Call cannot be seen or heard by others";
+	"Call is visible, not audible to others";
 
     public static final String PUBLIC_DESCRIPTION =
 	"Call is heard by everyone nearby";
