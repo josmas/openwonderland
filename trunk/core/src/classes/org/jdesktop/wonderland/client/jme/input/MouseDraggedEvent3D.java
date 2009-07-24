@@ -234,8 +234,8 @@ public class MouseDraggedEvent3D extends MouseMovedEvent3D {
     public Event clone (Event event) {
 	if (event == null) {
 	    event = new MouseDraggedEvent3D();
-	    ((MouseDraggedEvent3D)event).hitPickDetails = hitPickDetails;
 	}
+        ((MouseDraggedEvent3D)event).hitPickDetails = hitPickDetails;
 	return super.clone(event);
     }
 }

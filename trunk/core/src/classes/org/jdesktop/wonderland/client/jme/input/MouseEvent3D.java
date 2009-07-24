@@ -177,6 +177,7 @@ public abstract class MouseEvent3D extends InputEvent3D {
      */
     @Override
     public Event clone(Event event) {
+        // Note: doesn't create an event because this class is abstract
         super.clone(event);
         ((MouseEvent3D) event).pickDetails = pickDetails;
         return event;

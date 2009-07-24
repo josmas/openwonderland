@@ -43,6 +43,8 @@ import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.jme.input.InputPicker3D;
+import org.jdesktop.wonderland.client.jme.input.FocusEvent3D;
 
 /**
  * A singleton container for all of the processor objects in the Wonderland input subsystem.
@@ -280,7 +282,6 @@ public abstract class InputManager
     @InternalAPI
     public void mouseEntered(MouseEvent e) {
 	inputPicker.pickMouseEvent3D(e);
-        //System.err.println("********** WINDOW ENTERED");
         mainWindowHasCursor = true;
     }
 
@@ -291,7 +292,6 @@ public abstract class InputManager
     @InternalAPI
     public void mouseExited(MouseEvent e) {
 	inputPicker.pickMouseEvent3D(e);
-        //System.err.println("********** WINDOW EXITED");
         mainWindowHasCursor = false;
     }
 
@@ -373,8 +373,9 @@ public abstract class InputManager
      */
     @InternalAPI
     public void focusGained(FocusEvent e) {
-        //System.err.println("********** FOCUS GAINED");
         mainWindowHasFocus = true;
+        FocusEvent3D event = (FocusEvent3D) ((InputPicker3D)inputPicker).createWonderlandEvent(e);
+        eventDistributor.enqueueEvent(event, null);
     }
 
     /**
@@ -383,8 +384,9 @@ public abstract class InputManager
      */
     @InternalAPI
     public void focusLost(FocusEvent e) {
-        //System.err.println("********** FOCUS LOST");
         mainWindowHasFocus = false;
+        FocusEvent3D event = (FocusEvent3D) ((InputPicker3D)inputPicker).createWonderlandEvent(e);
+        eventDistributor.enqueueEvent(event, null);
     }
 
     /** 

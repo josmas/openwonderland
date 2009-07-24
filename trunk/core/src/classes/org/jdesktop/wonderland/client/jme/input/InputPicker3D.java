@@ -21,6 +21,7 @@ import java.awt.AWTEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.awt.event.FocusEvent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.InputPicker;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -44,11 +45,14 @@ public class InputPicker3D extends InputPicker {
     /**
      * {@inheritDoc}
      */
-    protected Event createWonderlandEvent(AWTEvent awtEvent) {
+    @InternalAPI
+    public Event createWonderlandEvent(AWTEvent awtEvent) {
         Event event = null;
 
         if (awtEvent instanceof KeyEvent) {
             event = new KeyEvent3D((KeyEvent) awtEvent);
+        } else if (awtEvent instanceof FocusEvent) {
+            event = new FocusEvent3D((FocusEvent) awtEvent);
         } else if (awtEvent instanceof MouseWheelEvent) {
             event = new MouseWheelEvent3D((MouseWheelEvent) awtEvent);
         } else if (awtEvent instanceof MouseEvent) {
