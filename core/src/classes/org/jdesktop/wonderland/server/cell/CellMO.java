@@ -115,39 +115,16 @@ public abstract class CellMO implements ManagedObject, Serializable {
 
     private final Set<ComponentChangeListenerSrv> componentChangeListeners =
             new LinkedHashSet<ComponentChangeListenerSrv>();
+    private final Set<CellParentChangeListenerSrv> parentChangeListeners =
+            new LinkedHashSet<CellParentChangeListenerSrv>();
+    private final Set<CellChildrenChangeListenerSrv> childrenChangeListeners =
+            new LinkedHashSet<CellChildrenChangeListenerSrv>();
 
     /** Default constructor, used when the cell is created via WFS */
     public CellMO() {
         this.localBounds = null;
         this.localTransform = null;
         this.cellID = WonderlandContext.getCellManager().createCellID(this);
-
-        // This is here, rather than in AvatarCellMO because getAvatarCellComponentClasses is package private
-        if (this instanceof AvatarCellMO) {
-            Iterable<Class<? extends CellComponentMO>> avatarComponentClasses = CellManagerMO.getCellManager().getAvatarCellComponentClasses();
-
-            if (avatarComponentClasses!=null) {
-                for(Class<? extends CellComponentMO> c : avatarComponentClasses) {
-                    try {
-                        Constructor con = c.getConstructor(CellMO.class);
-                        CellComponentMO comp = (CellComponentMO) con.newInstance(this);
-                        addComponent(comp);
-                    } catch (NoSuchMethodException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (SecurityException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (InstantiationException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IllegalAccessException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (IllegalArgumentException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch (InvocationTargetException ex) {
-                        Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        }
     }
     
     /**
@@ -241,6 +218,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
            child.setLive(true);     // setLive will add the child to the universe and form the parent/child relationship
         }
 
+        // notify listeners
+        fireChildChangedEvent(child, true);
     }
     
     /**
@@ -259,6 +238,10 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 if (live) {
                     child.setLive(false);
                 }
+
+                // notify listeners
+                fireChildChangedEvent(child, false);
+
                 return true;
             } catch (MultipleParentException ex) {
                 // This should never happen
@@ -346,6 +329,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
             this.parentRef = AppContext.getDataManager().createReference(parent);
             this.parentCellID = parent.getCellID();
         }
+
+        // notify listeners
+        fireParentChangeEvent(parent);
     }
     
     /**
@@ -426,9 +412,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
             createChannelComponent();
             resolveAutoComponentAnnotationsForCell();
 
-            this.live = live;  // Needs to happen after resolveAutoComponentAnnotationsForCell
-
             addToUniverse(UniverseManagerFactory.getUniverseManager());
+
+            this.live = live;  // Needs to happen after resolveAutoComponentAnnotationsForCell
 
             // Add a message receiver to handle messages to dynamically add and
             // remove components, get and set the server state.
@@ -984,6 +970,12 @@ public abstract class CellMO implements ManagedObject, Serializable {
      * @param listener the listener to remove
      */
     public void removeComponentChangeListener(ComponentChangeListenerSrv listener) {
+        // wrap managed objects on remove as well so the comparison in
+        // equals works.
+        if (listener instanceof ManagedObject) {
+            listener = new ManagedComponentChangeListenerSrv(listener);
+        }
+
         componentChangeListeners.remove(listener);
     }
 
@@ -1032,6 +1024,92 @@ public abstract class CellMO implements ManagedObject, Serializable {
         transformChangeListeners.remove(listener);
         if (isLive())
             UniverseManagerFactory.getUniverseManager().removeTransformChangeListener(this, listener);
+    }
+
+    /**
+     * Add a parent change listener to this cell.  This listener will be
+     * notified any time the parent of this cell changes.
+     * The listener can either be a Serializable object or and instance of
+     * ManagedObject.
+     * @param listener the listener to add
+     */
+    public void addParentChangeListener(CellParentChangeListenerSrv listener) {
+        // wrap managed objects
+        if (listener instanceof ManagedObject) {
+            listener = new ManagedCellParentChangeListenerSrv(listener);
+        }
+
+        parentChangeListeners.add(listener);
+    }
+
+    /**
+     * Remove a parent change listener.
+     * @param listener the listener to remove
+     */
+    public void removeParentChangeListener(CellParentChangeListenerSrv listener) {
+        // wrap managed objects on remove as well so the comparison in
+        // equals works.
+        if (listener instanceof ManagedObject) {
+            listener = new ManagedCellParentChangeListenerSrv(listener);
+        }
+
+        parentChangeListeners.remove(listener);
+    }
+
+    /**
+     * Notification of a parent change event
+     * @param parent the new parent cell (may be null)
+     */
+    protected void fireParentChangeEvent(CellMO parent)
+    {
+        for (CellParentChangeListenerSrv listener : parentChangeListeners) {
+            listener.parentChanged(this, parent);
+        }
+    }
+
+     /**
+     * Add a children change listener to this cell.  This listener will be
+     * notified any time the children of this cell change.
+     * The listener can either be a Serializable object or and instance of
+     * ManagedObject.
+     * @param listener the listener to add
+     */
+    public void addChildrenChangeListener(CellChildrenChangeListenerSrv listener) {
+        // wrap managed objects
+        if (listener instanceof ManagedObject) {
+            listener = new ManagedCellChildrenChangeListenerSrv(listener);
+        }
+
+        childrenChangeListeners.add(listener);
+    }
+
+    /**
+     * Remove a children change listener.
+     * @param listener the listener to remove
+     */
+    public void removeChildrenChangeListener(CellChildrenChangeListenerSrv listener) {
+        // wrap managed objects on remove as well so the comparison in
+        // equals works.
+        if (listener instanceof ManagedObject) {
+            listener = new ManagedCellChildrenChangeListenerSrv(listener);
+        }
+
+        childrenChangeListeners.remove(listener);
+    }
+
+    /**
+     * Notification of a children change event
+     * @param child the child cell
+     * @param added true if the child was added, or false if it was removed
+     */
+    protected void fireChildChangedEvent(CellMO child, boolean added) {
+        for (CellChildrenChangeListenerSrv listener : childrenChangeListeners) {
+            if (added) {
+                listener.childAdded(this, child);
+            } else {
+                listener.childRemoved(this, child);
+            }
+        }
     }
 
     /**
@@ -1115,7 +1193,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             cellMO.setServerState(state);
 
             // Notify the sender that things went OK
-//            sender.send(clientID, new OKMessage(message.getMessageID()));
+            sender.send(clientID, new OKMessage(message.getMessageID()));
 
             // Fetch a new client-state and set it. Send a message on the
             // cell channel with the new state.
@@ -1172,7 +1250,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             }
 
             // Notify the sender that things went OK
-//            sender.send(clientID, new OKMessage(message.getMessageID()));
+            sender.send(clientID, new OKMessage(message.getMessageID()));
 
             // Fetch a new client-state and set it. Send a message on the
             // cell channel with the new state.
@@ -1248,8 +1326,8 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 } else {
                     // Otherwise, the component already exists, so send an error
                     // message back to the client.
-//                    sender.send(clientID, new ErrorMessage(message.getMessageID(),
-//                                "The Component " + className + " already exists."));
+                    sender.send(clientID, new ErrorMessage(message.getMessageID(),
+                               "The Component " + className + " already exists."));
                     return;
                 }
             } catch (java.lang.Exception excp) {
@@ -1261,7 +1339,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 // Log an error in the log and send back an error message.
                 logger.log(Level.WARNING, "Unable to add component " +
                         className + " for cell " + cellMO.getName(), excp);
-//                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
+                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
                 return;
             }
 
@@ -1298,7 +1376,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 // Remove the component and send a success message back to the
                 // client
                 cellMO.removeComponent(component);
-//                sender.send(clientID, new OKMessage(message.getMessageID()));
+                sender.send(clientID, new OKMessage(message.getMessageID()));
 
                 // Send the same event message to all clients as an asynchronous
                 // event
@@ -1307,7 +1385,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             } catch (java.lang.ClassNotFoundException excp) {
                 // Just got an exception and ignore here
                 logger.log(Level.WARNING, "Cannot find component class", excp);
-//                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
+                sender.send(clientID, new ErrorMessage(message.getMessageID(), excp));
             }
         }
     }
@@ -1330,15 +1408,77 @@ public abstract class CellMO implements ManagedObject, Serializable {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof ComponentChangeListenerSrv)) {
+            if (!(o instanceof ManagedComponentChangeListenerSrv)) {
                 return false;
             }
 
-            if (o instanceof ManagedComponentChangeListenerSrv) {
-                return ref.equals(((ManagedComponentChangeListenerSrv) o).ref);
-            } else {
-                return ref.get().equals(o);
+            return ref.equals(((ManagedComponentChangeListenerSrv) o).ref);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 83 * hash + (this.ref != null ? this.ref.hashCode() : 0);
+            return hash;
+        }
+    }
+
+    /** Wrapper to use a managed object to notify a listener */
+    private static class ManagedCellParentChangeListenerSrv
+        implements CellParentChangeListenerSrv
+    {
+        private ManagedReference<CellParentChangeListenerSrv> ref;
+
+        public ManagedCellParentChangeListenerSrv(CellParentChangeListenerSrv listener) {
+            ref = AppContext.getDataManager().createReference(listener);
+        }
+
+        public void parentChanged(CellMO cell, CellMO parent) {
+            ref.get().parentChanged(cell, parent);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof ManagedCellParentChangeListenerSrv)) {
+                return false;
             }
+
+            return ref.equals(((ManagedCellParentChangeListenerSrv) o).ref);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 83 * hash + (this.ref != null ? this.ref.hashCode() : 0);
+            return hash;
+        }
+    }
+
+    /** Wrapper to use a managed object to notify a listener */
+    private static class ManagedCellChildrenChangeListenerSrv
+        implements CellChildrenChangeListenerSrv
+    {
+        private ManagedReference<CellChildrenChangeListenerSrv> ref;
+
+        public ManagedCellChildrenChangeListenerSrv(CellChildrenChangeListenerSrv listener) {
+            ref = AppContext.getDataManager().createReference(listener);
+        }
+
+        public void childAdded(CellMO cell, CellMO child) {
+            ref.get().childAdded(cell, child);
+        }
+
+        public void childRemoved(CellMO cell, CellMO child) {
+            ref.get().childRemoved(cell, child);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof ManagedCellChildrenChangeListenerSrv)) {
+                return false;
+            }
+
+            return ref.equals(((ManagedCellChildrenChangeListenerSrv) o).ref);
         }
 
         @Override
