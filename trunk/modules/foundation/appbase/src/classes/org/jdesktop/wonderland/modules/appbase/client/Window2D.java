@@ -36,7 +36,7 @@ import com.jme.util.geom.BufferUtils;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.HashMap;
-import javax.swing.SwingWorker;
+import org.jdesktop.swingworker.SwingWorker;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
