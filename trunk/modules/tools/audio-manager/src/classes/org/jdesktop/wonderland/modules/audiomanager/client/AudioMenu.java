@@ -105,15 +105,15 @@ public class AudioMenu extends javax.swing.JPanel {
     public void addMenus() {
         JmeClientMain.getFrame().addToWindowMenu(softphoneMenuItem, 5);
         JmeClientMain.getFrame().addToToolsMenu(muteCheckBox, 0);
-        JmeClientMain.getFrame().addToWindowMenu(personalPhoneMenuItem, 3);
-        JmeClientMain.getFrame().addToWindowMenu(voiceChatMenuItem, 4);
+        JmeClientMain.getFrame().addToWindowMenu(voiceChatMenuItem, 3);
+        //JmeClientMain.getFrame().addToWindowMenu(personalPhoneMenuItem, 4);
     }
 
     public void removeMenus() {
         JmeClientMain.getFrame().removeFromWindowMenu(softphoneMenuItem);
         JmeClientMain.getFrame().removeFromToolsMenu(muteCheckBox);
-        JmeClientMain.getFrame().removeFromWindowMenu(personalPhoneMenuItem);
         JmeClientMain.getFrame().removeFromWindowMenu(voiceChatMenuItem);
+        //JmeClientMain.getFrame().removeFromWindowMenu(personalPhoneMenuItem);
     }
 
     public static AudioMenu getAudioMenu(AudioMenuListener audioMenuListener) {
