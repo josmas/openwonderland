@@ -60,6 +60,8 @@ public class HoldHUDPanel extends javax.swing.JPanel implements MemberChangeList
     public void setHUDComponent(HUDComponent holdHUDComponent) {
 	this.holdHUDComponent = holdHUDComponent;
 
+	holdHUDComponent.setName("Hold");
+
 	holdHUDComponent.addEventListener(new HUDEventListener() {
             public void HUDObjectChanged(HUDEvent e) {
                 if (e.getEventType().equals(HUDEventType.CLOSED)) {

@@ -376,16 +376,16 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
-        AddExternalHUDPanel addExternalHUDPanel = new AddExternalHUDPanel(this, session, presenceInfo);
+        AddHUDPanel addHUDPanel = new AddHUDPanel(this, session, presenceInfo);
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-        final HUDComponent addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
-        addExternalHUDComponent.setName("Call External");
-        addExternalHUDPanel.setHUDComponent(addExternalHUDComponent);
-        addExternalHUDComponent.setPreferredLocation(Layout.NORTHEAST);
-        mainHUD.addComponent(addExternalHUDComponent);
-        addExternalHUDComponent.addEventListener(new HUDEventListener() {
+        final HUDComponent addHUDComponent = mainHUD.createComponent(addHUDPanel);
+        addHUDComponent.setName("Call ");
+        addHUDPanel.setHUDComponent(addHUDComponent);
+        addHUDComponent.setPreferredLocation(Layout.NORTHEAST);
+        mainHUD.addComponent(addHUDComponent);
+        addHUDComponent.addEventListener(new HUDEventListener() {
 
             public void HUDObjectChanged(HUDEvent e) {
                 if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
@@ -397,12 +397,12 @@ public class AudioManagerClient extends BaseConnection implements
 
             public void propertyChange(PropertyChangeEvent pe) {
                 if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                    addExternalHUDComponent.setVisible(false);
+                    addHUDComponent.setVisible(false);
                 }
             }
         };
-        addExternalHUDPanel.addPropertyChangeListener(plistener);
-        addExternalHUDComponent.setVisible(true);
+        addHUDPanel.addPropertyChangeListener(plistener);
+        addHUDComponent.setVisible(true);
     }
 
     public void voiceChat() {
@@ -410,15 +410,15 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
-        AddInWorldHUDPanel addInWorldHUDPanel = new AddInWorldHUDPanel(this, session, presenceInfo);
+        AddHUDPanel addHUDPanel = new AddHUDPanel(this, session, presenceInfo);
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-        final HUDComponent addInWorldHUDComponent = mainHUD.createComponent(addInWorldHUDPanel);
-        addInWorldHUDPanel.setHUDComponent(addInWorldHUDComponent);
-        addInWorldHUDComponent.setPreferredLocation(Layout.NORTHEAST);
-        mainHUD.addComponent(addInWorldHUDComponent);
-        addInWorldHUDComponent.addEventListener(new HUDEventListener() {
+        final HUDComponent addHUDComponent = mainHUD.createComponent(addHUDPanel);
+        addHUDPanel.setHUDComponent(addHUDComponent);
+        addHUDComponent.setPreferredLocation(Layout.NORTHEAST);
+        mainHUD.addComponent(addHUDComponent);
+        addHUDComponent.addEventListener(new HUDEventListener() {
 
             public void HUDObjectChanged(HUDEvent e) {
                 if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
@@ -430,12 +430,12 @@ public class AudioManagerClient extends BaseConnection implements
 
             public void propertyChange(PropertyChangeEvent pe) {
                 if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                    addInWorldHUDComponent.setVisible(false);
+                    addHUDComponent.setVisible(false);
                 }
             }
         };
-        addInWorldHUDPanel.addPropertyChangeListener(plistener);
-        addInWorldHUDComponent.setVisible(true);
+        addHUDPanel.addPropertyChangeListener(plistener);
+        addHUDComponent.setVisible(true);
     }
 
     public void softphoneVisible(boolean isVisible) {
@@ -763,7 +763,8 @@ public class AudioManagerClient extends BaseConnection implements
 
         logger.warning("Call ended for " + callee + " Reason:  " + reason);
 
-        if (reason.equalsIgnoreCase("Hung up") == false) {
+        if (reason.equalsIgnoreCase("Hung up") == false &&
+		reason.equalsIgnoreCase("User requested call termination") == false) {
             callEnded(callee, reason);
         }
 
