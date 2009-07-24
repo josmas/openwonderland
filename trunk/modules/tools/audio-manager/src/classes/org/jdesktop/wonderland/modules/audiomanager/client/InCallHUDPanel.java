@@ -72,6 +72,8 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+
 /**
  *
  * @author  jp
@@ -128,6 +130,8 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
             members.add(caller);
             addToUserList(caller);
         }
+
+	pm.setMute(myPresenceInfo, true);
 
         hangupButton.setEnabled(false);
 
@@ -546,18 +550,22 @@ private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 }//GEN-LAST:event_addButtonActionPerformed
 
 private void speakerPhoneRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speakerPhoneRadioButtonActionPerformed
-    changePrivacy(ChatType.PUBLIC);
     privacyDescription.setText(VoiceChatMessage.PUBLIC_DESCRIPTION);
+    changePrivacy(ChatType.PUBLIC);
+
+    pm.setMute(myPresenceInfo, SoftphoneControlImpl.getInstance().isMuted());
 }//GEN-LAST:event_speakerPhoneRadioButtonActionPerformed
 
 private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
-    changePrivacy(ChatType.SECRET);
     privacyDescription.setText(VoiceChatMessage.SECRET_DESCRIPTION);
+    changePrivacy(ChatType.SECRET);
+    pm.setMute(myPresenceInfo, true);
 }//GEN-LAST:event_secretRadioButtonActionPerformed
 
 private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privateRadioButtonActionPerformed
-    changePrivacy(ChatType.PRIVATE);
     privacyDescription.setText(VoiceChatMessage.PRIVATE_DESCRIPTION);
+    changePrivacy(ChatType.PRIVATE);
+    pm.setMute(myPresenceInfo, true);
 }//GEN-LAST:event_privateRadioButtonActionPerformed
 
     private void changePrivacy(ChatType chatType) {
