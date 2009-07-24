@@ -20,8 +20,10 @@ package org.jdesktop.wonderland.modules.security.server.service;
 import java.util.Set;
 import java.util.SortedSet;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.modules.security.common.Permission;
 import org.jdesktop.wonderland.modules.security.common.Principal;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.security.Resource;
 
 /**
@@ -39,10 +41,25 @@ public class CellResourceManagerImpl implements CellResourceManagerInternal {
         return service.getCellResource(cellID);
     }
 
+    public Set<Action> getActions(CellID cellID) {
+        return service.getActions(cellID);
+    }
+
     public void updateCellResource(CellID cellID, Set<Principal> owners,
                                    SortedSet<Permission> permissions)
     {
         service.updateCellResource(cellID, owners, permissions);
+    }
+
+    public void updateCellResource(CellID cellID, CellID parentID)
+    {
+        service.updateCellResource(cellID, parentID);
+    }
+
+    public void updateCellResource(CellID cellID, CellComponentMO component,
+                                   boolean added)
+    {
+        service.updateCellResource(cellID, component, added);
     }
 
     public void invalidateCellResource(CellID cellID) {

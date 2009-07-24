@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.security.common.messages;
 
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
@@ -24,4 +25,22 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  * @author jkaplan
  */
 public class PermissionsRequestMessage extends CellMessage {
+    /** the cell we are requesting permissions for */
+    private CellID requestCellID;
+
+    public PermissionsRequestMessage() {
+        this (null);
+    }
+
+    public PermissionsRequestMessage(CellID requestCellID) {
+        this.requestCellID = requestCellID;
+    }
+
+    /**
+     * Get the requested cell id. If the cell id is null, get the permissions
+     * for the cell this component is attached to.
+     */
+    public CellID getRequestCellID() {
+        return requestCellID;
+    }
 }

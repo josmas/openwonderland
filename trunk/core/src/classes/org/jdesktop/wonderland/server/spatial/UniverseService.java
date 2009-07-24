@@ -27,6 +27,7 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.util.ScalableHashMap;
+import com.sun.sgs.app.util.ScalableHashSet;
 import com.sun.sgs.app.util.ScalableList;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
@@ -92,6 +93,9 @@ public class UniverseService extends AbstractService implements UniverseManager 
 
     /** Key for the list of transform change listener */
     private static final String LISTENERS_KEY = NAME + ".listeners";
+
+    /** Key for the list of cell listeners */
+    private static final String CELL_LISTENERS_KEY = NAME + ".cell.listeners";
 
     private Universe universe;
     private ChangeApplication changeApplication;
@@ -277,6 +281,10 @@ public class UniverseService extends AbstractService implements UniverseManager 
             }
         });
 
+        // notify listeners
+        for (CellMOListener listener : getCellListeners()) {
+            listener.cellAdded(cellMO);
+        }
     }
 
     public void revalidateCell(CellMO cellMO) {
@@ -296,6 +304,11 @@ public class UniverseService extends AbstractService implements UniverseManager 
                 universe.removeCell(cellID);
             }
         });
+
+        // notify listeners
+        for (CellMOListener listener : getCellListeners()) {
+            listener.cellRemoved(cell);
+        }
     }
 
     public void addChild(CellMO parent, CellMO child) {
@@ -400,6 +413,14 @@ public class UniverseService extends AbstractService implements UniverseManager 
         return ret;
     }
 
+    public void addCellListener(CellMOListener listener) {
+        getCellListeners().add(listener);
+    }
+
+    public void removeCellListener(CellMOListener listener) {
+        getCellListeners().remove(listener);
+    }
+
     public void addTransformChangeListener(CellMO cell, final TransformChangeListenerSrv listener) {
         // add a record of this listener so if can be reinstantiated
         addListenerRecord(cell.getCellID(), listener, ListenerRecord.Type.TRANSFORM);
@@ -479,10 +500,23 @@ public class UniverseService extends AbstractService implements UniverseManager 
 
         try {
             out = (Map<Object, ListenerRecord>)
-                    dataService.getServiceBinding(LISTENERS_KEY);
+                    dataService.getServiceBindingForUpdate(LISTENERS_KEY);
         } catch (NameNotBoundException nnbe) {
             out = new ScalableHashMap<Object, ListenerRecord>();
             dataService.setServiceBinding(LISTENERS_KEY, out);
+        }
+
+        return out;
+    }
+
+    private Set<CellMOListener> getCellListeners() {
+        Set<CellMOListener> out;
+
+        try {
+            out = (Set<CellMOListener>) dataService.getServiceBindingForUpdate(CELL_LISTENERS_KEY);
+        } catch (NameNotBoundException nnbe) {
+            out = new ScalableHashSet<CellMOListener>();
+            dataService.setServiceBinding(CELL_LISTENERS_KEY, out);
         }
 
         return out;

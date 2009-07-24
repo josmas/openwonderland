@@ -80,6 +80,7 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent.AvatarConfigChangeListener;
@@ -141,10 +142,26 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             username = "npc"; // HACK !
 
         characterMotionListener = new CharacterMotionListener() {
-            public void transformUpdate(Vector3f translation, PMatrix rotation) {
-                ((MovableAvatarComponent) c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
-                };
+            Vector3f prevTrans;
+            PMatrix prevRot;
             
+            public void transformUpdate(Vector3f translation, PMatrix rotation) {
+                if (logger.isLoggable(Level.FINEST)) {
+                    logger.finest("Transform update: translation: prev: " +
+                            prevTrans + " cur: " + translation +
+                            " rotation: prev: " + prevRot + " cur: " +
+                            rotation);
+                }
+                
+                if (prevTrans == null || !Math3DUtils.epsilonEquals(prevTrans, translation, 0.001f) ||
+                    prevRot == null || !prevRot.epsilonEquals(rotation, 0.001f))
+                {
+                    ((MovableAvatarComponent) c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation.getRotation(), translation));
+
+                    prevTrans = translation.clone();
+                    prevRot = new PMatrix(rotation);
+                }
+            };   
         };
 
         // This info will be sent to the other clients to animate the avatar

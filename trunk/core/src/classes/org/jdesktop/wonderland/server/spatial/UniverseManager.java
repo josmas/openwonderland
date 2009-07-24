@@ -84,6 +84,21 @@ public interface UniverseManager {
     public void removeViewUpdateListener(CellMO cell, ViewUpdateListener viewUpdateListener);
 
     /**
+     * Add a cell listener.  The listener will be notified whenever a cell
+     * is added or removed.  Cell listeners must be serializable and may
+     * optionally implement managed object.  Listeners will be notified
+     * in a Darkstar transaction, and are persisted across restarts.
+     * @param listener the listener to add
+     */
+    public void addCellListener(CellMOListener listener);
+
+    /**
+     * Remove a cell listener.
+     * @param listener the listener to remove
+     */
+    public void removeCellListener(CellMOListener listener);
+
+    /**
      * Schedule a runnable to execute when the current transaction commits. This
      * is useful if you need to interact with other changes in the UniverseManager
      * that are pending on the completion of the current transaction.

@@ -112,4 +112,12 @@ public class UniverseServiceManagerImpl implements UniverseManager {
     public void scheduleTask(UniverseKernelRunnable task) {
         service.scheduleTask(task);
     }
+
+    public void addCellListener(CellMOListener listener) {
+        service.addCellListener(listener);
+    }
+
+    public void removeCellListener(CellMOListener listener) {
+        service.removeCellListener(listener);
+    }
 }

@@ -99,17 +99,26 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
             if (sc.hasPermissions()) {
                 editItem.setEnabled(canMove(sc));
             } else {
-                // if not, we need to start a thread to load them
-                editItem.setLabel("Edit (checking) ...");
-                editItem.setEnabled(false);
-                new Thread(new Runnable() {
-
+                Thread t = new Thread(new Runnable() {
                     public void run() {
                         editItem.setLabel("Edit...");
                         editItem.setEnabled(canMove(sc));
                         editItem.fireMenuItemRepaintListeners();
                     }
-                }, "Security check wait thread").start();
+                }, "Security check wait thread");
+                t.start();
+
+                // wait for a bit to see if the listener comes back
+                // quickly
+                try {
+                    t.join(250);
+                } catch (InterruptedException ie) {}
+
+                if (t.isAlive()) {
+                    // the thread isn't done -- add in a wait message
+                    editItem.setLabel("Edit (checking) ...");
+                    editItem.setEnabled(false);
+                }
             }
         }
 
@@ -120,7 +129,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     private boolean canMove(SecurityComponent sc) {
         try {
             MoveAction ma = new MoveAction();
-            return sc.getPermissions().contains(ma);
+            return sc.getPermission(ma);
         } catch (InterruptedException ie) {
             // shouldn't happen, since we check above
             return true;

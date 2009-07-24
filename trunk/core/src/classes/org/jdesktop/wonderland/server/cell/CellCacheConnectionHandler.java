@@ -17,11 +17,6 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.DataManager;
-import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.Task;
-import com.sun.sgs.app.TaskManager;
 import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import java.io.Serializable;
 import java.util.Properties;

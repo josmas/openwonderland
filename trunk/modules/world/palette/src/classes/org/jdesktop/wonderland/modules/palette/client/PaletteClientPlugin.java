@@ -176,12 +176,30 @@ public class PaletteClientPlugin extends BaseClientPlugin
             duplicateItem.setEnabled(canDuplicate(psc));
             deleteItem.setEnabled(canDelete(sc, psc));
         } else {
-            new Thread(new Runnable() {
+            Thread t = new Thread(new Runnable() {
                 public void run() {
                     duplicateItem.setEnabled(canDuplicate(psc));
+                    duplicateItem.setLabel("Duplicate");
+                    duplicateItem.fireMenuItemRepaintListeners();
                     deleteItem.setEnabled(canDelete(sc, psc));
+                    deleteItem.setLabel("Delete");
+                    deleteItem.fireMenuItemRepaintListeners();
                 }
-            }, "Cell palette security check").start();
+            }, "Cell palette security check");
+            t.start();
+
+            // wait for a little bit to see if the check comes back
+            // quickly
+            try {
+                t.join(250);
+            } catch (InterruptedException ie) {}
+
+            if (!t.isAlive()) {
+                duplicateItem.setEnabled(false);
+                duplicateItem.setLabel("Duplicate (checking)");
+                deleteItem.setEnabled(false);
+                deleteItem.setLabel("Delete (checking)");
+            }
         }
 
         return new ContextMenuItem[] {
@@ -197,7 +215,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
 
         try {
             ChildrenAction ca = new ChildrenAction();
-            return psc.getPermissions().contains(ca);
+            return psc.getPermission(ca);
         } catch (InterruptedException ie) {
             // shouldn't happen, since we check above
             return true;
@@ -215,10 +233,10 @@ public class PaletteClientPlugin extends BaseClientPlugin
             ChildrenAction ca = new ChildrenAction();
 
             if (sc != null) {
-                out = sc.getPermissions().contains(ma);
+                out = sc.getPermission(ma);
             }
             if (out && psc != null) {
-                out = psc.getPermissions().contains(ca);
+                out = psc.getPermission(ca);
             }
         } catch (InterruptedException ie) {
             // shouldn't happen, since we check above
