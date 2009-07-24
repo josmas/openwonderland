@@ -54,6 +54,12 @@ import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
+/* For Testing FocusEvent3D
+import org.jdesktop.wonderland.client.jme.input.FocusEvent3D;
+import org.jdesktop.wonderland.client.jme.input.InputManager3D;
+*/
 
 /**
  *
@@ -466,28 +472,42 @@ public class JmeClientMain {
         // Note: the app base will impose its own (different) policy later
         inputManager.addKeyMouseFocus(inputManager.getGlobalFocusEntity());
 
+        /* For Testing FocusEvent3D
+        InputManager3D.getInputManager().addGlobalEventListener(
+            new EventClassListener () {
+                private final Logger logger = Logger.getLogger("My Logger");
+                public Class[] eventClassesToConsume () {
+                    return new Class[] { FocusEvent3D.class };
+                }
+                public void commitEvent (Event event) {
+                    logger.severe("Global listener: received mouse event, event = " + event);
+                }
+            });
+        */
+
         /* Note: Example of global key and mouse event listener
         InputManager3D.getInputManager().addGlobalEventListener(
-        new EventClassFocusListener () {
-        private final Logger logger = Logger.getLogger("My Logger");
-        public Class[] eventClassesToConsume () {
-        return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
-        }
-        public void commitEvent (Event event) {
-        // NOTE: to test, change the two logger.fine calls below to logger.warning
-        if (event instanceof KeyEvent3D) {
-        if (((KeyEvent3D)event).isPressed()) {
-        logger.fine("Global listener: received key event, event = " + event );
-        }
-        } else {
-        logger.fine("Global listener: received mouse event, event = " + event);
-        MouseEvent3D mouseEvent = (MouseEvent3D) event;
-        System.err.println("Event pickDetails = " + mouseEvent.getPickDetails());
-        System.err.println("Event entity = " + mouseEvent.getEntity());
-        }
-        }
-        });
+            new EventClassFocusListener () {
+                private final Logger logger = Logger.getLogger("My Logger");
+                public Class[] eventClassesToConsume () {
+                    return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
+                }
+                public void commitEvent (Event event) {
+                    // NOTE: to test, change the two logger.fine calls below to logger.warning
+                    if (event instanceof KeyEvent3D) {
+                        if (((KeyEvent3D)event).isPressed()) {
+                            logger.fine("Global listener: received key event, event = " + event );
+                        }
+                    } else {
+                        logger.fine("Global listener: received mouse event, event = " + event);
+                        MouseEvent3D mouseEvent = (MouseEvent3D) event;
+                        System.err.println("Event pickDetails = " + mouseEvent.getPickDetails());
+                        System.err.println("Event entity = " + mouseEvent.getEntity());
+                    }
+                }
+            });
          */
+
         frame.setDesiredFrameRate(desiredFrameRate);
     }
 

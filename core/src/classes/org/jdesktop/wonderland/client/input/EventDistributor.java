@@ -179,7 +179,7 @@ public abstract class EventDistributor implements Runnable {
     protected void tryGlobalListeners (Event event) {
         logger.info("tryGlobalListeners event = " + event);
         synchronized (globalEventListeners) {
-                Iterator<EventListener> it = globalEventListeners.iterator();
+            Iterator<EventListener> it = globalEventListeners.iterator();
             while (it.hasNext()) {
 		EventListener listener = it.next();
 		if (listener.isEnabled()) {

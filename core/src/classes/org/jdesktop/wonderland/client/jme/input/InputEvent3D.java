@@ -141,6 +141,7 @@ public abstract class InputEvent3D extends Event {
     /** {@inheritDoc} */
     @Override
     public Event clone(Event event) {
+        // Note: doesn't create an event because this class is abstract
         ((InputEvent3D) event).awtEvent = awtEvent;
         ((InputEvent3D) event).pickInfo = pickInfo;
         return event;
