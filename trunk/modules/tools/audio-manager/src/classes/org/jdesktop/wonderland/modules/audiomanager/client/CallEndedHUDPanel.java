@@ -42,6 +42,7 @@ public class CallEndedHUDPanel extends javax.swing.JPanel {
         callStatusLabel = new javax.swing.JLabel();
         okButton = new javax.swing.JButton();
 
+        jLabel1.setFont(jLabel1.getFont());
         jLabel1.setText("Phone Call Ended Unexpectedly");
 
         okButton.setText("OK");
