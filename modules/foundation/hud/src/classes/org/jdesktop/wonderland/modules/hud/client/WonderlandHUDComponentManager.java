@@ -19,9 +19,11 @@ package org.jdesktop.wonderland.modules.hud.client;
 
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
-import com.jme.scene.Node;
+import com.jme.renderer.ColorRGBA;
 import com.jme.scene.state.BlendState;
+import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
+import com.jme.system.DisplaySystem;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -35,8 +37,9 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.AlphaProcessor;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
@@ -48,9 +51,11 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.test.EnterExitEvent3DLogger;
+import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
+import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
 import org.jdesktop.wonderland.modules.hud.client.HUDComponentState.HUDComponentVisualState;
 
 /**
@@ -135,10 +140,10 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 MouseEnterExitEvent3D mouseEvent = (MouseEnterExitEvent3D) event;
                 switch (mouseEvent.getID()) {
                     case MouseEvent.MOUSE_ENTERED:
-                        logger.fine("mouse entered component: " + component);
+                        logger.finest("mouse entered component: " + component);
                         break;
                     case MouseEvent.MOUSE_EXITED:
-                        logger.fine("mouse exited component: " + component);
+                        logger.finest("mouse exited component: " + component);
                         break;
                     default:
                         break;
@@ -311,7 +316,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
         if (state.isVisible()) {
-            return;
+            //return;
         }
 
         HUDView2D view = state.getView();
@@ -340,6 +345,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         component.setLocation((int) location.x, (int) location.y, false);
         view.setLocationOrtho(new Vector2f(location.x + view.getDisplayerLocalWidth() / 2, location.y + view.getDisplayerLocalHeight() / 2), false);
 
+        setTransparency(component, component.getTransparency());
         // display the component
         view.setVisibleApp(true, false);
         view.setVisibleUser(true);
@@ -350,19 +356,69 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    public void setTransparent(HUDView2D view) {
-        Node node = view.getNode();
-        Entity entity = view.getEntity();
+    public void setTransparency(HUDComponent2D component, final float transparency) {
+        HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
+
+        HUDView2D view = state.getView();
+
+        if (view == null) {
+            logger.warning("component has no view, unable to set transparency");
+            return;
+        }
+
+        GeometryNode node = view.getGeometryNode();
+
+        if (!(node.getChild(0) instanceof TexturedQuad)) {
+            logger.warning("can't find quad for view, unable to set transparency");
+            return;
+        }
+        final TexturedQuad quad = (TexturedQuad) node.getChild(0);
+
+        RenderUpdater updater = new RenderUpdater() {
+
+            public void update(Object arg0) {
+                WorldManager wm = (WorldManager) arg0;
+
+                BlendState as = (BlendState) wm.getRenderManager().createRendererState(RenderState.StateType.Blend);
+                // activate blending
+                as.setBlendEnabled(true);
+                // set the source function
+                as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
+                // set the destination function
+                as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
+                // disable test
+                as.setTestEnabled(false);
+                // activate the blend state
+                as.setEnabled(true);
+
+                // assign the blender state to the node
+                quad.setRenderState(as);
+                quad.updateRenderState();
+
+                MaterialState ms = (MaterialState) quad.getRenderState(RenderState.StateType.Material);
+                if (ms == null) {
+                    ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
+                    quad.setRenderState(ms);
+                }
+
+                if (ms != null) {
+                    ColorRGBA diffuse = ms.getDiffuse();
+                    diffuse.a = 1.0f - transparency;
+                    ms.setDiffuse(diffuse);
+                } else {
+                    logger.warning("quad has no material state, unable to set transparency");
+                    return;
+                }
+
+                ColorRGBA color = quad.getDefaultColor();
+                color.a = transparency;
+                quad.setDefaultColor(color);
+
+                wm.addToUpdateList(quad);
+            }
+        };
         WorldManager wm = ClientContextJME.getWorldManager();
-        BlendState as = (BlendState) wm.getRenderManager().createRendererState(RenderState.RS_BLEND);
-        as.setEnabled(true);
-        as.setBlendEnabled(true);
-        as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
-        as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
-        node.setRenderState(as);
-        RenderComponent rc = entity.getComponent(RenderComponent.class);
-        //AlphaProcessor proc = new AlphaProcessor("", wm, view.getGeometryNode(), 0.01f);
-        //entity.addComponent(AlphaProcessor.class, proc);
+        wm.addRenderUpdater(updater, wm);
     }
 
     private void componentInvisible(HUDComponent2D component) {
@@ -492,6 +548,12 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         logger.fine("closing HUD component: " + component);
     }
 
+    private void componentTransparencyChanged(HUDComponent2D component) {
+        logger.fine("changing transparency of HUD component: " + component);
+        float transparency = component.getTransparency();
+        setTransparency(component, transparency);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -526,6 +588,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 break;
             case CLOSED:
                 componentClosed(comp);
+                break;
+            case CHANGED_TRANSPARENCY:
+                componentTransparencyChanged(comp);
                 break;
             case CREATED:
             case RESIZED:
