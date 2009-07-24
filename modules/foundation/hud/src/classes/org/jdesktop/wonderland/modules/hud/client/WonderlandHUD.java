@@ -32,7 +32,9 @@ import org.jdesktop.wonderland.client.hud.HUDButton;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDDialog;
+import org.jdesktop.wonderland.client.hud.HUDDisplayable;
 import org.jdesktop.wonderland.client.hud.HUDMessage;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
 /**
  * A WonderlandHUD is a 2D region of the Wonderland client window on which HUDComponents
@@ -172,6 +174,19 @@ public class WonderlandHUD extends HUDObject2D implements HUD {
      */
     public HUDComponent createComponent() {
         return new HUDComponent2D();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HUDComponent createComponent(HUDDisplayable displayable) {
+        HUDComponent2D component = null;
+
+        if (displayable instanceof Window2D) {
+            component = new HUDComponent2D((Window2D)displayable);
+        }
+
+        return component;
     }
 
     /**
