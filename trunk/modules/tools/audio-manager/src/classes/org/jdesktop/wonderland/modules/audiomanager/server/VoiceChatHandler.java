@@ -238,6 +238,10 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		return;
 	    }
 	    
+	    if (audioGroup.getPlayerInfo(player) == null) {
+		return;   // not in group
+	    }
+
 	    removePlayerFromAudioGroup(audioGroup, player);
 
 	    if (audioGroup.getNumberOfPlayers() <= 1) {
