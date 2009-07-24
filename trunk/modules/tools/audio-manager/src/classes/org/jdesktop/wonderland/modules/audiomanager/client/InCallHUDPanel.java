@@ -131,13 +131,13 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
             addToUserList(caller);
         }
 
-	pm.setMute(myPresenceInfo, true);
-
         hangupButton.setEnabled(false);
 
         pm = PresenceManagerFactory.getPresenceManager(session);
 
         pm.addPresenceManagerListener(this);
+
+	pm.setMute(myPresenceInfo, true);
 
         client.addDisconnectListener(this);
 
