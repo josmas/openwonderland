@@ -65,7 +65,7 @@
                                   <Component id="nameTextField" linkSize="1" alignment="0" pref="174" max="32767" attributes="1"/>
                                   <Component id="statusLabel" alignment="0" min="-2" pref="202" max="-2" attributes="1"/>
                               </Group>
-                              <EmptySpace pref="19" max="32767" attributes="0"/>
+                              <EmptySpace pref="21" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
@@ -85,7 +85,7 @@
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="callButton" linkSize="3" min="-2" pref="87" max="-2" attributes="0"/>
                                           </Group>
-                                          <Component id="phonePrivacyDescriptionLabel" alignment="0" pref="246" max="32767" attributes="0"/>
+                                          <Component id="phonePrivacyDescriptionLabel" alignment="0" pref="234" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -212,7 +212,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane1" alignment="0" min="-2" pref="184" max="-2" attributes="0"/>
+                          <Component id="jScrollPane1" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="privateRadioButton" min="-2" max="-2" attributes="0"/>
@@ -222,27 +222,27 @@
                                   <Component id="speakerPhoneRadioButton" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="29" pref="29" max="29" attributes="0"/>
+                                  <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" attributes="0">
-                                          <EmptySpace min="6" pref="6" max="6" attributes="0"/>
+                                      <Component id="privacyDescriptionLabel" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="1" attributes="0">
                                           <Component id="cancelButton" linkSize="2" min="-2" pref="87" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                           <Component id="inviteButton" linkSize="2" min="-2" pref="87" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                                       </Group>
-                                      <Component id="privacyDescriptionLabel" alignment="0" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
                       </Group>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="25" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="jScrollPane1" pref="90" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" pref="94" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="privateRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -253,8 +253,8 @@
                       <Component id="privacyDescriptionLabel" min="-2" pref="16" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="inviteButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>

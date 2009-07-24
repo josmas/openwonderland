@@ -137,7 +137,7 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
         pm.addPresenceManagerListener(this);
 
-	pm.setMute(myPresenceInfo, true);
+	//pm.setMute(myPresenceInfo, true);
 
         client.addDisconnectListener(this);
 
@@ -560,19 +560,19 @@ private void speakerPhoneRadioButtonActionPerformed(java.awt.event.ActionEvent e
     privacyDescription.setText(VoiceChatMessage.PUBLIC_DESCRIPTION);
     changePrivacy(ChatType.PUBLIC);
 
-    pm.setMute(myPresenceInfo, SoftphoneControlImpl.getInstance().isMuted());
+    //pm.setMute(myPresenceInfo, SoftphoneControlImpl.getInstance().isMuted());
 }//GEN-LAST:event_speakerPhoneRadioButtonActionPerformed
 
 private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
     privacyDescription.setText(VoiceChatMessage.SECRET_DESCRIPTION);
     changePrivacy(ChatType.SECRET);
-    pm.setMute(myPresenceInfo, true);
+    //pm.setMute(myPresenceInfo, true);
 }//GEN-LAST:event_secretRadioButtonActionPerformed
 
 private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privateRadioButtonActionPerformed
     privacyDescription.setText(VoiceChatMessage.PRIVATE_DESCRIPTION);
     changePrivacy(ChatType.PRIVATE);
-    pm.setMute(myPresenceInfo, true);
+    //pm.setMute(myPresenceInfo, true);
 }//GEN-LAST:event_privateRadioButtonActionPerformed
 
     private void changePrivacy(ChatType chatType) {
@@ -627,9 +627,6 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
             holdHUDPanel.addPropertyChangeListener(plistener);
         }
 
-        holdHUDComponent.setVisible(onHold);
-
-        inCallHUDComponent.setVisible(!onHold);
         setHold(onHold, 1);
     }
 
@@ -709,6 +706,13 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
         session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
         inCallHUDComponent.setVisible(false);
         inCallHUDPanelMap.remove(group);
+
+	System.out.println("CLOSE " + addHUDComponent);
+
+	if (addHUDComponent != null) {
+	    addHUDComponent.setVisible(false);
+	    addHUDComponent.setClosed();
+	}
     }
 
     private class UserListCellRenderer implements ListCellRenderer {
