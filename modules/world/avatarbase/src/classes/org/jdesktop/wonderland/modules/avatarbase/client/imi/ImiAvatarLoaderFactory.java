@@ -15,18 +15,24 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.avatarbase.client.registry.annotation;
+package org.jdesktop.wonderland.modules.avatarbase.client.imi;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+import org.jdesktop.wonderland.modules.avatarbase.client.loader.annotation.AvatarLoaderFactory;
+import org.jdesktop.wonderland.modules.avatarbase.client.loader.spi.AvatarLoaderFactorySPI;
+import org.jdesktop.wonderland.modules.avatarbase.client.loader.spi.AvatarLoaderSPI;
 
 /**
- * Annotation that indicates this class is an avatar factory. Avatar factories
- * must also implement the AvatarFactorySPI interface.
+ * Generates loaders to load the IMI avatars on the client.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Target(ElementType.TYPE)
-public @interface AvatarFactory {
-}
+@AvatarLoaderFactory
+public class ImiAvatarLoaderFactory implements AvatarLoaderFactorySPI {
 
+    /**
+     * {@inheritDoc}
+     */
+    public AvatarLoaderSPI getAvatarLoader() {
+        return new ImiAvatarLoader();
+    }
+}

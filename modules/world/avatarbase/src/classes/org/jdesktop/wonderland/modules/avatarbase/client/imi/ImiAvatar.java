@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.spi.AvatarSPI;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 
@@ -260,11 +261,13 @@ public class ImiAvatar implements AvatarSPI {
     /**
      * {@inheritDoc}
      */
-    public URL getAvatarURL(ServerSessionManager session) {
+    public AvatarConfigInfo getAvatarConfigInfo(ServerSessionManager session) {
         // Ask the configuration manager to the conversion to the server URL
         ImiAvatarConfigManager m = ImiAvatarConfigManager.getImiAvatarConfigManager();
         try {
-            return m.getAvatarURL(session, this);
+            String url = m.getAvatarURL(session, this).toExternalForm();
+            String className = ImiAvatarLoaderFactory.class.getName();
+            return new AvatarConfigInfo(url, className);
         } catch (InterruptedException excp) {
             logger.log(Level.WARNING, "Fetch of avatar URL was interrupted", excp);
             return null;

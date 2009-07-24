@@ -36,91 +36,91 @@
     <!-- HAIR -->
     <hair>
         <name>Male_PonyTailShape</name>
-        <description>Male_PonyTailShape</description>
+        <description>Pony Tail</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_PonyTailShape</shapes>
     </hair>
     <hair>
         <name>Male_ChinLengthPartLeftShape</name>
-        <description>Male_ChinLengthPartLeftShape</description>
+        <description>Chin Length Part Left</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_ChinLengthPartLeftShape</shapes>
     </hair>
     <hair>
         <name>Male_SlickedBackShape</name>
-        <description>Male_SlickedBackShape</description>
+        <description>Slicked Back</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_SlickedBackShape</shapes>
     </hair>
     <hair>
         <name>Male_PartLeftShape</name>
-        <description>Male_PartLeftShape</description>
+        <description>Part Left</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_PartLeftShape</shapes>
     </hair>
     <hair>
         <name>Male_ShortMessyShape</name>
-        <description>Male_ShortMessyShape</description>
+        <description>Short Messy</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_ShortMessyShape</shapes>
     </hair>
     <hair>
         <name>Male_FlatTopShape</name>
-        <description>Male_FlatTopShape</description>
+        <description>Flat Top</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_FlatTopShape</shapes>
     </hair>
     <hair>
         <name>Male_ShortTopUpShape</name>
-        <description>Male_ShortTopUpShape</description>
+        <description>Short Top</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_ShortTopUpShape</shapes>
     </hair>
     <hair>
         <name>Male_ShortBasicShape</name>
-        <description>Male_ShortBasicShape</description>
+        <description>Basic Short</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_ShortBasicShape</shapes>
     </hair>
     <hair>
         <name>Male_ShortRecedShape</name>
-        <description>Male_ShortRecedShape</description>
+        <description>Short Recede</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_ShortRecedShape</shapes>
     </hair>
     <hair>
         <name>Male_Balding1Shape</name>
-        <description>Male_Balding1Shape</description>
+        <description>Balding</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_Balding1Shape</shapes>
     </hair>
     <hair>
         <name>Male_BaldPiccardShape</name>
-        <description>Male_BaldPiccardShape</description>
+        <description>Piccard Balding</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_BaldPiccardShape</shapes>
     </hair>
     <hair>
         <name>Male_SuperFauxHawkShape</name>
-        <description>Male_SuperFauxHawkShape</description>
+        <description>Mohawk</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_SuperFauxHawkShape</shapes>
     </hair>
     <hair>
         <name>Male_SpikeyShape</name>
-        <description>Male_SpikeyShape</description>
+        <description>Spikey</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_SpikeyShape</shapes>
     </hair>
     <hair>
         <name>Male_ChinLengthPartRightShape</name>
-        <description>Male_ChinLengthPartRightShape</description>
+        <description>Chin Length Part Right</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_ChinLengthPartRightShape</shapes>
     </hair>
     <hair>
         <name>Male_PartRightShape</name>
-        <description>Male_PartRightShape</description>
+        <description>Part Right</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_PartRightShape</shapes>
     </hair>

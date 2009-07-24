@@ -36,10 +36,9 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.ThreadManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.AvatarSessionLoader;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry;
-import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
-import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
@@ -80,7 +79,7 @@ public class ImiAvatarConfigManager {
     /**
      * Default constructor
      */
-    ImiAvatarConfigManager() {
+    private ImiAvatarConfigManager() {
         // Fetch the IMI base content collection for configuration, which is
         // the imi/ directory beneath the avatar base.
         AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
@@ -540,10 +539,6 @@ public class ImiAvatarConfigManager {
         }
 
         /**
-         *
-         */
-
-        /**
          * Returns the collection at the root of all of the avatar configuration
          * information.
          *
@@ -553,20 +548,8 @@ public class ImiAvatarConfigManager {
         private ContentCollection getBaseServerCollection(ServerSessionManager session)
                 throws ContentRepositoryException {
 
-            ContentRepositoryRegistry reg = ContentRepositoryRegistry.getInstance();
-            ContentRepository repository = reg.getRepository(session);
-            ContentCollection userDir = repository.getUserRoot(true);
-            if (userDir == null) {
-                logger.warning("Unable to find user content directory");
-                throw new ContentRepositoryException("Unable to find user dir");
-            }
-
             // Fetch the avatars/imi directory, creating each if necessary
-            ContentCollection dir = (ContentCollection) userDir.getChild("avatars");
-            if (dir == null) {
-                dir = (ContentCollection) userDir.createChild("avatars", Type.COLLECTION);
-            }
-
+            ContentCollection dir = AvatarSessionLoader.getBaseServerCollection(session);
             ContentCollection imiDir = (ContentCollection) dir.getChild("imi");
             if (imiDir == null) {
                 imiDir = (ContentCollection) dir.createChild("imi", Type.COLLECTION);

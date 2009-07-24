@@ -15,18 +15,19 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.avatarbase.client.registry.annotation;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+package org.jdesktop.wonderland.modules.avatarbase.client.loader.spi;
 
 /**
- * Annotation that indicates this class is an avatar factory. Avatar factories
- * must also implement the AvatarFactorySPI interface.
+ * An avatar loader factory creates and returns a loader for its type of avatar.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Target(ElementType.TYPE)
-public @interface AvatarFactory {
-}
+public interface AvatarLoaderFactorySPI {
 
+    /**
+     * Creates and returns an avatar loader.
+     *
+     * @return An avatar loader
+     */
+    public AvatarLoaderSPI getAvatarLoader();
+}

@@ -15,31 +15,18 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.avatarbase.common.cell.messages;
+package org.jdesktop.wonderland.modules.avatarbase.client.loader.annotation;
 
-import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
+ * Annotation that indicates this class is an avatar loader. Avatar loaders
+ * must also implement the AvatarLoaderSPI interface.
  *
- * @author paulby
+ * @author Jordan Slott <jslott@dev.java.net>
  */
-public class AvatarConfigComponentClientState extends CellComponentClientState {
-
-    private String configURL;
-
-    /**
-     * @return the configURL
-     */
-    public String getConfigURL() {
-        return configURL;
-    }
-
-    /**
-     * @param configURL the configURL to set
-     */
-    public void setConfigURL(String configURL) {
-        this.configURL = configURL;
-    }
-
-
+@Target(ElementType.TYPE)
+public @interface AvatarLoaderFactory {
 }
+

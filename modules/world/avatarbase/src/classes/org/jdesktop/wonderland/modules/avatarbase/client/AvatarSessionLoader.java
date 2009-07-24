@@ -26,6 +26,11 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.annotation.AvatarFactory;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.spi.AvatarFactorySPI;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 
 /**
  * Manages the initialization of avatars from various sources for a given
@@ -188,6 +193,31 @@ public class AvatarSessionLoader {
         // There probably should be more to do here. We need to consider what
         // happens when an unload() happens during a load()
         // XXX
+    }
+
+    /**
+     * Returns the content collection on the server that represents the base
+     * collection for all avatar configuration information.
+     *
+     * @return A ContentCollection root for all server avatar config info
+     */
+    public static synchronized ContentCollection getBaseServerCollection(ServerSessionManager manager)
+            throws ContentRepositoryException {
+
+        ContentRepositoryRegistry reg = ContentRepositoryRegistry.getInstance();
+        ContentRepository repository = reg.getRepository(manager);
+        ContentCollection userDir = repository.getUserRoot(true);
+        if (userDir == null) {
+            logger.warning("Unable to find user content directory");
+            throw new ContentRepositoryException("Unable to find user dir");
+        }
+
+        // Fetch the avatars/imi directory, creating each if necessary
+        ContentCollection dir = (ContentCollection) userDir.getChild("avatars");
+        if (dir == null) {
+            dir = (ContentCollection) userDir.createChild("avatars", Type.COLLECTION);
+        }
+        return dir;
     }
 
     /**

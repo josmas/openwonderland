@@ -17,47 +17,70 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.common.cell.messages;
 
-import java.net.URL;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- * A message indicating that the avatar model has been updated.
+ * A message indicating that the avatar model has been updated. This message
+ * provides information to find the proper avatar loader on the client and
+ * load the avatar.
  *
  * @author paulby
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 public class AvatarConfigMessage extends CellMessage {
 
+    /**
+     * Enumeration of the type of message:
+     * REQUEST: A request from the client to change the avatar configuration
+     * APPLY: A response sent to all clients to change the avatar configuration
+     */
     public enum ActionType { REQUEST, APPLY };
     private ActionType actionType;
 
-    // The URL of the configuration file on the server that describes the
-    // avatar. If null, use the "default" avatar.
-    private String modelConfigURL = null;
+    // The configuration information necessary to configure the avatar
+    private AvatarConfigInfo avatarConfigInfo = null;
 
-    AvatarConfigMessage(ActionType actionType, String modelConfigURL) {
-        this.modelConfigURL = modelConfigURL;
+    /** Constructor */
+    public AvatarConfigMessage(ActionType actionType, AvatarConfigInfo info) {
         this.actionType = actionType;
+        this.avatarConfigInfo = info;
     }
 
-    public String getModelConfigURL() {
-        return modelConfigURL;
+    /**
+     * Returns the avatar configuration information.
+     * @return The avatar config info
+     */
+    public AvatarConfigInfo getAvatarConfigInfo() {
+        return avatarConfigInfo;
     }
 
+    /**
+     * Returns the type of the action: REQUEST or APPLY.
+     * @return Either REQUEST or APPLY
+     */
     public ActionType getActionType() {
         return actionType;
     }
 
     /**
-     * Given a request message, return appropriate apply message
-     * @param requestMessage
-     * @return
+     * Given a request message, return appropriate apply message.
+     *
+     * @param msg The original avatar info request message
+     * @return An apply message corresponding to the request
      */
-    public static AvatarConfigMessage newApplyMessage(AvatarConfigMessage requestMessage) {
-        return new AvatarConfigMessage(ActionType.APPLY, requestMessage.getModelConfigURL());
+    public static AvatarConfigMessage newApplyMessage(AvatarConfigMessage msg) {
+        return new AvatarConfigMessage(ActionType.APPLY, msg.getAvatarConfigInfo());
     }
 
-    public static AvatarConfigMessage newRequestMessage(URL newURL) {
-        String url = (newURL != null) ? newURL.toExternalForm() : null;
-        return new AvatarConfigMessage(ActionType.REQUEST, url);
+    /**
+     * Returns an avatar configuration request message given the configuration
+     * information.
+     * 
+     * @param info The new avatar configuration information
+     * @return A request message corresponding
+     */
+    public static AvatarConfigMessage newRequestMessage(AvatarConfigInfo info) {
+        return new AvatarConfigMessage(ActionType.REQUEST, info);
     }
 }

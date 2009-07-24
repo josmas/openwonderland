@@ -66,103 +66,103 @@
     <!-- HAIR -->
     <hair>
         <name>M_PigTailsShape</name>
-        <description>M_PigTailsShape</description>
+        <description>Pig Tails</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>M_PigTailsShape</shapes>
     </hair>
     <hair>
         <name>CulyPigTailzShape</name>
-        <description>CulyPigTailzShape</description>
+        <description>Curly Pig Tails</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>CulyPigTailzShape</shapes>
     </hair>
     <hair>
         <name>L_BunShape</name>
-        <description>L_BunShape</description>
+        <description>Left Bun</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>L_BunShape</shapes>
     </hair>
     <hair>
         <name>M_BunShape</name>
-        <description>M_BunShape</description>
+        <description>Medium Bun</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>M_BunShape</shapes>
     </hair>
     <hair>
         <name>CurlyPonyTailShape</name>
-        <description>CurlyPonyTailShape</description>
+        <description>Curly Pony Tail</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>CurlyPonyTailShape</shapes>
     </hair>
     <hair>
         <name>L_PonyTailShape</name>
-        <description>L_PonyTailShape</description>
+        <description>Pony Tail</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>L_PonyTailShape</shapes>
     </hair>
     <hair>
         <name>M_PonyTailShape</name>
-        <description>M_PonyTailShape</description>
+        <description>Media Pony Tail</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>M_PonyTailShape</shapes>
     </hair>
     <hair>
         <name>Long_W_bangsShape</name>
-        <description>Long_W_bangsShape</description>
+        <description>Long Bangs</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Long_W_bangsShape</shapes>
     </hair>
     <hair>
         <name>Layered_bangShape</name>
-        <description>Layered_bangShape</description>
+        <description>Layered Bangs</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Layered_bangShape</shapes>
     </hair>
     <hair>
         <name>Layered_pt_LShape</name>
-        <description>Layered_pt_LShape</description>
+        <description>Layered Left Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Layered_pt_LShape</shapes>
     </hair>
     <hair>
         <name>Layered_pt_RShape</name>
-        <description>Layered_pt_RShape</description>
+        <description>Layered Right Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Layered_pt_RShape</shapes>
     </hair>
     <hair>
         <name>Layered_pt_centerShape</name>
-        <description>Layered_pt_centerShape</description>
+        <description>Layered Center Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Layered_pt_centerShape</shapes>
     </hair>
     <hair>
         <name>Curly_bangsShape</name>
-        <description>Curly_bangsShape</description>
+        <description>Curly Bangs</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Curly_bangsShape</shapes>
     </hair>
     <hair>
         <name>Culry_pt_RightShape</name>
-        <description>Culry_pt_RightShape</description>
+        <description>Curly Right Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Culry_pt_RightShape</shapes>
     </hair>
     <hair>
         <name>Culry_pt_LeftShape</name>
-        <description>Culry_pt_LeftShape</description>
+        <description>Curly Left Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Culry_pt_LeftShape</shapes>
     </hair>
     <hair>
         <name>Curly_Mid_PtShape</name>
-        <description>Curly_Mid_PtShape</description>
+        <description>Curly Mid Part</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Curly_Mid_PtShape</shapes>
     </hair>
     <hair>
         <name>Long_DredzShape</name>
-        <description>Long_DredzShape</description>
+        <description>Long Dredz</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>
         <shapes>Long_DredzShape</shapes>
     </hair>
@@ -273,6 +273,12 @@
         <shapes>TShirt1Shape</shapes>
         <shapes>Arms_NudeShape</shapes>
     </torsos>
+
+    <!-- JACKETS -->
+    <jackets>
+        <name>No Jacket</name>
+        <description>No Jacket</description>
+    </jackets>
 
     <!-- FEET -->
     <feet>

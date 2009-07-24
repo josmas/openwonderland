@@ -24,9 +24,11 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigComponentClientState;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigComponentServerState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentClientState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentServerState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage.ActionType;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -36,107 +38,146 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
+ * A server-side Cell component that represents the current avatar configuration.
  *
  * @author paulby
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 public class AvatarConfigComponentMO extends CellComponentMO {
 
+    private static Logger logger = Logger.getLogger(AvatarConfigComponentMO.class.getName());
+
     @UsesCellComponentMO(ChannelComponentMO.class)
     protected ManagedReference<ChannelComponentMO> channelComponentRef = null;
-    private boolean live;
-    private String avatarConfig=null;
 
+    // The avatar configuration information
+    private AvatarConfigInfo avatarConfigInfo = null;
+
+    /** Constructor */
     public AvatarConfigComponentMO(CellMO cell) {
         super(cell);
-        
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected String getClientClass() {
         return "org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent";
     }
 
-    protected Class getMessageClass() {
-        return AvatarConfigMessage.class;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setLive(boolean live) {
-        if (this.live==live)
+        boolean oldLive = isLive();
+        super.setLive(live);
+
+        // If we are not changing the state then just return
+        if (oldLive == live) {
             return;
+        }
 
-        this.live = live;
+        // Otherwise, either add or remove the message receiver to listen for
+        // avatar configuration events
+        ChannelComponentMO channel = channelComponentRef.getForUpdate();
         if (live) {
-            channelComponentRef.getForUpdate().addMessageReceiver(getMessageClass(), new ComponentMessageReceiverImpl(this));
+            AvatarConfigMessageReceiver recv = new AvatarConfigMessageReceiver(this);
+            channel.addMessageReceiver(AvatarConfigMessage.class, recv);
         } else {
-            channelComponentRef.getForUpdate().removeMessageReceiver(getMessageClass());
+            channel.removeMessageReceiver(AvatarConfigMessage.class);
         }
     }
 
-    public void handleMessage(WonderlandClientID clientID, AvatarConfigMessage msg) {
+    /**
+     * Handles the avatar configuration message requests from the client.
+     */
+    private void handleMessage(WonderlandClientID clientID, AvatarConfigMessage msg) {
 
-        avatarConfig = msg.getModelConfigURL();
-
-        if (live) {
-            channelComponentRef.getForUpdate().sendAll(clientID, AvatarConfigMessage.newApplyMessage(msg));
+        // Update the current value for the avatar configuration, and if the
+        // component is live, then send a message to all clients.
+        avatarConfigInfo = msg.getAvatarConfigInfo();
+        if (isLive() == true) {
+            ChannelComponentMO channel = channelComponentRef.getForUpdate();
+            AvatarConfigMessage resp = new AvatarConfigMessage(ActionType.APPLY, avatarConfigInfo);
+            channel.sendAll(clientID, resp);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public CellComponentClientState getClientState(CellComponentClientState clientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+    public CellComponentClientState getClientState(CellComponentClientState clientState,
+            WonderlandClientID clientID, ClientCapabilities capabilities) {
+
         if (clientState == null) {
             clientState = new AvatarConfigComponentClientState();
         }
-        ((AvatarConfigComponentClientState)clientState).setConfigURL(avatarConfig);
+        ((AvatarConfigComponentClientState)clientState).setAvatarConfigInfo(avatarConfigInfo);
         return super.getClientState(clientState, clientID, capabilities);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CellComponentServerState getServerState(CellComponentServerState state) {
         if (state == null) {
             state = new AvatarConfigComponentServerState();
         }
-        ((AvatarConfigComponentServerState)state).setAvatarConfigURL(avatarConfig);
+        ((AvatarConfigComponentServerState)state).setAvatarConfigInfo(avatarConfigInfo);
         return super.getServerState(state);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setServerState(CellComponentServerState state) {
         super.setServerState(state);
-        avatarConfig = ((AvatarConfigComponentServerState)state).getAvatarConfigURL();
+        avatarConfigInfo = ((AvatarConfigComponentServerState)state).getAvatarConfigInfo();
     }
 
-    private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
+    /**
+     * Handles messages for the avatar configuration.
+     */
+    private static class AvatarConfigMessageReceiver implements ComponentMessageReceiver {
 
+        // Reference to the component associated with this message handler
         private ManagedReference<AvatarConfigComponentMO> compRef;
 
-        public ComponentMessageReceiverImpl(AvatarConfigComponentMO comp) {
+        public AvatarConfigMessageReceiver(AvatarConfigComponentMO comp) {
             compRef = AppContext.getDataManager().createReference(comp);
         }
 
-        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            AvatarConfigMessage ent = (AvatarConfigMessage) message;
+        public void messageReceived(WonderlandClientSender sender,
+                WonderlandClientID clientID, CellMessage message) {
 
+
+            AvatarConfigMessage ent = (AvatarConfigMessage) message;
             switch (ent.getActionType()) {
+
                 case REQUEST:
                     // TODO check permisions
-
                     compRef.getForUpdate().handleMessage(clientID, ent);
-
-                    // Only need to send a response if the change can not be completed as requested
-                    //sender.send(session, MovableMessageResponse.newMoveModifiedMessage(ent.getMessageID(), ent.getTranslation(), ent.getRotation()));
                     break;
+
                 case APPLY:
-                    Logger.getAnonymousLogger().severe("Server should never receive APPLY messages");
+                    logger.severe("Server should never receive APPLY messages");
                     break;
             }
         }
 
-         /**
+        /**
          * Record the message -- part of the event recording mechanism.
-         * Nothing more than the message is recorded in this implementation, delegate it to the recorder manager
+         * Nothing more than the message is recorded in this implementation,
+         * delegate it to the recorder manager
          */
-        public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+        public void recordMessage(WonderlandClientSender sender,
+                WonderlandClientID clientID, CellMessage message) {
+            
 //            RecorderManager.getDefaultManager().recordMessage(sender, clientID, message);
         }
     }
