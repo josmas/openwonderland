@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.EndCallMessage;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatDialOutMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatHoldMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatJoinMessage;
@@ -90,11 +92,8 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     private static HashMap<String, InCallHUDPanel> inCallHUDPanelMap = new HashMap();
     private HUDComponent inCallHUDComponent;
 
-    private AddInWorldHUDPanel addInWorldHUDPanel;
-    private HUDComponent addInWorldHUDComponent;
-
-    private AddExternalHUDPanel addExternalHUDPanel;
-    private HUDComponent addExternalHUDComponent;
+    private AddHUDPanel addHUDPanel;
+    private HUDComponent addHUDComponent;
 
     private boolean personalPhone;
 
@@ -144,8 +143,6 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
 
         this.group = group;
 
-        inCallJLabel.setText("Call in progress: " + group);
-
         inCallHUDPanelMap.put(group, this);
 
         client.addMemberChangeListener(group, this);
@@ -155,18 +152,18 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         setVisible(true);
     }
 
-    public void setAddInWorldPanel(AddInWorldHUDPanel addInWorldHUDPanel,
-	    HUDComponent addInWorldHUDComponent) {
+    public void setAddPanel(AddHUDPanel addHUDPanel,
+	    HUDComponent addHUDComponent) {
 
-        this.addInWorldHUDPanel = addInWorldHUDPanel;
-	this.addInWorldHUDComponent = addInWorldHUDComponent;
+        this.addHUDPanel = addHUDPanel;
+	this.addHUDComponent = addHUDComponent;
     }
 
-    public void setAddExternalHUDPanel(AddExternalHUDPanel addExternalHUDPanel,
-	    HUDComponent addExternalHUDComponent) {
+    public void setAddHUDPanel(AddHUDPanel addHUDPanel,
+	    HUDComponent addHUDComponent) {
 
-        this.addExternalHUDPanel = addExternalHUDPanel;
-        this.addExternalHUDComponent = addExternalHUDComponent;
+        this.addHUDPanel = addHUDPanel;
+        this.addHUDComponent = addHUDComponent;
     }
 
     public void setClosed() {
@@ -179,11 +176,13 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     public void setHUDComponent(HUDComponent inCallHUDComponent) {
         this.inCallHUDComponent = inCallHUDComponent;
 
+	inCallHUDComponent.setName("Call In Progress");
+
         inCallHUDComponent.addEventListener(new HUDEventListener() {
 
 	    public void HUDObjectChanged(HUDEvent e) {
                 if (e.getEventType().equals(HUDEventType.CLOSED)) {
-            	    session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
+		    leave();
                 }
             }
         });
@@ -296,8 +295,7 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         if (type.equals(ChangeType.USER_REMOVED)) {
 	    if (presenceInfo.clientID == null) {
 		if (personalPhone && members.size() == 1) {
-            	    session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
-		    inCallHUDComponent.setVisible(false);
+		    leave();
 		}
 	    }
 	} else {
@@ -332,8 +330,7 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
         removeFromUserList(member);
 
 	if (personalPhone && members.size() == 1) {
-	    session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
-	    inCallHUDComponent.setVisible(false);
+	    leave();
 	}
     }
 
@@ -352,23 +349,18 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        inCallJLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         userList = new javax.swing.JList();
         secretRadioButton = new javax.swing.JRadioButton();
         privateRadioButton = new javax.swing.JRadioButton();
-        addInWorldButton = new javax.swing.JButton();
+        leaveButton = new javax.swing.JButton();
         hangupButton = new javax.swing.JButton();
         holdButton = new javax.swing.JButton();
         speakerPhoneRadioButton = new javax.swing.JRadioButton();
         privacyDescription = new javax.swing.JLabel();
-        addExternalButton = new javax.swing.JButton();
-        groupNameTextField = new javax.swing.JLabel();
+        addButton = new javax.swing.JButton();
 
         setRequestFocusEnabled(false);
-
-        inCallJLabel.setFont(inCallJLabel.getFont().deriveFont(inCallJLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        inCallJLabel.setText("Call in progress: ");
 
         userList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -396,10 +388,10 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
             }
         });
 
-        addInWorldButton.setText("Add In-World");
-        addInWorldButton.addActionListener(new java.awt.event.ActionListener() {
+        leaveButton.setText("Leave");
+        leaveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addInWorldButtonActionPerformed(evt);
+                leaveButtonActionPerformed(evt);
             }
         });
 
@@ -424,14 +416,14 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
             }
         });
 
-        addExternalButton.setText("Add External");
-        addExternalButton.addActionListener(new java.awt.event.ActionListener() {
+        privacyDescription.setFont(new java.awt.Font("DejaVu Sans", 0, 12));
+
+        addButton.setText("Add...");
+        addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addExternalButtonActionPerformed(evt);
+                addButtonActionPerformed(evt);
             }
         });
-
-        groupNameTextField.setText(" ");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -441,60 +433,44 @@ public class InCallHUDPanel extends javax.swing.JPanel implements PresenceManage
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(inCallJLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(groupNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(privateRadioButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(secretRadioButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(speakerPhoneRadioButton)
-                        .addContainerGap(28, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, 0, 0, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(holdButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(addExternalButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 112, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                    .add(addInWorldButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(hangupButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 107, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                        .add(10, 10, 10))))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(holdButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 68, Short.MAX_VALUE))
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(hangupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(leaveButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE)))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                            .add(privateRadioButton)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(secretRadioButton)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(speakerPhoneRadioButton))
+                        .add(privacyDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        layout.linkSize(new java.awt.Component[] {addInWorldButton, hangupButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(inCallJLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(groupNameTextField))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 152, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(7, 7, 7)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(privateRadioButton)
                     .add(secretRadioButton)
                     .add(speakerPhoneRadioButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(privacyDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(12, 12, 12)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addExternalButton)
-                    .add(addInWorldButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(addButton)
+                    .add(hangupButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(hangupButton)
-                    .add(holdButton))
+                    .add(holdButton)
+                    .add(leaveButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -503,62 +479,18 @@ private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//G
     setEnableHangupButton();
 }//GEN-LAST:event_userListValueChanged
 
-private void addInWorldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addInWorldButtonActionPerformed
-    if (addInWorldHUDPanel != null) {
-        addInWorldHUDComponent.setVisible(true);
-        return;
-    }
-
-    addInWorldHUDPanel = new AddInWorldHUDPanel(client, session, myPresenceInfo, this);
-
-    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-    addInWorldHUDComponent = mainHUD.createComponent(addInWorldHUDPanel);
-
-    addInWorldHUDPanel.setHUDComponent(addInWorldHUDComponent);
-
-    //System.out.println("Call in progress x,y " + inCallHUDComponent.getX() + ", " + inCallHUDComponent.getY()
-    //    + " width " + inCallHUDComponent.getWidth() + " height " + inCallHUDComponent.getHeight()
-    //    + " Call x,y " + (inCallHUDComponent.getX() + inCallHUDComponent.getWidth())
-    //    + ", " + (inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - addInWorldHUDComponent.getHeight()));
-
-    mainHUD.addComponent(addInWorldHUDComponent);
-    addInWorldHUDComponent.addEventListener(new HUDEventListener() {
-
-        public void HUDObjectChanged(HUDEvent e) {
-            if (e.getEventType().equals(HUDEventType.CLOSED)) {
-		addInWorldHUDPanel = null;
-		addInWorldHUDComponent = null;
-            }
-        }
-    });
-
-    addInWorldHUDComponent.setVisible(true);
-    addInWorldHUDComponent.setLocation(inCallHUDComponent.getX() + inCallHUDComponent.getWidth(),
-            inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - addInWorldHUDComponent.getHeight());
-
-    PropertyChangeListener plistener = new PropertyChangeListener() {
-
-        public void propertyChange(PropertyChangeEvent pe) {
-            if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                addInWorldHUDComponent.setVisible(false);
-            }
-        }
-    };
-    addInWorldHUDPanel.addPropertyChangeListener(plistener);
-    addInWorldHUDComponent.setVisible(true);
-}//GEN-LAST:event_addInWorldButtonActionPerformed
+private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_leaveButtonActionPerformed
+    leave();
+}//GEN-LAST:event_leaveButtonActionPerformed
 
 private void hangupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hangupButtonActionPerformed
-    hangup();
+    ArrayList<PresenceInfo> membersInfo = getSelectedMembers();
+
+    for (PresenceInfo info : membersInfo) {
+        session.send(client, new EndCallMessage(info.callID, "Terminated with malice"));
+    }
 }//GEN-LAST:event_hangupButtonActionPerformed
 
-    private void changePrivacy(ChatType chatType) {
-        ArrayList<PresenceInfo> membersInfo = getSelectedMembers();
-
-        for (PresenceInfo info : membersInfo) {
-            session.send(client, new VoiceChatJoinMessage(group, info, new PresenceInfo[0], chatType));
-        }
-    }
     private HoldHUDPanel holdHUDPanel;
     private HUDComponent holdHUDComponent;
     private boolean onHold = false;
@@ -569,38 +501,38 @@ private void holdButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     hold(onHold);
 }//GEN-LAST:event_holdButtonActionPerformed
 
-private void addExternalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addExternalButtonActionPerformed
-    if (addExternalHUDPanel != null) {
-        addExternalHUDComponent.setVisible(true);
+private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+    if (addHUDPanel != null) {
+        addHUDComponent.setVisible(true);
         return;
     }
 
-    addExternalHUDPanel = new AddExternalHUDPanel(client, session, myPresenceInfo, this);
+    addHUDPanel = new AddHUDPanel(client, session, myPresenceInfo, this);
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-    addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
-    addExternalHUDComponent.setName("Phone");
-    addExternalHUDPanel.setHUDComponent(addExternalHUDComponent);
+    addHUDComponent = mainHUD.createComponent(addHUDPanel);
+    addHUDComponent.setName("Phone");
+    addHUDPanel.setHUDComponent(addHUDComponent);
 
     //System.out.println("Call in progress x,y " + inCallHUDComponent.getX() + ", " + inCallHUDComponent.getY()
     //    + " width " + inCallHUDComponent.getWidth() + " height " + inCallHUDComponent.getHeight()
     //    + " Call x,y " + (inCallHUDComponent.getX() + inCallHUDComponent.getWidth())
-    //    + ", " + (inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - addExternalHUDComponent.getHeight()));
+    //    + ", " + (inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - addHUDComponent.getHeight()));
 
-    mainHUD.addComponent(addExternalHUDComponent);
-    addExternalHUDComponent.addEventListener(new HUDEventListener() {
+    mainHUD.addComponent(addHUDComponent);
+    addHUDComponent.addEventListener(new HUDEventListener() {
 
         public void HUDObjectChanged(HUDEvent e) {
             if (e.getEventType().equals(HUDEventType.CLOSED)) {
-		addExternalHUDPanel = null;
-		addExternalHUDComponent = null;
+		addHUDPanel = null;
+		addHUDComponent = null;
             }
         }
     });
 
-    addExternalHUDComponent.setVisible(true);
-    addExternalHUDComponent.setLocation(inCallHUDComponent.getX() + inCallHUDComponent.getWidth(),
-            inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - addExternalHUDComponent.getHeight());
+    addHUDComponent.setVisible(true);
+    addHUDComponent.setLocation(inCallHUDComponent.getX() + inCallHUDComponent.getWidth(),
+            inCallHUDComponent.getY() + inCallHUDComponent.getHeight() - addHUDComponent.getHeight());
 
     PropertyChangeListener plistener = new PropertyChangeListener() {
 
@@ -609,24 +541,42 @@ private void addExternalButtonActionPerformed(java.awt.event.ActionEvent evt) {/
             }
         }
     };
-    addExternalHUDPanel.addPropertyChangeListener(plistener);
-    addExternalHUDComponent.setVisible(true);
-}//GEN-LAST:event_addExternalButtonActionPerformed
+    addHUDPanel.addPropertyChangeListener(plistener);
+    addHUDComponent.setVisible(true);
+}//GEN-LAST:event_addButtonActionPerformed
 
 private void speakerPhoneRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_speakerPhoneRadioButtonActionPerformed
-    chatType = ChatType.PUBLIC;
+    changePrivacy(ChatType.PUBLIC);
     privacyDescription.setText(VoiceChatMessage.PUBLIC_DESCRIPTION);
 }//GEN-LAST:event_speakerPhoneRadioButtonActionPerformed
 
 private void secretRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_secretRadioButtonActionPerformed
-    chatType = ChatType.SECRET;
+    changePrivacy(ChatType.SECRET);
     privacyDescription.setText(VoiceChatMessage.SECRET_DESCRIPTION);
 }//GEN-LAST:event_secretRadioButtonActionPerformed
 
 private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_privateRadioButtonActionPerformed
-    chatType = ChatType.PRIVATE;
+    changePrivacy(ChatType.PRIVATE);
     privacyDescription.setText(VoiceChatMessage.PRIVATE_DESCRIPTION);
 }//GEN-LAST:event_privateRadioButtonActionPerformed
+
+    private void changePrivacy(ChatType chatType) {
+        ArrayList<PresenceInfo> membersInfo = getSelectedMembers();
+
+        if (membersInfo.contains(myPresenceInfo) == false) {
+            session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo, new PresenceInfo[0], chatType));
+        }
+
+        for (PresenceInfo info : membersInfo) {
+            /*
+             * You can only select yourself or outworlders
+             */
+            if (info.clientID != null) {
+                continue;
+            }
+            session.send(client, new VoiceChatJoinMessage(group, info, new PresenceInfo[0], chatType));
+        }
+    }
 
     private void hold(boolean onHold) {
         if (holdHUDPanel == null) {
@@ -682,7 +632,7 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
             inCallHUDComponent.setVisible(!onHold);
             holdHUDComponent.setVisible(onHold);
         } catch (IllegalStateException e) {
-            hangup();
+            leave();
         }
     }
 
@@ -720,14 +670,19 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
     }
 
     private void setEnableHangupButton() {
+	hangupButton.setEnabled(false);
+
         ArrayList<PresenceInfo> membersInfo = getSelectedMembers();
+
+	if (membersInfo.size() == 0) {
+	    return;
+	}
 
         for (PresenceInfo info : membersInfo) {
             /*
-             * You can only select yourself or outworlders
+             * You can only select outworlders
              */
-            if (info.clientID != null && myPresenceInfo.equals(info) == false) {
-                hangupButton.setEnabled(false);
+            if (info.clientID != null) {
                 return;
             }
         }
@@ -735,28 +690,10 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
         hangupButton.setEnabled(true);
     }
 
-    private void hangup() {
-        ArrayList<PresenceInfo> membersInfo = getSelectedMembers();
-
-        boolean hide = false;
-
-        for (PresenceInfo info : membersInfo) {
-            session.send(client, new VoiceChatLeaveMessage(group, info));
-            if (info.equals(myPresenceInfo)) {
-                hide = true;
-            }
-        }
-
-        if (hide) {
-            inCallHUDComponent.setVisible(false);
-            inCallHUDPanelMap.remove(group);
-        }
-    }
-
-    public void endHeldCall() {
+    private void leave() {
         session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
-        inCallHUDPanelMap.remove(group);
         inCallHUDComponent.setVisible(false);
+        inCallHUDPanelMap.remove(group);
     }
 
     private class UserListCellRenderer implements ListCellRenderer {
@@ -791,14 +728,12 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addExternalButton;
-    private javax.swing.JButton addInWorldButton;
+    private javax.swing.JButton addButton;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JLabel groupNameTextField;
     private javax.swing.JButton hangupButton;
     private javax.swing.JButton holdButton;
-    private javax.swing.JLabel inCallJLabel;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton leaveButton;
     private javax.swing.JLabel privacyDescription;
     private javax.swing.JRadioButton privateRadioButton;
     private javax.swing.JRadioButton secretRadioButton;

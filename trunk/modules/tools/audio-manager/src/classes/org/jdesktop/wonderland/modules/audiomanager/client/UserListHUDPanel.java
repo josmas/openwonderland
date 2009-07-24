@@ -781,26 +781,25 @@ private void panelToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {/
     }
 }//GEN-LAST:event_panelToggleButtonActionPerformed
 
-private HUDComponent addExternalHUDComponent;
+private HUDComponent addHUDComponent;
 
 private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneButtonActionPerformed
-    if (addExternalHUDComponent != null) {
-	addExternalHUDComponent.setVisible(true);
+    if (addHUDComponent != null) {
+	addHUDComponent.setVisible(true);
 	return;
     }
 
-    AddExternalHUDPanel addExternalHUDPanel =
-	new AddExternalHUDPanel(client, session, presenceInfo);
+    AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, presenceInfo);
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-    addExternalHUDComponent = mainHUD.createComponent(addExternalHUDPanel);
-    addExternalHUDComponent.setName("Call External");
-    addExternalHUDComponent.setPreferredLocation(Layout.NORTHEAST);
+    addHUDComponent = mainHUD.createComponent(addHUDPanel);
+    addHUDComponent.setName("Call ");
+    addHUDComponent.setPreferredLocation(Layout.NORTHEAST);
 
-    addExternalHUDPanel.setHUDComponent(addExternalHUDComponent);
+    addHUDPanel.setHUDComponent(addHUDComponent);
 
-    mainHUD.addComponent(addExternalHUDComponent);
-    addExternalHUDComponent.addEventListener(new HUDEventListener() {
+    mainHUD.addComponent(addHUDComponent);
+    addHUDComponent.addEventListener(new HUDEventListener() {
 
         public void HUDObjectChanged(HUDEvent e) {
             if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
@@ -813,8 +812,8 @@ private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         }
     };
 
-    addExternalHUDPanel.addPropertyChangeListener(plistener);
-    addExternalHUDComponent.setVisible(true);
+    addHUDPanel.addPropertyChangeListener(plistener);
+    addHUDComponent.setVisible(true);
 }//GEN-LAST:event_phoneButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

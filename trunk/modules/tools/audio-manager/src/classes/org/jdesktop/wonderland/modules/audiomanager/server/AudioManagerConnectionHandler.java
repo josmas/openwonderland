@@ -32,6 +32,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallReq
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallRequestMessage;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.EndCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.CallEndedMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.CallMigrateMessage;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage;
@@ -146,6 +148,29 @@ public class AudioManagerConnectionHandler
             placeCall(clientID, (PlaceCallRequestMessage) message);
             return;
         }
+
+	if (message instanceof EndCallMessage) {
+	    EndCallMessage msg = (EndCallMessage) message;
+
+            String callID = msg.getCallID();
+
+            Call call = vm.getCall(callID);
+
+            if (call == null) {
+                logger.fine("Unable to end call " + callID);
+                return;
+            }
+
+	    try {
+		vm.endCall(call, true);
+            } catch (IOException e) {
+                logger.warning(
+                    "Unable to end call " + call + ":  " + e.getMessage());
+            }
+
+	    sender.send(new CallEndedMessage(msg.getCallID(), msg.getReason()));
+	    return;
+	}
 
         if (message instanceof MuteCallRequestMessage) {
             MuteCallRequestMessage msg = (MuteCallRequestMessage) message;
