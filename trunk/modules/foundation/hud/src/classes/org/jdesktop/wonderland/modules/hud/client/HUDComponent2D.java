@@ -79,6 +79,7 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
      */
     public HUDComponent2D(Window2D window) {
         this.window = window;
+        setBounds(getX(), getY(), window.getWidth(), window.getHeight());
     }
 
     /**
