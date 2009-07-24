@@ -80,6 +80,13 @@ public interface HUD extends HUDObject {
     public HUDComponent createComponent();
 
     /**
+     * Creates a new HUD component bound to a HUD displayable
+     * @param displayable a displayable to display in this HUD component
+     * @return a new HUD component
+     */
+    public HUDComponent createComponent(HUDDisplayable displayable);
+    
+    /**
      * Creates a new HUD component bound to a Swing component
      * @param component a Swing component to display in this HUD component
      * @return a new HUD component
