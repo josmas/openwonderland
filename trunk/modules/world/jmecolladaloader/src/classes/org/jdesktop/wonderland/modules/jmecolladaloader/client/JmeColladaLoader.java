@@ -154,7 +154,7 @@ public class JmeColladaLoader implements ModelLoader {
             URL url = AssetUtils.getAssetURL(getLoaderDataURL(model));
             in = url.openStream();
             if (in==null) {
-                logger.severe("Unabled to get deployment data "+url.toExternalForm());
+                logger.severe("Unable to get deployment data "+url.toExternalForm());
             } else {
                 try {
                     data = LoaderData.decode(in);

@@ -367,7 +367,7 @@ public class AudioManagerClient extends BaseConnection implements
         if (session.getStatus() == WonderlandSession.Status.CONNECTED) {
             session.send(this, new MuteCallRequestMessage(sc.getCallID(), isMuted));
         } else {
-            logger.warning("Unabled to send MuteCallRequestMessage.  Session is not connected.");
+            logger.warning("Unable to send MuteCallRequestMessage.  Session is not connected.");
         }
     }
 
