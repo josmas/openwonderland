@@ -34,7 +34,8 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigComponentClientState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentClientState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
 
 /**
@@ -48,8 +49,13 @@ public class AvatarConfigComponent extends CellComponent {
 
     private static Logger logger = Logger.getLogger(AvatarConfigComponent.class.getName());
 
-    // The URL of the current avatar configuration, null if none is set
-    private URL avatarConfigURL = null;
+    // The current avatar configuration, null if none is set
+    private AvatarConfigInfo avatarConfigInfo = null;
+
+    // If a request to change the avatar has been made, but the component has
+    // not yet been initialized, then this info stores the initial value to be
+    // applied when the component becomes ACTIVE.
+    private AvatarConfigInfo pendingChange = null;
 
     @UsesCellComponent
     protected ChannelComponent channelComp;
@@ -59,37 +65,41 @@ public class AvatarConfigComponent extends CellComponent {
     // the avatar has changed.
     private Set<AvatarConfigChangeListener> listenerSet = new HashSet();
 
-    // If a request to change the avatar has been made, but the component has
-    // not yet been initialized, then this URL stores the initial value to be
-    // applied when the component becomes ACTIVE.
-    private URL pendingChange = null;
-
+    /** Constructor */
     public AvatarConfigComponent(Cell cell) {
         super(cell);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
+        avatarConfigInfo = ((AvatarConfigComponentClientState)clientState).getAvatarConfigInfo();
+
+        // XXX NPC HACK STUFF XXX
         try {
-            String str = ((AvatarConfigComponentClientState) clientState).getConfigURL();
-            if (str != null) {
-                if (str.startsWith("assets")) {
-                    // FOR NPC
-                    WonderlandSession session = cell.getCellCache().getSession();
-                    ServerSessionManager manager = session.getSessionManager();
-                    String serverHostAndPort = manager.getServerNameAndPort();
-                    avatarConfigURL = AssetUtils.getAssetURL("wla://avatarbaseart@" + serverHostAndPort + "/" + str, cell);
-//                    System.err.println("------> NPC URL "+avatarConfigURL);
-                } else
-                    avatarConfigURL = new URL(str);
-            } else
-                avatarConfigURL = null;
+            if (avatarConfigInfo != null) {
+                String str = avatarConfigInfo.getAvatarConfigURL();
+                if (str != null) {
+                    if (str.startsWith("assets") == true) {
+                        // FOR NPC
+                        URL newURL = AssetUtils.getAssetURL("wla://avatarbaseart/" + str, cell);
+                        System.err.println("------> NPC URL " + str);
+                        avatarConfigInfo = new AvatarConfigInfo(newURL.toExternalForm(),
+                                avatarConfigInfo.getLoaderFactoryClassName());
+                    }
+                }
+            }
         } catch (MalformedURLException ex) {
             Logger.getLogger(AvatarConfigComponent.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
@@ -126,39 +136,38 @@ public class AvatarConfigComponent extends CellComponent {
     }
 
     /**
-     * Returns the URL of the current avatar configuration in use.
+     * Returns the current avatar configuration information in-use.
      *
-     * @return The URL of the avatar configuration
+     * @return The avatar configuration information
      */
-    public URL getAvatarConfigURL() {
-        return avatarConfigURL;
+    public AvatarConfigInfo getAvatarConfigInfo() {
+        return avatarConfigInfo;
     }
 
     /**
-     * Sets the URL of the new avatar configuration and informs all of the
+     * Sets the new avatar configuration information and informs all of the
      * other clients of the change. If 'isLocal' is true, then do not inform
      * any other clients of the change, simply update the avatar locally.
      *
-     * @param url The new configuration URL
+     * @param info The new avatar configuration information
+     * @param isLocal True if we just want to update the avatar locally
      */
-    public void requestAvatarConfigURL(URL url, boolean isLocal) {
-        logger.warning("Requesting avatar url " + url + " currently in use url " + avatarConfigURL);
+    public void requestAvatarConfigInfo(AvatarConfigInfo info, boolean isLocal) {
 
         // Otherwise, request a configuration update. If this component is not
         // in the active state, then set the request as 'pending'.
         synchronized (this) {
             if (isLocal == false) {
                 if (channelComp == null) {
-                    pendingChange = url;
+                    pendingChange = info;
                     return;
                 }
-                logger.warning("Send avatar requrest message for " + url);
-                channelComp.send(AvatarConfigMessage.newRequestMessage(url));
+                channelComp.send(AvatarConfigMessage.newRequestMessage(info));
             }
             else {
                 // If we just want to change the avatar configuration locally,
                 // then just fake a changed event
-                fireAvatarConfigChangeEvent(AvatarConfigMessage.newRequestMessage(url));
+                fireAvatarConfigChangeEvent(AvatarConfigMessage.newRequestMessage(info));
             }
         }
     }
@@ -207,15 +216,8 @@ public class AvatarConfigComponent extends CellComponent {
      * @param msg
      */
     private void handleConfigMessage(AvatarConfigMessage message) {
-        String newURL = message.getModelConfigURL();
-
-        // Fire off an event that informs listeners of the new URL
-        try {
-            avatarConfigURL = (newURL != null) ? new URL(newURL) : null;
-            fireAvatarConfigChangeEvent(message);
-        } catch (MalformedURLException excp) {
-            logger.log(Level.WARNING, "Unable for form new URL " + newURL, excp);
-        }
+        avatarConfigInfo = message.getAvatarConfigInfo();
+        fireAvatarConfigChangeEvent(message);
     }
 
     /**

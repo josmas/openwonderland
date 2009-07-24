@@ -15,16 +15,15 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+package org.jdesktop.wonderland.modules.avatarbase.common.cell;
 
-package org.jdesktop.wonderland.modules.avatarbase.common.cell.messages;
-
-import java.net.URL;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
- * Server state for avatarbase avatar configuration
+ * Server state for avatarbase avatar configuration cell component. This class
+ * is JAXB annotated so that is may be serialized to/from XML.
  *
  * @author paulby
  */
@@ -32,30 +31,37 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class AvatarConfigComponentServerState extends CellComponentServerState {
 
-
-    private String avatarConfigURL;
+    // The avatar configuration information
+    private AvatarConfigInfo avatarConfigInfo = null;
 
     /** Default constructor */
     public AvatarConfigComponentServerState() {
+        super();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getServerComponentClassName() {
         return "org.jdesktop.wonderland.modules.avatarbase.server.cell.AvatarConfigComponentMO";
     }
 
     /**
-     * @return the configURL
+     * Returns the avatar configuration information.
+     *
+     * @return The avatar configuration information
      */
-    public String getAvatarConfigURL() {
-        return avatarConfigURL;
+    public AvatarConfigInfo getAvatarConfigInfo() {
+        return avatarConfigInfo;
     }
 
     /**
-     * @param configURL the configURL to set
+     * Sets the avatar configuration information.
+     *
+     * @param avatarConfigInfo The avatar config information
      */
-    public void setAvatarConfigURL(String configURL) {
-        this.avatarConfigURL = configURL;
+    public void setAvatarConfigInfo(AvatarConfigInfo avatarConfigInfo) {
+        this.avatarConfigInfo = avatarConfigInfo;
     }
-
 }

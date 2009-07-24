@@ -21,6 +21,7 @@ import com.jme.math.Vector3f;
 import imi.camera.CameraModels;
 import imi.camera.ChaseCamModel;
 import imi.camera.ChaseCamState;
+import imi.character.avatar.Avatar;
 import imi.character.behavior.CharacterBehaviorManager;
 import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
@@ -68,12 +69,12 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.Avatar
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME.AvatarChangedListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarTestPanel;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.GestureHUD;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WonderlandAvatarCache;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry.AvatarInUseListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.spi.AvatarSPI;
 import org.jdesktop.wonderland.modules.avatarbase.client.ui.AvatarConfigFrame;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 
 /**
  * A client-side plugin to initialize the avatar system
@@ -141,7 +142,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
         // rarely happens in practice). When the avatar cell renderer changes,
         // reset the chase camera state.
         avatarChangedListener = new AvatarChangedListener() {
-            public void avatarChanged(WlAvatarCharacter newAvatar) {
+            public void avatarChanged(Avatar newAvatar) {
                 if (camState != null) {
                     // stop listener for changes from the old avatar cell
                     // renderer.
@@ -436,9 +437,9 @@ public class AvatarClientPlugin extends BaseClientPlugin
 
         // Initialize the avatar control panel (test) with the current avatar
         // character.
-        if (testPanelRef != null && testPanelRef.get() != null) {
-            testPanelRef.get().setAvatarCharacter(avatarCellRenderer.getAvatarCharacter());
-        }
+//        if (testPanelRef != null && testPanelRef.get() != null) {
+//            testPanelRef.get().setAvatarCharacter(avatarCellRenderer.getAvatarCharacter());
+//        }
 
         // Initialize the gesture HUD panel with the current avatar character.
         if (gestureHUDRef != null && gestureHUDRef.get() != null) {
@@ -503,10 +504,8 @@ public class AvatarClientPlugin extends BaseClientPlugin
         AvatarSPI avatar = registry.getAvatarInUse();
         if (avatar != null) {
             ServerSessionManager session = viewCell.getCellCache().getSession().getSessionManager();
-            URL serverURL = avatar.getAvatarURL(session);
-            configComponent.requestAvatarConfigURL(serverURL, isLocal);
-
-            logger.warning("Refresh avatar in use, setting avatar to " + serverURL);
+            AvatarConfigInfo configInfo = avatar.getAvatarConfigInfo(session);
+            configComponent.requestAvatarConfigInfo(configInfo, isLocal);
         }
     }
 }

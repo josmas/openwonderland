@@ -17,9 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.registry.spi;
 
-import java.net.URL;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 
 /**
  * The AvatarSPI interface represents a type of avatar that is registered in
@@ -64,11 +64,11 @@ public interface AvatarSPI {
     public void configure();
 
     /**
-     * Return the URL that representings the system-wide configuration XML
-     * file that any client can use to render the avatar.
+     * Return the avatar configuration information used by other clients to
+     * load the avatar on their systems.
      *
      * @param session The current primary session
-     * @return A URL
+     * @return An AvatarConfigInfo object
      */
-    public URL getAvatarURL(ServerSessionManager session);
+    public AvatarConfigInfo getAvatarConfigInfo(ServerSessionManager session);
 }

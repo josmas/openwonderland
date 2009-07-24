@@ -17,10 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.basic;
 
-import java.net.URL;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.spi.AvatarSPI;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 
 /**
  * The most basic avatar available in the system, a simple COLLADA model that
@@ -79,7 +79,7 @@ public class BasicAvatar implements AvatarSPI {
     /**
      * {@inheritDoc}
      */
-    public URL getAvatarURL(ServerSessionManager session) {
+    public AvatarConfigInfo getAvatarConfigInfo(ServerSessionManager session) {
         return null;
     }
 }

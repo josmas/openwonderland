@@ -687,6 +687,13 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         jacketComboBox.setEnabled(!isBusy);
         handsComboBox.setEnabled(!isBusy);
         feetComboBox.setEnabled(!isBusy);
+        hairLabel.setEnabled(!isBusy);
+        headLabel.setEnabled(!isBusy);
+        torsoLabel.setEnabled(!isBusy);
+        legsLabel.setEnabled(!isBusy);
+        jacketLabel.setEnabled(!isBusy);
+        handsLabel.setEnabled(!isBusy);
+        feetLabel.setEnabled(!isBusy);
 //        hairButton.setEnabled(!isBusy);
 //        skinButton.setEnabled(!isBusy);
 //        torsoButton.setEnabled(!isBusy);
@@ -713,18 +720,25 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         femaleRadioButton = new javax.swing.JRadioButton();
         maleRadioButton = new javax.swing.JRadioButton();
         mainConfigPanel = new javax.swing.JPanel();
+        hairLabel = new javax.swing.JLabel();
         hairComboBox = new javax.swing.JComboBox();
         hairButton = new javax.swing.JButton();
+        headLabel = new javax.swing.JLabel();
         headComboBox = new javax.swing.JComboBox();
         skinButton = new javax.swing.JButton();
+        torsoLabel = new javax.swing.JLabel();
         torsoComboBox = new javax.swing.JComboBox();
         torsoButton = new javax.swing.JButton();
+        jacketLabel = new javax.swing.JLabel();
         jacketComboBox = new javax.swing.JComboBox();
         jacketBlankPanel = new javax.swing.JPanel();
+        handsLabel = new javax.swing.JLabel();
         handsComboBox = new javax.swing.JComboBox();
         handsBlankPanel = new javax.swing.JPanel();
+        legsLabel = new javax.swing.JLabel();
         legsComboBox = new javax.swing.JComboBox();
         pantsButton = new javax.swing.JButton();
+        feetLabel = new javax.swing.JLabel();
         feetComboBox = new javax.swing.JComboBox();
         shoeButton = new javax.swing.JButton();
         randomizeButton = new javax.swing.JButton();
@@ -763,47 +777,143 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         genderPanel.add(maleRadioButton);
 
         mainConfigPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        mainConfigPanel.setLayout(new java.awt.GridLayout(7, 2));
+        mainConfigPanel.setLayout(new java.awt.GridBagLayout());
 
-        mainConfigPanel.add(hairComboBox);
+        hairLabel.setText("Hair:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        mainConfigPanel.add(hairLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        mainConfigPanel.add(hairComboBox, gridBagConstraints);
 
         hairButton.setText("Hair Color...");
         hairButton.setEnabled(false);
-        mainConfigPanel.add(hairButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        mainConfigPanel.add(hairButton, gridBagConstraints);
 
-        mainConfigPanel.add(headComboBox);
+        headLabel.setText("Head:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        mainConfigPanel.add(headLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        mainConfigPanel.add(headComboBox, gridBagConstraints);
 
         skinButton.setText("Skin Color...");
         skinButton.setEnabled(false);
-        mainConfigPanel.add(skinButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        mainConfigPanel.add(skinButton, gridBagConstraints);
 
-        mainConfigPanel.add(torsoComboBox);
+        torsoLabel.setText("Torso:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        mainConfigPanel.add(torsoLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        mainConfigPanel.add(torsoComboBox, gridBagConstraints);
 
         torsoButton.setText("Shirt Color...");
         torsoButton.setEnabled(false);
-        mainConfigPanel.add(torsoButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        mainConfigPanel.add(torsoButton, gridBagConstraints);
 
-        mainConfigPanel.add(jacketComboBox);
+        jacketLabel.setText("Jacket:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        mainConfigPanel.add(jacketLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        mainConfigPanel.add(jacketComboBox, gridBagConstraints);
 
         jacketBlankPanel.setLayout(new java.awt.GridLayout(1, 0));
-        mainConfigPanel.add(jacketBlankPanel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
+        mainConfigPanel.add(jacketBlankPanel, gridBagConstraints);
 
-        mainConfigPanel.add(handsComboBox);
+        handsLabel.setText("Hands:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        mainConfigPanel.add(handsLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        mainConfigPanel.add(handsComboBox, gridBagConstraints);
 
         handsBlankPanel.setLayout(new java.awt.GridLayout(1, 0));
-        mainConfigPanel.add(handsBlankPanel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 4;
+        mainConfigPanel.add(handsBlankPanel, gridBagConstraints);
 
-        mainConfigPanel.add(legsComboBox);
+        legsLabel.setText("Legs:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        mainConfigPanel.add(legsLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        mainConfigPanel.add(legsComboBox, gridBagConstraints);
 
         pantsButton.setText("Pants Color...");
         pantsButton.setEnabled(false);
-        mainConfigPanel.add(pantsButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        mainConfigPanel.add(pantsButton, gridBagConstraints);
 
-        mainConfigPanel.add(feetComboBox);
+        feetLabel.setText("Feet:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 6;
+        mainConfigPanel.add(feetLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        mainConfigPanel.add(feetComboBox, gridBagConstraints);
 
         shoeButton.setText("Shoe Color...");
         shoeButton.setEnabled(false);
-        mainConfigPanel.add(shoeButton);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 6;
+        mainConfigPanel.add(shoeButton, gridBagConstraints);
 
         randomizeButton.setText("Randomize");
 
@@ -817,13 +927,17 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-            .add(genderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-            .add(mainConfigPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-            .add(randomizeButton)
+            .add(namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+            .add(genderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+            .add(mainConfigPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
-                .add(106, 106, 106)
-                .add(buttonPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap()
+                .add(randomizeButton)
+                .addContainerGap(194, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(buttonPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -833,11 +947,10 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
                 .add(genderPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(6, 6, 6)
                 .add(mainConfigPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(6, 6, 6)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(randomizeButton)
                 .add(9, 9, 9)
-                .add(buttonPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(6, 6, 6))
+                .add(buttonPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -847,17 +960,23 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
     private javax.swing.JPanel buttonPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JComboBox feetComboBox;
+    private javax.swing.JLabel feetLabel;
     private javax.swing.JRadioButton femaleRadioButton;
     private javax.swing.JLabel genderLabel;
     private javax.swing.JPanel genderPanel;
     private javax.swing.JButton hairButton;
     private javax.swing.JComboBox hairComboBox;
+    private javax.swing.JLabel hairLabel;
     private javax.swing.JPanel handsBlankPanel;
     private javax.swing.JComboBox handsComboBox;
+    private javax.swing.JLabel handsLabel;
     private javax.swing.JComboBox headComboBox;
+    private javax.swing.JLabel headLabel;
     private javax.swing.JPanel jacketBlankPanel;
     private javax.swing.JComboBox jacketComboBox;
+    private javax.swing.JLabel jacketLabel;
     private javax.swing.JComboBox legsComboBox;
+    private javax.swing.JLabel legsLabel;
     private javax.swing.JPanel mainConfigPanel;
     private javax.swing.JRadioButton maleRadioButton;
     private javax.swing.JLabel nameLabel;
@@ -869,6 +988,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
     private javax.swing.JButton skinButton;
     private javax.swing.JButton torsoButton;
     private javax.swing.JComboBox torsoComboBox;
+    private javax.swing.JLabel torsoLabel;
     private javax.swing.JButton useButton;
     // End of variables declaration//GEN-END:variables
 }
