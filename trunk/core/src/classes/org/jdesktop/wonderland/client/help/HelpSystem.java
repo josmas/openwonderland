@@ -64,7 +64,11 @@ public class HelpSystem implements PrimaryServerListener {
      * {@inheritDoc}
      */
     public void primaryServer(ServerSessionManager server) {
-        reload(server);
+        // If the primary server is null, then simply ignore. Perhaps we should
+        // remove the menu items whenver we get a 'null' primary server?
+        if (server != null) {
+            reload(server);
+        }
     }
 
     /**
