@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.WindowConventional;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 
 /**
  * The Xremwin window class. 
@@ -267,7 +268,9 @@ public class WindowXrw extends WindowConventional {
      * Returns the name of the controlling user.
      */
     public String getControllingUser() {
-        return ((ControlArbXrw) app.getControlArb()).getController();
+        ControlArb controlArb = app.getControlArb();
+        if (controlArb instanceof ControlArbNull) return null;
+        return ((ControlArbXrw) controlArb).getController();
     }
 
     /**
