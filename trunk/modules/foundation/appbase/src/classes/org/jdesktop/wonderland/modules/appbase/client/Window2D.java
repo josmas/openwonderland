@@ -57,6 +57,7 @@ import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
 import java.util.NoSuchElementException;
+import org.jdesktop.wonderland.client.hud.HUDDisplayable;
 
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
@@ -80,7 +81,7 @@ otherwise view.setParent gets really tricky
  * @author deronj
  */
 @ExperimentalAPI
-public abstract class Window2D {
+public abstract class Window2D implements HUDDisplayable {
 
     private static final Logger logger = Logger.getLogger(Window2D.class.getName());
     private static final int CHANGED_ALL         = -1;
@@ -1755,13 +1756,13 @@ public abstract class Window2D {
                         }
                     }));
 
-                /* TODO: eventually add:
-                 menuItems[1] = SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
-                 public void actionPerformed(ContextMenuItemEvent event) {
-                 System.err.println("Show in HUD Not yet implemented.");
-                 }
-                 })
-                */
+                // ITEM 4: Show in HUD
+                menuItems.add(
+                    new SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            app.setShowInHUD(true);
+                        }
+                        }));
             }
 
             return menuItems.toArray(new ContextMenuItem[1]);
