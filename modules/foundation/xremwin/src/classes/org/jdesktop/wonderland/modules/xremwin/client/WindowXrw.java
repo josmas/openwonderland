@@ -267,8 +267,7 @@ public class WindowXrw extends WindowConventional {
      * Returns the name of the controlling user.
      */
     public String getControllingUser() {
-        // TODO: return ((ControlArbXrw) app.getControlArb()).getController();
-        return null;
+        return ((ControlArbXrw) app.getControlArb()).getController();
     }
 
     /**
