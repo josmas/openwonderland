@@ -22,6 +22,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
@@ -78,6 +82,9 @@ public abstract class App2D {
 
     /** The set of all views of the windows of this app. */
     private View2DSet viewSet = new View2DSet();
+
+    /** Whether to display the app in the HUD. */
+    private boolean showInHUD;
 
     // Register the appbase shutdown hook
     static {
@@ -333,5 +340,28 @@ public abstract class App2D {
 
         apps.clear();
         logger.warning("Done shutting down app base.");
+    }
+
+    /**
+     * Specifies whether to also display this app in the HUD. Note: this is in addition to 
+     * displaying the app in the world.
+     */
+    public synchronized void setShowInHUD (boolean showInHUD) {
+        if (this.showInHUD == showInHUD) return;
+        this.showInHUD = showInHUD;
+        if (showInHUD) {
+
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+            for (Window2D window : windows) {
+                HUDComponent component = mainHUD.createComponent(window);
+                component.setPreferredLocation(Layout.CENTER);
+                mainHUD.addComponent(component);
+                component.setVisible(true);
+            }
+
+        } else {
+            // TODO: implement setShowInHUD=false
+        }
     }
 }
