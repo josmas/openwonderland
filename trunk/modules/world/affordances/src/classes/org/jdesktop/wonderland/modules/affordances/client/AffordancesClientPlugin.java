@@ -63,6 +63,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
 
         // create HUD control
         affordanceHUD = mainHUD.createComponent(affordanceHUDPanel);
+        affordanceHUD.setName("Edit Component");
         affordanceHUD.setPreferredLocation(Layout.SOUTH);
         affordanceHUD.addEventListener(new HUDEventListener() {
             public void HUDObjectChanged(HUDEvent event) {
