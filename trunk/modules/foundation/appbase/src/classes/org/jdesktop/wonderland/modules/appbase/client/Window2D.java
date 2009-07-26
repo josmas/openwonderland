@@ -354,20 +354,24 @@ public abstract class Window2D implements HUDDisplayable {
     /**
      * {@inheritDoc}
      */
-    public synchronized void cleanup() {
-        setParent(null);
-        texture = null;
-        if (surface != null) {
-            surface.setUpdateEnable(false);
-            surface.cleanup();
-            surface = null;
+    public void cleanup() {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                setParent(null);
+                texture = null;
+                if (surface != null) {
+                    surface.setUpdateEnable(false);
+                    surface.cleanup();
+                    surface = null;
+                }
+                if (app != null) {
+                    app.removeWindow(this);
+                    app = null;
+                }
+                visibleApp = false;
+            }
         }
-        if (app != null) {
-            App2D theApp = app;
-            app = null;
-            theApp.removeWindow(this);
-        }
-        visibleApp = false;
     }
 
     /**
@@ -802,7 +806,7 @@ public abstract class Window2D implements HUDDisplayable {
     /** 
      * Returns whether this window is in the same local Z plane as its parent.
      */
-    public synchronized boolean isCoplanar () {
+    public boolean isCoplanar () {
         return coplanar;
     }
 
@@ -1089,13 +1093,18 @@ public abstract class Window2D implements HUDDisplayable {
      *
      * @param listener The key listener to add.
      */
-    public synchronized void removeKeyListener(KeyListener listener) {
-        if (keyListeners == null) {
-            return;
-        }
-        keyListeners.remove(listener);
-        if (keyListeners.size() == 0) {
-            keyListeners = null;
+    public void removeKeyListener(KeyListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (keyListeners == null) {
+                    return;
+                }
+                keyListeners.remove(listener);
+                if (keyListeners.size() == 0) {
+                    keyListeners = null;
+                }
+            }
         }
     }
 
@@ -1104,13 +1113,18 @@ public abstract class Window2D implements HUDDisplayable {
      *
      * @param listener The mouse listener to remove.
      */
-    public synchronized void removeMouseListener(MouseListener listener) {
-        if (mouseListeners == null) {
-            return;
-        }
-        mouseListeners.remove(listener);
-        if (mouseListeners.size() == 0) {
-            mouseListeners = null;
+    public void removeMouseListener(MouseListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (mouseListeners == null) {
+                    return;
+                }
+                mouseListeners.remove(listener);
+                if (mouseListeners.size() == 0) {
+                    mouseListeners = null;
+                }
+            }
         }
     }
 
@@ -1119,13 +1133,18 @@ public abstract class Window2D implements HUDDisplayable {
      *
      * @param listener The mouse motion listener to remove.
      */
-    public synchronized void removeMouseMotionListener(MouseMotionListener listener) {
-        if (mouseMotionListeners == null) {
-            return;
-        }
-        mouseMotionListeners.remove(listener);
-        if (mouseMotionListeners.size() == 0) {
-            mouseMotionListeners = null;
+    public void removeMouseMotionListener(MouseMotionListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (mouseMotionListeners == null) {
+                    return;
+                }
+                mouseMotionListeners.remove(listener);
+                if (mouseMotionListeners.size() == 0) {
+                    mouseMotionListeners = null;
+                }
+            }
         }
     }
 
@@ -1134,13 +1153,18 @@ public abstract class Window2D implements HUDDisplayable {
      *
      * @param listener The mouse wheel listener to remove.
      */
-    public synchronized void removeMouseWheelListener(MouseWheelListener listener) {
-        if (mouseWheelListeners == null) {
-            return;
-        }
-        mouseWheelListeners.remove(listener);
-        if (mouseWheelListeners.size() == 0) {
-            mouseWheelListeners = null;
+    public void removeMouseWheelListener(MouseWheelListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (mouseWheelListeners == null) {
+                    return;
+                }
+                mouseWheelListeners.remove(listener);
+                if (mouseWheelListeners.size() == 0) {
+                    mouseWheelListeners = null;
+                }
+            }
         }
     }
 
@@ -1180,8 +1204,11 @@ public abstract class Window2D implements HUDDisplayable {
      * Remove a close listener from this window. 
      */
     public void removeCloseListener (CloseListener listener) {
-        synchronized (closeListeners) {
-            closeListeners.remove(listener);
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (closeListeners) {
+                closeListeners.remove(listener);
+            }
         }
     }
 
@@ -1212,11 +1239,16 @@ public abstract class Window2D implements HUDDisplayable {
      * Remove an event listener from all of this window's views.
      * @param listener The listener to remove.
      */
-    public synchronized void removeEventListener(EventListener listener) {
-        if (eventListeners.contains(listener)) {
-            eventListeners.remove(listener);
-            for (View2D view : views) {
-                view.removeEventListener(listener);
+    public void removeEventListener(EventListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (eventListeners.contains(listener)) {
+                    eventListeners.remove(listener);
+                    for (View2D view : views) {
+                        view.removeEventListener(listener);
+                    }
+                }
             }
         }
     }
@@ -1225,7 +1257,7 @@ public abstract class Window2D implements HUDDisplayable {
      * Does this window's views have the given listener attached to them?
      * @param listener The listener to check.
      */
-    public synchronized boolean hasEventListener(EventListener listener) {
+    public boolean hasEventListener(EventListener listener) {
         return eventListeners.contains(listener);
     }
 
@@ -1256,12 +1288,17 @@ public abstract class Window2D implements HUDDisplayable {
     /**
      * Remove an entity component from this window's view that have them.
      */
-    public synchronized void removeEntityComponent(Class clazz) {
-        EntityComponentEntry entry = entityComponentEntryForClass(clazz);
-        if (entry != null) {
-            entityComponents.remove(entry);
-            for (View2D view : views) {
-                view.removeEntityComponent(clazz);
+    public void removeEntityComponent(Class clazz) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                EntityComponentEntry entry = entityComponentEntryForClass(clazz);
+                if (entry != null) {
+                    entityComponents.remove(entry);
+                    for (View2D view : views) {
+                        view.removeEntityComponent(clazz);
+                    }
+                }
             }
         }
     }
@@ -1270,7 +1307,7 @@ public abstract class Window2D implements HUDDisplayable {
      * Returns the entity component of the given class which this window's views have attached.
      * @param listener The listener to check.
      */
-    public synchronized EntityComponent getEntityComponent(Class clazz) {
+    public EntityComponent getEntityComponent(Class clazz) {
         EntityComponentEntry entry = entityComponentEntryForClass(clazz);
         if (entry == null) {
             return null;
@@ -1316,19 +1353,24 @@ public abstract class Window2D implements HUDDisplayable {
     /**
      * Removes a view from the window.
      */
-    public synchronized void removeView(View2D view) {
-        if (views.remove(view)) {
-            if (view instanceof View2DCell) {
-                cellViews.remove((View2DCell)view);
-            }
-            removeViewForDisplayer(view);
-
-            // Detach event listeners and entity components to this new view
-            for (EventListener listener : eventListeners) {
-                view.removeEventListener(listener);
-            }
-            for (EntityComponentEntry entry : entityComponents) {
-                view.removeEntityComponent(entry.clazz);
+    public void removeView(View2D view) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (views.remove(view)) {
+                    if (view instanceof View2DCell) {
+                        cellViews.remove((View2DCell)view);
+                    }
+                    removeViewForDisplayer(view);
+                    
+                    // Detach event listeners and entity components to this new view
+                    for (EventListener listener : eventListeners) {
+                        view.removeEventListener(listener);
+                    }
+                    for (EntityComponentEntry entry : entityComponents) {
+                        view.removeEntityComponent(entry.clazz);
+                    }
+                }
             }
         }
     }
@@ -1336,14 +1378,19 @@ public abstract class Window2D implements HUDDisplayable {
     /**
      * Remove all views from the window.
      */
-    public synchronized void removeViewsAll() {
-        LinkedList<View2D> viewsToRemove = (LinkedList<View2D>) views.clone();
-        for (View2D view : viewsToRemove) {
-            View2DDisplayer displayer = view.getDisplayer();
-            displayer.destroyView(view);
+    public void removeViewsAll() {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                LinkedList<View2D> viewsToRemove = (LinkedList<View2D>) views.clone();
+                for (View2D view : viewsToRemove) {
+                    View2DDisplayer displayer = view.getDisplayer();
+                    displayer.destroyView(view);
+                }
+                views.clear();
+                cellViews.clear();
+            }
         }
-        views.clear();
-        cellViews.clear();
     }
 
     /** Add a new view for the displayer of the view. */
@@ -1354,21 +1401,26 @@ public abstract class Window2D implements HUDDisplayable {
 
     /** Remove a view for the displayer of the view. */
     private void removeViewForDisplayer(View2D view) {
-        View2DDisplayer displayer = view.getDisplayer();
-        displayerToView.remove(displayer);
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                View2DDisplayer displayer = view.getDisplayer();
+                displayerToView.remove(displayer);
+            }
+        }
     }
 
     /**
      * Returns the view of this window in the given displayer.
      */
-    public synchronized View2D getView(View2DDisplayer displayer) {
+    public View2D getView(View2DDisplayer displayer) {
         return displayerToView.get(displayer);
     }
 
     /**
      * Returns an iterator over the views of this window for all displayers.
      */
-    public synchronized Iterator<View2D> getViews() {
+    public Iterator<View2D> getViews() {
         return views.iterator();
     }
 

@@ -52,15 +52,6 @@ class ProviderProxy implements Serializable {
     /** The set of execution capabilities provided by this provider. */
     private HashSet<String> executionCapabilities = new HashSet<String>();
 
-    /** Whether the last launch response has arrived. */
-    private boolean lastLaunchResponded;
-
-    /** Whether the last launch succeeded. */
-    private boolean lastLaunchSuccess;
-
-    /** The connection info of the last successful launch. */
-    private String lastLaunchConnInfo;
-
     /** 
      * The name of the Darkstar binding we use to store the reference to the cells launched by 
      * this provider. 

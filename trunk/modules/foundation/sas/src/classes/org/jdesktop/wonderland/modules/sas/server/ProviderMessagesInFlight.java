@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import com.sun.sgs.app.AppContext;
+import java.util.LinkedList;
 
 // TODO: must have a timeout on how long messages live in this
 @ExperimentalAPI
@@ -53,5 +54,23 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
 
     public MessageInfo getMessageInfo (MessageID msgID) {
         return messageMap.get(msgID);
+    }
+
+    /**
+     * Removes all messages that are in-flight to the given provider.
+     */
+    public void removeMessagesForProvider (ProviderProxy provider) {
+        LinkedList<MessageID> removeList = new LinkedList<MessageID>();
+        for (MessageID msgID : messageMap.keySet()) {
+            MessageInfo messageInfo = messageMap.get(msgID);
+            if (messageInfo.provider == provider) {
+                removeList.add(msgID);
+            }
+        }        
+        for (MessageID msgIDToRemove : removeList) {
+            messageMap.remove(msgIDToRemove);
+        }
+        removeList = null;
+        AppContext.getDataManager().markForUpdate(this);
     }
 }

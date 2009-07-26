@@ -66,8 +66,6 @@ public class SasXrwProviderMain
 
         checkPlatform();
 
-        System.err.println("****** Enter SasXrwProviderMain");
-
         // TODO: parse args
 
         String userName = "sasxprovider";
@@ -76,14 +74,13 @@ public class SasXrwProviderMain
 
         
         String serverUrl = System.getProperty("wonderland.web.server.url", "http://localhost:8080");
-        System.err.println("Connecting to server " + serverUrl);
+        logger.warning("Connecting to server " + serverUrl);
 
         try {
             SasProvider provider = new SasProvider(userName, fullName, password, serverUrl, this);
         } catch (Exception ex) {
-            System.err.println("Exception " + ex);
-            ex.printStackTrace();
-            System.err.println("Cannot connect to server " + serverUrl);
+            logger.severe("Exception " + ex);
+            logger.severe("Cannot connect to server " + serverUrl);
             System.exit(1);
         }        
     }
@@ -95,8 +92,8 @@ public class SasXrwProviderMain
         String osName = System.getProperty("os.name");
         if (!"Linux".equals(osName) &&
             !"SunOS".equals(osName)) {
-            System.err.println("SasXrwProviderMain cannot run on platform " + osName);
-            System.err.println("Program terminated.");
+            logger.severe("SasXrwProviderMain cannot run on platform " + osName);
+            logger.severe("Program terminated.");
             System.exit(1);
         }
     }

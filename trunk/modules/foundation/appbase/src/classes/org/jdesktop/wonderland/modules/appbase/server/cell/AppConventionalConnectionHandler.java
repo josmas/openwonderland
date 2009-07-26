@@ -100,7 +100,6 @@ public class AppConventionalConnectionHandler implements ClientConnectionHandler
 
         // Reply success
         sender.send(clientID, new OKMessage(message.getMessageID()));
-        System.err.println("*********** Sent OKMessage");
 
         // Now send this message to all clients to notify them of the change
         sender.send(message);
