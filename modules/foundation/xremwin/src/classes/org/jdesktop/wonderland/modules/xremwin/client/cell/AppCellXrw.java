@@ -62,7 +62,6 @@ public class AppCellXrw extends AppConventionalCell {
             return null;
         }
 
-        ((AppConventional) app).setInitInBestView(initInBestView);
         ((AppConventional) app).addDisplayer(this);
 
         // Now it is safe to enable the master client loop
