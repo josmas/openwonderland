@@ -269,17 +269,15 @@ public abstract class View2DEntity implements View2D {
     /** {@inheritDoc} */
     public synchronized void cleanup () {
 
-        /* TODO: must block while there is an active render updater making changes 
-         // Wait until all changes are performed
-         // TODO: replace with a synchronous RU above
-         synchronized (sgChanges) {
-             while (sgChanges.size() > 0) {
-                 try { sgChanges.wait(); } catch (InterruptedException ex) {}
-             }
-         }
-        */
+        changeMask = 0;
+        disableGUI();
 
-        /* TODO: attach state, use sgchanges */
+        setParent(null);;
+        setVisibleUser(false, false);
+        setOrtho(false, false);
+        setGeometryNode(null, false);
+        update();
+        children.clear();
 
         if (gui != null) {
             gui.detachEventListeners(entity);
@@ -287,11 +285,6 @@ public abstract class View2DEntity implements View2D {
             gui = null;
         }
 
-        if (parentEntity != null) {
-            parentEntity.removeEntity(entity);
-            parentEntity = null;
-        }
-        entity = null;
 
         if (geometryNode != null) {
             viewNode.detachChild(geometryNode);
@@ -303,9 +296,16 @@ public abstract class View2DEntity implements View2D {
             newGeometryNode = null;
         }
 
-        // TODO: detach this from parent view
-        parent = null;
-        children.clear();
+        if (entity != null) {
+
+            // Make sure that entity listeners and components are really gone
+            // There is a case with movement into or out of the HUD where these
+            // might get stuck on the entity
+            for (EventListener listener : eventListeners) {
+                listener.removeFromEntity(entity);
+            }
+            entity = null;
+        }
 
         viewNode = null;
         controlArb = null;
@@ -1365,11 +1365,13 @@ public abstract class View2DEntity implements View2D {
             // be the effective aperture rectangle width and height
             float width = (float) sizeApp.width;    
             float height = (float) sizeApp.height;
-            Image image = getWindow().getTexture().getImage();
-            float widthRatio = width / image.getWidth();
-            float heightRatio = height / image.getHeight();
-            sgChangeGeometryTexCoordsSet(geometryNode, widthRatio, heightRatio);
-            windowNeedsValidate = true;
+            if (getWindow() != null && getWindow().getTexture() != null) {
+                Image image = getWindow().getTexture().getImage();
+                float widthRatio = width / image.getWidth();
+                float heightRatio = height / image.getHeight();
+                sgChangeGeometryTexCoordsSet(geometryNode, widthRatio, heightRatio);
+                windowNeedsValidate = true;
+            }
         }
 
         // React to transform related changes
@@ -1912,8 +1914,9 @@ public abstract class View2DEntity implements View2D {
 
 
                  // Propagate changes to JME
-                 ClientContextJME.getWorldManager().addToUpdateList(viewNode);
-
+                 if (viewNode != null) {
+                     ClientContextJME.getWorldManager().addToUpdateList(viewNode);
+                 }
 
                  sgChanges.clear();
              }

@@ -120,8 +120,9 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
     /**
      * Called when provider client disconnects from the SAS server.
      */
-    public void providerDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
+    public ProviderProxy providerDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         logger.info("**** Sas provider disconnnected, clientID = " + clientID);
+        ProviderProxy providerToRemove = null;
 
         // TODO: for now everything uses xremwin
         String execCap = "xremwin";
@@ -129,16 +130,14 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         // Remove provider from execution capability list 
         LinkedList<ProviderProxy> providers = execCapToProviderList.get(execCap);
         if (providers != null) {
-            ProviderProxy toRemove = null;
             for (ProviderProxy provider : providers) {
                 if (provider.getClientID().equals(clientID)) {
-                    toRemove = provider;
+                    providerToRemove = provider;
                     break;
                 }
             }
-            if (toRemove != null) {
-                toRemove.cleanup();
-                providers.remove(toRemove);
+            if (providerToRemove != null) {
+                providers.remove(providerToRemove);
             }
 
             if (providers.size() <= 0) {
@@ -148,6 +147,8 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
 
         // Mark server modified
         AppContext.getDataManager().markForUpdate(this);
+
+        return providerToRemove;
     }
 
     /**

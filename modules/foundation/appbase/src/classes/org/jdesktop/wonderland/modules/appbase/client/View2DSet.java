@@ -15,12 +15,13 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.appbase.client.view;
+package org.jdesktop.wonderland.modules.appbase.client;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 
 /**
  * TODO
@@ -30,6 +31,9 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 @ExperimentalAPI
 public class View2DSet {
 
+    /** The app to which this view set belongs. */
+    private App2D app;
+
     /** The displayers in the set. */
     private LinkedList<View2DDisplayer> displayers = new LinkedList<View2DDisplayer>();
 
@@ -37,20 +41,34 @@ public class View2DSet {
     private LinkedList<Window2D> windows = new LinkedList<Window2D>();
 
     /**
+     * Create a new instance of View2DSet.
+     * @param app The app to which this view set belongs.
+     */
+    public View2DSet (App2D app) {
+        this.app = app;
+    }
+
+    /**
      * Clean up resources.
      */
-    public synchronized void cleanup () {
-        for (View2DDisplayer displayer : displayers) {
-            displayer.destroyAllViews();
-        }
-        displayers.clear();
+    public void cleanup () {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                for (View2DDisplayer displayer : displayers) {
+                    displayer.destroyAllViews();
+                }
+                displayers.clear();
 
-        LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
-        for (Window2D window : toRemoveList) {
-            remove(window);
+                LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
+                for (Window2D window : toRemoveList) {
+                    remove(window);
+                }
+                windows.clear();
+                toRemoveList.clear();
+                app = null;
+            }
         }
-        windows.clear();
-        toRemoveList.clear();
     }
 
     /**
@@ -67,9 +85,14 @@ public class View2DSet {
      * Removes a displayer from the set. All views associated with the displayer are destroyed.
      * Nothing happens if the displayer is not in the set.
      */
-    public synchronized void remove (View2DDisplayer displayer) {
-        if (displayers.remove(displayer)) {
-            displayer.destroyAllViews();
+    public void remove (View2DDisplayer displayer) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (displayers.remove(displayer)) {
+                    displayer.destroyAllViews();
+                }
+            }
         }
     }
 
@@ -87,9 +110,13 @@ public class View2DSet {
      * Removes a window from the set. All views associated with the window are destroyed.
      * Nothing happens if the window is not in the set.
      */
-    public synchronized void remove (Window2D window) {
-        if (windows.remove(window)) {
-            window.removeViewsAll();
+    public void remove (Window2D window) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                window.removeViewsAll();
+                windows.remove(window);
+            }
         }
     }
 

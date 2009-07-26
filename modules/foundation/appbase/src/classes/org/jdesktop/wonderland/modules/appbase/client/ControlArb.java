@@ -79,15 +79,18 @@ public abstract class ControlArb {
      * Clean up resources held.
      */
     public void cleanup() {
-        if (hasControl()) {
-            releaseControl();
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            if (hasControl()) {
+                releaseControl();
+            }
+            synchronized (controlArbs) {
+                controlArbs.remove(this);
+            }
+            listeners.clear();
+            app = null;
+            appControl = false;
         }
-        synchronized (controlArbs) {
-            controlArbs.remove(this);
-        }
-        listeners.clear();
-        app = null;
-        appControl = false;
     }
 
     /**
@@ -202,8 +205,13 @@ public abstract class ControlArb {
      * 
      * @param listener The control change listener.
      */
-    public synchronized void removeListener(ControlChangeListener listener) {
-        listeners.remove(listener);
+    public void removeListener(ControlChangeListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                listeners.remove(listener);
+            }
+        }
     }
 
     /**

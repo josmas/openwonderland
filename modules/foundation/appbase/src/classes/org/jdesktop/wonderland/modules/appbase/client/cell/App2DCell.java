@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
@@ -102,13 +103,16 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * {@inheritDoc}
      */
     public void cleanup() {
-        synchronized (appCells) {
-            appCells.remove(this);
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (appCells) {
+                appCells.remove(this);
+            }
+            view2DCellFactory = null;
+            pixelScale = null;
+            views.clear();
+            app = null;
         }
-        view2DCellFactory = null;
-        pixelScale = null;
-        views.clear();
-        app = null;
     }
 
     /**
@@ -202,12 +206,24 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                     if (menuListener == null) {
                         menuListener = new ContextMenuListener() {
                             public void contextMenuDisplayed(ContextEvent event) {
-                                System.out.println("CONTEXT MENU DISPLAYED");
                                 windowMenuDisplayed(event, contextMenuComp);
                             }
                         };
                         ContextMenuManager cmm = ContextMenuManager.getContextMenuManager();
                         cmm.addContextMenuListener(menuListener);
+                    }
+                } else {
+                    // If the cell has decreased to ACTIVE it is no longer visible and is no longer
+                    // close enough to the viewer to be potentially viewable, so we release control
+                    // of the app if it is controlled. We did a similar thing in 0.4 Wonderland, 
+                    // where we released control on a teleport. But this is a more elegant solution.
+                    if (app != null) {
+                        ControlArb controlArb = app.getControlArb();
+                        if (controlArb != null) {
+                            if (controlArb.hasControl()) {
+                                controlArb.releaseControl();
+                            }
+                        }
                     }
                 }
                 break;
@@ -309,26 +325,36 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /** {@inheritDoc} */
-    public synchronized void destroyView (View2D view) {
-        if (views.remove(view)) {
-            Window2D window = view.getWindow();
-            window.removeView(view);
-            view.cleanup();
+    public void destroyView (View2D view) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (views.remove(view)) {
+                    Window2D window = view.getWindow();
+                    window.removeView(view);
+                    view.cleanup();
+                }
+            }
         }
     }
 
     /** {@inheritDoc} */
-    public synchronized void destroyAllViews () {
-        LinkedList<View2D> toRemoveList = (LinkedList<View2D>) views.clone();
-        for (View2D view : toRemoveList) {
-            Window2D window = view.getWindow();
-            if (window != null) {
-                window.removeView(view);
+    public void destroyAllViews () {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                LinkedList<View2D> toRemoveList = (LinkedList<View2D>) views.clone();
+                for (View2D view : toRemoveList) {
+                    Window2D window = view.getWindow();
+                    if (window != null) {
+                        window.removeView(view);
+                    }
+                    view.cleanup();
+                }
+                views.clear();
+                toRemoveList.clear();
             }
-            view.cleanup();
         }
-        views.clear();
-        toRemoveList.clear();
     }
 
     /** {@inheritDoc} */

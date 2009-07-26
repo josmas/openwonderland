@@ -147,10 +147,20 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         logger.fine("SasProvider client disconnected.");
         SasServer server = (SasServer) serverRef.get();
-        server.providerDisconnected(sender, clientID);
-        // TODO: remove any messages in flight for the given provider client
-        // Probably need to iterate through list of in flight message info looking at for all
-        // messages which have this client ID as their provider clientn
-        // TODO: remove any running app info for the given provider client
+        ProviderProxy provider = server.providerDisconnected(sender, clientID);
+        if (provider != null) {
+
+            ProviderMessagesInFlight messagesInFlight = getProviderMessagesInFlight();
+            if (messagesInFlight != null) {
+                messagesInFlight.removeMessagesForProvider(provider);
+            }
+
+            RunningAppInfo runningApps = getRunningApps();
+            if (runningApps != null) {
+                runningApps.removeAppInfosForProvider(provider);
+            }
+
+            provider.cleanup();
+        }
     }
 }
