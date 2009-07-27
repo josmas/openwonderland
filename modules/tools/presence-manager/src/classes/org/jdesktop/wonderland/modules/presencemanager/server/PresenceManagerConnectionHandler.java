@@ -23,6 +23,7 @@ import com.sun.sgs.app.ManagedReference;
 import com.sun.mpk20.voicelib.app.ManagedCallBeginEndListener;
 import com.sun.mpk20.voicelib.app.ManagedPlayerInRangeListener;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.PlayerInRangeListener;
 
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
@@ -86,7 +87,7 @@ public class PresenceManagerConnectionHandler implements
 
     private CopyOnWriteArrayList<PresenceInfo> presenceInfoList = new CopyOnWriteArrayList();
 
-    private ConcurrentHashMap<BigInteger, ManagedReference<PlayerInRangeNotifier>> notifiers =
+    private ConcurrentHashMap<BigInteger, PlayerInRangeNotifier> notifiers =
 	new ConcurrentHashMap();
 
     public PresenceManagerConnectionHandler() {
@@ -142,23 +143,17 @@ public class PresenceManagerConnectionHandler implements
 	    }
 
 	    if (msg.getAdd() == true) {
-	        PlayerInRangeNotifier notifier = new PlayerInRangeNotifier(info);
-
-	        ManagedReference<PlayerInRangeNotifier> notifierRef =
-		    AppContext.getDataManager().createReference(notifier);
-
-	        notifiers.put(clientID.getID(), notifierRef);
+	        notifiers.put(clientID.getID(), new PlayerInRangeNotifier(info));
 		return;
 	    }
 
-	    ManagedReference<PlayerInRangeNotifier> notifierRef = notifiers.remove(clientID.getID());
+	    PlayerInRangeNotifier notifier = notifiers.remove(clientID.getID());
 
-	    if (notifierRef == null) {
-	        System.out.println("Can't find notifier for " + clientID.getID());	
-		return;
+	    if (notifier == null) {
+	  	return;
 	    }
 
-	    notifierRef.get().done();
+	    notifier.done();
 	    return;
 	}
 
@@ -220,12 +215,12 @@ public class PresenceManagerConnectionHandler implements
         // mark ourself for update
         AppContext.getDataManager().markForUpdate(this);
 
-	ManagedReference<PlayerInRangeNotifier> notifierRef = notifiers.remove(clientID.getID());
+	PlayerInRangeNotifier notifier = notifiers.remove(clientID.getID());
 
-	if (notifierRef == null) {
+	if (notifier == null) {
 	    System.out.println("Can't find notifier for " + clientID.getID());	
 	} else {
-	    notifierRef.get().done();
+	    notifier.done();
 	}
 
 	presenceInfoList.remove(info);
@@ -261,10 +256,12 @@ public class PresenceManagerConnectionHandler implements
 	presenceInfoList.clear();
     }
 
-    static class PlayerInRangeNotifier implements ManagedPlayerInRangeListener {
+    static class PlayerInRangeNotifier implements PlayerInRangeListener, Serializable {
 
 	private PresenceInfo presenceInfo;
 	
+  	private boolean done;
+
 	public PlayerInRangeNotifier(PresenceInfo presenceInfo) {
 	    this.presenceInfo = presenceInfo;
 
@@ -281,6 +278,8 @@ public class PresenceManagerConnectionHandler implements
 	}
 
 	public void done() {
+	    done = true;
+
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	    Player player = vm.getPlayer(presenceInfo.callID);
@@ -293,6 +292,10 @@ public class PresenceManagerConnectionHandler implements
 	}
 	
         public void playerInRange(Player player, Player playerInRange, boolean isInRange) {
+	    if (done) {
+		return;
+	    }
+
 	    WonderlandClientSender sender =
                 WonderlandContext.getCommsManager().getSender(PresenceManagerConnectionType.CONNECTION_TYPE);
     	    

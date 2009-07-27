@@ -346,6 +346,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements PresenceManagerLi
             }
         });
 
+        buttonGroup2.add(phonePrivateRadioButton);
         phonePrivateRadioButton.setSelected(true);
         phonePrivateRadioButton.setText("Private");
         phonePrivateRadioButton.addActionListener(new java.awt.event.ActionListener() {
@@ -354,6 +355,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements PresenceManagerLi
             }
         });
 
+        buttonGroup2.add(phoneSecretRadioButton);
         phoneSecretRadioButton.setText("Secret");
         phoneSecretRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -361,6 +363,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements PresenceManagerLi
             }
         });
 
+        buttonGroup2.add(phoneSpeakerPhoneRadioButton);
         phoneSpeakerPhoneRadioButton.setText("SpeakerPhone");
         phoneSpeakerPhoneRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
