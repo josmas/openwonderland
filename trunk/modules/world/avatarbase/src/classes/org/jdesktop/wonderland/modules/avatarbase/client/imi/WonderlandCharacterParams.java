@@ -136,15 +136,17 @@ public class WonderlandCharacterParams implements Cloneable {
         setAsPreset(params, ConfigType.FEET);
         setAsPreset(params, ConfigType.HANDS);
 
-        // XXX what about colors? XXX
-//        float rgbOut[] = new float[3];
-//        params.getHairColor(rgbOut);
-//        logger.warning("HAIR COLOR " + rgbOut[0] + " " + rgbOut[1] + " " + rgbOut[2]);
+        // Set the colors
+        setAsColor(params, ConfigType.HAIR_COLOR);
+        setAsColor(params, ConfigType.PANTS_COLOR);
+        setAsColor(params, ConfigType.SHIRT_COLOR);
+        setAsColor(params, ConfigType.SHOE_COLOR);
+        setAsColor(params, ConfigType.SKIN_COLOR);
     }
 
     /**
-     * A utility routine to fetch the preset from the IMI character params
-     * and set the config element in this set of attributes.
+     * A utility routine to fetch the preset from the IMI character params meta
+     * data and set the config element in this set of attributes.
      */
     private void setAsPreset(CharacterParams params, ConfigType type) {
         String presetName = params.getMetaData().get(type.toString());
@@ -162,6 +164,63 @@ public class WonderlandCharacterParams implements Cloneable {
             return;
         }
         logger.warning("For config type " + type + ", using preset " + presetName);
+    }
+
+    /**
+     * A utility routine to fetch the color from the IMI character params meta
+     * data and set the config element in this set of attributes.
+     */
+    private void setAsColor(CharacterParams params, ConfigType type) {
+        String colorString = params.getMetaData().get(type.toString());
+        if (colorString == null) {
+            logger.warning("No color found for config type " + type);
+            return;
+        }
+
+        // The color string is of the format RRR GGG BBB where the values are
+        // between 0 - 255 for each color component.
+        String rgb[] = colorString.split(" ");
+        float r = (float)Integer.parseInt(rgb[0]) / 255.0f;
+        float g = (float)Integer.parseInt(rgb[1]) / 255.0f;
+        float b = (float)Integer.parseInt(rgb[2]) / 255.0f;
+
+        logger.warning("For color type " + type + ", using color " + r + " " +
+                g + " " + b);
+
+        ColorConfigElement e = null;
+        switch (type) {
+            case HAIR_COLOR:
+                e = new HairColorConfigElement();
+                e.setRGB(r, g, b);
+                break;
+
+            case PANTS_COLOR:
+                e = new PantsColorConfigElement();
+                e.setRGB(r, g, b);
+                break;
+
+            case SHIRT_COLOR:
+                e = new ShirtColorConfigElement();
+                e.setRGB(r, g, b);
+                break;
+
+            case SHOE_COLOR:
+                e = new ShoeColorConfigElement();
+                e.setRGB(r, g, b);
+                break;
+
+            case SKIN_COLOR:
+                e = new SkinColorConfigElement();
+                e.setRGB(r, g, b);
+                break;
+
+            default:
+                break;
+        }
+
+        if (e != null) {
+            setElement(type, e);
+        }
     }
 
     @XmlTransient
@@ -294,16 +353,7 @@ public class WonderlandCharacterParams implements Cloneable {
                 if (el.size() > 0) {
                     setElement(type, 0);
                 }
-            }
-
-            // Initialize the color config elelements.
-            // This turns everything black, bad!
-//            setElement(ConfigType.HAIR_COLOR, new HairColorConfigElement());
-//            setElement(ConfigType.PANTS_COLOR, new PantsColorConfigElement());
-//            setElement(ConfigType.SHIRT_COLOR, new ShirtColorConfigElement());
-//            setElement(ConfigType.SHOE_COLOR, new ShoeColorConfigElement());
-//            setElement(ConfigType.SKIN_COLOR, new SkinColorConfigElement());
-            
+            }            
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error loading config from " +
                        configURL, ioe);
@@ -662,6 +712,13 @@ public class WonderlandCharacterParams implements Cloneable {
         private float g;
         private float b;
 
+        @XmlTransient
+        public void setRGB(float r, float g, float b) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+        }
+        
         @XmlElement
         public float getR() {
             return r;
@@ -707,7 +764,12 @@ public class WonderlandCharacterParams implements Cloneable {
     public static class SkinColorConfigElement extends ColorConfigElement {
         @Override
         public void apply(CharacterParams attrs) {
-            attrs.setSkinTone(getR(), getG(), getB());
+            // XXX Settings the attributes does nothing XXX
+//            attrs.setSkinTone(getR(), getG(), getB());
+
+            String rgb = "" + (int) (getR() * 255) + " " + (int) (getG() * 255) +
+                    " " + (int) (getB() * 255);
+            attrs.getMetaData().put(ConfigType.SKIN_COLOR.toString(), rgb);
         }
 
         /**
@@ -727,8 +789,11 @@ public class WonderlandCharacterParams implements Cloneable {
     public static class HairColorConfigElement extends ColorConfigElement {
         @Override
         public void apply(CharacterParams attrs) {
-            logger.warning("APPLY SETTING HAIR COLOR " + getR() + " " + getG() + " " + getB());
-            attrs.setHairColor(getR(), getG(), getB());
+            // XXX Settings the attributes does nothing XXX
+//            attrs.setHairColor(getR(), getG(), getB());
+            String rgb = "" + (int)(getR() * 255) + " " +(int)(getG() * 255) +
+                    " " + (int)(getB() * 255);
+            attrs.getMetaData().put(ConfigType.HAIR_COLOR.toString(), rgb);
         }
 
         /**
@@ -748,7 +813,12 @@ public class WonderlandCharacterParams implements Cloneable {
     public static class ShirtColorConfigElement extends ColorConfigElement {
         @Override
         public void apply(CharacterParams attrs) {
-            attrs.setShirtColor(getR(), getG(), getB(), 0f, 0f, 0f);
+            // XXX Settings the attributes does nothing XXX
+//            attrs.setShirtColor(getR(), getG(), getB(), 0f, 0f, 0f);
+
+            String rgb = "" + (int) (getR() * 255) + " " + (int) (getG() * 255) +
+                    " " + (int) (getB() * 255);
+            attrs.getMetaData().put(ConfigType.SHIRT_COLOR.toString(), rgb);
         }
 
         /**
@@ -768,7 +838,12 @@ public class WonderlandCharacterParams implements Cloneable {
     public static class PantsColorConfigElement extends ColorConfigElement {
         @Override
         public void apply(CharacterParams attrs) {
-            attrs.setPantsColor(getR(), getG(), getB(), 0f, 0f, 0f);
+            // XXX Settings the attributes does nothing XXX
+//            attrs.setPantsColor(getR(), getG(), getB(), 0f, 0f, 0f);
+
+            String rgb = "" + (int) (getR() * 255) + " " + (int) (getG() * 255) +
+                    " " + (int) (getB() * 255);
+            attrs.getMetaData().put(ConfigType.PANTS_COLOR.toString(), rgb);
         }
 
         /**
@@ -788,7 +863,12 @@ public class WonderlandCharacterParams implements Cloneable {
     public static class ShoeColorConfigElement extends ColorConfigElement {
         @Override
         public void apply(CharacterParams attrs) {
-            attrs.setShirtColor(getR(), getG(), getB(), 0f, 0f, 0f);
+            // XXX Settings the attributes does nothing XXX
+//            attrs.setShirtColor(getR(), getG(), getB(), 0f, 0f, 0f);
+
+            String rgb = "" + (int) (getR() * 255) + " " + (int) (getG() * 255) +
+                    " " + (int) (getB() * 255);
+            attrs.getMetaData().put(ConfigType.SHOE_COLOR.toString(), rgb);
         }
 
         /**

@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.imi;
 
 import imi.character.CharacterParams;
+import imi.character.Manipulator;
+import java.awt.Color;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -26,6 +28,9 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.WonderlandCharacterParams.ColorConfigElement;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.WonderlandCharacterParams.ConfigElement;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.WonderlandCharacterParams.ConfigType;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.spi.AvatarSPI;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
@@ -247,14 +252,42 @@ public class ImiAvatar implements AvatarSPI {
         WorldManager wm = ClientContextJME.getWorldManager();
         WlAvatarCharacter wlc = new WlAvatarCharacter.WlAvatarCharacterBuilder(cp, wm).addEntity(false).build();
 
-//        ConfigElement ce = params.getElement(ConfigType.HAIR_COLOR);
-//        if (ce != null) {
-//            float r = ((ColorConfigElement)ce).getR();
-//            float g = ((ColorConfigElement)ce).getG();
-//            float b = ((ColorConfigElement)ce).getB();
-//            Manipulator.setHairColor(wlc, new Color(r, g, b));
-//        }
-
+        // We need to manually apply all of the colors if they are present
+        ConfigElement ce = params.getElement(ConfigType.HAIR_COLOR);
+        if (ce != null) {
+            float r = ((ColorConfigElement)ce).getR();
+            float g = ((ColorConfigElement)ce).getG();
+            float b = ((ColorConfigElement)ce).getB();
+            Manipulator.setHairColor(wlc, new Color(r, g, b));
+        }
+        ce = params.getElement(ConfigType.PANTS_COLOR);
+        if (ce != null) {
+            float r = ((ColorConfigElement)ce).getR();
+            float g = ((ColorConfigElement)ce).getG();
+            float b = ((ColorConfigElement)ce).getB();
+            Manipulator.setPantsColor(wlc, new Color(r, g, b));
+        }
+        ce = params.getElement(ConfigType.SHIRT_COLOR);
+        if (ce != null) {
+            float r = ((ColorConfigElement)ce).getR();
+            float g = ((ColorConfigElement)ce).getG();
+            float b = ((ColorConfigElement)ce).getB();
+            Manipulator.setShirtColor(wlc, new Color(r, g, b));
+        }
+        ce = params.getElement(ConfigType.SHOE_COLOR);
+        if (ce != null) {
+            float r = ((ColorConfigElement)ce).getR();
+            float g = ((ColorConfigElement)ce).getG();
+            float b = ((ColorConfigElement)ce).getB();
+            Manipulator.setShoesColor(wlc, new Color(r, g, b));
+        }
+        ce = params.getElement(ConfigType.SKIN_COLOR);
+        if (ce != null) {
+            float r = ((ColorConfigElement)ce).getR();
+            float g = ((ColorConfigElement)ce).getG();
+            float b = ((ColorConfigElement)ce).getB();
+            Manipulator.setSkinTone(wlc, new Color(r, g, b));
+        }
         return wlc;
    }
 
