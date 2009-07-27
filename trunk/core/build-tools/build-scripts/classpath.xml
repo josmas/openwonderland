@@ -61,6 +61,7 @@
         <path location="${core.common.dir}/stun.jar"/>
         <path location="${core.common.dir}/scannotation-1.0.2.jar"/>
         <path location="${core.common.dir}/javassist.jar"/>
+        <path location="${top.dir}/utils/wonderland-version/dist/wonderland-version.jar"/>
     </pathconvert>
     
     <pathconvert property="core-common.classpath">
