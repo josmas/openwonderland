@@ -154,6 +154,9 @@
             </Component>
             <Component class="javax.swing.JRadioButton" name="phonePrivateRadioButton">
               <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="buttonGroup2"/>
+                </Property>
                 <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Private"/>
               </Properties>
@@ -163,6 +166,9 @@
             </Component>
             <Component class="javax.swing.JRadioButton" name="phoneSecretRadioButton">
               <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="buttonGroup2"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Secret"/>
               </Properties>
               <Events>
@@ -171,6 +177,9 @@
             </Component>
             <Component class="javax.swing.JRadioButton" name="phoneSpeakerPhoneRadioButton">
               <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="buttonGroup2"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="SpeakerPhone"/>
               </Properties>
               <Events>
