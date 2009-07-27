@@ -73,8 +73,11 @@ public abstract class AbstractComponentMessageReceiver implements ComponentMessa
                                     WonderlandClientID clientID,
                                     CellMessage message ) {
 
-        RecorderManager.getDefaultManager().recordMessage(sender, clientID, message);
-        postRecordMessage(sender, clientID, message);
+        RecorderManager mgr = RecorderManager.getDefaultManager();
+        if (mgr.isRecording()) {
+            mgr.recordMessage(sender, clientID, message);
+            postRecordMessage(sender, clientID, message);
+        }
     }
 
     /**
