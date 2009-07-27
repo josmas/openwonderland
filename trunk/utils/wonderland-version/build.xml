@@ -33,8 +33,8 @@
     </target>
     
     <target name="jar" depends="build, -utils-jar">
-        <mkdir dir="dist"/>
-        <copy todir="dist" file="${build.lib.dir}/${util.jarname}.jar"/>
+        <mkdir dir="${current.dir}/dist"/>
+        <copy todir="${current.dir}/dist" file="${build.lib.dir}/${util.jarname}.jar"/>
     </target>
 
     <!-- get the subversion version number -->
