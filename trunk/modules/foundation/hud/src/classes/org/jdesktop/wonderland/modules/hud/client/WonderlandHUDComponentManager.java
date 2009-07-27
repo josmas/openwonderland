@@ -304,6 +304,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             }
             if (frameView != null) {
                 // display/hide the frame view
+                state.getFrame().setTitle(component.getName());
                 frameView.setVisibleApp(visible);
                 frameView.setVisibleUser(visible);
             }
