@@ -141,7 +141,6 @@
         <Component class="javax.swing.JButton" name="hairButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Hair Color..."/>
-            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -174,7 +173,6 @@
         <Component class="javax.swing.JButton" name="skinButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Skin Color..."/>
-            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -207,7 +205,6 @@
         <Component class="javax.swing.JButton" name="torsoButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Shirt Color..."/>
-            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -308,7 +305,6 @@
         <Component class="javax.swing.JButton" name="pantsButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Pants Color..."/>
-            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -341,7 +337,6 @@
         <Component class="javax.swing.JButton" name="shoeButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Shoe Color..."/>
-            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

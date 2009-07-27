@@ -483,16 +483,19 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         if (config == null) {
             logger.warning("Unable to find config element " + type);
             config = new HairColorConfigElement();
-            config.setR(0.0f);
-            config.setG(0.0f);
-            config.setB(0.0f);
+            config.setR(1.0f);
+            config.setG(1.0f);
+            config.setB(1.0f);
         }
 
 
         // Create the initial color, each color component is a floating point
         // value between 0.0 and 1.0, inclusive. Show the dialog.
-        Color rgb = new Color(config.getR(), config.getB(), config.getG());
+        Color rgb = new Color(config.getR(), config.getG(), config.getB());
         Color hairColor = JColorChooser.showDialog(this, title, rgb);
+        if (hairColor == null) {
+            return;
+        }
 
         // Take the new values from the dialog and set the configuration
         // element. We need to convert the integer values between 0 and 255 to
@@ -694,11 +697,11 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         jacketLabel.setEnabled(!isBusy);
         handsLabel.setEnabled(!isBusy);
         feetLabel.setEnabled(!isBusy);
-//        hairButton.setEnabled(!isBusy);
-//        skinButton.setEnabled(!isBusy);
-//        torsoButton.setEnabled(!isBusy);
-//        pantsButton.setEnabled(!isBusy);
-//        shoeButton.setEnabled(!isBusy);
+        hairButton.setEnabled(!isBusy);
+        skinButton.setEnabled(!isBusy);
+        torsoButton.setEnabled(!isBusy);
+        pantsButton.setEnabled(!isBusy);
+        shoeButton.setEnabled(!isBusy);
         randomizeButton.setEnabled(!isBusy);
     }
 
@@ -794,7 +797,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         mainConfigPanel.add(hairComboBox, gridBagConstraints);
 
         hairButton.setText("Hair Color...");
-        hairButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
@@ -814,7 +816,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         mainConfigPanel.add(headComboBox, gridBagConstraints);
 
         skinButton.setText("Skin Color...");
-        skinButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
@@ -834,7 +835,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         mainConfigPanel.add(torsoComboBox, gridBagConstraints);
 
         torsoButton.setText("Shirt Color...");
-        torsoButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
@@ -890,7 +890,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         mainConfigPanel.add(legsComboBox, gridBagConstraints);
 
         pantsButton.setText("Pants Color...");
-        pantsButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 5;
         mainConfigPanel.add(pantsButton, gridBagConstraints);
@@ -909,7 +908,6 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         mainConfigPanel.add(feetComboBox, gridBagConstraints);
 
         shoeButton.setText("Shoe Color...");
-        shoeButton.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 6;
