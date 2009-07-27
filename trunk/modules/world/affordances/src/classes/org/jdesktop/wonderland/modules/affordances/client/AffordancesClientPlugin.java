@@ -70,7 +70,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
                 /**
                  * Handles when the affordance frame is closed
                  */
-                if (event.getEventType() == HUDEventType.DISAPPEARED) {
+                if (event.getEventType() == HUDEventType.CLOSED) {
                     // Tell all of the affordances to remove themselves by posting
                     // an event to the input system as such. Also tell the
                     // affordance panel it has closed
@@ -148,6 +148,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
             if (affordanceHUD == null) {
                 createHUD();
             }
+            affordanceHUD.setName("Edit Component: " + event.getCell().getName());
             affordanceHUD.setVisible(true);
 
             // Update the states of the HUD Swing components; we must do this
