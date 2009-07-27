@@ -22,6 +22,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.lang.Class;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +45,20 @@ public class HUDFrameHeader2D extends HUDComponent2D implements ActionListener, 
 
     public HUDFrameHeader2D(JComponent component) {
         super(component);
+    }
+
+    public void setTitle(String title) {
+        if (component instanceof HUDFrameHeader2DImpl) {
+            ((HUDFrameHeader2DImpl)component).setTitle(title);
+        }
+    }
+
+    public String getTitle() {
+        String title = null;
+        if (component instanceof HUDFrameHeader2DImpl) {
+            title = ((HUDFrameHeader2DImpl)component).getTitle();
+        }
+        return title;
     }
 
     public void addActionListener(ActionListener listener) {
