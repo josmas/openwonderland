@@ -63,15 +63,15 @@ public class SwingWhiteboardWindow extends WindowSwing {
      * @param app The whiteboard app which owns the window.
      * @param width The width of the window (in pixels).
      * @param height The height of the window (in pixels).
-     * @param topLevel Whether the window is top-level (e.g. is decorated) with a frame.
+     * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
      * @param commComponent The communications component for communicating with the server.
      */
     public SwingWhiteboardWindow(SwingWhiteboardCell cell, App2D app, int width, int height, 
-                                 boolean topLevel, Vector2f pixelScale, 
+                                 boolean decorated, Vector2f pixelScale, 
                                  SwingWhiteboardComponent commComponent)
             throws InstantiationException {
-        super(app, width, height, topLevel, pixelScale);
+        super(app, width, height, decorated, pixelScale);
         this.cell = cell;
         this.commComponent = commComponent;
 

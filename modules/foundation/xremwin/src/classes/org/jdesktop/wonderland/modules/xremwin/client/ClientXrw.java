@@ -508,17 +508,17 @@ public abstract class ClientXrw implements Runnable {
                 }
 
             case WINDOW_SET_ROTATE_Y:
+                /* TODO:someday: not yet supported for secondaries 
                 // If this was performed interactively by this client, ignore it
                 if (winSetRotateYMsgArgs.clientId != clientId) {
                     win = lookupWindow(winSetRotateYMsgArgs.wid);
                     if (win == null) {
                         AppXrw.logger.warning("WindowSetRotateY: window doesn't exist: wid = " + winSetRotateYMsgArgs.wid);
                     } else {
-                        /* TODO: Window2D config methods not yet impl
                         win.setRotateY(win, winSetRotateYMsgArgs.roty);
-                         */
                     }
                 }
+                */
                 break;
 
             case BEEP:
