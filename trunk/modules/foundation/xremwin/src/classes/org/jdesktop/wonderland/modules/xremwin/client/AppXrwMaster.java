@@ -255,7 +255,7 @@ public class AppXrwMaster
             masterApps.remove(this);
         }
 
-        logger.severe("AppXrwMaster cleaned up");
+        logger.severe("AppXrwMaster stopped.");
 
         if (exitListener != null) {
             exitListener.appExitted(this);

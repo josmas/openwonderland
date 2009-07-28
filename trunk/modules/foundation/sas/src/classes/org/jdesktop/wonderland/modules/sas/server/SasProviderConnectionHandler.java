@@ -120,9 +120,11 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
             }
             messagesInFlight.removeMessageInfo(launchMsgID);
 
-            // Transition the app to the running apps list. It will stay there until the app exits
-            // or the provider quits
-            getRunningApps().addAppInfo(launchMsgID, msgInfo.provider, msgInfo.cellID);
+            // If app launch succeeded, transition the app to the running apps list. It will 
+            // stay there until the app exits or the provider disconnects
+            if (status == SasProviderLaunchStatusMessage.LaunchStatus.SUCCESS) {
+                getRunningApps().addAppInfo(launchMsgID, msgInfo.provider, msgInfo.cellID);
+            }
             
             msgInfo.provider.appLaunchResult(status, msgInfo.cellID, connInfo);
 
@@ -162,5 +164,26 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
 
             provider.cleanup();
         }
+    }
+
+    // Called when the app is stopped (usually when the cell is deleted).
+    public static void removeCell (CellID cellID, ProviderProxy provider) {
+        getProviderMessagesInFlight().removeMessagesForCellAndProvider(provider, cellID);
+        getRunningApps().removeAppInfosForCellAndProvider(provider, cellID);
+    }
+
+    // Given an an app identified by a provider and a cell, returns the launch message ID
+    // for that app. TODO: someday: assumes only one app launched per cell.
+    static MessageID getLaunchMessageIDForCellAndProvider (ProviderProxy provider, CellID cellID) {
+
+        // First check the running app list
+        MessageID msgID = getRunningApps().getLaunchMessageIDForCellAndProvider(provider, cellID);
+        if (msgID != null) return msgID;
+
+        // Then check the list of launch messages in flight
+        msgID = getProviderMessagesInFlight().getLaunchMessageIDForCellAndProvider(provider, cellID);
+        if (msgID != null) return msgID;
+        
+        return null;
     }
 }

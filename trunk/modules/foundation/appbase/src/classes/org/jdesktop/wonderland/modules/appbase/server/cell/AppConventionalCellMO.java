@@ -85,6 +85,9 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
     protected String connectionInfo;
 
+    /** Opaque info which identifies the launched app to the app server. */
+    private Object appServerLaunchInfo;
+
     /**
      * The SAS server must implement this.
      */
@@ -99,14 +102,16 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
          * @param executionCapability The type of execution capability needed (xremwin, vnc, etc.)
          * @param appName The name of the app.
          * @param command The execution command.
+         * @return Opaque information which identifies the launched to the app server. This must be 
+         * provided to the appStop method.
          */
-        public void appLaunch (AppConventionalCellMO cell, String executionCapability, String appname,
-                               String command) throws InstantiationException;
+        public Object appLaunch (AppConventionalCellMO cell, String executionCapability, String appname,
+                                String command) throws InstantiationException;
         
         /**
          * Stop a running server shared application.
          */
-        public void appStop (CellID cellID);
+        public void appStop (Object appServerLaunchInfo);
     }
 
     /**
@@ -246,7 +251,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
             // TODO: someday: need to generalize beyond xremwin
             try {
-                appServerLauncher.appLaunch(this, "xremwin", serverState.getAppName(), serverState.getCommand());
+                appServerLaunchInfo = appServerLauncher.appLaunch(this, "xremwin", 
+                                              serverState.getAppName(), serverState.getCommand());
             } catch (InstantiationException ex) {
                 // TODO: jon: what should this exception be?
                 logger.warning("App launch for app " + serverState.getAppName() + " failed with an exception.");
@@ -257,8 +263,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
         } else {
             if (connectionInfo != null) {
-                //logger.severe("************* STOP APP");
-                appServerLauncher.appStop(cellID);
+                appServerLauncher.appStop(appServerLaunchInfo);
                 destroy();
             }
         }
@@ -315,8 +320,10 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         } else {
             logger.warning("App cell terminated because SAS provider exitted.");
         }
-        logger.warning("App name of cell = " + serverState.getAppName());
-        logger.warning("Launch command of app = " + serverState.getCommand());
+        if (serverState != null) {
+            logger.warning("App name of cell = " + serverState.getAppName());
+            logger.warning("Launch command of app = " + serverState.getCommand());
+        }
 
         // TODO: notify clients of exit value
 

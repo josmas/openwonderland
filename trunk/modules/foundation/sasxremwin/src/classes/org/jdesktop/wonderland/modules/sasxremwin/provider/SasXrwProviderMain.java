@@ -144,5 +144,20 @@ public class SasXrwProviderMain
             }
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void appStop (SasProviderConnection connection, MessageID launchMessageID) {
+        synchronized (runningAppInfos) {
+            for (AppXrwMaster app : runningAppInfos.keySet()) {
+                AppInfo appInfo = runningAppInfos.get(app);
+                if (appInfo.connection == connection && appInfo.launchMessageID == launchMessageID) {
+                    runningAppInfos.remove(app);
+                    app.cleanup();
+                }
+            }
+        }
+    }
 }
 

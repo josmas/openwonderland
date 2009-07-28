@@ -28,10 +28,12 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO.AppServerLauncher;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchStatusMessage;
+import org.jdesktop.wonderland.modules.sas.common.SasProviderAppStopMessage;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
+import org.jdesktop.wonderland.common.messages.MessageID;
 
 /**
  * This represents a provider on the server side.
@@ -161,6 +163,33 @@ class ProviderProxy implements Serializable {
         }
     }
     
+    /**
+     * Called by the cell to stop the app. Usually called when the cell is deleted.
+     * TODO: someday: currently assumes that there is only one app running per cell.
+     */
+    public void appStop (CellMO cell) {
+
+        // Get the launch message ID which will identify the app to the provider
+        MessageID launchMessageID = SasProviderConnectionHandler.getLaunchMessageIDForCellAndProvider(
+                                                                      this, cell.getCellID());
+
+        // Send a stop message to the provider
+        if (launchMessageID != null) {
+            SasProviderAppStopMessage msg = new SasProviderAppStopMessage(launchMessageID);
+            try {
+                sender.send(clientID, msg);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        // Remove information about the cell and app from the cells launched list
+        getProviderCellsLaunched().remove(cell.getCellID());
+
+        // Remove information about the cell and app from the connection handler
+        SasProviderConnectionHandler.removeCell(cell.getCellID(), this);
+    }
+
     /**
      * Clean up resources.
      */
