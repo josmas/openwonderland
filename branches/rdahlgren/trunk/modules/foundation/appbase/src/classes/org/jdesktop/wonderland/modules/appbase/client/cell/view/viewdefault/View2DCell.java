@@ -224,7 +224,7 @@ public class View2DCell extends View2DEntity {
     // Apply any pending rotation delta to the given user transform.
     protected void userTransformApplyDeltaRotation (CellTransform userTransform) {
         if (deltaRotationToApply != null) {
-            CellTransform transform = new CellTransform(null, null, null);
+            CellTransform transform = new CellTransform(null, null);
             transform.setRotation(deltaRotationToApply);
             userTransform.mul(transform);
             deltaRotationToApply = null;
@@ -292,6 +292,14 @@ public class View2DCell extends View2DEntity {
 
     /** {@inheritDoc} */
     @Override
+    protected void frameUpdateUserResizable () {
+        if (frame != null) {
+            frame.setUserResizable(isUserResizable());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     protected void frameUpdate () {
         if (frame != null) {
             try {
@@ -307,6 +315,24 @@ public class View2DCell extends View2DEntity {
      */
     protected Frame2DCell getFrame () {
         return frame;
+    }
+
+    /**
+     * Immediately sets the this view's user cell transform to the given transform.
+     * Note: you must call update after calling this to have the setting take effect.
+     */
+    public void setUserTransformCellLocal (CellTransform transform) {
+        userTransformCell = transform.clone(null);
+        userTransformCellReplaced = true;
+        userTransformCellChangedLocalOnly = true;
+        changeMask |= CHANGED_USER_TRANSFORM;
+    }
+
+    /**
+     * Return the cell user transform of this view.
+     */
+    public CellTransform getUserTransformCell () {
+        return userTransformCell.clone(null);
     }
 }
 

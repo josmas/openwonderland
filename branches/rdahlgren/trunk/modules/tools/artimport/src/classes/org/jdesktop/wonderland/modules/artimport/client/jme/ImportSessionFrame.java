@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
 import javax.xml.bind.JAXBException;
-import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import com.jme.image.Texture;
 import com.jme.math.Matrix3f;
@@ -70,12 +69,16 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
+import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
+import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
 import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.modules.ModuleUtils;
+import org.jdesktop.wonderland.common.FileUtils;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
@@ -430,6 +433,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         saveAsSrcB.setText("Save as source...");
         saveAsSrcB.setToolTipText("Create a module source base, with build.xml etc");
+        saveAsSrcB.setEnabled(false);
         saveAsSrcB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsSrcBActionPerformed(evt);
@@ -573,7 +577,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
     private void deployToServerBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deployToServerBActionPerformed
 
         String moduleName = targetModuleTF.getText();
-        ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo = new ArrayList();
+        ArrayList<DeployedModel> deploymentInfo = new ArrayList();
         WorldManager wm = ClientContextJME.getWorldManager();
         ServerSessionManager targetServer = (ServerSessionManager) targetServerSelector.getSelectedItem();
 
@@ -626,9 +630,10 @@ public class ImportSessionFrame extends javax.swing.JFrame
         // Now create the cells for the new content
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
         CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-        for(ModelLoader.ModelDeploymentInfo info : deploymentInfo) {
+        for(DeployedModel info : deploymentInfo) {
+            System.err.println("SENDING cell create "+info.getCellServerState());
             CellID parentCellID = null;
-            CellCreateMessage msg = new CellCreateMessage(parentCellID, info.getCellSetup());
+            CellCreateMessage msg = new CellCreateMessage(parentCellID, info.getCellServerState());
             connection.send(msg);
         }
 
@@ -636,7 +641,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         imports.clear();
     }
 
-    private File createModuleJar(ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo, File targetDir) {
+    private File createModuleJar(ArrayList<DeployedModel> deploymentInfo, File targetDir) {
 
         File moduleJar=null;
         String moduleName = targetModuleTF.getText();
@@ -644,7 +649,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         try {
             File tmpDir = File.createTempFile("wlart", null);
             if (tmpDir.isDirectory()) {
-                deleteDirContents(tmpDir);
+                FileUtils.deleteDirContents(tmpDir);
             } else {
                 tmpDir.delete();
             }
@@ -655,16 +660,17 @@ public class ImportSessionFrame extends javax.swing.JFrame
                 try {
                     deploymentInfo.add(model.getModelLoader().deployToModule(tmpDir, model));
                 } catch (IOException ex) {
-                    Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOrigModel(), ex);
+                    Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOriginalURL().toExternalForm(), ex);
                 }
             }
 
             ModuleJarWriter mjw = new ModuleJarWriter();
             File[] dirs = tmpDir.listFiles();
-            for(File f : dirs) {
-                if (f.isDirectory())
-                    mjw.addDirectory(f);
-            }
+            if (dirs!=null)
+                for(File f : dirs) {
+                    if (f.isDirectory())
+                        mjw.addDirectory(f);
+                }
             ModuleInfo mi = new ModuleInfo(moduleName, 1, 0, descriptionTF.getText());
             mjw.setModuleInfo(mi);
             try {
@@ -711,11 +717,11 @@ public class ImportSessionFrame extends javax.swing.JFrame
         for(ImportedModel m : imports) {
             addToTable(m);
             try {
-                loadModel(m);
+                loadModel(m.getImportSettings());
             } catch (FileNotFoundException ex) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Unable to load model "+m.getOrigModel(), ex);
+                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Unable to load model "+m.getOriginalURL().toExternalForm(), ex);
             } catch(IOException ioe) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Unable to load model "+m.getOrigModel(), ioe);                
+                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Unable to load model "+m.getOriginalURL().toExternalForm(), ioe);
             }
         }
 }//GEN-LAST:event_loadImportGroupMIActionPerformed
@@ -737,7 +743,7 @@ private void targetModuleTFActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
 private void saveAsModuleBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsModuleBActionPerformed
 
-    ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo = new ArrayList();
+    ArrayList<DeployedModel> deploymentInfo = new ArrayList();
 
     JFileChooser chooser = new JFileChooser();
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -754,7 +760,7 @@ private void sceneGraphWindowMIActionPerformed(java.awt.event.ActionEvent evt) {
 
 private void saveAsSrcBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsSrcBActionPerformed
         String moduleName = targetModuleTF.getText();
-        ArrayList<ModelLoader.ModelDeploymentInfo> deploymentInfo = new ArrayList();
+        ArrayList<DeployedModel> deploymentInfo = new ArrayList();
 
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -770,7 +776,7 @@ private void saveAsSrcBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 int res = JOptionPane.showConfirmDialog(this, "Module Directory exists, replace ?", "Module exists !", JOptionPane.YES_NO_OPTION);
                 if (res==JOptionPane.NO_OPTION)
                     return;
-                deleteDirContents(srcDir);
+                FileUtils.deleteDirContents(srcDir);
             }
         } else {
             srcDir.mkdir();
@@ -779,12 +785,11 @@ private void saveAsSrcBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         ModuleSourceManager moduleMgr = new ModuleSourceManager();
         moduleMgr.createModule(moduleName, "Art Module", parentDir, true, false, false);
 
-            // Compile the target module
         for(ImportedModel model : imports) {
             try {
                 deploymentInfo.add(model.getModelLoader().deployToModule(srcDir, model));
             } catch (IOException ex) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOrigModel(), ex);
+                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOriginalURL().toExternalForm(), ex);
             }
         }
 
@@ -807,20 +812,7 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     tableModel.setRowCount(0);
 }//GEN-LAST:event_okBActionPerformed
 
-    /**
-     * Recursively delete the content of the supplied directory
-     * @param dir
-     */
-    private void deleteDirContents(File dir) {
-        for(File content : dir.listFiles()) {
-            if (content.isDirectory())
-                deleteDirContents(content);
-            content.delete();
-        }
-    }
-
-
-    synchronized void asyncLoadModel(final ImportedModel model, final LoadCompleteListener listener) {
+    synchronized void asyncLoadModel(final ImportSettings settings, final LoadCompleteListener listener) {
         final JDialog loadingDialog = new JDialog(importFrame);
         loadingDialog.setLayout(new BorderLayout());
         loadingDialog.add(loadingDialogPanel, BorderLayout.CENTER);
@@ -833,8 +825,8 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
 
             public void run() {
                 try {
-                    Entity entity = loadModel(model);
-                    listener.loadComplete(entity);
+                    ImportedModel loadedModel = loadModel(settings);
+                    listener.loadComplete(loadedModel);
                 } catch (IOException ex) {
                     Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
                 } finally {
@@ -851,36 +843,31 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
      * 
      * @param origFile
      */
-    Entity loadModel(ImportedModel model) throws IOException {
-        Vector3f rot = model.getOrientation();
-
+    ImportedModel loadModel(ImportSettings settings) throws IOException {
         Node rootBG = new Node();
 //        rootBG.setLocalRotation(calcRotationMatrix(rot.x, rot.y, rot.z));
 //        rootBG.setLocalTranslation(model.getTranslation());
-        
-        File dir = new File(model.getOrigModel()).getParentFile();
-        
-        lastModelDir = dir;
+
+        URL url = settings.getModelURL();
+        if (url.getProtocol().equalsIgnoreCase("file")) {
+            lastModelDir = new File(url.getFile()).getParentFile();
+        }
         
         Node modelBG=null;
                 
-        File modelFile = new File(model.getOrigModel());
-        ModelLoader modelLoader = LoaderManager.getLoaderManager().getLoader(modelFile);
+        ModelLoader modelLoader = LoaderManager.getLoaderManager().getLoader(url);
 
-        logger.info("Using model loader "+modelLoader);
+        logger.fine("Using model loader "+modelLoader);
         
         if (modelLoader==null) {
-            JOptionPane.showMessageDialog(null, "No Loader for "+org.jdesktop.wonderland.common.FileUtils.getFileExtension(modelFile.getName()));
+            JOptionPane.showMessageDialog(null, "No Loader for "+org.jdesktop.wonderland.common.FileUtils.getFileExtension(url.toExternalForm()));
             return null;
         }
 
-        model.setModelLoader(modelLoader);
-        modelBG = modelLoader.importModel(modelFile);
+        ImportedModel loadedModel = modelLoader.importModel(settings);
+        modelBG = loadedModel.getModelBG();
 
         rootBG.attachChild(modelBG);
-        
-        model.setModelBG(modelBG);
-        model.setRootBG(rootBG);
         
         WorldManager wm = ClientContextJME.getWorldManager();
         
@@ -893,20 +880,19 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
         rootBG.setRenderState(matState);
         rootBG.setRenderState(buf);
 
-        Entity entity = new Entity(model.getOrigModel());
+        Entity entity = new Entity(loadedModel.getWonderlandName());
         RenderComponent scene = wm.getRenderManager().createRenderComponent(rootBG);
         entity.addComponent(RenderComponent.class,scene);
-        
-        model.setEntity(entity);
         
         entity.addComponent(TransformProcessorComponent.class, new TransformProcessorComponent(wm, modelBG, rootBG));
         
         wm.addEntity(entity);
         sgViewFrame.addEntity(entity);
+        loadedModel.setEntity(entity);
         
-        findTextures(modelBG);
+//        findTextures(modelBG);
         
-        return entity;
+        return loadedModel;
     }
       
      // This gimble locks, but good enough for now...
@@ -982,12 +968,12 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     }
     
     void addToTable(ImportedModel config) {
-        tableModel.addRow(new Object[] { config.getWonderlandName(),config.getOrigModel() });
+        tableModel.addRow(new Object[] { config.getWonderlandName(),config.getOriginalURL().toExternalForm() });
     }
     
     void setRow(int row, ImportedModel config) {
         tableModel.setValueAt(config.getWonderlandName(), row, 0);        
-        tableModel.setValueAt(config.getOrigModel(), row, 1);        
+        tableModel.setValueAt(config.getOriginalURL().toExternalForm(), row, 1);
     }
     
     /**
@@ -1166,6 +1152,6 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
          * that was loaded
          * @param entity
          */
-        public void loadComplete(Entity entity);
+        public void loadComplete(ImportedModel importedModel);
     }
 }

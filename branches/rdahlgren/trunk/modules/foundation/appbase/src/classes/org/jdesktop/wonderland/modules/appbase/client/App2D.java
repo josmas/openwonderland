@@ -22,11 +22,15 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
-import org.jdesktop.wonderland.modules.appbase.client.view.View2DSet;
+import org.jdesktop.wonderland.modules.appbase.client.View2DSet;
 
 /**
  * The generic 2D application superclass. All 2D apps in Wonderland have this
@@ -77,7 +81,18 @@ public abstract class App2D {
     private String name;
 
     /** The set of all views of the windows of this app. */
-    private View2DSet viewSet = new View2DSet();
+    private View2DSet viewSet;
+
+    /** Whether to display the app in the HUD. */
+    private boolean showInHUD;
+
+    /**
+     * There are some deadlock situations during app cleanup. I would prefer to address this
+     * by replacing all app base locks with a single app-wide lock, but that is to big a change
+     * to do at this point. For now, we'll just use this lock to force the cleanup process to be
+     * single threaded.
+     */
+    private Integer appCleanupLock = new Integer(0);
 
     // Register the appbase shutdown hook
     static {
@@ -133,31 +148,43 @@ public abstract class App2D {
         synchronized(apps) {
             apps.add(this);
         }
+
+        viewSet = new View2DSet(this);
     }
 
     /**
      * Deallocate resources.
      */
     public void cleanup() {
-        viewSet.cleanup();
-        if (controlArb != null) {
-            controlArb.cleanup();
-            controlArb = null;
+        synchronized (appCleanupLock) {
+            viewSet.cleanup();
+            if (controlArb != null) {
+                controlArb.cleanup();
+                controlArb = null;
+            }
+            stack.cleanup();
+            LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
+            for (Window2D window : toRemoveList) {
+                window.cleanup();
+            }
+            windows.clear();
+            toRemoveList.clear();
+            pixelScale = null;
         }
-        stack.cleanup();
-        LinkedList<Window2D> toRemoveList = (LinkedList<Window2D>) windows.clone();
-        for (Window2D window : toRemoveList) {
-            window.cleanup();
-        }
-        windows.clear();
-        toRemoveList.clear();
-        pixelScale = null;
+    }
+
+    /** INTERNAL ONLY. */
+    @InternalAPI
+    public Object getAppCleanupLock () {
+        return appCleanupLock;
     }
 
     /** 
      * Returns the pixel scale 
      */
     public Vector2f getPixelScale() {
+        // Note: pixelScale may be null (e.g. on the SAS)
+        if (pixelScale == null) return null;
         return new Vector2f(pixelScale);
     }
 
@@ -177,7 +204,9 @@ public abstract class App2D {
      * Remove a displayer to this app.
      */
     public void removeDisplayer (View2DDisplayer displayer) {
-        viewSet.remove(displayer);
+        synchronized (appCleanupLock) {
+            viewSet.remove(displayer);
+        }
     }
 
     /**
@@ -200,10 +229,12 @@ public abstract class App2D {
      * @param window The window to remove.
      */
     public void removeWindow(Window2D window) {
-        viewSet.remove(window);
-        windows.remove(window);
-        if (window == primaryWindow) {
-            setPrimaryWindow(null);
+        synchronized (appCleanupLock) {
+            viewSet.remove(window);
+            windows.remove(window);
+            if (window == primaryWindow) {
+                setPrimaryWindow(null);
+            }
         }
     }
 
@@ -331,5 +362,28 @@ public abstract class App2D {
 
         apps.clear();
         logger.warning("Done shutting down app base.");
+    }
+
+    /**
+     * Specifies whether to also display this app in the HUD. Note: this is in addition to 
+     * displaying the app in the world.
+     */
+    public synchronized void setShowInHUD (boolean showInHUD) {
+        if (this.showInHUD == showInHUD) return;
+        this.showInHUD = showInHUD;
+        if (showInHUD) {
+
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+            for (Window2D window : windows) {
+                HUDComponent component = mainHUD.createComponent(window);
+                component.setPreferredLocation(Layout.CENTER);
+                mainHUD.addComponent(component);
+                component.setVisible(true);
+            }
+
+        } else {
+            // TODO: implement setShowInHUD=false
+        }
     }
 }

@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -51,6 +52,7 @@ import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellParentChangeListenerSrv;
 import org.jdesktop.wonderland.server.cell.CellResourceManager;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ComponentChangeListenerSrv;
@@ -68,9 +70,7 @@ import org.jdesktop.wonderland.server.spatial.UniverseManager;
  * A component that stores security settings for a cell
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-public class SecurityComponentMO extends CellComponentMO
-        implements ComponentChangeListenerSrv
-{
+public class SecurityComponentMO extends CellComponentMO {
     private static final Logger logger =
             Logger.getLogger(SecurityComponentMO.class.getName());
 
@@ -83,13 +83,6 @@ public class SecurityComponentMO extends CellComponentMO
     /** the set of all owners for this cell */
     private Set<Principal> owners;
 
-    /**
-     * The set of all actions associated with this cell.  This comes from
-     * aggregating all the actions on the cell as well as any actions used
-     * by any components of this cell.
-     */
-    private Set<Action> actions;
-
     /** the channel component */
     @UsesCellComponentMO(ChannelComponentMO.class)
     private ManagedReference<ChannelComponentMO> channelRef;
@@ -100,7 +93,7 @@ public class SecurityComponentMO extends CellComponentMO
 
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.modules.security.client.SecurityComponent";
+        return "org.jdesktop.wonderland.modules.security.client.SecurityQueryComponent";
     }
 
     /**
@@ -109,6 +102,14 @@ public class SecurityComponentMO extends CellComponentMO
      */
     public SortedSet<Permission> getPermissions() {
         return permissions;
+    }
+
+    /**
+     * Return true if this cell has any owners, or false if not
+     * @return whether this cell is owned
+     */
+    public boolean isOwned() {
+        return ((owners != null) && !owners.isEmpty());
     }
 
     /**
@@ -172,46 +173,16 @@ public class SecurityComponentMO extends CellComponentMO
 
     @Override
     protected void setLive(boolean live) {
-        System.out.println("[SecurityComponentMO] setLive: " + live);
-
         super.setLive(live);
 
+        CellMO cell = cellRef.getForUpdate();
+        ChannelComponentMO channel = channelRef.getForUpdate();
+
         if (live) {
-            // get actions for all existing components, and also register
-            // as a listener for component change notifications
-            cellRef.getForUpdate().addComponentChangeListener(this);
-            actions = findActions();
-
-            channelRef.getForUpdate().addMessageReceiver(PermissionsRequestMessage.class,
-                                                  new MessageReceiver(cellRef.get(), this));
+            channel.addMessageReceiver(PermissionsRequestMessage.class,
+                                       new MessageReceiver(cell, this));
         } else {
-            // unregister as a component change listener
-            cellRef.getForUpdate().removeComponentChangeListener(this);
-            actions = null;
-
-            channelRef.getForUpdate().removeMessageReceiver(PermissionsRequestMessage.class);
-        }
-    }
-
-    /**
-     * Notification that the set of cell components has changed
-     */
-    public void componentChanged(CellMO cell, ChangeType type, 
-                                 CellComponentMO component)
-    {
-        switch (type) {
-            case ADDED:
-                // we can simply add this components actions to the set
-                // of all actions -- if it is a duplicate that isn't
-                // a problem
-                getActions(component.getClass(), actions);
-                break;
-            case REMOVED:
-                // we don't know if other components have the actions this
-                // component declares, so we have no choice here but to
-                // recalculate the actions completely
-                actions = findActions();
-                break;
+            channel.removeMessageReceiver(PermissionsRequestMessage.class);
         }
     }
 
@@ -223,13 +194,19 @@ public class SecurityComponentMO extends CellComponentMO
         CellPermissions out = new CellPermissions();
 
         // add the owners
-        out.getOwners().addAll(owners);
+        if (isOwned()) {
+            out.getOwners().addAll(owners);
+        }
 
         // combine all permissions for all users
-        out.getPermissions().addAll(permissions);
+        if (permissions != null) {
+            out.getPermissions().addAll(permissions);
+        }
 
         // add all the actions
-        for (Action a : actions) {
+        CellResourceManagerInternal crmi =
+                AppContext.getManager(CellResourceManagerInternal.class);
+        for (Action a : crmi.getActions(cellID)) {
             out.getAllActions().add(new ActionDTO(a));
         }
 
@@ -312,20 +289,45 @@ public class SecurityComponentMO extends CellComponentMO
      * to the security service that evaluates the security rules for the
      * current user and sends the result over a channel.
      *
+     * @param sender the sender to send the response to
+     * @param clientID the id of the client to send the response to
+     * @param messageID the id of the message to respond to
+     * @param cellID the id of the cell to request permissions for, or null
+     * to request permissions for this cell
+     *
      * @return the set of permissions for the given user id, or null if
      * no permissions can be determined for the given user.
      */
     protected void sendUserPermissions(WonderlandClientSender sender,
                                        WonderlandClientID clientID,
-                                       MessageID messageID)
+                                       MessageID messageID,
+                                       CellID requestCellID)
     {
+        if (requestCellID == null) {
+            requestCellID = cellID;
+        }
+
+        logger.warning("[SecurityComponentMO] send user permissions for " +
+                       requestCellID + " to " + clientID);
+
         // get the resource for this cell
-        CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
-        Resource rsrc = crm.getCellResource(cellID);
+        CellResourceManagerInternal crmi =
+                AppContext.getManager(CellResourceManagerInternal.class);
+        Resource rsrc = crmi.getCellResource(requestCellID);
+        if (rsrc == null) {
+            // no resource -- send permission for everything
+            Set<ActionDTO> send = new LinkedHashSet<ActionDTO>();
+            for (Action action : crmi.getActions(requestCellID)) {
+                send.add(new ActionDTO(action));
+            }
+            sender.send(clientID, new PermissionsResponseMessage(messageID, send));
+            return;
+        }
 
         // construct a request for this user's permissions
         ResourceMap rm = new ResourceMap();
-        ActionMap am = new ActionMap(rsrc, actions.toArray(new Action[0]));
+        Action[] actions = crmi.getActions(requestCellID).toArray(new Action[0]);
+        ActionMap am = new ActionMap(rsrc, actions);
         rm.put(rsrc.getId(), am);
 
         // construct a new task to send the message
@@ -462,8 +464,14 @@ public class SecurityComponentMO extends CellComponentMO
                                     WonderlandClientID clientID,
                                     CellMessage message)
         {
+            CellID requestCellID = null;
+            if (message instanceof PermissionsRequestMessage) {
+                requestCellID = ((PermissionsRequestMessage) message).getRequestCellID();
+            }
+
             componentRef.get().sendUserPermissions(sender, clientID,
-                                                   message.getMessageID());
+                                                   message.getMessageID(),
+                                                   requestCellID);
         }
     }
 

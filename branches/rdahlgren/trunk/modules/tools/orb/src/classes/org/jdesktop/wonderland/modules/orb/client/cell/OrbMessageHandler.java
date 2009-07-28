@@ -167,14 +167,8 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
 	String playerWithVpCallID = orbCell.getPlayerWithVpCallID();
 
-	boolean realCall = playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID());
-
 	username = orbCell.getUsername();
 
-	if (realCall == false) {
-	    username = username + " ";  // to distinguish between virtual calls and real calls.
-	}
-	
 	usernameAlias = username;
 
         pm = PresenceManagerFactory.getPresenceManager(session);
@@ -193,7 +187,7 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
   	pm.addPresenceManagerListener(this);
 
-	if (realCall) {
+	if (playerWithVpCallID == null || playerWithVpCallID.equals(orbCell.getCallID())) {
 	    /*
 	     * It's a real call.  Use the actual callID and userID.
 	     */
@@ -201,11 +195,11 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 	    presenceInfoAdded = true;
 	} 
 
-        NameTagComponent comp = new NameTagComponent(orbCell, usernameAlias, (float) .17);
+        NameTagComponent comp = new NameTagComponent(orbCell, username, (float) .17);
 	    orbCell.addComponent(comp);
 	nameTag = comp.getNameTagNode();
 
-	//nameTag.setFont(Font.decode("Sans-PLAIN-20"));
+        nameTag.setNameTag(EventType.CHANGE_NAME, username, usernameAlias);
 
 	setBystanders(bystanders);
 

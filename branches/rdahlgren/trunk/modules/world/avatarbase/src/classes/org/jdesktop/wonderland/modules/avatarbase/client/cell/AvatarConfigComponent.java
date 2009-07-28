@@ -19,12 +19,14 @@ package org.jdesktop.wonderland.modules.avatarbase.client.cell;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -32,144 +34,200 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigComponentClientState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentClientState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
 
 /**
+ * A Cell component that represents the current avatar configured by the system.
+ * It listens for messages to change the avatar configuration.
  *
  * @author paulby
+ * @author Jordan Slott <jslott@dev.java.net>
  */
 public class AvatarConfigComponent extends CellComponent {
 
-    private String avatarConfigName;
-    private URL avatarConfigURL;
+    private static Logger logger = Logger.getLogger(AvatarConfigComponent.class.getName());
+
+    // The current avatar configuration, null if none is set
+    private AvatarConfigInfo avatarConfigInfo = null;
+
+    // If a request to change the avatar has been made, but the component has
+    // not yet been initialized, then this info stores the initial value to be
+    // applied when the component becomes ACTIVE.
+    private AvatarConfigInfo pendingChange = null;
 
     @UsesCellComponent
     protected ChannelComponent channelComp;
-    protected ChannelComponent.ComponentMessageReceiver msgReceiver=null;
+    protected ChannelComponent.ComponentMessageReceiver msgReceiver = null;
 
-    private LinkedList<AvatarConfigChangeListener> avatarChangeListeners = new LinkedList();
+    // A set of listeners that receive notification if the configuration of
+    // the avatar has changed.
+    private Set<AvatarConfigChangeListener> listenerSet = new HashSet();
 
-    private URL pendingChange = null;
-
+    /** Constructor */
     public AvatarConfigComponent(Cell cell) {
         super(cell);
     }
 
-    public String getAvatarConfigName() {
-        return avatarConfigName;
-    }
-
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
+        avatarConfigInfo = ((AvatarConfigComponentClientState)clientState).getAvatarConfigInfo();
+
+        // XXX NPC HACK STUFF XXX
         try {
-            String str = ((AvatarConfigComponentClientState) clientState).getConfigURL();
-            if (str!=null) {
-                if (str.startsWith("assets")) {
-                    // FOR NPC
-                    WonderlandSession session = cell.getCellCache().getSession();
-                    ServerSessionManager manager = session.getSessionManager();
-                    String serverHostAndPort = manager.getServerNameAndPort();
-                    avatarConfigURL = AssetUtils.getAssetURL("wla://avatarbaseart@" + serverHostAndPort + "/"+str, cell);
-//                    System.err.println("------> NPC URL "+avatarConfigURL);
-                } else
-                    avatarConfigURL = new URL(str);
-            } else
-                avatarConfigURL = null;
+            if (avatarConfigInfo != null) {
+                String str = avatarConfigInfo.getAvatarConfigURL();
+                if (str != null) {
+                    if (str.startsWith("assets") == true) {
+                        // FOR NPC
+                        URL newURL = AssetUtils.getAssetURL("wla://avatarbaseart/" + str, cell);
+                        System.err.println("------> NPC URL " + str);
+                        avatarConfigInfo = new AvatarConfigInfo(newURL.toExternalForm(),
+                                avatarConfigInfo.getLoaderFactoryClassName());
+                    }
+                }
+            }
         } catch (MalformedURLException ex) {
             Logger.getLogger(AvatarConfigComponent.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
-        switch (status) {
-            case DISK:
-                if (msgReceiver != null && channelComp != null) {
-                    channelComp.removeMessageReceiver(getMessageClass());
-                    msgReceiver = null;
-                }
-                break;
-            case ACTIVE: {
-                if (msgReceiver == null) {
-                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
-                        public void messageReceived(CellMessage message) {
-                                notifyConfigUpdate((AvatarConfigMessage) message);
-                        }
-                    };
-                    channelComp.addMessageReceiver(getMessageClass(), msgReceiver);
-                    synchronized(this) {
-                        if (pendingChange!=null) {
-                            channelComp.send(AvatarConfigMessage.newRequestMessage(pendingChange));
-                            pendingChange = null;
-                        }
+        // If we are back in the disk state, then attempt to remove the message
+        // receiver.
+        if (status == CellStatus.DISK && increasing == false) {
+            if (msgReceiver != null && channelComp != null) {
+                channelComp.removeMessageReceiver(AvatarConfigMessage.class);
+                msgReceiver = null;
+            }
+        }
+        else if (status == CellStatus.ACTIVE && increasing == true) {
+            // If we are being made active, then attempt to add the message
+            // receiver on the channel.
+            if (msgReceiver == null) {
+                msgReceiver = new ComponentMessageReceiver() {
+                    public void messageReceived(CellMessage message) {
+                        handleConfigMessage((AvatarConfigMessage) message);
+                    }
+                };
+                channelComp.addMessageReceiver(AvatarConfigMessage.class, msgReceiver);
+
+                // If there is any pending update to the config (that happened
+                // before the ACTIVE state, then apply it now.
+                synchronized (this) {
+                    if (pendingChange != null) {
+                        channelComp.send(AvatarConfigMessage.newRequestMessage(pendingChange));
+                        pendingChange = null;
                     }
                 }
             }
         }
     }
 
-    private void notifyConfigUpdate(AvatarConfigMessage msg) {
-        System.out.println("AvatarConfigComponent got a notifyConfigUpdate message. my url is "
-                + avatarConfigURL + ", url from message is " + msg.getModelConfigURL());
-        if ((avatarConfigURL!=null && avatarConfigURL.toExternalForm().equals(msg.getModelConfigURL())
-                || msg.getModelConfigURL()==null))
-            return;
+    /**
+     * Returns the current avatar configuration information in-use.
+     *
+     * @return The avatar configuration information
+     */
+    public AvatarConfigInfo getAvatarConfigInfo() {
+        return avatarConfigInfo;
+    }
 
-        try {
-            avatarConfigURL = new URL(msg.getModelConfigURL());
-            synchronized(avatarChangeListeners) {
-                for(AvatarConfigChangeListener l : avatarChangeListeners) {
-                    l.AvatarConfigChanged(msg);
+    /**
+     * Sets the new avatar configuration information and informs all of the
+     * other clients of the change. If 'isLocal' is true, then do not inform
+     * any other clients of the change, simply update the avatar locally.
+     *
+     * @param info The new avatar configuration information
+     * @param isLocal True if we just want to update the avatar locally
+     */
+    public void requestAvatarConfigInfo(AvatarConfigInfo info, boolean isLocal) {
+
+        // Otherwise, request a configuration update. If this component is not
+        // in the active state, then set the request as 'pending'.
+        synchronized (this) {
+            if (isLocal == false) {
+                if (channelComp == null) {
+                    pendingChange = info;
+                    return;
                 }
+                channelComp.send(AvatarConfigMessage.newRequestMessage(info));
             }
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(AvatarConfigComponent.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    public URL getAvatarConfigURL() {
-        return avatarConfigURL;
-    }
-
-    public void setAvatarConfigURL(URL url) {
-        avatarConfigURL = url;
-    }
-
-    public void addAvatarConfigChageListener(AvatarConfigChangeListener listener) {
-        synchronized(avatarChangeListeners) {
-            avatarChangeListeners.add(listener);
-        }
-    }
-
-    public void requestConfigChange(URL configURL) {
-        if (avatarConfigURL!=null && avatarConfigURL.equals(configURL))
-            return;
-
-        // This can be called before channelComp is initialzed
-
-        synchronized(this) {
-            if (channelComp==null) {
-                pendingChange = configURL;
-            } else {
-                channelComp.send(AvatarConfigMessage.newRequestMessage(configURL));
+            else {
+                // If we just want to change the avatar configuration locally,
+                // then just fake a changed event
+                fireAvatarConfigChangeEvent(AvatarConfigMessage.newRequestMessage(info));
             }
         }
     }
 
     /**
-     * @return the class of the message this component handles.
+     * Adds a listener for avatar change events. If the listener already exists
+     * this method does nothing.
+     *
+     * @param l The listener to add
      */
-    protected Class getMessageClass() {
-        return AvatarConfigMessage.class;
+    public void addAvatarConfigChangeListener(AvatarConfigChangeListener l) {
+        synchronized (listenerSet) {
+            listenerSet.add(l);
+        }
     }
 
+    /**
+     * Removes a listener for avatar change events. If the listener does not
+     * exist, this method does nothing.
+     *
+     * @param l The listener to remove
+     */
+    public void removeAvatarConfigChangeListener(AvatarConfigChangeListener l) {
+        synchronized (listenerSet) {
+            listenerSet.remove(l);
+        }
+    }
+
+    /**
+     * Sends an event to all listeners that the avatar configuration has
+     * changed.
+     *
+     * @param message The avatar configuration message
+     */
+    private void fireAvatarConfigChangeEvent(AvatarConfigMessage message) {
+        synchronized (listenerSet) {
+            for (AvatarConfigChangeListener l : listenerSet) {
+                l.avatarConfigChanged(message);
+            }
+        }
+    }
+
+    /**
+     * Handles when this cell component recieves a configuration message from
+     * the server.
+     * @param msg
+     */
+    private void handleConfigMessage(AvatarConfigMessage message) {
+        avatarConfigInfo = message.getAvatarConfigInfo();
+        fireAvatarConfigChangeEvent(message);
+    }
+
+    /**
+     * Listener interface to notify that an avatar has changed.
+     */
     public interface AvatarConfigChangeListener {
-        public void AvatarConfigChanged(AvatarConfigMessage msg);
+        /**
+         * An avatar configuration has changed.
+         * @param msg The configuration message
+         */
+        public void avatarConfigChanged(AvatarConfigMessage message);
     }
 }

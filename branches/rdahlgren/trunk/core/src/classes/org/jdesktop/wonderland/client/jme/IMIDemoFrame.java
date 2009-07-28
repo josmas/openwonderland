@@ -56,7 +56,7 @@ import org.jdesktop.wonderland.client.jme.utils.GUIUtils;
  */
 public class IMIDemoFrame extends JFrame implements MainFrame {
     /** Logger ref **/
-    private static final Logger logger = Logger.getLogger(MainFrameImpl.class.getName());
+    private static final Logger logger = Logger.getLogger(IMIDemoFrame.class.getName());
     /** i18n support **/
     private static final ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/client/jme/resources/bundle", Locale.getDefault());
     /** Menu stuffs **/
@@ -214,6 +214,8 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
 
                 // frame rate meter
                 fpsMI = new JCheckBoxMenuItem(bundle.getString("FPS_Meter"));
+                // Demo hack!
+                fpsMI.setActionCommand("IMI_HACK_FILTER");
                 fpsMI.addActionListener(new java.awt.event.ActionListener() {
 
                     public void actionPerformed(java.awt.event.ActionEvent evt) {

@@ -74,11 +74,13 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
             logger.severe("clientDetached has null avatar for session");
             return;
         }
-
+        
         avatar.detach();    // Detach avatar from world
-        avatar.getCellCache().logout(clientID);
+
+        AvatarCellCacheMO acc = avatar.getCellCache();
+        acc.logout(clientID);
     }
-    
+
     public void messageReceived(WonderlandClientSender sender,
                                 WonderlandClientID clientID,
                                 Message message)
@@ -126,7 +128,7 @@ class CellCacheConnectionHandler implements ClientConnectionHandler, Serializabl
         AvatarCellMO avatar = user.getAvatar(clientID, msg.getViewID());
         if (avatar == null) {
             user.getReference().getForUpdate(); // Mark for update
-            avatar = new AvatarCellMO(user);
+            avatar = new AvatarCellMO(user, clientID);
             viewID = msg.getViewID();
             user.putAvatar(clientID, viewID, avatar);
         }

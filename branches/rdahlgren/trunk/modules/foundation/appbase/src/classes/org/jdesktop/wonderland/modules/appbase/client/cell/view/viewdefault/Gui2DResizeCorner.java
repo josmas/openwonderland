@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
+import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 
 /**
  * The GUI code for the frame resize corner.
@@ -93,9 +94,17 @@ class Gui2DResizeCorner extends Gui2DSide {
          */
         @Override
         public void commitEvent(Event event) {
-            Action action;
-
             MouseEvent3D me3d = (MouseEvent3D) event;
+
+            // Process change control event even if not enabled
+            if (Gui2D.isChangeControlEvent((MouseEvent)me3d.getAwtEvent())) {
+                super.commitEvent(event);
+            }
+
+            // Do nothing if not enabled
+            if (!resizeCorner.isEnabled()) {
+                return;
+            }
 
             if (me3d instanceof MouseEnterExitEvent3D &&
                 view.getWindow().getApp().getControlArb().hasControl()) {

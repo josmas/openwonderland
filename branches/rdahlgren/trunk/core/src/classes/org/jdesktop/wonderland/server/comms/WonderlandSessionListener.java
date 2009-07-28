@@ -27,14 +27,18 @@ import com.sun.sgs.app.Delivery;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedObjectRemoval;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.Task;
+import com.sun.sgs.app.TaskManager;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -55,6 +59,8 @@ import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.common.security.annotation.Actions;
+import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
 import org.jdesktop.wonderland.server.security.ActionMap;
 import org.jdesktop.wonderland.server.security.Resource;
@@ -109,7 +115,10 @@ public class WonderlandSessionListener
     /** a map from the ID we've assigned a client to the sender for that
         client */
     private Map<Short, WonderlandClientSenderImpl> senders;
-    
+
+    /** the unique ID of this session listener */
+    private BigInteger sessionID;
+
     /**
      * Create a new instance of WonderlandSessionListener for the given
      * session
@@ -142,7 +151,7 @@ public class WonderlandSessionListener
         // connection.  The client's unique ID is the ID of the ClientSession
         // managed object.  This id is guaranteed by Darkstar to be unique
         // across the whole Darkstar cluster.
-        BigInteger sessionID = sessionRef.getId();
+        sessionID = sessionRef.getId();
         WonderlandIdentity userID =
                AppContext.getManager(ClientIdentityManager.class).getClientID();
         Message sim = new SessionInitializationMessage(sessionID, userID);
@@ -174,6 +183,14 @@ public class WonderlandSessionListener
     }
 
     /**
+     * Get the session id of this session
+     * @return this session listener's unique identifier
+     */
+    public BigInteger getSessionID() {
+        return sessionID;
+    }
+
+    /**
      * Called when the listener receives a message.  If the wrapped session
      * has not yet been defined, look for ProtocolSelectionMessages, otherwise
      * simply forward the data to the delegate session
@@ -189,8 +206,6 @@ public class WonderlandSessionListener
             // find the handler
             ClientConnectionHandler handler = getHandler(clientID);
             if (handler == null) {
-                System.out.println("Session " + getSession().getName() + 
-                            " unknown handler ID: " + clientID);
                 logger.fine("Session " + getSession().getName() + 
                             " unknown handler ID: " + clientID);
                 sendError(m.getMessageID(), clientID,
@@ -235,7 +250,6 @@ public class WonderlandSessionListener
                 handler.messageReceived(sender, getWonderlandClientID(), m);
             }
         } catch (PackerException eme) {
-            System.out.println("Error extracting message from client");
             logger.log(Level.WARNING, "Error extracting message from client", 
                        eme);
             
@@ -278,21 +292,22 @@ public class WonderlandSessionListener
      * @param forced true if the disconnect was forced
      */
     public void disconnected(boolean forced) {
-        logger.warning("Session  disconnected");
-        
+        // mark ourself for update
+        AppContext.getDataManager().markForUpdate(this);
+
         // Detach all handlers. Convert IDs to an array first because
         // the map is modified in the handleDetach method, which causes
         // a concurrent modification exception if we are iterating directly
         // over the key set
         Short[] clientIDs = handlers.keySet().toArray(new Short[0]);
         for (Short clientID : clientIDs) {
-            handleDetach(clientID.shortValue());
+            handleDetach(clientID.shortValue(), true);
         }
         
         // clear the list
         handlers.clear();
     }
-     
+
     /**
      * Register a handler that will handle connections from a particular
      * WonderlandClient type.
@@ -404,13 +419,8 @@ public class WonderlandSessionListener
      * @return the removed handler for the given ID, or null if there is no 
      * handler for the given ID
      */
-    protected ClientConnectionHandler removeHandler(Short clientID) {
-        ClientHandlerRef ref = handlers.remove(clientID);
-        if (ref == null) {
-            return null;
-        }
-        
-        return ref.get();
+    private ClientHandlerRef removeHandler(Short clientID) {
+        return handlers.remove(clientID);
     }
     
     /**
@@ -516,7 +526,10 @@ public class WonderlandSessionListener
                           "Duplicate client for " + type);
             return;
         }
-        
+
+        // mark ourself for update
+        AppContext.getDataManager().markForUpdate(this);
+
         // add handler to our list
         handlers.put(Short.valueOf(clientID), ref);
         
@@ -539,9 +552,11 @@ public class WonderlandSessionListener
     /**
      * Handle a detach request
      * @param clientID the id of the client to detach
+     * @param disconnect if true, this is a disconnect.  In that case, the
+     * ClientSession will be removed from the channel automatically, so
+     * there is no need for us to do it explicitly.
      */
-    protected void handleDetach(short clientID) {
-//        logger.warning("DETACHING "+clientID+"  session "+getSession());
+    protected void handleDetach(short clientID, boolean disconnect) {
         ClientConnectionHandler handler = getHandler(Short.valueOf(clientID));
         if (handler == null) {
             logger.fine("Detach unknown client ID " + clientID);
@@ -552,19 +567,52 @@ public class WonderlandSessionListener
             logger.fine("Session " + getSession().getName() + " detach " +
                         "client type " + handler.getConnectionType());
         }
-        
+
         // remove this client from the sender
         WonderlandClientSenderImpl sender = senders.remove(clientID);
-        if (sender==null)
-            logger.warning("NULL Sender, is this expected ?");
-        else
+        if (sender == null && clientID != SESSION_INTERNAL_CLIENT_ID) {
+            logger.warning("Null sender for " + handler.getConnectionType());
+        }
+
+        // skip removing the session if this is a disconnect. In the disconnect
+        // case, Darkstar automatically removes the ClientSession from any
+        // channels, so we don't need to do it ourselves (doing it ourselves
+        // causes extra conflict in Darkstar).
+        if (!disconnect && sender != null) {
             sender.removeSession(getSession());
-        
+        }
+
         // remove the handler from the map
-        removeHandler(Short.valueOf(clientID));
-        
+        ClientHandlerRef handlerRef =
+                removeHandler(Short.valueOf(clientID));
+
         // notify the handler
-        handler.clientDisconnected(sender, getWonderlandClientID());
+        if (disconnect) {
+            // in the case of a disconnect, we don't want to do all the
+            // notifications in a single task.  Instead, we add each
+            // notification to the user's logout task list.
+            scheduleClientDisconnect(handlerRef, sender);
+        } else {
+            // a single client disconnect.  Just notify the handler directly
+            handler.clientDisconnected(sender, getWonderlandClientID());
+        }
+    }
+
+    /**
+     * Schedule a disconnect task with the user's logout task list
+     * @param handlerRef a reference to the handler to remove
+     * @param sender the sender to send responses to
+     */
+    private void scheduleClientDisconnect(ClientHandlerRef handlerRef,
+                                          WonderlandClientSender sender)
+    {
+        // get the list of logout tasks for this user
+        UserMO user = UserManager.getUserManager().getUser(getWonderlandClientID());
+        Queue<Task> tasks = user.getLogoutTasks(getWonderlandClientID());
+
+        // add a new task to notify the handler of the disconnect
+        tasks.add(new NotifyDisconnectTask(getWonderlandClientID(),
+                                           handlerRef, sender));
     }
 
     /**
@@ -656,7 +704,10 @@ public class WonderlandSessionListener
     }
 
     /**
-     * Get the actions associated with a message class
+     * Get the actions associated with a message class.
+     * <p>
+     * Note this method is static, and affects static data, not the data
+     * associated with any particular Darkstar managed object.
      * @param clazz the message class
      * @return the set of actions associated with the given message type, or
      * an empty set if no actions are associated with the given type
@@ -717,9 +768,6 @@ public class WonderlandSessionListener
         /** the client type */
         private ConnectionType type;
         
-        /** the set of sessions */
-        private ManagedReference<ClientSessionSet> sessionsRef;
-        
         /** the underlying channel to send to all sessions */
         private ManagedReference<Channel> channelRef;
         
@@ -742,7 +790,6 @@ public class WonderlandSessionListener
         
             // create references
             DataManager dm = AppContext.getDataManager();
-            sessionsRef    = dm.createReference(sessions);
             channelRef     = dm.createReference(channel);
         }
         
@@ -751,9 +798,13 @@ public class WonderlandSessionListener
         }
 
         public Set<WonderlandClientID> getClients() {
+            DataManager dm = AppContext.getDataManager();
             Set<WonderlandClientID> out = new LinkedHashSet<WonderlandClientID>();
-            
-            for (ManagedReference<ClientSession> ref : sessionsRef.get()) {
+
+            for (Iterator<ClientSession> i = channelRef.get().getSessions();
+                 i.hasNext();)
+            {
+                ManagedReference<ClientSession> ref = dm.createReference(i.next());
                 out.add(new WonderlandClientID(ref));
             }
             
@@ -761,7 +812,7 @@ public class WonderlandSessionListener
         }
 
         public boolean hasSessions() {
-            return !(sessionsRef.get().isEmpty());
+            return channelRef.get().hasSessions();
         }
 
         public void send(Message message) {
@@ -799,21 +850,17 @@ public class WonderlandSessionListener
          */
         private void addSession(ClientSession session) {
             channelRef.get().join(session);
-           
-            DataManager dm = AppContext.getDataManager();
-            sessionsRef.get().add(dm.createReference(session));
         }
         
         /**
          * Remove a session from this sender.  This affects the global state
-         * of all senders of this type.
+         * of all senders of this type.  Note that there is no need to call
+         * this on disconnect, since Darkstar will automatically remove
+         * the session from the channel.
          * @param session the session to remove 
          */
         private void removeSession(ClientSession session) {
             channelRef.get().leave(session);
-            
-            DataManager dm = AppContext.getDataManager();
-            sessionsRef.get().remove(dm.createReference(session));
         }
     }
       
@@ -864,7 +911,7 @@ public class WonderlandSessionListener
                                             acm.getProperties());
             } else if (message instanceof DetachClientMessage) {
                 DetachClientMessage dcm = (DetachClientMessage) message;
-                listener.get().handleDetach(dcm.getClientID());
+                listener.get().handleDetach(dcm.getClientID(), false);
             }
         }
     }
@@ -922,7 +969,10 @@ public class WonderlandSessionListener
             Channel channel = cm.createChannel(channelName, 
                                                null,
                                                Delivery.RELIABLE);
-                    
+
+            // mark ourself for udate
+            dm.markForUpdate(this);
+
             // add to the map
             HandlerRecord record = new HandlerRecord();
             record.ref = ref;
@@ -939,10 +989,13 @@ public class WonderlandSessionListener
          * @param handler the handler to unregister
          */
         public void unregister(ClientConnectionHandler handler) {
+            // mark ourself for udate
+            DataManager dm = AppContext.getDataManager();
+            dm.markForUpdate(this);
+
             HandlerRecord record = handlers.remove(handler.getConnectionType());
   
             // remove the channel and session store
-            DataManager dm = AppContext.getDataManager();
             dm.removeObject(record.channel.get());
             dm.removeObject(record.sessions.get());
             
@@ -958,12 +1011,11 @@ public class WonderlandSessionListener
          * @return the set of all registered handlers
          */
         public Set<ClientConnectionHandler> getHandlers() {
-            Set<ClientConnectionHandler> out = new HashSet<ClientConnectionHandler>(handlers.size());
+            Set<ClientConnectionHandler> out =
+                    new HashSet<ClientConnectionHandler>(handlers.size());
             
-            synchronized (handlers) {
-                for (HandlerRecord record : handlers.values()) {
-                    out.add(record.ref.get());
-                }
+            for (HandlerRecord record : handlers.values()) {
+                out.add(record.ref.get());
             }
             
             return out;
@@ -1164,6 +1216,25 @@ public class WonderlandSessionListener
                 listener.sendError(messageID, SESSION_INTERNAL_CLIENT_ID,
                         "Permission denied for " + type);
             }
+        }
+    }
+
+    private static class NotifyDisconnectTask implements Task, Serializable {
+        private WonderlandClientID clientID;
+        private ClientHandlerRef handlerRef;
+        private WonderlandClientSender sender;
+
+        public NotifyDisconnectTask(WonderlandClientID clientID,
+                                    ClientHandlerRef handlerRef,
+                                    WonderlandClientSender sender)
+        {
+            this.clientID = clientID;
+            this.handlerRef = handlerRef;
+            this.sender = sender;
+        }
+
+        public void run() throws Exception {
+            handlerRef.get().clientDisconnected(sender, clientID);
         }
     }
 }

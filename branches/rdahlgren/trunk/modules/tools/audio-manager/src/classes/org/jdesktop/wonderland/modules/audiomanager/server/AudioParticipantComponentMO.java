@@ -42,14 +42,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantCompo
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioParticipantComponentServerState;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantCallEndedMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantCallEstablishedMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMigrateMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
-
 import org.jdesktop.wonderland.server.WonderlandContext;
 
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
@@ -61,32 +53,22 @@ import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
-import com.sun.mpk20.voicelib.app.AudioGroup;
-import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
-import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo.ChatType;
-import com.sun.mpk20.voicelib.app.Call;
-import com.sun.mpk20.voicelib.app.CallSetup;
 import com.sun.mpk20.voicelib.app.Player;
-import com.sun.mpk20.voicelib.app.PlayerSetup;
-import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
-import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
 
 import com.jme.math.Vector3f;
 
 import com.sun.voip.client.connector.CallStatus;
-import com.sun.voip.client.connector.CallStatusListener;
-
-import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 
 import org.jdesktop.wonderland.modules.orb.server.cell.OrbCellMO;
+
+import com.sun.voip.client.connector.CallStatusListener;
 
 /**
  *
  * @author jprovino
  */
-public class AudioParticipantComponentMO extends CellComponentMO 
-	implements ManagedCallStatusListener {
+public class AudioParticipantComponentMO extends CellComponentMO {
 
     private static final Logger logger =
             Logger.getLogger(AudioParticipantComponentMO.class.getName());
@@ -96,9 +78,6 @@ public class AudioParticipantComponentMO extends CellComponentMO
     private CellID cellID;
 
     private WonderlandClientID clientID;
-
-    private boolean isSpeaking;
-    private boolean isMuted;
 
     /**
      * Create a AudioParticipantComponent for the given cell. 
@@ -116,10 +95,6 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
         // Fetch the component-specific state and set member variables
         AudioParticipantComponentServerState state = (AudioParticipantComponentServerState) serverState;
-
-        isSpeaking = state.isSpeaking();
-
-	isMuted = state.isMuted();
     }
 
     @Override
@@ -127,7 +102,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
         AudioParticipantComponentServerState state = (AudioParticipantComponentServerState) serverState;
 
         if (state == null) {
-            state = new AudioParticipantComponentServerState(isSpeaking, isMuted);
+            state = new AudioParticipantComponentServerState(false, false);
         }
 
         return super.getServerState(state);
@@ -140,7 +115,7 @@ public class AudioParticipantComponentMO extends CellComponentMO
             ClientCapabilities capabilities) {
 
 	if (clientState == null) {
-	    clientState = new AudioParticipantComponentClientState(isSpeaking, isMuted);
+	    clientState = new AudioParticipantComponentClientState(false, false);
 	}
 
 	this.clientID = clientID;
@@ -160,10 +135,6 @@ public class AudioParticipantComponentMO extends CellComponentMO
 		myTransformChangeListener = null;
 	    }
 
-	    AppContext.getManager(VoiceManager.class).removeCallStatusListener(this);
-
-	    channelComponent.removeMessageReceiver(AudioVolumeMessage.class);
-	    channelComponent.removeMessageReceiver(ChangeUsernameAliasMessage.class);
 	    return;
 	}
 
@@ -172,11 +143,6 @@ public class AudioParticipantComponentMO extends CellComponentMO
 	CellMO cellMO = cellRef.get();
 
 	cellMO.addTransformChangeListener(myTransformChangeListener);
-
-	channelComponent.addMessageReceiver(AudioVolumeMessage.class, 
-            new ComponentMessageReceiverImpl(cellRef, this));
-	channelComponent.addMessageReceiver(ChangeUsernameAliasMessage.class, 
-            new ComponentMessageReceiverImpl(cellRef, this));
     }
 
     protected String getClientClass() {
@@ -197,74 +163,6 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
         public void messageReceived(WonderlandClientSender sender, 
 	        WonderlandClientID clientID, CellMessage message) {
-
-	    if (message instanceof ChangeUsernameAliasMessage) {
-		sender.send(message);
-		return;
-	    }
-
-            if (message instanceof AudioVolumeMessage == false) {
-		logger.warning("Unknown message:  " + message);
-		return;
-	    }
-
-	    AudioVolumeMessage msg = (AudioVolumeMessage) message;
-
-            String softphoneCallID = msg.getSoftphoneCallID();
-
-	    String otherCallID = msg.getOtherCallID();
-
-            double volume = msg.getVolume();
-
-            logger.fine("GOT Volume message:  call " + softphoneCallID
-	    	+ " volume " + volume);
-
-            VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-            Player softphonePlayer = vm.getPlayer(softphoneCallID);
-
-            if (softphonePlayer == null) {
-                logger.warning("Can't find softphone player, callID " + softphoneCallID);
-                return;
-            }
-
-            if (softphoneCallID.equals(otherCallID)) {
-                softphonePlayer.setMasterVolume(volume);
-                return;
-            }
-
-            Player player = vm.getPlayer(otherCallID);
-
- 	    if (player == null) {
-                logger.warning("Can't find player for callID " + otherCallID);
-		return;
-            } 
-
-	    if (volume == 1.0) {
-		softphonePlayer.removePrivateSpatializer(player);
-		return;
-	    }
-
-	    VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
-
-            Spatializer spatializer;
-
-	    spatializer = player.getPublicSpatializer();
-
-	    if (spatializer != null) {
-		spatializer = (Spatializer) spatializer.clone();
-	    } else {
-	        if (player.getSetup().isLivePlayer) {
-		    spatializer = (Spatializer) parameters.livePlayerSpatializer.clone();
-	        } else {
-		    spatializer = (Spatializer) parameters.stationarySpatializer.clone();
-	        }
-	    }
-
-            spatializer.setAttenuator(volume);
-
-            softphonePlayer.setPrivateSpatializer(player, spatializer);
-            return;
         }
     }
 
@@ -282,206 +180,6 @@ public class AudioParticipantComponentMO extends CellComponentMO
 
     public void removeCallStatusListener(CallStatusListener listener, String callID) {
         AppContext.getManager(VoiceManager.class).removeCallStatusListener(listener, callID);
-    }
-
-    public void callTransferToSameNumber() {
-        ChannelComponentMO channelCompMO = (ChannelComponentMO)
-            cellRef.get().getComponent(ChannelComponentMO.class);
-
-	channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, true));
-    }
-
-    public void callStatusChanged(CallStatus status) {
-	logger.finer("AudioParticipantComponent go call status:  " + status);
-
-        ChannelComponentMO channelCompMO = (ChannelComponentMO)
-            cellRef.get().getComponent(ChannelComponentMO.class);
-
-	String callId = status.getCallId();
-
-	if (callId == null) {
-	    logger.warning("No callId in status:  " + status);
-	    return;
-	}
-
-	int code = status.getCode();
-
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	AudioGroup audioGroup;
-
-	Call call = vm.getCall(callId);
-
-	Player player = vm.getPlayer(callId);
-
-	AudioGroup secretAudioGroup;
-
-	WonderlandClientSender sender = WonderlandContext.getCommsManager().getSender(CellChannelConnectionType.CLIENT_TYPE);
-
-	switch (code) {
-	case CallStatus.ESTABLISHED:
-	    if (player == null) {
-		logger.warning("Couldn't find player for " + status);
-		return;
-	    }
-
-	    vm.dump("all");
-	    player.setPrivateMixes(true);
-	    channelCompMO.sendAll(null, new AudioParticipantCallEstablishedMessage(cellID));
-	    break;
-
-	case CallStatus.MUTED:
-	    isMuted = true;
-	    channelCompMO.sendAll(null, new AudioParticipantMuteCallMessage(cellID, true));
-	    break;
-
-	case CallStatus.UNMUTED:
-	    isMuted = false;
-	    channelCompMO.sendAll(null, new AudioParticipantMuteCallMessage(cellID, false));
-	    break;
-
-        case CallStatus.STARTEDSPEAKING:
-	    isSpeaking = true;
-
-	    if (player == null) {
-		logger.warning("Couldn't find player for " + status);
-		return;
-	    }
-
-	    secretAudioGroup = getSecretAudioGroup(player);
-
-	    if (playerIsChatting(player)) {
-		VoiceChatHandler.getInstance().setSpeaking(player, cellID, true, secretAudioGroup);
-	    }
-
-	    if (secretAudioGroup != null) {
-		return;
-	    }
-
-	    channelCompMO.sendAll(null, new AudioParticipantSpeakingMessage(cellID, true));
-            break;
-
-        case CallStatus.STOPPEDSPEAKING:
-	    isSpeaking = false;
-
-	    if (player == null) {
-		logger.warning("Couldn't find player for " + status);
-		return;
-	    }
-
-	    secretAudioGroup = getSecretAudioGroup(player);
-
-	    if (playerIsChatting(player)) {
-		VoiceChatHandler.getInstance().setSpeaking(player, cellID, false, secretAudioGroup);
-	    }
-
-	    if (secretAudioGroup != null) {
-		return;
-	    }
-
-	    channelCompMO.sendAll(null, new AudioParticipantSpeakingMessage(cellID, false));
-            break;
-
-	case CallStatus.MIGRATED:
-	    //channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, true));
-	    sender.send(clientID, new AudioParticipantMigrateMessage(cellID, true));
-	    break;
-
-	case CallStatus.MIGRATE_FAILED:
-	    //channelCompMO.sendAll(null, new AudioParticipantMigrateMessage(cellID, false));
-	    sender.send(clientID, new AudioParticipantMigrateMessage(cellID, false));
-	    break;
-
-	case CallStatus.ENDED:
-	    if (player == null) {
-		logger.warning("Couldn't find player for " + status);
-		return;
-	    }
-
-	    AudioGroup[] audioGroups = player.getAudioGroups();
-
-	    for (int i = 0; i < audioGroups.length; i++) {
-		audioGroups[i].removePlayer(player);
-	    }
-
-	    channelCompMO.sendAll(null, new AudioParticipantCallEndedMessage(cellID, 
-		status.getOption("Reason")));
-            break;
-	  
-	case CallStatus.BRIDGE_OFFLINE:
-            logger.info("Bridge offline: " + status);
-		// XXX need a way to tell the voice manager to reset all of the private mixes.
-		Call c = vm.getCall(callId);
-
-	    if (callId == null || callId.length() == 0) {
-                /*
-                 * After the last BRIDGE_OFFLINE notification
-                 * we have to tell the voice manager to restore
-                 * all the pm's for live players.
-                 */
-                logger.fine("Restoring private mixes...");
-	    } else {
-		if (c == null) {
-		    logger.warning("No call for " + callId);
-		    break;
-		}
-
-		Player p = c.getPlayer();
-
-		if (p == null) {
-		    logger.warning("No player for " + callId);
-		    break;
-		}
-
-		try {
-		    c.end(true);
-		} catch (IOException e) {
-		    logger.warning("Unable to end call " + callId);
-		}
-
-		try {
-		    AudioManagerConnectionHandler.setupCall(
-		 	callId, c.getSetup(), -p.getX(), p.getY(), p.getZ(), p.getOrientation());
-		} catch (IOException e) {
-		    logger.warning("Unable to setupCall " + c + " "
-			+ e.getMessage());
-		}
-	    }
-
-            break;
-        }
-    }
-
-    private boolean playerIsChatting(Player player) {
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
-
-	AudioGroup[] audioGroups = player.getAudioGroups();
-
-	for (int i = 0; i < audioGroups.length; i++) {
-	    if (audioGroups[i].equals(parameters.livePlayerAudioGroup) == false &&
-	    	    audioGroups[i].equals(parameters.stationaryPlayerAudioGroup) == false) {
-
-		return true;
-	    }
-	}
-
-	return false;
-    }
-
-    private AudioGroup getSecretAudioGroup(Player player) {
-	AudioGroup[] audioGroups = player.getAudioGroups();
-
-	for (int i = 0; i < audioGroups.length; i++) {
-            AudioGroupPlayerInfo info = audioGroups[i].getPlayerInfo(player);
-
-            if (info.chatType == AudioGroupPlayerInfo.ChatType.SECRET) {
-		return audioGroups[i];
-	    }
-	}
-
-	return null;
     }
 
     static class MyTransformChangeListener implements TransformChangeListenerSrv {

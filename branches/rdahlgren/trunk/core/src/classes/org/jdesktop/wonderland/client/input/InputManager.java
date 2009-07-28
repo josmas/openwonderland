@@ -21,10 +21,12 @@ import com.jme.math.Ray;
 import java.awt.Canvas;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.KeyListener;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import org.jdesktop.mtgame.CameraComponent;
@@ -39,6 +41,10 @@ import org.jdesktop.mtgame.PickInfo;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.jme.input.InputPicker3D;
+import org.jdesktop.wonderland.client.jme.input.FocusEvent3D;
 
 /**
  * A singleton container for all of the processor objects in the Wonderland input subsystem.
@@ -91,7 +97,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 
 @ExperimentalAPI
 public abstract class InputManager 
-    implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener
+    implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, FocusListener
 {
     private static final Logger logger = Logger.getLogger(InputManager.class.getName());
 
@@ -106,6 +112,12 @@ public abstract class InputManager
 
     /** The canvas from which this input manager should receive events. */
     protected Canvas canvas;
+
+    /** Whether the main window has focus. */
+    private static boolean mainWindowHasFocus;
+
+    /** Whether the cursor is in the main window. */
+    private static boolean mainWindowHasCursor;
 
     /** The global focus wildcard entity */
     protected Entity globalFocusEntity;
@@ -165,6 +177,8 @@ public abstract class InputManager
 	// Note: the global focus entity must be initialized early so that the Wonderland client can register 
 	// global listeners. The Wonderland client does this before it calls initialize.
 	initializeGlobalFocus(ClientContextJME.getWorldManager());
+
+        EventListenerBaseImpl.initializeEventListeners();
     }
 
     /**
@@ -217,6 +231,7 @@ public abstract class InputManager
 	canvas.addMouseListener(this);
 	canvas.addMouseMotionListener(this);
 	canvas.addMouseWheelListener(this);
+	canvas.addFocusListener(this);
 
 	logger.fine("Input System initialization complete.");
     }
@@ -267,6 +282,7 @@ public abstract class InputManager
     @InternalAPI
     public void mouseEntered(MouseEvent e) {
 	inputPicker.pickMouseEvent3D(e);
+        mainWindowHasCursor = true;
     }
 
     /**
@@ -276,6 +292,7 @@ public abstract class InputManager
     @InternalAPI
     public void mouseExited(MouseEvent e) {
 	inputPicker.pickMouseEvent3D(e);
+        mainWindowHasCursor = false;
     }
 
     /**
@@ -349,6 +366,44 @@ public abstract class InputManager
     public void keyTyped(KeyEvent e) {
 	inputPicker.pickKeyEvent(e);
     }
+
+    /**
+     * INTERNAL ONLY
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    public void focusGained(FocusEvent e) {
+        mainWindowHasFocus = true;
+        FocusEvent3D event = (FocusEvent3D) ((InputPicker3D)inputPicker).createWonderlandEvent(e);
+        eventDistributor.enqueueEvent(event, null);
+    }
+
+    /**
+     * INTERNAL ONLY
+     * {@inheritDoc}
+     */
+    @InternalAPI
+    public void focusLost(FocusEvent e) {
+        mainWindowHasFocus = false;
+        FocusEvent3D event = (FocusEvent3D) ((InputPicker3D)inputPicker).createWonderlandEvent(e);
+        eventDistributor.enqueueEvent(event, null);
+    }
+
+    /** 
+     * Make sure that the Wonderland client main (3D) window has key focus.
+     */
+    public static void ensureKeyFocusInMainWindow() {
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run () {
+                if (mainWindowHasFocus || !mainWindowHasCursor) return;
+                Canvas canvas = JmeClientMain.getFrame().getCanvas();
+                if (!canvas.requestFocusInWindow()) {
+                    logger.warning("Focus request for main canvas rejected.");
+                }
+            }
+        });
+    }
+
 
     /**
      * Register a global event listener with the input manager. If the listener has already been

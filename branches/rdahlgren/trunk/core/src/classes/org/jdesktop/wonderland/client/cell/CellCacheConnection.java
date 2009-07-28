@@ -140,9 +140,10 @@ public class CellCacheConnection extends BaseConnection {
                 }
                 break;
             case CHANGE_PARENT:
-                for(CellCacheMessageListener l : listeners) {
-                    l.changeParent(msg.getCellID(), msg.getParentID(), msg.getCellTransform());
-                }
+                // Unused at the moment, CellEditConnectionHandler processes reparenting
+//                for(CellCacheMessageListener l : listeners) {
+//                    l.changeParent(msg.getCellID(), msg.getParentID(), msg.getCellTransform());
+//                }
                 break;
             default :
                 logger.warning("Message type not implemented "+msg.getActionType());

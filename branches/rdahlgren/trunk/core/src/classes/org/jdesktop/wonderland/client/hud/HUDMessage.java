@@ -22,6 +22,7 @@ package org.jdesktop.wonderland.client.hud;
  * @author nsimpson
  */
 public interface HUDMessage extends HUDComponent {
+
     /**
      * Sets the text of the message
      * @param message the message text

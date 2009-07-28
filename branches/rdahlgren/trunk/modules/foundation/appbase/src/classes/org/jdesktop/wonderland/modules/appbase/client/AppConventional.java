@@ -31,9 +31,6 @@ public abstract class AppConventional extends App2D {
 
     private static final Logger logger = Logger.getLogger(AppConventional.class.getName());
 
-    /** Should the first window made visible be moved to the best view position? (Master only) */
-    private boolean initInBestView;
-    
     /**
      * Create a new instance of AppConventional with a default name.
      *
@@ -53,22 +50,5 @@ public abstract class AppConventional extends App2D {
      */
     public AppConventional(String name, ControlArb controlArb, Vector2f pixelScale) {
         super(name, controlArb, pixelScale);
-    }
-
-    /**
-     * Specify whether, when the app is made visible, it should be moved to approximately the best view 
-     * based on the current user position.
-     *
-     * @param initInBestView Whether the app should be moved to approximately the best view.
-     */
-    public void setInitInBestView(boolean initInBestView) {
-        this.initInBestView = initInBestView;
-    }
-
-    /**
-     * Returns the initInBestView property.
-     */
-    public boolean getInitInBestView() {
-        return initInBestView;
     }
 }

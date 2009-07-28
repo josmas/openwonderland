@@ -64,6 +64,14 @@ public class MessageID implements Externalizable {
     public static MessageID generateMessageID() {
         return idGen.generateID();
     }
+
+    /**
+     * Access the id of this message
+     * @return the internal id
+     */
+    public long getID() {
+        return id;
+    }
     
     /**
      * Set the default message ID generator

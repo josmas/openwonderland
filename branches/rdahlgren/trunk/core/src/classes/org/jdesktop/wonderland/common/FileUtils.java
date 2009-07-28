@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.common;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,5 +55,63 @@ public class FileUtils {
             out.write(buf, 0, size);
         }
 
+    }
+
+    /**
+     * Replace the extension of the filename with newExtension and return
+     * @param filename
+     * @param oldExtension
+     * @param newExtension
+     * @return
+     */
+    // TODO Untested
+//    public static String replaceFileExtension(String filename, String oldExtension, String newExtension) {
+//        if (!filename.endsWith(oldExtension))
+//            throw new RuntimeException("Extension does not match");
+//
+//        String ret = filename.substring(0, filename.length()-oldExtension.length());
+//        ret += newExtension;
+//
+//        return ret;
+//    }
+
+    /**
+     * Recursively delete the content of the supplied directory
+     * @param dir
+     */
+    public static void deleteDirContents(File dir) {
+        for(File content : dir.listFiles()) {
+            if (content.isDirectory())
+                deleteDirContents(content);
+            content.delete();
+        }
+    }
+
+
+    /**
+     * Traverse from start, looking for a directory named string
+     * 
+     * @param start
+     * @param string
+     * @return
+     */
+    public static File findDir(File start, String string) {
+        if (start.getName().equals(string)) {
+            return start;
+        }
+
+        if (start.isDirectory()) {
+            File[] subDirs = start.listFiles();
+            if (subDirs==null)
+                return null;
+
+            for(File f : subDirs) {
+                File result = findDir(f, string);
+                if (result!=null && result.isDirectory())
+                    return result;
+            }
+        }
+
+        return null;
     }
 }

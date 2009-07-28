@@ -3,7 +3,7 @@
     <Attributes>
         <Name>AvatarJaneDoe</Name>
         <Gender>2</Gender>
-        <HeadAttachment>imi/character/data/FG_Female02HighPoly.bhf</HeadAttachment>
+	<HeadAttachment>assets/models/collada/Heads/Binary/FG_Female02HighPoly.bhf</HeadAttachment>
         <LoadingInstructions>
 		assets/models/collada/Clothing/FemaleClothing/FemaleBlouse.dae
         </LoadingInstructions>

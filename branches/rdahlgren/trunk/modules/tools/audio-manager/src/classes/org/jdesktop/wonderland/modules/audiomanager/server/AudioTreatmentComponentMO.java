@@ -56,7 +56,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentCompone
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
@@ -207,14 +207,14 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         ChannelComponentMO channelComponent = (ChannelComponentMO) cellRef.get().getComponent(ChannelComponentMO.class);
 
         if (live == false) {
-            channelComponent.removeMessageReceiver(AudioTreatmentMessage.class);
+            channelComponent.removeMessageReceiver(AudioTreatmentRequestMessage.class);
 	    removeProximityListener();
             return;
         }
 
         ComponentMessageReceiverImpl receiver = new ComponentMessageReceiverImpl(cellRef, this);
 
-        channelComponent.addMessageReceiver(AudioTreatmentMessage.class, receiver);
+        channelComponent.addMessageReceiver(AudioTreatmentRequestMessage.class, receiver);
 
 	initialize();
     }
@@ -408,9 +408,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID,
                 CellMessage message) {
 
-            if (message instanceof AudioTreatmentMessage) {
-                AudioTreatmentMessage msg = (AudioTreatmentMessage) message;
-                logger.fine("Got AudioTreatmentMessage, startTreatment=" + msg.restartTreatment());
+            if (message instanceof AudioTreatmentRequestMessage) {
+                AudioTreatmentRequestMessage msg = (AudioTreatmentRequestMessage) message;
+                logger.fine("Got AudioTreatmentRequestMessage, startTreatment=" 
+		    + msg.restartTreatment());
 
             	String treatmentId = CallID.getCallID(cellID);
 
@@ -442,8 +443,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
     public void callStatusChanged(CallStatus callStatus) {
         String callId = callStatus.getCallId();
-
-	System.out.println("callStatus " + callStatus);
 
         switch (callStatus.getCode()) {
             case CallStatus.ESTABLISHED:
@@ -535,4 +534,5 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             return null;
         }
     }
+
 }

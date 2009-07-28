@@ -257,6 +257,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
         } else {
             if (connectionInfo != null) {
+                //logger.severe("************* STOP APP");
                 appServerLauncher.appStop(cellID);
                 destroy();
             }

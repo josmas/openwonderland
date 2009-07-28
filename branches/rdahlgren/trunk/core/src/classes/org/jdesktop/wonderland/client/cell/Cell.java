@@ -111,6 +111,10 @@ public class Cell {
             new CopyOnWriteArraySet<ComponentChangeListener>();
     private final Set<CellStatusChangeListener> statusChangeListeners =
             new CopyOnWriteArraySet<CellStatusChangeListener>();
+    private final Set<CellParentChangeListener> parentChangeListeners =
+            new CopyOnWriteArraySet<CellParentChangeListener>();
+    private final Set<CellChildrenChangeListener> childChangeListeners =
+            new CopyOnWriteArraySet<CellChildrenChangeListener>();
 
     /**
      * Instantiate a new cell
@@ -167,6 +171,9 @@ public class Cell {
             children.add(child);
             child.setParent(this);
         }
+
+        // notify listeners
+        notifyChildChangeListeners(child, true);
     }
 
     /**
@@ -183,6 +190,9 @@ public class Cell {
                 child.setParent(null);
             }
         }
+
+        // notify listeners
+        notifyChildChangeListeners(child, false);
     }
 
     /**
@@ -280,6 +290,9 @@ public class Cell {
      */
     void setParent(Cell parent) {
         this.parent = parent;
+
+        // notify listeners
+        notifyParentChangeListeners(parent);
     }
 
     /**
@@ -942,6 +955,56 @@ public class Cell {
     private void notifyStatusChangeListeners(CellStatus status) {
         for (CellStatusChangeListener listener : statusChangeListeners) {
             listener.cellStatusChanged(this, status);
+        }
+    }
+
+    /**
+     * Add a parent change listener to this cell.  The listener will be called
+     * for any change to this cell's parent.
+     * @param listener the listener to add
+     */
+    public void addParentChangeListener(CellParentChangeListener listener) {
+        parentChangeListeners.add(listener);
+    }
+
+    /**
+     * Remove a parent change listener from this cell
+     * @param listener the listener to remove
+     */
+    public void removeParentChangeListener(CellParentChangeListener listener) {
+        parentChangeListeners.remove(listener);
+    }
+
+    private void notifyParentChangeListeners(Cell parent) {
+        for (CellParentChangeListener listener : parentChangeListeners) {
+            listener.parentChanged(this, parent);
+        }
+    }
+
+    /**
+     * Add a children change listener to this cell.  The listener will be called
+     * for any change to this cell's children.
+     * @param listener the listener to add
+     */
+    public void addChildrenChangeListener(CellChildrenChangeListener listener) {
+        childChangeListeners.add(listener);
+    }
+
+    /**
+     * Remove a child change listener from this cell
+     * @param listener the listener to remove
+     */
+    public void removeChildChangeListener(CellChildrenChangeListener listener) {
+        childChangeListeners.remove(listener);
+    }
+
+    private void notifyChildChangeListeners(Cell child, boolean added) {
+        for (CellChildrenChangeListener listener : childChangeListeners) {
+            if (added) {
+                listener.childAdded(this, child);
+            } else {
+                listener.childRemoved(this, child);
+            }
         }
     }
 }

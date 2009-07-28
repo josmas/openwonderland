@@ -37,7 +37,7 @@ public class WlzipURLConnection extends URLConnection {
     
     @Override
     public void connect() throws IOException {
-        System.out.println("Connect to "+url);
+//        System.out.println("Connect to "+url);
     }
     
     @Override

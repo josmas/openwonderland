@@ -3,7 +3,7 @@
     <Attributes>
         <Name>TestFemale</Name>
         <Gender>2</Gender>
-        <HeadAttachment>imi/character/data/FG_FemaleHead01.bhf</HeadAttachment>
+	<HeadAttachment>assets/models/collada/Heads/Binary/FG_FemaleHead01.bhf</HeadAttachment>
         <LoadingInstructions>
             assets/models/collada/Clothing/FemaleClothing/Female_ConverseShoes.dae\
         </LoadingInstructions>

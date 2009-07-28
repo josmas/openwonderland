@@ -109,6 +109,15 @@ public interface View2D {
     /** Returns the frame title. */
     public String getTitle ();
 
+    /** Specify whether the view's frame resize corner is enabled.. Update afterward. */
+    public void setUserResizable (boolean userResizable);
+
+    /** Specify whether the view's frame resize corner is enabled. Update if specified. */
+    public void setUserResizable (boolean userResizable, boolean update);
+
+    /** Return whether the view's frame resize corner is enabled. The default is false. */
+    public boolean isUserResizable ();
+
     /** 
      * Specify the portion of the window which is displayed by this view. 
      * Update afterward.

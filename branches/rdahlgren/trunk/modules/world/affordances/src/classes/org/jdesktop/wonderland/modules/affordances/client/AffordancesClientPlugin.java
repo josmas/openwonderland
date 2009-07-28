@@ -28,9 +28,9 @@ import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
-import org.jdesktop.wonderland.client.hud.HUDComponentListener;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
@@ -63,13 +63,14 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
 
         // create HUD control
         affordanceHUD = mainHUD.createComponent(affordanceHUDPanel);
+        affordanceHUD.setName("Edit Component");
         affordanceHUD.setPreferredLocation(Layout.SOUTH);
-        affordanceHUD.addComponentListener(new HUDComponentListener() {
-            public void HUDComponentChanged(HUDComponentEvent event) {
+        affordanceHUD.addEventListener(new HUDEventListener() {
+            public void HUDObjectChanged(HUDEvent event) {
                 /**
                  * Handles when the affordance frame is closed
                  */
-                if (event.getEventType() == ComponentEventType.DISAPPEARED) {
+                if (event.getEventType() == HUDEventType.CLOSED) {
                     // Tell all of the affordances to remove themselves by posting
                     // an event to the input system as such. Also tell the
                     // affordance panel it has closed
@@ -99,17 +100,26 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
             if (sc.hasPermissions()) {
                 editItem.setEnabled(canMove(sc));
             } else {
-                // if not, we need to start a thread to load them
-                editItem.setLabel("Edit (checking) ...");
-                editItem.setEnabled(false);
-                new Thread(new Runnable() {
-
+                Thread t = new Thread(new Runnable() {
                     public void run() {
                         editItem.setLabel("Edit...");
                         editItem.setEnabled(canMove(sc));
                         editItem.fireMenuItemRepaintListeners();
                     }
-                }, "Security check wait thread").start();
+                }, "Security check wait thread");
+                t.start();
+
+                // wait for a bit to see if the listener comes back
+                // quickly
+                try {
+                    t.join(250);
+                } catch (InterruptedException ie) {}
+
+                if (t.isAlive()) {
+                    // the thread isn't done -- add in a wait message
+                    editItem.setLabel("Edit (checking) ...");
+                    editItem.setEnabled(false);
+                }
             }
         }
 
@@ -120,7 +130,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
     private boolean canMove(SecurityComponent sc) {
         try {
             MoveAction ma = new MoveAction();
-            return sc.getPermissions().contains(ma);
+            return sc.getPermission(ma);
         } catch (InterruptedException ie) {
             // shouldn't happen, since we check above
             return true;
@@ -138,6 +148,7 @@ public class AffordancesClientPlugin implements ContextMenuFactorySPI {
             if (affordanceHUD == null) {
                 createHUD();
             }
+            affordanceHUD.setName("Edit Component: " + event.getCell().getName());
             affordanceHUD.setVisible(true);
 
             // Update the states of the HUD Swing components; we must do this

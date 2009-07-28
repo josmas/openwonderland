@@ -78,6 +78,17 @@ public class RecorderManager {
     }
 
     /**
+     * Record the metadata corresponding to the message
+     * @param message a message that's been received and recorded
+     * @param metadata the string metadata that acts as an annotation to the message
+     */
+    public void recordMetadata(CellMessage message, String metadata) {
+        for (EventRecorder recorder : recorders.values()) {
+            recorder.recordMetadata(message, metadata);
+        }
+    }
+
+    /**
      * Register an event recorder with me.
      * @param recorder the recorder to be registered
      */

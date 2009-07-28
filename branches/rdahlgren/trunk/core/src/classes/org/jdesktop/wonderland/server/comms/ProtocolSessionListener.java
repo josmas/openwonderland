@@ -74,7 +74,7 @@ public class ProtocolSessionListener
     
     /** the wrapped session, or null if no wrapped session exists yet */
     private ClientSessionListener wrapped;
-    
+
     /**
      * Create a new instance of WonderlandSessionListener for the given
      * session
@@ -170,20 +170,26 @@ public class ProtocolSessionListener
      * @param forced true if the disconnect was forced
      */
     public void disconnected(boolean forced) {
+        // notify the user that logout has started.
+        // TODO: is this the right thing to do, or should we only
+        // do this automatically from the Wonderland protocol?
+        WonderlandClientID clientID = new WonderlandClientID(getSession());
+        WonderlandContext.getUserManager().startLogout(clientID);
+
+        // notify the wrapped session that we were disconnected
         if (wrapped != null) {
             wrapped.disconnected(forced);
-            
-            // TODO: is this the right thing to do, or should we only
-            // do this automatically from the Wonderland protocol?
-            WonderlandClientID clientID = new WonderlandClientID(getSession());
-            WonderlandContext.getUserManager().logout(clientID);
         }
+            
+        // notify the user that logout is now complete.  This will start
+        // running the logout tasks
+        WonderlandContext.getUserManager().finishLogout(clientID);
         
         // record client disconnect
         if (protocol != null) {
             recordDisconnect(protocol, getSession());
         }
-        
+
         // XXX acording to the Darkstar docs, this is our responsibility,
         // but it throws an exception if we remove the session here.  Hopefully
         // Darkstar cleans this up for us

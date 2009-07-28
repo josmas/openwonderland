@@ -21,6 +21,8 @@ import org.jdesktop.wonderland.modules.orb.server.cell.Orb;
 
 import java.lang.reflect.Method;
 
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -39,22 +41,25 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectionType;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantMuteCallMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioParticipantSpeakingMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.EndCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.CallSpeakingMessage;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayerInRangeMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatDialOutMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatEndMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoRequestMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatInfoResponseMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatHoldMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatLeaveMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatBusyMessage;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatBusyMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatDialOutMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatEndMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatInfoRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatInfoResponseMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatHoldMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatJoinMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatJoinAcceptedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatLeaveMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatJoinRequestMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
@@ -138,23 +143,23 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
     /*
      * members of the group should get speaking indications no matter where they are.
      */
-    public void setSpeaking(Player player, CellID cellID, boolean isSpeaking, AudioGroup secretAudioGroup) {
+    public void setSpeaking(Player player, String callID, boolean isSpeaking, AudioGroup secretAudioGroup) {
 	WonderlandClientSender sender = 
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
 	if (secretAudioGroup != null) {
-	    setSpeaking(sender, secretAudioGroup.getId(), cellID, isSpeaking);    
+	    setSpeaking(sender, secretAudioGroup.getId(), callID, isSpeaking);    
 	    return;
 	}
 
 	AudioGroup[] audioGroups = player.getAudioGroups();
 
 	for (int i = 0; i < audioGroups.length; i++) {
-	     setSpeaking(sender, audioGroups[i].getId(), cellID, isSpeaking);    
+	     setSpeaking(sender, audioGroups[i].getId(), callID, isSpeaking);    
 	}
     }
 
-    private void setSpeaking(WonderlandClientSender sender, String audioGroupID, CellID cellID, 
+    private void setSpeaking(WonderlandClientSender sender, String audioGroupID, String callID,
 	    boolean isSpeaking) {
 
 	PresenceInfo[] chatters = getChatters(audioGroupID);
@@ -179,7 +184,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		continue;
 	    }
 
-	    sender.send(id, new AudioParticipantSpeakingMessage(cellID, isSpeaking));
+	    sender.send(id, new CallSpeakingMessage(callID, isSpeaking));
 	}
     }
 
@@ -230,10 +235,13 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	        if (audioGroup.getNumberOfPlayers() == 0) {
 		    endVoiceChat(vm, audioGroup);  // cleanup
 	        }
-	        sender.send(msg);
 		return;
 	    }
 	    
+	    if (audioGroup.getPlayerInfo(player) == null) {
+		return;   // not in group
+	    }
+
 	    removePlayerFromAudioGroup(audioGroup, player);
 
 	    if (audioGroup.getNumberOfPlayers() <= 1) {
@@ -252,7 +260,6 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 		    player, msg.getCallee(), ChatType.PUBLIC);
 	    }
 	    
-	    sender.send(msg);
 	    return;
 	}
 
@@ -266,7 +273,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    return;
 	}
 
-	if (message instanceof VoiceChatJoinAcceptedMessage == true) {
+	if (message instanceof VoiceChatJoinAcceptedMessage) {
 	    if (audioGroup == null) {
 		logger.warning("Join accepted:  Audio group " + group + " no longer exists");
 		return;
@@ -286,7 +293,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    return;
 	}
 
-	if (message instanceof VoiceChatHoldMessage == true) {
+	if (message instanceof VoiceChatHoldMessage) {
 	    VoiceChatHoldMessage msg = (VoiceChatHoldMessage) message;
 
 	    if (audioGroup == null) {
@@ -310,7 +317,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	
 	    if (msg.isOnHold()) {
 		playerInfo.isSpeaking = false;
-		playerInfo.listenAttenuation = 0;
+		playerInfo.listenAttenuation = msg.getVolume();
 	    } else {
 		playerInfo.isSpeaking = true;
 		playerInfo.speakingAttenuation = AudioGroup.DEFAULT_SPEAKING_ATTENUATION;
@@ -318,12 +325,13 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    }
 
 	    updateAttenuation(player);
-	    sender.send(msg);
+	    sender.send(clientID, msg);
 	    return;
 	}
 
 	if (message instanceof VoiceChatDialOutMessage) {
-	    PhoneMessageHandler.getInstance().dialOut(sender, clientID, (VoiceChatDialOutMessage) message);
+	    VoiceChatPhoneMessageHandler.getInstance().dialOut(
+		sender, clientID, (VoiceChatDialOutMessage) message);
 	    return;
 	}
 
@@ -547,7 +555,15 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);
 
 	updateAttenuation(player);
-	sendVoiceChatInfo(sender, audioGroup.getId());
+
+	PresenceInfo presenceInfo = playerMap.remove(player.getId());
+
+	if (presenceInfo == null) {
+	    logger.warning("No presence Info for " + player.getId());
+	    return;
+	}
+
+	sender.send(new VoiceChatLeaveMessage(audioGroup.getId(), presenceInfo));
     }
 
     private void sendVoiceChatInfo(WonderlandClientSender sender, String group) {

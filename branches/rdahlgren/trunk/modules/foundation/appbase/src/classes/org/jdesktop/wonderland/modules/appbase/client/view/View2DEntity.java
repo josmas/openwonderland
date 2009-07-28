@@ -86,6 +86,7 @@ public abstract class View2DEntity implements View2D {
     protected static final int CHANGED_ORTHO            = 0x0800;
     protected static final int CHANGED_LOCATION_ORTHO   = 0x1000;
     protected static final int CHANGED_TEX_COORDS       = 0x2000;
+    protected static final int CHANGED_USER_RESIZABLE   = 0x4000;
 
     protected static final int CHANGED_ALL = -1;
 
@@ -134,6 +135,9 @@ public abstract class View2DEntity implements View2D {
     /** Whether this view should be decorated by a frame. */
     private boolean decorated;
 
+    /** Whether this view's frame resize corner is enabled. */
+    private boolean userResizable = false;
+
     /** The frame title. */
     private String title;
 
@@ -168,10 +172,16 @@ public abstract class View2DEntity implements View2D {
     private Vector3f deltaTranslationToApply;
 
     /** A copy of the current view node's user transformation in world (aka non-ortho) mode. */
-    private CellTransform userTransformCell = new CellTransform(null, null, null);
+    protected CellTransform userTransformCell = new CellTransform(null, null);
+
+    /** True if the user transform cell was changed by an entire matrix replacement */
+    protected boolean userTransformCellReplaced = false;
+
+    /** True if we shouldn't bother informing other clients of modifications to the user transform cell. */
+    protected boolean userTransformCellChangedLocalOnly = false;
 
     /** A copy of the current view node's user transformation in ortho mode. */
-    private CellTransform userTransformOrtho = new CellTransform(null, null, null);
+    private CellTransform userTransformOrtho = new CellTransform(null, null);
 
     /** The event listeners which are attached to this view while the view is attached to its cell */
     private LinkedList<EventListener> eventListeners = new LinkedList<EventListener>();
@@ -259,17 +269,15 @@ public abstract class View2DEntity implements View2D {
     /** {@inheritDoc} */
     public synchronized void cleanup () {
 
-        /* TODO: must block while there is an active render updater making changes 
-         // Wait until all changes are performed
-         // TODO: replace with a synchronous RU above
-         synchronized (sgChanges) {
-             while (sgChanges.size() > 0) {
-                 try { sgChanges.wait(); } catch (InterruptedException ex) {}
-             }
-         }
-        */
+        changeMask = 0;
+        disableGUI();
 
-        /* TODO: attach state, use sgchanges */
+        setParent(null);;
+        setVisibleUser(false, false);
+        setOrtho(false, false);
+        setGeometryNode(null, false);
+        update();
+        children.clear();
 
         if (gui != null) {
             gui.detachEventListeners(entity);
@@ -277,11 +285,6 @@ public abstract class View2DEntity implements View2D {
             gui = null;
         }
 
-        if (parentEntity != null) {
-            parentEntity.removeEntity(entity);
-            parentEntity = null;
-        }
-        entity = null;
 
         if (geometryNode != null) {
             viewNode.detachChild(geometryNode);
@@ -293,9 +296,16 @@ public abstract class View2DEntity implements View2D {
             newGeometryNode = null;
         }
 
-        // TODO: detach this from parent view
-        parent = null;
-        children.clear();
+        if (entity != null) {
+
+            // Make sure that entity listeners and components are really gone
+            // There is a case with movement into or out of the HUD where these
+            // might get stuck on the entity
+            for (EventListener listener : eventListeners) {
+                listener.removeFromEntity(entity);
+            }
+            entity = null;
+        }
 
         viewNode = null;
         controlArb = null;
@@ -441,16 +451,16 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized void setVisibleApp (boolean visible) {
-        setVisibleApp(visible, true);
+    public synchronized void setVisibleApp (boolean visibleApp) {
+        setVisibleApp(visibleApp, true);
     }
 
     /** {@inheritDoc} */
-    public synchronized void setVisibleApp (boolean visible, boolean update) {
-        if (visibleApp == visible) return;
+    public synchronized void setVisibleApp (boolean visibleApp, boolean update) {
+        if (this.visibleApp == visibleApp) return;
         logger.info("view = " + this);
-        logger.info("change visibleApp = " + visible);
-        visibleApp = visible;
+        logger.info("change visibleApp = " + visibleApp);
+        this.visibleApp = visibleApp;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
              update();
@@ -463,16 +473,16 @@ public abstract class View2DEntity implements View2D {
     }
 
     /** {@inheritDoc} */
-    public synchronized void setVisibleUser (boolean visible) {
-        setVisibleUser(visible, true);
+    public synchronized void setVisibleUser (boolean visibleUser) {
+        setVisibleUser(visibleUser, true);
     }
 
     /** {@inheritDoc} */
-    public synchronized void setVisibleUser (boolean visible, boolean update) {
-        if (visibleUser == visible) return;
+    public synchronized void setVisibleUser (boolean visibleUser, boolean update) {
+        if (this.visibleUser == visibleUser) return;
         logger.info("view = " + this);
-        logger.info("change visibleUser = " + visible);
-        visibleUser = visible;
+        logger.info("change visibleUser = " + visibleUser);
+        this.visibleUser = visibleUser;
         changeMask |= CHANGED_VISIBLE;
         if (update) {
             update();
@@ -506,6 +516,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setDecorated (boolean decorated, boolean update) {
+        if (this.decorated == decorated) return;
         logger.info("view = " + this);
         logger.info("change decorated = " + decorated);
         this.decorated = decorated;
@@ -537,6 +548,28 @@ public abstract class View2DEntity implements View2D {
     /** {@inheritDoc} */
     public String getTitle () {
         return title;
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void setUserResizable (boolean userResizable) {
+        setUserResizable(userResizable, true);
+    }
+
+    /** {@inheritDoc} */
+    public synchronized void setUserResizable (boolean userResizable, boolean update) {
+        if (this.userResizable == userResizable) return;
+        logger.info("view = " + this);
+        logger.info("change userResizable = " + userResizable);
+        this.userResizable = userResizable;
+        changeMask |= CHANGED_USER_RESIZABLE;
+        if (update) {
+            update();
+        }
+    }
+
+    /** {@inheritDoc} */
+    public boolean isUserResizable () {
+        return userResizable;
     }
 
     /** 
@@ -778,9 +811,10 @@ public abstract class View2DEntity implements View2D {
      * within the world is derived from WFS and other input. 
      */
     public synchronized void setLocationOrtho (Vector2f location, boolean update) {
+        if (locationOrtho.x == location.x && locationOrtho.y == location.y) return;
         logger.info("view = " + this);
         logger.info("change location ortho = " + location);
-        this.locationOrtho = location.clone();
+        locationOrtho = location.clone();
         changeMask |= CHANGED_LOCATION_ORTHO;
         if (update) {
             update();
@@ -801,6 +835,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setOffset(Vector2f offset, boolean update) {
+        if (this.offset.x == offset.x && this.offset.y == offset.y) return;
         logger.info("view = " + this);
         logger.info("change offset = " + offset);
         this.offset = (Vector2f) offset.clone();
@@ -822,6 +857,7 @@ public abstract class View2DEntity implements View2D {
 
     /** {@inheritDoc} */
     public synchronized void setPixelOffset(Point pixelOffset, boolean update) {
+        if (this.pixelOffset.x == pixelOffset.x && this.pixelOffset.y == pixelOffset.y) return;
         logger.info("view = " + this);
         logger.info("change pixelOffset = " + pixelOffset);
         this.pixelOffset = (Point) pixelOffset.clone();
@@ -1027,6 +1063,9 @@ public abstract class View2DEntity implements View2D {
                 case CHANGED_TEX_COORDS:
                     str = "CHANGED_TEX_COORDS";
                     break;
+                case CHANGED_USER_RESIZABLE:
+                    str = "CHANGED_USER_RESIZABLE";
+                    break;
                 default:
                     continue;
                 }
@@ -1072,6 +1111,9 @@ public abstract class View2DEntity implements View2D {
                     str2 = ": locationOrtho = " + locationOrtho;
                     break;
                 case CHANGED_TEX_COORDS:
+                    break;
+                case CHANGED_USER_RESIZABLE:
+                    str2 = ": userResizable = " + userResizable;
                     break;
                 }
 
@@ -1244,7 +1286,7 @@ public abstract class View2DEntity implements View2D {
 
         // React to frame changes (must do before handling size changes)
         if ((changeMask & (CHANGED_DECORATED | CHANGED_TITLE | CHANGED_ORTHO | CHANGED_TYPE |
-                           CHANGED_PIXEL_SCALE)) != 0) { 
+                           CHANGED_PIXEL_SCALE | CHANGED_USER_RESIZABLE)) != 0) { 
             logger.fine("Update frame for view " + this);
             logger.fine("decorated " + decorated);
 
@@ -1273,7 +1315,11 @@ public abstract class View2DEntity implements View2D {
                     reattachFrame();
                 }
             }
-
+            if ((changeMask & CHANGED_USER_RESIZABLE) != 0) {
+                if (decorated && !ortho) {
+                    frameUpdateUserResizable();
+                }
+            }
         }            
 
         if ((changeMask & (CHANGED_STACK | CHANGED_ORTHO)) != 0) {
@@ -1319,11 +1365,13 @@ public abstract class View2DEntity implements View2D {
             // be the effective aperture rectangle width and height
             float width = (float) sizeApp.width;    
             float height = (float) sizeApp.height;
-            Image image = getWindow().getTexture().getImage();
-            float widthRatio = width / image.getWidth();
-            float heightRatio = height / image.getHeight();
-            sgChangeGeometryTexCoordsSet(geometryNode, widthRatio, heightRatio);
-            windowNeedsValidate = true;
+            if (getWindow() != null && getWindow().getTexture() != null) {
+                Image image = getWindow().getTexture().getImage();
+                float widthRatio = width / image.getWidth();
+                float heightRatio = height / image.getHeight();
+                sgChangeGeometryTexCoordsSet(geometryNode, widthRatio, heightRatio);
+                windowNeedsValidate = true;
+            }
         }
 
         // React to transform related changes
@@ -1335,7 +1383,7 @@ public abstract class View2DEntity implements View2D {
             switch (type) {
             case UNKNOWN:
             case PRIMARY:
-                transform = new CellTransform(null, null, null);
+                transform = new CellTransform(null, null);
                 if (ortho) { 
                     Vector3f orthoLocTranslation = new Vector3f();
                     orthoLocTranslation.x = locationOrtho.x;
@@ -1366,12 +1414,15 @@ public abstract class View2DEntity implements View2D {
             } else {
                 currentUserTransform = userTransformCell;
             }
-            logger.fine("currentUserTransform (before) = " + currentUserTransform);
 
-            // Apply any pending user transform deltas (by post-multiplying them
-            // into the current user transform
-            userTransformApplyDeltas(currentUserTransform);
-            logger.fine("currentUserTransform (after) = " + currentUserTransform);
+            if (!userTransformCellReplaced) {            
+                // Apply any pending user transform deltas (by post-multiplying them
+                // into the current user transform
+                logger.fine("currentUserTransform (before) = " + currentUserTransform);
+                userTransformApplyDeltas(currentUserTransform);
+            }
+
+            logger.fine("currentUserTransform (latest) = " + currentUserTransform);
 
             // Now put the update user transformation into effect
             switch (type) {
@@ -1381,11 +1432,19 @@ public abstract class View2DEntity implements View2D {
                 break;
             case SECONDARY:
                 sgChangeTransformUserSet(viewNode, currentUserTransform);
+                // Note: moving a secondary in the cell doesn't change the position
+                // of the secondary in ortho, and vice versa.
+                if (!ortho && !userTransformCellChangedLocalOnly) {
+                    window.changedUserTransformCell(userTransformCell, this);
+                }
                 break;
             case POPUP:
                 // Always set to identity
-                sgChangeTransformUserSet(viewNode, new CellTransform(null, null, null));
+                sgChangeTransformUserSet(viewNode, new CellTransform(null, null));
             }
+
+            userTransformCellReplaced = false;
+            userTransformCellChangedLocalOnly = false;
         }
 
         sgProcessChanges();
@@ -1447,7 +1506,7 @@ public abstract class View2DEntity implements View2D {
     // Uses: type, parent, pixelscale, size, offset
     // View2DCell subclass uses: type, ortho, parent, stack
     private CellTransform calcOffsetStackTransform () {
-        CellTransform transform = new CellTransform(null, null, null);
+        CellTransform transform = new CellTransform(null, null);
 
         // Uses: parent, pixelScale, size, offset, ortho
         Vector3f offsetTranslation = calcOffsetTranslation();
@@ -1527,7 +1586,7 @@ public abstract class View2DEntity implements View2D {
     // Apply any pending translation delta to the given user transform.
     protected void userTransformApplyDeltaTranslation (CellTransform userTransform) {
         if (deltaTranslationToApply != null) {
-            CellTransform transform = new CellTransform(null, null, null);
+            CellTransform transform = new CellTransform(null, null);
             transform.setTranslation(deltaTranslationToApply);
             //System.err.println("******* delta translation transform = " + transform);
             userTransform.mul(transform);
@@ -1855,8 +1914,9 @@ public abstract class View2DEntity implements View2D {
 
 
                  // Propagate changes to JME
-                 ClientContextJME.getWorldManager().addToUpdateList(viewNode);
-
+                 if (viewNode != null) {
+                     ClientContextJME.getWorldManager().addToUpdateList(viewNode);
+                 }
 
                  sgChanges.clear();
              }
@@ -2051,6 +2111,13 @@ public abstract class View2DEntity implements View2D {
      */
     protected void frameUpdateTitle () {
     }
+
+    /**
+     * Update this frame's userResizable attribute
+     */
+    protected void frameUpdateUserResizable () {
+    }
+
 
     /**
      * Update the frame.

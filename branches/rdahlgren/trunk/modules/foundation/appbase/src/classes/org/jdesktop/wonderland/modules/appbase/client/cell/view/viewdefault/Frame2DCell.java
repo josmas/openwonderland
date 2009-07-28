@@ -46,6 +46,9 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /** Whether the frame is currently attached to a view. */
     private boolean attached;
 
+    /** Whether the resize corner is active. */
+    private boolean userResizable;
+
     /**
      * Components who wish to be notified when the user has pressed the
      * close button should implement this interface and register themselves
@@ -88,14 +91,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     /** The view to which this cell belongs. */
     private View2DCell view;
 
-    /** List of listeners to notify when the frame is closed. */
-    protected LinkedList<CloseListener> closeListeners = new LinkedList();
-
-    /** 
-     ** The window menu associated with this frame. 
-     */
-    private WindowMenuSwing windowMenu;
-
     /**
      * Create a new instance of FrameWorldDefault.
      *
@@ -111,7 +106,7 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
                 ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(frameNode);
         frameEntity.addComponent(RenderComponent.class, rc);
 
-        header = new FrameHeaderSwing(view, closeListeners);
+        header = new FrameHeaderSwing(view);
 
         leftSide = new FrameSide(view, FrameSide.Side.LEFT, new Gui2DSide(view));
         leftSide.setParentEntity(frameEntity);
@@ -125,8 +120,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
         resizeCorner = new FrameResizeCorner(view, rightSide, bottomSide);
         resizeCorner.setParentEntity(frameEntity);
 
-        windowMenu = new WindowMenuSwing(this);
-
         controlArb = view.getWindow().getApp().getControlArb();
         if (controlArb != null) {
             controlArb.addListener(this);
@@ -139,9 +132,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
     public synchronized void cleanup() {
         if (attached) {
             detachFromViewEntity();
-        }
-        if (closeListeners != null) {
-            closeListeners.clear();
         }
         if (header != null) {
             header.cleanup();
@@ -259,6 +249,13 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
         }
     }
 
+    /** {@inheritDoc} */
+    public synchronized void setUserResizable(boolean userResizable) {
+        if (resizeCorner != null) {
+            resizeCorner.setEnabled(userResizable);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -280,52 +277,6 @@ public class Frame2DCell implements Frame2D, ControlArb.ControlChangeListener {
         if (resizeCorner != null) {
             resizeCorner.updateControl(controlArb);
         }
-    }
-
-    /**
-     * Add a close listener.
-     *
-     * @param listener The listener to add.
-     */
-    public synchronized void addCloseListener(CloseListener listener) {
-        closeListeners.add(listener);
-    }
-
-    /**
-     * Remove a close listener.
-     *
-     * @param listener The listener to remove.
-     */
-    public synchronized void removeCloseListener(CloseListener listener) {
-        closeListeners.remove(listener);
-    }
-
-    /**
-     * Returns an iterator over all close listeners.
-     */
-    public synchronized Iterator<CloseListener> getCloseListeners() {
-        return closeListeners.iterator();
-    }
-
-    /**
-     * Show the Window Menu at the given event position.
-     */
-    public void windowMenuShowAt (MouseEvent event) {
-        windowMenu.showAt(event);
-    }
-
-    /**
-     * Hide the Window Menu.
-     */
-    public void windowMenuHide () {
-        windowMenu.hide();
-    }
-
-    /**
-     * Enable/disable the named Window Menu item. Does nothing if the item doesn't exist in the menu.
-     */
-    public void windowMenuItemSetEnabled (String name, boolean isEnabled) {
-        windowMenu.itemSetEnabled(name, isEnabled);
     }
 
     @Override

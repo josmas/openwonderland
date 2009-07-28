@@ -3,7 +3,7 @@
     <Attributes>
         <Name>FemaleAvatar</Name>
         <Gender>2</Gender>
-        <HeadAttachment>imi/character/data/FemaleCHead.bhf</HeadAttachment>
+	<HeadAttachment>assets/models/collada/Heads/Binary/FemaleCHead.bhf</HeadAttachment>
         <LoadingInstructions>
 		assets/models/collada/Clothing/FemaleClothing/FemaleFlipFlops.dae
         </LoadingInstructions>

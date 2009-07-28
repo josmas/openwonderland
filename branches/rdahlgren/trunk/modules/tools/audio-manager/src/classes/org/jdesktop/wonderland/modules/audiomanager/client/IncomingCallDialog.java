@@ -17,17 +17,27 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatBusyMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinAcceptedMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatJoinRequestMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage.ChatType;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatBusyMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatJoinAcceptedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatJoinRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
+
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import java.util.ArrayList;
 import java.util.logging.Logger;
-import java.awt.Point;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 
 /**
  *
@@ -43,7 +53,7 @@ public class IncomingCallDialog extends javax.swing.JFrame {
     private CellID cellID;
     private String group;
     private PresenceInfo caller;
-    private PresenceInfo callee;
+    private PresenceInfo myPresenceInfo;
 
     /** Creates new form IncomingCallDialog */
     public IncomingCallDialog() {
@@ -67,7 +77,9 @@ public class IncomingCallDialog extends javax.swing.JFrame {
 
         PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
 
-        callee = pm.getPresenceInfo(cellID);
+        myPresenceInfo = pm.getPresenceInfo(cellID);
+
+	System.out.println("NEW INCOMING FOR " + myPresenceInfo);
 
         setVisible(true);
     }
@@ -83,21 +95,25 @@ public class IncomingCallDialog extends javax.swing.JFrame {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         titleLabel = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        callerText = new javax.swing.JLabel();
+        privacyLabel = new javax.swing.JLabel();
         secretRadioButton = new javax.swing.JRadioButton();
         privateRadioButton = new javax.swing.JRadioButton();
         publicRadioButton = new javax.swing.JRadioButton();
         answerButton = new javax.swing.JButton();
         ignoreButton = new javax.swing.JButton();
         busyButton = new javax.swing.JButton();
-        callerText = new javax.swing.JLabel();
 
-        titleLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 15));
+        titleLabel.setFont(titleLabel.getFont().deriveFont(titleLabel.getFont().getStyle() | java.awt.Font.BOLD));
         titleLabel.setText("Incoming call from:");
 
-        jLabel1.setText("Privacy:");
+        callerText.setText("                           ");
+
+        privacyLabel.setFont(privacyLabel.getFont());
+        privacyLabel.setText("Privacy:");
 
         buttonGroup1.add(secretRadioButton);
+        secretRadioButton.setFont(secretRadioButton.getFont());
         secretRadioButton.setText("Secret");
         secretRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -106,6 +122,7 @@ public class IncomingCallDialog extends javax.swing.JFrame {
         });
 
         buttonGroup1.add(privateRadioButton);
+        privateRadioButton.setFont(privateRadioButton.getFont());
         privateRadioButton.setSelected(true);
         privateRadioButton.setText("Private");
         privateRadioButton.addActionListener(new java.awt.event.ActionListener() {
@@ -115,6 +132,7 @@ public class IncomingCallDialog extends javax.swing.JFrame {
         });
 
         buttonGroup1.add(publicRadioButton);
+        publicRadioButton.setFont(publicRadioButton.getFont());
         publicRadioButton.setText("Public");
         publicRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -143,78 +161,97 @@ public class IncomingCallDialog extends javax.swing.JFrame {
             }
         });
 
-        callerText.setText("                           ");
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(secretRadioButton)
-                        .add(18, 18, 18)
-                        .add(privateRadioButton)
-                        .addContainerGap(146, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(10, 10, 10)
+                                .add(privacyLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(secretRadioButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(privateRadioButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(publicRadioButton))
+                            .add(layout.createSequentialGroup()
+                                .add(titleLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(callerText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE))))
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(layout.createSequentialGroup()
-                                .add(titleLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 162, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
-                                .add(callerText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 141, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(layout.createSequentialGroup()
-                                .add(answerButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                                .add(31, 31, 31)
-                                .add(busyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 79, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(38, 38, 38)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(publicRadioButton)
-                                    .add(ignoreButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                        .add(30, 30, 30))))
+                        .add(45, 45, 45)
+                        .add(ignoreButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(busyButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(answerButton)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(40, 40, 40)
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(callerText)
-                    .add(titleLabel))
-                .add(121, 121, 121)
+                    .add(titleLabel)
+                    .add(callerText))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(privacyLabel)
                     .add(secretRadioButton)
                     .add(privateRadioButton)
                     .add(publicRadioButton))
-                .add(36, 36, 36)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 6, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(answerButton)
+                    .add(ignoreButton)
                     .add(busyButton)
-                    .add(ignoreButton))
-                .addContainerGap(26, Short.MAX_VALUE))
+                    .add(answerButton))
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+private HUDComponent inCallHUDComponent;
+
 private void answerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_answerButtonActionPerformed
     logger.info("Sent join message");
 
-    InCallDialog inCallDialog = client.getInCallDialog(group);
+    InCallHUDPanel inCallHUDPanel = InCallHUDPanel.getInCallHUDPanel(group);
 
-    if (inCallDialog == null) {
-        inCallDialog = new InCallDialog(client, session, cellID, group, chatType);
-        inCallDialog.setLocation(new Point((int) (getLocation().getX() + getWidth()), (int) getLocation().getY()));
+    if (inCallHUDPanel == null) {
+        inCallHUDPanel = new InCallHUDPanel(client, session, myPresenceInfo, caller, group);
+
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        inCallHUDComponent = mainHUD.createComponent(inCallHUDPanel);
+
+	inCallHUDPanel.setHUDComponent(inCallHUDComponent);
+
+        inCallHUDComponent.setPreferredLocation(Layout.NORTHWEST);
+
+        mainHUD.addComponent(inCallHUDComponent);
+
+        inCallHUDComponent.addEventListener(new HUDEventListener() {
+            public void HUDObjectChanged(HUDEvent e) {
+                if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
+                }
+            }
+        });
     }
 
-    session.send(client, new VoiceChatJoinAcceptedMessage(group, callee, chatType));
+    inCallHUDComponent.setVisible(true);
+
+    session.send(client, new VoiceChatJoinAcceptedMessage(group, myPresenceInfo, chatType));
     setVisible(false);
 }//GEN-LAST:event_answerButtonActionPerformed
 
 private void busyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_busyButtonActionPerformed
-    session.send(client, new VoiceChatBusyMessage(group, caller, callee, chatType));
+    session.send(client, new VoiceChatBusyMessage(group, caller, myPresenceInfo, chatType));
+    setVisible(false);
 }//GEN-LAST:event_busyButtonActionPerformed
 
 private void ignoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreButtonActionPerformed
@@ -251,7 +288,7 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel callerText;
     private javax.swing.JButton ignoreButton;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel privacyLabel;
     private javax.swing.JRadioButton privateRadioButton;
     private javax.swing.JRadioButton publicRadioButton;
     private javax.swing.JRadioButton secretRadioButton;

@@ -22,8 +22,13 @@ import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 import org.jdesktop.wonderland.server.spatial.impl.Universe;
 import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.NameNotBoundException;
+import com.sun.sgs.app.util.ScalableHashMap;
+import com.sun.sgs.app.util.ScalableHashSet;
+import com.sun.sgs.app.util.ScalableList;
 import com.sun.sgs.auth.Identity;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
@@ -42,7 +47,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ThreadManager;
@@ -68,7 +75,7 @@ public class UniverseService extends AbstractService implements UniverseManager 
     private static final String PKG_NAME = "org.jdesktop.wonderland.server.spatial";
 
     /** The logger for this class. */
-	private static final LoggerWrapper logger =
+    private static final LoggerWrapper logger =
         new LoggerWrapper(Logger.getLogger(PKG_NAME));
 
     /** The name of the version key. */
@@ -83,6 +90,12 @@ public class UniverseService extends AbstractService implements UniverseManager 
     // default property values
     private static final String CELL_LOAD_PROP = NAME + ".cell.load.count";
     private static final int CELL_LOAD_DEFAULT = 5;
+
+    /** Key for the list of transform change listener */
+    private static final String LISTENERS_KEY = NAME + ".listeners";
+
+    /** Key for the list of cell listeners */
+    private static final String CELL_LISTENERS_KEY = NAME + ".cell.listeners";
 
     private Universe universe;
     private ChangeApplication changeApplication;
@@ -193,6 +206,15 @@ public class UniverseService extends AbstractService implements UniverseManager 
             throw new IllegalStateException("Failed to reload cells", ex);
         }
 
+        // restore listeners after cells are reloaded, since the listeners are
+        // added to the SpatialCellImpl objects, which aren't created until
+        // the cells are restored
+        try {
+            transactionScheduler.runTask(new ReloadListeners(), taskOwner);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to reload listeners", ex);
+        }
+
         logger.log(Level.CONFIG, "UniverseService is ready");
     }
 
@@ -259,6 +281,10 @@ public class UniverseService extends AbstractService implements UniverseManager 
             }
         });
 
+        // notify listeners
+        for (CellMOListener listener : getCellListeners()) {
+            listener.cellAdded(cellMO);
+        }
     }
 
     public void revalidateCell(CellMO cellMO) {
@@ -278,6 +304,11 @@ public class UniverseService extends AbstractService implements UniverseManager 
                 universe.removeCell(cellID);
             }
         });
+
+        // notify listeners
+        for (CellMOListener listener : getCellListeners()) {
+            listener.cellRemoved(cell);
+        }
     }
 
     public void addChild(CellMO parent, CellMO child) {
@@ -348,9 +379,11 @@ public class UniverseService extends AbstractService implements UniverseManager 
     }
 
     public void viewLogout(ViewCellMO viewCell) {
+        final Identity identity = txnProxy.getCurrentOwner();
+
         scheduleChange(new Change(viewCell.getCellID(), null, null) {
             public void run() {
-                universe.viewLogout(cellID);
+                universe.viewLogout(cellID, identity);
             }
         });
     }
@@ -380,7 +413,18 @@ public class UniverseService extends AbstractService implements UniverseManager 
         return ret;
     }
 
+    public void addCellListener(CellMOListener listener) {
+        getCellListeners().add(listener);
+    }
+
+    public void removeCellListener(CellMOListener listener) {
+        getCellListeners().remove(listener);
+    }
+
     public void addTransformChangeListener(CellMO cell, final TransformChangeListenerSrv listener) {
+        // add a record of this listener so if can be reinstantiated
+        addListenerRecord(cell.getCellID(), listener, ListenerRecord.Type.TRANSFORM);
+
         scheduleChange(new Change(cell.getCellID(), null, null) {
             public void run() {
                 universe.addTransformChangeListener(cellID, listener);
@@ -389,6 +433,9 @@ public class UniverseService extends AbstractService implements UniverseManager 
     }
 
     public void removeTransformChangeListener(CellMO cell, final TransformChangeListenerSrv listener) {
+        // remove the record of this listener
+        removeListenerRecord(cell.getCellID(), listener, ListenerRecord.Type.TRANSFORM);
+
         scheduleChange(new Change(cell.getCellID(), null, null) {
             public void run() {
                 universe.removeTransformChangeListener(cellID, listener);
@@ -397,6 +444,9 @@ public class UniverseService extends AbstractService implements UniverseManager 
     }
 
     public void addViewUpdateListener(CellMO cell, final ViewUpdateListener viewUpdateListener) {
+        // add a record of this listener so if can be reinstantiated
+        addListenerRecord(cell.getCellID(), viewUpdateListener, ListenerRecord.Type.VIEW);
+
         scheduleChange(new Change(cell.getCellID(), null, null) {
             public void run() {
                 universe.addViewUpdateListener(cellID, viewUpdateListener);
@@ -405,11 +455,71 @@ public class UniverseService extends AbstractService implements UniverseManager 
     }
 
     public void removeViewUpdateListener(CellMO cell, final ViewUpdateListener viewUpdateListener) {
+        // remove the record of this listener
+        removeListenerRecord(cell.getCellID(), viewUpdateListener, ListenerRecord.Type.VIEW);
+
         scheduleChange(new Change(cell.getCellID(), null, null) {
             public void run() {
                 universe.removeViewUpdateListener(cellID, viewUpdateListener);
             }
         });
+    }
+
+    private void addListenerRecord(CellID cellID, Object listener,
+                                   ListenerRecord.Type type)
+    {
+        Map<Object, ListenerRecord> listeners = getListenerMap();
+
+        ListenerRecord record = listeners.get(listener);
+        if (record == null) {
+            record = new ListenerRecord(listener);
+            listeners.put(listener, record);
+        }
+
+        record.addCellRecord(cellID, type);
+    }
+
+    private void removeListenerRecord(CellID cellID, Object listener,
+                                      ListenerRecord.Type type)
+    {
+        Map<Object, ListenerRecord> listeners = getListenerMap();
+
+        ListenerRecord record = listeners.get(listener);
+        if (record == null) {
+            return;
+        }
+
+        record.removeCellRecord(cellID, type);
+        if (record.getCells().isEmpty()) {
+            listeners.remove(listener);
+        }
+    }
+
+    private Map<Object, ListenerRecord> getListenerMap() {
+        Map<Object, ListenerRecord> out;
+
+        try {
+            out = (Map<Object, ListenerRecord>)
+                    dataService.getServiceBindingForUpdate(LISTENERS_KEY);
+        } catch (NameNotBoundException nnbe) {
+            out = new ScalableHashMap<Object, ListenerRecord>();
+            dataService.setServiceBinding(LISTENERS_KEY, out);
+        }
+
+        return out;
+    }
+
+    private Set<CellMOListener> getCellListeners() {
+        Set<CellMOListener> out;
+
+        try {
+            out = (Set<CellMOListener>) dataService.getServiceBindingForUpdate(CELL_LISTENERS_KEY);
+        } catch (NameNotBoundException nnbe) {
+            out = new ScalableHashSet<CellMOListener>();
+            dataService.setServiceBinding(CELL_LISTENERS_KEY, out);
+        }
+
+        return out;
     }
 
     public void scheduleOnTransaction(Runnable runnable) {
@@ -594,6 +704,165 @@ public class UniverseService extends AbstractService implements UniverseManager 
             // remove the binding if we are finished
             if (finished) {
                 dataService.removeServiceBinding(key);
+            }
+        }
+    }
+    
+    private class ReloadListeners implements KernelRunnable {
+        public String getBaseTaskType() {
+            return NAME + ".ReloadListeners";
+        }
+
+        public void run() throws Exception {
+            final List<CellID> revalidateList = new ArrayList<CellID>();
+
+            for (final ListenerRecord record : getListenerMap().values()) {
+                for (final Map.Entry<CellID, ListenerRecord.Type> e :
+                     (Set<Entry<CellID, ListenerRecord.Type>>) record.getCells().entrySet())
+                {
+
+                    // add the cell id to the revalidate list
+                    revalidateList.add(e.getKey());
+
+                    // schedule adding the listener
+                    scheduleChange(new Change(e.getKey(), null, null) {
+                        public void run() {
+                            SpatialCell cell = universe.getSpatialCell(cellID);
+                            if (cell == null) {
+                                // the cell no longer exists.
+                                return;
+                            }
+
+                            logger.log(Level.INFO, "Restoring listener " +
+                                       record.get() + " type " + e.getValue());
+
+                            if (e.getValue() == ListenerRecord.Type.TRANSFORM ||
+                                e.getValue() == ListenerRecord.Type.BOTH)
+                            {
+                                universe.addTransformChangeListener(cellID, (TransformChangeListenerSrv) record.get());
+                            }
+
+                            if (e.getValue() == ListenerRecord.Type.VIEW ||
+                                e.getValue() == ListenerRecord.Type.BOTH)
+                            {
+                                universe.addViewUpdateListener(cellID, (ViewUpdateListener) record.get());
+                            }
+                        }
+                    });
+                }
+            }
+
+            // now schedule a change to revalidate each cell ID we added, so
+            // the transform is up to date
+            for (CellID cellID : revalidateList) {
+                scheduleChange(new Change(cellID, null, null) {
+                    public void run() {
+                        SpatialCell cell = universe.getSpatialCell(cellID);
+                        if (cell != null) {
+                            cell.revalidateListeners(taskOwner);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * A data structure that tracks listeners that are installed by this
+     * service.  This structure specifically is designed to coalesce all
+     * data about a particular listener into one record.  This ensures that
+     * when listeners are restored, only a single serialized copy of each
+     * listener exists, and that same listener will be registered with
+     * all the methods on this service.  This prevents issues like the listener
+     * being split into two different objects, one of which receives view
+     * events and the other of which receives transform events.
+     */
+    
+    private static class ListenerRecord<T> implements Serializable {
+        private static final long serialVersionUID = 1l;
+
+        private final T listener;
+        private final ManagedReference<T> listenerRef;
+
+        enum Type {
+            NONE, TRANSFORM, VIEW, BOTH;
+
+            public Type add(Type type) {
+                return valueOf(this.ordinal() | type.ordinal());
+            }
+
+            public Type remove(Type type) {
+                return valueOf(this.ordinal() ^ type.ordinal());
+            }
+
+            public Type valueOf(int bits) {
+                return Type.values()[bits];
+            }
+        };
+        private final Map<CellID, Type> cells =
+                new LinkedHashMap<CellID, Type>();
+
+        public ListenerRecord(T listener) {
+            if (listener instanceof ManagedObject) {
+                this.listener = null;
+                this.listenerRef = AppContext.getDataManager().createReference(listener);
+            } else {
+                this.listener = listener;
+                this.listenerRef = null;
+            }
+        }
+
+        public T get() {
+            if (listener != null) {
+                return listener;
+            } else {
+                return listenerRef.get();
+            }
+        }
+
+        public void addCellRecord(CellID cellID, Type type) {
+            Type curType = cells.get(cellID);
+            if (curType == null) {
+                cells.put(cellID, type);
+                return;
+            }
+
+            cells.put(cellID, curType.add(type));
+        }
+
+        public void removeCellRecord(CellID cellID, Type type) {
+            Type curType = cells.get(cellID);
+            if (curType == null) {
+                return;
+            }
+
+            Type newType = curType.remove(type);
+            if (newType == Type.NONE) {
+                cells.remove(cellID);
+            } else {
+                cells.put(cellID, newType);
+            }
+        }
+
+        public Map<CellID, Type> getCells() {
+            return cells;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof ListenerRecord)) {
+                return false;
+            }
+
+            return get().equals(((ListenerRecord) o).get());
+        }
+
+        @Override
+        public int hashCode() {
+            if (listener != null) {
+                return listener.hashCode();
+            } else {
+                return listenerRef.hashCode();
             }
         }
     }

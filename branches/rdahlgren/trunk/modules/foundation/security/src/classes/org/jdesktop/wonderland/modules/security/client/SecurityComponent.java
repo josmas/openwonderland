@@ -17,32 +17,31 @@
  */
 package org.jdesktop.wonderland.modules.security.client;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
-import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
-import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.common.security.Action;
-import org.jdesktop.wonderland.modules.security.common.ActionDTO;
-import org.jdesktop.wonderland.modules.security.common.messages.PermissionsChangedMessage;
-import org.jdesktop.wonderland.modules.security.common.messages.PermissionsRequestMessage;
-import org.jdesktop.wonderland.modules.security.common.messages.PermissionsResponseMessage;
 
 /**
  * Client-side representation of the security component contains the
- * permissions for this particular client.
+ * permissions for this particular client.  This component is automatically
+ * added to every cell by the SecurityComponentClientPlugin. This component
+ * doesn't do any communication directly.  Instead, it walks the tree
+ * of cells to find a parent cell with a SecurityQueryComponent, and uses
+ * that to make the server-side request.
+ *
+ * The SecurityQueryComponent is added when a server-side security component is
+ * added to the cell.
  * @author jkaplan
  */
 public class SecurityComponent extends CellComponent {
     private static final Logger logger =
             Logger.getLogger(SecurityComponent.class.getName());
+
+    /** If false, there is no security on the given cell. */
+    private boolean secure = true;
 
     /**
      * The set of permissions this user has for this cell.  If this value
@@ -50,42 +49,8 @@ public class SecurityComponent extends CellComponent {
      */
     private Set<Action> granted;
 
-    /** 
-     * The channel to listen for messages over
-     */
-    @UsesCellComponent
-    private ChannelComponent channel;
-
-    /**
-     * The message receiver to handle messages, or null if listeners
-     * are not registered
-     */
-    private SecurityMessageReceiver receiver = null;
-
     public SecurityComponent(Cell cell) {
         super (cell);
-    }
-
-    @Override
-    protected void setStatus(CellStatus status, boolean increasing) {
-        super.setStatus(status, increasing);
-
-        switch (status) {
-            case ACTIVE:
-                if (increasing) {
-                    if (receiver == null) {
-                        receiver = new SecurityMessageReceiver();
-                        channel.addMessageReceiver(PermissionsChangedMessage.class,
-                                                   receiver);
-                    }
-                } else {
-                    channel.removeMessageReceiver(PermissionsChangedMessage.class);
-                    receiver = null;
-                }
-                break;
-            case DISK:
-                break;
-        }
     }
 
     /**
@@ -93,46 +58,84 @@ public class SecurityComponent extends CellComponent {
      * requested
      */
     public synchronized boolean hasPermissions() {
-        return (granted != null);
+        return (!secure || granted != null);
     }
 
     /**
-     * Get this user's permissions
+     * Return whether or not the user has permissions to execute the given
+     * action on a cell.
+     * @param action the action to check for
+     * @return true of the current client has permission for the given action,
+     * or false if not
+     */
+    public synchronized boolean getPermission(Action action)
+        throws InterruptedException
+    {
+        // if there is no security, don't bother checking
+        if (!secure) {
+            return true;
+        }
+
+        // make sure the permissions are loaded
+        if (granted != null || loadPermissions()) {
+            // return true if the action is in the granted set
+            return granted.contains(action);
+        }
+
+        // if we got here, it means we were unable to load any permissions
+        return true;
+    }
+
+    /**
+     * Get this user's permissions from the server, and cache them
      * @return the set of permissions for this user, or null if the
      * permissions are not calculated
      */
-    public synchronized Set<Action> getPermissions()
+    protected synchronized boolean loadPermissions()
         throws InterruptedException
     {
-        if (granted == null) {
-            // request the permissions from the server
-            ResponseMessage rm = channel.sendAndWait(new PermissionsRequestMessage());
-            if (rm instanceof PermissionsResponseMessage) {
-                granted = new LinkedHashSet<Action>();
-                for (ActionDTO a : ((PermissionsResponseMessage) rm).getGranted()) {
-                    granted.add(a.getAction());
-                }
-            }
+        // find the security query component
+        SecurityQueryComponent query = findQueryComponent();
+        if (query == null) {
+            // nothing to ask, so there is no security
+            secure = false;
+            return false; 
         }
         
-        return granted;
+        // get the permissions from the query component
+        granted = query.getPermissions(cell.getCellID());
+        return true;
     }
 
+    /**
+     * Invalidate the cached resources.
+     */
+    protected synchronized void invalidate() {
+        granted = null;
+        secure = true;
+    }
+
+    /**
+     * Walk up the tree of cells to find the first parent with a
+     * SecurityQueryComponent.
+     * @return the SecurityQueryComponent of the nearest parent, or null
+     * if no parent has a SecurityQueryComponent.
+     */
+    protected SecurityQueryComponent findQueryComponent() {
+        SecurityQueryComponent out = null;
+
+        for (Cell curCell = cell; curCell != null; curCell = curCell.getParent()) {
+            out = curCell.getComponent(SecurityQueryComponent.class);
+            if (out != null) {
+                break;
+            }
+        }
+
+        return out;
+    }
 
     @Override
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
-    }
-
-    class SecurityMessageReceiver implements ComponentMessageReceiver {
-        public void messageReceived(CellMessage message) {
-            if (message instanceof PermissionsChangedMessage) {
-                // reset our view of granted permissions.  The next time someone
-                // requests them, they will be re-fetched from the server.
-                synchronized (this) {
-                    granted = null;
-                }
-            }
-        }
     }
 }

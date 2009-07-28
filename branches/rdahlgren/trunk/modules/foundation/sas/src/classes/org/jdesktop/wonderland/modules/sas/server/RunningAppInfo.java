@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import com.sun.sgs.app.AppContext;
+import java.util.LinkedList;
 
 /**
  * Information about provider apps that are running.
@@ -56,5 +57,23 @@ public class RunningAppInfo implements ManagedObject, Serializable {
 
     public AppInfo getAppInfo (MessageID msgID) {
         return runningAppMap.get(msgID);
+    }
+
+    /**
+     * Removes all app infos that are for the given provider.
+     */
+    public void removeAppInfosForProvider (ProviderProxy provider) {
+        LinkedList<MessageID> removeList = new LinkedList<MessageID>();
+        for (MessageID msgID : runningAppMap.keySet()) {
+            AppInfo appInfo = runningAppMap.get(msgID);
+            if (appInfo.provider == provider) {
+                removeList.add(msgID);
+            }
+        }        
+        for (MessageID msgIDToRemove : removeList) {
+            runningAppMap.remove(msgIDToRemove);
+        }
+        removeList = null;
+        AppContext.getDataManager().markForUpdate(this);
     }
 }

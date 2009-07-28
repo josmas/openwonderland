@@ -1,41 +1,47 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ns2:xmlCharacter xmlns:ns2="http://xml.netbeans.org/schema/CharacterXMLSchema">
     <Attributes>
-        <Name>nameless</Name>
+        <Name>SavingAndLoadingTestCharacter</Name>
         <Gender>1</Gender>
-        <HeadAttachment>assets/models/collada/Heads/MaleHead/MaleCHead.dae</HeadAttachment>
-        <LoadingInstructions>assets/models/collada/Clothing/MaleClothing/MaleTennisShoes.dae</LoadingInstructions>
-        <LoadingInstructions>assets/models/collada/Clothing/MaleClothing/Jeans.dae</LoadingInstructions>
+	<HeadAttachment>assets/models/collada/Heads/Binary/FG_MaleHead02Medium.bhf</HeadAttachment>
+        <LoadingInstructions>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</LoadingInstructions>
         <LoadingInstructions>assets/models/collada/Avatars/MaleAvatar/Male_Hands.dae</LoadingInstructions>
         <LoadingInstructions>assets/models/collada/Clothing/MaleClothing/MaleTShirt.dae</LoadingInstructions>
-        <LoadingInstructions>assets/models/collada/Hair/MaleHair/HairPlaceable.dae</LoadingInstructions>
-        <AdditionInstructions>
-            <SkinnedMeshName>TennisShoesShape</SkinnedMeshName>
-            <SubGroupName>Feet</SubGroupName>
-        </AdditionInstructions>
-        <AdditionInstructions>
-            <SkinnedMeshName>polySurface3Shape</SkinnedMeshName>
-            <SubGroupName>LowerBody</SubGroupName>
-        </AdditionInstructions>
+        <LoadingInstructions>assets/models/collada/Clothing/MaleClothing/Jeans.dae</LoadingInstructions>
+        <LoadingInstructions>assets/models/collada/Clothing/MaleClothing/MaleTennisShoes.dae</LoadingInstructions>
         <AdditionInstructions>
             <SkinnedMeshName>RHandShape</SkinnedMeshName>
             <SubGroupName>Hands</SubGroupName>
+            <OwningFileName>assets/models/collada/Avatars/MaleAvatar/Male_Hands.dae</OwningFileName>
         </AdditionInstructions>
         <AdditionInstructions>
             <SkinnedMeshName>LHandShape</SkinnedMeshName>
             <SubGroupName>Hands</SubGroupName>
+            <OwningFileName>assets/models/collada/Avatars/MaleAvatar/Male_Hands.dae</OwningFileName>
         </AdditionInstructions>
         <AdditionInstructions>
             <SkinnedMeshName>PoloShape</SkinnedMeshName>
             <SubGroupName>UpperBody</SubGroupName>
+            <OwningFileName>assets/models/collada/Clothing/MaleClothing/MaleTShirt.dae</OwningFileName>
         </AdditionInstructions>
         <AdditionInstructions>
             <SkinnedMeshName>ArmsShape</SkinnedMeshName>
             <SubGroupName>UpperBody</SubGroupName>
+            <OwningFileName>assets/models/collada/Clothing/MaleClothing/MaleTShirt.dae</OwningFileName>
+        </AdditionInstructions>
+        <AdditionInstructions>
+            <SkinnedMeshName>polySurface3Shape</SkinnedMeshName>
+            <SubGroupName>LowerBody</SubGroupName>
+            <OwningFileName>assets/models/collada/Clothing/MaleClothing/Jeans.dae</OwningFileName>
+        </AdditionInstructions>
+        <AdditionInstructions>
+            <SkinnedMeshName>TennisShoesShape</SkinnedMeshName>
+            <SubGroupName>Feet</SubGroupName>
+            <OwningFileName>assets/models/collada/Clothing/MaleClothing/MaleTennisShoes.dae</OwningFileName>
         </AdditionInstructions>
         <Attachments>
-            <MeshName>curly</MeshName>
-            <JointToAttachOn>Head</JointToAttachOn>
+            <MeshName>Male_PonyTailShape</MeshName>
+            <JointToAttachOn>HairAttach</JointToAttachOn>
             <LocalSpaceTransform>
                 <RowOne>
                     <X>1.0</X>
@@ -45,14 +51,14 @@
                 </RowOne>
                 <RowTwo>
                     <X>0.0</X>
-                    <Y>0.9848077</Y>
-                    <Z>-0.17364818</Z>
+                    <Y>1.0</Y>
+                    <Z>0.0</Z>
                     <W>0.0</W>
                 </RowTwo>
                 <RowThree>
-                    <X>-0.0</X>
-                    <Y>0.17364818</Y>
-                    <Z>0.9848077</Z>
+                    <X>0.0</X>
+                    <Y>0.0</Y>
+                    <Z>1.0</Z>
                     <W>0.0</W>
                 </RowThree>
                 <RowFour>
@@ -62,14 +68,17 @@
                     <W>1.0</W>
                 </RowFour>
             </LocalSpaceTransform>
+            <OwningFileName>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</OwningFileName>
         </Attachments>
-        <EyeballTexture>assets/models/collada/Heads/EyeTextures/eyeColor21.png</EyeballTexture>
+        <EyeballTexture>assets/models/collada/Heads/EyeTextures/eyeColor01.png</EyeballTexture>
         <SkinTone>
-            <X>0.8784314</X>
-            <Y>0.6392157</Y>
-            <Z>0.5647059</Z>
+            <X>0.69411767</X>
+            <Y>0.32941177</Y>
+            <Z>0.09411765</Z>
             <W>0.0</W>
         </SkinTone>
+        <AnimateFace>true</AnimateFace>
+        <ApplySkinToneOnHead>false</ApplySkinToneOnHead>
     </Attributes>
     <SkeletonDetails>
         <TargetJointName>Hips</TargetJointName>
@@ -424,21 +433,21 @@
         <BindPoseMatrix>
             <RowOne>
                 <X>0.643971</X>
-                <Y>0.129747</Y>
-                <Z>-0.753967</Z>
-                <W>0.050396</W>
+                <Y>0.129748</Y>
+                <Z>-0.753968</Z>
+                <W>0.0503968</W>
             </RowOne>
             <RowTwo>
                 <X>-0.764387</X>
-                <Y>0.150131</Y>
-                <Z>-0.627035</Z>
-                <W>0.046472</W>
+                <Y>0.150133</Y>
+                <Z>-0.627034</Z>
+                <W>0.0464721</W>
             </RowTwo>
             <RowThree>
-                <X>0.031838</X>
+                <X>0.0318389</X>
                 <Y>0.980115</Y>
-                <Z>0.195858</Z>
-                <W>0.096377</W>
+                <Z>0.195859</Z>
+                <W>0.0963778</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -576,7 +585,7 @@
             <RowTwo>
                 <X>0.0</X>
                 <Y>1.0</Y>
-                <Z>-0.0</Z>
+                <Z>0.0</Z>
                 <W>0.19902</W>
             </RowTwo>
             <RowThree>
@@ -716,19 +725,19 @@
                 <X>1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.0</W>
+                <W>0.0</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>1.0</Y>
                 <Z>0.0</Z>
-                <W>-0.046515</W>
+                <W>-0.0465154</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.0</Y>
                 <Z>1.0</Z>
-                <W>-0.042714</W>
+                <W>-0.0427149</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -745,13 +754,13 @@
                 <X>1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.05418</W>
+                <W>-0.0541804</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>1.0</Y>
                 <Z>0.0</Z>
-                <W>-0.014791</W>
+                <W>-0.0147919</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
@@ -774,13 +783,13 @@
                 <X>1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.054179</W>
+                <W>0.0541797</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>1.0</Y>
                 <Z>0.0</Z>
-                <W>-0.014788</W>
+                <W>-0.0147887</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
@@ -803,19 +812,19 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.035221</W>
+                <W>-0.0352214</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>0.169593</Z>
-                <W>0.015846</W>
+                <W>0.0135066</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.169593</Y>
                 <Z>-0.985514</Z>
-                <W>-0.098461</W>
+                <W>-0.0880709</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -836,12 +845,12 @@
             </RowOne>
             <RowTwo>
                 <X>-0.995665</X>
-                <Y>0.093012</Y>
+                <Y>0.0930121</Y>
                 <Z>0.0</Z>
-                <W>-0.01535</W>
+                <W>-0.0153504</W>
             </RowTwo>
             <RowThree>
-                <X>0.093012</X>
+                <X>0.0930121</X>
                 <Y>0.995665</Y>
                 <Z>0.0</Z>
                 <W>-0.135603</W>
@@ -865,12 +874,12 @@
             </RowOne>
             <RowTwo>
                 <X>-0.998411</X>
-                <Y>0.056351</Y>
+                <Y>0.0563518</Y>
                 <Z>0.0</Z>
-                <W>-0.044571</W>
+                <W>-0.0445715</W>
             </RowTwo>
             <RowThree>
-                <X>0.056351</X>
+                <X>0.0563518</X>
                 <Y>0.998411</Y>
                 <Z>0.0</Z>
                 <W>-0.133612</W>
@@ -890,13 +899,13 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.088391</W>
+                <W>-0.0883913</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>0.169593</Z>
-                <W>-0.018929</W>
+                <W>-0.0189299</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
@@ -919,19 +928,19 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.035221</W>
+                <W>0.0352214</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>-0.169593</Z>
-                <W>0.015848</W>
+                <W>0.0133581</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>-0.169593</Y>
                 <Z>-0.985514</Z>
-                <W>-0.098461</W>
+                <W>-0.0881948</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -948,19 +957,48 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.088391</W>
+                <W>0.0883913</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>-0.169593</Z>
-                <W>-0.018928</W>
+                <W>-0.0189289</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>-0.169593</Y>
                 <Z>-0.985514</Z>
-                <W>-0.011469</W>
+                <W>-0.0114698</W>
+            </RowThree>
+            <RowFour>
+                <X>0.0</X>
+                <Y>0.0</Y>
+                <Z>0.0</Z>
+                <W>1.0</W>
+            </RowFour>
+        </BindPoseMatrix>
+    </SkeletonDetails>
+    <SkeletonDetails>
+        <TargetJointName>HairAttach</TargetJointName>
+        <BindPoseMatrix>
+            <RowOne>
+                <X>-1.0</X>
+                <Y>0.0</Y>
+                <Z>0.0</Z>
+                <W>0.0</W>
+            </RowOne>
+            <RowTwo>
+                <X>0.0</X>
+                <Y>0.539491</Y>
+                <Z>0.841991</Z>
+                <W>0.023</W>
+            </RowTwo>
+            <RowThree>
+                <X>0.0</X>
+                <Y>0.841991</Y>
+                <Z>-0.539491</Z>
+                <W>0.0040</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1064,13 +1102,13 @@
                 <X>1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.0</W>
+                <W>0.0</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>1.0</Y>
                 <Z>0.0</Z>
-                <W>-0.022361</W>
+                <W>-0.0223616</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
@@ -1099,7 +1137,7 @@
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>0.169594</Z>
-                <W>-0.02408</W>
+                <W>-0.0240809</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
@@ -1122,19 +1160,19 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.026134</W>
+                <W>0.0261344</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>0.169594</Z>
-                <W>0.019654</W>
+                <W>0.0201979</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.169594</Y>
                 <Z>-0.985514</Z>
-                <W>2.64E-4</W>
+                <W>0.0109017</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1146,24 +1184,50 @@
     </SkeletonDetails>
     <SkeletonDetails>
         <TargetJointName>leftEyeLid</TargetJointName>
+        <LocalModifierMatrix>
+            <RowOne>
+                <X>1.0</X>
+                <Y>-0.0</Y>
+                <Z>0.0</Z>
+                <W>0.0</W>
+            </RowOne>
+            <RowTwo>
+                <X>0.0</X>
+                <Y>0.97591674</Y>
+                <Z>0.21814324</Z>
+                <W>0.0</W>
+            </RowTwo>
+            <RowThree>
+                <X>-0.0</X>
+                <Y>-0.21814324</Y>
+                <Z>0.97591674</Z>
+                <W>0.0</W>
+            </RowThree>
+            <RowFour>
+                <X>0.0</X>
+                <Y>0.0</Y>
+                <Z>0.0</Z>
+                <W>1.0</W>
+            </RowFour>
+        </LocalModifierMatrix>
         <BindPoseMatrix>
             <RowOne>
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.001159</W>
+                <W>1.99184E-4</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>0.169594</Z>
-                <W>0.002045</W>
+                <W>-0.0105215</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.169594</Y>
                 <Z>-0.985514</Z>
-                <W>0.006527</W>
+                <W>0.0103015</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1180,19 +1244,19 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.014678</W>
+                <W>-0.0146786</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>0.169594</Z>
-                <W>0.020616</W>
+                <W>0.0211601</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.169594</Y>
                 <Z>-0.985514</Z>
-                <W>0.02237</W>
+                <W>0.0330079</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1209,19 +1273,19 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>1.5E-5</W>
+                <W>1.99183E-4</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>0.169594</Z>
-                <W>5.76308E-4</W>
+                <W>-0.006990592</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.169594</Y>
                 <Z>-0.985514</Z>
-                <W>0.012233252</W>
+                <W>0.022662431</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1237,20 +1301,20 @@
             <RowOne>
                 <X>0.0</X>
                 <Y>-0.998411</Y>
-                <Z>0.056351</Z>
-                <W>0.00178</W>
+                <Z>0.0563518</Z>
+                <W>0.0017803</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>0.056351</Y>
+                <Y>0.0563518</Y>
                 <Z>0.998411</Z>
-                <W>-0.006861</W>
+                <W>-0.00686137</W>
             </RowTwo>
             <RowThree>
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.013874</W>
+                <W>0.0138742</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1266,20 +1330,20 @@
             <RowOne>
                 <X>0.0</X>
                 <Y>-0.998411</Y>
-                <Z>0.056351</Z>
-                <W>0.016968</W>
+                <Z>0.0563518</Z>
+                <W>0.0169683</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>0.056351</Y>
+                <Y>0.0563518</Y>
                 <Z>0.998411</Z>
-                <W>0.012699</W>
+                <W>0.0126998</W>
             </RowTwo>
             <RowThree>
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.038787</W>
+                <W>0.0387873</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1295,20 +1359,20 @@
             <RowOne>
                 <X>0.0</X>
                 <Y>-0.998411</Y>
-                <Z>0.056351</Z>
-                <W>0.001776</W>
+                <Z>0.0563518</Z>
+                <W>0.00177672</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>0.056351</Y>
+                <Y>0.0563518</Y>
                 <Z>0.998411</Z>
-                <W>-0.00686</W>
+                <W>-0.00686054</W>
             </RowTwo>
             <RowThree>
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.013873</W>
+                <W>-0.0138732</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1324,20 +1388,20 @@
             <RowOne>
                 <X>0.0</X>
                 <Y>-0.998411</Y>
-                <Z>0.056351</Z>
-                <W>0.016964</W>
+                <Z>0.0563518</Z>
+                <W>0.0169643</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>0.056351</Y>
+                <Y>0.0563518</Y>
                 <Z>0.998411</Z>
-                <W>0.0127</W>
+                <W>0.0127005</W>
             </RowTwo>
             <RowThree>
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.038786</W>
+                <W>-0.0387864</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1354,19 +1418,19 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.026134</W>
+                <W>-0.0261344</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>-0.169593</Z>
-                <W>0.018608</W>
+                <W>0.0228031</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>-0.169593</Y>
                 <Z>-0.985514</Z>
-                <W>-0.006319</W>
+                <W>0.00337648</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1378,24 +1442,50 @@
     </SkeletonDetails>
     <SkeletonDetails>
         <TargetJointName>rightEyeLid</TargetJointName>
+        <LocalModifierMatrix>
+            <RowOne>
+                <X>1.0</X>
+                <Y>-0.0</Y>
+                <Z>0.0</Z>
+                <W>0.0</W>
+            </RowOne>
+            <RowTwo>
+                <X>0.0</X>
+                <Y>0.97591674</Y>
+                <Z>0.21814324</Z>
+                <W>0.0</W>
+            </RowTwo>
+            <RowThree>
+                <X>-0.0</X>
+                <Y>-0.21814324</Y>
+                <Z>0.97591674</Z>
+                <W>0.0</W>
+            </RowThree>
+            <RowFour>
+                <X>0.0</X>
+                <Y>0.0</Y>
+                <Z>0.0</Z>
+                <W>1.0</W>
+            </RowFour>
+        </LocalModifierMatrix>
         <BindPoseMatrix>
             <RowOne>
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.001159</W>
+                <W>1.68785E-4</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>-0.169593</Z>
-                <W>0.0041</W>
+                <W>-0.00634066</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>-0.169593</Y>
                 <Z>-0.985514</Z>
-                <W>0.005474</W>
+                <W>0.0130913</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1412,19 +1502,19 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.014678</W>
+                <W>0.0146786</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>-0.169593</Z>
-                <W>0.026902</W>
+                <W>0.0310973</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>-0.169593</Y>
                 <Z>-0.985514</Z>
-                <W>0.014194</W>
+                <W>0.02389</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1441,19 +1531,19 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-1.5E-5</W>
+                <W>1.68784E-4</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
-                <Y>0.986432</Y>
-                <Z>-0.164167</Z>
-                <W>0.004535006</W>
+                <Y>0.985514</Y>
+                <Z>-0.169593</Z>
+                <W>0.001112234</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
-                <Y>-0.164167</Y>
-                <Z>-0.986432</Z>
-                <W>0.011353775</W>
+                <Y>-0.169593</Y>
+                <Z>-0.985514</Z>
+                <W>0.02354828</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1526,21 +1616,21 @@
         <BindPoseMatrix>
             <RowOne>
                 <X>1.0</X>
-                <Y>-3.0E-6</Y>
-                <Z>-7.0E-6</Z>
+                <Y>0.0</Y>
+                <Z>0.0</Z>
                 <W>0.0</W>
             </RowOne>
             <RowTwo>
-                <X>4.0E-6</X>
+                <X>0.0</X>
                 <Y>-0.493653</Y>
                 <Z>0.869659</Z>
-                <W>0.005755</W>
+                <W>0.00575543</W>
             </RowTwo>
             <RowThree>
-                <X>-6.0E-6</X>
+                <X>0.0</X>
                 <Y>-0.869659</Y>
                 <Z>-0.493653</Z>
-                <W>-0.031724</W>
+                <W>-0.0317246</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1557,7 +1647,7 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>0.013985</W>
+                <W>0.0139858</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
@@ -1569,7 +1659,7 @@
                 <X>0.0</X>
                 <Y>0.169594</Y>
                 <Z>-0.985514</Z>
-                <W>0.003674</W>
+                <W>0.00367424</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -1586,19 +1676,19 @@
                 <X>-1.0</X>
                 <Y>0.0</Y>
                 <Z>0.0</Z>
-                <W>-0.013984</W>
+                <W>-0.0139847</W>
             </RowOne>
             <RowTwo>
                 <X>0.0</X>
                 <Y>0.985514</Y>
                 <Z>0.169594</Z>
-                <W>0.004268</W>
+                <W>0.00426804</W>
             </RowTwo>
             <RowThree>
                 <X>0.0</X>
                 <Y>0.169594</Y>
                 <Z>-0.985514</Z>
-                <W>0.003674</W>
+                <W>0.00367415</W>
             </RowThree>
             <RowFour>
                 <X>0.0</X>
@@ -2913,9 +3003,251 @@
             </RowFour>
         </BindPoseMatrix>
     </SkeletonDetails>
-    <Materials TargetMeshName="HeadGeoShape" Name="MysteryNode!">
+    <Materials TargetMeshName="ShadowQuad" AlphaState="1" Name="ShadowMaterial">
         <Textures>
-            <RelativePath>assets/models/collada/Heads/MaleHead/MaleCHeadCLR.png</RelativePath>
+            <RelativePath>/work/SunSVNAvatars/build/classes/imi/character/data/shadow.png</RelativePath>
+            <TextureUnit>0</TextureUnit>
+            <WrapS>Repeat</WrapS>
+            <WrapT>Repeat</WrapT>
+            <AlphaCombiner>Modulate</AlphaCombiner>
+            <MinificationFilter>Trilinear</MinificationFilter>
+            <MagnificationFilter>Bilinear</MagnificationFilter>
+            <AnisotropicValue>0.0</AnisotropicValue>
+            <TextureApplyMode>Replace</TextureApplyMode>
+        </Textures>
+        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <AmbientColor alpha="1.0" blue="0.4" green="0.4" red="0.4"/>
+        <EmissiveColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <SpecularColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <Shininess>0</Shininess>
+        <ColorMaterial>None</ColorMaterial>
+        <CullFace>Back</CullFace>
+    </Materials>
+    <Materials TargetMeshName="rightEyeGeoShape" AlphaState="0" Name="Eyes-fx">
+        <Textures>
+            <RelativePath>assets/models/collada/Heads/MaleHead/New_eye_hi.png</RelativePath>
+            <TextureUnit>0</TextureUnit>
+            <WrapS>Repeat</WrapS>
+            <WrapT>Repeat</WrapT>
+            <AlphaCombiner>Add</AlphaCombiner>
+            <MinificationFilter>BilinearNoMipMaps</MinificationFilter>
+            <MagnificationFilter>Bilinear</MagnificationFilter>
+            <AnisotropicValue>0.0</AnisotropicValue>
+            <TextureApplyMode>Modulate</TextureApplyMode>
+        </Textures>
+        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="0.06202" green="0.06202" red="0.06202"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <Shaders>
+            <Program>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
+            </Program>
+            <Properties PropertyName="SpecularComponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>1.2</Value>
+            </Properties>
+            <Properties PropertyName="SpecularExponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>64.0</Value>
+            </Properties>
+            <Properties PropertyName="BaseDiffuseMapIndex">
+                <Type>GLSL_SAMPLER2D</Type>
+                <Value>0</Value>
+            </Properties>
+            <Properties PropertyName="ambientPower">
+                <Type>GLSL_FLOAT</Type>
+                <Value>0.3</Value>
+            </Properties>
+        </Shaders>
+        <Shininess>0</Shininess>
+        <ColorMaterial>None</ColorMaterial>
+        <CullFace>Back</CullFace>
+    </Materials>
+    <Materials TargetMeshName="leftEyeGeoShape" AlphaState="0" Name="Eyes-fx">
+        <Textures>
+            <RelativePath>assets/models/collada/Heads/MaleHead/New_eye_hi.png</RelativePath>
+            <TextureUnit>0</TextureUnit>
+            <WrapS>Repeat</WrapS>
+            <WrapT>Repeat</WrapT>
+            <AlphaCombiner>Add</AlphaCombiner>
+            <MinificationFilter>BilinearNoMipMaps</MinificationFilter>
+            <MagnificationFilter>Bilinear</MagnificationFilter>
+            <AnisotropicValue>0.0</AnisotropicValue>
+            <TextureApplyMode>Modulate</TextureApplyMode>
+        </Textures>
+        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="0.06202" green="0.06202" red="0.06202"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <Shaders>
+            <Program>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
+            </Program>
+            <Properties PropertyName="SpecularComponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>1.2</Value>
+            </Properties>
+            <Properties PropertyName="SpecularExponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>64.0</Value>
+            </Properties>
+            <Properties PropertyName="BaseDiffuseMapIndex">
+                <Type>GLSL_SAMPLER2D</Type>
+                <Value>0</Value>
+            </Properties>
+            <Properties PropertyName="ambientPower">
+                <Type>GLSL_FLOAT</Type>
+                <Value>0.3</Value>
+            </Properties>
+        </Shaders>
+        <Shininess>0</Shininess>
+        <ColorMaterial>None</ColorMaterial>
+        <CullFace>Back</CullFace>
+    </Materials>
+    <Materials TargetMeshName="TongueGeoShape" AlphaState="0" Name="blinn6-fx">
+        <Textures>
+            <RelativePath>assets/models/collada/Heads/MaleHead/FG_MaleHead01_D.png</RelativePath>
+            <TextureUnit>0</TextureUnit>
+            <WrapS>Repeat</WrapS>
+            <WrapT>Repeat</WrapT>
+            <AlphaCombiner>Add</AlphaCombiner>
+            <MinificationFilter>BilinearNoMipMaps</MinificationFilter>
+            <MagnificationFilter>Bilinear</MagnificationFilter>
+            <AnisotropicValue>0.0</AnisotropicValue>
+            <TextureApplyMode>Modulate</TextureApplyMode>
+        </Textures>
+        <Textures>
+            <RelativePath>assets/models/collada/Heads/MaleHead/FG_MaleHead01_N.png</RelativePath>
+            <TextureUnit>1</TextureUnit>
+            <WrapS>Repeat</WrapS>
+            <WrapT>Repeat</WrapT>
+            <AlphaCombiner>Add</AlphaCombiner>
+            <MinificationFilter>Trilinear</MinificationFilter>
+            <MagnificationFilter>Bilinear</MagnificationFilter>
+            <AnisotropicValue>0.0</AnisotropicValue>
+            <TextureApplyMode>Modulate</TextureApplyMode>
+        </Textures>
+        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="0.10744" green="0.10744" red="0.10744"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <Shaders>
+            <Program>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
+            </Program>
+            <Properties PropertyName="SpecularComponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>1.2</Value>
+            </Properties>
+            <Properties PropertyName="SpecularExponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>64.0</Value>
+            </Properties>
+            <Properties PropertyName="BaseDiffuseMapIndex">
+                <Type>GLSL_SAMPLER2D</Type>
+                <Value>0</Value>
+            </Properties>
+            <Properties PropertyName="ambientPower">
+                <Type>GLSL_FLOAT</Type>
+                <Value>0.3</Value>
+            </Properties>
+        </Shaders>
+        <Shininess>0</Shininess>
+        <ColorMaterial>None</ColorMaterial>
+        <CullFace>Back</CullFace>
+    </Materials>
+    <Materials TargetMeshName="LowerTeethShape" AlphaState="0" Name="TeethShader-fx">
+        <Textures>
+            <RelativePath>assets/models/collada/Heads/MaleHead/Teeth.png</RelativePath>
+            <TextureUnit>0</TextureUnit>
+            <WrapS>Repeat</WrapS>
+            <WrapT>Repeat</WrapT>
+            <AlphaCombiner>Add</AlphaCombiner>
+            <MinificationFilter>BilinearNoMipMaps</MinificationFilter>
+            <MagnificationFilter>Bilinear</MagnificationFilter>
+            <AnisotropicValue>0.0</AnisotropicValue>
+            <TextureApplyMode>Modulate</TextureApplyMode>
+        </Textures>
+        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <AmbientColor alpha="1.0" blue="0.18604" green="0.18604" red="0.18604"/>
+        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <Shaders>
+            <Program>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
+            </Program>
+            <Properties PropertyName="SpecularComponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>1.2</Value>
+            </Properties>
+            <Properties PropertyName="SpecularExponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>64.0</Value>
+            </Properties>
+            <Properties PropertyName="BaseDiffuseMapIndex">
+                <Type>GLSL_SAMPLER2D</Type>
+                <Value>0</Value>
+            </Properties>
+            <Properties PropertyName="ambientPower">
+                <Type>GLSL_FLOAT</Type>
+                <Value>0.3</Value>
+            </Properties>
+        </Shaders>
+        <Shininess>0</Shininess>
+        <ColorMaterial>None</ColorMaterial>
+        <CullFace>Back</CullFace>
+    </Materials>
+    <Materials TargetMeshName="UpperTeethShape" AlphaState="0" Name="TeethShader-fx">
+        <Textures>
+            <RelativePath>assets/models/collada/Heads/MaleHead/Teeth.png</RelativePath>
+            <TextureUnit>0</TextureUnit>
+            <WrapS>Repeat</WrapS>
+            <WrapT>Repeat</WrapT>
+            <AlphaCombiner>Add</AlphaCombiner>
+            <MinificationFilter>BilinearNoMipMaps</MinificationFilter>
+            <MagnificationFilter>Bilinear</MagnificationFilter>
+            <AnisotropicValue>0.0</AnisotropicValue>
+            <TextureApplyMode>Modulate</TextureApplyMode>
+        </Textures>
+        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <AmbientColor alpha="1.0" blue="0.18604" green="0.18604" red="0.18604"/>
+        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <Shaders>
+            <Program>
+                <DefaultProgramName>imi.shader.programs.EyeballShader</DefaultProgramName>
+            </Program>
+            <Properties PropertyName="SpecularComponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>1.2</Value>
+            </Properties>
+            <Properties PropertyName="SpecularExponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>64.0</Value>
+            </Properties>
+            <Properties PropertyName="BaseDiffuseMapIndex">
+                <Type>GLSL_SAMPLER2D</Type>
+                <Value>0</Value>
+            </Properties>
+            <Properties PropertyName="ambientPower">
+                <Type>GLSL_FLOAT</Type>
+                <Value>0.3</Value>
+            </Properties>
+        </Shaders>
+        <Shininess>0</Shininess>
+        <ColorMaterial>None</ColorMaterial>
+        <CullFace>Back</CullFace>
+    </Materials>
+    <Materials TargetMeshName="FG_MaleHead01Shape" AlphaState="0" Name="skin_medPhong-fx">
+        <Textures>
+            <RelativePath>assets/models/collada/Heads/MaleHead/FG_MaleHead02Med_D.png</RelativePath>
             <TextureUnit>0</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>
@@ -2926,7 +3258,7 @@
             <TextureApplyMode>Modulate</TextureApplyMode>
         </Textures>
         <Textures>
-            <RelativePath>assets/models/collada/Heads/MaleHead/MaleHeadNRM4.png</RelativePath>
+            <RelativePath>assets/models/collada/Heads/MaleHead/FG_MaleHead02Med_N.png</RelativePath>
             <TextureUnit>1</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>
@@ -2936,40 +3268,22 @@
             <AnisotropicValue>0.0</AnisotropicValue>
             <TextureApplyMode>Modulate</TextureApplyMode>
         </Textures>
-        <Textures>
-            <RelativePath>assets/models/collada/Heads/MaleHead/MaleCHeadSPC.png</RelativePath>
-            <TextureUnit>2</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
         <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.18604" green="0.18604" red="0.18604"/>
+        <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.FleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.PhongFleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
-                <Value>1.0</Value>
-            </Properties>
-            <Properties PropertyName="SpecularMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>2</Value>
+                <Value>1.2</Value>
             </Properties>
             <Properties PropertyName="materialColor">
                 <Type>GLSL_VEC3</Type>
-                <Value> 0.8784314 0.6392157 0.5647059</Value>
-            </Properties>
-            <Properties PropertyName="NormalMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>1</Value>
+                <Value> 1.0 1.0 1.0</Value>
             </Properties>
             <Properties PropertyName="DiffuseMapIndex">
                 <Type>GLSL_SAMPLER2D</Type>
@@ -2977,373 +3291,18 @@
             </Properties>
             <Properties PropertyName="specularExponent">
                 <Type>GLSL_FLOAT</Type>
-                <Value>3.25</Value>
+                <Value>8.0</Value>
             </Properties>
             <Properties PropertyName="ambientPower">
                 <Type>GLSL_FLOAT</Type>
-                <Value>0.35</Value>
+                <Value>0.45</Value>
             </Properties>
         </Shaders>
         <Shininess>0</Shininess>
         <ColorMaterial>None</ColorMaterial>
         <CullFace>Back</CullFace>
     </Materials>
-    <Materials TargetMeshName="TongueGeoShape" Name="MysteryNode!">
-        <Textures>
-            <RelativePath>assets/models/collada/Heads/MaleHead/MaleCHeadCLR.png</RelativePath>
-            <TextureUnit>0</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <Textures>
-            <RelativePath>assets/models/collada/Heads/MaleHead/MaleHeadNRM4.png</RelativePath>
-            <TextureUnit>1</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <Textures>
-            <RelativePath>assets/models/collada/Heads/MaleHead/MaleCHeadSPC.png</RelativePath>
-            <TextureUnit>2</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.18604" green="0.18604" red="0.18604"/>
-        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <Shaders>
-            <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
-            </Program>
-            <Properties PropertyName="SpecularComponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>1.2</Value>
-            </Properties>
-            <Properties PropertyName="SpecularExponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>64.0</Value>
-            </Properties>
-            <Properties PropertyName="BaseDiffuseMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>0</Value>
-            </Properties>
-            <Properties PropertyName="ambientPower">
-                <Type>GLSL_FLOAT</Type>
-                <Value>0.3</Value>
-            </Properties>
-        </Shaders>
-        <Shininess>0</Shininess>
-        <ColorMaterial>None</ColorMaterial>
-        <CullFace>Back</CullFace>
-    </Materials>
-    <Materials TargetMeshName="LowerTeethShape" Name="MysteryNode!">
-        <Textures>
-            <RelativePath>assets/models/collada/Heads/MaleHead/Teeth.png</RelativePath>
-            <TextureUnit>0</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.18604" green="0.18604" red="0.18604"/>
-        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
-        <Shaders>
-            <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
-            </Program>
-            <Properties PropertyName="SpecularComponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>1.2</Value>
-            </Properties>
-            <Properties PropertyName="SpecularExponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>64.0</Value>
-            </Properties>
-            <Properties PropertyName="BaseDiffuseMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>0</Value>
-            </Properties>
-            <Properties PropertyName="ambientPower">
-                <Type>GLSL_FLOAT</Type>
-                <Value>0.3</Value>
-            </Properties>
-        </Shaders>
-        <Shininess>0</Shininess>
-        <ColorMaterial>None</ColorMaterial>
-        <CullFace>Back</CullFace>
-    </Materials>
-    <Materials TargetMeshName="UpperTeethShape" Name="MysteryNode!">
-        <Textures>
-            <RelativePath>assets/models/collada/Heads/MaleHead/Teeth.png</RelativePath>
-            <TextureUnit>0</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.18604" green="0.18604" red="0.18604"/>
-        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
-        <Shaders>
-            <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
-            </Program>
-            <Properties PropertyName="SpecularComponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>1.2</Value>
-            </Properties>
-            <Properties PropertyName="SpecularExponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>64.0</Value>
-            </Properties>
-            <Properties PropertyName="BaseDiffuseMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>0</Value>
-            </Properties>
-            <Properties PropertyName="ambientPower">
-                <Type>GLSL_FLOAT</Type>
-                <Value>0.3</Value>
-            </Properties>
-        </Shaders>
-        <Shininess>0</Shininess>
-        <ColorMaterial>None</ColorMaterial>
-        <CullFace>Back</CullFace>
-    </Materials>
-    <Materials TargetMeshName="leftEyeGeoShape" Name="MysteryNode!">
-        <Textures>
-            <RelativePath>assets/models/collada/Heads/EyeTextures/eyeColor21.png</RelativePath>
-            <TextureUnit>0</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>BilinearNoMipMaps</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.18604" green="0.18604" red="0.18604"/>
-        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.06202" green="0.06202" red="0.06202"/>
-        <Shaders>
-            <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
-            </Program>
-            <Properties PropertyName="SpecularComponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>1.2</Value>
-            </Properties>
-            <Properties PropertyName="SpecularExponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>64.0</Value>
-            </Properties>
-            <Properties PropertyName="BaseDiffuseMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>0</Value>
-            </Properties>
-            <Properties PropertyName="ambientPower">
-                <Type>GLSL_FLOAT</Type>
-                <Value>0.3</Value>
-            </Properties>
-        </Shaders>
-        <Shininess>0</Shininess>
-        <ColorMaterial>None</ColorMaterial>
-        <CullFace>Back</CullFace>
-    </Materials>
-    <Materials TargetMeshName="rightEyeGeoShape" Name="MysteryNode!">
-        <Textures>
-            <RelativePath>assets/models/collada/Heads/EyeTextures/eyeColor21.png</RelativePath>
-            <TextureUnit>0</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>BilinearNoMipMaps</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.18604" green="0.18604" red="0.18604"/>
-        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.06202" green="0.06202" red="0.06202"/>
-        <Shaders>
-            <Program>
-                <DefaultProgramName>imi.scene.shader.programs.EyeballShader</DefaultProgramName>
-            </Program>
-            <Properties PropertyName="SpecularComponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>1.2</Value>
-            </Properties>
-            <Properties PropertyName="SpecularExponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>64.0</Value>
-            </Properties>
-            <Properties PropertyName="BaseDiffuseMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>0</Value>
-            </Properties>
-            <Properties PropertyName="ambientPower">
-                <Type>GLSL_FLOAT</Type>
-                <Value>0.3</Value>
-            </Properties>
-        </Shaders>
-        <Shininess>0</Shininess>
-        <ColorMaterial>None</ColorMaterial>
-        <CullFace>Back</CullFace>
-    </Materials>
-    <Materials TargetMeshName="TennisShoesShape" Name="MysteryNode!">
-        <Textures>
-            <RelativePath>assets/models/collada/Clothing/MaleClothing/MaleTennisShoesCLR.png</RelativePath>
-            <TextureUnit>0</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <Textures>
-            <RelativePath>assets/models/collada/Clothing/MaleClothing/MaleTennisShoesNRM.png</RelativePath>
-            <TextureUnit>1</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <Shaders>
-            <Program>
-                <DefaultProgramName>imi.scene.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
-            </Program>
-            <Properties PropertyName="baseColor">
-                <Type>GLSL_VEC3</Type>
-                <Value> 1.0 1.0 1.0</Value>
-            </Properties>
-            <Properties PropertyName="SpecularComponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>0.24</Value>
-            </Properties>
-            <Properties PropertyName="SpecularExponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>1.8</Value>
-            </Properties>
-            <Properties PropertyName="BaseDiffuseMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>0</Value>
-            </Properties>
-            <Properties PropertyName="specColor">
-                <Type>GLSL_VEC3</Type>
-                <Value> 1.0 1.0 1.0</Value>
-            </Properties>
-            <Properties PropertyName="NormalMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>1</Value>
-            </Properties>
-            <Properties PropertyName="ambientPower">
-                <Type>GLSL_FLOAT</Type>
-                <Value>0.2</Value>
-            </Properties>
-        </Shaders>
-        <Shininess>0</Shininess>
-        <ColorMaterial>None</ColorMaterial>
-        <CullFace>None</CullFace>
-    </Materials>
-    <Materials TargetMeshName="polySurface3Shape" Name="MysteryNode!">
-        <Textures>
-            <RelativePath>assets/models/collada/Clothing/MaleClothing/Jeans_COLOR.png</RelativePath>
-            <TextureUnit>0</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <Textures>
-            <RelativePath>assets/models/collada/Clothing/MaleClothing/Jeans_NORM.png</RelativePath>
-            <TextureUnit>1</TextureUnit>
-            <WrapS>Repeat</WrapS>
-            <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Add</AlphaCombiner>
-            <MinificationFilter>Trilinear</MinificationFilter>
-            <MagnificationFilter>Bilinear</MagnificationFilter>
-            <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Modulate</TextureApplyMode>
-        </Textures>
-        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
-        <Shaders>
-            <Program>
-                <DefaultProgramName>imi.scene.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
-            </Program>
-            <Properties PropertyName="baseColor">
-                <Type>GLSL_VEC3</Type>
-                <Value> 1.0 1.0 1.0</Value>
-            </Properties>
-            <Properties PropertyName="SpecularComponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>0.24</Value>
-            </Properties>
-            <Properties PropertyName="SpecularExponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>1.8</Value>
-            </Properties>
-            <Properties PropertyName="BaseDiffuseMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>0</Value>
-            </Properties>
-            <Properties PropertyName="specColor">
-                <Type>GLSL_VEC3</Type>
-                <Value> 1.0 1.0 1.0</Value>
-            </Properties>
-            <Properties PropertyName="NormalMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>1</Value>
-            </Properties>
-            <Properties PropertyName="ambientPower">
-                <Type>GLSL_FLOAT</Type>
-                <Value>0.2</Value>
-            </Properties>
-        </Shaders>
-        <Shininess>0</Shininess>
-        <ColorMaterial>None</ColorMaterial>
-        <CullFace>None</CullFace>
-    </Materials>
-    <Materials TargetMeshName="RHandShape" Name="MysteryNode!">
+    <Materials TargetMeshName="RHandShape" AlphaState="0" Name="HandsShader-fx">
         <Textures>
             <RelativePath>assets/models/collada/Avatars/MaleAvatar/MaleCHandsCLR.png</RelativePath>
             <TextureUnit>0</TextureUnit>
@@ -3381,9 +3340,10 @@
         <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <EmissiveColor alpha="1.0" blue="0.12404" green="0.12404" red="0.12404"/>
         <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.FleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.FleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3395,7 +3355,7 @@
             </Properties>
             <Properties PropertyName="materialColor">
                 <Type>GLSL_VEC3</Type>
-                <Value> 0.8784314 0.6392157 0.5647059</Value>
+                <Value> 0.69411767 0.32941177 0.09411765</Value>
             </Properties>
             <Properties PropertyName="NormalMapIndex">
                 <Type>GLSL_SAMPLER2D</Type>
@@ -3407,18 +3367,18 @@
             </Properties>
             <Properties PropertyName="specularExponent">
                 <Type>GLSL_FLOAT</Type>
-                <Value>3.25</Value>
+                <Value>8.0</Value>
             </Properties>
             <Properties PropertyName="ambientPower">
                 <Type>GLSL_FLOAT</Type>
-                <Value>0.35</Value>
+                <Value>0.45</Value>
             </Properties>
         </Shaders>
         <Shininess>0</Shininess>
         <ColorMaterial>None</ColorMaterial>
         <CullFace>Back</CullFace>
     </Materials>
-    <Materials TargetMeshName="LHandShape" Name="MysteryNode!">
+    <Materials TargetMeshName="LHandShape" AlphaState="0" Name="HandsShader-fx">
         <Textures>
             <RelativePath>assets/models/collada/Avatars/MaleAvatar/MaleCHandsCLR.png</RelativePath>
             <TextureUnit>0</TextureUnit>
@@ -3456,9 +3416,10 @@
         <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <EmissiveColor alpha="1.0" blue="0.12404" green="0.12404" red="0.12404"/>
         <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.FleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.FleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3470,7 +3431,7 @@
             </Properties>
             <Properties PropertyName="materialColor">
                 <Type>GLSL_VEC3</Type>
-                <Value> 0.8784314 0.6392157 0.5647059</Value>
+                <Value> 0.69411767 0.32941177 0.09411765</Value>
             </Properties>
             <Properties PropertyName="NormalMapIndex">
                 <Type>GLSL_SAMPLER2D</Type>
@@ -3482,18 +3443,18 @@
             </Properties>
             <Properties PropertyName="specularExponent">
                 <Type>GLSL_FLOAT</Type>
-                <Value>3.25</Value>
+                <Value>8.0</Value>
             </Properties>
             <Properties PropertyName="ambientPower">
                 <Type>GLSL_FLOAT</Type>
-                <Value>0.35</Value>
+                <Value>0.45</Value>
             </Properties>
         </Shaders>
         <Shininess>0</Shininess>
         <ColorMaterial>None</ColorMaterial>
         <CullFace>Back</CullFace>
     </Materials>
-    <Materials TargetMeshName="PoloShape" Name="Clothing">
+    <Materials TargetMeshName="PoloShape" AlphaState="0" Name="Clothing">
         <Textures>
             <RelativePath>assets/textures/checkerboard2.PNG</RelativePath>
             <TextureUnit>0</TextureUnit>
@@ -3528,12 +3489,13 @@
             <TextureApplyMode>Modulate</TextureApplyMode>
         </Textures>
         <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <EmissiveColor alpha="0.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="0.0" blue="0.0" green="0.0" red="0.0"/>
+        <AmbientColor alpha="1.0" blue="0.4" green="0.4" red="0.4"/>
+        <EmissiveColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <SpecularColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
             </Program>
             <Properties PropertyName="baseColor">
                 <Type>GLSL_VEC3</Type>
@@ -3568,7 +3530,7 @@
         <ColorMaterial>None</ColorMaterial>
         <CullFace>Back</CullFace>
     </Materials>
-    <Materials TargetMeshName="ArmsShape" Name="MysteryNode!">
+    <Materials TargetMeshName="ArmsShape" AlphaState="0" Name="Arms_MaleAvatarBase_BodyShader-fx">
         <Textures>
             <RelativePath>assets/models/collada/Clothing/MaleClothing/MaleCBodyCLRUndies.png</RelativePath>
             <TextureUnit>0</TextureUnit>
@@ -3606,9 +3568,10 @@
         <AmbientColor alpha="1.0" blue="0.26356" green="0.26356" red="0.26356"/>
         <EmissiveColor alpha="1.0" blue="0.12404" green="0.12404" red="0.12404"/>
         <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.FleshShader</DefaultProgramName>
+                <DefaultProgramName>imi.shader.programs.FleshShader</DefaultProgramName>
             </Program>
             <Properties PropertyName="specularComponent">
                 <Type>GLSL_FLOAT</Type>
@@ -3620,7 +3583,7 @@
             </Properties>
             <Properties PropertyName="materialColor">
                 <Type>GLSL_VEC3</Type>
-                <Value> 0.8784314 0.6392157 0.5647059</Value>
+                <Value> 0.69411767 0.32941177 0.09411765</Value>
             </Properties>
             <Properties PropertyName="NormalMapIndex">
                 <Type>GLSL_SAMPLER2D</Type>
@@ -3632,38 +3595,148 @@
             </Properties>
             <Properties PropertyName="specularExponent">
                 <Type>GLSL_FLOAT</Type>
-                <Value>3.25</Value>
+                <Value>8.0</Value>
             </Properties>
             <Properties PropertyName="ambientPower">
                 <Type>GLSL_FLOAT</Type>
-                <Value>0.35</Value>
+                <Value>0.45</Value>
             </Properties>
         </Shaders>
         <Shininess>0</Shininess>
         <ColorMaterial>None</ColorMaterial>
         <CullFace>Back</CullFace>
     </Materials>
-    <Materials TargetMeshName="ShadowQuad" Name="MysteryNode!">
+    <Materials TargetMeshName="polySurface3Shape" AlphaState="0" Name="blinn1-fx">
         <Textures>
-            <RelativePath>assets/textures/shadow.png</RelativePath>
+            <RelativePath>assets/models/collada/Clothing/MaleClothing/Jeans_COLOR.png</RelativePath>
             <TextureUnit>0</TextureUnit>
             <WrapS>Repeat</WrapS>
             <WrapT>Repeat</WrapT>
-            <AlphaCombiner>Modulate</AlphaCombiner>
+            <AlphaCombiner>Add</AlphaCombiner>
             <MinificationFilter>Trilinear</MinificationFilter>
             <MagnificationFilter>Bilinear</MagnificationFilter>
             <AnisotropicValue>0.0</AnisotropicValue>
-            <TextureApplyMode>Replace</TextureApplyMode>
+            <TextureApplyMode>Modulate</TextureApplyMode>
+        </Textures>
+        <Textures>
+            <RelativePath>assets/models/collada/Clothing/MaleClothing/Jeans_NORM.png</RelativePath>
+            <TextureUnit>1</TextureUnit>
+            <WrapS>Repeat</WrapS>
+            <WrapT>Repeat</WrapT>
+            <AlphaCombiner>Add</AlphaCombiner>
+            <MinificationFilter>Trilinear</MinificationFilter>
+            <MagnificationFilter>Bilinear</MagnificationFilter>
+            <AnisotropicValue>0.0</AnisotropicValue>
+            <TextureApplyMode>Modulate</TextureApplyMode>
         </Textures>
         <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <EmissiveColor alpha="0.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="0.0" blue="0.0" green="0.0" red="0.0"/>
+        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="0.5" green="0.5" red="0.5"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <Shaders>
+            <Program>
+                <DefaultProgramName>imi.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
+            </Program>
+            <Properties PropertyName="baseColor">
+                <Type>GLSL_VEC3</Type>
+                <Value> 1.0 1.0 1.0</Value>
+            </Properties>
+            <Properties PropertyName="SpecularComponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>0.24</Value>
+            </Properties>
+            <Properties PropertyName="SpecularExponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>1.8</Value>
+            </Properties>
+            <Properties PropertyName="BaseDiffuseMapIndex">
+                <Type>GLSL_SAMPLER2D</Type>
+                <Value>0</Value>
+            </Properties>
+            <Properties PropertyName="specColor">
+                <Type>GLSL_VEC3</Type>
+                <Value> 1.0 1.0 1.0</Value>
+            </Properties>
+            <Properties PropertyName="NormalMapIndex">
+                <Type>GLSL_SAMPLER2D</Type>
+                <Value>1</Value>
+            </Properties>
+            <Properties PropertyName="ambientPower">
+                <Type>GLSL_FLOAT</Type>
+                <Value>0.2</Value>
+            </Properties>
+        </Shaders>
         <Shininess>0</Shininess>
         <ColorMaterial>None</ColorMaterial>
-        <CullFace>Back</CullFace>
+        <CullFace>None</CullFace>
     </Materials>
-    <Materials TargetMeshName="curly" Name="MysteryNode!">
+    <Materials TargetMeshName="TennisShoesShape" AlphaState="0" Name="lambert1-fx">
+        <Textures>
+            <RelativePath>assets/models/collada/Clothing/MaleClothing/MaleTennisShoesCLR.png</RelativePath>
+            <TextureUnit>0</TextureUnit>
+            <WrapS>Repeat</WrapS>
+            <WrapT>Repeat</WrapT>
+            <AlphaCombiner>Add</AlphaCombiner>
+            <MinificationFilter>Trilinear</MinificationFilter>
+            <MagnificationFilter>Bilinear</MagnificationFilter>
+            <AnisotropicValue>0.0</AnisotropicValue>
+            <TextureApplyMode>Modulate</TextureApplyMode>
+        </Textures>
+        <Textures>
+            <RelativePath>assets/models/collada/Clothing/MaleClothing/MaleTennisShoesNRM.png</RelativePath>
+            <TextureUnit>1</TextureUnit>
+            <WrapS>Repeat</WrapS>
+            <WrapT>Repeat</WrapT>
+            <AlphaCombiner>Add</AlphaCombiner>
+            <MinificationFilter>Trilinear</MinificationFilter>
+            <MagnificationFilter>Bilinear</MagnificationFilter>
+            <AnisotropicValue>0.0</AnisotropicValue>
+            <TextureApplyMode>Modulate</TextureApplyMode>
+        </Textures>
+        <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
+        <Shaders>
+            <Program>
+                <DefaultProgramName>imi.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
+            </Program>
+            <Properties PropertyName="baseColor">
+                <Type>GLSL_VEC3</Type>
+                <Value> 0.105882354 0.5882353 0.14117648</Value>
+            </Properties>
+            <Properties PropertyName="SpecularComponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>0.24</Value>
+            </Properties>
+            <Properties PropertyName="SpecularExponent">
+                <Type>GLSL_FLOAT</Type>
+                <Value>1.8</Value>
+            </Properties>
+            <Properties PropertyName="BaseDiffuseMapIndex">
+                <Type>GLSL_SAMPLER2D</Type>
+                <Value>0</Value>
+            </Properties>
+            <Properties PropertyName="specColor">
+                <Type>GLSL_VEC3</Type>
+                <Value> 0.57254905 0.3529412 0.74509805</Value>
+            </Properties>
+            <Properties PropertyName="NormalMapIndex">
+                <Type>GLSL_SAMPLER2D</Type>
+                <Value>1</Value>
+            </Properties>
+            <Properties PropertyName="ambientPower">
+                <Type>GLSL_FLOAT</Type>
+                <Value>0.2</Value>
+            </Properties>
+        </Shaders>
+        <Shininess>0</Shininess>
+        <ColorMaterial>None</ColorMaterial>
+        <CullFace>None</CullFace>
+    </Materials>
+    <Materials TargetMeshName="Male_PonyTailShape" AlphaState="0" Name="HairBase-fx">
         <Textures>
             <RelativePath>assets/models/collada/Hair/MaleHair/HairBaseBrown.png</RelativePath>
             <TextureUnit>0</TextureUnit>
@@ -3690,37 +3763,22 @@
         <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <SpecularColor alpha="1.0" blue="0.0625" green="0.0625" red="0.0625"/>
+        <TransparencyColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <Shaders>
             <Program>
-                <DefaultProgramName>imi.scene.shader.programs.ClothingShaderSpecColor</DefaultProgramName>
+                <ListOfEffects>VertexToPosition_Transform</ListOfEffects>
+                <ListOfEffects>UnlitTexturing_Lighting</ListOfEffects>
+                <ListOfEffects>CalculateToLight_Lighting</ListOfEffects>
+                <ListOfEffects>GenerateFragLocalNormal</ListOfEffects>
+                <ListOfEffects>AmbientNdotL_Lighting</ListOfEffects>
             </Program>
-            <Properties PropertyName="SpecularComponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>0.5</Value>
-            </Properties>
-            <Properties PropertyName="SpecularExponent">
-                <Type>GLSL_FLOAT</Type>
-                <Value>3.4</Value>
-            </Properties>
-            <Properties PropertyName="BaseDiffuseMapIndex">
+            <Properties PropertyName="DiffuseMapIndex">
                 <Type>GLSL_SAMPLER2D</Type>
                 <Value>0</Value>
             </Properties>
-            <Properties PropertyName="specColor">
-                <Type>GLSL_VEC3</Type>
-                <Value> 0.26887083 0.32421672 0.10945894</Value>
-            </Properties>
-            <Properties PropertyName="materialColor">
-                <Type>GLSL_VEC3</Type>
-                <Value> 0.26887083 0.32421672 0.10945894</Value>
-            </Properties>
-            <Properties PropertyName="NormalMapIndex">
-                <Type>GLSL_SAMPLER2D</Type>
-                <Value>1</Value>
-            </Properties>
             <Properties PropertyName="ambientPower">
                 <Type>GLSL_FLOAT</Type>
-                <Value>0.38</Value>
+                <Value>0.35</Value>
             </Properties>
         </Shaders>
         <Shininess>0</Shininess>

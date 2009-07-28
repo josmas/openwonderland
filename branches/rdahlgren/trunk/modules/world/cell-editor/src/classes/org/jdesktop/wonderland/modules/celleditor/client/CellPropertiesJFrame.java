@@ -699,9 +699,16 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                 selectedCell.getCellID(),
                 updateState,
                 stateUpdates.cellComponentServerStateSet);
-        selectedCell.sendCellMessage(msg);
+        ResponseMessage response = selectedCell.sendCellMessageAndWait(msg);
+        if (response instanceof ErrorMessage) {
+            // XXX Probably should get a success/failed here!
+            ErrorMessage em = (ErrorMessage) response;
+            logger.log(Level.WARNING, "Error applugin values: " +
+                       em.getErrorMessage(), em.getErrorCause());
 
-        // XXX Probably should get a success/failed here!
+            JOptionPane.showMessageDialog(this, em.getErrorMessage(),
+                    "Error applying values", JOptionPane.ERROR_MESSAGE);
+        }
 
         // Clear any existing updates store by this class
         stateUpdates.clear();

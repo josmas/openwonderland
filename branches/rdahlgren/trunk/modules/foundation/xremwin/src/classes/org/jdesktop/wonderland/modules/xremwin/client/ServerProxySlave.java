@@ -48,6 +48,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientSocketListener;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.SlaveClientSocket;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 // TODO: 0.4 protocol
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs;
@@ -229,7 +230,7 @@ class ServerProxySlave implements ServerProxy {
         // Read the initial window state synchronization
         // part of the welcome message
         int numWins = bufQueue.nextInt();
-        AppXrw.logger.warning("numWins = " + numWins);
+        AppXrw.logger.info("numWins = " + numWins);
         for (int i = 0; i < numWins; i++) {
             syncWindowStateNext();
         }
@@ -248,14 +249,14 @@ class ServerProxySlave implements ServerProxy {
     }
 
     private void syncWindowStateNext() {
-        AppXrw.logger.warning("Enter syncWindowStateNext");
+        AppXrw.logger.info("Enter syncWindowStateNext");
 
         CreateWindowMsgArgs crtMsgArgs = new CreateWindowMsgArgs();
         WindowXrw win;
         int controllingUserLen;
         int desiredZOrder;
-        float rotY;
-        Vector3f userDispl = new Vector3f();
+        float rotY; // Currently ignored
+        Vector3f userTranslation = new Vector3f();
 
         crtMsgArgs.wid = bufQueue.nextInt();
         crtMsgArgs.x = (short) bufQueue.nextInt();
@@ -265,28 +266,27 @@ class ServerProxySlave implements ServerProxy {
         crtMsgArgs.borderWidth = bufQueue.nextInt();
         controllingUserLen = bufQueue.nextInt();
         desiredZOrder= bufQueue.nextInt();
-        rotY = bufQueue.nextFloat();
-        AppXrw.logger.warning("rotY = " + rotY);
-        userDispl.x = bufQueue.nextFloat();
-        userDispl.y = bufQueue.nextFloat();
-        userDispl.z = bufQueue.nextFloat();
-        AppXrw.logger.warning("userDispl = " + userDispl);
+        rotY = bufQueue.nextFloat();  // Just skipped
+        userTranslation.x = bufQueue.nextFloat();
+        userTranslation.y = bufQueue.nextFloat();
+        userTranslation.z = bufQueue.nextFloat();
+        AppXrw.logger.info("userTranslation = " + userTranslation);
         /* TODO: 0.4 protocol:
         int transientFor = bufQueue.nextInt();
-        AppXrw.logger.warning("transientFor = " + transientFor);
+        AppXrw.logger.info("transientFor = " + transientFor);
          */
         // TODO: 0.4 protocol: skip isTransient
         int transientFor = bufQueue.nextInt();
         int typeOrdinal = bufQueue.nextInt();
         Window2D.Type type = Window2D.Type.values()[typeOrdinal];
-        AppXrw.logger.warning("type = " + type);
+        AppXrw.logger.info("type = " + type);
         int parentWid = bufQueue.nextInt();
-        AppXrw.logger.warning("parentWid = " + parentWid);
+        AppXrw.logger.info("parentWid = " + parentWid);
         
         crtMsgArgs.decorated = (bufQueue.nextByte() == 1) ? true : false;
-        AppXrw.logger.warning("client = " + client);
-        AppXrw.logger.warning("crtMsgArgs = " + crtMsgArgs);
-        AppXrw.logger.warning("desiredZOrder= " + desiredZOrder);
+        AppXrw.logger.info("client = " + client);
+        AppXrw.logger.info("crtMsgArgs = " + crtMsgArgs);
+        AppXrw.logger.info("desiredZOrder= " + desiredZOrder);
 
         // Make sure window is ready to receive data on creation
         win = client.createWindow(crtMsgArgs);
@@ -306,18 +306,17 @@ class ServerProxySlave implements ServerProxy {
 
         win.setDesiredZOrder(desiredZOrder);
 
-        /* TODO: window config 
-        win.setRotateY(rotY);
-        win.setUserDisplacement(userDispl);
-         */
+        CellTransform userTransformCell = new CellTransform(null, null);
+        userTransformCell.setTranslation(userTranslation);
+        win.setUserTransformCellLocal(userTransformCell);
 
         boolean show = (bufQueue.nextByte() == 1) ? true : false;
-        AppXrw.logger.warning("show = " + show);
+        AppXrw.logger.info("show = " + show);
 
         if (controllingUserLen > 0) {
             byte[] controllingUserBuf = bufQueue.nextBuffer();
             String controllingUser = new String(controllingUserBuf);
-            AppXrw.logger.warning("controlling user = " + controllingUser);
+            AppXrw.logger.info("controlling user = " + controllingUser);
             win.setControllingUser(controllingUser);
         }
 

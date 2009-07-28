@@ -3,7 +3,7 @@
     <Attributes>
         <Name>nameless</Name>
         <Gender>1</Gender>
-        <HeadAttachment>imi/character/data/MaleCHead.bhf</HeadAttachment>
+	<HeadAttachment>assets/models/collada/Heads/Binary/MaleCHead.bhf</HeadAttachment>
         <LoadingInstructions>
 		assets/models/collada/Clothing/MaleClothing/MaleHeaddress.dae
         </LoadingInstructions>

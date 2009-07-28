@@ -22,10 +22,14 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
+import com.sun.sgs.app.Task;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Queue;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
@@ -39,17 +43,22 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ExperimentalAPI
 public class UserManager implements ManagedObject, Serializable {
     
-    private HashMap<WonderlandClientID, ManagedReference<UserMO>> clientToUser =
+    private final Map<WonderlandClientID, ManagedReference<UserMO>> clientToUser =
 	    new HashMap<WonderlandClientID, ManagedReference<UserMO>>();
 
-    private HashSet<ManagedReference<UserListener>> userListeners = new HashSet();
-    
+    private final Set<ManagedReference<UserListener>> userListeners =
+            new LinkedHashSet();
+
     /**
      * Name used in binding this object in DataManager
      **/
     private static final String BINDING_NAME="USER_MANAGER";
 
     private int userLimit = Integer.MAX_VALUE;
+
+    enum NotificationType {
+        LOGIN, LOGOUT
+    }
 
     /**
      * Creates a new instance of UserManager
@@ -138,7 +147,8 @@ public class UserManager implements ManagedObject, Serializable {
      */
     public void login(WonderlandClientID clientID) {
         DataManager dm = AppContext.getDataManager();
-        
+        dm.markForUpdate(this);
+
         // find the user object from the database, create it if necessary
         UserMO user = getUserMO(clientID.getSession().getName());
         if (user==null) {
@@ -150,42 +160,130 @@ public class UserManager implements ManagedObject, Serializable {
         
         // add this session to our map
         clientToUser.put(clientID, user.getReference());
-        notifyUserListenersLogin(clientID);
+
+        // notify listeners for just this user
+        for (ManagedReference<UserListener> listenerRef : user.getUserListeners()) {
+            AppContext.getTaskManager().scheduleTask(
+                    new UserListenerNotifier(listenerRef,
+                                             dm.createReference(user),
+                                             null,
+                                             clientID,
+                                             NotificationType.LOGIN));
+        }
+
+        // notify listeners for all users
+        for (ManagedReference<UserListener> listenerRef : userListeners) {
+            AppContext.getTaskManager().scheduleTask(
+                    new UserListenerNotifier(listenerRef,
+                                             dm.createReference(user),
+                                             null,
+                                             clientID,
+                                             NotificationType.LOGIN));
+        }
     }
-    
+
     /**
-     * Log user out of specified session
-     * @param session
+     * Start the logout process for the given session.  This will create
+     * a queue of tasks associated with the given session, that are
+     * executed sequentially.  Once this queue is empty, all mappings from
+     * the given id to a UserMO will be removed.
+     * @param clientID the id of the client to begin the logout process for
+     * @return the queue of tasks to perform before logout.
+     * @throws IllegalArgumentException if the given clientID is not
+     * currently logged in.
      */
-    public void logout(WonderlandClientID clientID) {
+    public Queue<Task> startLogout(WonderlandClientID clientID) {
+        UserMO user = getUser(clientID);
+        if (user == null) {
+            throw new IllegalArgumentException("Client " + clientID +
+                                               " not logged in.");
+        }
+
+        return user.startLogout(clientID);
+    }
+
+    /**
+     * Finish the logout for the current session. This method will first notify
+     * any user listeners of the fact that the user is logging out.  It will
+     * then run all logout tasks for the given user.  When the logout tasks have
+     * all completed, all mappings between the client id and the UserMO will
+     * be removed.
+     * @param clientID the id of the client to end the logout process for
+     * @throws IllegalArgumentException if no user is associated with the given
+     * client id.
+     */
+    public void finishLogout(WonderlandClientID clientID) {
+        DataManager dm = AppContext.getDataManager();
+
         // make sure there is a user
         UserMO user = getUser(clientID);
-        assert(user!=null);
-        if (user != null) {
-            user.logout(clientID);
+        if (user == null) {
+            throw new IllegalArgumentException("Client " + clientID +
+                                               " not logged in.");
+        }
+
+        // get the task queue to use
+        Queue<Task> tasks = user.getLogoutTasks(clientID);
+        
+        // add listener notification tasks to the queue, starting with
+        // per-user listeners
+        for (ManagedReference<UserListener> listener : user.getUserListeners()) {
+            tasks.add(new UserListenerNotifier(listener, 
+                                               dm.createReference(user), 
+                                               dm.createReference(tasks), 
+                                               clientID, 
+                                               NotificationType.LOGOUT));
         }
         
-        clientToUser.remove(clientID);
-        notifyUserListenersLogout(clientID);
-    }
-
-    /**
-     * Notify listeners that client is logging out
-     * @param clientID
-     */
-    private void notifyUserListenersLogout(WonderlandClientID clientID) {
-        for(ManagedReference<UserListener> listener : userListeners) {
-            AppContext.getTaskManager().scheduleTask(new UserListenerNotifier(listener, clientID, UserListenerNotifier.LOGOUT));
+        // next add global listeners
+        for (ManagedReference<UserListener> listener : userListeners) {
+            tasks.add(new UserListenerNotifier(listener, 
+                                               dm.createReference(user), 
+                                               dm.createReference(tasks), 
+                                               clientID, 
+                                               NotificationType.LOGOUT));
         }
+
+        // now that we have collected all logout tasks, start running them
+        AppContext.getTaskManager().scheduleTask(
+                new LogoutTask(clientID, dm.createReference(tasks)));
     }
 
     /**
-     * Notify listeners that a client is logging in.
-     * @param clientID
+     * Cleanup when all logouts for a given id are finished
+     * @param id the id to cleanup
      */
-    private void notifyUserListenersLogin(WonderlandClientID clientID) {
-        for(ManagedReference<UserListener> listener : userListeners) {
-            AppContext.getTaskManager().scheduleTask(new UserListenerNotifier(listener, clientID, UserListenerNotifier.LOGIN));
+    private void cleanupClient(WonderlandClientID clientID) {
+        AppContext.getDataManager().markForUpdate(this);
+
+        // remove the mapping for this user
+        ManagedReference<UserMO> userRef = clientToUser.remove(clientID);
+        userRef.get().finishLogout(clientID);
+    }
+
+    /**
+     * Notify listeners that of a change to a user's status.  Notifications will
+     * each be done in separate tasks.
+     * @param listeners the set of listeners to update
+     * @param clientID the ID of the client that changed
+     * @param userRef a reference to the user object that changed
+     * @param type the type of change
+     */
+    static void notifyUserListeners(Set<ManagedReference<UserListener>> listeners,
+                                    WonderlandClientID clientID,
+                                    ManagedReference<UserMO> userRef,
+                                    ManagedReference<Queue<Task>> tasksRef,
+                                    NotificationType type)
+    {
+        for (ManagedReference<UserListener> listener : listeners) {
+            switch (type) {
+                case LOGIN:
+                    listener.get().userLoggedIn(clientID, userRef);
+                    break;
+                case LOGOUT:
+                    listener.get().userLoggedOut(clientID, userRef, tasksRef);
+                    break;
+            }
         }
     }
 
@@ -228,20 +326,93 @@ public class UserManager implements ManagedObject, Serializable {
     }
 
     /**
-     * Add a listener to the set of listeners which are notified when a user
-     * logs out
-     * @param listener
+     * Add a listener to the set of listeners which are notified when any user
+     * logs out.  In most cases, you should use add a listener to a specific
+     * UserMO instead.
+     * @param listener the listener to remove
      */
     public void addUserListener(UserListener listener) {
+        AppContext.getDataManager().markForUpdate(this);
         userListeners.add(AppContext.getDataManager().createReference(listener));
     }
 
     /**
-     * Removed a UserListener listener
-     * 
-     * @param listener
+     * Removed a user listener that is listening to all users.
+     * @param listener the listener to remove
      */
     public void removeUserListener(UserListener listener) {
+        AppContext.getDataManager().markForUpdate(this);
         userListeners.remove(AppContext.getDataManager().createReference(listener));
+    }
+
+    /**
+     * A task to notify listeners when a user logs in or out
+     */
+    private static class UserListenerNotifier implements Task, Serializable {
+        private ManagedReference<UserListener> listenerRef;
+        private ManagedReference<UserMO> userRef;
+        private ManagedReference<Queue<Task>> tasksRef;
+        private WonderlandClientID clientID;
+        private NotificationType notificationType;
+
+
+        public UserListenerNotifier(ManagedReference<UserListener> listenerRef,
+                                    ManagedReference<UserMO> userRef,
+                                    ManagedReference<Queue<Task>> tasksRef,
+                                    WonderlandClientID clientID,
+                                    NotificationType notificationType)
+        {
+            this.listenerRef = listenerRef;
+            this.userRef = userRef;
+            this.tasksRef = tasksRef;
+            this.clientID = clientID;
+            this.notificationType = notificationType;
+        }
+
+        public void run() throws Exception {
+            switch (notificationType) {
+                case LOGIN:
+                    listenerRef.get().userLoggedIn(clientID, userRef);
+                    break;
+                case LOGOUT:
+                    listenerRef.get().userLoggedOut(clientID, userRef, tasksRef);
+                    break;
+            }
+        }
+    }
+
+    /**
+     * A task to run the next logout task in the queue, or call
+     * cleanupClient when all tasks in the queue are finished.
+     */
+    private static class LogoutTask implements Task, Serializable {
+        private WonderlandClientID clientID;
+        private ManagedReference<Queue<Task>> tasksRef;
+
+        public LogoutTask(WonderlandClientID clientID,
+                          ManagedReference<Queue<Task>> tasksRef)
+        {
+            this.clientID = clientID;
+            this.tasksRef = tasksRef;
+        }
+
+        public void run() throws Exception {
+            // get the first task
+            Task task = tasksRef.get().remove();
+
+            // run it
+            task.run();
+
+            // schedule the next task
+            if (tasksRef.get().isEmpty()) {
+                // we are all done -- call cleanup logout
+                UserManager.getUserManager().cleanupClient(clientID);
+            } else {
+                // there are more tasks -- schedule the next one
+                AppContext.getTaskManager().scheduleTask(
+                        new LogoutTask(clientID, tasksRef));
+            }
+
+        }
     }
 }

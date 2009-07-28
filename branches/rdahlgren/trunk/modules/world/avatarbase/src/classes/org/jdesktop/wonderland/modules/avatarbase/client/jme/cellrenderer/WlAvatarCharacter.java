@@ -66,10 +66,6 @@ public class WlAvatarCharacter extends Avatar {
             return this;
         }
 
-
-
-
-
         /**
          * {@inheritDoc AvatarBuilder}
          */
@@ -78,8 +74,6 @@ public class WlAvatarCharacter extends Avatar {
             WlAvatarCharacter result = new WlAvatarCharacter(this);
             return result;
         }
-
-
     }
 
     /**

@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.modules.appbase.client.utils.stats.StatisticsSet;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 // TODO: 0.4 protocol: temporarily insert
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs;
@@ -500,9 +501,8 @@ public abstract class ClientXrw implements Runnable {
                         AppXrw.logger.warning("WindowSetUserDispl: window doesn't exist: wid = " +
                                 winSetUserDisplMsgArgs.wid);
                     } else {
-                        /* TODO: Window2D config methods not yet impl
-                        win.setUserDisplacement(win, winSetUserDisplMsgArgs.userDispl);
-                         */
+                        CellTransform transform = new CellTransform(null, winSetUserDisplMsgArgs.userDispl);
+                        win.setUserTransformCellLocal(transform);
                     }
                     break;
                 }

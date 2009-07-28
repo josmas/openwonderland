@@ -36,6 +36,7 @@ import com.jme.util.geom.BufferUtils;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.HashMap;
+import org.jdesktop.swingworker.SwingWorker;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -53,6 +54,10 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
+import java.util.NoSuchElementException;
+import org.jdesktop.wonderland.client.hud.HUDDisplayable;
 
 /**
  * The generic 2D window superclass. All 2D windows in Wonderland have this root class. Instances of this 
@@ -76,7 +81,7 @@ otherwise view.setParent gets really tricky
  * @author deronj
  */
 @ExperimentalAPI
-public abstract class Window2D {
+public abstract class Window2D implements HUDDisplayable {
 
     private static final Logger logger = Logger.getLogger(Window2D.class.getName());
     private static final int CHANGED_ALL         = -1;
@@ -87,7 +92,9 @@ public abstract class Window2D {
     private static final int CHANGED_OFFSET      = 0x10;
     private static final int CHANGED_SIZE        = 0x20;
     private static final int CHANGED_TITLE       = 0x40;
-    private static final int CHANGED_STACK     = 0x80;
+    private static final int CHANGED_STACK       = 0x80;
+    private static final int CHANGED_USER_RESIZABLE = 0x100;
+    private static final int CHANGED_USER_TRANSFORM_CELL = 0x200;
 
     /** The type of the 2D window. */
     public enum Type {
@@ -105,7 +112,7 @@ public abstract class Window2D {
     private Point pixelOffset = new Point(0, 0);
     /** The size of the window specified by the application. */
     private Dimension size = new Dimension(1, 1);
-    /** The initial size of the pixels of the window's views (specified by WFS). */
+    /** The initial size of the pixels of the window's views. */
     protected Vector2f pixelScale;
     /** The string to display as the window title */
     protected String title;
@@ -123,6 +130,8 @@ public abstract class Window2D {
     protected ArrayList<MouseWheelListener> mouseWheelListeners = null;
     /** The views associated with this window. */
     private LinkedList<View2D> views = new LinkedList<View2D>();
+    /** The views of the window which are cell views. */
+    private LinkedList<View2DCell> cellViews = new LinkedList<View2DCell>();
     /** The app to which this window belongs */
     protected App2D app;
     /** The name of the window. */
@@ -148,6 +157,17 @@ public abstract class Window2D {
     private boolean coplanar;
     /** The surface the client on which subclasses should draw. */
     protected DrawingSurface surface;
+
+    /** 
+     * Whether this window can be resized interactively by the user. This attribute only applies to decorated
+     * windows. The resize corner of the window's view frames are not enabled unless this attribute is true.
+     */
+    private boolean userResizable = false;
+
+    /**
+     * The user transform of the window as displayed in a cell.
+     */
+    private CellTransform userTransformCell;
 
     /** A type for entries in the entityComponents list. */
     private static class EntityComponentEntry {
@@ -213,7 +233,9 @@ public abstract class Window2D {
         this.app = app;
         this.size = new Dimension(width, height);
         this.decorated = decorated;
-        this.pixelScale = new Vector2f(pixelScale);
+        if (pixelScale != null) {
+            this.pixelScale = new Vector2f(pixelScale);
+        }
         this.name = name;
 
         this.surface = surface;
@@ -332,20 +354,24 @@ public abstract class Window2D {
     /**
      * {@inheritDoc}
      */
-    public synchronized void cleanup() {
-        setParent(null);
-        texture = null;
-        if (surface != null) {
-            surface.setUpdateEnable(false);
-            surface.cleanup();
-            surface = null;
+    public void cleanup() {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                setParent(null);
+                texture = null;
+                if (surface != null) {
+                    surface.setUpdateEnable(false);
+                    surface.cleanup();
+                    surface = null;
+                }
+                if (app != null) {
+                    app.removeWindow(this);
+                    app = null;
+                }
+                visibleApp = false;
+            }
         }
-        if (app != null) {
-            App2D theApp = app;
-            app = null;
-            theApp.removeWindow(this);
-        }
-        visibleApp = false;
     }
 
     /**
@@ -740,13 +766,31 @@ public abstract class Window2D {
         return title;
     }
 
-     /**
-      * Specify whether this window is in the same local Z plane as its parent.
-      * Ignored by non-popups.
-      * <br><br>
-      * NOTE: You must set this attribute only when the window is not visible.
-      * Otherwise an exception is thrown.
-      */
+    /**
+     * Specifies whether the window is able to be interactively resized by the user.
+     */
+    public void setUserResizable (boolean userResizable) {
+        if (this.userResizable == userResizable) return;
+        this.userResizable = userResizable;
+        changeMask |= CHANGED_USER_RESIZABLE;
+        updateViews();
+    }
+
+    /**
+     * Returns whether the window can be interactively resized by the user.
+     * The default is false.
+     */
+    public boolean isUserResizable () {
+        return userResizable;
+    }
+
+    /**
+     * Specify whether this window is in the same local Z plane as its parent.
+     * Ignored by non-popups.
+     * <br><br>
+     * NOTE: You must set this attribute only when the window is not visible.
+     * Otherwise an exception is thrown.
+     */
     public synchronized void setCoplanar (boolean coplanar) {
         if (isVisibleApp()) {
             throw new RuntimeException("Cannot call setCoplanar when the window is visible.");
@@ -762,7 +806,7 @@ public abstract class Window2D {
     /** 
      * Returns whether this window is in the same local Z plane as its parent.
      */
-    public synchronized boolean isCoplanar () {
+    public boolean isCoplanar () {
         return coplanar;
     }
 
@@ -1049,13 +1093,18 @@ public abstract class Window2D {
      *
      * @param listener The key listener to add.
      */
-    public synchronized void removeKeyListener(KeyListener listener) {
-        if (keyListeners == null) {
-            return;
-        }
-        keyListeners.remove(listener);
-        if (keyListeners.size() == 0) {
-            keyListeners = null;
+    public void removeKeyListener(KeyListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (keyListeners == null) {
+                    return;
+                }
+                keyListeners.remove(listener);
+                if (keyListeners.size() == 0) {
+                    keyListeners = null;
+                }
+            }
         }
     }
 
@@ -1064,13 +1113,18 @@ public abstract class Window2D {
      *
      * @param listener The mouse listener to remove.
      */
-    public synchronized void removeMouseListener(MouseListener listener) {
-        if (mouseListeners == null) {
-            return;
-        }
-        mouseListeners.remove(listener);
-        if (mouseListeners.size() == 0) {
-            mouseListeners = null;
+    public void removeMouseListener(MouseListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (mouseListeners == null) {
+                    return;
+                }
+                mouseListeners.remove(listener);
+                if (mouseListeners.size() == 0) {
+                    mouseListeners = null;
+                }
+            }
         }
     }
 
@@ -1079,13 +1133,18 @@ public abstract class Window2D {
      *
      * @param listener The mouse motion listener to remove.
      */
-    public synchronized void removeMouseMotionListener(MouseMotionListener listener) {
-        if (mouseMotionListeners == null) {
-            return;
-        }
-        mouseMotionListeners.remove(listener);
-        if (mouseMotionListeners.size() == 0) {
-            mouseMotionListeners = null;
+    public void removeMouseMotionListener(MouseMotionListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (mouseMotionListeners == null) {
+                    return;
+                }
+                mouseMotionListeners.remove(listener);
+                if (mouseMotionListeners.size() == 0) {
+                    mouseMotionListeners = null;
+                }
+            }
         }
     }
 
@@ -1094,13 +1153,18 @@ public abstract class Window2D {
      *
      * @param listener The mouse wheel listener to remove.
      */
-    public synchronized void removeMouseWheelListener(MouseWheelListener listener) {
-        if (mouseWheelListeners == null) {
-            return;
-        }
-        mouseWheelListeners.remove(listener);
-        if (mouseWheelListeners.size() == 0) {
-            mouseWheelListeners = null;
+    public void removeMouseWheelListener(MouseWheelListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (mouseWheelListeners == null) {
+                    return;
+                }
+                mouseWheelListeners.remove(listener);
+                if (mouseWheelListeners.size() == 0) {
+                    mouseWheelListeners = null;
+                }
+            }
         }
     }
 
@@ -1140,8 +1204,11 @@ public abstract class Window2D {
      * Remove a close listener from this window. 
      */
     public void removeCloseListener (CloseListener listener) {
-        synchronized (closeListeners) {
-            closeListeners.remove(listener);
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (closeListeners) {
+                closeListeners.remove(listener);
+            }
         }
     }
 
@@ -1172,11 +1239,16 @@ public abstract class Window2D {
      * Remove an event listener from all of this window's views.
      * @param listener The listener to remove.
      */
-    public synchronized void removeEventListener(EventListener listener) {
-        if (eventListeners.contains(listener)) {
-            eventListeners.remove(listener);
-            for (View2D view : views) {
-                view.removeEventListener(listener);
+    public void removeEventListener(EventListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (eventListeners.contains(listener)) {
+                    eventListeners.remove(listener);
+                    for (View2D view : views) {
+                        view.removeEventListener(listener);
+                    }
+                }
             }
         }
     }
@@ -1185,7 +1257,7 @@ public abstract class Window2D {
      * Does this window's views have the given listener attached to them?
      * @param listener The listener to check.
      */
-    public synchronized boolean hasEventListener(EventListener listener) {
+    public boolean hasEventListener(EventListener listener) {
         return eventListeners.contains(listener);
     }
 
@@ -1216,12 +1288,17 @@ public abstract class Window2D {
     /**
      * Remove an entity component from this window's view that have them.
      */
-    public synchronized void removeEntityComponent(Class clazz) {
-        EntityComponentEntry entry = entityComponentEntryForClass(clazz);
-        if (entry != null) {
-            entityComponents.remove(entry);
-            for (View2D view : views) {
-                view.removeEntityComponent(clazz);
+    public void removeEntityComponent(Class clazz) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                EntityComponentEntry entry = entityComponentEntryForClass(clazz);
+                if (entry != null) {
+                    entityComponents.remove(entry);
+                    for (View2D view : views) {
+                        view.removeEntityComponent(clazz);
+                    }
+                }
             }
         }
     }
@@ -1230,7 +1307,7 @@ public abstract class Window2D {
      * Returns the entity component of the given class which this window's views have attached.
      * @param listener The listener to check.
      */
-    public synchronized EntityComponent getEntityComponent(Class clazz) {
+    public EntityComponent getEntityComponent(Class clazz) {
         EntityComponentEntry entry = entityComponentEntryForClass(clazz);
         if (entry == null) {
             return null;
@@ -1256,6 +1333,9 @@ public abstract class Window2D {
         }
 
         views.add(view);
+        if (view instanceof View2DCell) {
+            cellViews.add((View2DCell)view);
+        }
         addViewForDisplayer(view);
 
         changeMask = CHANGED_ALL;
@@ -1273,16 +1353,24 @@ public abstract class Window2D {
     /**
      * Removes a view from the window.
      */
-    public synchronized void removeView(View2D view) {
-        if (views.remove(view)) {
-            removeViewForDisplayer(view);
-
-            // Detach event listeners and entity components to this new view
-            for (EventListener listener : eventListeners) {
-                view.removeEventListener(listener);
-            }
-            for (EntityComponentEntry entry : entityComponents) {
-                view.removeEntityComponent(entry.clazz);
+    public void removeView(View2D view) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                if (views.remove(view)) {
+                    if (view instanceof View2DCell) {
+                        cellViews.remove((View2DCell)view);
+                    }
+                    removeViewForDisplayer(view);
+                    
+                    // Detach event listeners and entity components to this new view
+                    for (EventListener listener : eventListeners) {
+                        view.removeEventListener(listener);
+                    }
+                    for (EntityComponentEntry entry : entityComponents) {
+                        view.removeEntityComponent(entry.clazz);
+                    }
+                }
             }
         }
     }
@@ -1290,13 +1378,19 @@ public abstract class Window2D {
     /**
      * Remove all views from the window.
      */
-    public synchronized void removeViewsAll() {
-        LinkedList<View2D> viewsToRemove = (LinkedList<View2D>) views.clone();
-        for (View2D view : viewsToRemove) {
-            View2DDisplayer displayer = view.getDisplayer();
-            displayer.destroyView(view);
+    public void removeViewsAll() {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                LinkedList<View2D> viewsToRemove = (LinkedList<View2D>) views.clone();
+                for (View2D view : viewsToRemove) {
+                    View2DDisplayer displayer = view.getDisplayer();
+                    displayer.destroyView(view);
+                }
+                views.clear();
+                cellViews.clear();
+            }
         }
-        views.clear();
     }
 
     /** Add a new view for the displayer of the view. */
@@ -1307,22 +1401,94 @@ public abstract class Window2D {
 
     /** Remove a view for the displayer of the view. */
     private void removeViewForDisplayer(View2D view) {
-        View2DDisplayer displayer = view.getDisplayer();
-        displayerToView.remove(displayer);
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (this) {
+                View2DDisplayer displayer = view.getDisplayer();
+                displayerToView.remove(displayer);
+            }
+        }
     }
 
     /**
      * Returns the view of this window in the given displayer.
      */
-    public synchronized View2D getView(View2DDisplayer displayer) {
+    public View2D getView(View2DDisplayer displayer) {
         return displayerToView.get(displayer);
     }
 
     /**
      * Returns an iterator over the views of this window for all displayers.
      */
-    public synchronized Iterator<View2D> getViews() {
+    public Iterator<View2D> getViews() {
         return views.iterator();
+    }
+
+    /** Change user transform of this window in all cell views. No other clients are notified. */
+    public void setUserTransformCellLocal (CellTransform transform) {
+        userTransformCell = transform;
+        changeMask |= CHANGED_USER_TRANSFORM_CELL;
+        updateViews();
+    }
+
+    /** Returns the user transform of this window in it's cell views. */
+    public CellTransform getUserTransformCell () {
+        // Note: only need to get the transform from the first cell because syncUserTransformCell
+        // makes sure that the transform is the same in all cell views.
+        View2DCell cellView = null;
+        try {
+            cellView = cellViews.getFirst();
+        } catch (NoSuchElementException ex) {}
+        if (cellView == null) {
+            // Return identity. (This happens in the SAS).
+            return new CellTransform(null, null);
+        }
+            
+        return cellView.getUserTransformCell();
+    }
+
+    /**
+     * Called by the view code when the user changes the user cell transform.
+     * @param transform The new transform.
+     * @param changingView The view the user manipulated to change the transform.
+     */
+    public void changedUserTransformCell (CellTransform transform, View2D changingView) {
+        (new UserTransformCellNotifier(transform, changingView)).execute();
+    }
+
+    /**
+     * A SwingWorker which performs the notification of a change to the user cell transform
+     * on a generic thread.
+     */
+    private class UserTransformCellNotifier extends SwingWorker<String, Object> {
+        private CellTransform transform;
+        private View2D changingView;
+
+        private UserTransformCellNotifier (CellTransform transform, View2D changingView) {
+            this.transform = transform;
+            this.changingView = changingView;
+        }
+
+        @Override
+        public String doInBackground() {
+            notifyUserTransformCell(transform, changingView);
+            return null;
+        }
+    }
+
+    /**
+     * Notifies other cell views in this client that the user has changed the user cell transform 
+     * in a view of this window.
+     * @param transform The new transform.
+     * @param changingView The view the user manipulated to change the transform.
+     */
+    public synchronized void notifyUserTransformCell (CellTransform transform, View2D changingView) {
+        for (View2DCell view : cellViews) {
+            if (view != changingView) {
+                // Notify other clients as well
+                view.setUserTransformCellLocal(transform);
+            }
+        }        
     }
 
     /** {@inheritDoc}
@@ -1391,8 +1557,17 @@ public abstract class Window2D {
             if ((changeMask & CHANGED_TITLE) != 0) {
                 view.setTitle(title, false);
             }
+            if ((changeMask & CHANGED_USER_RESIZABLE) != 0) {
+                view.setUserResizable(userResizable, false);
+            }
             if ((changeMask & CHANGED_STACK) != 0) {
                 view.stackChanged(false);
+            }
+            if ((changeMask & CHANGED_USER_TRANSFORM_CELL) != 0 && view instanceof View2DCell) {
+                // Only change on this client
+                if (userTransformCell != null) {
+                    ((View2DCell)view).setUserTransformCellLocal(userTransformCell);
+                }
             }
             view.update();
         }
@@ -1633,13 +1808,13 @@ public abstract class Window2D {
                         }
                     }));
 
-                /* TODO: eventually add:
-                 menuItems[1] = SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
-                 public void actionPerformed(ContextMenuItemEvent event) {
-                 System.err.println("Show in HUD Not yet implemented.");
-                 }
-                 })
-                */
+                // ITEM 4: Show in HUD
+                menuItems.add(
+                    new SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
+                        public void actionPerformed(ContextMenuItemEvent event) {
+                            app.setShowInHUD(true);
+                        }
+                        }));
             }
 
             return menuItems.toArray(new ContextMenuItem[1]);

@@ -23,18 +23,22 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectio
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.DisconnectCallMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.VoiceChatMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlaceCallRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.PlayTreatmentRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.TransferCallRequestMessage;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.EndCallMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.CallEndedMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.CallMigrateMessage;
+
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage;
 
 import org.jdesktop.wonderland.common.comms.ConnectionType;
-
 
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -48,11 +52,11 @@ import java.io.Serializable;
 
 import java.util.logging.Logger;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.Properties;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.util.ScalableHashMap;
 
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.BridgeInfo;
@@ -60,10 +64,11 @@ import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.CallSetup;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerSetup;
+import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
 
 import com.sun.voip.CallParticipant;
-
 
 import java.io.IOException;
 
@@ -79,8 +84,9 @@ public class AudioManagerConnectionHandler
 
     private static final Logger logger =
             Logger.getLogger(AudioManagerConnectionHandler.class.getName());
-    private ConcurrentHashMap<BigInteger, String> sessionCallIDMap =
-            new ConcurrentHashMap();
+
+    private ManagedReference<ScalableHashMap<BigInteger, String>> sessionCallIDMapRef;
+
     private static AudioManagerConnectionHandler handler;
 
     public static AudioManagerConnectionHandler getInstance() {
@@ -93,6 +99,10 @@ public class AudioManagerConnectionHandler
 
     private AudioManagerConnectionHandler() {
         super();
+
+	ScalableHashMap<BigInteger, String> sessionCallIDMap = new ScalableHashMap();
+
+	sessionCallIDMapRef = AppContext.getDataManager().createReference(sessionCallIDMap);
     }
 
     public ConnectionType getConnectionType() {
@@ -114,7 +124,7 @@ public class AudioManagerConnectionHandler
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        if (message instanceof GetVoiceBridgeMessage) {
+        if (message instanceof GetVoiceBridgeRequestMessage) {
             //System.out.println("Got GetVoiceBridgeMessage");
 
             BridgeInfo bridgeInfo;
@@ -132,15 +142,38 @@ public class AudioManagerConnectionHandler
             return;
         }
 
-        if (message instanceof PlaceCallMessage) {
+        if (message instanceof PlaceCallRequestMessage) {
             logger.fine("Got PlaceCallMessage from " + clientID);
 
-            placeCall(clientID, (PlaceCallMessage) message);
+            placeCall(clientID, (PlaceCallRequestMessage) message);
             return;
         }
 
-        if (message instanceof MuteCallMessage) {
-            MuteCallMessage msg = (MuteCallMessage) message;
+	if (message instanceof EndCallMessage) {
+	    EndCallMessage msg = (EndCallMessage) message;
+
+            String callID = msg.getCallID();
+
+            Call call = vm.getCall(callID);
+
+            if (call == null) {
+                logger.fine("Unable to end call " + callID);
+                return;
+            }
+
+	    try {
+		vm.endCall(call, true);
+            } catch (IOException e) {
+                logger.warning(
+                    "Unable to end call " + call + ":  " + e.getMessage());
+            }
+
+	    sender.send(new CallEndedMessage(msg.getCallID(), msg.getReason()));
+	    return;
+	}
+
+        if (message instanceof MuteCallRequestMessage) {
+            MuteCallRequestMessage msg = (MuteCallRequestMessage) message;
 
             String callID = msg.getCallID();
 
@@ -161,8 +194,8 @@ public class AudioManagerConnectionHandler
             return;
         }
 
-        if (message instanceof TransferCallMessage) {
-            TransferCallMessage msg = (TransferCallMessage) message;
+        if (message instanceof TransferCallRequestMessage) {
+            TransferCallRequestMessage msg = (TransferCallRequestMessage) message;
 
             String callID = msg.getPresenceInfo().callID;
 
@@ -187,8 +220,8 @@ public class AudioManagerConnectionHandler
                     orientation = player.getOrientation();
                 }
 
-                placeCall(clientID, new PlaceCallMessage(msg.getPresenceInfo(), msg.getPhoneNumber(),
-                        x, y, z, orientation, true));
+                placeCall(clientID, new PlaceCallRequestMessage(msg.getPresenceInfo(), 
+		    msg.getPhoneNumber(), x, y, z, orientation, true));
                 return;
             }
 
@@ -204,17 +237,7 @@ public class AudioManagerConnectionHandler
             }
 
             if (msg.getPhoneNumber().equals(cp.getPhoneNumber())) {
-                CellMO cellMO = CellManagerMO.getCellManager().getCell(msg.getPresenceInfo().cellID);
-
-                AudioParticipantComponentMO audioParticipantComponentMO =
-                        cellMO.getComponent(AudioParticipantComponentMO.class);
-
-                if (audioParticipantComponentMO == null) {
-                    logger.warning("Cell " + cellMO.getCellID() + " doesn't have an AudioParticipantComponent!");
-                    return;
-                }
-
-                audioParticipantComponentMO.callTransferToSameNumber();
+		sender.send(clientID, new CallMigrateMessage(msg.getPresenceInfo().callID, true));
                 return;
             }
 
@@ -230,10 +253,15 @@ public class AudioManagerConnectionHandler
             return;
         }
 
-        if (message instanceof DisconnectCallMessage) {
-            logger.fine("got DisconnectCallMessage");
-            return;
-        }
+	if (message instanceof AudioVolumeMessage) {
+	    changeAudioVolume((AudioVolumeMessage) message);
+	    return;
+	}
+
+	if (message instanceof ChangeUsernameAliasMessage) {
+	    sender.send(message);
+	    return;
+	}
 
         if (message instanceof VoiceChatMessage) {
             VoiceChatHandler.getInstance().processVoiceChatMessage(sender, clientID,
@@ -241,8 +269,8 @@ public class AudioManagerConnectionHandler
             return;
         }
 
-        if (message instanceof PlayTreatmentMessage) {
-            PlayTreatmentMessage msg = (PlayTreatmentMessage) message;
+        if (message instanceof PlayTreatmentRequestMessage) {
+            PlayTreatmentRequestMessage msg = (PlayTreatmentRequestMessage) message;
 
             Call call = vm.getCall(msg.getCallID());
 
@@ -254,7 +282,8 @@ public class AudioManagerConnectionHandler
             try {
                 call.playTreatment(msg.getTreatment());
             } catch (IOException e) {
-                logger.warning("Unable to play treatment " + msg.getTreatment() + " to call " + call + ": " + e.getMessage());
+                logger.warning("Unable to play treatment " + msg.getTreatment() 
+		    + " to call " + call + ": " + e.getMessage());
             }
             return;
         }
@@ -262,7 +291,7 @@ public class AudioManagerConnectionHandler
         throw new UnsupportedOperationException("Unknown message:  " + message);
     }
 
-    private void placeCall(WonderlandClientID clientID, PlaceCallMessage msg) {
+    private void placeCall(WonderlandClientID clientID, PlaceCallRequestMessage msg) {
         PresenceInfo info = msg.getPresenceInfo();
 
         CellMO cellMO = CellManagerMO.getCellManager().getCell(info.cellID);
@@ -290,8 +319,7 @@ public class AudioManagerConnectionHandler
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        vm.removeCallStatusListener(audioParticipantComponentMO, callID);
-        vm.addCallStatusListener(audioParticipantComponentMO, callID);
+        new AudioCallStatusListener(clientID, callID);
 
         cp.setCallId(callID);
         cp.setName(info.userID.getUsername());
@@ -305,13 +333,13 @@ public class AudioManagerConnectionHandler
         cp.setVoiceDetectionWhileMuted(true);
         cp.setHandleSessionProgress(true);
 
-        sessionCallIDMap.put(clientID.getID(), callID);
+        sessionCallIDMapRef.get().put(clientID.getID(), callID);
 
         try {
             setupCall(callID, setup, msg.getX(), msg.getY(), msg.getZ(), msg.getDirection());
         } catch (IOException e) {
             logger.warning("Unable to place call " + cp + " " + e.getMessage());
-            sessionCallIDMap.remove(clientID.getID());
+            sessionCallIDMapRef.get().remove(clientID.getID());
         }
     }
 
@@ -377,17 +405,74 @@ public class AudioManagerConnectionHandler
         vm.getVoiceManagerParameters().stationaryPlayerAudioGroup.addPlayer(player, info);
     }
 
+    private void changeAudioVolume(AudioVolumeMessage msg) {
+	String softphoneCallID = msg.getSoftphoneCallID();
+
+	String otherCallID = msg.getOtherCallID();
+
+        double volume = msg.getVolume();
+
+        logger.fine("GOT Volume message:  call " + softphoneCallID
+	    + " volume " + volume + " other callID " + otherCallID);
+
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        Player softphonePlayer = vm.getPlayer(softphoneCallID);
+
+        if (softphonePlayer == null) {
+            logger.warning("Can't find softphone player, callID " + softphoneCallID);
+            return;
+        }
+
+        if (softphoneCallID.equals(otherCallID)) {
+            softphonePlayer.setMasterVolume(volume);
+            return;
+        }
+
+        Player player = vm.getPlayer(otherCallID);
+
+ 	if (player == null) {
+            logger.warning("Can't find player for callID " + otherCallID);
+	    return;
+        } 
+
+	if (volume == 1.0) {
+	    softphonePlayer.removePrivateSpatializer(player);
+	    return;
+	}
+
+	VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
+
+        Spatializer spatializer;
+
+	spatializer = player.getPublicSpatializer();
+
+	if (spatializer != null) {
+	    spatializer = (Spatializer) spatializer.clone();
+	} else {
+	    if (player.getSetup().isLivePlayer) {
+		spatializer = (Spatializer) parameters.livePlayerSpatializer.clone();
+	    } else {
+		spatializer = (Spatializer) parameters.stationarySpatializer.clone();
+	    }
+	}
+
+        spatializer.setAttenuator(volume);
+
+        softphonePlayer.setPrivateSpatializer(player, spatializer);
+    }
+
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         BigInteger sessionID = clientID.getID();
 
-        String callID = sessionCallIDMap.get(sessionID);
+        String callID = sessionCallIDMapRef.get().get(sessionID);
 
         if (callID == null) {
             logger.warning("Unable to find callID for client session " + sessionID);
             return;
         }
 
-        sessionCallIDMap.remove(sessionID);
+        sessionCallIDMapRef.get().remove(sessionID);
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -410,5 +495,6 @@ public class AudioManagerConnectionHandler
             logger.warning("Unable to end call " + call + " " + e.getMessage());
         }
     }
+
 }
 

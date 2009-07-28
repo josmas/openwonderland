@@ -30,9 +30,7 @@ import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Rotation;
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 
 /**
@@ -105,12 +103,10 @@ public class CellUtils {
         
         // Create a position component that will set the initial origin
         PositionComponentServerState position = new PositionComponentServerState();
-        position.setOrigin(new Origin(origin));
+        position.setTranslation(origin);
         Quaternion quaternion = new Quaternion();
         quaternion.lookAt(cameraLookDirection.negate(), new Vector3f(0, 1, 0));
-        Vector3f axis = new Vector3f();
-        float angle = quaternion.toAngleAxis(axis);
-        position.setRotation(new Rotation(axis, angle));
+        position.setRotation(quaternion);
         state.addComponentServerState(position);
 
         // Send the message to the server
@@ -128,12 +124,12 @@ public class CellUtils {
      * Note: currently always returns true because the server doesn't send 
      * any response to the cell delete message.
      */
-    public static boolean deleteCell (CellID cellID) {
+    public static boolean deleteCell (Cell cell) {
 
-        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+        WonderlandSession session = cell.getCellCache().getSession();
         CellEditChannelConnection connection = (CellEditChannelConnection)
             session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-        CellDeleteMessage msg = new CellDeleteMessage(cellID);
+        CellDeleteMessage msg = new CellDeleteMessage(cell.getCellID());
         connection.send(msg);
 
         // TODO: there really really should be an OK/Error response from the server!

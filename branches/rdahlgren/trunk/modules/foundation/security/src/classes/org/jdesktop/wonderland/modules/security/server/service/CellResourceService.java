@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.security.server.service;
 
+import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
 import com.sun.sgs.impl.util.AbstractService;
@@ -27,7 +28,11 @@ import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -39,11 +44,13 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.security.Action;
+import org.jdesktop.wonderland.common.security.annotation.Actions;
 import org.jdesktop.wonderland.modules.security.common.ActionDTO;
 import org.jdesktop.wonderland.modules.security.common.Permission;
 import org.jdesktop.wonderland.modules.security.common.Permission.Access;
 import org.jdesktop.wonderland.modules.security.common.Principal;
 import org.jdesktop.wonderland.modules.security.server.SecurityComponentMO;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.security.Resource;
@@ -71,9 +78,6 @@ public class CellResourceService extends AbstractService {
 
     /** The minor version. */
     private static final int MINOR_VERSION = 0;
-
-    /** Placeholder for a null resource */
-    private static final CellResourceImpl NULL_RESOURCE = new CellResourceImpl("null");
 
     /** the component registry */
     private ComponentRegistry registry;
@@ -106,9 +110,7 @@ public class CellResourceService extends AbstractService {
         };
 
         try {
-            /*
-	         * Check service version.
- 	         */
+            // Check service version
             transactionScheduler.runTask(new KernelRunnable() {
                 public String getBaseTaskType() {
                     return NAME + ".VersionCheckRunner";
@@ -125,6 +127,43 @@ public class CellResourceService extends AbstractService {
     }
 
     public Resource getCellResource(CellID cellID) {
+        List<CellResourceImpl> cells = new ArrayList<CellResourceImpl>();
+        boolean allNull = true;
+
+        // construct a tree by walking from this cell up to the root
+        while (cellID != null) {
+            CellResourceImpl curCell = getCellResourceImpl(cellID);
+            if (curCell == null) {
+                break;
+            }
+
+            // if there is a non-null resource, record that so that
+            // we actually return a value at the end of the method
+            if (!(curCell instanceof NullResourceImpl)) {
+                allNull = false;
+            }
+            
+            cells.add(curCell);
+            cellID = curCell.getParentID();
+        }
+
+        // make sure there were some non-null contexts
+        if (allNull || cells.size() == 0) {
+            return null;
+        } else {
+            return new CellTreeResourceImpl(cells);
+        }
+    }
+
+    /**
+     * Get the cell resource associated with the given cell ID. A cached
+     * resource is returned if possible.  If the given ID is not in
+     * the cache, a new cache entry will be generated and returned.
+     * @param cellID the ID of the cell to get
+     * @return the cell resource associated with the given ID, or null
+     * if no cell is associated with the given ID.
+     */
+    private CellResourceImpl getCellResourceImpl(CellID cellID) {
         // check the existing context object for this transaction.  This will
         // first check any local changes we have made, and return either the
         // locally modified version or the cached version.
@@ -136,20 +175,29 @@ public class CellResourceService extends AbstractService {
                            cellID);
             }
 
-            // we found a resource.  Before we return it, make sure it's not
-            // the placeholder for a null
-            if (rsrc == NULL_RESOURCE) {
-                return null;
-            } else {
-                return rsrc;
-            }
+            return rsrc;
         }
 
         // if we didn't find the resource in the cache anywhere, recreate
         // it from the cell.
         CellMO cell = CellManagerMO.getCell(cellID);
+        if (cell == null) {
+            return null;
+        }
+
+        // find this cell's parent
+        CellID parentID = null;
+        if (cell.getParent() != null) {
+            parentID = cell.getParent().getCellID();
+        }
+
+        // collect all the actions associated with this cell and its
+        // components
+        Set<Action> allActions = findActions(cell);
+
+        // get the security compnent from the cell
         SecurityComponentMO sc = cell.getComponent(SecurityComponentMO.class);
-        if (sc == null) {
+        if (sc == null || !sc.isOwned()) {
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE, "No security component for cell " +
                            cellID);
@@ -158,14 +206,17 @@ public class CellResourceService extends AbstractService {
             // there is no security component for this cell.  Add a null
             // entry to the cache, so we won't try to look it up every
             // time
-            ctx.addResource(cellID, NULL_RESOURCE);
-            return null;
+            rsrc = new NullResourceImpl(cellID, parentID, allActions);
+            ctx.addResource(cellID, rsrc);
+            return rsrc;
         }
 
         // create a new resource for this cell and add it to the cache
         rsrc = new CellResourceImpl(cellID.toString());
         rsrc.setOwners(sc.getOwners());
         rsrc.setPermissions(sc.getPermissions());
+        rsrc.setParentID(parentID);
+        rsrc.setActions(findActions(cell));
         ctx.addResource(cellID, rsrc);
 
         if (logger.isLoggable(Level.FINE)) {
@@ -177,8 +228,24 @@ public class CellResourceService extends AbstractService {
     }
 
     /**
+     * Get the actions associated with a given cell.  If the cell is not
+     * in the cache, a new cache entry will be created.
+     * @param cellID the id of the cell to get actions for
+     * @return the actions associated with the cell id, or null if no cell is
+     * associated with the given id
+     */
+    public Set<Action> getActions(CellID cellID) {
+        CellResourceImpl rsrc = getCellResourceImpl(cellID);
+        if (rsrc == null) {
+            return null;
+        }
+
+        return rsrc.getActions();
+    }
+
+    /**
      * Update a particular resource in the cache.  If there is no entry
-     * for this cell in the cache, it will be added.
+     * for this cell in the cache, ignore the update.
      * @param cellID the id of the cell to update
      * @param owners the updated owner set
      * @param permissions the update permission set
@@ -192,18 +259,80 @@ public class CellResourceService extends AbstractService {
 
         CellResourceContext ctx = ctxFactory.joinTransaction();
         CellResourceImpl rsrc = ctx.getResource(cellID);
-        if (rsrc == null || rsrc == NULL_RESOURCE) {
-            rsrc = new CellResourceImpl(cellID.toString());
-            ctx.addResource(cellID, rsrc);
-
+        if (rsrc == null) {
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Update created resource for cell " +
+                logger.log(Level.FINE, "Update ignored for non-cached cell " +
                            cellID);
             }
+
+            // no cached resource for this cell, just return
+            return;
+        } else if (rsrc instanceof NullResourceImpl) {
+            // there were no permissions, and now there are some.  Remove
+            // the resource so it will be recreated at the next call to
+            // get()
+            ctx.removeResource(cellID);
+            return;
+        } else {
+            // update the cached copy of the cell with new values
+            rsrc.setOwners(owners);
+            rsrc.setPermissions(permissions);
+        }
+    }
+
+    /**
+     * Update the parent of a particular resource in the cache.  If there is no
+     * entry for this cell in the cache, ignore the update.
+     * @param cellID the id of the cell to update
+     * @param parentID the cellID of the resource's new parent
+     */
+    public void updateCellResource(CellID cellID, CellID parentID) {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Update parent for cell " + cellID);
         }
 
-        rsrc.setOwners(owners);
-        rsrc.setPermissions(permissions);
+        CellResourceContext ctx = ctxFactory.joinTransaction();
+        CellResourceImpl rsrc = ctx.getResource(cellID);
+        if (rsrc != null) {
+            rsrc.setParentID(parentID);
+        }
+    }
+
+    /**
+     * Indicate that the components of the given resource have changed.
+     * If the cell is cached, this method will recalculate the set of
+     * actions for the cell based on the new set of components
+     * @param cellID the id of the cell to update
+     * @param component the component that changed
+     * @param added true if the component was added, or false if it
+     * was removed
+     */
+    public void updateCellResource(CellID cellID, CellComponentMO component,
+                                   boolean added)
+    {
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "Update components for cell " + cellID);
+        }
+
+        CellResourceContext ctx = ctxFactory.joinTransaction();
+        CellResourceImpl rsrc = ctx.getResource(cellID);
+        if (rsrc != null) {
+            if (added) {
+                // find the actions associated with the new component,
+                // and add those to the set associated with this cell.
+                // If there are duplicates, it doesn't matter.
+                Set<Action> addedActions = new HashSet<Action>();
+                getActions(component.getClass(), addedActions);
+                rsrc.getActions().addAll(addedActions);
+            } else {
+                // if a component was removed, we need to recalculate
+                // all the actions (since we don't know if a given
+                // action is referenced by multiple components)
+                // Since that is expensive, just remove the resource and
+                // let everything get recalculated
+                ctx.removeResource(cellID);
+            }
+        }
     }
 
     /**
@@ -215,9 +344,48 @@ public class CellResourceService extends AbstractService {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Invalidate resource for cell " + cellID);
         }
-            
+
         CellResourceContext ctx = ctxFactory.joinTransaction();
         ctx.removeResource(cellID);
+    }
+
+    /**
+     * Find all actions in this cell and its components
+     * @return the set of actions defined by the cell and all its components
+     */
+    protected Set<Action> findActions(CellMO cell) {
+        Set<Action> out = new LinkedHashSet<Action>();
+
+        // add all the actions for the cell
+        getActions(cell.getClass(), out);
+
+        // go through each component and add its actions
+        for (ManagedReference<CellComponentMO> componentRef : cell.getAllComponentRefs()) {
+            getActions(componentRef.get().getClass(), out);
+        }
+
+        return out;
+    }
+
+    /**
+     * Find all action annotations on a given class
+     * @param clazz the class to search
+     * @param actions the set of actions to add to
+     * @return the actions for the class
+     */
+    private void getActions(Class clazz, Set<Action> actions) {
+        Actions classActions = (Actions) clazz.getAnnotation(Actions.class);
+
+        if (classActions != null) {
+            for (Class ac : classActions.value()) {
+                actions.add(Action.getInstance(ac));
+            }
+        }
+
+        // search the superclass for any actions
+        if (clazz.getSuperclass() != null) {
+            getActions(clazz.getSuperclass(), actions);
+        }
     }
 
     @Override
@@ -335,15 +503,107 @@ public class CellResourceService extends AbstractService {
     }
 
     /**
+     * A resource for a tree of cells.
+     */
+    private static class CellTreeResourceImpl implements Resource, Serializable {
+        /**
+         * the list if cells in the tree, sorted with the base first
+         * then other cells until the root of the tree
+         */
+        private List<CellResourceImpl> resources;
+
+        public CellTreeResourceImpl(List<CellResourceImpl> resources) {
+            this.resources = resources;
+        }
+
+        public String getId() {
+            return CellTreeResourceImpl.class.getName() +
+                   "-" + resources.get(0).getId();
+        }
+
+        public Result request(WonderlandIdentity identity, Action action) {
+            Set<Principal> userPrincipals =
+                    UserPrincipals.getUserPrincipals(identity.getUsername(),
+                                                     false);
+            if (userPrincipals == null) {
+                return Result.SCHEDULE;
+            } else if (getPermission(resources, userPrincipals, action)) {
+                return Result.GRANT;
+            } else {
+                return Result.DENY;
+            }
+        }
+
+        public boolean request(WonderlandIdentity identity, Action action,
+                               ComponentRegistry registry)
+        {
+            Set<Principal> userPrincipals =
+                    UserPrincipals.getUserPrincipals(identity.getUsername(),
+                                                     true);
+            return getPermission(resources, userPrincipals, action);
+        }
+
+        protected boolean getPermission(List<CellResourceImpl> resources,
+                                        Set<Principal> userPrincipals,
+                                        Action action)
+        {
+            // no more parents to check
+            if (resources.isEmpty()) {
+                return false;
+            }
+
+            CellResourceImpl cur = resources.get(0);
+            if (cur.getPermission(userPrincipals, action)) {
+                // we have permission
+                return true;
+            }
+
+            // if we don't have permission, move up to the parent. First
+            // make sure the action is a top-level action: we don't
+            // query sub-actions on the parent
+            action = getTopLevelAction(action);
+            return getPermission(resources.subList(1, resources.size()),
+                                 userPrincipals, action);
+
+        }
+
+        protected Action getTopLevelAction(Action action) {
+            if (action.getParent() != null) {
+                return getTopLevelAction(action.getParent());
+            }
+
+            return action;
+        }
+    }
+
+    /**
      * A resource for a particular cell
      */
     private static class CellResourceImpl implements Resource, Serializable {
         private String cellID;
         private SortedSet<Permission> permissions;
         private Set<Principal> owners;
+        private Set<Action> allActions;
+        private CellID parentID;
 
         public CellResourceImpl(String cellID) {
             this.cellID = cellID;
+        }
+
+        public void setParentID(CellID parentID) {
+            this.parentID = parentID;
+        }
+
+        public CellID getParentID() {
+            return parentID;
+        }
+
+        public void setActions(Set<Action> allActions) {
+            this.allActions = allActions;
+        }
+
+        public Set<Action> getActions() {
+            return allActions;
         }
 
         public void setPermissions(SortedSet<Permission> permissions) {
@@ -445,6 +705,38 @@ public class CellResourceService extends AbstractService {
             // if we get here, the permission was a top-level permission that
             // was not specified.  Default to deny.
             return false;
+        }
+
+        @Override
+        public String toString() {
+            return "{CellResource:" + getId() + ":" + getParentID() + "}";
+        }
+    }
+
+    /**
+     * A placeholder resource implementation that has no data
+     */
+    private static class NullResourceImpl extends CellResourceImpl {
+        public NullResourceImpl(CellID cellID, CellID parentID,
+                                Set<Action> allActions)
+        {
+            super (cellID.toString());
+
+            setParentID(parentID);
+            setActions(allActions);
+        }
+
+        // always return false
+        @Override
+        protected boolean getPermission(Set<Principal> userPrincipals,
+                                        Action action)
+        {
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return "{NullResource:" + getId() + ":" + getParentID() + "}";
         }
     }
 }

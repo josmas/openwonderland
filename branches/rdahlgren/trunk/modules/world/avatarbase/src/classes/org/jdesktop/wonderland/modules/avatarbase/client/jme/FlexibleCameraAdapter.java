@@ -92,7 +92,6 @@ public class FlexibleCameraAdapter implements CameraController {
         double newTime = System.nanoTime() / 1000000000.0;
         deltaTime = (newTime - oldTime);
         oldTime = newTime;
-        handleLocalInput();
 
         if (model != null)
         {    
@@ -128,26 +127,6 @@ public class FlexibleCameraAdapter implements CameraController {
     
     public AbstractCameraState getState() {
         return state;
-    }
-
-    private void handleLocalInput() {
-        InputEvent[] events = null;
-        synchronized (this) {
-            events = inputEvents.toArray(new InputEvent[inputEvents.size()]);
-        }
-        for (InputEvent event : events) {
-            if (event instanceof KeyEvent) {
-                KeyEvent ke = (KeyEvent) event;
-                switch (ke.getKeyCode()) {
-                    case KeyEvent.VK_L:
-                        // dump some debugging info
-                        System.out.println("FlexibleCameraAdapter xform is " + transform);
-                        break;
-                    default:
-                        // do nothing
-                }
-            }
-        }
     }
 
     /**

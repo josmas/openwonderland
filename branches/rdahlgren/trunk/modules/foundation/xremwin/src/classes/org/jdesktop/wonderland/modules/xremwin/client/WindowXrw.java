@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.xremwin.client;
 
 import com.jme.math.Vector2f;
+import com.jme.math.Vector3f;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.math.BigInteger;
@@ -25,6 +26,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.WindowConventional;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 
 /**
  * The Xremwin window class. 
@@ -78,6 +82,9 @@ public class WindowXrw extends WindowConventional {
         }
 
         setScreenPosition(x, y);
+
+        // TODO: disable resize corner until bugs are fixed
+        //setUserResizable(true);
     }
 
     /**
@@ -261,8 +268,9 @@ public class WindowXrw extends WindowConventional {
      * Returns the name of the controlling user.
      */
     public String getControllingUser() {
-        // TODO: return ((ControlArbXrw) app.getControlArb()).getController();
-        return null;
+        ControlArb controlArb = app.getControlArb();
+        if (controlArb instanceof ControlArbNull) return null;
+        return ((ControlArbXrw) controlArb).getController();
     }
 
     /**
@@ -296,6 +304,23 @@ public class WindowXrw extends WindowConventional {
         }
 
         super.deliverEvent(event);
+    }
+
+    /**
+     * Notifies other clients that the user has changed the user cell transform in a view
+     * of this window.
+     * @param transform The new transform.
+     * @param changingView The view the user manipulated to change the transform.
+     */
+    @Override
+    public synchronized void notifyUserTransformCell (CellTransform transform, View2D changingView) {
+
+        // TODO: someday: this is currently only used for planar moves of secondary windows.
+        // Since we cannot currently rotate secondaries, we can just extract the translation and
+        // use the client method windowSetUserDisplacement.
+        Vector3f userTranslation = transform.getTranslation(null);
+        ClientXrw client = ((AppXrw) app).getClient();
+        client.windowSetUserDisplacement(this, userTranslation);
     }
 
     /** {@inheritDoc} */

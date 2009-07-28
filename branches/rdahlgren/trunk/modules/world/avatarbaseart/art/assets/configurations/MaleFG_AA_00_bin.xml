@@ -3,7 +3,7 @@
     <Attributes>
         <Name>Avatar</Name>
         <Gender>1</Gender>
-        <HeadAttachment>imi/character/data/blackHead.bhf</HeadAttachment>
+	<HeadAttachment>assets/models/collada/Heads/Binary/blackHead.bhf</HeadAttachment>
         <LoadingInstructions>
 		assets/models/collada/Avatars/MaleAvatar/Male_Hands.dae
         </LoadingInstructions>

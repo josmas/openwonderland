@@ -3,7 +3,7 @@
     <Attributes>
         <Name>FemaleAvatar</Name>
         <Gender>2</Gender>
-        <HeadAttachment>imi/character/data/AsianFemaleHead.bhf</HeadAttachment>
+	<HeadAttachment>assets/models/collada/Heads/Binary/AsianFemaleHead.bhf</HeadAttachment>
         <LoadingInstructions>
 		assets/models/collada/Clothing/FemaleClothing/Female_ConverseShoes.dae
         </LoadingInstructions>
@@ -2982,9 +2982,9 @@
             <TextureApplyMode>Modulate</TextureApplyMode>
         </Textures>
         <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <AmbientColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
-        <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <SpecularColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
         <Shaders>
             <Program>
                 <DefaultProgramName>imi.shader.programs.FleshShader</DefaultProgramName>
@@ -3273,7 +3273,7 @@
             <TextureApplyMode>Modulate</TextureApplyMode>
         </Textures>
         <DiffuseColor alpha="1.0" blue="1.0" green="1.0" red="1.0"/>
-        <AmbientColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
+        <AmbientColor alpha="1.0" blue="1.0" green="0.0" red="1.0"/>
         <EmissiveColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <SpecularColor alpha="1.0" blue="0.0" green="0.0" red="0.0"/>
         <Shaders>

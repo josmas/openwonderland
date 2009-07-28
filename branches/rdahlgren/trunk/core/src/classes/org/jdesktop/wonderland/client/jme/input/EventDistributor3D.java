@@ -59,6 +59,8 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
             processMouseKeyboardEvent(event, destPickInfo, hitPickInfo);
         } else if (event instanceof KeyEvent3D) {
             processMouseKeyboardEvent(event, mousePickInfoPrev, null);
+        } else if (event instanceof FocusEvent3D) {
+            processFocusEvent((FocusEvent3D)event);
         } else if (event instanceof FocusChangeEvent) {
             processFocusChangeEvent(((FocusChangeEvent) event).getChanges());
         } else if (event instanceof Event) {
@@ -164,6 +166,13 @@ public class EventDistributor3D extends EventDistributor implements Runnable {
             pickDetails = destPickInfo.get(idx);
             logger.fine("pickDetails = " + pickDetails);
         }
+    }
+
+    protected void processFocusEvent(FocusEvent3D event) {
+        logger.fine("Distributor: received focus event = " + event);
+
+        // Focus enty has no associated entity, so only try global listeners
+        tryGlobalListeners(event);
     }
 
     protected void processSwingEnterExitEvent(Event event, Entity entity) {

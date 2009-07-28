@@ -27,6 +27,8 @@ import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientS
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.MasterSocketSet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import com.jme.math.Vector3f;
 
 /**
  * The module in the master which broadcasts xremwin messages to slaves.
@@ -175,7 +177,7 @@ class SlaveForwarder {
                 byte[] buf = new byte[4];
                 encode(buf, 0, numWins);
                 unicastSend(slaveID, buf, true);
-                AppXrw.logger.warning("numWins = " + numWins);
+                AppXrw.logger.info("numWins = " + numWins);
 
                 // Then send the individual window states
                 it = appx.widToWindow.values().iterator();
@@ -193,34 +195,39 @@ class SlaveForwarder {
         }
 
         private void syncSlaveWindowState(BigInteger slaveID, WindowXrw win) {
-            AppXrw.logger.warning("Enter syncSlaveWindowState: win = " + win.getWid());
+            AppXrw.logger.info("Enter syncSlaveWindowState: win = " + win.getWid());
 
             String controllingUser = win.getControllingUser();
             int controllingUserLen = (controllingUser != null)
                     ? controllingUser.length() : 0;
 
-            AppXrw.logger.warning("wid = " + win.getWid());
-            AppXrw.logger.warning("xy = " + win.getOffsetX() + " " + win.getOffsetY());
-            AppXrw.logger.warning("wh = " + win.getWidth() + " " + win.getHeight());
-            AppXrw.logger.warning("bw = " + win.getBorderWidth());
-            AppXrw.logger.warning("decorated = " + win.isDecorated());
-            AppXrw.logger.warning("showing = " + win.isVisibleApp());
-            AppXrw.logger.warning("controlling user = " + controllingUser);
-            AppXrw.logger.warning("zOrder = " + win.getZOrder());
-
-            /*TODO:
-            AppXrw.logger.warning("rotY = " + win.getRotateY());
-            AppXrw.logger.warning("userTranslation = " + win.getUserTranslation());
-             */
+            AppXrw.logger.info("wid = " + win.getWid());
+            AppXrw.logger.info("xy = " + win.getOffsetX() + " " + win.getOffsetY());
+            AppXrw.logger.info("wh = " + win.getWidth() + " " + win.getHeight());
+            AppXrw.logger.info("bw = " + win.getBorderWidth());
+            AppXrw.logger.info("decorated = " + win.isDecorated());
+            AppXrw.logger.info("showing = " + win.isVisibleApp());
+            AppXrw.logger.info("controlling user = " + controllingUser);
+            AppXrw.logger.info("zOrder = " + win.getZOrder());
             
             WindowXrw.Type type = win.getType();
-            AppXrw.logger.warning("type = " + type);
+            AppXrw.logger.info("type = " + type);
             WindowXrw parentWindow = (WindowXrw) win.getParent();
             int parentWid = WindowXrw.INVALID_WID; 
             if (parentWindow != null) {
                 parentWid = parentWindow.getWid();
             }
-            AppXrw.logger.warning("parent wid = " + parentWid);
+            AppXrw.logger.info("parent wid = " + parentWid);
+
+            // Get the user transform from the cell and extract the translation
+            // from it and send this translation in the sync info. 
+            // TODO: someday: We can get away with this only because we currently don't
+            // support secondary rotations. When we finally do support secondary
+            // rotations we'll need to modify the sync protocol to send the entire 
+            // transform.
+            CellTransform userTransformCell = win.getUserTransformCell();
+            Vector3f userTranslation = userTransformCell.getTranslation(null);
+            AppXrw.logger.info("userTranslation = " + userTranslation);
 
             // Send basic window attributes
             encode(syncBuf, 0, win.getWid());
@@ -231,12 +238,14 @@ class SlaveForwarder {
             encode(syncBuf, 20, win.getBorderWidth());
             encode(syncBuf, 24, controllingUserLen);
             encode(syncBuf, 28, win.getZOrder());
-            /* TODO:
-             encode(syncBuf, 32, win.getRotateY());
-            encode(syncBuf, 36, userDispl.x);
-            encode(syncBuf, 40, userDispl.y);
-            encode(syncBuf, 44, userDispl.z);
-             */
+
+            // Placeholder: this used to be the rotation around y axis
+            encode(syncBuf, 32, 0f);
+
+            encode(syncBuf, 36, userTranslation.x);
+            encode(syncBuf, 40, userTranslation.y);
+            encode(syncBuf, 44, userTranslation.z);
+
             /* TODO: 0.4 protocol:
             encode(syncBuf, 48, win.getTransientFor().getWid());
              */
@@ -297,7 +306,7 @@ class SlaveForwarder {
                 System.arraycopy(message, 4, userNameBuf, 0, strLen);
                 String userName = new String(userNameBuf);
 
-                AppXrw.logger.warning("Received hello message from slave " + otherClientID +
+                AppXrw.logger.info("Received hello message from slave " + otherClientID +
                                ", userName = " + userName);
                 serverProxy.addIncomingSlaveHelloMessage(otherClientID, userName);
                 return;

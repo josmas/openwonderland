@@ -3,7 +3,7 @@
     <Attributes>
         <Name>nameless</Name>
         <Gender>1</Gender>
-        <HeadAttachment>imi/character/data/FG_MaleLowPoly_01.bhf</HeadAttachment>
+	<HeadAttachment>assets/models/collada/Heads/Binary/FG_MaleLowPoly_01.bhf</HeadAttachment>
         <LoadingInstructions>
 		assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae
         </LoadingInstructions>

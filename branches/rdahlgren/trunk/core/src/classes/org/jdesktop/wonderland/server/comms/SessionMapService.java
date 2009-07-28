@@ -41,7 +41,6 @@ import java.util.logging.Logger;
  * @author jprovino
  */
 public class SessionMapService extends AbstractService implements SessionMapManager {
-
     /** The name of this class. */
     private static final String NAME = SessionMapService.class.getName();
 
@@ -112,7 +111,13 @@ public class SessionMapService extends AbstractService implements SessionMapMana
 	 * I would use that rather than getting the ClientSession only
 	 * to again create a reference in WondlerlandClientID.
 	 */
-	return new WonderlandClientID(sessionRef.get().getClientSession());
+        try {
+            return new WonderlandClientID(sessionRef.get().getClientSession());
+        } catch (ObjectNotFoundException onfe) {
+            // no such object exists
+            logger.logThrow(Level.FINE, onfe, "No client for ID " + sessionID);
+            return null;
+        }
     }
 
 }

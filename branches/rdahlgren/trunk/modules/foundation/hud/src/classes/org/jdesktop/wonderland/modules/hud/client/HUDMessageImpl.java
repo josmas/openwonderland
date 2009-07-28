@@ -1,25 +1,19 @@
 /*
  * Project Wonderland
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
- * 
+ *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
- * 
+ *
  * The contents of this file are subject to the GNU General Public
  * License, Version 2 (the "License"); you may not use this file
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
- * 
+ *
  * Sun designates this particular file as subject to the "Classpath"
  * exception as provided by Sun in the License file that accompanied
  * this code.
- */
-
-/*
- * HUDMessageDialogImpl.java
- *
- * Created on Jun 5, 2009, 4:10:04 PM
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
@@ -63,16 +57,16 @@ public class HUDMessageImpl extends javax.swing.JPanel {
         messageTextArea = new javax.swing.JTextArea();
 
         setBackground(new java.awt.Color(208, 208, 208));
+        setEnabled(false);
 
         iconLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/hud/client/resources/info24x24.png"))); // NOI18N
 
+        scrollPane.setBackground(new java.awt.Color(208, 208, 208));
         scrollPane.setBorder(null);
         scrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setOpaque(false);
 
         messageTextArea.setBackground(new java.awt.Color(208, 208, 208));
         messageTextArea.setColumns(20);
-        messageTextArea.setEditable(false);
         messageTextArea.setFont(new java.awt.Font("Arial", 1, 18));
         messageTextArea.setForeground(new java.awt.Color(255, 255, 255));
         messageTextArea.setRows(1);
@@ -95,10 +89,10 @@ public class HUDMessageImpl extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, scrollPane)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, iconLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(iconLabel)
+                    .add(scrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

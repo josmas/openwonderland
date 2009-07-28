@@ -361,7 +361,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
             }
         });
 
-        statusLabel.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        statusLabel.setFont(new java.awt.Font("Arial", 1, 12));
         statusLabel.setForeground(new java.awt.Color(45, 45, 45));
         statusLabel.setText("Status:");
 
@@ -384,7 +384,7 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
                         .add(statusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 308, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(10, 10, 10))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanelLayout.createSequentialGroup()
-                        .addContainerGap(107, Short.MAX_VALUE)
+                        .addContainerGap(100, Short.MAX_VALUE)
                         .add(cancelButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(loginButton)
@@ -392,6 +392,9 @@ public class WonderlandLoginDialog extends javax.swing.JDialog
                 .add(advancedButton)
                 .addContainerGap())
         );
+
+        buttonPanelLayout.linkSize(new java.awt.Component[] {cancelButton, loginButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         buttonPanelLayout.setVerticalGroup(
             buttonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(buttonPanelLayout.createSequentialGroup()
