@@ -157,6 +157,9 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
 
     public void setPhoneType() {
 	addTypePanel.setType(true);
+	showAddPhonePanel(true, true);
+        addInitiateButtonPanel.setActionButtonText("Call");
+	userMode = false;
     }
 
     public void inviteUsers(ArrayList<PresenceInfo> usersToInvite) {

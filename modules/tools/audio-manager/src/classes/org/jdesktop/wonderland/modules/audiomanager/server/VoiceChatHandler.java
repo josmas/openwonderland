@@ -217,6 +217,11 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+	if (group == null) {
+	    logger.warning("Invalid audio group 'null'");
+	    return;
+	}
+
 	AudioGroup audioGroup = vm.getAudioGroup(group);
 
 	if (message instanceof VoiceChatLeaveMessage) {
