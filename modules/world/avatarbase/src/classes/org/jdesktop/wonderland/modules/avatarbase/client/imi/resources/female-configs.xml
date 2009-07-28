@@ -10,57 +10,57 @@
     <heads>
         <name>Female C Head</name>
         <description>Female C Head</description>
-        <model>assets/models/collada/Heads/FemaleHead/FemaleCHead.dae</model>
+        <model>assets/models/collada/Heads/Binary/FemaleCHead.bhf</model>
     </heads>
     <heads>
         <name>Asian Head</name>
         <description>Asian Head</description>
-        <model>assets/models/collada/Heads/FemaleHead/AsianFemaleHead.dae</model>
+        <model>assets/models/collada/Heads/Binary/AsianFemaleHead.bhf</model>
     </heads>
     <heads>
         <name>AA Head</name>
         <description>AA Head</description>
-        <model>assets/models/collada/Heads/FemaleHead/FemaleAAHead.dae</model>
+        <model>assets/models/collada/Heads/Binary/FemaleAAHead.bhf</model>
     </heads>
     <heads>
         <name>FaceGen High-Poly Head</name>
         <description>FaceGen High-Poly Head</description>
-        <model>assets/models/collada/Heads/FemaleHead/FemaleHi.dae</model>
+        <model>assets/models/collada/Heads/Binary/FemaleHi.bhf</model>
     </heads>
     <heads>
         <name>FaceGen High-Poly Head 2</name>
         <description>FaceGen High-Poly Head 2</description>
-        <model>assets/models/collada/Heads/FemaleHead/FemaleHi2.dae</model>
+        <model>assets/models/collada/Heads/Binary/FemaleHi2.bhf</model>
     </heads>
     <heads>
         <name>Female Hispanic Head</name>
         <description>Female Hispanic Head</description>
-        <model>assets/models/collada/Heads/FemaleHead/FemaleHispanicHead.dae</model>
+        <model>assets/models/collada/Heads/Binary/FemaleHispanicHead.bhf</model>
     </heads>
     <heads>
         <name>Female AF Head</name>
         <description>Female AF Head</description>
-        <model>assets/models/collada/Heads/FemaleHead/FG_Female_AF_Head02.dae</model>
+        <model>assets/models/collada/Heads/Binary/FG_Female_AF_Head02.bhf</model>
     </heads>
     <heads>
         <name>FaceGen High-Poly Head 01</name>
         <description>FaceGen High-Poly Head 01</description>
-        <model>assets/models/collada/Heads/FemaleHead/FG_Female01HighPoly.dae</model>
+        <model>assets/models/collada/Heads/Binary/FG_Female01HighPoly.bhf</model>
     </heads>
     <heads>
         <name>FaceGen High-Poly Head 02</name>
         <description>FaceGen High-Poly Head 02</description>
-        <model>assets/models/collada/Heads/FemaleHead/FG_Female02HighPoly.dae</model>
+        <model>assets/models/collada/Heads/Binary/FG_Female02HighPoly.bhf</model>
     </heads>
     <heads>
         <name>Female Head 01</name>
         <description>Female Head 01</description>
-        <model>assets/models/collada/Heads/FemaleHead/FG_FemaleHead01.dae</model>
+        <model>assets/models/collada/Heads/Binary/FG_FemaleHead01.bhf</model>
     </heads>
     <heads>
         <name>Female Low-Poly Head</name>
         <description>Female Low-Poly Head</description>
-        <model>assets/models/collada/Heads/FemaleHead/FG_FemaleLowPoly_01.dae</model>
+        <model>assets/models/collada/Heads/Binary/FG_FemaleLowPoly_01.bhf</model>
     </heads>
 
     <!-- HAIR -->
