@@ -242,10 +242,6 @@ public class AvatarClientPlugin extends BaseClientPlugin
         avatarChangedListener = new AvatarChangedListener() {
             public void avatarChanged(Avatar newAvatar) {
                 if (camState != null) {
-                    // stop listener for changes from the old avatar cell
-                    // renderer.
-                    avatarCellRenderer.removeAvatarChangedListener(avatarChangedListener);
-
                     if (newAvatar.getContext() != null) {
                         camState.setTargetCharacter(newAvatar);
                     }

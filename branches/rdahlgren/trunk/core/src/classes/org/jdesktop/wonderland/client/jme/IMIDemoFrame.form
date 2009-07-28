@@ -32,6 +32,11 @@
             <Property name="toolTipText" type="java.lang.String" value="Select an Avatar"/>
           </Properties>
         </Menu>
+        <Menu class="javax.swing.JMenu" name="insertMenu">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Insert"/>
+          </Properties>
+        </Menu>
       </SubComponents>
     </Menu>
   </NonVisualComponents>

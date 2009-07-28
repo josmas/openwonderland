@@ -10,27 +10,27 @@
     <heads>
         <name>Male C Head</name>
         <description>Male C Head</description>
-        <model>assets/models/collada/Heads/MaleHead/MaleCHead.dae</model>
+        <model>assets/models/collada/Heads/Binary/MaleCHead.bhf</model>
     </heads>
     <heads>
         <name>FaceGen Medium-Poly Head 2</name>
         <description>FaceGen Medium-Poly Head 2</description>
-        <model>assets/models/collada/Heads/MaleHead/FG_MaleHead02Medium.dae</model>
+        <model>assets/models/collada/Heads/Binary/FG_MaleHead02Medium.bhf</model>
     </heads>
     <heads>
         <name>FaceGen Low-Poly Head</name>
         <description>FaceGen Low-Poly Head</description>
-        <model>assets/models/collada/Heads/MaleHead/FG_MaleLowPoly_01.dae</model>
+        <model>assets/models/collada/Heads/Binary/FG_MaleLowPoly_01.bhf</model>
     </heads>
     <heads>
         <name>Black Head</name>
         <description>Black Head</description>
-        <model>assets/models/collada/Heads/MaleHead/blackHead.dae</model>
+        <model>assets/models/collada/Heads/Binary/blackHead.bhf</model>
     </heads>
     <heads>
         <name>Asian Head</name>
         <description>Asian Head</description>
-        <model>assets/models/collada/Heads/MaleHead/AsianHeadMale.dae</model>
+        <model>assets/models/collada/Heads/Binary/AsianHeadMale.bhf</model>
     </heads>
 
     <!-- HAIR -->

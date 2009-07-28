@@ -233,6 +233,7 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
                 HelpSystem helpSystem = new HelpSystem();
                 JMenu helpMenu = helpSystem.getHelpJMenu();
 //                mainMenuBar.add(helpMenu);
+                
             }
         });
     }
@@ -447,14 +448,15 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
      * {@inheritDoc}
      */
     public void addToInsertMenu(JMenuItem menuItem) {
-     
+        addToInsertMenu(menuItem, -1);
     }
 
     /**
      * {@inheritDoc}
      */
     public void addToInsertMenu(JMenuItem menuItem, int index) {
-     
+        if (menuItem.getActionCommand().equals("IMI_HACK_FILTER"))
+            addToMenu(insertMenu, menuItem, index);
     }
 
     /**
@@ -654,6 +656,7 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
         viewMenu = new javax.swing.JMenu();
         windowMenu = new javax.swing.JMenu();
         avatarsMenu = new javax.swing.JMenu();
+        insertMenu = new javax.swing.JMenu();
 
         jLabel1.setText("jLabel1");
 
@@ -691,6 +694,9 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
         avatarsMenu.setToolTipText("Select an Avatar");
         mainMenuBar.add(avatarsMenu);
 
+        insertMenu.setText("Insert");
+        mainMenuBar.add(insertMenu);
+
         setJMenuBar(mainMenuBar);
 
         pack();
@@ -700,6 +706,7 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
     private javax.swing.JMenu avatarsMenu;
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenu insertMenu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JPanel serverPanel;
