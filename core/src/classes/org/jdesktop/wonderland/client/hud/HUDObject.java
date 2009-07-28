@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
+import javax.swing.ImageIcon;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 
@@ -281,6 +282,18 @@ public interface HUDObject {
      * @return true if the HUD object can be decorated, false otherwise
      */
     public boolean getDecoratable();
+
+    /**
+     * Sets the icon to display when this HUD object is minimized
+     * @param iconImage the icon image
+     */
+    public void setIcon(ImageIcon iconImage);
+
+    /**
+     * Gets the icon for ths HUD object
+     * @return the icon image
+     */
+    public ImageIcon getIcon();
 
     /**
      * Adds a listener for HUD object events
