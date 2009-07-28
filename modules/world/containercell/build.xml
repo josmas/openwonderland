@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="package" name="wonderland-container-cell">
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.wonderland-portal}"/>
+    <dirname property="current.dir" file="${ant.file.wonderland-container-cell}"/>
     <property file="${current.dir}/my.module.properties"/>
     <property name="modules.dir" location="${wonderland.dir}/modules"/>
 
