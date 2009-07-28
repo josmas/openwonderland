@@ -43,6 +43,11 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
         return phoneTextField.getText();
     }
 
+    public void setStatusMessage(String message) {
+        statusLabel.setText(message);
+    }
+    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -57,6 +62,7 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
         nameTextField = new javax.swing.JTextField();
         phoneLabel = new javax.swing.JLabel();
         phoneTextField = new javax.swing.JTextField();
+        statusLabel = new javax.swing.JLabel();
         addUserDetailsPanel = new javax.swing.JPanel();
 
         setMinimumSize(new java.awt.Dimension(0, 95));
@@ -76,6 +82,8 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
 
         phoneTextField.setName("phoneTextField"); // NOI18N
 
+        statusLabel.setName("statusLabel"); // NOI18N
+
         org.jdesktop.layout.GroupLayout phonePanelLayout = new org.jdesktop.layout.GroupLayout(phonePanel);
         phonePanel.setLayout(phonePanelLayout);
         phonePanelLayout.setHorizontalGroup(
@@ -86,10 +94,12 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
                     .add(nameLabel)
                     .add(phoneLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(phonePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(phoneTextField)
-                    .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 164, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(65, Short.MAX_VALUE))
+                .add(phonePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(statusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 211, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(phonePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                        .add(phoneTextField)
+                        .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 164, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
         phonePanelLayout.setVerticalGroup(
             phonePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -102,7 +112,8 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
                 .add(phonePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(phoneTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(phoneLabel))
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE))
         );
 
         addUserDetailsPanel.setBackground(new java.awt.Color(0, 0, 0));
@@ -132,5 +143,6 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
     private javax.swing.JLabel phoneLabel;
     private javax.swing.JPanel phonePanel;
     private javax.swing.JTextField phoneTextField;
+    private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 }
