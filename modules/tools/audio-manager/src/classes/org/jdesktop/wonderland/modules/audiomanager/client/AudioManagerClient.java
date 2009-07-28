@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel;
+import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.IncomingCallHUDPanel;
+
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 
@@ -372,37 +375,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void personalPhone() {
-        if (presenceInfo == null) {
-            return;
-        }
-
-        AddHUDPanel addHUDPanel = new AddHUDPanel(this, session, presenceInfo);
-
-        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-
-        final HUDComponent addHUDComponent = mainHUD.createComponent(addHUDPanel);
-        addHUDComponent.setName("Call ");
-        addHUDPanel.setHUDComponent(addHUDComponent);
-        addHUDComponent.setPreferredLocation(Layout.NORTHEAST);
-        mainHUD.addComponent(addHUDComponent);
-        addHUDComponent.addEventListener(new HUDEventListener() {
-
-            public void HUDObjectChanged(HUDEvent e) {
-                if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
-                }
-            }
-        });
-
-        PropertyChangeListener plistener = new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent pe) {
-                if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                    addHUDComponent.setVisible(false);
-                }
-            }
-        };
-        addHUDPanel.addPropertyChangeListener(plistener);
-        addHUDComponent.setVisible(true);
+	voiceChat();
     }
 
     public void voiceChat() {
@@ -410,15 +383,15 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
-        AddHUDPanel addHUDPanel = new AddHUDPanel(this, session, presenceInfo);
+        AddHUDPanel addPanel = new AddHUDPanel(this, session, presenceInfo, presenceInfo);
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-        final HUDComponent addHUDComponent = mainHUD.createComponent(addHUDPanel);
-        addHUDPanel.setHUDComponent(addHUDComponent);
-        addHUDComponent.setPreferredLocation(Layout.NORTHEAST);
-        mainHUD.addComponent(addHUDComponent);
-        addHUDComponent.addEventListener(new HUDEventListener() {
+        final HUDComponent addComponent = mainHUD.createComponent(addPanel);
+        addPanel.setHUDComponent(addComponent);
+        addComponent.setPreferredLocation(Layout.NORTHEAST);
+        mainHUD.addComponent(addComponent);
+        addComponent.addEventListener(new HUDEventListener() {
 
             public void HUDObjectChanged(HUDEvent e) {
                 if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
@@ -430,12 +403,12 @@ public class AudioManagerClient extends BaseConnection implements
 
             public void propertyChange(PropertyChangeEvent pe) {
                 if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                    addHUDComponent.setVisible(false);
+                    addComponent.setVisible(false);
                 }
             }
         };
-        addHUDPanel.addPropertyChangeListener(plistener);
-        addHUDComponent.setVisible(true);
+        addPanel.addPropertyChangeListener(plistener);
+        addComponent.setVisible(true);
     }
 
     public void softphoneVisible(boolean isVisible) {
