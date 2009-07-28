@@ -23,6 +23,8 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -727,18 +729,18 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
     }
 
-    InCallHUDPanel inCallHUDPanel =
-	new InCallHUDPanel(client, session, presenceInfo, presenceInfo);
+    AddHUDPanel addHUDPanel =
+	new AddHUDPanel(client, session, presenceInfo, presenceInfo);
 
-    inCallHUDPanel.inviteUsers(usersToInvite);
+    addHUDPanel.inviteUsers(usersToInvite);
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-    final HUDComponent inCallHUDComponent = mainHUD.createComponent(inCallHUDPanel);
+    final HUDComponent addHUDComponent = mainHUD.createComponent(addHUDPanel);
 
-    inCallHUDPanel.setHUDComponent(inCallHUDComponent);
+    addHUDPanel.setHUDComponent(addHUDComponent);
 
-    mainHUD.addComponent(inCallHUDComponent);
-    inCallHUDComponent.addEventListener(new HUDEventListener() {
+    mainHUD.addComponent(addHUDComponent);
+    addHUDComponent.addEventListener(new HUDEventListener() {
 
         public void HUDObjectChanged(HUDEvent e) {
             if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
@@ -750,21 +752,21 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         public void propertyChange(PropertyChangeEvent pe) {
             if (pe.getPropertyName().equals("ok") || pe.getPropertyName().equals("cancel")) {
-                inCallHUDComponent.setVisible(false);
+                addHUDComponent.setVisible(false);
             }
         }
     };
 
-    inCallHUDPanel.addPropertyChangeListener(plistener);
-    inCallHUDComponent.setVisible(true);
+    addHUDPanel.addPropertyChangeListener(plistener);
+    addHUDComponent.setVisible(true);
 
     //System.out.println("U x,y " + userListHUDComponent.getX() + ", " + userListHUDComponent.getY()
     //    + " width " + userListHUDComponent.getWidth() + " height " + userListHUDComponent.getHeight()
     //    + " I x,y " + (userListHUDComponent.getX() + userListHUDComponent.getWidth())
-    //    + ", " + (userListHUDComponent.getY() + userListHUDComponent.getHeight() - inCallHUDComponent.getHeight()));
+    //    + ", " + (userListHUDComponent.getY() + userListHUDComponent.getHeight() - addHUDComponent.getHeight()));
 
-    inCallHUDComponent.setLocation(userListHUDComponent.getX() + userListHUDComponent.getWidth(),
-            userListHUDComponent.getY() + userListHUDComponent.getHeight() - inCallHUDComponent.getHeight());
+    addHUDComponent.setLocation(userListHUDComponent.getX() + userListHUDComponent.getWidth(),
+            userListHUDComponent.getY() + userListHUDComponent.getHeight() - addHUDComponent.getHeight());
 }//GEN-LAST:event_voiceChatButtonActionPerformed
 
 private void muteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_muteButtonActionPerformed
@@ -784,12 +786,9 @@ private void panelToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 private HUDComponent addHUDComponent;
 
 private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneButtonActionPerformed
-    if (addHUDComponent != null) {
-	addHUDComponent.setVisible(true);
-	return;
-    }
+    AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, presenceInfo, presenceInfo);
 
-    AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, presenceInfo);
+    addHUDPanel.setPhoneType();
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     addHUDComponent = mainHUD.createComponent(addHUDPanel);
