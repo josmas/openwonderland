@@ -274,6 +274,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
                 camState.setTargetCharacter(avatarCellRenderer.getAvatarCharacter());
                 ClientContextJME.getViewManager().setCameraController(new FlexibleCameraAdapter(camModel, camState));
                 camState.transformUpdate(avatarCellRenderer.getAvatarCharacter().getPositionRef(), PMatrix.IDENTITY);
+                camModel.reset(camState);
             }
         });
 

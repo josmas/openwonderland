@@ -546,25 +546,10 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             // don't add the entity to wm
             ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
 
-            // Load the new hotness
+            // Load the new hotness placeholder guy
             Node placeHolder = JmeUtils.loadSerializedJmeGraph(new URL(baseURL + "assets/models/collada/Avatars/placeholder.bin"));
             JmeUtils.setDefaultRenderStatesOnGraph(placeHolder, ColorMaterial.AmbientAndDiffuse, wm);
-            // Load the old storytelling guy
-//            URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
-//            ResourceLocator resourceLocator = new RelativeResourceLocator(url);
-//
-//            ResourceLocatorTool.addThreadResourceLocator(
-//                    ResourceLocatorTool.TYPE_TEXTURE,
-//                    resourceLocator);
-//            Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
-//            ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
-            //checkBounds(placeHolder);
-            //placeHolder.updateModelBound();
-            //placeHolder.updateWorldBound();
-
-            //System.out.println("Default Model Bounds: " + placeHolder.getWorldBound());
-            //placeHolder.lockBounds();
             ret.getJScene().getExternalKidsRoot().attachChild(placeHolder);
             ret.getJScene().setExternalKidsChanged(true);
         } else {
