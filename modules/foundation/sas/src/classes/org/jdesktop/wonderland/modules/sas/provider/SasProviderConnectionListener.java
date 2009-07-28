@@ -38,4 +38,9 @@ public interface SasProviderConnectionListener {
      */
     public String launch (String appName, String command, SasProviderConnection connection, 
                           MessageID launchMessageID);
+
+    /**
+     * Stop the specified app.
+     */
+    public void appStop (SasProviderConnection connection, MessageID launchMessageID);
 }

@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.common.messages.MessageList;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderConnectionType;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchMessage;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchStatusMessage;
+import org.jdesktop.wonderland.modules.sas.common.SasProviderAppStopMessage;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderAppExittedMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
 
@@ -72,25 +73,35 @@ public class SasProviderConnection extends BaseConnection {
         
         logger.warning("Received message from server: " + message);
 
-        if (!(message instanceof SasProviderLaunchMessage)) {
+        if (message instanceof SasProviderLaunchMessage) {
+            SasProviderLaunchMessage msg = (SasProviderLaunchMessage) message;
+
+            logger.warning("Received launch message from server");
+            logger.warning("execCap = " + msg.getExecutionCapability());
+            logger.warning("appName = " + msg.getAppName());
+            logger.warning("command = " + msg.getCommand());
+
+            if (listener == null) {
+                logger.warning("No provider listener is registered.");
+                sendResponse(msg.getMessageID(), null);
+            }
+
+            logger.warning("Attempting to launch X app");
+            String connInfo = listener.launch(msg.getAppName(), msg.getCommand(), this, msg.getMessageID());
+            logger.warning("connInfo = " + connInfo);
+            sendResponse(msg.getMessageID(), connInfo);
+
+        } else if (message instanceof SasProviderAppStopMessage) {
+            SasProviderAppStopMessage msg = (SasProviderAppStopMessage) message;
+
+            logger.warning("Received app message from server");
+            logger.warning("launchMsgID= " + msg.getLaunchMessageID());
+
+            listener.appStop(this, msg.getLaunchMessageID());
+
+        } else {
             throw new RuntimeException("Unexpected message type "+message.getClass().getName());
         }
-        SasProviderLaunchMessage msg = (SasProviderLaunchMessage) message;
-
-        logger.warning("Received launch message from server");
-        logger.warning("execCap = " + msg.getExecutionCapability());
-        logger.warning("appName = " + msg.getAppName());
-        logger.warning("command = " + msg.getCommand());
-
-        if (listener == null) {
-            logger.warning("No provider listener is registered.");
-            sendResponse(msg.getMessageID(), null);
-        }
-
-        logger.warning("Attempting to launch X app");
-        String connInfo = listener.launch(msg.getAppName(), msg.getCommand(), this, msg.getMessageID());
-        logger.warning("connInfo = " + connInfo);
-        sendResponse(msg.getMessageID(), connInfo);
     }
     
     /**

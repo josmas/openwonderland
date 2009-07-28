@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.sas.server;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.sas.server.SasServer.LaunchRequest;
 
 /**
  * Holds the launch requests which have not yet been satisified.
@@ -45,5 +47,24 @@ class PendingLaunches implements Serializable {
      */
     LinkedList<SasServer.LaunchRequest> getPendingLaunches (String executionCapability) {
         return execCapToLaunchReqList.get(executionCapability);
+    }
+
+    /**
+     * Remove cell from pending launch list. 
+     * TODO: someday: For now, this code assumes only one app launch per cell.
+     */
+    void remove (CellID cellID, String executionCapability) {
+        LinkedList<LaunchRequest> reqs = getPendingLaunches(executionCapability);
+        LaunchRequest reqToRemove = null;
+        if (reqs == null) return;
+        for (LaunchRequest req : reqs) {
+            if (req.cellID == cellID) {
+                reqToRemove = req;
+                break;
+            }
+        }
+        if (reqToRemove != null) {
+            reqs.remove(reqToRemove);
+        }
     }
 }

@@ -57,6 +57,24 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
     }
 
     /**
+     * Removes all messages that are in-flight for a given cell and provider.
+     */
+    public void removeMessagesForCellAndProvider (ProviderProxy provider, CellID cellID) {
+        LinkedList<MessageID> removeList = new LinkedList<MessageID>();
+        for (MessageID msgID : messageMap.keySet()) {
+            MessageInfo messageInfo = messageMap.get(msgID);
+            if (messageInfo.cellID == cellID && messageInfo.provider == provider) {
+                removeList.add(msgID);
+            }
+        }        
+        for (MessageID msgIDToRemove : removeList) {
+            messageMap.remove(msgIDToRemove);
+        }
+        removeList = null;
+        AppContext.getDataManager().markForUpdate(this);
+    }
+
+    /**
      * Removes all messages that are in-flight to the given provider.
      */
     public void removeMessagesForProvider (ProviderProxy provider) {
@@ -72,5 +90,17 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
         }
         removeList = null;
         AppContext.getDataManager().markForUpdate(this);
+    }
+
+    // Given an an app identified by a provider and a cell, returns the launch message ID
+    // for that app. TODO: someday: assumes only one app launched per cell.
+    public MessageID getLaunchMessageIDForCellAndProvider (ProviderProxy provider, CellID cellID) {
+        for (MessageID msgID : messageMap.keySet()) {
+            MessageInfo messageInfo = messageMap.get(msgID);
+            if (messageInfo.provider == provider && messageInfo.cellID == cellID) {
+                return msgID;
+            }
+        }        
+        return null;
     }
 }
