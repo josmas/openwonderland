@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
@@ -51,6 +52,7 @@ public class HUDObject2D implements HUDObject {
     protected float transparency = 0.0f;
     protected boolean enabled = false;
     protected boolean decoratable = true;
+    protected ImageIcon iconImage;
     protected Layout compassPoint = Layout.NONE;
     protected List<HUDEventListener> listeners;
     protected HUDEvent event;
@@ -360,6 +362,20 @@ public class HUDObject2D implements HUDObject {
      */
     public boolean getDecoratable() {
         return decoratable;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setIcon(ImageIcon iconImage) {
+        this.iconImage = iconImage;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public ImageIcon getIcon() {
+        return iconImage;
     }
 
     /**
