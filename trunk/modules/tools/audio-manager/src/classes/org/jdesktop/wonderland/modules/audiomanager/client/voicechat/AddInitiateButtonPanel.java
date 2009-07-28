@@ -84,40 +84,40 @@ public class AddInitiateButtonPanel extends javax.swing.JPanel {
             }
         });
 
-        javax.swing.GroupLayout buttonGroupLayout = new javax.swing.GroupLayout(buttonGroup);
+        org.jdesktop.layout.GroupLayout buttonGroupLayout = new org.jdesktop.layout.GroupLayout(buttonGroup);
         buttonGroup.setLayout(buttonGroupLayout);
         buttonGroupLayout.setHorizontalGroup(
-            buttonGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(buttonGroupLayout.createSequentialGroup()
-                .addComponent(cancelButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(actionButton))
+            buttonGroupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(buttonGroupLayout.createSequentialGroup()
+                .add(cancelButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(actionButton))
         );
 
-        buttonGroupLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {actionButton, cancelButton});
+        buttonGroupLayout.linkSize(new java.awt.Component[] {actionButton, cancelButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         buttonGroupLayout.setVerticalGroup(
-            buttonGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(buttonGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(cancelButton)
-                .addComponent(actionButton))
+            buttonGroupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(buttonGroupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(cancelButton)
+                .add(actionButton))
         );
 
         actionButtonPanel.add(buttonGroup);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 295, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(actionButtonPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 295, Short.MAX_VALUE)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(actionButtonPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 29, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(actionButtonPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 29, Short.MAX_VALUE)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(actionButtonPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
