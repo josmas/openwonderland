@@ -19,15 +19,12 @@ package org.jdesktop.wonderland.modules.audiomanager.client.voicechat;
 
 import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClient;
 import org.jdesktop.wonderland.modules.audiomanager.client.DisconnectListener;
-import org.jdesktop.wonderland.modules.audiomanager.client.MemberChangeListener;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import javax.swing.JFrame;
 
 import java.util.logging.Logger;
 
@@ -41,15 +38,10 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.EndCallMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatInfoRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatLeaveMessage;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatMessage.ChatType;
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -65,9 +57,9 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListener {
 
     public enum Mode {
+
         ADD, INITIATE, IN_PROGRESS, HOLD
     };
-
     public Mode mode = Mode.ADD;
     private AddTypePanel addTypePanel;
     private AddUserPanel addUserPanel;
@@ -75,26 +67,19 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
     private HoldPanel holdPanel;
     private AddInitiateButtonPanel addInitiateButtonPanel;
     private InProgressButtonPanel inProgressButtonPanel;
-
     private static final Logger logger = Logger.getLogger(AddHUDPanel.class.getName());
-
     private AudioManagerClient client;
     private WonderlandSession session;
     private PresenceManager pm;
     private PresenceInfo myPresenceInfo;
-
     private PresenceInfo caller;
     private String group;
-
     private ChatType chatType;
-
     private static int groupNumber;
-
     private static HashMap<String, AddHUDPanel> addHUDPanelMap = new HashMap();
-
     private PropertyChangeSupport listeners;
-
     private HUDComponent addHUDComponent;
+    private int normalHeight = 0;
 
     public AddHUDPanel() {
         initComponents();
@@ -104,7 +89,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
     public AddHUDPanel(AudioManagerClient client, WonderlandSession session,
             PresenceInfo myPresenceInfo, PresenceInfo caller) {
 
-	this(client, session, myPresenceInfo, caller, null);
+        this(client, session, myPresenceInfo, caller, null);
     }
 
     public AddHUDPanel(AudioManagerClient client, WonderlandSession session,
@@ -113,7 +98,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
         this.client = client;
         this.session = session;
         this.myPresenceInfo = myPresenceInfo;
-	this.caller = caller;
+        this.caller = caller;
 
         if (group == null) {
             group = caller.userID.getUsername() + "-" + groupNumber++;
@@ -129,15 +114,16 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
 
         pm = PresenceManagerFactory.getPresenceManager(session);
 
-	addHUDPanelMap.put(group, this);
-	
-	client.addDisconnectListener(this);
+        addHUDPanelMap.put(group, this);
+
+        client.addDisconnectListener(this);
     }
 
     public void setHUDComponent(HUDComponent addHUDComponent) {
-	this.addHUDComponent = addHUDComponent;
+        this.addHUDComponent = addHUDComponent;
 
-	addHUDComponent.addEventListener(new HUDEventListener() {
+        addHUDComponent.addEventListener(new HUDEventListener() {
+
             public void HUDObjectChanged(HUDEvent e) {
                 if (e.getEventType().equals(HUDEventType.CLOSED)) {
                     leave();
@@ -155,15 +141,15 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
     }
 
     public void setPhoneType() {
-	addTypePanel.setType(true);
-	showAddPhonePanel(true, true);
+        addTypePanel.setType(true);
+        showAddPhonePanel(true, true);
         addInitiateButtonPanel.setActionButtonText("Call");
-	userMode = false;
+        userMode = false;
     }
 
     public void inviteUsers(ArrayList<PresenceInfo> usersToInvite) {
         addUserPanel.inviteUsers(usersToInvite);
-	setMode(Mode.IN_PROGRESS);
+        setMode(Mode.IN_PROGRESS);
     }
 
     public void setClosed() {
@@ -175,6 +161,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
 
     public void disconnected() {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 addHUDComponent.setVisible(false);
             }
@@ -221,7 +208,6 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
                 break;
         }
     }
-
     private boolean userMode = true;
 
     private void showAddType(boolean show) {
@@ -232,7 +218,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
                 public void actionPerformed(ActionEvent e) {
                     showAddUserPanel(true, (mode != Mode.ADD));
                     addInitiateButtonPanel.setActionButtonText("Invite");
-		    userMode = true;
+                    userMode = true;
                 }
             });
             addTypePanel.addPhoneModeListener(new ActionListener() {
@@ -240,7 +226,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
                 public void actionPerformed(ActionEvent e) {
                     showAddPhonePanel(true, (mode != Mode.ADD));
                     addInitiateButtonPanel.setActionButtonText("Call");
-		    userMode = false;
+                    userMode = false;
                 }
             });
         }
@@ -256,8 +242,8 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
         }
 
         if (addUserPanel == null) {
-            addUserPanel = new AddUserPanel(client, session, myPresenceInfo, 
-		caller, group);
+            addUserPanel = new AddUserPanel(client, session, myPresenceInfo,
+                    caller, group);
         }
 
         addUserPanel.setVisible(showPanel, mode);
@@ -299,7 +285,10 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
         holdPanel.setVisible(showPanel);
         if (showPanel) {
             add(holdPanel, BorderLayout.NORTH);
-            this.setSize(this.getWidth(), holdPanel.getPreferredSize().height);
+            if (normalHeight == 0) {
+                normalHeight = addHUDComponent.getHeight();
+            }
+            addHUDComponent.setHeight(holdPanel.getPreferredSize().height);
         }
     }
 
@@ -307,14 +296,14 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
         if (addInitiateButtonPanel == null) {
             addInitiateButtonPanel = new AddInitiateButtonPanel();
 
-	    addInitiateButtonPanel.addActionButtonListener(new ActionListener() {
+            addInitiateButtonPanel.addActionButtonListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
                     actionButtonActionPerformed(e);
                 }
             });
 
-	    addInitiateButtonPanel.addCancelButtonListener(new ActionListener() {
+            addInitiateButtonPanel.addCancelButtonListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
                     cancelButtonActionPerformed(e);
@@ -328,16 +317,16 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
     }
 
     private void actionButtonActionPerformed(ActionEvent e) {
-	if (userMode) {
-	    addUserPanel.inviteUsers();
-	    setMode(Mode.IN_PROGRESS);
-	} else {
-	    /*
-	     * Phone Mode
-	     */
-	    String name = addPhoneUserPanel.getPhoneName();
+        if (userMode) {
+            addUserPanel.inviteUsers();
+            setMode(Mode.IN_PROGRESS);
+        } else {
+            /*
+             * Phone Mode
+             */
+            String name = addPhoneUserPanel.getPhoneName();
 
-	    PresenceInfo[] info = pm.getAllUsers();
+            PresenceInfo[] info = pm.getAllUsers();
 
             for (int i = 0; i < info.length; i++) {
                 if (info[i].usernameAlias.equals(name) ||
@@ -346,14 +335,14 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
                     addPhoneUserPanel.setStatusMessage("Name is already being used!");
                     return;
                 }
-	    }
+            }
 
-	    addUserPanel.callUser(name, addPhoneUserPanel.getPhoneNumber());
-	}
+            addUserPanel.callUser(name, addPhoneUserPanel.getPhoneNumber());
+        }
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
-	addHUDComponent.setVisible(false);
+        addHUDComponent.setVisible(false);
     }
 
     private void showInProgressButtons(boolean show) {
@@ -363,14 +352,14 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
             inProgressButtonPanel.addAddButtonListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
-		    addButtonActionPerformed(e);
+                    addButtonActionPerformed(e);
                 }
             });
 
             inProgressButtonPanel.addHangUpButtonListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
-		    hangup(e);
+                    hangup(e);
                 }
             });
 
@@ -394,10 +383,10 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
     }
 
     private void addButtonActionPerformed(ActionEvent e) {
-	AddHUDPanel addHUDPanel =
-            new AddHUDPanel(client, session, myPresenceInfo, myPresenceInfo, group);
+        AddHUDPanel addHUDPanel =
+                new AddHUDPanel(client, session, myPresenceInfo, myPresenceInfo, group);
 
-	addHUDPanel.setMode(Mode.ADD);
+        addHUDPanel.setMode(Mode.ADD);
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         final HUDComponent addHUDComponent = mainHUD.createComponent(addHUDPanel);
@@ -433,7 +422,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
     }
 
     private void hangup(ActionEvent e) {
-	addUserPanel.hangup();
+        addUserPanel.hangup();
     }
 
     private void setInitiateMode() {
@@ -467,8 +456,11 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
             components[c].setVisible(false);
         }
         validate();
+        if ((normalHeight > 0) && (addHUDComponent != null)) {
+            // restore dialog to the normal height if was in HOLD mode
+            addHUDComponent.setHeight(holdPanel.getPreferredSize().height);
+        }
     }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
