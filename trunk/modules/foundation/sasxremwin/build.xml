@@ -63,6 +63,9 @@
             <!-- include the top-level run.xml file -->
             <fileset file="${current.dir}/run.xml"/>
 
+            <!-- include the logger control file-->
+            <fileset file="${current.dir}/logging.properties"/>
+
             <!-- include prepackaged binaries for xremwin -->
             <zipfileset src="${current.dir}/lib/zip/xremwin.zip"/>
 

@@ -29,6 +29,8 @@
                 <pathelement path="${core-client.classpath}"/>
             </classpath>
 
+            <jvmarg value="-Djava.util.logging.config.file=logging.properties"/>
+
             <sysproperty key="java.library.path" value="${current.dir}/lib/${ostype}/native"/>
             <sysproperty key="wonderland.web.server.url" value="${wonderland.web.server.url}"/>
         </java>
