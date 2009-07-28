@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 
 /**
@@ -100,7 +101,14 @@ public class CellUtils {
 //        System.out.println("SIZING HINT " + sizingHint);
         System.out.println("FACTOR " + factor);
         System.out.println("CELL ORIGIN " + origin);
-        
+
+        // find the parent cell for this creation (may be null)
+        CellID parentID = null;
+        Cell parent = CellCreationParentRegistry.getCellCreationParent();
+        if (parent != null) {
+            parentID = parent.getCellID();
+        }
+
         // Create a position component that will set the initial origin
         PositionComponentServerState position = new PositionComponentServerState();
         position.setTranslation(origin);
@@ -113,7 +121,7 @@ public class CellUtils {
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
         CellEditChannelConnection connection = (CellEditChannelConnection)
                 session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-        CellCreateMessage msg = new CellCreateMessage(null, state);
+        CellCreateMessage msg = new CellCreateMessage(parentID, state);
         connection.send(msg);
     }
 

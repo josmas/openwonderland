@@ -183,11 +183,23 @@ class CellEditConnectionHandler implements SecureClientConnectionHandler, Serial
                 logger.warning("Unable to load cell MO: " + className );
                 return;
             }
-            
+
+            // Find the parent cell (if any)
+            CellMO parent = null;
+            CellID parentCellID = ((CellCreateMessage)editMessage).getParentCellID();
+            if (parentCellID != null) {
+                parent = CellManagerMO.getCell(parentCellID);
+            }
+
             /* Call the cell's setup method */
             try {
                 cellMO.setServerState(setup);
-                WonderlandContext.getCellManager().insertCellInWorld(cellMO);
+
+                if (parent == null) {
+                    WonderlandContext.getCellManager().insertCellInWorld(cellMO);
+                } else {
+                    parent.addChild(cellMO);
+                }
             } catch (ClassCastException cce) {
                 logger.log(Level.WARNING, "Error setting up new cell " +
                         cellMO.getName() + " of type " +
