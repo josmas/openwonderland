@@ -52,9 +52,6 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
     /* A map of cell display names and their cell factories */
     private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
 
-    /* The scalar distance from the camera to place new cells */
-    public static final float NEW_CELL_DISTANCE = 2.5f;
-
     /* The "No Preview Available" image */
     private Image noPreviewAvailableImage = null;
 
@@ -210,7 +207,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
 
         // Create the new cell at a distance away from the avatar
         try {
-            CellUtils.createCell(setup, NEW_CELL_DISTANCE);
+            CellUtils.createCell(setup);
         } catch (CellCreationException excp) {
             Logger logger = Logger.getLogger(CellPalette.class.getName());
             logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +

@@ -82,6 +82,10 @@ public abstract class CellServerState implements Serializable {
     @XmlTransient
     private Map<String, String> internalMetaData = new HashMap();
 
+    /* The bounding volume hint for initial Cell placement */
+    @XmlTransient()
+    private BoundingVolumeHint boundingVolumeHint = new BoundingVolumeHint();
+    
     /**
      * A wrapper class for hashmaps, because JAXB does not correctly support
      * the HashMap class.
@@ -189,6 +193,25 @@ public abstract class CellServerState implements Serializable {
      */
     public void setMetaData(Map<String, String> metadata) {
         this.internalMetaData = metadata;
+    }
+
+    /**
+     * Returns the bounding volume hint for intelligent initial Cell placement.
+     *
+     * @return The bounding volume hint information
+     */
+    @XmlTransient
+    public BoundingVolumeHint getBoundingVolumeHint() {
+        return boundingVolumeHint;
+    }
+
+    /**
+     * Sets the bounding volume hint for intelligent initial Cell placement.
+     *
+     * @param boundingVolumeHint The bounding volume hint
+     */
+    public void setBoundingVolumeHint(BoundingVolumeHint boundingVolumeHint) {
+        this.boundingVolumeHint = boundingVolumeHint;
     }
 
     @XmlTransient public String getName() {

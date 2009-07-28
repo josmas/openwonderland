@@ -27,13 +27,18 @@ import org.jdesktop.wonderland.modules.imageviewer.client.cell.jme.cellrenderer.
 import org.jdesktop.wonderland.modules.imageviewer.common.cell.ImageViewerCellClientState;
 
 /**
- * Client Cell for a whiteboard shared application.
+ * Client-side cell class to display an image.
  *
- * @author nsimpson,deronj
+ * @author Jordan Slott <jslott@dev.java.net>
  */
-
 @ExperimentalAPI
 public class ImageViewerCell extends Cell {
+
+    /** Scale factor for the image width */
+    public static final float WIDTH_SCALE_FACTOR = 0.01f;
+
+    /** Scale factory for the image height */
+    public static final float HEIGHT_SCALE_FACTOR = 0.01f;
 
     /* The image uri to use */
     private String imageURI = null;

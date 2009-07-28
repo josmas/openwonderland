@@ -66,7 +66,7 @@ public class CellPaletteDataFlavorHandler implements DataFlavorHandlerSPI {
             CellServerState state = (CellServerState) transferable.getTransferData(dataFlavor);
 
             // Create the new cell at a distance away from the avatar
-            CellUtils.createCell(state, CellPalette.NEW_CELL_DISTANCE);
+            CellUtils.createCell(state);
 
         } catch (UnsupportedFlavorException ex) {
             Logger.getLogger(CellPaletteDataFlavorHandler.class.getName()).log(Level.WARNING, null, ex);

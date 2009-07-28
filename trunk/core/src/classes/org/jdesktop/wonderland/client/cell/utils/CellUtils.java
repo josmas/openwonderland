@@ -17,9 +17,10 @@
  */
 package org.jdesktop.wonderland.client.cell.utils;
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
@@ -31,8 +32,10 @@ import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 
 /**
  * A collection of useful utility routines pertaining to Cells.
@@ -43,18 +46,20 @@ public class CellUtils {
 
     private static Logger logger = Logger.getLogger(CellUtils.class.getName());
 
+    /** The default bounds radius to use if no hint is given */
+    private static final float DEFAULT_RADIUS = 1.0f;
+
     /**
-     * Creates a cell in the world given the CellServerState of the cell and
-     * the linear distance away from the avatar to initially place the cell.
-     * Throws CellCreationException upon failure. If the given CellServerState
-     * is null, this method simply does not create a Cell.
-     *
+     * Creates a cell in the world given the CellServerState of the cell. If the
+     * given CellServerState is null, this method simply does not create a Cell.
+     * This method attempts to position the Cell "optimally" so that the avatar
+     * can see it, based upon "hints" about the Cell bounds given to it in the
+     * CellServerState.
+     * 
      * @param state The cell server state for the new cell
-     * @param distance The linear distance away from the avatar
      * @throw CellCreationException Upon error creating the cell
      */
-    public static void createCell(CellServerState state, float distance)
-           throws CellCreationException {
+    public static void createCell(CellServerState state) throws CellCreationException {
 
         // Check to see if the Cell server state is null, and fail quietly if
         // so
@@ -63,58 +68,89 @@ public class CellUtils {
             return;
         }
 
-        // Fetch the current transform from the view manager. Find the current
-        // position of the camera and its look direction.
-        ViewManager manager = ViewManager.getViewManager();
-        ViewCell viewCell = manager.getPrimaryViewCell();
-//        Vector3f cameraPosition = manager.getCameraPosition(null);
-        Vector3f avatarPosition = viewCell.getWorldTransform().getTranslation(null);
-        Vector3f cameraLookDirection = manager.getCameraLookDirection(null);
+        // Fetch the transform of the view (avatar) Cell and its "look at"
+        // direction.
+        ViewManager vm = ViewManager.getViewManager();
+        ViewCell viewCell = vm.getPrimaryViewCell();
+        CellTransform viewTransform = viewCell.getWorldTransform();
+        Quaternion viewRotation = viewTransform.getRotation(null);
+        Vector3f lookAt = CellPlacementUtils.getLookDirection(viewRotation, null);
 
-        // For now, the origin of the Cell is right on top of the avatar
-//        Vector3f origin = cameraPosition;
+        // The initial original of the Cell, by default, the position of the
+        // view (avatar) Cell.
+        Vector3f origin = null;
+
+        // Look for the "bounds hint" provided by the Cell. There are three
+        // possible cases:
+        //
+        // (1) There is a hint and the Cell wants us to do the optimal layout
+        // so go ahead and do it.
+        //
+        // (2) There is no hint, so use the default bounds radius and do the
+        // optimal layout
+        //
+        // (3) There is a hint that says do not do the optimal layout, so we
+        // will just put the Cell right on top of the avatar.
+        BoundingVolumeHint hint = state.getBoundingVolumeHint();
+
+        logger.warning("Using bounding volume hint " +
+                hint.getBoundsHint().toString() + ", do placement=" +
+                hint.isDoSystemPlacement());
         
-        // HACK ALERT: If we find a "sizing-hint" field in the Cell server state
-        // meta data, then we use that to place the Cell 1 unit away from the
-        // camera.
-//        Map<String, String> metadata = state.getMetaData();
-//        String sizingHint = metadata.get("sizing-hint");
-//        if (sizingHint != null) {
-//            float sizing = Float.parseFloat(sizingHint);
-//            distance = 1.0f + sizing;
-//        }
+        if (hint != null && hint.isDoSystemPlacement() == true) {
+            // Case (1): We have a bounds hint and we want to do the layout,
+            // so we find the distance away from the avatar and also the height
+            // above the ground.
+            BoundingVolume boundsHint = hint.getBoundsHint();
+            origin = CellPlacementUtils.getCellOrigin(boundsHint, viewCell);
+        }
+        else if (hint == null) {
+            // Case (2): Do the optimal placement using the default radius.
+            BoundingVolume boundsHint = new BoundingSphere(DEFAULT_RADIUS, Vector3f.ZERO);
+            origin = CellPlacementUtils.getCellOrigin(boundsHint, viewCell);
+        }
+        else if (hint != null && hint.isDoSystemPlacement() == false) {
+            // Case (3): The Cell will take care of its own placement, use
+            // the origin of the avatar as the initial placement
+            origin = viewTransform.getTranslation(null);
+        }
 
-
-        // Hard-code distance away to 1.0.
-        distance = 1.0f;
-
-        // Compute the new vector away from the camera position to be a certain
-        // number of scalar units away
-        float lengthSquared = cameraLookDirection.lengthSquared();
-        float factor = (distance * distance) / lengthSquared;
-        Vector3f origin = avatarPosition.add(cameraLookDirection.mult(factor));
-
-        System.out.println("AVATAR POSITION " + avatarPosition);
-        System.out.println("CAMERA LOOK AT " + cameraLookDirection);
-        System.out.println("LENGTH SQ " + lengthSquared);
-        System.out.println("DISTANCE SQ " + (distance * distance));
-//        System.out.println("SIZING HINT " + sizingHint);
-        System.out.println("FACTOR " + factor);
-        System.out.println("CELL ORIGIN " + origin);
+        // We need to rotate the scale so that it is facing the avatar
+        Quaternion rotation = new Quaternion();
+        rotation.lookAt(lookAt.negate(), new Vector3f(0, 1, 0));
 
         // find the parent cell for this creation (may be null)
         CellID parentID = null;
         Cell parent = CellCreationParentRegistry.getCellCreationParent();
         if (parent != null) {
             parentID = parent.getCellID();
+            logger.warning("Using parent with Cell ID " + parentID.toString());
         }
 
+        // Formulate up the initial transform of the Cell in world coordinates.
+        CellTransform transform = new CellTransform(rotation, origin);
+        
+        // We also need to convert the initial origin of the Cell (in world
+        // coordinates to the coordinates of the parent Cell (if non-null)
+        if (parentID != null) {
+            CellTransform worldTransform = new CellTransform(null, null);
+            CellTransform parentTransform = parent.getWorldTransform();
+
+            logger.warning("Transform of the parent cell: translation=" +
+                    parentTransform.getTranslation(null).toString() + ", rotation=" +
+                    parentTransform.getRotation(null).toString());
+
+            transform = CellPlacementUtils.transform(transform, worldTransform,
+                    parentTransform);
+        }
+        
+        logger.warning("Final adjusted origin " + transform.getTranslation(null).toString());
+        
         // Create a position component that will set the initial origin
         PositionComponentServerState position = new PositionComponentServerState();
-        position.setTranslation(origin);
-        Quaternion quaternion = new Quaternion();
-        quaternion.lookAt(cameraLookDirection.negate(), new Vector3f(0, 1, 0));
-        position.setRotation(quaternion);
+        position.setTranslation(transform.getTranslation(null));
+        position.setRotation(transform.getRotation(null));
+        position.setScaling(transform.getScaling(null));
         state.addComponentServerState(position);
 
         // Send the message to the server

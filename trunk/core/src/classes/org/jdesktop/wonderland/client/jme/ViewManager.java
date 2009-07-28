@@ -488,8 +488,6 @@ public class ViewManager implements ViewPropertiesListener {
     /**
      * Convienence method to return the camera position as a vector.
      *
-     * NOTE: THIS IS UNTESTED
-     *
      * @return The camera position
      */
     public Vector3f getCameraPosition(Vector3f v3f) {
@@ -498,8 +496,6 @@ public class ViewManager implements ViewPropertiesListener {
 
     /**
      * Returns the camera "look direction" as a vector.
-     *
-     * NOTE: THIS IS UNTESTED
      *
      * @return The camera look direction
      */
