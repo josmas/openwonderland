@@ -45,7 +45,6 @@ import org.jdesktop.wonderland.modules.avatarbase.client.imi.WonderlandCharacter
  * Avatar attributes for generating Wonderland avatars
  * @author jkaplan
  */
-@XmlRootElement
 public class WonderlandCharacterParams implements Cloneable {
     private static final Logger logger =
             Logger.getLogger(WonderlandCharacterParams.class.getName());
@@ -81,10 +80,6 @@ public class WonderlandCharacterParams implements Cloneable {
         }
     }
 
-    public WonderlandCharacterParams() {
-        this (null);
-    }
-
     public WonderlandCharacterParams(URL configURL) {
         this.configURL = configURL;
         loadConfig(configURL);
@@ -114,7 +109,6 @@ public class WonderlandCharacterParams implements Cloneable {
             element.apply(out);
         }
 
-        /// XXX what about colors? XXX
         return out;
     }
 

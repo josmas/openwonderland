@@ -172,7 +172,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
 
         // Create the new cell at a distance away from the avatar
         try {
-            CellUtils.createCell(state, 5.0f);
+            CellUtils.createCell(state);
         } catch (CellCreationException excp) {
             logger.log(Level.WARNING, "Unable to create cell for uri " + uri, excp);
         }
