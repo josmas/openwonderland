@@ -119,6 +119,9 @@ public abstract class InputManager
     /** Whether the cursor is in the main window. */
     private static boolean mainWindowHasCursor;
 
+    /** Are we running on a Mac? */
+    private static boolean isMac = "Mac OS X".equals(System.getProperty("os.name"));
+
     /** The global focus wildcard entity */
     protected Entity globalFocusEntity;
 
@@ -283,6 +286,16 @@ public abstract class InputManager
     public void mouseEntered(MouseEvent e) {
 	inputPicker.pickMouseEvent3D(e);
         mainWindowHasCursor = true;
+
+        /* TODO: notyet
+        // Fix 348 by forcing key-focus-follows-mouse behavior on the mac
+        if (isMac) {
+            if (!mainWindowHasFocus) {
+                System.err.println("******* Mac OS X: acquire key focus for main window");
+                ensureKeyFocusInMainWindow();
+            }
+        }
+        */
     }
 
     /**
