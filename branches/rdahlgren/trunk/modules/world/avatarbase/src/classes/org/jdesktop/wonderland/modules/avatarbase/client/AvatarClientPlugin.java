@@ -28,6 +28,7 @@ import imi.character.behavior.CharacterBehaviorManager;
 import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
 import imi.repository.Repository;
+import imi.scene.PMatrix;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -272,6 +273,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
                 camState.setCameraPosition(avatarCellRenderer.getCell().getLocalTransform().getTranslation(null).add(offsetVec));
                 camState.setTargetCharacter(avatarCellRenderer.getAvatarCharacter());
                 ClientContextJME.getViewManager().setCameraController(new FlexibleCameraAdapter(camModel, camState));
+                camState.transformUpdate(avatarCellRenderer.getAvatarCharacter().getPositionRef(), PMatrix.IDENTITY);
             }
         });
 

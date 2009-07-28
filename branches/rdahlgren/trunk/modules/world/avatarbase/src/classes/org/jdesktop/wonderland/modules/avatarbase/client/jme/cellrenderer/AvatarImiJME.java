@@ -94,6 +94,8 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarCon
 
 import com.jme.scene.shape.Teapot;
 import com.jme.scene.TriMesh;
+import com.jme.scene.state.MaterialState.ColorMaterial;
+import imi.scene.utils.JmeUtils;
 
 /**
  * Cell renderer for Avatars, using the IMI avatar system.
@@ -544,14 +546,18 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             // don't add the entity to wm
             ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
 
-            URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
-            ResourceLocator resourceLocator = new RelativeResourceLocator(url);
-
-            ResourceLocatorTool.addThreadResourceLocator(
-                    ResourceLocatorTool.TYPE_TEXTURE,
-                    resourceLocator);
-            Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
-            ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
+            // Load the new hotness
+            Node placeHolder = JmeUtils.loadSerializedJmeGraph(new URL(baseURL + "assets/models/collada/Avatars/placeholder.bin"));
+            JmeUtils.setDefaultRenderStatesOnGraph(placeHolder, ColorMaterial.AmbientAndDiffuse, wm);
+            // Load the old storytelling guy
+//            URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
+//            ResourceLocator resourceLocator = new RelativeResourceLocator(url);
+//
+//            ResourceLocatorTool.addThreadResourceLocator(
+//                    ResourceLocatorTool.TYPE_TEXTURE,
+//                    resourceLocator);
+//            Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
+//            ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
             //checkBounds(placeHolder);
             //placeHolder.updateModelBound();
