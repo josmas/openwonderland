@@ -335,8 +335,20 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
 	    /*
 	     * Phone Mode
 	     */
-	    addUserPanel.callUser(addPhoneUserPanel.getPhoneName(),
-		addPhoneUserPanel.getPhoneNumber());
+	    String name = addPhoneUserPanel.getPhoneName();
+
+	    PresenceInfo[] info = pm.getAllUsers();
+
+            for (int i = 0; i < info.length; i++) {
+                if (info[i].usernameAlias.equals(name) ||
+                        info[i].userID.getUsername().equals(name)) {
+
+                    addPhoneUserPanel.setStatusMessage("Name is already being used!");
+                    return;
+                }
+	    }
+
+	    addUserPanel.callUser(name, addPhoneUserPanel.getPhoneNumber());
 	}
     }
 

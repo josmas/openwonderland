@@ -222,18 +222,6 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     public void callUser(String name, String number) {
-	    PresenceInfo[] info = pm.getAllUsers();
-
-        for (int i = 0; i < info.length; i++) {
-            if (info[i].usernameAlias.equals(name) ||
-                    info[i].userID.getUsername().equals(name)) {
-
-                //statusLabel.setText("Name is already being used!");
-		System.out.println("Name is already being used!");
-                return;
-            }
-	}
-
         personalPhone = true;
 
         session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
