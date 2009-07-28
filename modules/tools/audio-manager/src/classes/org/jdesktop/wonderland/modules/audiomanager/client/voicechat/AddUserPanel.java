@@ -59,8 +59,15 @@ import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
 
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -100,12 +107,11 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	this.caller = caller;
 	this.group = group;
 
-	System.out.println("GROUP IS " + group);
-
         initComponents();
 
 	userListModel = new DefaultListModel();
         addUserList.setModel(userListModel);
+	addUserList.setCellRenderer(new UserListCellRenderer());
 	
         members.add(myPresenceInfo);
 
@@ -342,7 +348,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	for (int i = 0; i < presenceInfoList.length; i++) {
 	    PresenceInfo info = presenceInfoList[i];
 
-	    if (members.contains(info)) {
+	    if (members.contains(info) || info.equals(myPresenceInfo)) {
                 removeFromUserList(info);
             } else {
                 addToUserList(info);
@@ -356,6 +362,10 @@ public class AddUserPanel extends javax.swing.JPanel implements
         PresenceInfo[] presenceInfoList = pm.getAllUsers();
 
 	for (int i = 0; i < presenceInfoList.length; i++) {
+	    if (presenceInfoList[i].equals(myPresenceInfo)) {
+		continue;
+	    }
+
 	    addToUserList(presenceInfoList[i]);
 	}
     }
@@ -368,6 +378,11 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	case ADD:
 	    switch (type) {
 	    case USER_ADDED:
+		if (presenceInfo.equals(myPresenceInfo)) {
+		    removeFromUserList(presenceInfo);
+		    break;
+		}
+
 		if (members.contains(presenceInfo)) {
 		    return;
 		}
@@ -466,6 +481,37 @@ public class AddUserPanel extends javax.swing.JPanel implements
             }
 
             session.send(client, new EndCallMessage(info.callID, "Terminated with malice"));
+        }
+    }
+
+    private class UserListCellRenderer implements ListCellRenderer {
+
+        protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+        private Font font = new Font("SansSerif", Font.PLAIN, 13);
+
+        public Component getListCellRendererComponent(JList list, Object value, int index,
+                boolean isSelected, boolean cellHasFocus) {
+
+            JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index,
+                    isSelected, cellHasFocus);
+
+            String usernameAlias = NameTagNode.getUsername((String) value);
+
+            PresenceInfo info = pm.getAliasPresenceInfo(usernameAlias);
+
+            if (info == null) {
+                logger.warning("No presence info for " + usernameAlias);
+                return renderer;
+            }
+
+            if (members.contains(info)) {
+                renderer.setFont(font);
+                renderer.setForeground(Color.BLACK);
+            } else {
+                renderer.setFont(font);
+                renderer.setForeground(Color.BLUE);
+            }
+            return renderer;
         }
     }
 

@@ -121,9 +121,8 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
 
         this.group = group;
 
-	System.out.println("AddHUDPanel group " + this.group);
-
         initComponents();
+
         setMode(Mode.INITIATE);
 
         //hangupButton.setEnabled(false);
@@ -257,8 +256,6 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
         }
 
         if (addUserPanel == null) {
-	    System.out.println("FOO " + group);
-
             addUserPanel = new AddUserPanel(client, session, myPresenceInfo, 
 		caller, group);
         }
@@ -385,8 +382,6 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
     }
 
     private void addButtonActionPerformed(ActionEvent e) {
-	System.out.println("Addingggggggg " + group);
-
 	AddHUDPanel addHUDPanel =
             new AddHUDPanel(client, session, myPresenceInfo, myPresenceInfo, group);
 
@@ -423,8 +418,6 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
         session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
         addHUDComponent.setVisible(false);
         addHUDPanelMap.remove(group);
-
-	System.out.println("CLOSE " + addHUDComponent);
     }
 
     private void hangup(ActionEvent e) {
