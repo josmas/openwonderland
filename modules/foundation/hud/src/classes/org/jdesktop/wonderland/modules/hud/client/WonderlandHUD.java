@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -183,7 +184,7 @@ public class WonderlandHUD extends HUDObject2D implements HUD {
         HUDComponent2D component = null;
 
         if (displayable instanceof Window2D) {
-            component = new HUDComponent2D((Window2D)displayable);
+            component = new HUDComponent2D((Window2D) displayable);
         }
 
         return component;
@@ -222,6 +223,13 @@ public class WonderlandHUD extends HUDObject2D implements HUD {
      */
     public HUDButton createButton(String label) {
         return new HUDButtonComponent(label);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HUDComponent createImageComponent(ImageIcon imageIcon) {
+        return new HUDImageComponent(imageIcon);
     }
 
     /**

@@ -52,7 +52,7 @@ public class HUDImageComponent extends HUDComponent2D {
         } else {
             ((JButton)component).setIcon(imageIcon);
         }
-        setBounds(0, 0, component.getWidth(), component.getHeight());
+        setBounds(0, 0, component.getPreferredSize().width, component.getPreferredSize().height);
     }
 
     /**

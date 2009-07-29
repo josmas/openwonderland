@@ -51,6 +51,7 @@ public class HUDObject2D implements HUDObject {
     protected boolean worldVisible = false;
     protected float transparency = 0.0f;
     protected boolean enabled = false;
+    protected boolean minimized = false;
     protected boolean decoratable = true;
     protected ImageIcon iconImage;
     protected Layout compassPoint = Layout.NONE;
@@ -348,6 +349,26 @@ public class HUDObject2D implements HUDObject {
      */
     public boolean isEnabled() {
         return enabled;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setMinimized(boolean minimized) {
+        if (this.minimized == minimized) {
+            return;
+        }
+        this.minimized = minimized;
+
+        notifyEventListeners((minimized == true) ? HUDEventType.MINIMIZED
+                : HUDEventType.MAXIMIZED);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isMinimized() {
+        return minimized;
     }
 
     /**
