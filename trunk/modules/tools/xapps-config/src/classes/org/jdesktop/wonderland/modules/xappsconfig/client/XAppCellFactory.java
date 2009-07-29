@@ -63,7 +63,11 @@ public class XAppCellFactory implements CellFactorySPI {
 
         AppCellXrwServerState serverState = new AppCellXrwServerState();
         serverState.setAppName(appName);
-        serverState.setCommand(command);
+
+        // don't set a command -- the server will derive the command from
+        // the app name
+        serverState.setCommand(null);
+        
         serverState.setLaunchLocation("server");
 
         return (T) serverState;

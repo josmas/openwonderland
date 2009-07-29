@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -117,6 +118,9 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener,
             }
             else if (action != null && action.equalsIgnoreCase("add") == true) {
                 handleAdd(request, response, xAppsCollection);
+            }
+            else if (action != null && action.equalsIgnoreCase("check") == true) {
+                handleCheck(request, response, xAppsCollection);
             }
 
             // Otherwise, display the items
@@ -266,6 +270,48 @@ public class XAppsServlet extends HttpServlet implements ServletContextListener,
         request.setAttribute("entries", entries);
         RequestDispatcher rd = getServletContext().getRequestDispatcher("/browse.jsp");
         rd.forward(request, response);
+    }
+
+    /**
+     * Handles the "check" action to map an app name to a command
+     */
+    private void handleCheck(HttpServletRequest request,
+            HttpServletResponse response, ContentCollection c)
+            throws ServletException, IOException, ContentRepositoryException,
+            JAXBException
+    {
+        // get the name of the application to check
+        String checkApp = request.getParameter("app");
+        if (checkApp == null) {
+            throw new ServletException("App parameter is required.");
+        } else {
+            checkApp = checkApp.trim();
+        }
+
+        // Loop through all of the entries in the content repo and spit out
+        // the information to a collection of X11AppEntry objects. This will
+        // be displayed by the jsp.
+        Collection<X11AppEntry> entries = new ArrayList();
+        for (ContentNode child : c.getChildren()) {
+            if (child instanceof ContentResource) {
+                // Find out the information about the content resource item
+                ContentResource resource = (ContentResource)child;
+                String path = resource.getPath();
+
+                // Use JAXB to parse the item
+                Reader r = new InputStreamReader(resource.getInputStream());
+                XAppRegistryItem item = XAppRegistryItem.decode(r);
+
+                if (item.getAppName().equalsIgnoreCase(checkApp)) {
+                    response.setContentType("text/plain");
+
+                    PrintWriter pr = new PrintWriter(response.getWriter());
+                    pr.println(item.getCommand());
+                    pr.close();
+                    break;
+                }
+            }
+        }
     }
 
     /**
