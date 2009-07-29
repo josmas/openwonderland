@@ -17,10 +17,19 @@
  */
 package org.jdesktop.wonderland.modules.assetmeter.client;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDFactory;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
@@ -32,43 +41,74 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 @Plugin
 public class AssetMeterClientPlugin extends BaseClientPlugin {
 
-    private AssetMeterJFrame assetMeterJFrame;
-    private final JMenuItem item;
+    private AssetMeterJPanel assetMeterJPanel;
+    private HUDComponent assetMeterHUDComponent;
+    private JMenuItem item;
 
     public AssetMeterClientPlugin() {
-        item = new JMenuItem("Asset Meter");
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    item = new JCheckBoxMenuItem("Asset Meter");
+                    item.setSelected(true);
+                }
+            });
+        } catch (InterruptedException ie) {
+            throw new IllegalStateException("Interrupt creating menu", ie);
+        } catch (InvocationTargetException ise) {
+            throw new IllegalStateException("Exception creating menu", ise);
+        }
     }
 
     @Override
     protected void activate() {
-        // First create the asset meter frame and keep a weak reference to it
-        // so that it gets garbage collected
-        assetMeterJFrame = new AssetMeterJFrame();
-        assetMeterJFrame.setSize(350, 200);
-
         // Add the Asset Meter as a checkbox menu item to the Tools menu as a
-        // Checkbox menu item. If it is selected, then show it or hide it. Keep
-        // the frame in a weak reference.
+        // Checkbox menu item. If it is selected, then show it or hide it.
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (assetMeterJFrame.isVisible() == false) {
-                    assetMeterJFrame.setVisible(true);
-                }
+                setEnabled(item.isSelected());
+            }
+        });
+
+        // Set up the UI
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // First create the asset meter frame
+                assetMeterJPanel = new AssetMeterJPanel(AssetMeterClientPlugin.this);
+
+                // Now create the HUD component
+                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+                assetMeterHUDComponent = mainHUD.createComponent(assetMeterJPanel);
+                assetMeterHUDComponent.setPreferredLocation(Layout.SOUTHEAST);
+                assetMeterHUDComponent.setName("Downloading...");
+                mainHUD.addComponent(assetMeterHUDComponent);
             }
         });
 
         // Add the item to the tools menu and make the Asset Meter visible
         // by default initially.
         JmeClientMain.getFrame().addToWindowMenu(item, 1);
-        assetMeterJFrame.setVisible(true);
     }
 
     @Override
     protected void deactivate() {
         // remove items
         JmeClientMain.getFrame().removeFromWindowMenu(item);
-        assetMeterJFrame.setVisible(false);
-        assetMeterJFrame.deactivate();
-        assetMeterJFrame = null;
+        assetMeterJPanel.deactivate();
+        assetMeterJPanel = null;
+    }
+
+    HUDComponent getHUDComponent() {
+        return assetMeterHUDComponent;
+    }
+
+    void resize() {
+        Dimension size = assetMeterJPanel.getSize();
+        System.out.println("Resize to " + size);
+        assetMeterHUDComponent.setSize(size);
+    }
+
+    private void setEnabled(boolean enabled) {
+        assetMeterJPanel.setUpdateEnabled(enabled);
     }
 }
