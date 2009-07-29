@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellAppExittedMessage;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import java.util.logging.Logger;
 
@@ -318,14 +319,25 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         if (exitValue >= 0) {
             logger.warning("App cell terminated because app exitted with exit value = " + exitValue);
         } else {
-            logger.warning("App cell terminated because SAS provider exitted.");
-        }
-        if (serverState != null) {
-            logger.warning("App name of cell = " + serverState.getAppName());
-            logger.warning("Launch command of app = " + serverState.getCommand());
+            logger.warning("App cell terminated because SAS provider exitted. Exit value is unknown.");
         }
 
-        // TODO: notify clients of exit value
+        if (serverState == null) {
+            // TODO: someday: cell was destroyed via close button. I'm not sure what to send 
+            // in this case, if anything.
+        } else {
+
+            // Notify all client cells that app has exitted.
+
+            logger.warning("App name of cell = " + serverState.getAppName());
+            logger.warning("Launch command of app = " + serverState.getCommand());
+
+            AppConventionalCellAppExittedMessage msg = 
+                new AppConventionalCellAppExittedMessage(cellID, exitValue, 
+                                                         serverState.getAppName(), 
+                                                         serverState.getCommand());
+            AppConventionalConnectionHandler.getSender().send(msg);
+        }
 
         destroy();
     }

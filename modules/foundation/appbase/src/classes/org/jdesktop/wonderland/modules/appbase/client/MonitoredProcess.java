@@ -50,6 +50,8 @@ public class MonitoredProcess {
     private Process process;
     /** The process monitor */
     private ProcessMonitor monitor;
+    /** The exit value of the process. */
+    private int exitValue = -2;
 
     /** 
      * Create a new instance of MonitoredProcess. Use the default reporter.
@@ -212,6 +214,7 @@ public class MonitoredProcess {
             process = null;
         }
         if (monitor != null) {
+            exitValue = monitor.getExitValue();
             monitor.cleanup();
             monitor = null;
         }
@@ -261,6 +264,16 @@ public class MonitoredProcess {
         monitor = new ProcessMonitor(process, processName, reporter);
 
         return true;
+    }
+
+    /**
+     * Return the process exit value.
+     */
+    public int getExitValue () {
+        if (monitor != null) {
+            return monitor.getExitValue();
+        }
+        return exitValue;
     }
 
     /**
