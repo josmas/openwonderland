@@ -33,7 +33,7 @@
             <export>
                 <type>folder</type>
                 <location>dist</location>
-                <build-target>release</build-target>
+                <build-target>daily-build</build-target>
             </export>
             <view>
                 <items>

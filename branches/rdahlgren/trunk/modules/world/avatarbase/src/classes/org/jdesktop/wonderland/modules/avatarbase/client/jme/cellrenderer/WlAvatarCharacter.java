@@ -20,6 +20,7 @@ import imi.character.CharacterParams;
 import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarContext.TriggerNames;
 import imi.character.statemachine.GameContext;
+import imi.collision.CharacterCollisionInitialization;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import org.jdesktop.mtgame.WorldManager;
@@ -71,6 +72,7 @@ public class WlAvatarCharacter extends Avatar {
          */
         @Override
         public WlAvatarCharacter build() {
+            initializer(new CharacterCollisionInitialization());
             WlAvatarCharacter result = new WlAvatarCharacter(this);
             return result;
         }

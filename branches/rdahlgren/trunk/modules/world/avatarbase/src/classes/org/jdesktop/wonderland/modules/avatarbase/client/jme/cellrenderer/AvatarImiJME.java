@@ -618,9 +618,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         ServerSessionManager manager = cell.getCellCache().getSession().getSessionManager();
         CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(manager, "Default");
 
-        collisionController = new CollisionController(collisionGraph, (JMECollisionSystem) collisionSystem);
-        collisionChangeRequestListener.setCollisionController(collisionController);
-        ((AvatarController) ret.getContext().getController()).setCollisionController(collisionController);
+//        collisionController = new CollisionController(collisionGraph, (JMECollisionSystem) collisionSystem);
+//        collisionChangeRequestListener.setCollisionController(collisionController);
+//        ((AvatarController) ret.getContext().getController()).setCollisionController(collisionController);
 
         return ret;
     }

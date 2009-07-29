@@ -447,7 +447,7 @@ public class JmeClientMain {
     private void createUI(WorldManager wm) {
         // DAHLGREN : Changed to stripped down version
         frame = new IMIDemoFrame(wm, width, height);
-//        frame = new MainFrameImpl(wm, width, height);
+        //frame = new MainFrameImpl(wm, width, height);
         // center the frame
         frame.getFrame().setLocationRelativeTo(null);
 
