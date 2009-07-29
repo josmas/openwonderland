@@ -637,7 +637,19 @@ public abstract class InputManager
      * <br>
      * FOR APP BASE ONLY.
      */
+    @InternalAPI
     public static class WindowSwingViewMarker extends EntityComponent {}
+
+    /** 
+     * An entity component which allows us to figure out whether a WindowSwing should consume events.
+     * <br>
+     * FOR APP BASE ONLY.
+     */
+    @InternalAPI
+    public abstract static class WindowSwingEventConsumer extends EntityComponent {
+        public enum EventAction { DISCARD, CONSUME_2D, CONSUME_3D };
+        public abstract EventAction consumesEvent (MouseEvent3D me3d);
+    }
 
     /**
      * Calculate a pick ray from the current eye position into the given

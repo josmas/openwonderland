@@ -93,11 +93,6 @@ public class Gui2DInterior extends Gui2D {
      */
     protected class InteriorMouseListener extends Gui2D.MouseListener {
 
-        public InteriorMouseListener () {
-            // Tell the processor component super class that we are going to use some swing UI in commitEvent
-            setSwingSafe(true);
-        }
-
         @Override
         public boolean propagatesToParent (Event event) {
             return false;
@@ -192,11 +187,6 @@ public class Gui2DInterior extends Gui2D {
      */
     protected class InteriorKeyListener extends EventClassListener {
 
-        public InteriorKeyListener () {
-            // Tell the processor component super class that we are going to use some swing UI in commitEvent
-            setSwingSafe(true);
-        }
-
         @Override
         public boolean propagatesToParent (Event event) {
             return false;
@@ -230,7 +220,7 @@ public class Gui2DInterior extends Gui2D {
         public void commitEvent(Event event) {
             logger.fine("Interior key commitEvent, event = " + event);
             KeyEvent3D ke3d = (KeyEvent3D) event;
-            KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
+            final KeyEvent ke = (KeyEvent) ke3d.getAwtEvent();
 
             /* For ortho subwindow debugging -- TODO: doesn't work. See bug 203 
             if (ke3d.isPressed() &&
@@ -245,9 +235,13 @@ public class Gui2DInterior extends Gui2D {
             // Note: currently no special GUI processing is needed for key events
             // so they are all just sent to the app group if it has control
             if (view != null) {
-                ControlArb controlArb = view.getWindow().getApp().getControlArb();
+                final ControlArb controlArb = view.getWindow().getApp().getControlArb();
                 if (controlArb.hasControl()) {
-                    controlArb.deliverEvent(view.getWindow(), ke);
+                    SwingUtilities.invokeLater(new Runnable () {
+                        public void run () {
+                            controlArb.deliverEvent(view.getWindow(), ke);
+                        }
+                    });
                 }
             }
         }

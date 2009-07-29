@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 import java.awt.Color;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -103,82 +104,107 @@ public class HeaderPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables
 
-    public void setBackground (Color color) {
-        super.setBackground(color);
-        if (jLabel1 != null) {
-            jLabel1.setBackground(color);
-        }
-        if (jLabel2 != null) {
-            jLabel2.setBackground(color);
-        }
-        if (jButton1 != null) {
-            jButton1.setBackground(color);
-        }
+    public void setBackground (final Color color) {
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run () {
+                HeaderPanel.super.setBackground(color);
+                if (jLabel1 != null) {
+                    jLabel1.setBackground(color);
+                }
+                if (jLabel2 != null) {
+                    jLabel2.setBackground(color);
+                }
+                if (jButton1 != null) {
+                    jButton1.setBackground(color);
+                }
+            }
+        });
     }
 
     @Override
-    public void addMouseListener (MouseListener listener) {
-        super.addMouseListener(listener);
-        if (jLabel1 != null) {
-            jLabel1.addMouseListener(listener);
-        }
-        if (jLabel2 != null) {
-            jLabel2.addMouseListener(listener);
-        }
-        if (jButton1 != null) {
-            jButton1.addMouseListener(listener);
-        }
+    public void addMouseListener (final MouseListener listener) {
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run () {
+                HeaderPanel.super.addMouseListener(listener);
+                if (jLabel1 != null) {
+                    jLabel1.addMouseListener(listener);
+                }
+                if (jLabel2 != null) {
+                    jLabel2.addMouseListener(listener);
+                }
+                if (jButton1 != null) {
+                    jButton1.addMouseListener(listener);
+                }
+            }
+        });
     }
 
     @Override
-    public void removeMouseListener (MouseListener listener) {
-        super.removeMouseListener(listener);
-        if (jLabel1 != null) {
-            jLabel1.removeMouseListener(listener);
-        }
-        if (jLabel2 != null) {
-            jLabel2.removeMouseListener(listener);
-        }
-        if (jButton1 != null) {
-            jButton1.removeMouseListener(listener);
-        }
+    public void removeMouseListener (final MouseListener listener) {
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run () {
+                HeaderPanel.super.removeMouseListener(listener);
+                if (jLabel1 != null) {
+                    jLabel1.removeMouseListener(listener);
+                }
+                if (jLabel2 != null) {
+                    jLabel2.removeMouseListener(listener);
+                }
+                if (jButton1 != null) {
+                    jButton1.removeMouseListener(listener);
+                }
+            }
+        });
 
     }
 
     @Override
-    public void addMouseMotionListener (MouseMotionListener listener) {
-        super.addMouseMotionListener(listener);
-        if (jLabel1 != null) {
-            jLabel1.addMouseMotionListener(listener);
-        }
-        if (jLabel2 != null) {
-            jLabel2.addMouseMotionListener(listener);
-        }
-        if (jButton1 != null) {
-            jButton1.addMouseMotionListener(listener);
-        }
+    public void addMouseMotionListener (final MouseMotionListener listener) {
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run () {
+                HeaderPanel.super.addMouseMotionListener(listener);
+                if (jLabel1 != null) {
+                    jLabel1.addMouseMotionListener(listener);
+                }
+                if (jLabel2 != null) {
+                    jLabel2.addMouseMotionListener(listener);
+                }
+                if (jButton1 != null) {
+                    jButton1.addMouseMotionListener(listener);
+                }
+            }
+        });
     }
 
     @Override
-    public void removeMouseMotionListener (MouseMotionListener listener) {
-        super.removeMouseMotionListener(listener);
-        if (jLabel1 != null) {
-            jLabel1.removeMouseMotionListener(listener);
-        }
-        if (jLabel2 != null) {
-            jLabel2.removeMouseMotionListener(listener);
-        }
-        if (jButton1 != null) {
-            jButton1.removeMouseMotionListener(listener);
-        }
+    public void removeMouseMotionListener (final MouseMotionListener listener) {
+        SwingUtilities.invokeLater(new Runnable () {
+            public void run () {
+                HeaderPanel.super.removeMouseMotionListener(listener);
+                if (jLabel1 != null) {
+                    jLabel1.removeMouseMotionListener(listener);
+                }
+                if (jLabel2 != null) {
+                    jLabel2.removeMouseMotionListener(listener);
+                }
+                if (jButton1 != null) {
+                    jButton1.removeMouseMotionListener(listener);
+                }
+            }
+        });
     }
 
     public void setTitle (String title) {
         if (title == null) {
             title = " ";
         }
+        final String theTitle = title;
         if (jLabel1 != null) {
-            jLabel1.setText(title);
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    jLabel1.setText(theTitle);
+                }
+            });
         }
     }
 
@@ -186,8 +212,13 @@ public class HeaderPanel extends javax.swing.JPanel {
         if (controller == null) {
             controller = " ";
         }
+        final String theController = controller;
         if (jLabel1 != null) {
-            jLabel2.setText(controller);
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    jLabel2.setText(theController);
+                }
+            });
         }
     }
 
