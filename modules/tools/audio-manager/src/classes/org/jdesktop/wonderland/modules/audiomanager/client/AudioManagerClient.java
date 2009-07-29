@@ -389,7 +389,8 @@ public class AudioManagerClient extends BaseConnection implements
 
         final HUDComponent addComponent = mainHUD.createComponent(addPanel);
         addPanel.setHUDComponent(addComponent);
-        addComponent.setPreferredLocation(Layout.NORTHEAST);
+        addComponent.setPreferredLocation(Layout.CENTER);
+        addComponent.setName("Voice Chat");
         mainHUD.addComponent(addComponent);
         addComponent.addEventListener(new HUDEventListener() {
 

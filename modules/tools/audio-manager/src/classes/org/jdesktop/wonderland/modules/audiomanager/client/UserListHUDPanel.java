@@ -669,7 +669,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
 
             if (isMe(info)) {
                 // this user
-                volumeLabel.setText("Master volume for " + username);
+                volumeLabel.setText("Master volume");
                 editButton.setEnabled(true);
                 textChatButton.setEnabled(false);
                 voiceChatButton.setEnabled(false);
@@ -758,6 +758,7 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     };
 
     addHUDPanel.addPropertyChangeListener(plistener);
+    addHUDComponent.setPreferredLocation(Layout.CENTER);
     addHUDComponent.setVisible(true);
 
     //System.out.println("U x,y " + userListHUDComponent.getX() + ", " + userListHUDComponent.getY()
@@ -765,8 +766,8 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     //    + " I x,y " + (userListHUDComponent.getX() + userListHUDComponent.getWidth())
     //    + ", " + (userListHUDComponent.getY() + userListHUDComponent.getHeight() - addHUDComponent.getHeight()));
 
-    addHUDComponent.setLocation(userListHUDComponent.getX() + userListHUDComponent.getWidth(),
-            userListHUDComponent.getY() + userListHUDComponent.getHeight() - addHUDComponent.getHeight());
+//    addHUDComponent.setLocation(userListHUDComponent.getX() + userListHUDComponent.getWidth(),
+//            userListHUDComponent.getY() + userListHUDComponent.getHeight() - addHUDComponent.getHeight());
 }//GEN-LAST:event_voiceChatButtonActionPerformed
 
 private void muteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_muteButtonActionPerformed
@@ -793,7 +794,7 @@ private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     addHUDComponent = mainHUD.createComponent(addHUDPanel);
     addHUDComponent.setName("Call ");
-    addHUDComponent.setPreferredLocation(Layout.NORTHEAST);
+    addHUDComponent.setPreferredLocation(Layout.CENTER);
 
     addHUDPanel.setHUDComponent(addHUDComponent);
 
