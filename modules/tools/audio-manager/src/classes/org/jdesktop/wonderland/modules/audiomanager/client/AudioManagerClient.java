@@ -478,11 +478,11 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         if (message instanceof VoiceChatJoinRequestMessage) {
-            IncomingCallHUDPanel incomingCallHUDPanel = new IncomingCallHUDPanel(this,
+            final IncomingCallHUDPanel incomingCallHUDPanel = new IncomingCallHUDPanel(this,
                     session, cell.getCellID(), (VoiceChatJoinRequestMessage) message);
 
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-            HUDComponent incomingCallHUDComponent = mainHUD.createComponent(incomingCallHUDPanel);
+            final HUDComponent incomingCallHUDComponent = mainHUD.createComponent(incomingCallHUDPanel);
             incomingCallHUDPanel.setHUDComponent(incomingCallHUDComponent);
             incomingCallHUDComponent.setPreferredLocation(Layout.CENTER);
 
@@ -491,6 +491,7 @@ public class AudioManagerClient extends BaseConnection implements
 
                 public void HUDObjectChanged(HUDEvent e) {
                     if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
+			incomingCallHUDPanel.busy();
                     }
                 }
             });

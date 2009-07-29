@@ -123,9 +123,14 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
 
         this.group = group;
 
+	System.out.println("NEW HUD For " + group);
+
         initComponents();
 
         setMode(mode);
+
+	setEnabledInviteButton();
+	setEnabledActionButton();
 
         pm = PresenceManagerFactory.getPresenceManager(session);
 
@@ -265,7 +270,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
                 public void actionPerformed(ActionEvent e) {
                     showAddUserPanel(true, (mode != Mode.ADD));
                     addInitiateButtonPanel.setActionButtonText("Invite");
-        	    addInitiateButtonPanel.setEnabledActionButton(true);
+        	    setEnabledInviteButton();
                     userMode = true;
                 }
             });
@@ -426,8 +431,11 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
             }
 
             addUserPanel.callUser(name, addPhoneUserPanel.getPhoneNumber());
-	    addHUDComponent.setVisible(false);
-	    addHUDComponent.setClosed();
+
+	    if (mode.equals(Mode.ADD)) {
+	        addHUDComponent.setVisible(false);
+	        addHUDComponent.setClosed();
+	    }
         }
 
 	if (mode.equals(Mode.INITIATE)) {
@@ -607,9 +615,18 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
     private void addUserListValueChanged(javax.swing.event.ListSelectionEvent e) {
 	ArrayList<PresenceInfo> selectedValues = addUserPanel.getSelectedValues();
 
+	setEnabledInviteButton();
+	setEnabledActionButton();
+
+	if (inProgressButtonPanel == null) {
+	    return;
+	}
+
 	for (PresenceInfo info: selectedValues) {
 	    if (info.clientID != null) {
-		inProgressButtonPanel.setEnabledHangUpButton(false);
+		if (inProgressButtonPanel != null) {
+		    inProgressButtonPanel.setEnabledHangUpButton(false);
+		}
 		return;
 	    }
 	}
@@ -625,7 +642,19 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
 	}
     }
 
+    private void setEnabledInviteButton() {
+	if (addInitiateButtonPanel == null) {
+	    return;
+	}
+
+	addInitiateButtonPanel.setEnabledActionButton(addUserPanel.getSelectedValues().size() > 0);
+    }
+
     private void setEnabledActionButton() {
+	if (addInitiateButtonPanel == null || addPhoneUserPanel == null) {
+	    return;
+	}
+
 	boolean isEnabled = addPhoneUserPanel.getPhoneName().length() > 0 &&
 	    addPhoneUserPanel.getPhoneNumber().length() > 0;
 

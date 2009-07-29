@@ -113,10 +113,14 @@ public class AddUserPanel extends javax.swing.JPanel implements
         addUserList.setModel(userListModel);
 	addUserList.setCellRenderer(new UserListCellRenderer());
 	
-        members.add(myPresenceInfo);
+	synchronized (members) {
+            members.add(myPresenceInfo);
+	}
 
         if (caller.equals(myPresenceInfo) == false) {
-            members.add(caller);
+	    synchronized (members) {
+                members.add(caller);
+	    }
             //addToUserList(caller);
         }
      
@@ -258,7 +262,10 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
         for (PresenceInfo info : usersToInvite) {
 	    addToUserList(info);
-            invitedMembers.add(info);
+
+	    synchronized (invitedMembers) {
+                invitedMembers.add(info);
+	    }
 
             session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
                 usersToInvite.toArray(new PresenceInfo[0]), chatType));
@@ -344,11 +351,13 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	for (int i = 0; i < presenceInfoList.length; i++) {
 	    PresenceInfo info = presenceInfoList[i];
 
-	    if (members.contains(info) || info.equals(myPresenceInfo)) {
-                removeFromUserList(info);
-            } else {
-                addToUserList(info);
-            }
+	    synchronized (members) {
+	        if (members.contains(info) || info.equals(myPresenceInfo)) {
+                    removeFromUserList(info);
+                } else {
+                    addToUserList(info);
+                }
+	    }
 	}
     }
 
@@ -374,9 +383,11 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	case ADD:
 	    switch (type) {
 	    case USER_ADDED:
-		if (members.contains(presenceInfo)) {
-		    removeFromUserList(presenceInfo);
-		    break;
+		synchronized (members) {
+		    if (members.contains(presenceInfo)) {
+		        removeFromUserList(presenceInfo);
+		        break;
+		    }
 		}
 		addToUserList(presenceInfo);
 		break;
@@ -402,8 +413,10 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    case USER_REMOVED:
 		removeFromUserList(presenceInfo);
 		if (personalPhone) {
-		    if (presenceInfo.clientID == null && members.size() == 1) {
-			leave();
+		    synchronized (members) {
+		        if (presenceInfo.clientID == null && members.size() == 1) {
+			    leave();
+		        }
 		    }
 		}
 	        break;
@@ -414,12 +427,14 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	case IN_PROGRESS:
 	    switch (type) {
             case USER_ADDED:
-		if (members.contains(presenceInfo)) {
-		    addToUserList(presenceInfo);
-		} else {
-		    removeFromUserList(presenceInfo);
+		synchronized (members) {
+		    if (members.contains(presenceInfo)) {
+		        addToUserList(presenceInfo);
+		    } else {
+		        removeFromUserList(presenceInfo);
+		    }
 		}
-		break;
+	        break;
 
 	    case USER_REMOVED:
 		removeFromUserList(presenceInfo);
@@ -442,24 +457,45 @@ public class AddUserPanel extends javax.swing.JPanel implements
     private ArrayList<PresenceInfo> invitedMembers = new ArrayList();
 
     public void memberChange(PresenceInfo presenceInfo, boolean added) {
-	invitedMembers.remove(presenceInfo);
+	synchronized (invitedMembers) {
+	    invitedMembers.remove(presenceInfo);
+	}
 
 	if (added) {
-	    if (members.contains(presenceInfo) == false) {
-		members.add(presenceInfo);
+	    synchronized (members) {
+	        if (members.contains(presenceInfo) == false) {
+		    members.add(presenceInfo);
+	        }
 	    }
 	    presenceInfoChanged(presenceInfo, ChangeType.USER_ADDED);
 	} else {
-	    members.remove(presenceInfo);
+	    synchronized (members) {
+	        members.remove(presenceInfo);
+	    }
 	    presenceInfoChanged(presenceInfo, ChangeType.USER_REMOVED);
 
-	    if (personalPhone && members.size() == 1) {
-                leave();
-            }
+	    synchronized (members) {
+	        if (personalPhone && members.size() == 1) {
+                    leave();
+                }
+	    }
 	}
     }
 
     public void setMemberList(PresenceInfo[] memberList) {
+	synchronized (invitedMembers) {
+	    synchronized (members) {
+	        for (int i = 0; i < memberList.length; i++) {
+		    PresenceInfo info = memberList[i];
+
+		    invitedMembers.remove(info);
+
+	            if (members.contains(info) == false) {
+		        members.add(info);
+	            }
+	        }
+	    }
+	}
     }
 
     private void leave() {
@@ -498,7 +534,9 @@ public class AddUserPanel extends javax.swing.JPanel implements
                 return renderer;
             }
 
-            if (members.contains(info)) {
+	    boolean isMember = members.contains(info);
+
+	    if (isMember) {
                 renderer.setFont(font);
                 renderer.setForeground(Color.BLACK);
             } else {
