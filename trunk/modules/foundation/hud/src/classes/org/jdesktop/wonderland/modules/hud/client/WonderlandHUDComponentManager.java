@@ -522,6 +522,23 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
+    private void componentResized(HUDComponent2D component) {
+        logger.finest("resizing HUD component: " + component);
+
+        HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
+        HUDView2D view = state.getView();
+        if (view != null) {
+            view.setSizeApp(component.getSize());
+            if (component.getDecoratable()) {
+                HUDView2D frameView = state.getFrameView();
+                if (frameView != null) {
+                    HUDFrameHeader2D frame = state.getFrame();
+                    frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * frame.getHeight() / 2 + 0.75f * component.getSize().height / 2)));
+                }
+            }
+        }
+    }
+
     private void componentViewChanged(HUDComponent2D component) {
         logger.fine("changing HUD component view: " + component);
 
@@ -541,6 +558,16 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
     private void componentMinimized(HUDComponent2D component) {
         logger.fine("minimizing HUD component: " + component);
+        if (layout != null) {
+            //layout.minimizeComponent(component);
+        }
+    }
+
+    private void componentMaximized(HUDComponent2D component) {
+        logger.fine("maximizing HUD component: " + component);
+        if (layout != null) {
+            //layout.maximizeComponent(component);
+        }
     }
 
     private void componentClosed(HUDComponent2D component) {
@@ -585,15 +612,19 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
             case MINIMIZED:
                 componentMinimized(comp);
                 break;
+            case MAXIMIZED:
+                componentMaximized(comp);
+                break;
             case CLOSED:
                 componentClosed(comp);
                 break;
             case CHANGED_TRANSPARENCY:
                 componentTransparencyChanged(comp);
                 break;
-            case CREATED:
             case RESIZED:
-            case MAXIMIZED:
+                componentResized(comp);
+                break;
+            case CREATED:
             case ICONIFIED:
             case ENABLED:
             case DISABLED:
@@ -662,8 +693,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     public void minimizeComponent(HUDComponent component) {
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state != null) {
-            state.setState(HUDComponentVisualState.MINIMIZED);
-            // TODO: update display
+            component.setMinimized(true);
         }
     }
 
