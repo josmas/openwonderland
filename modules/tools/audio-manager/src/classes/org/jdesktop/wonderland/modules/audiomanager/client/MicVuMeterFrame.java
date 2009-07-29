@@ -75,7 +75,7 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
 	startVuMeter(false);
     }
 
-    public void startVuMeter(boolean startVuMeter) {
+    public void startVuMeter(final boolean startVuMeter) {
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
 	client.removeDisconnectListener(this);
@@ -97,7 +97,12 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
 	}
 
         sc.startVuMeter(startVuMeter);
-	setVisible(startVuMeter);
+
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+		setVisible(startVuMeter);
+            }
+        });
     }
 
     public void softphoneVisible(boolean isVisible) {
@@ -128,7 +133,12 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
 
             volume = Math.round(Math.sqrt(volume) * 100) / 100D;
 
-            meter.setValue(volume);
+	    java.awt.EventQueue.invokeLater(new Runnable() {
+           	public void run() { 
+		    meter.setValue(volume);
+		}
+	    });
+
 	    volume = 0;
         } else {
 	    double volume = Math.abs(Double.parseDouble(data));

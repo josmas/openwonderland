@@ -27,6 +27,8 @@ public class InProgressButtonPanel extends javax.swing.JPanel {
 
     public InProgressButtonPanel() {
         initComponents();
+
+	hangUpButton.setEnabled(false);
     }
 
     public void addAddButtonListener(ActionListener listener) {
@@ -59,6 +61,14 @@ public class InProgressButtonPanel extends javax.swing.JPanel {
 
     public void removeLeaveButtonListener(ActionListener listener) {
         leaveButton.removeActionListener(listener);
+    }
+
+    public void setEnabledHangUpButton(boolean isEnabled) {
+	hangUpButton.setEnabled(isEnabled);
+    }
+
+    public void setEnabledAddButton(boolean isEnabled) {
+	addButton.setEnabled(isEnabled);
     }
 
     /** This method is called from within the constructor to

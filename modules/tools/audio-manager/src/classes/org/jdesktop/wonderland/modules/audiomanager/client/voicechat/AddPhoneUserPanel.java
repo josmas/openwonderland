@@ -47,6 +47,37 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
         statusLabel.setText(message);
     }
     
+    public void addNameTextActionListener(java.awt.event.ActionListener listener) {
+	nameTextField.addActionListener(listener);
+    }
+
+    public void removeNameTextActionListener(java.awt.event.ActionListener listener) {
+	nameTextField.removeActionListener(listener);
+    }
+
+    public void addPhoneTextActionListener(java.awt.event.ActionListener listener) {
+	phoneTextField.addActionListener(listener);
+    }
+
+    public void removePhoneTextActionListener(java.awt.event.ActionListener listener) {
+	phoneTextField.removeActionListener(listener);
+    }
+
+    public void addNameTextKeyReleasedListener(java.awt.event.KeyAdapter listener) {
+        nameTextField.addKeyListener(listener);
+    }
+
+    public void removeNameTextKeyReleasedListener(java.awt.event.KeyAdapter listener) {
+        nameTextField.addKeyListener(listener);
+    }
+
+    public void addPhoneTextKeyReleasedListener(java.awt.event.KeyAdapter listener) {
+        phoneTextField.addKeyListener(listener);
+    }
+
+    public void removePhoneTextKeyReleasedListener(java.awt.event.KeyAdapter listener) {
+        phoneTextField.addKeyListener(listener);
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -76,11 +107,31 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
         nameLabel.setName("nameLabel"); // NOI18N
 
         nameTextField.setName("nameTextField"); // NOI18N
+        nameTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nameTextFieldActionPerformed(evt);
+            }
+        });
+        nameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                nameTextFieldKeyReleased(evt);
+            }
+        });
 
         phoneLabel.setText("Phone #:");
         phoneLabel.setName("phoneLabel"); // NOI18N
 
         phoneTextField.setName("phoneTextField"); // NOI18N
+        phoneTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                phoneTextFieldActionPerformed(evt);
+            }
+        });
+        phoneTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                phoneTextFieldKeyReleased(evt);
+            }
+        });
 
         statusLabel.setName("statusLabel"); // NOI18N
 
@@ -99,7 +150,7 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
                     .add(phonePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                         .add(phoneTextField)
                         .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 164, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         phonePanelLayout.setVerticalGroup(
             phonePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -113,7 +164,7 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
                     .add(phoneTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(phoneLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE))
+                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 15, Short.MAX_VALUE))
         );
 
         addUserDetailsPanel.setBackground(new java.awt.Color(0, 0, 0));
@@ -132,9 +183,25 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(phonePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(0, 0, 0)
-                .add(addUserDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 4, Short.MAX_VALUE))
+                .add(addUserDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 2, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void nameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nameTextFieldActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_nameTextFieldActionPerformed
+
+private void phoneTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneTextFieldActionPerformed
+// TODO add your handling code here:
+}//GEN-LAST:event_phoneTextFieldActionPerformed
+
+private void nameTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_nameTextFieldKeyReleased
+// TODO add your handling code here:
+}//GEN-LAST:event_nameTextFieldKeyReleased
+
+private void phoneTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_phoneTextFieldKeyReleased
+// TODO add your handling code here:
+}//GEN-LAST:event_phoneTextFieldKeyReleased
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel addUserDetailsPanel;

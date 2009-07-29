@@ -761,13 +761,9 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     addHUDComponent.setPreferredLocation(Layout.CENTER);
     addHUDComponent.setVisible(true);
 
-    //System.out.println("U x,y " + userListHUDComponent.getX() + ", " + userListHUDComponent.getY()
-    //    + " width " + userListHUDComponent.getWidth() + " height " + userListHUDComponent.getHeight()
-    //    + " I x,y " + (userListHUDComponent.getX() + userListHUDComponent.getWidth())
-    //    + ", " + (userListHUDComponent.getY() + userListHUDComponent.getHeight() - addHUDComponent.getHeight()));
-
-//    addHUDComponent.setLocation(userListHUDComponent.getX() + userListHUDComponent.getWidth(),
-//            userListHUDComponent.getY() + userListHUDComponent.getHeight() - addHUDComponent.getHeight());
+    addHUDPanel.setLocation(userListHUDComponent.getX() + userListHUDComponent.getWidth(),
+	userListHUDComponent.getY() + userListHUDComponent.getHeight() - 
+	addHUDComponent.getHeight());
 }//GEN-LAST:event_voiceChatButtonActionPerformed
 
 private void muteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_muteButtonActionPerformed

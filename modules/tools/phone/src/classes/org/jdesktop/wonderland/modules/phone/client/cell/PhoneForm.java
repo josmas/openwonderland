@@ -85,13 +85,17 @@ public class PhoneForm extends JDialog implements KeypadListener {
     }
 
     public void reset() {
-        contactNameTextField.setText(null);
-        contactNumberTextField.setText(null);
-        keypadButton.setEnabled(false);
-        callButton.setText("Call");
-        callButton.setEnabled(false);
-        setLocked(locked);
-        statusMessageLabel.setText(null);
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+		contactNameTextField.setText(null);
+		contactNumberTextField.setText(null);
+		keypadButton.setEnabled(false);
+	        callButton.setText("Call");
+		callButton.setEnabled(false);
+		setLocked(locked);
+		statusMessageLabel.setText(null);
+            }
+        });
     }
 
     @Override
@@ -106,37 +110,46 @@ public class PhoneForm extends JDialog implements KeypadListener {
         setLocked(locked);
     }
 
-    private void setLocked(boolean locked) {
+    private void setLocked(final boolean locked) {
         this.locked = locked;
 
-        if (locked) {
-            lockedLabel.setForeground(Color.RED);
-            lockedLabel.setText("Locked");
-            setSimulationMode(true);
-            privateCallCheckBox.setSelected(false);
-            privateCallCheckBox.setEnabled(false);
-            callButton.setEnabled(false);
-            unlockButton.setText("Unlock");
-        } else {
-            lockedLabel.setForeground(new Color(0, 153, 0));
-            lockedLabel.setText("Unlocked");
-            setSimulationMode(false);
-            privateCallCheckBox.setSelected(true);
-            privateCallCheckBox.setEnabled(true);
-            setDialoutButtonState();
-            unlockButton.setText("Lock");
-        }
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	if (locked) {
+            	    lockedLabel.setForeground(Color.RED);
+            	    lockedLabel.setText("Locked");
+            	    setSimulationMode(true);
+            	    privateCallCheckBox.setSelected(false);
+            	    privateCallCheckBox.setEnabled(false);
+            	    callButton.setEnabled(false);
+            	    unlockButton.setText("Unlock");
+        	} else {
+	            lockedLabel.setForeground(new Color(0, 153, 0));
+           	    lockedLabel.setText("Unlocked");
+	            setSimulationMode(false);
+            	    privateCallCheckBox.setSelected(true);
+            	    privateCallCheckBox.setEnabled(true);
+            	    setDialoutButtonState();
+            	    unlockButton.setText("Lock");
+        	}
+	    }
+	});
     }
 
-    public void changeLocked(boolean locked, boolean wasSuccessful) {
-        if (wasSuccessful == false) {
-            phonePasswordDialog.invalidPassword();
-            return;
-        }
+    public void changeLocked(final boolean locked, final boolean wasSuccessful) {
+	
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	if (wasSuccessful == false) {
+            	    phonePasswordDialog.invalidPassword();
+            	    return;
+        	}
 
-        phonePasswordDialog.setVisible(false);
+        	phonePasswordDialog.setVisible(false);
 
-        setLocked(locked);
+		setLocked(locked);
+	    }
+	});
     }
 
     private void setSimulationMode(boolean simulating) {
@@ -148,38 +161,50 @@ public class PhoneForm extends JDialog implements KeypadListener {
     }
 
     private void setDialoutButtonState() {
-        if (contactNameTextField.isEditable() == false) {
-	    if (callButton.getText().equals("End Call") == false) {
-                callButton.setEnabled(false);
-	    }
-            return;
-        }
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	if (contactNameTextField.isEditable() == false) {
+	    	    if (callButton.getText().equals("End Call") == false) {
+                	callButton.setEnabled(false);
+	    	    }
+            	    return;
+        	}
 
-        if (contactNameTextField.getText().length() > 0 &&
-                contactNumberTextField.getText().length() > 0) {
-            callButton.setEnabled(true);
-        } else {
-	    if (callButton.getText().equals("End Call") == false) {
-                callButton.setEnabled(false);
+		if (contactNameTextField.getText().length() > 0 &&
+                    contactNumberTextField.getText().length() > 0) {
+            	    callButton.setEnabled(true);
+		} else {
+		    if (callButton.getText().equals("End Call") == false) {
+			callButton.setEnabled(false);
+	    	    }
+        	}
 	    }
-        }
+	});
     }
 
-    public void setStatusMessage(String s) {
-	statusMessageLabel.setText(s);
+    public void setStatusMessage(final String s) {
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+		statusMessageLabel.setText(s);
+	    }
+	});
     }
 
-    public void setCallEstablished(boolean enabled) {
-        statusMessageLabel.setText("Call in progress");
+    public void setCallEstablished(final boolean enabled) {
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	statusMessageLabel.setText("Call in progress");
 
-        joinButton.setEnabled(enabled);
+        	joinButton.setEnabled(enabled);
 
-        if (!simulationModeCheckBox.isSelected()) {
-            // allow calls to be ended whether private or public if not
-            // simulating calls
-            // REMIND: should allow simulated calls to be ended too
-            keypadButton.setEnabled(true);
-        }
+        	if (!simulationModeCheckBox.isSelected()) {
+		    // allow calls to be ended whether private or public if not
+		    // simulating calls
+		    // REMIND: should allow simulated calls to be ended too
+		    keypadButton.setEnabled(true);
+        	}
+	    }
+	});
     }
 
     public void setCallEnded(String reasonCallEnded) {
@@ -204,26 +229,32 @@ public class PhoneForm extends JDialog implements KeypadListener {
             reasonCallEnded = "Hung up";
         }
 
-        statusMessageLabel.setText("Ended:  " + reasonCallEnded);
+	final String s = reasonCallEnded;
 
-        //jTextFieldContactName.setEditable(true);
-        //jTextFieldContactNumber.setEditable(true);
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	statusMessageLabel.setText("Ended:  " + s);
 
-        setDialoutButtonState();
+		//jTextFieldContactName.setEditable(true);
+		//jTextFieldContactNumber.setEditable(true);
 
-        if (simulationModeCheckBox.isSelected()) {
-            privateCallCheckBox.setEnabled(false);
-        }
+        	setDialoutButtonState();
 
-        callButton.setText("Call");
-        joinButton.setEnabled(false);
-        keypadButton.setEnabled(false);
+        	if (simulationModeCheckBox.isSelected()) {
+            	    privateCallCheckBox.setEnabled(false);
+        	}
 
-        unlockButton.setEnabled(true);
+	 	callButton.setText("Call");
+		joinButton.setEnabled(false);
+		keypadButton.setEnabled(false);
 
-        if (keypad != null) {
-            keypad.setVisible(false);
-        }
+		unlockButton.setEnabled(true);
+
+		if (keypad != null) {
+		    keypad.setVisible(false);
+        	}
+	    }
+	});
     }
 
 //    public void updateCallListings(HashMap<String,CallListing> callListings, CallListing selectListing) {    
