@@ -59,13 +59,13 @@ public abstract class WindowConventional extends Window2D {
      * @param app The app to which the window belongs.
      * @param width The width of the window (in pixels). This does NOT include the borderWidth.
      * @param height The height of the window (in pixels). This does NOT include the borderWidth.
-     * @param topLevel Whether the window is top left (that is, is decorated).
+     * @param decorated Whether the window is decorated with a frame.
      * @param borderWidth The border width of the window.
      * @param pixelScale The size of the window pixels in world coordinates.
      */
-    public WindowConventional(App2D app, int width, int height, boolean topLevel, int borderWidth, 
+    public WindowConventional(App2D app, int width, int height, boolean decorated, int borderWidth, 
                               Vector2f pixelScale) {
-        super(app, width, height, topLevel, pixelScale, new DrawingSurfaceBufferedImage());
+        super(app, width, height, decorated, pixelScale, new DrawingSurfaceBufferedImage());
         this.borderWidth = borderWidth;
         appConventional = (AppConventional) app;
     }
@@ -76,14 +76,14 @@ public abstract class WindowConventional extends Window2D {
      * @param app The app to which the window belongs.
      * @param width The width of the window (in pixels). This does NOT include the borderWidth.
      * @param height The height of the window (in pixels). This does NOT include the borderWidth.
-     * @param topLevel Whether the window is top left (that is, is decorated).
+     * @param decorated Whether the window is decorated with a frame.
      * @param borderWidth The border width of the window.
      * @param pixelScale The size of the window pixels in world coordinates.
      * @param name The name of the window.
      */
-    public WindowConventional(App2D app, int width, int height, boolean topLevel, int borderWidth, 
+    public WindowConventional(App2D app, int width, int height, boolean decorated, int borderWidth, 
                               Vector2f pixelScale, String name) {
-        super(app, width, height, topLevel, pixelScale, name, new DrawingSurfaceBufferedImage());
+        super(app, width, height, decorated, pixelScale, name, new DrawingSurfaceBufferedImage());
         this.borderWidth = borderWidth;
         appConventional = (AppConventional) app;
     }

@@ -17,14 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.sample.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
 
@@ -44,10 +45,10 @@ public class SampleCellFactory implements CellFactorySPI {
         SampleCellServerState state = new SampleCellServerState();
         state.setShapeType("BOX");
 
-        // HACK!
-        Map<String, String> metadata = new HashMap();
-        metadata.put("sizing-hint", "2.0");
-        state.setMetaData(metadata);
+        // Give the hint for the bounding volume for initial Cell placement
+        BoundingBox box = new BoundingBox(Vector3f.ZERO, 2, 2, 2);
+        BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
+        state.setBoundingVolumeHint(hint);
 
         return (T)state;
     }

@@ -603,7 +603,7 @@ private void privateRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {
 
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             holdHUDComponent = mainHUD.createComponent(holdHUDPanel);
-            holdHUDComponent.setPreferredLocation(Layout.SOUTHWEST);
+            holdHUDComponent.setPreferredLocation(Layout.EAST);
 
 	    holdHUDPanel.setHUDComponent(holdHUDComponent);
 

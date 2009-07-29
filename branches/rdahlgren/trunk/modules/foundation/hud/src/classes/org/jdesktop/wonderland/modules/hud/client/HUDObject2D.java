@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
@@ -50,7 +51,9 @@ public class HUDObject2D implements HUDObject {
     protected boolean worldVisible = false;
     protected float transparency = 0.0f;
     protected boolean enabled = false;
+    protected boolean minimized = false;
     protected boolean decoratable = true;
+    protected ImageIcon iconImage;
     protected Layout compassPoint = Layout.NONE;
     protected List<HUDEventListener> listeners;
     protected HUDEvent event;
@@ -351,6 +354,26 @@ public class HUDObject2D implements HUDObject {
     /**
      * {@inheritDoc}
      */
+    public void setMinimized(boolean minimized) {
+        if (this.minimized == minimized) {
+            return;
+        }
+        this.minimized = minimized;
+
+        notifyEventListeners((minimized == true) ? HUDEventType.MINIMIZED
+                : HUDEventType.MAXIMIZED);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isMinimized() {
+        return minimized;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void setDecoratable(boolean decoratable) {
         this.decoratable = decoratable;
     }
@@ -360,6 +383,20 @@ public class HUDObject2D implements HUDObject {
      */
     public boolean getDecoratable() {
         return decoratable;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setIcon(ImageIcon iconImage) {
+        this.iconImage = iconImage;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public ImageIcon getIcon() {
+        return iconImage;
     }
 
     /**

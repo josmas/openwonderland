@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
@@ -116,6 +117,7 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
             public void componentResized(ComponentEvent e) {
                 // TODO: generate a resize event so the HUD frame can adapt
                 logger.fine("swing component resized: " + e);
+                notifyEventListeners(HUDEventType.RESIZED);
             }
         });
     }

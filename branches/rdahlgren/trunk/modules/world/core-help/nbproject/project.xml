@@ -9,9 +9,6 @@
             <!-- Do not use Project Properties customizer when editing this file manually. -->
             <name>core-help-module</name>
             <properties/>
-            <folders>
-                <source-folder/>
-            </folders>
             <ide-actions>
                 <action name="build">
                     <target>package</target>

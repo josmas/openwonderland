@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jdesktop.wonderland.front.admin.AdminRegistration.RegistrationFilter;
+import org.jdesktop.wonderland.utils.version.Version;
 
 /**
  *
@@ -62,6 +63,9 @@ public class AdminServlet extends HttpServlet implements ServletContextListener 
 
         // set the page URL variable
         request.setAttribute("pageURL", pageURL);
+
+        // set the version variable
+        request.setAttribute("version", new Version());
 
         // get the set of registered links, and apply any filter
         List<AdminRegistration> registry = getRegistry();

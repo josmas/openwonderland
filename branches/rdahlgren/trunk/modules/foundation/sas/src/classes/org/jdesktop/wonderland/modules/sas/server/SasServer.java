@@ -44,6 +44,19 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
 
     private static final Logger logger = Logger.getLogger(SasServer.class.getName());
 
+    /** Helps clean up app info when the app is stopped by the cell. */
+    private static class SasLaunchInfo implements Serializable{
+        private AppConventionalCellMO cell;
+        private String executionCapability;
+        private ProviderProxy provider;
+        private SasLaunchInfo (AppConventionalCellMO cell, String executionCapability, 
+                               ProviderProxy provider) {
+            this.cell = cell;
+            this.executionCapability = executionCapability;
+            this.provider = provider;
+        }
+    }
+
     static class LaunchRequest implements Serializable {
         CellID cellID;
         String executionCapability;
@@ -133,6 +146,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             for (ProviderProxy provider : providers) {
                 if (provider.getClientID().equals(clientID)) {
                     providerToRemove = provider;
+                    provider.cleanup();
                     break;
                 }
             }
@@ -154,7 +168,8 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
     /**
      * {@inheritDoc}
      */
-    public void appLaunch (AppConventionalCellMO cell, String executionCapability, String appName, String command) 
+    public Object appLaunch (AppConventionalCellMO cell, String executionCapability, String appName, 
+                             String command) 
         throws InstantiationException 
     {
         logger.info("***** appLaunch, command = " + command);
@@ -173,7 +188,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             logger.warning("Launch attempt will pend.");
             pendingLaunches.add(launchReq);
             AppContext.getDataManager().markForUpdate(this);
-            return;
+            return new SasLaunchInfo(cell, executionCapability, null);
         }
 
         // TODO: someday: Right now we just try only the first provider. Eventually try multiple providers.
@@ -185,6 +200,8 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         // Now request the provider to launch the app
         launchesInFlight.put(cellID, launchReq);
         provider.tryLaunch(cellID, executionCapability, appName, command);
+
+        return new SasLaunchInfo(cell, executionCapability, provider);
     }
         
     /**
@@ -217,6 +234,8 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             return;
         }
 
+        // TODO: someday: probably shouldn't do this if the provider tried to launch and it failed.
+        // Probably should only do this if the provider wouldn't or couldn't launch for some reason.
         if (status != AppServerLauncher.LaunchStatus.SUCCESS || connInfo == null) {
             // The provider we tried cannot launch. Launch must pend.
             logger.warning("SAS provider launch failed with status " + status + 
@@ -237,10 +256,36 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
     /**
      * {@inheritDoc}
      */
-    public void appStop (CellID cellID) {
-        logger.info("***** appLaunch, cellID = " + cellID);
-        // TODO: tell the provider to stop the app, if it is still connected
-        // TODO: make sure we remove all inflight requests and messages and pending messages as well
+    public void appStop (Object launchInfo) {
+        SasLaunchInfo sasLaunchInfo = (SasLaunchInfo) launchInfo;
+
+        CellID cellID = sasLaunchInfo.cell.getCellID();
+
+        // First, remove cell from the launches in flight map.
+        launchesInFlight.remove(cellID);
+        AppContext.getDataManager().markForUpdate(this);
+
+        // Next, remove cell from pending launch list. 
+        // TODO: someday: For now, this code assumes only one app launch per cell.
+        pendingLaunches.remove(cellID, sasLaunchInfo.executionCapability);
+        AppContext.getDataManager().markForUpdate(this);
+
+        // Finally tell the provider to stop the app.
+        // 
+        // If the provider was determined when appLaunch() was called, tell it to stop the app. */
+        // But if the app had to pend waiting for a provider, we must notify all providers to 
+        // see which one launched the app.
+        if (sasLaunchInfo.provider != null) {
+            sasLaunchInfo.provider.appStop(sasLaunchInfo.cell);
+        } else {
+            LinkedList<ProviderProxy> providers = 
+                execCapToProviderList.get(sasLaunchInfo.executionCapability);
+            if (providers != null) {
+                for (ProviderProxy provider : providers) {
+                    provider.appStop(sasLaunchInfo.cell);
+                }
+            }
+        }
     }
 
     private void tryPendingLaunches (String executionCapability) throws InstantiationException {

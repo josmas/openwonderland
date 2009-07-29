@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
@@ -40,6 +42,7 @@ public class HUDAbsoluteLayoutManager implements HUDLayoutManager {
     // a mapping between HUD components and their views
     protected Map<HUDComponent, HUDView> hudViewMap;
     protected HUD hud;
+    private static final String DEFAULT_HUD_ICON_USERS = "/org/jdesktop/wonderland/modules/hud/client/resources/GenericUsers32x32.png";
 
     public HUDAbsoluteLayoutManager() {
         this(null);
@@ -120,5 +123,32 @@ public class HUDAbsoluteLayoutManager implements HUDLayoutManager {
      */
     public void relayout(HUDComponent component) {
         // components are positioned absolutely
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void minimizeComponent(HUDComponent component) {
+        ImageIcon imageIcon = component.getIcon();
+        if (imageIcon == null) {
+            imageIcon = new ImageIcon(getClass().getResource(DEFAULT_HUD_ICON_USERS));
+        }
+        HUDImageComponent hudIcon = (HUDImageComponent)hud.createImageComponent(imageIcon);
+        hudIcon.setPreferredLocation(Layout.EAST);
+        hud.addComponent(hudIcon);
+        hudIcon.setVisible(true);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void maximizeComponent(HUDComponent component) {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isMinimized(HUDComponent component) {
+        return false;
     }
 }

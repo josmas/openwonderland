@@ -17,6 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import org.jdesktop.wonderland.client.jme.artimport.*;
 import java.io.File;
@@ -39,7 +43,11 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.content.AbstractContentImporter;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.FileUtils;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Bounds;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
@@ -248,8 +256,26 @@ public class ModelDndContentImporter implements ContentImporterSPI {
     }
 
     public void createCell(DeployedModel deployedModel) {
+        // Fetch the bounds of the Cell and use it as the bounds hint.
+        CellServerState state = deployedModel.getCellServerState();
+        PositionComponentServerState pcss =
+                (PositionComponentServerState) state.getComponentServerState(PositionComponentServerState.class);
+        BoundingVolume boundsHint = null;
+        if (pcss != null) {
+            Bounds bounds = pcss.getBounds();
+            if (bounds.type == Bounds.BoundsType.BOX) {
+                boundsHint = new BoundingBox(Vector3f.ZERO, (float)bounds.x,
+                        (float)bounds.y, (float)bounds.z);
+            }
+            else {
+                boundsHint = new BoundingSphere((float)bounds.x, Vector3f.ZERO);
+            }
+        }
+        BoundingVolumeHint hint = new BoundingVolumeHint(true, boundsHint);
+        state.setBoundingVolumeHint(hint);
+
         try {
-            CellUtils.createCell(deployedModel.getCellServerState(), 5.0f);
+            CellUtils.createCell(state);
         } catch (CellCreationException excp) {
             logger.log(Level.WARNING, "Unable to create cell for uri " + deployedModel.getDeployedURL(), excp);
         }

@@ -43,7 +43,8 @@
             </div>
             <div id="serverInfo">
                 Wonderland Server:  <%= request.getLocalName()%><br/>
-                Wonderland Version: @VERSION@<br/>    
+                Wonderland Version: ${requestScope['version'].version}
+                                    (rev. ${requestScope['version'].revision})<br/>
             </div>
         </div>
         

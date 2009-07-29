@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.client.hud;
 import java.awt.Dimension;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 
@@ -122,6 +123,13 @@ public interface HUD extends HUDObject {
      * @return a new HUD button component
      */
     public HUDButton createButton(String label);
+
+    /**
+     * Creates a new HUD component to display an image
+     * @param imageIcon the image to display
+     * @return a new HUD image component
+     */
+    public HUDComponent createImageComponent(ImageIcon imageIcon);
 
     /**
      * Adds a HUD component to the HUD

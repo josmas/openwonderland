@@ -92,8 +92,6 @@ import org.jdesktop.wonderland.modules.avatarbase.client.loader.spi.AvatarLoader
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
 
-import com.jme.scene.shape.Teapot;
-import com.jme.scene.TriMesh;
 import com.jme.scene.state.MaterialState.ColorMaterial;
 import imi.scene.utils.JmeUtils;
 

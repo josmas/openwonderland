@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
@@ -82,12 +83,17 @@ public class MasterSocketSet implements Runnable {
         stop();
 
         // Close all subordinate MasterClientSockets
+        LinkedList<MasterClientSocket> toClose = new LinkedList<MasterClientSocket>();
         synchronized (clientSocketMap) {
             for (MasterClientSocket mcs : clientSocketMap.values()) {
-                mcs.close();
+                toClose.add(mcs);
             }
             clientSocketMap.clear();
         }
+        for (MasterClientSocket mcs : toClose) {
+            mcs.close();
+        }
+        toClose = null;
 
         try {
             serverSocket.close();

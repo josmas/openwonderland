@@ -76,4 +76,34 @@ public class RunningAppInfo implements ManagedObject, Serializable {
         removeList = null;
         AppContext.getDataManager().markForUpdate(this);
     }
+
+    /**
+     * Removes all app infos that are for the given provider.
+     */
+    public void removeAppInfosForCellAndProvider (ProviderProxy provider, CellID cellID) {
+        LinkedList<MessageID> removeList = new LinkedList<MessageID>();
+        for (MessageID msgID : runningAppMap.keySet()) {
+            AppInfo appInfo = runningAppMap.get(msgID);
+            if (appInfo.provider == provider && appInfo.cellID == cellID) {
+                removeList.add(msgID);
+            }
+        }        
+        for (MessageID msgIDToRemove : removeList) {
+            runningAppMap.remove(msgIDToRemove);
+        }
+        removeList = null;
+        AppContext.getDataManager().markForUpdate(this);
+    }
+
+    // Given an an app identified by a provider and a cell, returns the launch message ID
+    // for that app. TODO: someday: assumes only one app launched per cell.
+    public MessageID getLaunchMessageIDForCellAndProvider (ProviderProxy provider, CellID cellID) {
+        for (MessageID msgID : runningAppMap.keySet()) {
+            AppInfo appInfo = runningAppMap.get(msgID);
+            if (appInfo.provider == provider && appInfo.cellID == cellID) {
+                return msgID;
+            }
+        }        
+        return null;
+    }
 }
