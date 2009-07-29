@@ -458,7 +458,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
         validate();
         if ((normalHeight > 0) && (addHUDComponent != null)) {
             // restore dialog to the normal height if was in HOLD mode
-            addHUDComponent.setHeight(holdPanel.getPreferredSize().height);
+            addHUDComponent.setHeight(normalHeight);
         }
     }
 

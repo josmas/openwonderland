@@ -249,7 +249,7 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
 
             addHUDPanel.setHUDComponent(addComponent);
 
-            addComponent.setPreferredLocation(Layout.NORTHWEST);
+            addComponent.setPreferredLocation(Layout.NORTH);
 
             mainHUD.addComponent(addComponent);
 
