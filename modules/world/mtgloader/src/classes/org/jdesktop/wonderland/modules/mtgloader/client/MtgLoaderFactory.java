@@ -38,21 +38,21 @@ public class MtgLoaderFactory extends ModelLoaderFactory
     private ModelDndContentImporter importer;
 
     public void initialize(ServerSessionManager loginManager) {
-//        LoaderManager.getLoaderManager().registerLoader(this);
-//        this.importer = new ModelDndContentImporter(loginManager, new String[] {getFileExtension()});
-//        this.plugin = new BaseClientPlugin() {
-//            @Override
-//            protected void activate() {
-//                MtgLoaderFactory.this.register();
-//            }
-//
-//            @Override
-//            protected void deactivate() {
-//                MtgLoaderFactory.this.unregister();
-//            }
-//        };
-//
-//        plugin.initialize(loginManager);
+        LoaderManager.getLoaderManager().registerLoader(this);
+        this.importer = new ModelDndContentImporter(loginManager, new String[] {getFileExtension()});
+        this.plugin = new BaseClientPlugin() {
+            @Override
+            protected void activate() {
+                MtgLoaderFactory.this.register();
+            }
+
+            @Override
+            protected void deactivate() {
+                MtgLoaderFactory.this.unregister();
+            }
+        };
+
+        plugin.initialize(loginManager);
     }
 
     public void cleanup() {

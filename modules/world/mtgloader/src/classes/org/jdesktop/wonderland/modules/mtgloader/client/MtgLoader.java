@@ -41,6 +41,7 @@ import java.util.zip.ZipFile;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ConfigInstance;
 import org.jdesktop.mtgame.WorldManager.ConfigLoadListener;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -86,10 +87,15 @@ class MtgLoader extends JmeColladaLoader {
 
         ClientContextJME.getWorldManager().loadConfiguration(url, new ConfigLoadListener() {
 
-            public void entityLoaded(Entity entity) {
-                ClientContextJME.getWorldManager().addEntity(entity);
+            public void configLoaded(ConfigInstance ci) {
+                //System.out.println("Loaded: " + ci.getEntity());
             }
         });
+
+        ConfigInstance ci[] = ClientContextJME.getWorldManager().getAllConfigInstances();
+        for (int i=0; i<ci.length; i++) {
+            ClientContextJME.getWorldManager().addEntity(ci[i].getEntity());
+        }
 
         return null;
     }
