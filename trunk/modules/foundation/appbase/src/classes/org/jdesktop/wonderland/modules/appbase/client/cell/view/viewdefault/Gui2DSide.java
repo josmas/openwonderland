@@ -69,9 +69,6 @@ class Gui2DSide extends Gui2D {
         /** Create a new instance of SideMouseListener. */
         public SideMouseListener (Entity entity) {
             this.entity = entity;
-
-            // Tell the processor component super class that we are going to use some swing UI in commitEvent
-            setSwingSafe(true);
         }
 
         /** {@inheritDoc} */

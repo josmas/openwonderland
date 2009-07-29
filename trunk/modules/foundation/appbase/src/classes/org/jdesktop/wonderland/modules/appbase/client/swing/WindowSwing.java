@@ -43,6 +43,12 @@ import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
+import java.awt.event.MouseEvent;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.client.jme.input.InputManager3D;
+import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
@@ -61,6 +67,7 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 // TODO: currently this has JME dependencies. It would be nice to do this in a graphics library independent fashion.
 @ExperimentalAPI
 public class WindowSwing extends Window2D {
+
 
     private static final Logger logger = Logger.getLogger(WindowSwing.class.getName());
     /** The Swing component which is displayed in this window */
@@ -198,7 +205,7 @@ public class WindowSwing extends Window2D {
             viewCleanup(view);
         }
     }
-
+    
     /** 
      * Specify the Swing component displayed in this window. The component is validated (that is it
      * is layed out).
@@ -236,6 +243,7 @@ public class WindowSwing extends Window2D {
         embeddedPeer.validate();
         embeddedPeer.repaint();
     }
+
 
     /* TODO: I'm leaving this hear to illustrate a bug
     private class MyAwtEnterListener extends MouseAdapter {
@@ -373,6 +381,51 @@ public class WindowSwing extends Window2D {
 
     protected void paint(Graphics2D g) {}
 
+    private static class MyWindowSwingEventConsumer extends InputManager.WindowSwingEventConsumer {
+
+        private App2D app;
+
+        private MyWindowSwingEventConsumer (App2D app) {
+            this.app = app;
+        }
+
+        public EventAction consumesEvent (MouseEvent3D me3d) {
+            
+            MouseEvent awtEvent = (MouseEvent) me3d.getAwtEvent();
+            logger.fine("WS.consumesEvent: " + awtEvent);
+            if (Gui2D.isChangeControlEvent(awtEvent)) {
+                logger.fine("Is Change Control Event");
+
+                // Perform the control toggle immediately
+                ControlArb controlArb = app.getControlArb();
+                if (controlArb.hasControl()) {
+                    controlArb.releaseControl();
+                } else {
+                    controlArb.takeControl();
+                }
+
+                return EventAction.DISCARD;
+            }
+            logger.fine("Isn't change control event " + awtEvent);
+
+            // If app doesn't have control, ignore the event
+            if (!app.getControlArb().hasControl()) {
+                logger.fine("Doesn't have control");
+                return EventAction.DISCARD;
+            }
+            logger.fine("Has control");
+
+            // If app has control and focus, send the event to Swing
+            if (InputManager3D.entityHasFocus(me3d, app.getFocusEntity())) {
+                logger.fine("App entity has focus");
+                return EventAction.CONSUME_2D;
+            }
+            logger.fine("App entity doesn't have focus");
+
+            return EventAction.DISCARD;
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     public void addView(View2D view) {
@@ -391,11 +444,14 @@ public class WindowSwing extends Window2D {
     private void viewInit (View2D view) {
         view.addEntityComponent(InputManager.WindowSwingViewMarker.class, new WindowSwingViewMarker());
         view.addEntityComponent(WindowSwingViewReference.class, new WindowSwingViewReference(view));
+        view.addEntityComponent(InputManager.WindowSwingEventConsumer.class, 
+                                new MyWindowSwingEventConsumer(getApp()));
     }
 
     /** Attach the things we use from the given given view. */
     private void viewCleanup (View2D view) {
         view.removeEntityComponent(InputManager.WindowSwingViewMarker.class);
         view.removeEntityComponent(WindowSwingViewReference.class);
+        view.removeEntityComponent(InputManager.WindowSwingEventConsumer.class); 
     }
 }

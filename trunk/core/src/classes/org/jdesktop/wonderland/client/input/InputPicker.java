@@ -51,6 +51,8 @@ import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
 import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.client.input.InputManager.WindowSwingEventConsumer;
+import org.jdesktop.wonderland.client.input.InputManager.WindowSwingEventConsumer.EventAction;
 
 /**
  * The abstract base class for an InputPicker singleton. The InputPicker is the part of the 
@@ -235,13 +237,13 @@ public abstract class InputPicker {
      *
      * Returns non-null if window is a WindowSwing. If it is a WindowSwing then
      * return the appropriate hit entity and the corresponding pick info.
+     * Otherwise forward the event to the event distributor as a 3D event.
      *
      * @param awtEvent The event whose entity and pickInfo need to be picked.
      * @return An object of class PickEventReturn, which contains the return
      * values entity and pickDetails.
      */
     public InputManager.PickEventReturn pickMouseEventSwing (MouseEvent awtMouseEvent) {
-	boolean inSwingRegion = false;
 
 	logger.info("Picker Swing: received awt event = " + awtMouseEvent);
 
@@ -258,7 +260,7 @@ public abstract class InputPicker {
 	logger.fine("destPickInfo = " + destPickInfo);
  	logger.fine("hitPickInfo = " + hitPickInfo);
 
-	// Generate enter/exit events associated with this mouse event
+	// Generate 3D enter/exit events associated with this mouse event
 	int eventID = awtMouseEvent.getID();
 	if (eventID == MouseEvent.MOUSE_MOVED ||
 	    eventID == MouseEvent.MOUSE_DRAGGED ||
@@ -282,115 +284,71 @@ public abstract class InputPicker {
 	// (and, for drag events, attach the raw hit pick info).
 	MouseEvent3D event = (MouseEvent3D) createWonderlandEvent(awtMouseEvent);
 
-	// Search through the entity space to find the first input sensitive 
-	// Window Swing entity for the pickInfo that will consume the event.
-	// Note: WindowSwing entities are always leaf nodes so we don't need to search the parent chains.
-	boolean propagatesToUnder = true;
+	// Get the destination entity and move pick details into the event
 	PickDetails pickDetails = destPickInfo.get(0);
+        Entity entity = pickDetails.getEntity();
 	logger.fine("Picker: pickDetails = " + pickDetails);
-	int idx = 0;
-	while (pickDetails != null && idx < destPickInfo.size() && propagatesToUnder) {
-	    Entity entity = pickDetails.getEntity();
-	    logger.fine("Picker: entity = " + entity);
-	    if (entity == null) {
-		// Search next depth level for entities willing to consume this event
-		idx++;
-		if (idx < destPickInfo.size()) {
-		    pickDetails = destPickInfo.get(idx);
-		} else {
-		    pickDetails = null;
-		}
-		continue;
-	    }
-	    boolean consumesEvent = false;
-            propagatesToUnder = false;
-	    EventListenerCollection listeners = (EventListenerCollection) 
-		entity.getComponent(EventListenerCollection.class);
-	    if (listeners == null) { 
-		consumesEvent = false;
-		propagatesToUnder = false;
-	    } else {
-                
-		event.setPickDetails(pickDetails);
-		if (eventID == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null) {
-		    MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) event;
-		    if (idx < hitPickInfo.size()) {
-			de3d.setHitPickDetails(hitPickInfo.get(idx));
-		    }
-		}
-                Iterator<EventListener> it = listeners.iterator();
-		while (it.hasNext()) {
-                    EventListener listener = it.next();
-		    if (listener.isEnabled()) {
-			Event distribEvent = EventDistributor.createEventForEntity(event, entity);
-			logger.fine("Invoke event listener consumesEvent");
-			logger.fine("Listener = " + listener);
-			logger.fine("Event = " + distribEvent);
-			consumesEvent |= listener.consumesEvent(distribEvent);
-			// TODO: someday: decommit for now
-			//propagatesToUnder |= listener.propagatesToUnder(distribEvent);
-			logger.fine("consumesEvent = " + consumesEvent);
-		    }
-		}
-	    }
-
-	    logger.info("********* isWindowSwingEntity(entity) = " + isWindowSwingEntity(entity));
-	    logger.info("consumesEvent = " + consumesEvent);
-	    if (consumesEvent && isWindowSwingEntity(entity)) {
-		// WindowSwing pick semantics: Stop at the first WindowSwing which has any listener which
-		// will consume the event. Note that because of single-threaded nature of the Embedded Swing 
-		// interface we cannot do any further propagation of the event to parents or unders.
-		logger.fine("Hit windowswing");
-		generateSwingEnterExitEvents(entity);
-		// HACK: see doc for this method
-		cleanupGrab(awtMouseEvent);
-		if (eventID == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null &&
-		    idx < hitPickInfo.size()) {
-		    return new InputManager.PickEventReturn(entity, pickDetails, hitPickInfo.get(idx));
-		} else {
-		    return new InputManager.PickEventReturn(entity, pickDetails, null);
-		}
-	    }
-
-	    if (propagatesToUnder) {
-		// Search next depth level for entities willing to consume this event
-		idx++;
-		if (idx < destPickInfo.size()) {
-		    pickDetails = destPickInfo.get(idx);
-		} else {
-		    pickDetails = null;
-		}
-	    }
-	}
-
-        /* For Debug
-	System.err.println("---------------------------------------");
-	System.err.println("awtMouseEvent = " + awtMouseEvent);
-	System.err.println("hitPickInfo = " + hitPickInfo);
-        if (hitPickInfo != null && hitPickInfo.size() > 0) {
-            PickDetails hitPickDetails = hitPickInfo.get(0);
-            if (hitPickDetails != null) {
-                Entity hitEntity = hitPickDetails.getEntity();
-                System.err.println("hitEntity = " + hitEntity);
+        logger.fine("Picker: entity = " + entity);
+        event.setPickDetails(pickDetails);
+        if (eventID == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null) {
+            MouseDraggedEvent3D de3d = (MouseDraggedEvent3D) event;
+            if (hitPickInfo.size() > 0) {
+                de3d.setHitPickDetails(hitPickInfo.get(0));
             }
         }
-	System.err.println("destPickInfo = " + destPickInfo);
-        if (destPickInfo != null && destPickInfo.size() > 0) {
-            PickDetails destPickDetails = destPickInfo.get(0);
-            if (destPickDetails != null) {
-                Entity destEntity = destPickDetails.getEntity();
-                System.err.println("destEntity = " + destEntity);
+
+        if (isWindowSwingEntity(entity)) {
+            logger.info("Hit window swing entity = " + entity);
+
+            // Get the WindowSwing of the entity
+            WindowSwingEventConsumer eventConsumer = 
+                (WindowSwingEventConsumer) entity.getComponent(WindowSwingEventConsumer.class);
+            
+            // Treat change control events as 3D events, regardless of control or focus
+            EventAction eventAction =  eventConsumer.consumesEvent(event);
+            logger.info("Event action = " + eventAction);
+
+            switch (eventAction) {
+
+            case CONSUME_3D:
+
+                // We haven't hit an input sensitive WindowSwing so post the event to the 
+                // event distributor as a 3D event
+                swingPickInfos.add(new PickInfoQueueEntry(hitPickInfo, awtMouseEvent));
+
+                generateSwingEnterExitEvents(null);
+
+                return null;
+
+            case CONSUME_2D:
+
+                // HACK: see doc for this method
+                cleanupGrab(awtMouseEvent);
+
+                generateSwingEnterExitEvents(entity);
+
+                // Return the event to Swing
+                if (eventID == MouseEvent.MOUSE_DRAGGED && hitPickInfo != null &&
+                    hitPickInfo.size() > 0) {
+                    return new InputManager.PickEventReturn(entity, pickDetails, hitPickInfo.get(0));
+                } else {
+                    return new InputManager.PickEventReturn(entity, pickDetails, null);
+                }
+
+            case DISCARD:
+            default:
+                generateSwingEnterExitEvents(null);
+                return null;
             }
+        } else {
+
+            // This is a 3D event
+            swingPickInfos.add(new PickInfoQueueEntry(hitPickInfo, awtMouseEvent));
+
+            generateSwingEnterExitEvents(null);
+            
+            return null;
         }
-        */
-
-	// We haven't found an input sensitive WindowSwing so provide the pickInfo we have calculated
-	// to pickMouseEvent3D.
-
-	swingPickInfos.add(new PickInfoQueueEntry(hitPickInfo, awtMouseEvent));
-
-	generateSwingEnterExitEvents(null);
-	return null;
     }
 
     /**
