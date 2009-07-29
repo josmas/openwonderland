@@ -32,6 +32,9 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 @ExperimentalAPI
 public class ProcessMonitor {
 
+    /** We don't know the exit status because the process hasn't exitted. */
+    private static int EXIT_STATUS_UNKNOWN_STILL_RUNNING = -1;
+
     /** The process being monitored */
     private Process process;
     /** The name of the process */
@@ -45,6 +48,12 @@ public class ProcessMonitor {
      * the exit status to the user.
      */
     private ExitMonitor exitMonitor;
+
+    /**
+     * The exit value of the app. This is positive if the app has exitted
+     * and we know the value.
+     */
+    private int exitValue = EXIT_STATUS_UNKNOWN_STILL_RUNNING;
 
     /** 
      * Create a new instance of ProcessMonitor with the default reporter.
@@ -89,6 +98,13 @@ public class ProcessMonitor {
 
         reporter = null;
         process = null;
+    }
+
+    /**
+     * Return the process exit value.
+     */
+    public int getExitValue () {
+        return exitValue;
     }
 
     /** The class which monitors process output */
@@ -167,7 +183,7 @@ public class ProcessMonitor {
             try {
 
                 // Block thread until process exits
-                int exitValue = process.waitFor();
+                exitValue = process.waitFor();
 
                 if (reporter != null) {
                     reporter.exitValue(exitValue);

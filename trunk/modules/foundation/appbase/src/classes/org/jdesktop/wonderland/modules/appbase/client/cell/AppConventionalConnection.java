@@ -30,6 +30,10 @@ import org.jdesktop.wonderland.modules.appbase.common.AppConventionalConnectionT
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellAppExittedMessage;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**
  * Handler for app base conventional messages.
@@ -89,14 +93,22 @@ public class AppConventionalConnection extends BaseConnection {
      * {@inheritDoc}
      */
     public void handleMessage (Message message) {
-        if (!(message instanceof AppConventionalCellSetConnectionInfoMessage)) {
+        if (message instanceof AppConventionalCellSetConnectionInfoMessage) {
+            AppConventionalCellSetConnectionInfoMessage msg =
+                (AppConventionalCellSetConnectionInfoMessage) message;
+            handleSetConnectionInfoMessage(msg);
+
+        } else if (message instanceof AppConventionalCellAppExittedMessage) {
+            AppConventionalCellAppExittedMessage msg =
+                (AppConventionalCellAppExittedMessage) message;
+            handleAppExittedMessage(msg);
+
+        } else {
             logger.warning("Invalid message type, message type = " + message.getClass());
-            return;
         }
+    }
 
-        AppConventionalCellSetConnectionInfoMessage msg =
-            (AppConventionalCellSetConnectionInfoMessage) message;
-
+    public void handleSetConnectionInfoMessage (AppConventionalCellSetConnectionInfoMessage msg) {
         CellID cellID = msg.getCellID();
         CellCache cellCache = ClientContext.getCellCache(session);
         if (cellCache == null) {
@@ -114,5 +126,20 @@ public class AppConventionalConnection extends BaseConnection {
         }
         AppConventionalCell appConvCell = (AppConventionalCell) cell;
         appConvCell.setConnectionInfo(msg.getConnectionInfo());
+    }
+
+    public void handleAppExittedMessage (AppConventionalCellAppExittedMessage msg) {
+        final String appName = msg.getAppName();
+        final int exitValue = msg.getExitValue();
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+
+                try {
+                    JOptionPane.showMessageDialog(JmeClientMain.getFrame().getFrame(), 
+                                        "App " + appName + " exitted with exit value = " + exitValue);
+                } catch (Exception ex) {}
+            }
+        });
     }
 }

@@ -62,6 +62,8 @@ public class AppXrwMaster
     private AppXrwConnectionInfo connectionInfo;
     /** List of master apps created by this client. */
     private static LinkedList<AppXrwMaster> masterApps = new LinkedList<AppXrwMaster>();
+    /** The process exit value. */
+    private int exitValue = -2;
 
     /** Defines a listener which is called when the app exits. */
     public interface ExitListener {
@@ -245,6 +247,7 @@ public class AppXrwMaster
         winSys = null;
 
         if (appProcess != null) {
+            exitValue = appProcess.getExitValue();
             appProcess.cleanup();
             appProcess = null;
         }
@@ -352,11 +355,18 @@ public class AppXrwMaster
     }
 
     /**
-     * Returns the exit value of the app process. Returns -1 if no exit value is available
-     * (for example, if the app is still running.)
+     * Returns the exit value of the app process. A return value >= 0 indicates that the process
+     * has exitted and returned an exit value. The return value is this exit value. 
+     * <br><br>
+     * A return value of -1 indicates that the process is still running, so no exit value is available.
+     * <br>
+     * A return value of -2 indicates that the process is no longer running, but for some reason
+     * its exit value is not available.
      */
     public int getExitValue () {
-        // TODO
-        return 0;
+        if (appProcess != null) {
+            return appProcess.getExitValue();
+        }
+        return exitValue;
     }
 }
