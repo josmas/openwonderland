@@ -46,13 +46,17 @@ public class PhonePasswordDialog extends JDialog {
         invalidPasswordLabel.setVisible(false);
     }
 
-    public void setLocked(boolean locked) {
-        invalidPasswordLabel.setVisible(false);
-        keepUnlockedCheckBox.setEnabled(locked);
-        keepUnlockedLabel.setEnabled(keepUnlockedCheckBox.isSelected());
-        phonePasswordOkButton.setText(locked ? "Unlock" : "Lock");
-        dialogLabel.setText("Enter the password to " +
-                ((locked) ? "unlock" : "lock") + " the phone");
+    public void setLocked(final boolean locked) {
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	invalidPasswordLabel.setVisible(false);
+        	keepUnlockedCheckBox.setEnabled(locked);
+        	keepUnlockedLabel.setEnabled(keepUnlockedCheckBox.isSelected());
+        	phonePasswordOkButton.setText(locked ? "Unlock" : "Lock");
+        	dialogLabel.setText("Enter the password to " +
+                    ((locked) ? "unlock" : "lock") + " the phone");
+	    }
+	});
     }
 
     public boolean getKeepUnlocked() {
@@ -210,7 +214,11 @@ public class PhonePasswordDialog extends JDialog {
     }//GEN-LAST:event_phonePasswordCancelButtonActionPerformed
 
     public void invalidPassword() {
-        invalidPasswordLabel.setVisible(true);
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	invalidPasswordLabel.setVisible(true);
+	    }
+	});
     }
 
     private void keepUnlockedCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keepUnlockedCheckBoxActionPerformed

@@ -127,7 +127,7 @@ public class PhoneMessageHandler {
 
     public void phoneSelected() {
 	if (phoneForm == null) {
-	    PhoneInfo phoneInfo = phoneCell.getPhoneInfo();
+	    final PhoneInfo phoneInfo = phoneCell.getPhoneInfo();
 
 	    boolean locked = phoneInfo.locked;
 
@@ -138,13 +138,20 @@ public class PhoneMessageHandler {
 		passwordProtected = false;
 	    }
 
-	    WonderlandSession session = phoneCell.getCellCache().getSession();
+	    final WonderlandSession session = phoneCell.getCellCache().getSession();
 
-	    phoneForm = new PhoneForm(session, phoneCell.getCellID(), channelComp,
-		this, locked, phoneInfo.phoneNumber, passwordProtected);
+	    final boolean isLocked = locked;
+	    final boolean isPasswordProtected = passwordProtected;
+
+	    java.awt.EventQueue.invokeLater(new Runnable() {
+		public void run() {
+	            phoneForm = new PhoneForm(session, phoneCell.getCellID(), channelComp,
+		        PhoneMessageHandler.this, isLocked, phoneInfo.phoneNumber, isPasswordProtected);
+	    
+		    phoneForm.setVisible(true);
+		}
+	    });
 	}
-
-	phoneForm.setVisible(true);
     }
 
     public void processMessage(final PhoneResponseMessage message) {
@@ -361,20 +368,6 @@ public class PhoneMessageHandler {
 
 }
     
-    class doPhoneFormRunnable implements Runnable {
-        
-        private PhoneForm phoneForm;
-
-        public doPhoneFormRunnable(PhoneForm phoneForm) {
-            this.phoneForm = phoneForm;
-        }
-        
-        public void run() {                                        
-            //Pop up a phoneForm here and get the address info.            
-            phoneForm.setVisible(true);
-        }        
-    }
-      
     class ProjectorStateUpdater extends Thread {
 
         private boolean running = true;

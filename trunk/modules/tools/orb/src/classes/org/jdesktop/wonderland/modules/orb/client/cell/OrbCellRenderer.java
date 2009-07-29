@@ -226,7 +226,6 @@ public class OrbCellRenderer extends BasicRenderer {
     class MyMouseListener extends EventClassListener {
 
         public MyMouseListener() {
-            setSwingSafe(true);
         }
 
         @Override

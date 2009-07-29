@@ -150,6 +150,14 @@ public class AddUserPanel extends javax.swing.JPanel implements
         validate();
     }
 
+    public void addUserListSelectionListener(javax.swing.event.ListSelectionListener listener) {
+        addUserList.addListSelectionListener(listener);
+    }
+
+    public void removeUserListSelectionListener(javax.swing.event.ListSelectionListener listener) {
+        addUserList.removeListSelectionListener(listener);
+    }
+
     public void setVisible(boolean isVisible, Mode mode) {
 	this.mode = mode;
 
@@ -258,7 +266,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
 
-    private ArrayList<PresenceInfo> getSelectedValues() {
+    public ArrayList<PresenceInfo> getSelectedValues() {
 	Object[] selectedValues = addUserList.getSelectedValues();
 
 	ArrayList<PresenceInfo> usersToInvite = new ArrayList();
@@ -366,13 +374,9 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	case ADD:
 	    switch (type) {
 	    case USER_ADDED:
-		if (presenceInfo.equals(myPresenceInfo)) {
+		if (members.contains(presenceInfo)) {
 		    removeFromUserList(presenceInfo);
 		    break;
-		}
-
-		if (members.contains(presenceInfo)) {
-		    return;
 		}
 		addToUserList(presenceInfo);
 		break;
@@ -438,6 +442,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
     private ArrayList<PresenceInfo> invitedMembers = new ArrayList();
 
     public void memberChange(PresenceInfo presenceInfo, boolean added) {
+	invitedMembers.remove(presenceInfo);
+
 	if (added) {
 	    if (members.contains(presenceInfo) == false) {
 		members.add(presenceInfo);
@@ -531,6 +537,11 @@ public class AddUserPanel extends javax.swing.JPanel implements
         });
         addUserList.setName("addUserList"); // NOI18N
         addUserList.setVisibleRowCount(5);
+        addUserList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                addUserListValueChanged(evt);
+            }
+        });
         addUserScrollPane.setViewportView(addUserList);
 
         addUserDetailsPanel.setBackground(new java.awt.Color(0, 0, 0));
@@ -547,11 +558,16 @@ public class AddUserPanel extends javax.swing.JPanel implements
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(addUserScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(addUserScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
                 .add(0, 0, 0)
-                .add(addUserDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 6, Short.MAX_VALUE))
+                .add(addUserDetailsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 2, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+private void addUserListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_addUserListValueChanged
+// TODO add your handling code here:
+}//GEN-LAST:event_addUserListValueChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel addUserDetailsPanel;
     private javax.swing.JList addUserList;

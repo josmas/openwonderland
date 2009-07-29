@@ -158,50 +158,56 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(26, 26, 26)
+                        .add(ignoreButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(BusyButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(AnswerButton))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(layout.createSequentialGroup()
-                                .add(callerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 138, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(callerText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(privateRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(secretRadioButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(speakerPhoneRadioButton))))
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(35, 35, 35)
-                            .add(privacyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                            .add(26, 26, 26)
-                            .add(ignoreButton)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(BusyButton)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(AnswerButton))))
-                .add(17, 17, 17))
+                                .addContainerGap()
+                                .add(privacyDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 240, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .addContainerGap()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(callerLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 261, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(layout.createSequentialGroup()
+                                        .add(privateRadioButton)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(secretRadioButton)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(speakerPhoneRadioButton)))))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(callerText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(callerLabel)
-                    .add(callerText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(secretRadioButton)
-                    .add(speakerPhoneRadioButton)
-                    .add(privateRadioButton))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap(40, Short.MAX_VALUE)
+                        .add(callerText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 17, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(16, 16, 16))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(callerLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(privateRadioButton)
+                            .add(secretRadioButton)
+                            .add(speakerPhoneRadioButton))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(privacyDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(ignoreButton)
                     .add(BusyButton)
-                    .add(AnswerButton)))
+                    .add(AnswerButton))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {callerText, privacyDescription}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -237,30 +243,26 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
     private void AnswerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AnswerButtonActionPerformed
         logger.info("Sent join message");
 
-        AddHUDPanel addHUDPanel = AddHUDPanel.getAddHUDPanel(group);
+        AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, myPresenceInfo, caller, group);
 
-        if (addHUDPanel == null) {
-            addHUDPanel = new AddHUDPanel(client, session, myPresenceInfo, caller, group);
+	addHUDPanel.setMode(Mode.IN_PROGRESS);
 
-	    addHUDPanel.setMode(Mode.IN_PROGRESS);
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        addComponent = mainHUD.createComponent(addHUDPanel);
 
-            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-            addComponent = mainHUD.createComponent(addHUDPanel);
+        addHUDPanel.setHUDComponent(addComponent);
 
-            addHUDPanel.setHUDComponent(addComponent);
+        addHUDPanel.setPreferredLocation(Layout.NORTHWEST);
 
-            addComponent.setPreferredLocation(Layout.NORTH);
+        mainHUD.addComponent(addComponent);
 
-            mainHUD.addComponent(addComponent);
-
-            addComponent.addEventListener(new HUDEventListener() {
-                public void HUDObjectChanged(HUDEvent e) {
-                    if (e.getEventType().equals(HUDEventType.CLOSED)) {
-			addComponent = null;
-                    }
+        addComponent.addEventListener(new HUDEventListener() {
+            public void HUDObjectChanged(HUDEvent e) {
+                if (e.getEventType().equals(HUDEventType.CLOSED)) {
+		    addComponent = null;
                 }
-            });
-        }
+            }
+        });
 
         addComponent.setVisible(true);
 

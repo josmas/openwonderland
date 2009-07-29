@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
   </Properties>
@@ -29,7 +29,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="holdLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="holdingUsersLabel" pref="151" max="32767" attributes="0"/>
+                          <Component id="holdingUsersLabel" pref="186" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="takeOffHoldButton" min="-2" max="-2" attributes="0"/>
@@ -77,6 +77,9 @@
         <Property name="value" type="int" value="1"/>
         <Property name="name" type="java.lang.String" value="holdVolumeSlider" noResource="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="holdVolumeSliderStateChanged"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="holdingUsersLabel">
       <Properties>

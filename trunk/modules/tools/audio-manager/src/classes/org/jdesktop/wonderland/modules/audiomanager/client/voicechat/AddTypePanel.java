@@ -29,12 +29,8 @@ public class AddTypePanel extends javax.swing.JPanel {
         initComponents();
     }
 
-    public void setType(boolean isPhoneType) {
-	if (isPhoneType) {
-	    phoneUserRadioButton.setSelected(true);
-	} else {
-	    userRadioButton.setSelected(true);
-	}
+    public void setPhoneType() {
+	phoneUserRadioButton.setSelected(true);
     }
 
     public void addUserModeListener(ActionListener listener) {

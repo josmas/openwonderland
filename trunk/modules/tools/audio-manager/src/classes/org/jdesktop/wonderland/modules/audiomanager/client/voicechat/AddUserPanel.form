@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="buttonGroup1">
     </Component>
@@ -36,9 +36,9 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="addUserScrollPane" max="32767" attributes="0"/>
+              <Component id="addUserScrollPane" pref="93" max="32767" attributes="0"/>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-              <Component id="addUserDetailsPanel" pref="6" max="32767" attributes="0"/>
+              <Component id="addUserDetailsPanel" pref="2" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -71,6 +71,9 @@
             <Property name="name" type="java.lang.String" value="addUserList" noResource="true"/>
             <Property name="visibleRowCount" type="int" value="5"/>
           </Properties>
+          <Events>
+            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="addUserListValueChanged"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

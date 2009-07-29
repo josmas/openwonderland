@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.audiomanager.client.voicechat;
 
 import java.awt.event.ActionListener;
+import javax.swing.event.ChangeListener;
 
 /**
  *
@@ -35,6 +36,18 @@ public class HoldPanel extends javax.swing.JPanel {
 
     public void removeHoldListener(ActionListener listener) {
         takeOffHoldButton.removeActionListener(listener);
+    }
+
+    public void addVolumeSliderChangeListener(ChangeListener listener) {
+        holdVolumeSlider.addChangeListener(listener);
+    }
+
+    public void removeVolumeSliderChangeListener(ChangeListener listener) {
+        holdVolumeSlider.removeChangeListener(listener);
+    }
+
+    public int getHoldVolume() {
+	return holdVolumeSlider.getValue();
     }
 
     /** This method is called from within the constructor to
@@ -64,6 +77,11 @@ public class HoldPanel extends javax.swing.JPanel {
         holdVolumeSlider.setSnapToTicks(true);
         holdVolumeSlider.setValue(1);
         holdVolumeSlider.setName("holdVolumeSlider"); // NOI18N
+        holdVolumeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                holdVolumeSliderStateChanged(evt);
+            }
+        });
 
         holdingUsersLabel.setText("one two three");
         holdingUsersLabel.setName("holdingUsersLabel"); // NOI18N
@@ -89,7 +107,7 @@ public class HoldPanel extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(holdLabel)
-                            .add(holdingUsersLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE))
+                            .add(holdingUsersLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(takeOffHoldButton))))
         );
@@ -111,6 +129,11 @@ public class HoldPanel extends javax.swing.JPanel {
     private void takeOffHoldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_takeOffHoldButtonActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_takeOffHoldButtonActionPerformed
+
+private void holdVolumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_holdVolumeSliderStateChanged
+// TODO add your handling code here:
+}//GEN-LAST:event_holdVolumeSliderStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel holdLabel;
     private javax.swing.JSlider holdVolumeSlider;
