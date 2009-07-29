@@ -43,6 +43,7 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.Vo
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
@@ -390,7 +391,9 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         final HUDComponent addHUDComponent = mainHUD.createComponent(addHUDPanel);
-
+        addHUDComponent.setName("Add to Voice Chat");
+        addHUDComponent.setPreferredLocation(Layout.EAST);
+        
         addHUDPanel.setHUDComponent(addHUDComponent);
 
         mainHUD.addComponent(addHUDComponent);
