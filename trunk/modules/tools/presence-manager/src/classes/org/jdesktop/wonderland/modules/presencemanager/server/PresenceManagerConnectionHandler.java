@@ -238,8 +238,6 @@ public class PresenceManagerConnectionHandler implements
     }
 
     public void callBeginEndNotification(CallStatus status) {
-	System.out.println("PI CS: " + status);
-
 	if (status.getCode() != CallStatus.ENDED) {
 	    return;
 	}
