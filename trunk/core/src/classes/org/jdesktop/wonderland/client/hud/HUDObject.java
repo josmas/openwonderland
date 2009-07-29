@@ -272,6 +272,18 @@ public interface HUDObject {
     public boolean isEnabled();
 
     /**
+     * Minimize or unminimize a component
+     * @param minimized true to minimize, false to un-minimize
+     */
+    public void setMinimized(boolean minimized);
+
+    /**
+     * Gets the minimized state of a component
+     * @return true if the component is minimized, false otherwise
+     */
+    public boolean isMinimized();
+
+    /**
      * Sets whether the HUD object can be decorated
      * @param decoratable true if the HUD object can be decorated, false otherwise
      */
