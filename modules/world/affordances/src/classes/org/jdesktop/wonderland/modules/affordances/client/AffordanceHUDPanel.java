@@ -68,7 +68,7 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
         positionHUDPanel = new PositionHUDPanel();
         positionHUD = mainHUD.createComponent(positionHUDPanel);
         positionHUD.setName("Details");
-        positionHUD.setPreferredLocation(Layout.WEST);
+        positionHUD.setPreferredLocation(Layout.SOUTHEAST);
 
         // add affordances HUD panel to main HUD
         mainHUD.addComponent(positionHUD);
