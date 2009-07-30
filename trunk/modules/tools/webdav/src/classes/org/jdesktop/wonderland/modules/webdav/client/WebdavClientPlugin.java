@@ -95,7 +95,7 @@ public class WebdavClientPlugin extends BaseClientPlugin {
         // this plugin. Since all the code is isolated to this classloader,
         // even static changes like registering the local repository will
         // ony be in effect for this server.
-        String dirName = "localRepo-" + loginInfo.getUsername();
+        String dirName = "localRepo/" + loginInfo.getUsername();
         final File userDir = ClientContext.getUserDirectory(dirName);
         localRepo = new FileContentCollection(userDir, null) {
             @Override

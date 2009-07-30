@@ -166,7 +166,7 @@ public class ClientContext {
     public synchronized static File getUserDirectory(String dirName) {
         File dir = new File(getUserDirectory(), dirName);
         if (!dir.exists()) {
-            dir.mkdir();
+            dir.mkdirs();
         }
 
         return dir;
