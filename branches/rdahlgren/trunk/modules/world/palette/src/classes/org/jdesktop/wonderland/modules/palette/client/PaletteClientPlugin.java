@@ -81,6 +81,8 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // users create new cells.  The menu will be added when our server
         // becomes primary.
         paletteMI = new JMenuItem("Component...");
+        // IMI_HACK_FILTER
+        paletteMI.setActionCommand("IMI_HACK_FILTER");
         paletteMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 CellPalette cellPaletteFrame;
@@ -101,6 +103,8 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
         paletteHUDMI = new JMenuItem("Shortcuts");
+        // IMI_HACK_FILTER
+        paletteHUDMI.setActionCommand("IMI_HACK_FILTER");
         paletteHUDMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 HUDCellPalette hudCellPaletteFrame;

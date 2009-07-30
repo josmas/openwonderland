@@ -138,6 +138,8 @@ public class AudioManagerClient extends BaseConnection implements
         userListJMenuItem = new javax.swing.JCheckBoxMenuItem();
         userListJMenuItem.setText("Users");
         userListJMenuItem.setSelected(usersMenuSelected);
+        // IMI_HACK_FILTER
+        userListJMenuItem.setActionCommand("IMI_HACK_FILTER");
         userListJMenuItem.addActionListener(new java.awt.event.ActionListener() {
 
             public void actionPerformed(java.awt.event.ActionEvent evt) {

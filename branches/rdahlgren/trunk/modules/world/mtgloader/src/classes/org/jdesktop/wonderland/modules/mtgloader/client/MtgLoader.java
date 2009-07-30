@@ -40,6 +40,7 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import org.jdesktop.mtgame.ConfigInstance;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.WorldManager.ConfigLoadListener;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
@@ -88,6 +89,10 @@ class MtgLoader extends JmeColladaLoader {
 
             public void entityLoaded(Entity entity) {
                 ClientContextJME.getWorldManager().addEntity(entity);
+            }
+
+            public void configLoaded(ConfigInstance instance) {
+                
             }
         });
 

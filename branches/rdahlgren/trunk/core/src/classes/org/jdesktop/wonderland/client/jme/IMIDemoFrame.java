@@ -179,6 +179,8 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
                 frameRateMenu.add(fps120);
                 frameRateMenu.add(fps200);
 
+                frameRateMenu.setActionCommand("IMI_HACK_FILTER");
+                addToWindowMenu(frameRateMenu, -1);
 //                addToViewMenu(frameRateMenu, 5);
 
                 fps15.addActionListener(new java.awt.event.ActionListener() {
