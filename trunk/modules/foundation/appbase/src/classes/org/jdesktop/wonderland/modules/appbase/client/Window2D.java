@@ -1768,6 +1768,10 @@ public abstract class Window2D implements HUDDisplayable {
      * Return the window menu items for this window based on its current state.
      */
     public ContextMenuItem[] windowMenuItems (ContextMenuComponent contextMenuComp) {
+
+        // TODO:someday:can simplify this routine because I think it is always called
+        // with hasControl == true.
+
         ArrayList<ContextMenuItem> menuItems = new ArrayList<ContextMenuItem>();
         switch (type) {
 
@@ -1808,14 +1812,15 @@ public abstract class Window2D implements HUDDisplayable {
                         }
                     }));
 
-                // ITEM 4: Show in HUD
-                menuItems.add(
-                    new SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
-                        public void actionPerformed(ContextMenuItemEvent event) {
-                            app.setShowInHUD(true);
-                        }
-                        }));
             }
+
+            // ITEM 4: Show in HUD
+            menuItems.add(
+                new SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
+                    public void actionPerformed(ContextMenuItemEvent event) {
+                        app.setShowInHUD(true);
+                    }
+                }));
 
             return menuItems.toArray(new ContextMenuItem[1]);
 

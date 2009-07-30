@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.View2DSet;
+import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
 
 /**
  * The generic 2D application superclass. All 2D apps in Wonderland have this
@@ -376,6 +377,11 @@ public abstract class App2D {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
             for (Window2D window : windows) {
+
+                // Don't ever show frame headers in the HUD
+                if (window instanceof WindowSwingHeader) continue;
+
+                System.err.println("******** Move into HUD w2d = " + window);
                 HUDComponent component = mainHUD.createComponent(window);
                 component.setPreferredLocation(Layout.CENTER);
                 mainHUD.addComponent(component);

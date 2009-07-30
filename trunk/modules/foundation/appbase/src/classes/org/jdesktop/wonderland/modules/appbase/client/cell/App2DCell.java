@@ -277,12 +277,17 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * Return the app-specific window menu items for the case where the app doesn't have control.
      */
     private ContextMenuItem[] windowMenuItemsForNoControl (ContextMenuComponent contextMenuComp) {
-//        contextMenuComp.setShowStandardMenuItems(true);
+        contextMenuComp.setShowStandardMenuItems(true);
 
         return new ContextMenuItem[] {
             new SimpleContextMenuItem("Take Control", new ContextMenuActionListener () {
                 public void actionPerformed(ContextMenuItemEvent event) {
                     app.getControlArb().takeControl();
+                }
+            }),
+            new SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
+                public void actionPerformed(ContextMenuItemEvent event) {
+                    app.setShowInHUD(true);
                 }
             })
         };
