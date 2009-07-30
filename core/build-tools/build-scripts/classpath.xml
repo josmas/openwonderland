@@ -10,6 +10,7 @@
         <path location="${core.jme.dir}/target/jme-awt.jar"/>
         <path location="${core.jme.dir}/target/jme-audio.jar"/>
         <path location="${core.jme.dir}/target/jme-scene.jar"/>
+        <path location="${core.jme.dir}/target/jme-effects.jar"/>
         <path location="${core.jme.dir}/target/jme-model.jar"/>
         <path location="${core.jme.dir}/target/jme-collada.jar"/>
         <path location="${core.jme.dir}/target/jme-xml.jar"/>
