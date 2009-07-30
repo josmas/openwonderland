@@ -244,17 +244,15 @@ public class PresenceManagerClient extends BaseConnection implements
 
 		    nameTagList.remove(name);
 
-		    PresenceInfo[] info = pm.getUserPresenceInfo(name);
+		    PresenceInfo info = pm.getUserPresenceInfo(name);
 
-		    if (info == null || info.length == 0) {
+		    if (info == null) {
 			System.out.println("No presence info for " + name);
 			continue;
 		    }
 		
-		    PresenceInfo pi = info[0];
-
-		    nameTag.updateLabel(pi.usernameAlias, pi.inConeOfSilence,
-			pi.isSpeaking, pi.isMuted);
+		    nameTag.updateLabel(info.usernameAlias, info.inConeOfSilence,
+			info.isSpeaking, info.isMuted);
 		}
 
 		if (nameTagList.size() == 0) {
