@@ -177,6 +177,7 @@ public class TextChatJFrame extends javax.swing.JFrame {
         messageTextArea.setLineWrap(true);
         messageTextArea.setRows(5);
         messageTextArea.setWrapStyleWord(true);
+        messageTextArea.setFocusable(false);
         jScrollPane1.setViewportView(messageTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
