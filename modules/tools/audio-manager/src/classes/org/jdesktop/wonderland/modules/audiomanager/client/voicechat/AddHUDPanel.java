@@ -527,6 +527,8 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
         session.send(client, new VoiceChatLeaveMessage(group, myPresenceInfo));
         addHUDComponent.setVisible(false);
         addHUDPanelMap.remove(this);
+
+	client.getWlAvatarCharacter().stop();
     }
 
     private void hangup(ActionEvent e) {

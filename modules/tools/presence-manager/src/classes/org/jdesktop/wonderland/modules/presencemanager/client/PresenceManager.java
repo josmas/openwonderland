@@ -92,12 +92,11 @@ public interface PresenceManager {
     public PresenceInfo[] getAllUsers();
 
     /**
-     * Get PresenceInfo for a given username.  If there is more than one user
-     * with the username, all of them are returned;
+     * Get PresenceInfo for a given username.  
      * @param String user name
-     * @return PresenceInfo[] presence information for user.  Should be only one entry.
+     * @return PresenceInfo presence information for user.
      */
-    public PresenceInfo[] getUserPresenceInfo(String username);
+    public PresenceInfo getUserPresenceInfo(String username);
 
     /**
      * Get PresenceInfo for a given username alias.  If there is more 

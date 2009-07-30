@@ -72,6 +72,8 @@ import javax.swing.ListCellRenderer;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
+
 /**
  *
  * @author nsimpson
@@ -213,6 +215,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
     private void changePrivacy() {
 	ArrayList<PresenceInfo> users = getSelectedValues();
 
+	animateCallAnswer();
+
         if (users.contains(myPresenceInfo) == false) {
             session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo, new PresenceInfo[0], chatType));
         }
@@ -236,6 +240,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
     public void callUser(String name, String number) {
         personalPhone = true;
 
+	animateCallAnswer();
+
         session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
                 new PresenceInfo[0], chatType));
 
@@ -251,6 +257,16 @@ public class AddUserPanel extends javax.swing.JPanel implements
         session.send(client, new VoiceChatDialOutMessage(group, callID, chatType, presenceInfo, number));
     }
 
+    private void animateCallAnswer() {
+	if (chatType.equals(ChatType.PRIVATE)) {
+	    client.getWlAvatarCharacter().playAnimation("Male_AnswerCell");
+	    System.out.println("Playing animation...");
+	} else {
+	    client.getWlAvatarCharacter().stop();
+	    System.out.println("Stopping animation...");
+	}
+    }
+
     public void inviteUsers() {
 	ArrayList<PresenceInfo> usersToInvite = getSelectedValues();
 	usersToInvite.remove(myPresenceInfo);
@@ -259,6 +275,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
     public void inviteUsers(ArrayList<PresenceInfo> usersToInvite) {
 	clearUserList();
+
+	animateCallAnswer();
 
         for (PresenceInfo info : usersToInvite) {
 	    addToUserList(info);
@@ -541,7 +559,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
                 renderer.setForeground(Color.BLACK);
             } else {
                 renderer.setFont(font);
-                renderer.setForeground(Color.BLUE);
+                renderer.setForeground(Color.LIGHT_GRAY);
             }
             return renderer;
         }

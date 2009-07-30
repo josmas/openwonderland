@@ -32,6 +32,8 @@ import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
+
 /**
  *
  * @author  jp
@@ -234,7 +236,7 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
     private HUDComponent addComponent;
 
     private void AnswerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AnswerButtonActionPerformed
-        logger.info("Sent join message");
+        logger.info("Sent join accepted message");
 
         AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, myPresenceInfo, caller, group);
 
@@ -262,6 +264,12 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
         session.send(client, new VoiceChatJoinAcceptedMessage(group, myPresenceInfo, chatType));
 
 	answered = true;
+
+        if (chatType.equals(ChatType.PRIVATE)) {
+            client.getWlAvatarCharacter().playAnimation("Male_AnswerCell");
+        } else {
+            client.getWlAvatarCharacter().stop();
+        }
 
         incomingCallHUDComponent.setVisible(false);
     }//GEN-LAST:event_AnswerButtonActionPerformed

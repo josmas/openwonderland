@@ -57,6 +57,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentCompone
 import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMenuChangeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
@@ -68,10 +70,12 @@ import com.sun.mpk20.voicelib.app.FalloffFunction;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Player;
+import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.Treatment;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.mpk20.voicelib.app.VoiceManagerParameters;
 
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -207,14 +211,18 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         ChannelComponentMO channelComponent = (ChannelComponentMO) cellRef.get().getComponent(ChannelComponentMO.class);
 
         if (live == false) {
+            channelComponent.removeMessageReceiver(AudioTreatmentMenuChangeMessage.class);
             channelComponent.removeMessageReceiver(AudioTreatmentRequestMessage.class);
+            channelComponent.removeMessageReceiver(AudioVolumeMessage.class);
 	    removeProximityListener();
             return;
         }
 
         ComponentMessageReceiverImpl receiver = new ComponentMessageReceiverImpl(cellRef, this);
 
+        channelComponent.addMessageReceiver(AudioTreatmentMenuChangeMessage.class, receiver);
         channelComponent.addMessageReceiver(AudioTreatmentRequestMessage.class, receiver);
+        channelComponent.addMessageReceiver(AudioVolumeMessage.class, receiver);
 
 	initialize();
     }
@@ -437,8 +445,70 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
                 return;
             }
 
+	    if (message instanceof AudioVolumeMessage) {
+		changeAudioVolume((AudioVolumeMessage) message);
+		return;
+	    }
+
+	    if (message instanceof AudioVolumeMessage) {
+		sender.send(message);
+		return;
+	    }
+
             logger.warning("Unknown message:  " + message);
         }
+
+        private void changeAudioVolume(AudioVolumeMessage msg) {
+	    String softphoneCallID = msg.getSoftphoneCallID();
+
+	    String otherCallID = msg.getOtherCallID();
+
+            double volume = msg.getVolume();
+
+            logger.fine("GOT Volume message:  call " + softphoneCallID
+	        + " volume " + volume + " other callID " + otherCallID);
+
+            VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+            Player softphonePlayer = vm.getPlayer(softphoneCallID);
+
+            if (softphonePlayer == null) {
+                logger.warning("Can't find softphone player, callID " + softphoneCallID);
+                return;
+            }
+
+            Player player = vm.getPlayer(otherCallID);
+
+ 	    if (player == null) {
+                logger.warning("Can't find player for callID " + otherCallID);
+	        return;
+            } 
+
+	    if (volume == 1.0) {
+	        softphonePlayer.removePrivateSpatializer(player);
+	        return;
+	    }
+
+	    VoiceManagerParameters parameters = vm.getVoiceManagerParameters();
+
+            Spatializer spatializer;
+
+	    spatializer = player.getPublicSpatializer();
+
+	    if (spatializer != null) {
+	        spatializer = (Spatializer) spatializer.clone();
+	    } else {
+	        if (player.getSetup().isLivePlayer) {
+		    spatializer = (Spatializer) parameters.livePlayerSpatializer.clone();
+	        } else {
+		    spatializer = (Spatializer) parameters.stationarySpatializer.clone();
+	        }
+	    }
+
+            spatializer.setAttenuator(volume);
+
+            softphonePlayer.setPrivateSpatializer(player, spatializer);
+	}
     }
 
     public void callStatusChanged(CallStatus callStatus) {
