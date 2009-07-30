@@ -655,6 +655,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             // one user (self or someone else)
             controlPanel.setVisible(true);
             volumeSlider.setEnabled(true);
+            textChatButton.setEnabled(true);
             panelToggleButton.setIcon(downIcon);
 
             String username = NameTagNode.getUsername((String) selectedValues[0]);
@@ -693,7 +694,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
             volumeLabel.setText("Private volume for " + selectedValues.length + " users");
             volumeSlider.setEnabled(true);
             volumeSlider.setValue(5);
-            textChatButton.setEnabled(true);
+            textChatButton.setEnabled(false);
             voiceChatButton.setEnabled(true);
             panelToggleButton.setIcon(downIcon);
         }
