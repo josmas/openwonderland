@@ -63,7 +63,6 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 logger.info("close action performed");
                 notifyActionListeners(new ActionEvent(HUDFrameHeader2DImpl.this, e.getID(), "close"));
-
             }
         });
     }

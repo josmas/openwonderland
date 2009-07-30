@@ -39,6 +39,7 @@ public class HUDComponentState {
     private HUDFrameHeader2D frame;
     private Window2D frameWindow;
     private HUDView2D frameView;
+    private HUDImageComponent icon;
     private boolean decorated;
     private int zorder;
 
@@ -202,6 +203,22 @@ public class HUDComponentState {
      */
     public boolean isDecorated() {
         return decorated;
+    }
+
+    /** 
+     * Sets the icon associated with the HUD component
+     * @param icon the icon
+     */
+    public void setIcon(HUDImageComponent icon) {
+        this.icon = icon;
+    }
+
+    /**
+     * Gets the icon associated with the HUD component
+     * @return the icon
+     */
+    public HUDImageComponent getIcon() {
+        return icon;
     }
 
     /**

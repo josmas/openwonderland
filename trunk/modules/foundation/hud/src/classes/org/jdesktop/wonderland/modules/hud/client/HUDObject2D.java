@@ -57,6 +57,7 @@ public class HUDObject2D implements HUDObject {
     protected Layout compassPoint = Layout.NONE;
     protected List<HUDEventListener> listeners;
     protected HUDEvent event;
+    private final Object listenerLock = new Object();
 
     public HUDObject2D() {
         listeners = Collections.synchronizedList(new ArrayList());
@@ -354,14 +355,25 @@ public class HUDObject2D implements HUDObject {
     /**
      * {@inheritDoc}
      */
-    public void setMinimized(boolean minimized) {
-        if (this.minimized == minimized) {
+    public void setMinimized() {
+        if (minimized == true) {
             return;
         }
-        this.minimized = minimized;
+        minimized = true;
 
-        notifyEventListeners((minimized == true) ? HUDEventType.MINIMIZED
-                : HUDEventType.MAXIMIZED);
+        notifyEventListeners(HUDEventType.MINIMIZED);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setMaximized() {
+        if (minimized == false) {
+            return;
+        }
+        minimized = false;
+
+        notifyEventListeners(HUDEventType.MAXIMIZED);
     }
 
     /**
@@ -427,11 +439,12 @@ public class HUDObject2D implements HUDObject {
     public void notifyEventListeners(HUDEvent event) {
         List<HUDEventListener> notifiees = getEventListeners();
         if (notifiees != null) {
-            Iterator<HUDEventListener> iter = notifiees.iterator();
-            while (iter.hasNext()) {
-                HUDEventListener notifiee = iter.next();
+            HUDEventListener[] notify = notifiees.toArray(new HUDEventListener[0]);
+            for (int i = 0; i < notify.length; i++) {
+                HUDEventListener notifiee = notify[i];
                 notifiee.HUDObjectChanged(event);
             }
+            notify = null;
         }
     }
 

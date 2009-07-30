@@ -92,6 +92,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -223,6 +224,7 @@ public class AudioManagerClient extends BaseConnection implements
             userListHUDPanel.setHUDComponent(userListHUDComponent);
             userListHUDComponent.setPreferredLocation(Layout.NORTHWEST);
             userListHUDComponent.setName("Users");
+            userListHUDComponent.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/GenericUsers32x32.png")));
 
             mainHUD.addComponent(userListHUDComponent);
             userListHUDComponent.addEventListener(new HUDEventListener() {

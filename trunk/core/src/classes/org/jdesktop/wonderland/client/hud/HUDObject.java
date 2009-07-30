@@ -272,10 +272,14 @@ public interface HUDObject {
     public boolean isEnabled();
 
     /**
-     * Minimize or unminimize a component
-     * @param minimized true to minimize, false to un-minimize
+     * Minimizes a component
      */
-    public void setMinimized(boolean minimized);
+    public void setMinimized();
+
+    /**
+     * Maximizes a component
+     */
+    public void setMaximized();
 
     /**
      * Gets the minimized state of a component

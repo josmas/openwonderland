@@ -17,6 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -30,6 +36,7 @@ public class HUDImageComponent extends HUDComponent2D {
 
     private static final Logger logger = Logger.getLogger(HUDImageComponent.class.getName());
     private ImageIcon imageIcon;
+    private List<ActionListener> actionListeners;
 
     public HUDImageComponent() {
         super();
@@ -49,10 +56,19 @@ public class HUDImageComponent extends HUDComponent2D {
         this.imageIcon = imageIcon;
         if (component == null) {
             component = new JButton(imageIcon);
+            ((JButton)component).setBorderPainted(false);
+            ((JButton)component).setBorder(null);
+            ((JButton) component).addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    logger.info("action performed");
+                    notifyActionListeners(new ActionEvent(HUDImageComponent.this, e.getID(), "pressed"));
+                }
+            });
         } else {
-            ((JButton)component).setIcon(imageIcon);
+            ((JButton) component).setIcon(imageIcon);
         }
-        setBounds(0, 0, component.getPreferredSize().width, component.getPreferredSize().height);
+        setBounds(0, 0, imageIcon.getIconWidth(), imageIcon.getIconHeight());
     }
 
     /**
@@ -69,5 +85,23 @@ public class HUDImageComponent extends HUDComponent2D {
     @Override
     public void setComponent(JComponent component) {
         super.setComponent(component);
+    }
+
+    public void addActionListener(ActionListener listener) {
+        if (actionListeners == null) {
+            actionListeners = Collections.synchronizedList(new ArrayList());
+        }
+        actionListeners.add(listener);
+    }
+
+    public void notifyActionListeners(ActionEvent e) {
+        if (actionListeners != null) {
+            ListIterator<ActionListener> iter = actionListeners.listIterator();
+            while (iter.hasNext()) {
+                ActionListener listener = iter.next();
+                listener.actionPerformed(e);
+            }
+            iter = null;
+        }
     }
 }
