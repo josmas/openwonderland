@@ -27,6 +27,7 @@
         <path location="${current.dir}/../presence-manager/build/lib/client/presencemanager-client.jar"/>
         <path location="${current.dir}/../orb/build/lib/client/orb-client.jar"/>
         <path location="${current.dir}/../../world/avatarbase/build/client/avatarbase-client.jar"/>
+        <path location="${current.dir}/../../world/avatarbase/lib/avatars.jar"/>
         <path location="${current.dir}/../orb/build/lib/client/orb-client.jar"/>
     </pathconvert>
 

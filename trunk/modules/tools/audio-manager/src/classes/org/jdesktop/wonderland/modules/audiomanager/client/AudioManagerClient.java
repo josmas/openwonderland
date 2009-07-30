@@ -20,6 +20,9 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel;
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.IncomingCallHUDPanel;
 
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
+
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 
@@ -29,6 +32,10 @@ import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
+
+import imi.character.avatar.Avatar;
 
 import org.jdesktop.wonderland.common.NetworkAddress;
 
@@ -149,6 +156,11 @@ public class AudioManagerClient extends BaseConnection implements
         });
         userListJMenuItem.setEnabled(false);
         logger.fine("Starting AudioManagerCLient");
+    }
+
+    public WlAvatarCharacter getWlAvatarCharacter() {
+	AvatarImiJME rend = (AvatarImiJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+	return rend.getAvatarCharacter();
     }
 
     public void addDisconnectListener(DisconnectListener listener) {

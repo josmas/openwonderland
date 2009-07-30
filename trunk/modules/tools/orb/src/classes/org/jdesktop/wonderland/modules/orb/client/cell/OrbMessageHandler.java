@@ -173,10 +173,10 @@ public class OrbMessageHandler implements TransformChangeListener, FollowMeListe
 
         pm = PresenceManagerFactory.getPresenceManager(session);
 
-	PresenceInfo[] pi = pm.getUserPresenceInfo(orbCell.getUsername());
+	PresenceInfo pi = pm.getUserPresenceInfo(orbCell.getUsername());
 
-	if (pi != null && pi.length >= 1) {
-	    usernameAlias = pi[0].usernameAlias;
+	if (pi != null) {
+	    usernameAlias = pi.usernameAlias;
 	}
 
 	WonderlandIdentity userID = new WonderlandIdentity(username, usernameAlias, null);

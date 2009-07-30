@@ -210,7 +210,7 @@ public class PresenceManagerImpl implements PresenceManager {
             PresenceInfo info = cellIDMap.get(cellID);
 
             if (info == null) {
-                logger.warning("No presence info for CellID " + cellID);
+                logger.fine("No presence info for CellID " + cellID);
                 return null;
             }
 
@@ -232,7 +232,7 @@ public class PresenceManagerImpl implements PresenceManager {
             PresenceInfo info = sessionIDMap.get(sessionID);
 
             if (info == null) {
-                logger.warning("No presence info for sessionID " + sessionID);
+                logger.fine("No presence info for sessionID " + sessionID);
                 return null;
             }
 
@@ -249,7 +249,7 @@ public class PresenceManagerImpl implements PresenceManager {
             PresenceInfo info = userIDMap.get(userID);
 
             if (info == null) {
-                logger.warning("No presence info for userID " + userID);
+                logger.fine("No presence info for userID " + userID);
     	        return null;
             }
 
@@ -267,7 +267,7 @@ public class PresenceManagerImpl implements PresenceManager {
             PresenceInfo info = callIDMap.get(callID);
 
             if (info == null) {
-                logger.warning("No presence info for callID " + callID);
+                logger.fine("No presence info for callID " + callID);
                 return null;
             }
 
@@ -308,39 +308,14 @@ public class PresenceManagerImpl implements PresenceManager {
     }
 
     /**
-     * Get PresenceInfo for a given username.  If there is more than one user
-     * with the username, all of them are returned;
+     * Get PresenceInfo for a given username.  
      */
-    public PresenceInfo[] getUserPresenceInfo(String username) {
-        WonderlandIdentity[] users;
+    public PresenceInfo getUserPresenceInfo(String username) {
+        WonderlandIdentity userID;
 
         synchronized (userIDMap) {
-            users = userIDMap.keySet().toArray(new WonderlandIdentity[0]);
+            return userIDMap.get(username);
         }
-
-        ArrayList<PresenceInfo> userList = new ArrayList();
-
-        for (int i = 0; i < users.length; i++) {
-            if (users[i].getUsername().equals(username) == false) {
-                continue;
-            }
-
-            PresenceInfo info = userIDMap.get(users[i]);
-
-            if (info == null) {
-                logger.warning("userIDMap does not have an entry for " + users[i]);
-                return null;
-            }
-
-            userList.add(info);
-        }
-
-        if (userList.size() > 0) {
-            return userList.toArray(new PresenceInfo[0]);
-        }
-
-        logger.warning("No presence info for " + username);
-        return null;
     }
 
     /**
@@ -362,7 +337,7 @@ public class PresenceManagerImpl implements PresenceManager {
 	    }
         }
 
-        logger.warning("No presence info for " + usernameAlias);
+        logger.fine("No presence info for " + usernameAlias);
         return null;
     }
 
@@ -371,11 +346,11 @@ public class PresenceManagerImpl implements PresenceManager {
      * @param String user name
      */
     public void changeUsernameAlias(PresenceInfo info) {
-        PresenceInfo[] users = this.getUserPresenceInfo(info.userID.getUsername());
-        if ((users != null) && (users.length == 1)) {
-            // update user alias, only if it's unique
-            PresenceInfo userInfo = users[0];
-            userInfo.usernameAlias = info.usernameAlias;
+        PresenceInfo presenceInfo = getUserPresenceInfo(info.userID.getUsername());
+
+        if (presenceInfo != null) {
+            // update user alias
+            presenceInfo.usernameAlias = info.usernameAlias;
         }
 
         session.send(PresenceManagerClient.getInstance(),
