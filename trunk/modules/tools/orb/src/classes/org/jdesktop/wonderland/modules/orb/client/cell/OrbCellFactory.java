@@ -41,10 +41,9 @@ public class OrbCellFactory implements CellFactorySPI {
         return (T)new OrbCellServerState();
     }
 
-    
-
     public String getDisplayName() {
-        return "Orb";
+        // Return null so that it does not appear in any Cell Palette
+        return null;
     }
 
     public Image getPreviewImage() {
