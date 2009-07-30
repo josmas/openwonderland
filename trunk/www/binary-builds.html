@@ -53,13 +53,23 @@
     
     <br><br>
     <b>Prerequisites</b>
+    
+    <p>This page describes how to install a Wonderland server from a binary "jar" file. This is an activity we recommend for advanced end users, system administrators, or software developers. After installing a binary build, you will end up with an instance of a Wonderland server, including a web server component and several default Wonderland worlds. You will be able to provide end users with a link to a web page which has a button to launch a Wonderland client.</p>
+        
     <p>
     Before you download and install the binary release of Project Wonderland, make sure you have met the following requirements:
     <ul>
-        <li>Operating Systems Supported: Windows XP/Vista, Linux (Debian/Ubuntu), Solaris 10, Mac OS X. Note: Only 32-bit operating systems are supported.
-        <li>Java SE 5 or 6 (either JRE or JDK), <a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>.
-        <li>Access to a command line.
+        <li>Supported Operating System: Windows XP/Vista, Linux (Debian/Ubuntu), Solaris 10, Mac OS X<br>
+        If Wonderland does not seem to run on your system, see the note below on <a href="#platforms">platform exceptions</a>.<br><br>
+        
+        <li>Java SE 5 or 6 (either JRE or JDK), which you can find here: <a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>.<br>
+        <i>Note For Macintosh Users:</i> You need to be sure that Java SE 6 is not only installed, but also set as the active Java version.  Go to Applications -> Utilities -> Java Preferences, and make sure that "Java SE 6" is first on the list under "Java Applications".<br><br>
+        
+        <li>Access to a command line<br>
+        You will need to know how to use a few simple commands such as "cd" and "rm".
     </ul>
+    
+ 
     
     <br>
     <b>Installing a Nightly Binary Build</b>
@@ -67,16 +77,25 @@
         Each night (US Pacific time), a new Wonderland binary build is created. These are known as the "nightly builds," or simply as the "nightly." To install a nightly, follow these steps:    </p>
     <ol>
         <li>Navigate to <a href="http://download.java.net/lg3d/wonderland/daily-0.5-dev/">http://download.java.net/lg3d/wonderland/daily-0.5-dev/</a><br><br>
-        <li>Scroll to the bottom of the page and select the date you want.<br>
+        <li>Scroll to the bottom of the page and select the date you want<br>
         Typically you will click on the last folder in the list, which is the most recent nightly build <br><br>
         <li>Right click on "Wonderland.jar" and save it to your computer<br>
-        Note: Do not change the name of the jar file when you save it. If you want to keep track of which nightly is which, create a folder and name it with the date of the nightly. Then save the jar file in that folder. The jar files are large, so the download will take some time.<br><br>
+        <i>Note:</i> Do not change the name of the jar file when you save it. If you want to keep track of which nightly is which, create a folder and name it with the date of the nightly. Then save the jar file in that folder. The jar files are large, so the download will take some time.<br><br>
         <li>Open your terminal program to access a command line<br><br>
         <li>Change directories to the location where you downloaded the jar file<br><br>
-        <li>Start Wonderland by typing:<br><br>
+        <li>Start Wonderland on Mac or Unix system by typing:<br><br>
             <ul>
             <code>java -jar Wonderland.jar</code>
             </ul><br>
+        Or on a Windows system by typing the following, including the quotation marks:<br><br>
+            <ul>
+            <code>"\Program Files\Java\jre6\bin\java" -jar Wonderland.jar</code>
+            </ul><br>
+        Unless you're on a Vista 64-bit system, in which case you need to type:<br><br>
+            <ul>
+            <code>"\Program Files (x86)\Java\jre6\bin\java" -jar Wonderland.jar</code>
+            </ul><br><br>         
+            
         <li>Be patient while the Wonderland server starts up.<br>
         You should soon see lots of messages fly by in the terminal window, including lots of warnings. Expect some pauses. The process will take a minute or two.<br><br>
         <li>Eventually you will see a message that includes the text "Wonderland web server started successfully."<br>
@@ -92,8 +111,8 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
             </ul><br>
         <li>Make a note of the log file directory<br>
         You will need this information when you wish to delete this build from your computer. In addition, this directory may contain useful information for reporting Wonderland problems.<br><br>
-        <li>Copy and paste the URL in the last line into a browser window to navigate to the Wonderland launch page.<br> 
-        If the computer is a server machine, you can also give this URL to others.<br><br>
+        <li>Copy and paste the URL in the last line  of the message into a browser window to navigate to the Wonderland launch page.<br> 
+        This is the URL you can give to end users to launch Wonderland.<br><br>
         <li>Click "Launch Wonderland 0.5" from the launch page
     </ol>
     
@@ -105,7 +124,7 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
     <br>
     <b>Configuration Options</b>
     <p>
-    For most installations, there's no need to configure the Project Wonderland software, but if you have properties you would like to change, you can add them at the command line. For example:</p>
+    For most installations, there's no need to configure the Wonderland software, but if you have properties you would like to change, you can add them at the command line. For example:</p>
     
     <ul>
 <code>java -Dwonderland.webserver.host=localhost -jar wonderland.jar</code>
@@ -121,13 +140,13 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
     <br>
     <b>Uninstalling Wonderland</b>
     <p>
-    To uninstall the Project Wonderland binary distribution from your machine, perform the following steps:
+    To uninstall the Wonderland binary distribution from your machine, perform the following steps:
     
     <ol>
         <li>Delete the Wonderland.jar file<br>
         If you placed the jar file in a directory with the date of the build, delete the directory<br><br>
         <li>Delete the directory <code>~/.wonderland-server/[version-number]</code><br>
-        The "~" notation means your home directory. The complete directory name was printed in your terminal window when you started the Wonderland server (see Step 8 above). 
+        The "~" notation means your home directory. The complete directory name was printed in your terminal window when you started the Wonderland server (see the log file location in Step 8 above). 
     </ol>
     
     <br>
@@ -141,6 +160,24 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
         <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandFirewallPoint5">Configuring a Project Wonderland Server Behind a Firewall or NAT</a>
         <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandWebstartPoint5">Launching Wonderland Clients using Java Webstart</a>
         <li><a href="http://wiki.java.net/bin/view/Javadesktop/ProjectWonderlandTelephoneAdmin">Setting up Telephones for Project Wonderland</a>
+    </ul>
+        
+    
+    <br><a name="platforms">
+    <b>Platform Exceptions</b></a>
+    <p>
+    Wonderland currently supports both 32-bit and 64-bit operating systems to varying degrees, but the situation is a bit complicated. Here's the current state:</p>
+    <ul>
+    <p><b>MacOS</b><br> 
+    Apple only provides 64-bit Java SE JRE/JDK, so you have to have a 64-bit system (hardware).</p>
+
+    <p><b>Windows</b><br>
+    32-bit and 64-bit systems are supported, but <i>only</i> with the Java SE 32-bit JRE/JDK.  Wonderland doesn't mind running on a 32-bit JRE on a 64-bit system.</p>
+
+    <p><b>Linux</b><br>
+    Only 32-bit systems are supported right now. In the future, we will try to bundle 64-bit versions of the native client libraries to run the Wonderland client on a 64-bit JRE/JDK. Running the Wonderland server on a 64-bit system is a not currently possible since the Darkstar server component only ships a 32-bit Berkeley DB native library. Once Darkstar moves over to the Java version of Berkeley DB this will no longer be an issue. 
+    <p>
+    </ul>
     </ul>    
     
     <!-- Google Analytics Page Hit Statistics -->
