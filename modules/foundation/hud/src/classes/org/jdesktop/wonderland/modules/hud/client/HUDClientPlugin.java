@@ -71,7 +71,7 @@ public class HUDClientPlugin extends BaseClientPlugin {
         manager.addHUD(wonderlandHUD);
 
         // create a component manager for the HUD components in this HUD
-        HUDComponentManager compManager = new WonderlandHUDComponentManager();
+        HUDComponentManager compManager = new WonderlandHUDComponentManager(wonderlandHUD);
 
         // define the layout of HUD components in the Wonderland main HUD
         compManager.setLayoutManager(new HUDCompassLayoutManager(wonderlandHUD));

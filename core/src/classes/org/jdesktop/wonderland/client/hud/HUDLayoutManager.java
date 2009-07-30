@@ -80,22 +80,4 @@ public interface HUDLayoutManager {
      * @param component the component to re-layout
      */
     public void relayout(HUDComponent component);
-
-    /**
-     * Minimize a component
-     * @param component the component to minimize
-     */
-    public void minimizeComponent(HUDComponent component);
-
-    /**
-     * Maximize a component
-     * @param component the component to maximize
-     */
-    public void maximizeComponent(HUDComponent component);
-
-    /**
-     * Gets the minimized state of a component
-     * @return true if the component is minimized, false otherwise
-     */
-    public boolean isMinimized(HUDComponent component);
 }

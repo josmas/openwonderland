@@ -169,9 +169,9 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
     @Override
     public String toString() {
         return "HUDComponent2D: " +
-                "cell: " + cell +
+                "cell: " + cell + " " +
                 ((component != null) ? component.getClass().getName() : "") +
-                "window: " + window +
+                "window: " + window + " " +
                 super.toString();
     }
 }

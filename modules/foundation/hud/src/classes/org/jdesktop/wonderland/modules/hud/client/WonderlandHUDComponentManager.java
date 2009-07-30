@@ -35,10 +35,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
@@ -54,7 +57,7 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
-import org.jdesktop.wonderland.modules.hud.client.HUDComponentState.HUDComponentVisualState;
+import org.pushingpixels.trident.Timeline;
 
 /**
  * A WonderlandHUDComponentManager manages a set of HUDComponents.
@@ -69,25 +72,33 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         HUDEventListener, ActionListener, MouseMotionListener {
 
     private static final Logger logger = Logger.getLogger(WonderlandHUDComponentManager.class.getName());
+    private HUD hud;
     // a mapping between HUD components and their states
     private Map<HUDComponent, HUDComponentState> hudStateMap;
     // a mapping between frames and HUD components
     private Map<HUDFrameHeader2D, HUDComponent> hudFrameMap;
     // the layout manager for the HUD
-    protected HUDLayoutManager layout;
+    private HUDLayoutManager layout;
     // displays HUD components on the glass
-    protected HUDView2DDisplayer hudDisplayer;
+    private HUDView2DDisplayer hudDisplayer;
     // displays HUD components in-world, associated with some cell
-    protected HUDView3DDisplayer worldDisplayer;
+    private HUDView3DDisplayer worldDisplayer;
     //
-    protected HUDApp2D hudApp;
-    protected Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
-    protected Vector2f worldPixelScale = new Vector2f(0.013f, 0.013f);
+    private HUDApp2D hudApp;
+    private Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
+    private Vector2f worldPixelScale = new Vector2f(0.013f, 0.013f);
     private boolean dragging = false;
     private int dragX = 0;
     private int dragY = 0;
+    private static final float DEFAULT_FOCUSED_TRANSPARENCY = 0.0f;
+    private static final float DEFAULT_UNFOCUSED_TRANSPARENCY = 0.2f;
+    private static final String DEFAULT_HUD_ICON = "/org/jdesktop/wonderland/modules/hud/client/resources/GenericWindow32x32.png";
+    // TODO: set these from user properties
+    private float focusedTransparency = DEFAULT_FOCUSED_TRANSPARENCY;
+    private float unfocusedTransparency = DEFAULT_UNFOCUSED_TRANSPARENCY;
 
-    public WonderlandHUDComponentManager() {
+    public WonderlandHUDComponentManager(HUD hud) {
+        this.hud = hud;
         hudStateMap = Collections.synchronizedMap(new HashMap());
         hudFrameMap = Collections.synchronizedMap(new HashMap());
     }
@@ -112,6 +123,16 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
 
         return window;
+    }
+
+    public void fadeTransparency(HUDComponent component, float from, float to) {
+        Timeline timeline = new Timeline(this);
+        timeline.addPropertyToInterpolate("transparency", from, to);
+        timeline.play();
+    }
+
+    public void setTransparency(Float transparency) {
+        logger.fine("set transparency to: " + transparency);
     }
 
     /**
@@ -139,9 +160,11 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 switch (mouseEvent.getID()) {
                     case MouseEvent.MOUSE_ENTERED:
                         logger.finest("mouse entered component: " + component);
+                        setFocused(component, true);
                         break;
                     case MouseEvent.MOUSE_EXITED:
                         logger.finest("mouse exited component: " + component);
+                        setFocused(component, false);
                         break;
                     default:
                         break;
@@ -355,13 +378,16 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    public void setTransparency(HUDComponent2D component, final float transparency) {
-        HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
+    public void setFocused(HUDComponent component, boolean focused) {
+        if (component != null) {
+            component.setTransparency(focused ? focusedTransparency : unfocusedTransparency);
+            //fadeTransparency(component, component.getTransparency(), focused ? focusedTransparency : unfocusedTransparency);
+        }
+    }
 
-        HUDView2D view = state.getView();
-
+    public void setTransparency(HUDView2D view, final float transparency) {
         if (view == null) {
-            logger.warning("component has no view, unable to set transparency");
+            logger.warning("no view, unable to set transparency");
             return;
         }
 
@@ -418,6 +444,14 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         };
         WorldManager wm = ClientContextJME.getWorldManager();
         wm.addRenderUpdater(updater, wm);
+    }
+
+    public void setTransparency(HUDComponent2D component, final float transparency) {
+        HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
+
+        if (state != null) {
+            setTransparency(state.getView(), transparency);
+        }
     }
 
     private void componentInvisible(HUDComponent2D component) {
@@ -556,17 +590,43 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    private void componentMinimized(HUDComponent2D component) {
+    private void componentMinimized(final HUDComponent2D component) {
         logger.fine("minimizing HUD component: " + component);
-        if (layout != null) {
-            //layout.minimizeComponent(component);
+        HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
+
+        if (state != null) {
+            HUDImageComponent icon = state.getIcon();
+            if (icon == null) {
+                ImageIcon imageIcon = component.getIcon();
+                if (imageIcon == null) {
+                    imageIcon = new ImageIcon(getClass().getResource(DEFAULT_HUD_ICON));
+                }
+                icon = (HUDImageComponent) hud.createImageComponent(imageIcon);
+                icon.setPreferredLocation(Layout.SOUTHWEST);
+                icon.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        component.setMaximized();
+                    }
+                });
+                state.setIcon(icon);
+                hud.addComponent(icon);
+            }
+            component.setVisible(false);
+            icon.setVisible(true);
         }
     }
 
     private void componentMaximized(HUDComponent2D component) {
         logger.fine("maximizing HUD component: " + component);
-        if (layout != null) {
-            //layout.maximizeComponent(component);
+        HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
+
+        if (state != null) {
+            HUDImageComponent icon = state.getIcon();
+            if (icon != null) {
+                icon.setVisible(false);
+                component.setVisible(true);
+            }
         }
     }
 
@@ -578,6 +638,11 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         logger.fine("changing transparency of HUD component: " + component);
         float transparency = component.getTransparency();
         setTransparency(component, transparency);
+        HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
+        HUDView2D frameView = state.getFrameView();
+        if (frameView != null) {
+            setTransparency(frameView, transparency);
+        }
     }
 
     /**
@@ -693,7 +758,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     public void minimizeComponent(HUDComponent component) {
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state != null) {
-            component.setMinimized(true);
+            component.setMinimized();
         }
     }
 
@@ -703,8 +768,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     public void maximizeComponent(HUDComponent component) {
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state != null) {
-            state.setState(HUDComponentVisualState.MAXIMIZED);
-            // TODO: update display
+            component.setMaximized();
         }
     }
 
