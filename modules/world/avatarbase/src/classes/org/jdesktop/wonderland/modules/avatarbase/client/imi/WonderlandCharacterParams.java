@@ -73,8 +73,7 @@ public class WonderlandCharacterParams implements Cloneable {
     private static JAXBContext jaxbContext = null;
     static {
         try {
-            jaxbContext = JAXBContext.newInstance(WonderlandCharacterParams.class,
-                                                  ConfigList.class, HeadConfigElement.class);
+            jaxbContext = JAXBContext.newInstance(ConfigList.class);
         } catch (javax.xml.bind.JAXBException excp) {
             logger.log(Level.WARNING, "Error creating JAXB context", excp);
         }
