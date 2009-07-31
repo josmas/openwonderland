@@ -327,7 +327,7 @@ public class ImiAvatar implements AvatarSPI {
                 return null;
             }
 
-            logger.warning("Generating params from url " + url);
+            logger.info("Generating params from url " + url);
             
             // Create character, fetch the IMI CharacterParams and generate a
             // WonderlandCharacterParams from that.

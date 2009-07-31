@@ -11,6 +11,7 @@
     <fileset dir="${current.dir}" id="all.projects">
         <exclude name="kmzloader/build.xml"/>
         <exclude name="jmecolladaloader/build.xml"/>
+        <exclude name="avatarbase/build.xml"/>
         <include name="*/**/build.xml"/>
     </fileset>
     
@@ -22,10 +23,15 @@
         <include name="jmecolladaloader/build.xml"/>
     </fileset>
     
+    <fileset dir="${current.dir}" id="avatarbase.module">
+        <include name="avatarbase/build.xml"/>
+    </fileset>
+
     <!-- build and package all subprojects -->
     <target name="dist">
         <build-subprojects fileset="jmecolladaloader.module" target="dist"/>
         <build-subprojects fileset="kmzloader.module" target="dist"/>
+        <build-subprojects fileset="avatarbase.module" target="dist"/>
         <build-subprojects fileset="all.projects" target="dist"/>
     </target>
     
@@ -34,6 +40,7 @@
         <!-- clean sub-projects -->
         <build-subprojects fileset="jmecolladaloader.module" target="clean"/>
         <build-subprojects fileset="kmzloader.module" target="clean"/>
+        <build-subprojects fileset="avatarbase.module" target="clean"/>
         <build-subprojects fileset="all.projects" target="clean"/>       
     </target>
     

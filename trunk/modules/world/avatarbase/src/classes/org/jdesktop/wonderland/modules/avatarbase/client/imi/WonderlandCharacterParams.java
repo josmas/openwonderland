@@ -156,7 +156,7 @@ public class WonderlandCharacterParams implements Cloneable {
             setElement(type, 0);
             return;
         }
-        logger.warning("For config type " + type + ", using preset " + presetName);
+        logger.info("For config type " + type + ", using preset " + presetName);
     }
 
     /**
@@ -177,7 +177,7 @@ public class WonderlandCharacterParams implements Cloneable {
         float g = (float)Integer.parseInt(rgb[1]) / 255.0f;
         float b = (float)Integer.parseInt(rgb[2]) / 255.0f;
 
-        logger.warning("For color type " + type + ", using color " + r + " " +
+        logger.info("For color type " + type + ", using color " + r + " " +
                 g + " " + b);
 
         ColorConfigElement e = null;

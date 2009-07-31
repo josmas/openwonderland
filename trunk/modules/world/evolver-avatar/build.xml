@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderland-evolver-avatar" default="package" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-evolver-avatar}"/>
+    <property name="modules.dir" location="${current.dir}/../.."/>
+        
+    <property name="module.src" value="org/jdesktop/wonderland/modules/evolver"/>
+    <property name="module.packagename" value="evolver"/>
+    <property name="module.jarname" value="evolver-avatar"/>
+    
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+       
+    <!-- kmzload is dependent on the jmecolladaloader and content-repo -->
+    <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
+        <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
+    </pathconvert>
+       
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+        
+        <module name="evolver-avatar" version="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+                builddir="${build.dir}">
+                    
+           <requires name="avatarbase" version="1"/>
+           <client>
+                <clientjar name="evolver-avatar-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/evolver/resources/**/*.png"/>
+                    </fileset>
+                </clientjar> 
+            </client>
+        </module>
+    </target>
+                                           
+    <target name="clean" depends="-module-clean"/>
+    <target name="deploy" depends="dist, -module-deploy"/>
+</project>
