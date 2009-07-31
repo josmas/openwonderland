@@ -2031,6 +2031,16 @@ public abstract class View2DEntity implements View2D {
 
         logger.info("texid alloc: ts.getTexture() = " + ts.getTexture());
 
+        Texture tex = ts.getTexture();
+        if (tex != null) {
+            if (tex.getTextureId() != 0) {
+                // Don't allocate a texture ID if one is already allocated. This can happen,
+                // for example, when a new view is created which shows the same texture as
+                // an existing view. One such case is Apps-in-HUD.
+                return;
+            }
+        }
+
         if (inRenderLoop) {
             // We're already in the render loop
             ts.load();

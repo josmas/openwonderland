@@ -240,6 +240,9 @@ public class DrawingSurfaceBufferedImage extends DrawingSurfaceImageGraphics {
                 public void run() {
                     Rectangle dirtyRect = g.getDirtyRectangle();
                     if (dirtyRect != null) {
+
+                        //System.err.println("DBSI: Rendering into texid = " + texid);
+
 			int x1 = dirtyRect.x;
 			int y1 = dirtyRect.y;
 			int x2 = dirtyRect.x + dirtyRect.width - 1;

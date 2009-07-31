@@ -25,6 +25,8 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
@@ -86,6 +88,9 @@ public abstract class App2D {
 
     /** Whether to display the app in the HUD. */
     private boolean showInHUD;
+
+    /** HUD components for windows shown in the HUD. */
+    private LinkedList<HUDComponent> hudComponents;
 
     /**
      * There are some deadlock situations during app cleanup. I would prefer to address this
@@ -376,20 +381,41 @@ public abstract class App2D {
 
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
+            LinkedList<HUDComponent> hudComponents = new LinkedList<HUDComponent>();
+
             for (Window2D window : windows) {
 
                 // Don't ever show frame headers in the HUD
                 if (window instanceof WindowSwingHeader) continue;
 
-                System.err.println("******** Move into HUD w2d = " + window);
                 HUDComponent component = mainHUD.createComponent(window);
                 component.setPreferredLocation(Layout.CENTER);
+                hudComponents.add(component);
+
+                component.addEventListener(new HUDEventListener() {
+                    public void HUDObjectChanged(HUDEvent e) {
+                        if (e.getEventType().equals(HUDEvent.HUDEventType.CLOSED)) {
+                            // TODO: currently we take the entire app off the HUD when
+                            // any HUD view of any app window is quit
+                            setShowInHUD(false);
+                        }
+                    }
+                });
+                
                 mainHUD.addComponent(component);
                 component.setVisible(true);
             }
 
         } else {
-            // TODO: implement setShowInHUD=false
+            if (hudComponents != null) {
+                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+                for (HUDComponent component : hudComponents) {
+                    component.setVisible(false);
+                    mainHUD.removeComponent(component);
+                }
+                hudComponents.clear();
+                hudComponents = null;
+            }
         }
     }
 }
