@@ -481,7 +481,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // it exists, otherwise, it's a bad error.
         ColorConfigElement config = (ColorConfigElement)currentParams.getElement(type);
         if (config == null) {
-            logger.warning("Unable to find config element " + type);
+            logger.info("Unable to find config element " + type);
             config = new HairColorConfigElement();
             config.setR(1.0f);
             config.setG(1.0f);

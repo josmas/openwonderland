@@ -459,19 +459,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     public void loadAndChangeAvatar(final AvatarConfigInfo avatarConfigInfo) {
-        RenderUpdater updater = new RenderUpdater() {
-            public void update(Object arg0) {
-                try {
-                    changeAvatarInternal(loadAvatarInternal(avatarConfigInfo));
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(AvatarImiJME.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        };
-        WorldManager wm = ClientContextJME.getWorldManager();
-        wm.addRenderUpdater(updater, null);
+        logger.warning("Loading avatar info");
+        WlAvatarCharacter avatar = loadAvatar(avatarConfigInfo);
+        logger.warning("Changing avatar character");
+        changeAvatar(avatar);
+        logger.warning("Done changing avatar character");
     }
 
     /**
@@ -485,6 +477,15 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         // message until it is finished
         LoadingInfo.startedLoading(cell.getCellID(), username);
         try {
+            if (avatarConfigInfo != null) {
+                logger.warning("Loading avatar with config info url " +
+                        avatarConfigInfo.getAvatarConfigURL() + " with loader " +
+                        avatarConfigInfo.getLoaderFactoryClassName());
+            }
+            else {
+                logger.warning("Loading default avatar.");
+            }
+
             return loadAvatarInternal(avatarConfigInfo);
         } catch (java.lang.Exception excp) {
             // Loger and error and return null
@@ -563,6 +564,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             // If the avatar has a non-null configuration information, then
             // ask the loader factory to generate a new loader for this avatar
             String className = avatarConfigInfo.getLoaderFactoryClassName();
+
+            logger.warning("Loading avatar with class name " + className);
+
             if (className == null) {
                 logger.warning("No class name given for avatar configuration" +
                         " with url " + avatarConfigInfo.getAvatarConfigURL());
@@ -580,6 +584,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
             // Ask the avatar loader to create and return an avatar character
             ret = factory.getAvatarLoader().getAvatarCharacter(avatarConfigInfo);
+
+            logger.warning("Done loading avatar, ret="+ ret);
         }
 
         ret.getModelInst().getTransform().getLocalMatrix(true).set(origin);

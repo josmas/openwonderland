@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -41,6 +42,8 @@ public class WonderlandAvatarCache implements CacheBehavior {
     private static final Logger logger = Logger.getLogger(WonderlandAvatarCache.class.getName());
     /** The folder we will be searching for and storing cache files in. **/
     private File cacheFolder = null;
+
+    // The base URL for relative URLs
     private String baseURL;
 
     /**
@@ -56,29 +59,42 @@ public class WonderlandAvatarCache implements CacheBehavior {
         }
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public boolean initialize(Object[] params) {
         // Nothing needs to be done currently.
         return true;
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public boolean shutdown() {
         return true;
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public boolean isFileCached(URL location) {
+        logger.info("Is File Cached? URL=" + location.toExternalForm() +
+                " Protocol " + location.getProtocol());
+
         File cacheFile = urlToCacheFile(location);
         return cacheFile.exists();
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public InputStream getStreamToResource(URL location) {
+        logger.info("Get Stream to Resource URL=" + location.toExternalForm() +
+                " Protocol " + location.getProtocol());
+
         File cacheFile = urlToCacheFile(location);
         InputStream result = null;
         if (cacheFile != null && cacheFile.exists()) {
-//            System.err.println("WonderlandAvatarCache using cached file " + location.toExternalForm());
             try {
                 result = new FileInputStream(cacheFile);
             } catch (FileNotFoundException ex) {
@@ -89,8 +105,13 @@ public class WonderlandAvatarCache implements CacheBehavior {
         return result;
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public OutputStream getStreamForWriting(URL location) {
+        logger.info("Get Stream for Writing URL=" + location.toExternalForm() +
+                " Protocol " + location.getProtocol());
+
         File cacheFile = urlToCacheFile(location);
         OutputStream result = null;
         if (cacheFile != null) {
@@ -104,7 +125,9 @@ public class WonderlandAvatarCache implements CacheBehavior {
         return result;
     }
 
-    @Override
+    /**
+     * {@inheritDoc}
+     */
     public boolean clearCache() {
         for (File file : cacheFolder.listFiles()) {
             file.delete();
@@ -128,15 +151,8 @@ public class WonderlandAvatarCache implements CacheBehavior {
             }
         }
 
-        // Get the path relative to the "assets" folder
+        // Use the URL as a String to determine the file name
         String urlString = location.toExternalForm();
-//        int assetsIndex = urlString.indexOf("assets/");
-//
-//        if (assetsIndex != 1) // If found, truncate
-//        {
-//            urlString = urlString.substring(assetsIndex + 7);
-//        }
-
         String hashFileName = MD5HashUtils.getStringFromHash(urlString.getBytes());
         File result = new File(cacheFolder, hashFileName);
 
@@ -147,31 +163,49 @@ public class WonderlandAvatarCache implements CacheBehavior {
                 result.delete();
             }
         }
-
-//        System.err.println("***** CACHE " + location.toExternalForm() + "  " + result);
-
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Texture loadTexture(URL location) {
-        logger.fine("WonderlandAvatarCache "+location.toExternalForm());
-        if (location.getProtocol().equalsIgnoreCase("file")) {
-            // Workaround for hard coded file:// urls in head bhf files
-            String relativePath = location.toExternalForm();
-            int assetsIndex = relativePath.indexOf("assets/");
-            if (assetsIndex != -1) {
-                relativePath = relativePath.substring(assetsIndex);
-            }
+        logger.info("Load Texture URL=" + location.toExternalForm() +
+                " Protocol " + location.getProtocol());
 
-            URL localURL = null;
-            try {
-                localURL = new URL(baseURL + relativePath);
-                return TextureManager.loadTexture(localURL);
-            } catch (MalformedURLException ex) {
-                logger.warning("Error creating texture url "+baseURL+relativePath);
-            }
+        // XXX HACK
+        // If the protocl is "file", then check to see if we are taking about
+        // a .bhf file. In this case, we lop off the path with some hard-coded
+        // name "assets" and append the base URL. For all other URLs and "file"
+        // URLs that are not .bhf files, do nothing.
+        // XXX HACK
+        String urlString = location.toExternalForm();
+        if (location.getProtocol().equalsIgnoreCase("file") == true) {
+            if (urlString.endsWith(".bhf") == true) {
+                int assetsIndex = urlString.indexOf("assets/");
+                if (assetsIndex != -1) {
+                    urlString = urlString.substring(assetsIndex);
+                }
 
+                URL localURL = null;
+                try {
+                    localURL = new URL(baseURL + urlString);
+                    return TextureManager.loadTexture(localURL);
+                } catch (MalformedURLException excp) {
+                    logger.log(Level.WARNING, "Error creating texture url " +
+                            baseURL + urlString, excp);
+                    return null;
+                }
+            }
         }
         return TextureManager.loadTexture(location);
+    }
+
+    public void createCachePackage(OutputStream arg0) {
+        // Do nothing
+    }
+
+    public void loadCachePackage(InputStream arg0) {
+        // Do nothing
     }
 }

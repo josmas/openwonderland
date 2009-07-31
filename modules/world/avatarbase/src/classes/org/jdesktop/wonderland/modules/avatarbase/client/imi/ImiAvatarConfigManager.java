@@ -89,7 +89,7 @@ public class ImiAvatarConfigManager {
             if (imiCollection == null) {
                 imiCollection = (ContentCollection) bc.createChild("imi", Type.COLLECTION);
             }
-            logger.warning("Using local IMI avatar collection " +
+            logger.info("Using local IMI avatar collection " +
                     imiCollection.getPath());
         } catch (ContentRepositoryException excp) {
             logger.log(Level.WARNING, "Unable to fetch imi/ collection", excp);
@@ -181,13 +181,13 @@ public class ImiAvatarConfigManager {
         // on other servers. So we just synchronize on 'this' which means only
         // a single addServerAndSync() call can be active at once.
         synchronized (this) {
-            logger.warning("Adding server " + session.getServerURL());
+            logger.info("Adding server " + session.getServerURL());
             
             // First check to see if the session already exists in the map. If
             // so then just return
             synchronized (avatarConfigServers) {
                 if (avatarConfigServers.containsKey(session) == true) {
-                    logger.warning("Server " + session.getServerURL() +
+                    logger.info("Server " + session.getServerURL() +
                             " is already present in the manager.");
                     return;
                 }
@@ -198,13 +198,13 @@ public class ImiAvatarConfigManager {
             // a 'ready' state.
             ServerSyncThread t = null;
             try {
-                logger.warning("Starting sychronization with server " +
+                logger.info("Starting sychronization with server " +
                         session.getServerURL());
 
                 t = new ServerSyncThread(session);
                 t.scheduleSync(true);
 
-                logger.warning("Sychronization with server " +
+                logger.info("Sychronization with server " +
                         session.getServerURL() + " is done.");
             } catch (ContentRepositoryException excp) {
                 logger.log(Level.WARNING, "Unable to create sync thread for " +
@@ -216,7 +216,7 @@ public class ImiAvatarConfigManager {
             // it is ready.
             synchronized (avatarConfigServers) {
                 avatarConfigServers.put(session, t);
-                logger.warning("Added server " + session.getServerURL() +
+                logger.info("Added server " + session.getServerURL() +
                         " to map of managed sessions.");
             }
         }
@@ -295,7 +295,7 @@ public class ImiAvatarConfigManager {
     public void saveAvatar(ImiAvatar avatar)
             throws ContentRepositoryException, IOException, JAXBException {
 
-        logger.warning("Saving avatar with name " + avatar.getName() + " to server.");
+        logger.info("Saving avatar with name " + avatar.getName() + " to server.");
 
         // First check to see if an avatar already exists with the same name.
         // We need this to know whether to update an existing one or not.
@@ -319,7 +319,7 @@ public class ImiAvatarConfigManager {
         // For each server we are connected to, delete the old file from the
         // server
         synchronized (avatarConfigServers) {
-            logger.warning("Attempting to delete avatar to server, number=" +
+            logger.info("Attempting to delete avatar to server, number=" +
                 avatarConfigServers.size());
 
             for (ServerSyncThread t : avatarConfigServers.values()) {
@@ -328,7 +328,7 @@ public class ImiAvatarConfigManager {
                 // to get rid of the old avatar before we upload the new one.
                 if (existingAvatar != null) {
                     try {
-                        logger.warning("Schedule delete of existing avatar " +
+                        logger.info("Schedule delete of existing avatar " +
                                 "named " + avatarName + " from server.");
                         t.scheduleDelete(existingAvatar, true);
                     }
@@ -343,7 +343,7 @@ public class ImiAvatarConfigManager {
         }
 
         if (existingAvatar != null) {
-            logger.warning("Already have an avatar named " + avatarName +
+            logger.info("Already have an avatar named " + avatarName +
                     " with version " + existingAvatar.getVersion());
 
             // If we already have an avatar, check it's version number,
@@ -366,7 +366,7 @@ public class ImiAvatarConfigManager {
             file = (ContentResource) imiCollection.createChild(fileName, Type.RESOURCE);
         }
 
-        logger.warning("Writing avatar to resource " + file.getPath());
+        logger.info("Writing avatar to resource " + file.getPath());
 
         // Write out the avatar configuration to a byte avatar.
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -382,20 +382,20 @@ public class ImiAvatarConfigManager {
         // this no matter whether the avatar is new or whether we are updating
         // an existing avatar.
         synchronized (localAvatars) {
-            logger.warning("Put avatar named " + avatarName + " in list of avatars");
+            logger.info("Put avatar named " + avatarName + " in list of avatars");
             localAvatars.put(avatarName, avatar);
         }
         
         // For each server we are connected to, upload the new file.
         synchronized (avatarConfigServers) {
-            logger.warning("Attempting to upload avatar to server, number=" +
+            logger.info("Attempting to upload avatar to server, number=" +
                 avatarConfigServers.size());
 
             for (ServerSyncThread t : avatarConfigServers.values()) {
                 // We ask the server to upload the file. We need to wait for
                 // it to complete before we tell other clients to use it.
                 try {
-                    logger.warning("Schedule upload of avatar named " + avatarName +
+                    logger.info("Schedule upload of avatar named " + avatarName +
                             " to server " + t.toString());
                     t.scheduleUpload(avatar, true);
                 } catch (InterruptedException excp) {
@@ -408,7 +408,7 @@ public class ImiAvatarConfigManager {
 
         // If the avatar is new, tell the system.
         if (existingAvatar == null) {
-            logger.warning("Registering avater named " + avatarName + " in the system");
+            logger.info("Registering avater named " + avatarName + " in the system");
             AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
             registry.registerAvatar(avatar, false);
         }
@@ -651,7 +651,7 @@ public class ImiAvatarConfigManager {
          * IMI avatar configuration information.
          */
         private void syncImpl() {
-            logger.warning("Beginning sychronization of server " +
+            logger.info("Beginning sychronization of server " +
                     manager.getServerURL());
 
             // Keep arrays of configuration files that need to be uploaded to
@@ -671,7 +671,7 @@ public class ImiAvatarConfigManager {
                         ImiServerAvatar serverAvatar = new ImiServerAvatar(resource);
                         String avatarName = serverAvatar.avatarName;
 
-                        logger.warning("Looking at server avatar named " +
+                        logger.info("Looking at server avatar named " +
                                 avatarName + " with version " + serverAvatar.version);
 
                         // Check to see if the server avatar already exists in
@@ -679,7 +679,7 @@ public class ImiAvatarConfigManager {
                         ImiServerAvatar previous = serverAvatars.put(avatarName, serverAvatar);
                         if (previous != null && previous.version > serverAvatar.version) {
 
-                            logger.warning("Found a previous version named " +
+                            logger.info("Found a previous version named " +
                                     avatarName + " with version " + previous.version);
 
                             // If we somehow find a more recent avatar in our
@@ -704,13 +704,13 @@ public class ImiAvatarConfigManager {
                 // local copy needs to be updated then do so.
                 synchronized (localAvatars) {
 
-                    logger.warning("Taking a look at all of our local avatars");
+                    logger.info("Taking a look at all of our local avatars");
 
                     for (ImiAvatar avatar : localAvatars.values()) {
                         String avatarName = avatar.getName();
                         ImiServerAvatar serverVersion = tmpServerAvatars.get(avatarName);
 
-                        logger.warning("Looking at local avatar named " +
+                        logger.info("Looking at local avatar named " +
                                 avatarName + " server version " + serverVersion);
 
                         // If the local avatar is not on the server, or if the
@@ -719,7 +719,7 @@ public class ImiAvatarConfigManager {
                         if (serverVersion == null ||
                                 serverVersion.version < avatar.getVersion()) {
 
-                            logger.warning("Server version for avatar named " +
+                            logger.info("Server version for avatar named " +
                                     avatarName + " does not exist or is older" +
                                     " than version " + avatar.getVersion());
 
@@ -727,7 +727,7 @@ public class ImiAvatarConfigManager {
                             tmpServerAvatars.remove(avatarName);
                         }
                         else if (serverVersion.version > avatar.getVersion()) {
-                            logger.warning("Server version for avatar named " +
+                            logger.info("Server version for avatar named " +
                                     avatarName + " is more recent than local " +
                                     "with server version " + serverVersion.version +
                                     " and local version " + avatar.getVersion());
@@ -739,7 +739,7 @@ public class ImiAvatarConfigManager {
                             tmpServerAvatars.remove(avatarName);
                         }
                         else if (serverVersion.version == avatar.getVersion()) {
-                            logger.warning("Server version for avatar named " +
+                            logger.info("Server version for avatar named " +
                                     avatarName + " is same as local version " +
                                     avatar.getVersion());
                             
@@ -757,7 +757,7 @@ public class ImiAvatarConfigManager {
                 // and not on the client (so the previous code block did not
                 // see them), so add them to the download list.
                 for (ImiServerAvatar serverAvatar : tmpServerAvatars.values()) {
-                    logger.warning("Adding Server avatar to download list " +
+                    logger.info("Adding Server avatar to download list " +
                             serverAvatar.avatarName + " version " +
                             serverAvatar.version);
 
@@ -767,11 +767,11 @@ public class ImiAvatarConfigManager {
 
                 // For all of the avatar configuration files that we wish to
                 // upload, do so synchronously.
-                logger.warning("Doing upload of local avatars, number to upload " +
+                logger.info("Doing upload of local avatars, number to upload " +
                         uploadList.size());
 
                 for (ImiAvatar avatar : uploadList) {
-                    logger.warning("Uploading Local avatar to server " +
+                    logger.info("Uploading Local avatar to server " +
                             avatar.getName() + " version " + avatar.getVersion());
 
                     uploadFileImpl(avatar);
@@ -783,12 +783,12 @@ public class ImiAvatarConfigManager {
 
                 // For all of the avatar configuration files that we wish to
                 // download, do so synchronously.
-                logger.warning("Doing download of local avatars to the server," +
+                logger.info("Doing download of local avatars to the server," +
                         " number to download " + downloadList.size());
 
                 for (ImiServerAvatar serverAvatar : downloadList) {
                     try {
-                        logger.warning("Downloading server avatar named " +
+                        logger.info("Downloading server avatar named " +
                                 serverAvatar.avatarName + " to file name " +
                                 serverAvatar.resource.getName());
 
@@ -804,7 +804,7 @@ public class ImiAvatarConfigManager {
                         ImiAvatar newAvatar = new ImiAvatar(localFile);
                         newAvatarList.add(newAvatar);
 
-                        logger.warning("Local avatar created in resource " +
+                        logger.info("Local avatar created in resource " +
                                 localFile.getPath());
 
                     } catch (IOException excp) {
@@ -816,12 +816,12 @@ public class ImiAvatarConfigManager {
                 // For all of the new avatars we just downloaded, upload the
                 // list of local avatars. We also fire an event to indicate
                 // that a new avatar has been added.
-                logger.warning("Adding new local avatars to system, " +
+                logger.info("Adding new local avatars to system, " +
                         "number of avatars " + newAvatarList.size());
 
                 synchronized (localAvatars) {
                     for (ImiAvatar newAvatar : newAvatarList) {
-                        logger.warning("Adding new local avatar to system " +
+                        logger.info("Adding new local avatar to system " +
                                 "named " + newAvatar.getName());
 
                         localAvatars.put(newAvatar.getName(), newAvatar);
