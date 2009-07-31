@@ -20,10 +20,10 @@ package org.jdesktop.wonderland.modules.palette.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
@@ -48,6 +48,10 @@ import org.jdesktop.wonderland.common.cell.security.ModifyAction;
 import org.jdesktop.wonderland.modules.palette.client.dnd.CellPaletteDataFlavorHandler;
 import org.jdesktop.wonderland.modules.security.client.SecurityComponent;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 /**
  * Client-size plugin for the cell palette.
@@ -64,8 +68,9 @@ public class PaletteClientPlugin extends BaseClientPlugin
     /* The single instance of the cell palette dialog */
     private WeakReference<CellPalette> cellPaletteFrameRef = null;
 
-    /* The single instance of the HUD cell palette dialog */
-    private WeakReference<HUDCellPalette> hudCellPaletteFrameRef = null;
+    /* The single instance of the Affordance HUD Panel */
+    private static HUDCellPalette hudCellPalette = null;
+    private static HUDComponent paletteHUD = null;
 
     /* The menu item to add to the menu */
     private JMenuItem paletteMI;
@@ -103,22 +108,41 @@ public class PaletteClientPlugin extends BaseClientPlugin
         paletteHUDMI = new JMenuItem("Shortcuts");
         paletteHUDMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                HUDCellPalette hudCellPaletteFrame;
-                if (hudCellPaletteFrameRef == null || hudCellPaletteFrameRef.get() == null) {
-                    hudCellPaletteFrame = new HUDCellPalette();
-                    hudCellPaletteFrameRef = new WeakReference(hudCellPaletteFrame);
-                }
-                else {
-                    hudCellPaletteFrame = hudCellPaletteFrameRef.get();
-                }
-
-                if (hudCellPaletteFrame.isVisible() == false) {
-                    hudCellPaletteFrame.setVisible(true);
-                }
+                // Display the HUD Panel. We need to call HUD methods
+                // on a thread OTHER than the AWT Event Thread.
+                new Thread() {
+                    @Override
+                    public void run() {
+                        if (paletteHUD == null) {
+                            createHUD();
+                        }
+                        paletteHUD.setVisible(true);
+                    }
+                }.start();
             }
         });
 
         super.initialize(loginInfo);
+    }
+
+    /**
+     * Creates the affordance HUD frame.
+     *
+     * NOTE: This method should NOT be called on the AWT Event Thread.
+     */
+    private void createHUD() {
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+        // create affordances Swing control
+        hudCellPalette = new HUDCellPalette();
+
+        // create HUD control
+        paletteHUD = mainHUD.createComponent(hudCellPalette);
+        paletteHUD.setName("Shortcuts");
+        paletteHUD.setPreferredLocation(Layout.NORTHEAST);
+
+        // add affordances HUD panel to main HUD
+        mainHUD.addComponent(paletteHUD);
     }
 
     /**
