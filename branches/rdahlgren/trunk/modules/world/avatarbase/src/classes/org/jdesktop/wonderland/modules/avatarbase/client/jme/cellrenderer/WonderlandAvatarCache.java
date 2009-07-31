@@ -174,4 +174,12 @@ public class WonderlandAvatarCache implements CacheBehavior {
         }
         return TextureManager.loadTexture(location);
     }
+
+    public void createCachePackage(OutputStream arg0) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void loadCachePackage(InputStream arg0) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

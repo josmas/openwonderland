@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
 import com.jme.math.Quaternion;
@@ -34,16 +33,13 @@ import com.jme.scene.Geometry;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
-import com.jme.util.export.binary.BinaryImporter;
 import com.jme.util.resource.ResourceLocator;
-import com.jme.util.resource.ResourceLocatorTool;
 import imi.character.CharacterAnimationProcessor;
 import imi.character.CharacterMotionListener;
 import imi.character.CharacterParams;
 import imi.character.CharacterProcessor;
 import imi.character.MaleAvatarParams;
 import imi.character.avatar.Avatar;
-import imi.character.avatar.AvatarController;
 import imi.character.statemachine.GameContextListener;
 import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.CycleActionState;
@@ -93,6 +89,7 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
 
 import com.jme.scene.state.MaterialState.ColorMaterial;
+import imi.character.Manipulator;
 import imi.scene.utils.JmeUtils;
 
 /**
@@ -412,6 +409,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 else
                     avatarChangedListeners.remove(listenerRef);
             }
+
+            // XXX Dahlgren - Change ambient level on avatars
+            Manipulator.setAmbient(newAvatar, 0.6f);
             // update the bounds if necessary
             if (avatarCharacter.getJScene() != null) {
                 // Some of these ops must be done on the render thread
