@@ -19,19 +19,18 @@ package org.jdesktop.wonderland.client.cell.utils;
 
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
@@ -73,12 +72,11 @@ public class CellUtils {
         ViewManager vm = ViewManager.getViewManager();
         ViewCell viewCell = vm.getPrimaryViewCell();
         CellTransform viewTransform = viewCell.getWorldTransform();
-        Quaternion viewRotation = viewTransform.getRotation(null);
-        Vector3f lookAt = CellPlacementUtils.getLookDirection(viewRotation, null);
+        ServerSessionManager manager =
+                viewCell.getCellCache().getSession().getSessionManager();
 
-        // The initial original of the Cell, by default, the position of the
-        // view (avatar) Cell.
-        Vector3f origin = null;
+        // The Cell Transform to apply to the Cell
+        CellTransform transform = null;
 
         // Look for the "bounds hint" provided by the Cell. There are three
         // possible cases:
@@ -102,22 +100,20 @@ public class CellUtils {
             // so we find the distance away from the avatar and also the height
             // above the ground.
             BoundingVolume boundsHint = hint.getBoundsHint();
-            origin = CellPlacementUtils.getCellOrigin(boundsHint, viewCell);
+            transform = CellPlacementUtils.getCellTransform(manager, boundsHint,
+                    viewTransform);
         }
         else if (hint == null) {
             // Case (2): Do the optimal placement using the default radius.
             BoundingVolume boundsHint = new BoundingSphere(DEFAULT_RADIUS, Vector3f.ZERO);
-            origin = CellPlacementUtils.getCellOrigin(boundsHint, viewCell);
+            transform = CellPlacementUtils.getCellTransform(manager, boundsHint,
+                    viewTransform);
         }
         else if (hint != null && hint.isDoSystemPlacement() == false) {
             // Case (3): The Cell will take care of its own placement, use
             // the origin of the avatar as the initial placement
-            origin = viewTransform.getTranslation(null);
+            transform = new CellTransform();
         }
-
-        // We need to rotate the scale so that it is facing the avatar
-        Quaternion rotation = new Quaternion();
-        rotation.lookAt(lookAt.negate(), new Vector3f(0, 1, 0));
 
         // find the parent cell for this creation (may be null)
         CellID parentID = null;
@@ -126,9 +122,6 @@ public class CellUtils {
             parentID = parent.getCellID();
             logger.warning("Using parent with Cell ID " + parentID.toString());
         }
-
-        // Formulate up the initial transform of the Cell in world coordinates.
-        CellTransform transform = new CellTransform(rotation, origin);
         
         // We also need to convert the initial origin of the Cell (in world
         // coordinates to the coordinates of the parent Cell (if non-null)
@@ -154,7 +147,7 @@ public class CellUtils {
         state.addComponentServerState(position);
 
         // Send the message to the server
-        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+        WonderlandSession session = manager.getPrimarySession();
         CellEditChannelConnection connection = (CellEditChannelConnection)
                 session.getConnection(CellEditConnectionType.CLIENT_TYPE);
         CellCreateMessage msg = new CellCreateMessage(parentID, state);
