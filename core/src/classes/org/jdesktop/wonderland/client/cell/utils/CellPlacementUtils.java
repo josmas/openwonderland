@@ -27,9 +27,9 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PickDetails;
 import org.jdesktop.mtgame.PickInfo;
-import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -47,26 +47,47 @@ public class CellPlacementUtils {
     private static final float MIN_DISTANCE = 1.0f;
 
     /**
-     * Returns a vector that represents the origin of a Cell placed optimally,
-     * given the bounding volume of the Cell and (optionally) the "view" Cell.
-     * If the view Cell is null, this method selects the primary view Cell. The
-     * origin is given in world coordinates.
+     * Returns a Cell transform so that it is optimally placed given the
+     * bounding volume of the Cell and the transform of the viewer. Optionally
+     * takes the current server session, if null, uses the primary one.
      *
+     * The transform returned is in world coordinates.
+     *
+     * @param session The server session
      * @param bounds The bounding volume of the Cell
-     * @param viewCell The view Cell
+     * @param viewTransform The transform of the view Cell
      */
-    public static Vector3f getCellOrigin(BoundingVolume bounds, ViewCell viewCell) {
+    public static CellTransform getCellTransform(ServerSessionManager session,
+            BoundingVolume bounds, CellTransform viewTransform) {
+
+        Vector3f origin = getCellOrigin(session, bounds, viewTransform);
+        Quaternion rotation = getCellRotation(viewTransform);
+        return new CellTransform(rotation, origin);
+    }
+
+    /**
+     * Returns a vector that represents the origin of a Cell placed optimally,
+     * given the bounding volume of the Cell and the "view" Cell Tranform. Also
+     * takes the server session, if null, uses the primary session.
+     *
+     * The origin returned is in world coordinates.
+     *
+     * @param session The server session
+     * @param bounds The bounding volume of the Cell
+     * @param viewTransform The transform of the view Cell
+     */
+    public static Vector3f getCellOrigin(ServerSessionManager session,
+            BoundingVolume bounds, CellTransform viewTransform) {
+
         // If the view Cell is null, then find the view Cell from the primary
         // session
         ViewManager vm = ViewManager.getViewManager();
-        if (viewCell == null) {
-            viewCell = vm.getPrimaryViewCell();
+        if (session == null) {
+            session = LoginManager.getPrimary();
         }
-        ServerSessionManager session = viewCell.getCellCache().getSession().getSessionManager();
 
         // Fetch a whole bunch of things about the view cell: its transform,
         // position, rotation, and "look at" vector.
-        CellTransform viewTransform = viewCell.getWorldTransform();
         Vector3f viewPosition = viewTransform.getTranslation(null);
         Quaternion viewRotation = viewTransform.getRotation(null);
         Vector3f lookAt = CellPlacementUtils.getLookDirection(viewRotation, null);
@@ -122,6 +143,20 @@ public class CellPlacementUtils {
 
         logger.warning("Determined world origin of Cell is " + origin);
         return origin;
+    }
+
+    /**
+     * Returns the rotation of a Cell so that is faces the viewer.
+     *
+     * @param viewTransform The transform of the viewer
+     * @return A rotation in world coordinates
+     */
+    public static Quaternion getCellRotation(CellTransform viewTransform) {
+        Quaternion viewRotation = viewTransform.getRotation(null);
+        Vector3f lookAt = CellPlacementUtils.getLookDirection(viewRotation, null);
+        Quaternion rotation = new Quaternion();
+        rotation.lookAt(lookAt.negate(), new Vector3f(0, 1, 0));
+        return rotation;
     }
 
     /**
