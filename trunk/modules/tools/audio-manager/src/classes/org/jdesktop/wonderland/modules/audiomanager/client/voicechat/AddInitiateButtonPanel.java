@@ -63,14 +63,10 @@ public class AddInitiateButtonPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         actionButtonPanel = new javax.swing.JPanel();
-        buttonGroup = new javax.swing.JPanel();
         cancelButton = new javax.swing.JButton();
         actionButton = new javax.swing.JButton();
 
         actionButtonPanel.setName("actionButtonPanel"); // NOI18N
-        actionButtonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
-
-        buttonGroup.setName("buttonGroup"); // NOI18N
 
         cancelButton.setText("Cancel");
         cancelButton.setName("cancelButton"); // NOI18N
@@ -88,26 +84,22 @@ public class AddInitiateButtonPanel extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout buttonGroupLayout = new org.jdesktop.layout.GroupLayout(buttonGroup);
-        buttonGroup.setLayout(buttonGroupLayout);
-        buttonGroupLayout.setHorizontalGroup(
-            buttonGroupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonGroupLayout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout actionButtonPanelLayout = new org.jdesktop.layout.GroupLayout(actionButtonPanel);
+        actionButtonPanel.setLayout(actionButtonPanelLayout);
+        actionButtonPanelLayout.setHorizontalGroup(
+            actionButtonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, actionButtonPanelLayout.createSequentialGroup()
+                .addContainerGap(124, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(actionButton))
         );
-
-        buttonGroupLayout.linkSize(new java.awt.Component[] {actionButton, cancelButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        buttonGroupLayout.setVerticalGroup(
-            buttonGroupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(buttonGroupLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(cancelButton)
-                .add(actionButton))
+        actionButtonPanelLayout.setVerticalGroup(
+            actionButtonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(actionButtonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(actionButton)
+                .add(cancelButton))
         );
-
-        actionButtonPanel.add(buttonGroup);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -115,7 +107,7 @@ public class AddInitiateButtonPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(0, 295, Short.MAX_VALUE)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(actionButtonPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
+                .add(actionButtonPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -137,7 +129,6 @@ public class AddInitiateButtonPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton actionButton;
     private javax.swing.JPanel actionButtonPanel;
-    private javax.swing.JPanel buttonGroup;
     private javax.swing.JButton cancelButton;
     // End of variables declaration//GEN-END:variables
 
