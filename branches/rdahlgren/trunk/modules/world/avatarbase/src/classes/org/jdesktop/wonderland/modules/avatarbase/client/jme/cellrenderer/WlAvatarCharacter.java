@@ -72,7 +72,8 @@ public class WlAvatarCharacter extends Avatar {
          */
         @Override
         public WlAvatarCharacter build() {
-            initializer(new CharacterCollisionInitialization());
+            if (attributeParams != null && !attributeParams.isUseSimpleStaticModel())
+                initializer(new CharacterCollisionInitialization(true, false, false, false)); // disables picking and gravity
             WlAvatarCharacter result = new WlAvatarCharacter(this);
             return result;
         }
@@ -136,13 +137,13 @@ public class WlAvatarCharacter extends Avatar {
 //        m_keyBindings.put(KeyEvent.VK_PERIOD,       TriggerNames.NextAction.ordinal());
 //        m_keyBindings.put(KeyEvent.VK_1,            TriggerNames.GoTo1.ordinal());
 //        m_keyBindings.put(KeyEvent.VK_2,            TriggerNames.GoTo2.ordinal());
-//        m_keyBindings.put(KeyEvent.VK_3,            TriggerNames.GoTo3.ordinal());
+        m_keyBindings.put(KeyEvent.VK_Q,            TriggerNames.GoTo3.ordinal());
         m_keyBindings.put(KeyEvent.VK_G,            TriggerNames.SitOnGround.ordinal());
         m_keyBindings.put(KeyEvent.VK_0,            TriggerNames.Smile.ordinal());
         m_keyBindings.put(KeyEvent.VK_9,            TriggerNames.Frown.ordinal());
         m_keyBindings.put(KeyEvent.VK_8,            TriggerNames.Scorn.ordinal());
-        m_keyBindings.put(KeyEvent.VK_Q,            TriggerNames.Move_Strafe_Left.ordinal());
-        m_keyBindings.put(KeyEvent.VK_E,            TriggerNames.Move_Strafe_Right.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_Q,            TriggerNames.Move_Strafe_Left.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_E,            TriggerNames.Move_Strafe_Right.ordinal());
         m_keyBindings.put(KeyEvent.VK_P,            TriggerNames.Point.ordinal());
 //        m_keyBindings.put(KeyEvent.VK_Q,            TriggerNames.ToggleLeftArm.ordinal());
 //        m_keyBindings.put(KeyEvent.VK_E,            TriggerNames.ToggleRightArm.ordinal());

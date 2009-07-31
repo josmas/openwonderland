@@ -29,6 +29,8 @@ import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
 import imi.collision.CollisionManager;
 import imi.environments.Environments;
+import imi.objects.AvatarObjectCollection;
+import imi.objects.IRD_ObjectsCollection;
 import imi.repository.Repository;
 import imi.scene.PMatrix;
 import imi.tests.StaticWorldManager;
@@ -410,6 +412,9 @@ public class AvatarClientPlugin extends BaseClientPlugin
         String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
         Environments.createBZOBJS(ClientContextJME.getWorldManager(), baseURL);
         //new imi.objects.AvatarsNPCsDemo(ClientContextJME.getWorldManager(), new Vector3f(7.0f, -9.1f, 13.0f), baseURL);
+        AvatarObjectCollection objects = new AvatarObjectCollection("WL Objects", ClientContextJME.getWorldManager());
+        objects.addChair(new Vector3f(0.0f, 0.0f, 0.0f), new Vector3f(1.0f, 0.0f, 0.0f), baseURL);
+        objects.addChair(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f(1.0f, 0.0f, 0.0f), baseURL);
         //////////// Lou ///////////////////////////////
 
         super.initialize(manager);

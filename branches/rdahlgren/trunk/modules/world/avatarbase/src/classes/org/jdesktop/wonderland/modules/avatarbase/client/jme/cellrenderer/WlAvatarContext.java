@@ -74,5 +74,10 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
             // Force animation to play if this is a Misc trigger
             setCurrentState((ActionState) gameStates.get(CycleActionState.class));
         }
+        //System.out.println("trigger " + trigger + " " + pressed);
+        if (pressed && trigger==TriggerNames.GoTo3.ordinal())
+        {
+            super.triggerAlert(trigger, pressed);
+        }
     }
 }
