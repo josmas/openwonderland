@@ -23,6 +23,7 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -61,9 +62,17 @@ public class SampleCellMO extends CellMO {
 
     @Override
     public void setServerState(CellServerState serverState) {
-        shapeType = ((SampleCellServerState)serverState).getShapeType();
-        logger.warning("SHAPE TYPE " + shapeType);
         super.setServerState(serverState);
+        shapeType = ((SampleCellServerState)serverState).getShapeType();
+
+        // XXX Test
+        // Fetch the View component state as a text
+        // XXX Test
+        ViewComponentServerState vcss =
+                (ViewComponentServerState) serverState.getComponentServerState(ViewComponentServerState.class);
+        if (vcss != null) {
+            logger.warning("View Bounds " + vcss.getCellTransform());
+        }
     }
 
     @Override

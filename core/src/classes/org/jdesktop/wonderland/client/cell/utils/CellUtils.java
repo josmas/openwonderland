@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellDeleteMessage;
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
+import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
 
 /**
  * A collection of useful utility routines pertaining to Cells.
@@ -91,9 +92,8 @@ public class CellUtils {
         // will just put the Cell right on top of the avatar.
         BoundingVolumeHint hint = state.getBoundingVolumeHint();
 
-        logger.warning("Using bounding volume hint " +
-                hint.getBoundsHint().toString() + ", do placement=" +
-                hint.isDoSystemPlacement());
+        logger.info("Using bounding volume hint " + hint.getBoundsHint() +
+                ", do placement=" + hint.isDoSystemPlacement());
         
         if (hint != null && hint.isDoSystemPlacement() == true) {
             // Case (1): We have a bounds hint and we want to do the layout,
@@ -120,7 +120,7 @@ public class CellUtils {
         Cell parent = CellCreationParentRegistry.getCellCreationParent();
         if (parent != null) {
             parentID = parent.getCellID();
-            logger.warning("Using parent with Cell ID " + parentID.toString());
+            logger.info("Using parent with Cell ID " + parentID.toString());
         }
         
         // We also need to convert the initial origin of the Cell (in world
@@ -129,7 +129,7 @@ public class CellUtils {
             CellTransform worldTransform = new CellTransform(null, null);
             CellTransform parentTransform = parent.getWorldTransform();
 
-            logger.warning("Transform of the parent cell: translation=" +
+            logger.info("Transform of the parent cell: translation=" +
                     parentTransform.getTranslation(null).toString() + ", rotation=" +
                     parentTransform.getRotation(null).toString());
 
@@ -137,7 +137,7 @@ public class CellUtils {
                     parentTransform);
         }
         
-        logger.warning("Final adjusted origin " + transform.getTranslation(null).toString());
+        logger.info("Final adjusted origin " + transform.getTranslation(null).toString());
         
         // Create a position component that will set the initial origin
         PositionComponentServerState position = new PositionComponentServerState();
@@ -145,6 +145,12 @@ public class CellUtils {
         position.setRotation(transform.getRotation(null));
         position.setScaling(transform.getScaling(null));
         state.addComponentServerState(position);
+
+        // If we do not want system placement to happen, then also include the
+        // transform of the View Cell that created the Cell.
+        if (hint != null && hint.isDoSystemPlacement() == false) {
+            state.addComponentServerState(new ViewComponentServerState(viewTransform));
+        }
 
         // Send the message to the server
         WonderlandSession session = manager.getPrimarySession();

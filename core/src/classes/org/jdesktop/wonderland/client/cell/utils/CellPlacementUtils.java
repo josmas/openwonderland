@@ -92,8 +92,8 @@ public class CellPlacementUtils {
         Quaternion viewRotation = viewTransform.getRotation(null);
         Vector3f lookAt = CellPlacementUtils.getLookDirection(viewRotation, null);
 
-        logger.warning("Using position of view cell " + viewPosition);
-        logger.warning("Using look-at vector of view cell " + lookAt);
+        logger.info("Using position of view cell " + viewPosition);
+        logger.info("Using look-at vector of view cell " + lookAt);
 
         // Use the "Default" collision system
         JMECollisionSystem system = (JMECollisionSystem)
@@ -113,8 +113,8 @@ public class CellPlacementUtils {
         float distance = CellPlacementUtils.getDistance(bounds, fov,
                 MIN_DISTANCE, minDistance);
 
-        logger.warning("Using field-of-view " + fov + " degrees.");
-        logger.warning("Distance away to place the Cell " + distance);
+        logger.info("Using field-of-view " + fov + " degrees.");
+        logger.info("Distance away to place the Cell " + distance);
         
         // Create a vector representing the origin of the Cell. This is with
         // respect to the local view cell coordinates which we assume is
@@ -141,7 +141,7 @@ public class CellPlacementUtils {
         // for the Cell's initial position.
         origin = origin.add(viewPosition);
 
-        logger.warning("Determined world origin of Cell is " + origin);
+        logger.info("Determined world origin of Cell is " + origin);
         return origin;
     }
 
@@ -315,10 +315,9 @@ public class CellPlacementUtils {
         heightRay.origin.set(position);
         heightRay.direction = lookAt;
 
-        logger.warning("For collidable, origin=" + position + " look at " +
+        logger.info("For collidable, origin=" + position + " look at " +
                 lookAt);
 
-        
         // Use the given collision system to find where the closest collidable
         // object is.
         PickInfo pi = collision.pickAllWorldRay(heightRay, true, false);
