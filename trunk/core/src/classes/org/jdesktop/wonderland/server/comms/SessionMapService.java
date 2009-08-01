@@ -92,10 +92,10 @@ public class SessionMapService extends AbstractService implements SessionMapMana
     public WonderlandClientID getClientID(BigInteger sessionID) {
 	DataService ds = txnProxy.getService(DataService.class);
 
-	ManagedReference<ClientSessionWrapper> sessionRef;
+	ManagedReference<ClientSession> sessionRef;
 
 	try {
-	    sessionRef = (ManagedReference<ClientSessionWrapper>) 
+	    sessionRef = (ManagedReference<ClientSession>) 
 	        ds.createReferenceForId(sessionID);
 	} catch (ObjectNotFoundException e) {
             logger.log(Level.WARNING, e.getMessage());
@@ -105,14 +105,9 @@ public class SessionMapService extends AbstractService implements SessionMapMana
 	if (sessionRef == null) {
 	    return null;
 	}
-
-	/*
-	 * Too bad ClientSessionWrapper doesn't return just the sessionRef.
-	 * I would use that rather than getting the ClientSession only
-	 * to again create a reference in WondlerlandClientID.
-	 */
+      
         try {
-            return new WonderlandClientID(sessionRef.get().getClientSession());
+            return new WonderlandClientID(sessionRef);
         } catch (ObjectNotFoundException onfe) {
             // no such object exists
             logger.logThrow(Level.FINE, onfe, "No client for ID " + sessionID);
