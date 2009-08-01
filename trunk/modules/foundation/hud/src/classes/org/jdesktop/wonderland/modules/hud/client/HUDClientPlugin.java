@@ -41,16 +41,19 @@ public class HUDClientPlugin extends BaseClientPlugin {
     private static final float DEFAULT_HUD_Y = 0.0f;
     private static final float DEFAULT_HUD_WIDTH = 1.0f;
     private static final float DEFAULT_HUD_HEIGHT = 1.0f;
+    private static final float ICON_HUD_HEIGHT = 0.2f;
 
     @Override
     public void initialize(ServerSessionManager loginManager) {
         logger.fine("initializing HUD client plugin");
 
+        Canvas canvas = JmeClientMain.getFrame().getCanvas();
+
         // Create the default HUD factory
         HUDFactory.setHUDFactorySPI(new WonderlandHUDFactory());
 
         // create the main Wonderland HUD
-        Canvas canvas = JmeClientMain.getFrame().getCanvas();
+        //
         logger.fine("creating Wonderland HUD: " +
                 DEFAULT_HUD_WIDTH + "x" + DEFAULT_HUD_HEIGHT +
                 " at " + DEFAULT_HUD_X + ", " + DEFAULT_HUD_Y);
@@ -78,6 +81,26 @@ public class HUDClientPlugin extends BaseClientPlugin {
 
         // manage the components in the main HUD
         wonderlandHUD.setComponentManager(compManager);
+
+        // create a HUD for icons
+        //
+        logger.fine("creating icon HUD: " + DEFAULT_HUD_WIDTH + "x" + ICON_HUD_HEIGHT +
+                " at " + DEFAULT_HUD_X + ", " + DEFAULT_HUD_Y);
+        final HUD iconbarHUD = HUDFactory.createHUD(canvas.getSize(),
+                DEFAULT_HUD_X, DEFAULT_HUD_Y, DEFAULT_HUD_WIDTH, ICON_HUD_HEIGHT);
+        iconbarHUD.setName("iconbar");
+
+        // manage the icon bar HUD
+        manager.addHUD(iconbarHUD);
+
+        // create a component manager for the HUD components in the icon bar HUD
+        HUDComponentManager iconCompManager = new WonderlandHUDComponentManager(iconbarHUD);
+
+        // define the layout of HUD components in the icon bar HUD
+        iconCompManager.setLayoutManager(new HUDFlowLayoutManager(iconbarHUD));
+
+        // manage the components in the icon bar HUD
+        iconbarHUD.setComponentManager(iconCompManager);
 
         // call the superclass's initialize method
         super.initialize(loginManager);
