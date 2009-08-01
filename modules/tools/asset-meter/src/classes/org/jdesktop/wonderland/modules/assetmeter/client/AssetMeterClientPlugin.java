@@ -28,7 +28,6 @@ import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDFactory;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.annotation.Plugin;
@@ -79,6 +78,7 @@ public class AssetMeterClientPlugin extends BaseClientPlugin {
                 // Now create the HUD component
                 HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
                 assetMeterHUDComponent = mainHUD.createComponent(assetMeterJPanel);
+                assetMeterHUDComponent.setPreferredTransparency(0.0f);
                 assetMeterHUDComponent.setPreferredLocation(Layout.SOUTHEAST);
                 assetMeterHUDComponent.setName("Downloading...");
                 mainHUD.addComponent(assetMeterHUDComponent);
