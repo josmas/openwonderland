@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.client.hud.HUDView;
  */
 public class HUDFlowLayoutManager extends HUDAbsoluteLayoutManager {
 
-    private static final Logger logger = Logger.getLogger(HUDCompassLayoutManager.class.getName());
+    private static final Logger logger = Logger.getLogger(HUDFlowLayoutManager.class.getName());
     private static final int MIN_LEFT_MARGIN = 10;
     private static final int MIN_RIGHT_MARGIN = 10;
     private static final int MIN_TOP_MARGIN = 20;
