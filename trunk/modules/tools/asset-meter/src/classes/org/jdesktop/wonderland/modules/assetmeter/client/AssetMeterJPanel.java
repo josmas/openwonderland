@@ -1,14 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * AssetMeterJPanel.java
+ * Project Wonderland
  *
- * Created on Jul 28, 2009, 12:09:36 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
-
 package org.jdesktop.wonderland.modules.assetmeter.client;
 
 import java.awt.CardLayout;
@@ -34,7 +40,6 @@ import javax.swing.Timer;
 import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetProgressListener;
-import org.jdesktop.wonderland.client.hud.HUDComponent;
 
 /**
  *
@@ -42,6 +47,7 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
  */
 public class AssetMeterJPanel extends javax.swing.JPanel {
     /* A synchronized ordered map of Assets to their downloading status objects */
+
     private final Map<String, DownloadingAsset> downloadingAssetMap;
 
     /* The default list model */
@@ -55,7 +61,7 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
 
     /* The fade timer in progress */
     private Timer fadeTimer;
-
+    private Timer dismissTimer;
     /* The current transparency */
     private int transparency = 0;
 
@@ -72,7 +78,7 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
         // Have the JList renderer the asset indicators
         loadingAssetList.setModel(listModel);
         loadingAssetList.setCellRenderer(new AssetIndicatorCellRenderer());
-        
+
         // Add a listener to the asset manager
         progressListener = new MeterProgressListener();
         AssetManager manager = AssetManager.getAssetManager();
@@ -207,46 +213,65 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_downButtonActionPerformed
 
     private void fadeIn() {
-        if (fadeTimer != null) {
-            fadeTimer.stop();
-        }
-
-        if (!plugin.getHUDComponent().isVisible()) {
-           plugin.getHUDComponent().setVisible(true);
-        }
-
-        transparency = 0;
-        if (plugin.getHUDComponent().getTransparency() != 0) {
-            plugin.getHUDComponent().setTransparency(0f);
-        }
+        plugin.getHUDComponent().setVisible(true);
+//        if (fadeTimer != null) {
+//            fadeTimer.stop();
+//        }
+//
+//        if (!plugin.getHUDComponent().isVisible()) {
+//           plugin.getHUDComponent().setVisible(true);
+//        }
+//
+//        transparency = 0;
+//        if (plugin.getHUDComponent().getTransparency() != 0) {
+//            plugin.getHUDComponent().setTransparency(0f);
+//        }
     }
 
     private void fadeOut() {
-        if (fadeTimer != null && fadeTimer.isRunning()) {
-            fadeTimer.stop();
-        }
-        
-        // see if we are already faded out
-        if (transparency == 100) {
-            return;
-        }
+        // wait 10 seconds before dismissing meter to prevent meter from
+        // popping in and out of view
+        if (dismissTimer == null) {
+            dismissTimer = new Timer(10000, new ActionListener() {
 
-        fadeTimer = new Timer(100, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                if (transparency < 100) {
-                    transparency += 2;
-                    plugin.getHUDComponent().setTransparency(transparency / 100f);
-                } else {
-                    transparency = 100;
-                    ((Timer) e.getSource()).stop();
-
-                    if (plugin.getHUDComponent().isVisible()) {
+                public void actionPerformed(ActionEvent e) {
+                    if (downloadingAssetMap.size() == 0) {
                         plugin.getHUDComponent().setVisible(false);
+                        dismissTimer = null;
+                    } else {
+                        System.err.println("--- restarting dismiss timer");
+                        dismissTimer.restart();
                     }
                 }
-            }
-        });
-        fadeTimer.start();
+            });
+            dismissTimer.setRepeats(false);
+            dismissTimer.start();
+        }
+//        if (fadeTimer != null && fadeTimer.isRunning()) {
+//            fadeTimer.stop();
+//        }
+//
+//        // see if we are already faded out
+//        if (transparency == 100) {
+//            return;
+//        }
+//
+//        fadeTimer = new Timer(100, new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                if (transparency < 100) {
+//                    transparency += 2;
+//                    plugin.getHUDComponent().setTransparency(transparency / 100f);
+//                } else {
+//                    transparency = 100;
+//                    ((Timer) e.getSource()).stop();
+//
+//                    if (plugin.getHUDComponent().isVisible()) {
+//                        plugin.getHUDComponent().setVisible(false);
+//                    }
+//                }
+//            }
+//        });
+//        fadeTimer.start();
     }
 
     void setUpdateEnabled(boolean enabled) {
@@ -265,8 +290,9 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
     private void updateDownloadingAsset(Asset asset, final int readBytes, final int percent) {
         // Update the values in the downloading asset indicator using a swing
         // worker for thread safeness.
-        final Asset[] assetArray = new Asset[] { asset };
+        final Asset[] assetArray = new Asset[]{asset};
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 DownloadingAsset da = downloadingAssetMap.get(assetArray[0].getAssetURI().toExternalForm());
                 if (da != null) {
@@ -294,6 +320,7 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
         downloadingAssetMap.put(asset.getAssetURI().toExternalForm(), da);
 
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 // set up the indicator in the AWT event thread
                 da.indicator = new AssetIndicator();
@@ -317,6 +344,7 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
         downloadingAssetMap.remove(asset.getAssetURI().toExternalForm());
 
         new Timer(750, new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 listModel.removeElement(da.indicator);
                 ((Timer) e.getSource()).stop();
@@ -351,10 +379,11 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
         if (fCount == 0) {
             fPercent = 0;
         } else {
-            fPercent = (int)((double) totalPercent / (double) count);
+            fPercent = (int) ((double) totalPercent / (double) count);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 combinedLabel.setText(fCount + " files.");
                 combinedProgressBar.setValue(fPercent);
@@ -367,17 +396,19 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
      * status
      */
     class DownloadingAsset {
+
         public Asset asset = null;
         public int readBytes = 0;
         public int percentage = -1;
         private AssetIndicator indicator = null; // initialize later in AWT
-                                                 // event thread
+        // event thread
     }
 
     /**
      * A progress listener for assets being downloaded by the Asset Manager
      */
     class MeterProgressListener implements AssetProgressListener {
+
         public void downloadProgress(Asset asset, int readBytes, int percentage) {
             // Check to see if the asset is already in the list, otherwise
             // add it. We need to synchronized according to the asset to make
@@ -385,8 +416,7 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
             synchronized (this) {
                 if (downloadingAssetMap.containsKey(asset.getAssetURI().toExternalForm()) == false) {
                     addDownloadingAsset(asset);
-                }
-                else {
+                } else {
                     updateDownloadingAsset(asset, readBytes, percentage);
                 }
             }
@@ -450,8 +480,9 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
      * A list cell rendered for the Asset Indicator
      */
     class AssetIndicatorCellRenderer implements ListCellRenderer {
+
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            return ((AssetIndicator)value);
+            return ((AssetIndicator) value);
         }
     }
 
@@ -459,6 +490,7 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
      * A JPanel that holds a label and a progress bar.
      */
     class AssetIndicator extends JPanel {
+
         private JProgressBar progressBar;
         private JLabel assetLabel;
 
@@ -524,8 +556,6 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
             progressBar.setValue(progressBar.getValue() + 1);
         }
     }
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel combinedLabel;
     private javax.swing.JPanel combinedPanel;
@@ -537,5 +567,4 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
     private javax.swing.JList loadingAssetList;
     private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
-
 }
