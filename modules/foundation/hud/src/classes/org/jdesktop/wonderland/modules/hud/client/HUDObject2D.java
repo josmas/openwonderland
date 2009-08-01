@@ -25,10 +25,10 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.jdesktop.wonderland.client.animation.FloatInterpolator;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
@@ -49,7 +49,8 @@ public class HUDObject2D implements HUDObject {
     protected DisplayMode mode = DisplayMode.HUD;
     protected boolean visible = false;
     protected boolean worldVisible = false;
-    protected float transparency = 0.0f;
+    protected float preferredTransparency = 1.0f;
+    protected float transparency = preferredTransparency;
     protected boolean enabled = false;
     protected boolean minimized = false;
     protected boolean decoratable = true;
@@ -156,7 +157,7 @@ public class HUDObject2D implements HUDObject {
      * {@inheritDoc}
      */
     public Rectangle getBounds() {
-        return (Rectangle) bounds;
+        return bounds.getBounds();
     }
 
     /**
@@ -319,7 +320,21 @@ public class HUDObject2D implements HUDObject {
     /**
      * {@inheritDoc}
      */
-    public void setTransparency(float transparency) {
+    public void setPreferredTransparency(Float preferredTransparency) {
+        this.preferredTransparency = preferredTransparency;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public float getPreferredTransparency() {
+        return preferredTransparency;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setTransparency(Float transparency) {
         this.transparency = transparency;
 
         notifyEventListeners(HUDEventType.CHANGED_TRANSPARENCY);
@@ -330,6 +345,20 @@ public class HUDObject2D implements HUDObject {
      */
     public float getTransparency() {
         return transparency;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void changeTransparency(Float from, Float to) {
+        new Thread(new HUDAnimator(this, "transparency", new FloatInterpolator(), from, to)).start();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void changeTransparency(Float from, Float to, long duration) {
+        new Thread(new HUDAnimator(this, "transparency", new FloatInterpolator(), from, to, duration)).start();
     }
 
     /**

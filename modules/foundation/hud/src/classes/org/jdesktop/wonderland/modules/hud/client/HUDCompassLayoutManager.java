@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -62,6 +64,31 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
     public void removeView(HUDComponent component, HUDView view) {
         super.removeView(component, view);
         positionMap.remove(component);
+    }
+
+    private boolean overlaps(HUDComponent a, HUDComponent b) {
+        boolean overlaps = false;
+        if ((a != null) && (b != null)) {
+            overlaps = a.isVisible() && b.isVisible() && 
+                    !a.equals(b) &&
+                    a.getBounds().intersects(b.getBounds());
+        }
+        return overlaps;
+    }
+
+    private SortedSet getOverlappers(HUDComponent a) {
+        SortedSet overlappers = null;
+        Iterator<HUDComponent> iter = hudViewMap.keySet().iterator();
+        while (iter.hasNext()) {
+            HUDComponent candidate = iter.next();
+            if (overlaps(a, candidate)) {
+                if (overlappers == null) {
+                    overlappers = Collections.synchronizedSortedSet(new TreeSet(new HUDComponentComparator()));
+                }
+                overlappers.add(candidate);
+            }
+        }
+        return overlappers;
     }
 
     /**
@@ -151,6 +178,12 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
 
         Vector2f currentPosition = positionMap.get(component);
         Vector2f newPosition = new Vector2f((location.x - hud.getX()) / hudWidth, (location.y - hud.getY()) / hudHeight);
+
+//        HUDComponent2D temp = new HUDComponent2D();
+//        temp.setBounds((int)newPosition.x, (int)newPosition.y, component.getWidth(), component.getHeight());
+//
+//        SortedSet overlappers = getOverlappers(temp);
+//        System.err.println("--- component: " + component + " overlaps " + overlappers);
 
         if ((currentPosition == null) || (Math.abs(currentPosition.x - newPosition.x) > 0.03) || (Math.abs(currentPosition.y - newPosition.y) > 0.03)) {
             positionMap.put(component, newPosition);

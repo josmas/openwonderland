@@ -244,20 +244,50 @@ public interface HUDObject {
     public DisplayMode getDisplayMode();
 
     /**
-     * Sets the transparency of the HUD object on a scale of 0.0f to 1.0f, where
-     * 0.0f means that the HUD object is completely opaque, and 1.0f means the
-     * HUD object is completely transparent.
-     * Note that transparency is independent of whether the HUD object is visible
-     * or not
-     * @param transparency the transparency of the HUD object
+     * Sets the preferred transparency of the HUD object on a scale of 0.0f to 
+     * 1.0f, where 0.0f is opaque and 1.0f is completely transparent.
+     * @param transparency the preferred transparency of the HUD object
      */
-    public void setTransparency(float transparency);
+    public void setPreferredTransparency(Float transparency);
 
     /**
-     * Gets the transparency of the HUD object
+     * Gets the preferred transparency of the HUD object
+     * @return the preferred transparency of the HUD object on the scale of 
+     * 0.0f to 1.0f
+     */
+    public float getPreferredTransparency();
+
+    /**
+     * Sets the transparency of the HUD object on a scale of 0.0f to 1.0f,
+     * where 0.0f is opaque and 1.0f is completely transparent.
+     * @param transparency the transparency of the HUD object
+     */
+    public void setTransparency(Float transparency);
+
+    /**
+     * Gets the current transparency of the HUD object
      * @return the transparency of the HUD object on the scale of 0.0f to 1.0f
      */
     public float getTransparency();
+
+    /**
+     * Changes the transparency of the HUD object from one transparency to
+     * another over the default duration, where 0.0f is opaque and 1.0f is
+     * completely transparent.
+     * @param from the initial transparency
+     * @param to the final transparency
+     */
+    public void changeTransparency(Float from, Float to);
+
+    /**
+     * Changes the transparency of the HUD object from one transparency to
+     * another over a specified duration, where 0.0f is opaque and 1.0f is
+     * completely transparent.
+     * @param from the initial transparency
+     * @param to the final transparency
+     * @param duration the time in milliseconds over which to effect the change
+     */
+    public void changeTransparency(Float from, Float to, long duration);
 
     /**
      * Sets whether the HUD object is responsive to mouse and keyboard events
