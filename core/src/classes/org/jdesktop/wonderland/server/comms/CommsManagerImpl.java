@@ -24,9 +24,13 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
+import org.jdesktop.wonderland.server.comms.annotation.ClientHandler;
+import org.jdesktop.wonderland.server.comms.annotation.Protocol;
 
 /**
  * Implementation of CommsManager
@@ -44,6 +48,21 @@ class CommsManagerImpl
     public CommsManagerImpl() {
         // create the protocol map
         protocols = new HashMap<String, CommunicationsProtocol>();
+
+        // find all annotated protocols and install them
+        ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
+        Iterator<CommunicationsProtocol> pi = scl.getAll(Protocol.class,
+                                                         CommunicationsProtocol.class);
+        while (pi.hasNext()) {
+            registerProtocol(pi.next());
+        }
+
+        // find all annotated client handlers and install them
+        Iterator<ClientConnectionHandler> ci = scl.getAll(ClientHandler.class,
+                                                          ClientConnectionHandler.class);
+        while (ci.hasNext()) {
+            registerClientHandler(ci.next());
+        }
     }
     
     /**
