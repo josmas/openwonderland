@@ -57,6 +57,8 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+
 
 /**
  * A WonderlandHUDComponentManager manages a set of HUDComponents.
@@ -95,7 +97,6 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     // TODO: set these from user properties
     private float focusedTransparency = DEFAULT_FOCUSED_TRANSPARENCY;
     private float unfocusedTransparency = DEFAULT_UNFOCUSED_TRANSPARENCY;
-    private HUDComponent animating = null;
 
     public WonderlandHUDComponentManager(HUD hud) {
         this.hud = hud;
@@ -586,16 +587,16 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         logger.fine("minimizing HUD component: " + component);
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
-
         if (state != null) {
+            HUD iconbarHUD = HUDManagerFactory.getHUDManager().getHUD("iconbar");
+
             HUDImageComponent icon = state.getIcon();
             if (icon == null) {
                 ImageIcon imageIcon = component.getIcon();
                 if (imageIcon == null) {
                     imageIcon = new ImageIcon(getClass().getResource(DEFAULT_HUD_ICON));
                 }
-                icon = (HUDImageComponent) hud.createImageComponent(imageIcon);
-                icon.setPreferredLocation(Layout.SOUTHWEST);
+                icon = (HUDImageComponent) iconbarHUD.createImageComponent(imageIcon);
                 icon.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
@@ -603,7 +604,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                     }
                 });
                 state.setIcon(icon);
-                hud.addComponent(icon);
+                iconbarHUD.addComponent(icon);
             }
             // hide the HUD component
             component.setVisible(false);
