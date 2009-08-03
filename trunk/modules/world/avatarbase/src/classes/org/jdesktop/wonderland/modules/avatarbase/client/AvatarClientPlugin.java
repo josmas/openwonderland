@@ -150,7 +150,6 @@ public class AvatarClientPlugin extends BaseClientPlugin
      */
     @Override
     public void initialize(ServerSessionManager manager) {
-        AvatarSystem.initialize(ClientContextJME.getWorldManager());
         loaderMap = new HashMap();
 
         // A listener for changes to the primary view cell renderer. (This
@@ -386,6 +385,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
             worldManager.addUserData(Repository.class, new Repository(worldManager,
                     new WonderlandAvatarCache(url.toExternalForm(),
                     ClientContext.getUserDirectory(bundle.getString("AvatarCache")))));
+            AvatarSystem.initialize(ClientContextJME.getWorldManager());
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "Unable to form avatar base URL", excp);
         }
