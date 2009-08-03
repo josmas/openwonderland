@@ -483,7 +483,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
 
             // Remove the avatar controls (test) if it exists
             if (avatarControlsMI != null) {
-                frame.removeFromWindowMenu(avatarControlsMI);
+//                frame.removeFromWindowMenu(avatarControlsMI);
             }
 
             // Add the avatar instrumentions settings if it exists
@@ -596,7 +596,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
 
             // Add the avatar control (test) if it exists
             if (avatarControlsMI != null) {
-                frame.addToWindowMenu(avatarControlsMI, 0);
+//                frame.addToWindowMenu(avatarControlsMI, 0);
             }
             
             // Add the avatar instrumentation settings if it exists
