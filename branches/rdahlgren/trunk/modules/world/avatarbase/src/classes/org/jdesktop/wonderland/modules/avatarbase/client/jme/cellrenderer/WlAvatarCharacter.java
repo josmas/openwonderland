@@ -20,6 +20,7 @@ import imi.character.CharacterParams;
 import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarContext.TriggerNames;
 import imi.character.statemachine.GameContext;
+import imi.collision.CharacterCollisionInitialization;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import org.jdesktop.mtgame.WorldManager;
@@ -71,6 +72,8 @@ public class WlAvatarCharacter extends Avatar {
          */
         @Override
         public WlAvatarCharacter build() {
+            if (attributeParams != null && !attributeParams.isUseSimpleStaticModel())
+                initializer(new CharacterCollisionInitialization(true, false, false, false)); // disables picking and gravity
             WlAvatarCharacter result = new WlAvatarCharacter(this);
             return result;
         }
@@ -139,8 +142,8 @@ public class WlAvatarCharacter extends Avatar {
         m_keyBindings.put(KeyEvent.VK_0,            TriggerNames.Smile.ordinal());
         m_keyBindings.put(KeyEvent.VK_9,            TriggerNames.Frown.ordinal());
         m_keyBindings.put(KeyEvent.VK_8,            TriggerNames.Scorn.ordinal());
-        m_keyBindings.put(KeyEvent.VK_Q,            TriggerNames.Move_Strafe_Left.ordinal());
-        m_keyBindings.put(KeyEvent.VK_E,            TriggerNames.Move_Strafe_Right.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_Q,            TriggerNames.Move_Strafe_Left.ordinal());
+//        m_keyBindings.put(KeyEvent.VK_E,            TriggerNames.Move_Strafe_Right.ordinal());
         m_keyBindings.put(KeyEvent.VK_P,            TriggerNames.Point.ordinal());
 //        m_keyBindings.put(KeyEvent.VK_Q,            TriggerNames.ToggleLeftArm.ordinal());
 //        m_keyBindings.put(KeyEvent.VK_E,            TriggerNames.ToggleRightArm.ordinal());

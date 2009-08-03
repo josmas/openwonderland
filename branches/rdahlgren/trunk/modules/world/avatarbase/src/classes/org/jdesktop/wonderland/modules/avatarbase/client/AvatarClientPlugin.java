@@ -25,7 +25,10 @@ import imi.character.avatar.Avatar;
 import imi.character.behavior.CharacterBehaviorManager;
 import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
+import imi.collision.CollisionManager;
+import imi.environments.Environments;
 import imi.repository.Repository;
+import imi.tests.StaticWorldManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.instrument.Instrumentation;
@@ -300,7 +303,19 @@ public class AvatarClientPlugin extends BaseClientPlugin
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "Unable to form avatar base URL", excp);
         }
-        
+
+        //////////// Lou ///////////////////////////////
+        StaticWorldManager.setWorldManager(ClientContextJME.getWorldManager());
+        new CollisionManager(ClientContextJME.getWorldManager());
+        String serverHostAndPort = manager.getServerNameAndPort();
+        String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
+        Environments.createBZOBJS(ClientContextJME.getWorldManager(), baseURL);
+        new imi.objects.AvatarsNPCsDemo(ClientContextJME.getWorldManager(), new Vector3f(7.0f, -9.1f, 13.0f), baseURL);
+//        AvatarObjectCollection objects = new AvatarObjectCollection("WL Objects", ClientContextJME.getWorldManager());
+//        objects.addChair(new Vector3f(0.0f, 0.0f, 0.0f), new Vector3f(1.0f, 0.0f, 0.0f), baseURL);
+//        objects.addChair(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f(1.0f, 0.0f, 0.0f), baseURL);
+        //////////// Lou ///////////////////////////////
+
         super.initialize(manager);
     }
 
