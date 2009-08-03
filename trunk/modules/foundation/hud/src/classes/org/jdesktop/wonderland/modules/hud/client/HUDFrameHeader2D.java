@@ -47,14 +47,14 @@ public class HUDFrameHeader2D extends HUDComponent2D implements ActionListener, 
 
     public void setTitle(String title) {
         if (component instanceof HUDFrameHeader2DImpl) {
-            ((HUDFrameHeader2DImpl)component).setTitle(title);
+            ((HUDFrameHeader2DImpl) component).setTitle(title);
         }
     }
 
     public String getTitle() {
         String title = null;
         if (component instanceof HUDFrameHeader2DImpl) {
-            title = ((HUDFrameHeader2DImpl)component).getTitle();
+            title = ((HUDFrameHeader2DImpl) component).getTitle();
         }
         return title;
     }

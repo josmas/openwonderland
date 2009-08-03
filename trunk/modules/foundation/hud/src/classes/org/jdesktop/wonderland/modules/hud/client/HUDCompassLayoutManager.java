@@ -69,7 +69,7 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
     private boolean overlaps(HUDComponent a, HUDComponent b) {
         boolean overlaps = false;
         if ((a != null) && (b != null)) {
-            overlaps = a.isVisible() && b.isVisible() && 
+            overlaps = a.isVisible() && b.isVisible() &&
                     !a.equals(b) &&
                     a.getBounds().intersects(b.getBounds());
         }
@@ -178,12 +178,6 @@ public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {
 
         Vector2f currentPosition = positionMap.get(component);
         Vector2f newPosition = new Vector2f((location.x - hud.getX()) / hudWidth, (location.y - hud.getY()) / hudHeight);
-
-//        HUDComponent2D temp = new HUDComponent2D();
-//        temp.setBounds((int)newPosition.x, (int)newPosition.y, component.getWidth(), component.getHeight());
-//
-//        SortedSet overlappers = getOverlappers(temp);
-//        System.err.println("--- component: " + component + " overlaps " + overlappers);
 
         if ((currentPosition == null) || (Math.abs(currentPosition.x - newPosition.x) > 0.03) || (Math.abs(currentPosition.y - newPosition.y) > 0.03)) {
             positionMap.put(component, newPosition);

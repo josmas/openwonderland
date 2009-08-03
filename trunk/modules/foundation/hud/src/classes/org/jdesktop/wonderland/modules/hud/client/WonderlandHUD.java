@@ -22,6 +22,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -31,9 +32,9 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDButton;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDDialog;
 import org.jdesktop.wonderland.client.hud.HUDDisplayable;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDMessage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
@@ -56,7 +57,6 @@ public class WonderlandHUD extends HUDObject2D implements HUD {
 
     private static final Logger logger = Logger.getLogger(WonderlandHUD.class.getName());
     protected List components;
-    protected HUDComponentManager componentManager;
     private Dimension displayBounds = new Dimension();
     private Rectangle2D.Float scalableBounds = null;
     private static final int HUD_DEFAULT_X = 0;
@@ -238,19 +238,22 @@ public class WonderlandHUD extends HUDObject2D implements HUD {
     public void addComponent(HUDComponent component) {
         components.add(component);
 
-        if (componentManager != null) {
-            componentManager.addComponent(component);
-        }
+        event.setObject(component);
+        event.setEventType(HUDEventType.ADDED);
+        event.setEventTime(new Date());
+        notifyEventListeners(event);
     }
 
     /**
      * {@inheritDoc}
      */
     public void removeComponent(HUDComponent component) {
-        if (componentManager != null) {
-            componentManager.removeComponent(component);
-        }
         components.remove(component);
+
+        event.setObject(component);
+        event.setEventType(HUDEventType.REMOVED);
+        event.setEventTime(new Date());
+        notifyEventListeners(event);
     }
 
     /**
@@ -263,39 +266,14 @@ public class WonderlandHUD extends HUDObject2D implements HUD {
     /**
      * {@inheritDoc}
      */
+    public boolean hasComponent(HUDComponent component) {
+        return components.contains(component);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean hasComponents() {
         return !components.isEmpty();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setComponentManager(HUDComponentManager componentManager) {
-        if (components.size() > 0) {
-            HUDComponent comps[] = (HUDComponent[]) components.toArray();
-
-            if (this.componentManager != null) {
-                // already have a component manager, so remove the components
-                // it's managing in this HUD
-                for (HUDComponent component : comps) {
-                    this.componentManager.removeComponent(component);
-                }
-            }
-            if (componentManager != null) {
-                // add the components in this HUD to the new component manager
-                for (HUDComponent component : comps) {
-                    component.addEventListener((WonderlandHUDComponentManager) componentManager);
-                }
-            }
-        }
-
-        this.componentManager = componentManager;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public HUDComponentManager getComponentManager() {
-        return componentManager;
     }
 }

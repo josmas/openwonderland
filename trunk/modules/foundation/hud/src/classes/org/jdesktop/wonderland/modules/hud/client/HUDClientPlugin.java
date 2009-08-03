@@ -54,7 +54,7 @@ public class HUDClientPlugin extends BaseClientPlugin {
 
         // create the main Wonderland HUD
         //
-        logger.fine("creating Wonderland HUD: " +
+        logger.fine("creating main HUD: " +
                 DEFAULT_HUD_WIDTH + "x" + DEFAULT_HUD_HEIGHT +
                 " at " + DEFAULT_HUD_X + ", " + DEFAULT_HUD_Y);
         final HUD wonderlandHUD = HUDFactory.createHUD(canvas.getSize(),
@@ -80,27 +80,30 @@ public class HUDClientPlugin extends BaseClientPlugin {
         compManager.setLayoutManager(new HUDCompassLayoutManager(wonderlandHUD));
 
         // manage the components in the main HUD
-        wonderlandHUD.setComponentManager(compManager);
+        wonderlandHUD.addEventListener(compManager);
 
         // create a HUD for icons
         //
         logger.fine("creating icon HUD: " + DEFAULT_HUD_WIDTH + "x" + ICON_HUD_HEIGHT +
                 " at " + DEFAULT_HUD_X + ", " + DEFAULT_HUD_Y);
-        final HUD iconbarHUD = HUDFactory.createHUD(canvas.getSize(),
+        final HUD iconHUD = HUDFactory.createHUD(canvas.getSize(),
                 DEFAULT_HUD_X, DEFAULT_HUD_Y, DEFAULT_HUD_WIDTH, ICON_HUD_HEIGHT);
-        iconbarHUD.setName("iconbar");
+        iconHUD.setName("icon");
 
         // manage the icon bar HUD
-        manager.addHUD(iconbarHUD);
+        manager.addHUD(iconHUD);
 
-        // create a component manager for the HUD components in the icon bar HUD
-        HUDComponentManager iconCompManager = new WonderlandHUDComponentManager(iconbarHUD);
+        // create a component manager for the HUD components in the icon HUD
+        HUDComponentManager iconCompManager = new WonderlandHUDIconManager(iconHUD);
 
-        // define the layout of HUD components in the icon bar HUD
-        iconCompManager.setLayoutManager(new HUDFlowLayoutManager(iconbarHUD));
+        // define the layout of HUD components in the icon HUD
+        iconCompManager.setLayoutManager(new HUDFlowLayoutManager(iconHUD));
 
-        // manage the components in the icon bar HUD
-        iconbarHUD.setComponentManager(iconCompManager);
+        // icon manager manages components in the main HUD
+        wonderlandHUD.addEventListener(iconCompManager);
+
+        // icon manager manages components in the icon HUD too
+        iconHUD.addEventListener(iconCompManager);
 
         // call the superclass's initialize method
         super.initialize(loginManager);
