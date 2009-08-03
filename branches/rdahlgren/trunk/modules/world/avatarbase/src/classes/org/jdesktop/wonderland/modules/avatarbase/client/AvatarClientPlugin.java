@@ -31,6 +31,7 @@ import imi.repository.Repository;
 import imi.tests.StaticWorldManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.lang.instrument.Instrumentation;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
@@ -45,6 +46,8 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
+import javax.xml.bind.JAXBException;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
@@ -54,6 +57,7 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.IMIDemoFrame;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.client.jme.MainFrameImpl;
@@ -65,6 +69,9 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarSessionLoader.AvatarLoaderStateListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.AvatarSessionLoader.State;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatar;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarConfigManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.WonderlandCharacterParams;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.FlexibleCameraAdapter;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarCollisionChangeRequestEvent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarControls;
@@ -72,6 +79,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.Avatar
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME.AvatarChangedListener;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarTestPanel;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.GestureHUD;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.LoadingInfo;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WonderlandAvatarCache;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry;
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry.AvatarInUseListener;
@@ -130,6 +138,8 @@ public class AvatarClientPlugin extends BaseClientPlugin
 
     // The avatar configuration menu item
     private JMenuItem avatarConfigMI = null;
+    private JMenuItem femaleAvatarMI = null;
+    private JMenuItem maleAvatarMI = null;
 
     // Menu item to take avatar to the starting location
     private JMenuItem startingLocationMI = null;
@@ -183,37 +193,98 @@ public class AvatarClientPlugin extends BaseClientPlugin
             }
         });
 
-        // A menu item for a test control panel for the avatar.
-//        avatarControlsMI = new JMenuItem(bundle.getString("Avatar_Controls"));
-//        avatarControlsMI.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                if (testPanelRef == null || testPanelRef.get() == null) {
-//                    AvatarTestPanel test = new AvatarTestPanel();
-//                    JFrame f = new JFrame(bundle.getString("Avatar_Controls"));
-//                    f.getContentPane().add(test);
-//                    f.pack();
-//                    f.setVisible(true);
-//                    f.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-//                    test.setAvatarCharacter(avatarCellRenderer.getAvatarCharacter());
-//                    testPanelRef = new WeakReference(test);
-//                } else {
-//                    SwingUtilities.getRoot(testPanelRef.get().getParent()).setVisible(true);
-//                }
-//            }
-//        });
+        maleAvatarMI = new JMenuItem("Male");
+        maleAvatarMI.setToolTipText("Select a random male avatar");
+        maleAvatarMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            // Get a unique name from the registry
+                            AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
+                            String avatarName = registry.getUniqueAvatarName();
+                            if (avatarCellRenderer != null)
+                                LoadingInfo.startedLoading(avatarCellRenderer.getCell().getCellID(), avatarName);
+                            else
+                                logger.info("Cell renderer was null, could not bring up LoadingInfo dialog.");
+                            // create a character params object using this name
+                            ImiAvatar avatar = new ImiAvatar(avatarName, 0);
+                            WonderlandCharacterParams params = WonderlandCharacterParams.loadMale();
+                            // extra config
+                            avatar.setAvatarParams(params);
+                            // Register the avatar
+                            registry.registerAvatar(avatar, true);
+                            // Save the avatar (this puts it on the server)
+                            ImiAvatarConfigManager.getImiAvatarConfigManager().saveAvatar(avatar);
+                            // now tell the avatar registry to use this avatar
+                            registry.setAvatarInUse(avatar, false);
+                            SwingUtilities.invokeLater(new Runnable() {
 
-        // Avatar Instrumentation is a dev tool
-//        avatarSettingsMI = new JMenuItem(bundle.getString("Avatar_Settings..."));
-//        avatarSettingsMI.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                AvatarInstrumentation in = new AvatarInstrumentation(instrumentation);
-//                in.setVisible(true);
-//            }
-//        });
-//        instrumentation = new DefaultInstrumentation(ClientContextJME.getWorldManager());
+                                public void run() {
+                                    maleAvatarMI.setEnabled(false);
+                                    femaleAvatarMI.setEnabled(false);
+                                }
+                            });
+                            if (avatarCellRenderer != null)
+                                LoadingInfo.finishedLoading(avatarCellRenderer.getCell().getCellID(), avatarName);
+                        } catch (IOException ex) {
+                            logger.warning("Caught IOException while trying to load a male avatar! " + ex.getMessage());
+                        } catch (JAXBException ex) {
+                            logger.warning("Caught a JAXB exception while saving the avatar. " + ex.getMessage());
+                        }
+                    }
+                }).start();
+            }
+        });
+
+        femaleAvatarMI = new JMenuItem("Female");
+        femaleAvatarMI.setToolTipText("Select a random female avatar");
+        femaleAvatarMI.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            // Get a unique name from the registry
+                            AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
+                            String avatarName = registry.getUniqueAvatarName();
+                            if (avatarCellRenderer != null)
+                                LoadingInfo.startedLoading(avatarCellRenderer.getCell().getCellID(), avatarName);
+                            else
+                                logger.info("Cell renderer was null, could not bring up LoadingInfo dialog.");
+                            // create a character params object using this name
+                            ImiAvatar avatar = new ImiAvatar(avatarName, 0);
+                            WonderlandCharacterParams params = WonderlandCharacterParams.loadFemale();
+                            // extra config
+                            avatar.setAvatarParams(params);
+                            // Register the avatar
+                            registry.registerAvatar(avatar, true);
+                            // Save the avatar (this puts it on the server)
+                            ImiAvatarConfigManager.getImiAvatarConfigManager().saveAvatar(avatar);
+                            // now tell the avatar registry to use this avatar
+                            registry.setAvatarInUse(avatar, false);
+                            SwingUtilities.invokeLater(new Runnable() {
+
+                                public void run() {
+                                    maleAvatarMI.setEnabled(false);
+                                    femaleAvatarMI.setEnabled(false);
+                                }
+                            });
+                            if (avatarCellRenderer != null)
+                                LoadingInfo.finishedLoading(avatarCellRenderer.getCell().getCellID(), avatarName);
+                        } catch (IOException ex) {
+                            logger.warning("Caught IOException while trying to load a female avatar! " + ex.getMessage());
+                        } catch (JAXBException ex) {
+                            logger.warning("Caught a JAXB exception while saving the avatar. " + ex.getMessage());
+                        }
+                    }
+                }).start();
+            }
+        });
 
         // The menu item for the Gesture (HUD)
         gestureMI = new JCheckBoxMenuItem(bundle.getString("Gesture_UI"));
+        gestureMI.setActionCommand("IMI_HACK_FILTER");
         gestureMI.setSelected(false);
         gestureMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -379,7 +450,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
             frame.removeFromEditMenu(avatarConfigMI);
             frame.removeFromPlacemarksMenu(startingLocationMI);
             
-            if (frame instanceof MainFrameImpl) { // Until MainFrame gets this method added
+            if (frame instanceof IMIDemoFrame) { // Until MainFrame gets this method added
                 ((MainFrameImpl) frame).removeFromCameraChoices(chaseCameraMI);
             }
             else {
@@ -487,8 +558,11 @@ public class AvatarClientPlugin extends BaseClientPlugin
             frame.addToEditMenu(avatarConfigMI, 0);
             frame.addToPlacemarksMenu(startingLocationMI, 0);
 
-            if (frame instanceof MainFrameImpl) { // Only until the MainFrame interface gets this method
-                ((MainFrameImpl) frame).addToCameraChoices(chaseCameraMI, 3);
+            if (frame instanceof IMIDemoFrame) { // Only until the MainFrame interface gets this method
+                ((IMIDemoFrame) frame).addToCameraChoices(chaseCameraMI, 3);
+                ((IMIDemoFrame) frame).addToAvatarsMenu(maleAvatarMI);
+                ((IMIDemoFrame) frame).addToAvatarsMenu(femaleAvatarMI);
+
             }
             else {
                 frame.addToViewMenu(chaseCameraMI, 3);
