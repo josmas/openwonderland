@@ -21,7 +21,6 @@ import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.IncomingCallHUDPanel;
 
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.CellRenderer;
 
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
@@ -35,7 +34,6 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 
-import imi.character.avatar.Avatar;
 
 import org.jdesktop.wonderland.common.NetworkAddress;
 

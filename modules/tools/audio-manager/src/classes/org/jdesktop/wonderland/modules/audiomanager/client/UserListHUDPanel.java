@@ -64,6 +64,8 @@ import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+import org.jdesktop.wonderland.modules.textchat.client.ChatManager;
 
 /**
  *
@@ -701,6 +703,27 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
 }//GEN-LAST:event_userListValueChanged
 
 private void textChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textChatButtonActionPerformed
+
+    // Fetch the currently selected value in the user list. There should only
+    // be one. Start a chat with that person, if one does not already exist
+    String selectedUser = (String) userList.getSelectedValue();
+    if (selectedUser == null) {
+        logger.warning("No user selected on chat window");
+        return;
+    }
+
+    logger.warning("Selected user is " + selectedUser);
+    String userName = NameTagNode.getUsername(selectedUser);
+    PresenceInfo info = pm.getAliasPresenceInfo(userName);
+    WonderlandIdentity id = info.userID;
+    if (id == null) {
+        logger.warning("No ID found for user " + selectedUser);
+        return;
+    }
+    
+    ChatManager chatManager = ChatManager.getChatManager();
+    String remoteUser = id.getUsername();
+    chatManager.startChat(remoteUser);
 }//GEN-LAST:event_textChatButtonActionPerformed
 
 private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_voiceChatButtonActionPerformed

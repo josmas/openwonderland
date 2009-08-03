@@ -26,7 +26,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -60,8 +59,24 @@ public class ChatManager implements TextChatListener {
     private ServerSessionManager loginInfo = null;
     private SessionLifecycleListener sessionListener = null;
 
-    public ChatManager(final ServerSessionManager loginInfo) {
-        this.loginInfo = loginInfo;
+    /**
+     * Singleton to hold instance of ChatManager. This holder class is loaded
+     * on the first execution of ChatManager.getChatManager().
+     */
+    private static class ChatManagerHolder {
+        private final static ChatManager manager = new ChatManager();
+    }
+
+    /**
+     * Returns a single instance of this class
+     * <p>
+     * @return Single instance of this class.
+     */
+    public static final ChatManager getChatManager() {
+        return ChatManagerHolder.manager;
+    }
+
+    private ChatManager() {
         textChatHUDRefMap = new HashMap();
         textChatPanelRefMap = new HashMap();
 
@@ -94,7 +109,6 @@ public class ChatManager implements TextChatListener {
         // we enable the menu items and set the primary sessions on their
         // objects.
         sessionListener = new SessionLifecycleListener() {
-
             public void sessionCreated(WonderlandSession session) {
                 // Do nothing for now
             }
@@ -103,13 +117,6 @@ public class ChatManager implements TextChatListener {
                 setPrimarySession(session);
             }
         };
-        loginInfo.addLifecycleListener(sessionListener);
-
-        // XXX Check if we already have primary session, should be handled
-        // by addLifecycleListener
-        if (loginInfo.getPrimarySession() != null) {
-            setPrimarySession(loginInfo.getPrimarySession());
-        }
     }
 
     private HUDComponent createTextChatHUD(final String userKey) {
@@ -143,6 +150,20 @@ public class ChatManager implements TextChatListener {
         textChatPanelRefMap.put(textChatHUDComponent, new WeakReference(textChatPanel));
 
         return textChatHUDComponent;
+    }
+
+    /**
+     * Registers the primary session
+     */
+    public void register(ServerSessionManager loginInfo) {
+        this.loginInfo = loginInfo;
+        loginInfo.addLifecycleListener(sessionListener);
+
+        // XXX Check if we already have primary session, should be handled
+        // by addLifecycleListener
+        if (loginInfo.getPrimarySession() != null) {
+            setPrimarySession(loginInfo.getPrimarySession());
+        }
     }
 
     /**
@@ -292,7 +313,7 @@ public class ChatManager implements TextChatListener {
 
         // Otherwise, the "toUser" is for this specific user. We fetch the
         // frame associated with the "from" user. If it exists (which also
-        // means it is visible, then add the message.
+        // means it is visible), then add the message.
         synchronized (textChatHUDRefMap) {
 
             WeakReference<HUDComponent> ref = textChatHUDRefMap.get(fromUser);
@@ -307,6 +328,7 @@ public class ChatManager implements TextChatListener {
             // user, but the frame does not exist, and is not visible. So we
             // create it and add to the map and display it.
             HUDComponent textChatHUDComponent = createTextChatHUD(fromUser);
+            textChatHUDComponent.setName("Text Chat" + " (" + fromUser + ")");
             textChatHUDRefMap.put(fromUser, new WeakReference(textChatHUDComponent));
             TextChatPanel textChatPanel = textChatPanelRefMap.get(textChatHUDComponent).get();
             textChatPanel.setActive(textChatConnection, toUser, fromUser);
