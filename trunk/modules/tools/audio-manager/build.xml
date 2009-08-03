@@ -29,6 +29,7 @@
         <path location="${current.dir}/../../world/avatarbase/build/client/avatarbase-client.jar"/>
         <path location="${current.dir}/../../world/avatarbase/lib/avatars.jar"/>
         <path location="${current.dir}/../orb/build/lib/client/orb-client.jar"/>
+        <path location="${current.dir}/../text-chat/build/client/textchat-client.jar"/>
     </pathconvert>
 
     <!-- import common build file -->

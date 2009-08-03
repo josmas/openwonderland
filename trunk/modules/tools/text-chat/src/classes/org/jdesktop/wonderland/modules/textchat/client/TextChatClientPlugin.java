@@ -38,7 +38,8 @@ public class TextChatClientPlugin extends BaseClientPlugin {
     @Override
     public void activate() {
         // Delegate to the manager class that handles all chat
-        chatManager = new ChatManager(getSessionManager());
+        chatManager = ChatManager.getChatManager();
+        chatManager.register(getSessionManager());
     }
 
     @Override
