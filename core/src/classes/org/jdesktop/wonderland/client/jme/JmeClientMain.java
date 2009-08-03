@@ -46,6 +46,8 @@ import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PhysicsSystem;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
@@ -257,8 +259,14 @@ public class JmeClientMain {
 
         // see if we need to change servers
         if (curSession != null &&
-                serverURL.equals(curSession.getSessionManager().getServerURL())) {
-            curSession.getLocalAvatar().localMoveRequest(translation, look);
+                serverURL.equals(curSession.getSessionManager().getServerURL()))
+        {
+            // no need to change - make a local move request
+            ViewCell vc = curSession.getLocalAvatar().getViewCell();
+            if (vc instanceof AvatarCell) {
+                ((AvatarCell) vc).triggerGoto(translation, look);
+            }
+
         } else {
             loadServer(serverURL, translation, look);
         }
