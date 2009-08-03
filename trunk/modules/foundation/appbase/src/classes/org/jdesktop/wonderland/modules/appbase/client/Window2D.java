@@ -57,6 +57,7 @@ import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
 import java.util.NoSuchElementException;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
 import org.jdesktop.wonderland.client.hud.HUDDisplayable;
 
 /**
@@ -1743,18 +1744,20 @@ public abstract class Window2D implements HUDDisplayable {
      * Perform any pre-processing necessary because a context menu is about
      * to be displayed for this window.
      */
-    public void contextMenuDisplayed(ContextMenuComponent contextMenuComp) {
+    public void contextMenuDisplayed(ContextMenuEvent event, 
+                                     ContextMenuComponent contextMenuComp)
+    {
         // If the window type is PRIMARY/UNKNOWN, then we want to display the
         // standard context menu items, otherwise if secondary, we do not
         switch (type) {
 
             case PRIMARY:
             case UNKNOWN:
-                contextMenuComp.setShowStandardMenuItems(true);
+                event.getSettings().setDisplayStandard(true);
                 break; 
 
             case SECONDARY:
-                contextMenuComp.setShowStandardMenuItems(false);
+                event.getSettings().setDisplayStandard(false);
                 break;
 
             case POPUP:
