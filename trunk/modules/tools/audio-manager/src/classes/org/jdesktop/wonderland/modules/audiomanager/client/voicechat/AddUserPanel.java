@@ -344,10 +344,18 @@ public class AddUserPanel extends javax.swing.JPanel implements
     private void addToUserList(PresenceInfo info) {
         removeFromUserList(info);
 
-        String name = NameTagNode.getDisplayName(info.usernameAlias,
-                info.isSpeaking, info.isMuted);
+        final String name = NameTagNode.getDisplayName(info.usernameAlias,
+            info.isSpeaking, info.isMuted);
 
-        addElement(name);
+	if (info.equals(myPresenceInfo) == false) {
+            addElement(name);
+	} else {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    userListModel.insertElementAt(name, 0);
+                }
+            });
+	}
     }
 
     private void removeFromUserList(PresenceInfo info) {
@@ -552,15 +560,20 @@ public class AddUserPanel extends javax.swing.JPanel implements
                 return renderer;
             }
 
-	    boolean isMember = members.contains(info);
+            renderer.setFont(font);
 
-	    if (isMember) {
-                renderer.setFont(font);
+	    if (mode == Mode.IN_PROGRESS) {
+	        boolean isMember = members.contains(info);
+
+	        if (isMember) {
+                    renderer.setForeground(Color.BLACK);
+                } else {
+                    renderer.setForeground(Color.LIGHT_GRAY);
+                }
+	    } else {
                 renderer.setForeground(Color.BLACK);
-            } else {
-                renderer.setFont(font);
-                renderer.setForeground(Color.LIGHT_GRAY);
-            }
+	    }
+
             return renderer;
         }
     }
