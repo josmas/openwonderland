@@ -56,8 +56,8 @@ public class HUDImageComponent extends HUDComponent2D {
         this.imageIcon = imageIcon;
         if (component == null) {
             component = new JButton(imageIcon);
-            ((JButton)component).setBorderPainted(false);
-            ((JButton)component).setBorder(null);
+            ((JButton) component).setBorderPainted(false);
+            ((JButton) component).setBorder(null);
             ((JButton) component).addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {

@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
@@ -147,10 +146,7 @@ public class WonderlandHUDManager extends HUDManager implements HUDEventListener
      * {@inheritDoc}
      */
     public void relayout(HUD hud) {
-        HUDComponentManager manager = hud.getComponentManager();
-        if (manager != null) {
-            manager.relayout();
-        }
+        // TODO: notify event listeners!
     }
 
     /**
@@ -256,44 +252,49 @@ public class WonderlandHUDManager extends HUDManager implements HUDEventListener
     public void HUDObjectChanged(HUDEvent event) {
         logger.fine("HUDManager received event: " + event);
 
-        HUD hud = (HUD) event.getObject();
+        if (event.getObject() instanceof HUD) {
+            HUD hud = (HUD) event.getObject();
 
-        switch (event.getEventType()) {
-            case CREATED:
-                break;
-            case APPEARED:
-                hudVisible(hud);
-                break;
-            case APPEARED_WORLD:
-                break;
-            case DISAPPEARED:
-                hudInvisible(hud);
-                break;
-            case DISAPPEARED_WORLD:
-                break;
-            case CHANGED_MODE:
-                break;
-            case MOVED:
-                break;
-            case MOVED_WORLD:
-                break;
-            case RESIZED:
-                hudResized(hud);
-                break;
-            case MINIMIZED:
-                break;
-            case MAXIMIZED:
-                break;
-            case ICONIFIED:
-                break;
-            case ENABLED:
-                break;
-            case DISABLED:
-            case CHANGED_TRANSPARENCY:
-                break;
-            default:
-                logger.info("TODO: handle HUD event type: " + event.getEventType());
-                break;
+            switch (event.getEventType()) {
+                case ADDED:
+                    break;
+                case REMOVED:
+                    break;
+                case APPEARED:
+                    hudVisible(hud);
+                    break;
+                case APPEARED_WORLD:
+                    break;
+                case DISAPPEARED:
+                    hudInvisible(hud);
+                    break;
+                case DISAPPEARED_WORLD:
+                    break;
+                case CHANGED_MODE:
+                    break;
+                case MOVED:
+                    break;
+                case MOVED_WORLD:
+                    break;
+                case RESIZED:
+                    hudResized(hud);
+                    break;
+                case MINIMIZED:
+                    break;
+                case MAXIMIZED:
+                    break;
+                case ENABLED:
+                    break;
+                case DISABLED:
+                    break;
+                case CHANGED_TRANSPARENCY:
+                    break;
+                case CLOSED:
+                    break;
+                default:
+                    logger.info("TODO: handle HUD event type: " + event.getEventType());
+                    break;
+            }
         }
     }
 }

@@ -35,15 +35,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDLayoutManager;
@@ -57,8 +54,6 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
-import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
-
 
 /**
  * A WonderlandHUDComponentManager manages a set of HUDComponents.
@@ -70,33 +65,33 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
  * @author nsimpson
  */
 public class WonderlandHUDComponentManager implements HUDComponentManager,
-        HUDEventListener, ActionListener, MouseMotionListener {
+        ActionListener, MouseMotionListener {
 
     private static final Logger logger = Logger.getLogger(WonderlandHUDComponentManager.class.getName());
-    private HUD hud;
+    protected HUD hud;
     // a mapping between HUD components and their states
-    private Map<HUDComponent, HUDComponentState> hudStateMap;
+    protected Map<HUDComponent, HUDComponentState> hudStateMap;
     // a mapping between frames and HUD components
-    private Map<HUDFrameHeader2D, HUDComponent> hudFrameMap;
+    protected Map<HUDFrameHeader2D, HUDComponent> hudFrameMap;
     // the layout manager for the HUD
-    private HUDLayoutManager layout;
+    protected HUDLayoutManager layout;
     // displays HUD components on the glass
-    private HUDView2DDisplayer hudDisplayer;
+    protected HUDView2DDisplayer hudDisplayer;
     // displays HUD components in-world, associated with some cell
-    private HUDView3DDisplayer worldDisplayer;
+    protected HUDView3DDisplayer worldDisplayer;
     //
-    private HUDApp2D hudApp;
-    private Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
-    private Vector2f worldPixelScale = new Vector2f(0.013f, 0.013f);
-    private boolean dragging = false;
-    private int dragX = 0;
-    private int dragY = 0;
-    private static final float DEFAULT_FOCUSED_TRANSPARENCY = 0.0f;
-    private static final float DEFAULT_UNFOCUSED_TRANSPARENCY = 0.2f;
-    private static final String DEFAULT_HUD_ICON = "/org/jdesktop/wonderland/modules/hud/client/resources/GenericWindow32x32.png";
+    protected HUDApp2D hudApp;
+    protected Vector2f hudPixelScale = new Vector2f(0.75f, 0.75f);
+    protected Vector2f worldPixelScale = new Vector2f(0.013f, 0.013f);
+    protected boolean dragging = false;
+    protected int dragX = 0;
+    protected int dragY = 0;
+    protected static final float DEFAULT_FOCUSED_TRANSPARENCY = 0.0f;
+    protected static final float DEFAULT_UNFOCUSED_TRANSPARENCY = 0.2f;
+    protected static final String DEFAULT_HUD_ICON = "/org/jdesktop/wonderland/modules/hud/client/resources/GenericWindow32x32.png";
     // TODO: set these from user properties
-    private float focusedTransparency = DEFAULT_FOCUSED_TRANSPARENCY;
-    private float unfocusedTransparency = DEFAULT_UNFOCUSED_TRANSPARENCY;
+    protected float focusedTransparency = DEFAULT_FOCUSED_TRANSPARENCY;
+    protected float unfocusedTransparency = DEFAULT_UNFOCUSED_TRANSPARENCY;
 
     public WonderlandHUDComponentManager(HUD hud) {
         this.hud = hud;
@@ -323,11 +318,14 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    private void componentVisible(HUDComponent2D component) {
+    protected void componentVisible(HUDComponent2D component) {
         logger.info("showing HUD component on HUD: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
+        if (state == null) {
+            return;
+        }
         if (state.isVisible()) {
             //return;
         }
@@ -446,11 +444,14 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    private void componentInvisible(HUDComponent2D component) {
+    protected void componentInvisible(HUDComponent2D component) {
         logger.info("hiding HUD component on HUD: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
+        if (state == null) {
+            return;
+        }
         if (!state.isVisible()) {
             return;
         }
@@ -467,7 +468,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    private void componentWorldVisible(HUDComponent2D component) {
+    protected void componentWorldVisible(HUDComponent2D component) {
         logger.info("showing HUD component in world: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
@@ -504,7 +505,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    private void componentWorldInvisible(HUDComponent2D component) {
+    protected void componentWorldInvisible(HUDComponent2D component) {
         logger.info("hiding HUD component in world: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
@@ -525,7 +526,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    private void componentMoved(HUDComponent2D component) {
+    protected void componentMoved(HUDComponent2D component) {
         logger.finest("moving component to: " + component.getX() + ", " + component.getY());
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         HUDView2D view = state.getView();
@@ -536,7 +537,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    private void componentMovedWorld(HUDComponent2D component) {
+    protected void componentMovedWorld(HUDComponent2D component) {
         logger.finest("moving HUD component in world: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
@@ -548,7 +549,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    private void componentResized(HUDComponent2D component) {
+    protected void componentResized(HUDComponent2D component) {
         logger.finest("resizing HUD component: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
@@ -566,7 +567,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    private void componentViewChanged(HUDComponent2D component) {
+    protected void componentViewChanged(HUDComponent2D component) {
         logger.fine("changing HUD component view: " + component);
 
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
@@ -583,63 +584,38 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    private void componentMinimized(final HUDComponent2D component) {
+    protected void componentMinimized(final HUDComponent2D component) {
         logger.fine("minimizing HUD component: " + component);
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
         if (state != null) {
-            HUD iconbarHUD = HUDManagerFactory.getHUDManager().getHUD("iconbar");
-
-            HUDImageComponent icon = state.getIcon();
-            if (icon == null) {
-                ImageIcon imageIcon = component.getIcon();
-                if (imageIcon == null) {
-                    imageIcon = new ImageIcon(getClass().getResource(DEFAULT_HUD_ICON));
-                }
-                icon = (HUDImageComponent) iconbarHUD.createImageComponent(imageIcon);
-                icon.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        component.setMaximized();
-                    }
-                });
-                state.setIcon(icon);
-                iconbarHUD.addComponent(icon);
-            }
-            // hide the HUD component
-            component.setVisible(false);
-            // display its icon component
-            icon.setVisible(true);
+            //component.setVisible(false);
         }
     }
 
-    private void componentMaximized(HUDComponent2D component) {
+    protected void componentMaximized(HUDComponent2D component) {
         logger.fine("maximizing HUD component: " + component);
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
 
         if (state != null) {
-            HUDImageComponent icon = state.getIcon();
-            if (icon != null) {
-                // hide the icon component
-                icon.setVisible(false);
-                // display its HUD component
-                component.setVisible(true);
-            }
+            //component.setVisible(true);
         }
     }
 
-    private void componentClosed(HUDComponent2D component) {
+    protected void componentClosed(HUDComponent2D component) {
         logger.fine("closing HUD component: " + component);
     }
 
-    private void componentTransparencyChanged(HUDComponent2D component) {
+    protected void componentTransparencyChanged(HUDComponent2D component) {
         //logger.fine("changing transparency of: " + component);
         float transparency = component.getTransparency();
         setTransparency(component, transparency);
         HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
-        HUDView2D frameView = state.getFrameView();
-        if (frameView != null) {
-            setTransparency(frameView, transparency);
+        if (state != null) {
+            HUDView2D frameView = state.getFrameView();
+            if (frameView != null) {
+                setTransparency(frameView, transparency);
+            }
         }
     }
 
@@ -647,52 +623,63 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
      * {@inheritDoc}
      */
     public void HUDObjectChanged(HUDEvent event) {
-        HUDComponent2D comp = (HUDComponent2D) event.getObject();
         logger.finest("HUD object changed: " + event);
+        if (event.getObject() instanceof HUDComponent2D) {
+            HUDComponent2D comp = (HUDComponent2D) event.getObject();
 
-        switch (event.getEventType()) {
-            case APPEARED:
-                componentVisible(comp);
-                break;
-            case DISAPPEARED:
-                componentInvisible(comp);
-                break;
-            case APPEARED_WORLD:
-                componentWorldVisible(comp);
-                break;
-            case DISAPPEARED_WORLD:
-                componentWorldInvisible(comp);
-                break;
-            case MOVED:
-                componentMoved(comp);
-                break;
-            case MOVED_WORLD:
-                componentMovedWorld(comp);
-                break;
-            case CHANGED_MODE:
-                componentViewChanged(comp);
-                break;
-            case MINIMIZED:
-                componentMinimized(comp);
-                break;
-            case MAXIMIZED:
-                componentMaximized(comp);
-                break;
-            case CLOSED:
-                componentClosed(comp);
-                break;
-            case CHANGED_TRANSPARENCY:
-                componentTransparencyChanged(comp);
-                break;
-            case RESIZED:
-                componentResized(comp);
-                break;
-            case CREATED:
-            case ICONIFIED:
-            case ENABLED:
-            case DISABLED:
-                logger.info("TODO: handle HUD event type: " + event.getEventType());
-                break;
+            switch (event.getEventType()) {
+                case ADDED:
+                    // event generated by HUD
+                    addComponent(comp);
+                    break;
+                case REMOVED:
+                    // event generated by HUD
+                    removeComponent(comp);
+                    break;
+                case APPEARED:
+                    componentVisible(comp);
+                    break;
+                case APPEARED_WORLD:
+                    componentWorldVisible(comp);
+                    break;
+                case DISAPPEARED:
+                    componentInvisible(comp);
+                    break;
+                case DISAPPEARED_WORLD:
+                    componentWorldInvisible(comp);
+                    break;
+                case CHANGED_MODE:
+                    componentViewChanged(comp);
+                    break;
+                case MOVED:
+                    componentMoved(comp);
+                    break;
+                case MOVED_WORLD:
+                    componentMovedWorld(comp);
+                    break;
+                case RESIZED:
+                    componentResized(comp);
+                    break;
+                case MINIMIZED:
+                    componentMinimized(comp);
+                    break;
+                case MAXIMIZED:
+                    componentMaximized(comp);
+                    break;
+                case ENABLED:
+                    break;
+                case DISABLED:
+                    break;
+                case CHANGED_TRANSPARENCY:
+                    componentTransparencyChanged(comp);
+                    break;
+                case CLOSED:
+                    componentClosed(comp);
+                    break;
+                default:
+                    logger.info("TODO: handle HUD event type: " + event.getEventType());
+                    break;
+            }
         }
     }
 

@@ -59,6 +59,7 @@ public class HUDObject2D implements HUDObject {
     protected List<HUDEventListener> listeners;
     protected HUDEvent event;
     private final Object listenerLock = new Object();
+    private boolean notifying;
 
     public HUDObject2D() {
         listeners = Collections.synchronizedList(new ArrayList());
@@ -465,12 +466,13 @@ public class HUDObject2D implements HUDObject {
     /**
      * {@inheritDoc}
      */
-    public void notifyEventListeners(HUDEvent event) {
-        List<HUDEventListener> notifiees = getEventListeners();
-        if (notifiees != null) {
-            HUDEventListener[] notify = notifiees.toArray(new HUDEventListener[0]);
+    public synchronized void notifyEventListeners(final HUDEvent event) {
+        if (listeners != null) {
+            notifying = true;
+            HUDEventListener[] notify = listeners.toArray(new HUDEventListener[listeners.size()]);
             for (int i = 0; i < notify.length; i++) {
-                HUDEventListener notifiee = notify[i];
+                final HUDEventListener notifiee = notify[i];
+                logger.finest("--- notifying [" + i + "]: " + notifiee);
                 notifiee.HUDObjectChanged(event);
             }
             notify = null;

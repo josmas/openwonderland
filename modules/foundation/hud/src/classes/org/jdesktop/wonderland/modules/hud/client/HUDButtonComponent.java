@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
  */
 public class HUDButtonComponent extends HUDComponent2D implements HUDButton {
 
-    private List<ActionListener> listeners;
+    private List<ActionListener> actionListeners;
     private JButton button;
 
     public HUDButtonComponent() {
@@ -76,21 +76,21 @@ public class HUDButtonComponent extends HUDComponent2D implements HUDButton {
     }
 
     public void addActionListener(ActionListener listener) {
-        if (listeners == null) {
-            listeners = Collections.synchronizedList(new ArrayList());
+        if (actionListeners == null) {
+            actionListeners = Collections.synchronizedList(new ArrayList());
         }
-        listeners.add(listener);
+        actionListeners.add(listener);
     }
 
     public void removeActionListener(ActionListener listener) {
-        if (listeners != null) {
-            listeners.remove(listener);
+        if (actionListeners != null) {
+            actionListeners.remove(listener);
         }
     }
 
     private void notifyListeners(ActionEvent event) {
         if (listeners != null) {
-            Iterator<ActionListener> iter = listeners.iterator();
+            Iterator<ActionListener> iter = actionListeners.iterator();
             while (iter.hasNext()) {
                 ActionListener notifiee = iter.next();
                 notifiee.actionPerformed(event);

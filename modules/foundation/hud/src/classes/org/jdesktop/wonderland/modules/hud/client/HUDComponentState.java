@@ -45,7 +45,7 @@ public class HUDComponentState {
 
     public enum HUDComponentVisualState {
 
-        MINIMIZED, NORMAL, MAXIMIZED, ICONIFIED
+        MINIMIZED, NORMAL, MAXIMIZED
     };
 
     public HUDComponentState(HUDComponent component) {
