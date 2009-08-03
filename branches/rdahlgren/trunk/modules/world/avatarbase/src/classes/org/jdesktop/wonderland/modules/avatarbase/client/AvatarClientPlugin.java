@@ -76,6 +76,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.AvatarSessionLoader.Sta
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatar;
 import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarConfigManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiDemoAvatarFactory;
 import org.jdesktop.wonderland.modules.avatarbase.client.imi.WonderlandCharacterParams;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.FlexibleCameraAdapter;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarCollisionChangeRequestEvent;
@@ -175,11 +176,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
                                 logger.info("Cell renderer was null, could not bring up LoadingInfo dialog.");
                             // create a character params object using this name
                             ImiAvatar avatar = new ImiAvatar(avatarName, 0);
-                            // create a wl param object and configure it to match our version
-                            WonderlandCharacterParams wlParams = WonderlandCharacterParams.loadMale();
-                            wlParams.setCharacterParams(new MaleAvatarParams(avatarName).build(true));
-                            // Set these params
-                            avatar.setAvatarParams(wlParams);
+                            avatar.setAvatarParams(ImiDemoAvatarFactory.getNextFemaleParams());
                             // Register the avatar
                             registry.registerAvatar(avatar, true);
                             // Save the avatar (this puts it on the server)
@@ -218,11 +215,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
                             
                             // create a character params object using this name
                             ImiAvatar avatar = new ImiAvatar(avatarName, 0);
-                            // create a wl param object and configure it to match our version
-                            WonderlandCharacterParams wlParams = WonderlandCharacterParams.loadFemale();
-                            wlParams.setCharacterParams(new FemaleAvatarParams(avatarName).build(true));
-                            // Set these params
-                            avatar.setAvatarParams(wlParams);
+                            avatar.setAvatarParams(ImiDemoAvatarFactory.getNextFemaleParams());
                             // Register the avatar
                             registry.registerAvatar(avatar, true);
                             // Save the avatar (this puts it on the server)
@@ -401,6 +394,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
             worldManager.addUserData(Repository.class, new Repository(worldManager,
                     new WonderlandAvatarCache(url.toExternalForm(),
                     ClientContext.getUserDirectory(bundle.getString("AvatarCache")))));
+            imi.character.AvatarSystem.initialize(worldManager);
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "Unable to form avatar base URL", excp);
         }

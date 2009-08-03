@@ -232,7 +232,8 @@ public class ImiAvatar implements AvatarSPI {
     /**
      * Returns the avatar character given the set of parameters.
      */
-    public static WlAvatarCharacter getAvatarCharacter(WonderlandCharacterParams params) {
+    public static WlAvatarCharacter getAvatarCharacter(WonderlandCharacterParams params)
+    {
         // Generate the base url for the avatar configuration. We must annotate
         // the base URL.
         String baseURL = null;

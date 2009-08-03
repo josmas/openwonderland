@@ -151,6 +151,7 @@ public class WonderlandCharacterParams implements Cloneable {
     private void setAsPreset(CharacterParams params, ConfigType type) {
         String presetName = params.getMetaData().get(type.toString());
         if (presetName == null) {
+            // This happens everytime, because the metadata table is empty
             logger.warning("No preset found for config type " + type);
             setElement(type, 0);
             return;

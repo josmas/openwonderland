@@ -56,8 +56,6 @@ public class PaletteClientPlugin extends BaseClientPlugin
         // users create new cells.  The menu will be added when our server
         // becomes primary.
         editorMI = new JMenuItem("Cell Editor");
-        // IMI_HACK_FILTER
-        editorMI.setActionCommand("IMI_HACK_FILTER");
         editorMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 CellPropertiesJFrame frame = getCellPropertiesJFrame();
