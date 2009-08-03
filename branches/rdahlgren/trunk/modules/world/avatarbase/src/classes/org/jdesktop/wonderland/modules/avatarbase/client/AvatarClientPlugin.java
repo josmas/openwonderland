@@ -21,6 +21,7 @@ import com.jme.math.Vector3f;
 import imi.camera.CameraModels;
 import imi.camera.ChaseCamModel;
 import imi.camera.ChaseCamState;
+import imi.character.AvatarSystem;
 import imi.character.avatar.Avatar;
 import imi.character.behavior.CharacterBehaviorManager;
 import imi.character.behavior.GoTo;
@@ -149,6 +150,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
      */
     @Override
     public void initialize(ServerSessionManager manager) {
+        AvatarSystem.initialize(ClientContextJME.getWorldManager());
         loaderMap = new HashMap();
 
         // A listener for changes to the primary view cell renderer. (This
