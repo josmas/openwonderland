@@ -87,7 +87,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.registry.AvatarRegistry
 import org.jdesktop.wonderland.modules.avatarbase.client.registry.spi.AvatarSPI;
 import org.jdesktop.wonderland.modules.avatarbase.client.ui.AvatarConfigFrame;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
-
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 /**
  * A client-side plugin to initialize the avatar system
  *
