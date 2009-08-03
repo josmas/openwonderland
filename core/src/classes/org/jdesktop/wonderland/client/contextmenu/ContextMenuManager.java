@@ -22,12 +22,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.PrimaryServerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
@@ -146,25 +146,12 @@ public class ContextMenuManager {
      *
      * @param event The ContextEvent that caused the menu to be displayed
      */
-    public void fireContextMenuEvent(ContextEvent event) {
+    public void fireContextMenuEvent(ContextMenuEvent event) {
         synchronized (listeners) {
-            for (ContextMenuListener listener : listeners) {
-                listener.contextMenuDisplayed(event);
-            }
+          final Cell cell = event.getPrimaryCell();
+          for (ContextMenuListener listener : listeners) {
+              listener.contextMenuDisplayed(event);
+          }
         }
-    }
-
-    /**
-     * Listener interface for an event when the context menu is about to be
-     * displayed. This is used if any threads wants to do special processing
-     * before the menu is displayed.
-     */
-    public interface ContextMenuListener {
-        /**
-         * Indicates that the context menu is about to be displayed.
-         *
-         * @param event The ContextEvent that caused the menu to be displayed
-         */
-        public void contextMenuDisplayed(ContextEvent event);
     }
 }
