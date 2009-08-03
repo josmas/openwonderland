@@ -41,6 +41,8 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuInvocationSettings;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem.MenuItemRepaintListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
@@ -143,55 +145,73 @@ public class SwingContextMenu implements MenuItemRepaintListener {
         menuItemMap.clear();
         reverseMenuMap.clear();
 
-        // Add the name of the cell as the header of the menu
+        
+        // create new ContextMenuEvent
+        ContextMenuEvent ctxEvent = new ContextMenuEvent(event, cell);
+
+        // Tell the context menu listeners that we are about to display a
+        // context menu, giving listeners an opportunity to make adjustments
+        ContextMenuManager.getContextMenuManager().fireContextMenuEvent(ctxEvent);
+
+        // get the settings from the event, possibly adjusted by listeners
+        ContextMenuInvocationSettings settings = ctxEvent.getSettings();
+        // Adjust name of menu (by default, this is the cell's name)
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         titlePanel.setBackground(WL_BLUE);
-        JLabel title = new JLabel("<html><b>" + cell.getName() + "</b></html>");
+        JLabel title = new JLabel("<html><b>" + settings.getMenuName() + "</b></html>");
         title.setForeground(Color.WHITE);
         title.setBackground(Color.GRAY);
         titlePanel.add(title);
         contextPanel.add(titlePanel);
         contextPanel.invalidate();
-
-        // Tell the context menu listeners that we are about to display a
-        // context menu
-        ContextMenuManager.getContextMenuManager().fireContextMenuEvent(event);
         
-        // Look for the context component on the current Cell, we need to find
-        // out whether we want to show the standard menu items.
-        ContextMenuComponent cmc = cell.getComponent(ContextMenuComponent.class);
-        boolean showStandardMenuItems = true;
-        if (cmc != null) {
-            showStandardMenuItems = cmc.isShowStandardMenuItems();
-        }
+        
 
-        // Fetch the manager of the context menu and all of the factories
-        // that generate menu items.
+        // Fetch the manager of the context menu
         ContextMenuManager cmm = ContextMenuManager.getContextMenuManager();
-        List<ContextMenuFactorySPI> factoryList = cmm.getContextMenuFactoryList();
-
-        // For each of the factories, loop through each of its items and
-        // add to the menu
-        if (showStandardMenuItems == true) {
-            for (ContextMenuFactorySPI factory : factoryList) {
-                ContextMenuItem items[] = factory.getContextMenuItems(event);
-                for (ContextMenuItem item : items) {
-                    addContextMenuItem(item, cell);
-                }
-            }
+        
+        // fetch context menu component
+        ContextMenuComponent cmc = cell.getComponent(ContextMenuComponent.class);
+        
+        // show standard menu items?
+        if (settings.isDisplayStandard() == true) {
+          // fetch standard items from CMM
+          List<ContextMenuFactorySPI> factoryList = cmm.getContextMenuFactoryList();
+          // add each item to the menu
+          for (ContextMenuFactorySPI factory : factoryList) {
+              ContextMenuItem items[] = factory.getContextMenuItems(event);
+              for (ContextMenuItem item : items) {
+                  addContextMenuItem(item, cell);
+              }
+          }
         }
 
-        // Look for the context component and add its items from the registered
-        // factories
-        if (cmc != null) {
-            ContextMenuFactorySPI factories[] = cmc.getContextMenuFactories();
-            for (ContextMenuFactorySPI factory : factories) {
-                ContextMenuItem items[] = factory.getContextMenuItems(event);
-                for (ContextMenuItem item : items) {
-                    addContextMenuItem(item, cell);
-                }
-            }
+        // show cell-specific standard items?
+        if (settings.isDisplayCellStandard() && cmc != null) {
+          // fetch standard factories from CMC
+          ContextMenuFactorySPI factories[] = cmc.getContextMenuFactories();
+          // add each item to the menu
+          for (ContextMenuFactorySPI factory : factories) {
+              ContextMenuItem items[] = factory.getContextMenuItems(event);
+              for (ContextMenuItem item : items) {
+                  addContextMenuItem(item, cell);
+              }
+          }
+        }
+
+        // show temporary items?
+
+        if (settings.isDisplayTemporaryFactories()) {
+          // fetch standard factories from CMC
+          List<ContextMenuFactorySPI> factoryList = settings.getFactoryList();
+          // add each item to the menu
+          for (ContextMenuFactorySPI factory : factoryList) {
+              ContextMenuItem items[] = factory.getContextMenuItems(event);
+              for (ContextMenuItem item : items) {
+                  addContextMenuItem(item, cell);
+              }
+          }
         }
     }
 

@@ -44,8 +44,9 @@ import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager.ContextMenuListener;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -205,7 +206,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                     // menu is displayed
                     if (menuListener == null) {
                         menuListener = new ContextMenuListener() {
-                            public void contextMenuDisplayed(ContextEvent event) {
+                            public void contextMenuDisplayed(ContextMenuEvent event) {
                                 windowMenuDisplayed(event, contextMenuComp);
                             }
                         };
@@ -250,13 +251,11 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * Performs any special pre-processing when a context menu is about to
      * be displayed
      */
-   private void windowMenuDisplayed (ContextEvent event,
+   private void windowMenuDisplayed (ContextMenuEvent event,
                                      ContextMenuComponent contextMenuComp) {
-        if (event instanceof Window2D.WindowContextMenuEvent) {
-            Window2D.WindowContextMenuEvent windowMenuEvent = (Window2D.WindowContextMenuEvent) event;
-            windowMenuEvent.getWindow().contextMenuDisplayed(contextMenuComp);
-        } else {
-            contextMenuComp.setShowStandardMenuItems(true);
+        if (event.getSource() instanceof Window2D.WindowContextMenuEvent) {
+            Window2D.WindowContextMenuEvent windowMenuEvent = (Window2D.WindowContextMenuEvent) event.getSource();
+            windowMenuEvent.getWindow().contextMenuDisplayed(event, contextMenuComp);
         }
     }
    
