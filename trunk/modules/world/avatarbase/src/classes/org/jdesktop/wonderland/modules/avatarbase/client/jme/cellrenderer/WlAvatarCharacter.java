@@ -72,11 +72,11 @@ public class WlAvatarCharacter extends Avatar {
          */
         @Override
         public WlAvatarCharacter build() {
-            if (attributeParams != null && !attributeParams.isUseSimpleStaticModel())
-            {
-                System.out.println("\n\nInitializing collision component IMI\n\n");
-                initializer(new CharacterCollisionInitialization(true, false, false, false)); // disables picking and gravity
-            }
+//            if (attributeParams != null && !attributeParams.isUseSimpleStaticModel())
+//            {
+//                System.out.println("\n\nInitializing collision component IMI\n\n");
+//                initializer(new CharacterCollisionInitialization(true, false, false, false)); // disables picking and gravity
+//            }
             WlAvatarCharacter result = new WlAvatarCharacter(this);
             return result;
         }

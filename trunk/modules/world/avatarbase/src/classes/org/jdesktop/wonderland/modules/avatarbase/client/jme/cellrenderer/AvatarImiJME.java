@@ -612,7 +612,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
         // Set up the collision for the avatar
-        setCollisionController(ret);
+        //setCollisionController(ret);
 
         return ret;
     }
