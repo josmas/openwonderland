@@ -396,7 +396,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
         String serverHostAndPort = manager.getServerNameAndPort();
         String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
         Environments.createBZOBJS(ClientContextJME.getWorldManager(), baseURL);
-        new imi.objects.AvatarsNPCsDemo(ClientContextJME.getWorldManager(), new Vector3f(7.0f, -9.1f, 13.0f), baseURL);
+        //new imi.objects.AvatarsNPCsDemo(ClientContextJME.getWorldManager(), new Vector3f(7.0f, -9.1f, 13.0f), baseURL);
 //        AvatarObjectCollection objects = new AvatarObjectCollection("WL Objects", ClientContextJME.getWorldManager());
 //        objects.addChair(new Vector3f(0.0f, 0.0f, 0.0f), new Vector3f(1.0f, 0.0f, 0.0f), baseURL);
 //        objects.addChair(new Vector3f(1.0f, 0.0f, 0.0f), new Vector3f(1.0f, 0.0f, 0.0f), baseURL);
