@@ -33,7 +33,7 @@
                     <td><input type="text" name="url"/></td>
                 </tr>
                 <tr>
-                    <td>Z:</td>
+                    <td>X:</td>
                     <td><input type="text" name="x"/> (meters)</td>
                 </tr>
                 <tr>
