@@ -104,4 +104,10 @@ public class CameraProcessor extends ProcessorComponent {
             pendingController = cameraController;
         }
     }
+
+    public CameraController getCameraController() {
+        synchronized (this) {
+            return pendingController;
+        }
+    }
 }

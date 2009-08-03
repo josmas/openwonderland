@@ -22,6 +22,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 
 /**
  * An interface for interacting with the main JME frame
@@ -238,6 +239,20 @@ public interface MainFrame {
      * @param desiredFrameRate the desired frame rate in frames per second
      */
     public void setDesiredFrameRate(int desiredFrameRate);
+
+    /**
+     * Add a camera menu item to the View menu at the specified index, where -1 adds
+     * to the end of the menu
+     * @param cameraMenuItem the menu item to activate this camera.  The menu item
+     * should have a listener that activates the given camera on selection.
+     */
+    public void addToCameraChoices(JRadioButtonMenuItem cameraMenuItem, int index);
+
+     /**
+     * Removes the specified camera choice
+     * @param menuItem the previously-added camera choice
+     */
+    public void removeFromCameraChoices(JRadioButtonMenuItem menuItem);
 
     /**
      * A listener that will be notified when the server URL changes
