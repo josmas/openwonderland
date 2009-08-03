@@ -236,6 +236,8 @@ public class AvatarClientPlugin extends BaseClientPlugin
                             logger.warning("Caught IOException while trying to load a male avatar! " + ex.getMessage());
                         } catch (JAXBException ex) {
                             logger.warning("Caught a JAXB exception while saving the avatar. " + ex.getMessage());
+                        } catch (ContentRepositoryException ex) {
+                            logger.warning("Content repo ex");
                         }
                     }
                 }).start();
@@ -285,6 +287,8 @@ public class AvatarClientPlugin extends BaseClientPlugin
                             logger.warning("Caught IOException while trying to load a female avatar! " + ex.getMessage());
                         } catch (JAXBException ex) {
                             logger.warning("Caught a JAXB exception while saving the avatar. " + ex.getMessage());
+                        } catch (ContentRepositoryException ex) {
+                            logger.warning("Content repo ex");
                         }
                     }
                 }).start();
