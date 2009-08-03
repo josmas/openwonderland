@@ -118,7 +118,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     private float positionMaxDistanceForPull = 3.0f;
     private String username;
     private DefaultCharacterControls controlScheme = null;
-    private NameTagNode nameTag;
 
     private ProcessorComponent cameraChainedProcessor = null;  // The processor to which the camera is chained
 
@@ -126,7 +125,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
     private Entity rootEntity = null;
 
-    private CollisionController collisionController = null;
     private CollisionChangeRequestListener collisionChangeRequestListener;
     
     /** Collection of listeners **/
@@ -208,14 +206,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 if (event instanceof AvatarNameEvent) {
                     AvatarNameEvent e = (AvatarNameEvent) event;
 
-                    if (e.getUsername().equals(username)) {
-                        if (nameTag == null) {
-                            logger.warning("[AvatarImiJME] warning: setting " +
-                                "avatar name when name tag is null. " + e);
-                            return;
-                        }
-
-                        nameTag.setNameTag(e.getEventType(), username, 
+                    // Fetch the name tag node, there should only be one of
+                    // these in the system and set the name.
+                    NameTagNode nameTagNode = getNameTagNode();
+                    if (e.getUsername().equals(username) == true) {
+                        nameTagNode.setNameTag(e.getEventType(), username,
                                            e.getUsernameAlias(),
                                            e.getForegroundColor(), e.getFont());
                     }
@@ -354,78 +349,83 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     /**
-     * Change the current avatar to the newAvatar
-     * XXX Does this need to happen in a render thread? XXX
-     * @param newAvatar
+     * Change the current avatar to the given avatar.
+     *
+     * NOTE: This method must be called in the MT Game Render Thread. As such,
+     * we assume only one of these methods is called at a time.
+     *
+     * @param newAvatar The new avatar to change to.
      */
     private void changeAvatarInternal(WlAvatarCharacter newAvatar) {
-        
-        synchronized(this) {
-            WorldManager wm = ClientContextJME.getWorldManager();
 
-            LoadingInfo.startedLoading(cell.getCellID(), newAvatar.getName());
+        // Turn on an indication that the avatar is being loaded
+        LoadingInfo.startedLoading(cell.getCellID(), newAvatar.getName());
 
-            PMatrix currentLocation = null;
+        // Fetch the name tag node. There should be only one of these in the
+        // system.
+        Node nameTagNode = getNameTagNode();
 
-            if (avatarCharacter != null) {
-                currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
-                rootEntity.removeEntity(avatarCharacter);
-                if (nameTag!=null) { // THis must be done after the entity is no longer live
-                    avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTag);
-                }
-
-                enableInputListeners(false);
-                avatarCharacter.destroy();
-            }
-
-            avatarCharacter = newAvatar;
-
-            if (newAvatar==null)
-                return;
-
-            RenderComponent rc = (RenderComponent) avatarCharacter.getComponent(RenderComponent.class);
-
-            if (rc != null) {
-                addDefaultComponents(avatarCharacter, rc.getSceneRoot());
-                avatarCharacter.removeComponent(CollisionComponent.class); // We don't want collision as we use the collision graph
-            } else {
-                logger.warning("NO RenderComponent for Avatar");
-            }
-
-            if (currentLocation != null && avatarCharacter.getModelInst()!=null) {
-                avatarCharacter.getModelInst().setTransform(new PTransform(currentLocation));
-            }
-
-            if (nameTag!=null) {
-                avatarCharacter.getJScene().getExternalKidsRoot().attachChild(nameTag);
-            }
-
-            rootEntity.addEntity(avatarCharacter);
-
-            selectForInput(selectedForInput);
-            
-            // Notify listeners
-            for (WeakReference<AvatarChangedListener> listenerRef : avatarChangedListeners) {
-                AvatarChangedListener listener = listenerRef.get();
-                if (listener != null)
-                    listener.avatarChanged(avatarCharacter);
-                else
-                    avatarChangedListeners.remove(listenerRef);
-            }
-            // update the bounds if necessary
-            if (avatarCharacter.getJScene() != null) {
-                // Some of these ops must be done on the render thread
-                ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-                    public void update(Object arg0) {
-                        avatarCharacter.getPScene().submitTransformsAndGeometry(true); // Make sure the geometry is attached to the jscene
-                        avatarCharacter.getJScene().setModelBound(new BoundingSphere()); // No more null bounding volumes
-                        avatarCharacter.getJScene().updateModelBound();
-                        avatarCharacter.getJScene().updateWorldBound();
-                    }
-                }, null);
-            }
-            LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
+        // If there is an existing avatar character, then remove it, but store
+        // away its position. Remove the name tag, turn off input and destroy
+        // the avatar character.
+        PMatrix currentLocation = null;
+        if (avatarCharacter != null) {
+            currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
+            rootEntity.removeEntity(avatarCharacter);
+            avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTagNode);
+            enableInputListeners(false);
+            avatarCharacter.destroy();
         }
+
+        // Set the new avatar character. If there is none (when would that happen?)
+        // then just return.
+        avatarCharacter = newAvatar;
+        if (newAvatar == null) {
+            return;
+        }
+
+        // Add all of the default components to the renderer, but remove the
+        // collision component, since we use our own collision graph
+        RenderComponent rc = (RenderComponent) avatarCharacter.getComponent(RenderComponent.class);
+        addDefaultComponents(avatarCharacter, rc.getSceneRoot());
+        avatarCharacter.removeComponent(CollisionComponent.class);
+
+        // Set the initial location of the avatar if there is one
+        if (currentLocation != null && avatarCharacter.getModelInst() != null) {
+            avatarCharacter.getModelInst().setTransform(new PTransform(currentLocation));
+        }
+
+        // Attach the name tag to the new avatar and add the avatar entity to
+        // the cell renderer root entity and turn on input.
+        Node externalRoot = avatarCharacter.getJScene().getExternalKidsRoot();
+        externalRoot.attachChild(nameTagNode);
+        externalRoot.setModelBound(new BoundingSphere());
+        externalRoot.updateModelBound();
+        externalRoot.updateGeometricState(0, true);
+        rootEntity.addEntity(avatarCharacter);
+        selectForInput(selectedForInput);
+
+        // Notify listeners that the avatar has changed.
+        for (WeakReference<AvatarChangedListener> listenerRef : avatarChangedListeners) {
+            AvatarChangedListener listener = listenerRef.get();
+            if (listener != null) {
+                listener.avatarChanged(avatarCharacter);
+            }
+            else {
+                avatarChangedListeners.remove(listenerRef);
+            }
+        }
+
+        // update the bounds if necessary
+        if (avatarCharacter.getJScene() != null) {
+            avatarCharacter.getPScene().submitTransformsAndGeometry(true);
+            avatarCharacter.getJScene().setModelBound(new BoundingSphere());
+            avatarCharacter.getJScene().updateModelBound();
+            avatarCharacter.getJScene().updateWorldBound();
+        }
+
+        // Turn off the indication that we have finished loading
+        LoadingInfo.finishedLoading(cell.getCellID(), newAvatar.getName());
     }
 
     @Override
@@ -599,26 +599,13 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 //            username = u.substring(u.lastIndexOf('/') + 1, u.lastIndexOf('.'));
 //        }
 
+        // Sets the Z-buffer state on the external kids root
         Node external = ret.getJScene().getExternalKidsRoot();
-        ZBufferState zbuf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.ZBuffer);
-        zbuf.setEnabled(true);
-        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-        external.setRenderState(zbuf);
-
-        NameTagComponent nameTagComp = cell.getComponent(NameTagComponent.class);
-        if (nameTagComp == null) {
-            nameTagComp = new NameTagComponent(cell, username, 2);
-            cell.addComponent(nameTagComp);
-        }
-        nameTag = nameTagComp.getNameTagNode();
-        external.attachChild(nameTag);
-        external.setModelBound(new BoundingSphere());
-        external.updateModelBound();
-        external.updateGeometricState(0, true);
+        setZBufferState(external);
 
         // JSCENE HAS NOT CHILDREN, so this does nothing
-        ret.getJScene().updateGeometricState(0, true);
-        GraphicsUtils.printGraphBounds(ret.getJScene());
+//        ret.getJScene().updateGeometricState(0, true);
+//        GraphicsUtils.printGraphBounds(ret.getJScene());
 
         //        JScene jscene = avatar.getJScene();
         //        jscene.renderToggle();      // both renderers
@@ -628,18 +615,69 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         //        jscene.toggleRenderBoundingVolume();  // turn off bounds
 
         // Set up the collision for the avatar
-        Spatial collisionGraph = new Box("AvatarCollision", new Vector3f(0f, 0.92f, 0f), 0.4f, 0.6f, 0.3f);
+        setCollisionController(ret);
+
+        return ret;
+    }
+
+    /**
+     * Returns the name tag node, creating it if it does not exist. There is a
+     * single name tag node attached to the avatar Cell.
+     *
+     * NOTE: This method assumes it is being called in an MT-Safe manner.
+     */
+    private NameTagNode getNameTagNode() {
+        NameTagComponent nameTagComp = cell.getComponent(NameTagComponent.class);
+        if (nameTagComp == null) {
+            nameTagComp = new NameTagComponent(cell, username, 2);
+            cell.addComponent(nameTagComp);
+        }
+        return nameTagComp.getNameTagNode();
+    }
+
+    /**
+     * Given the Avatar character, create and set it's collision controller.
+     */
+    private void setCollisionController(WlAvatarCharacter avatar) {
+        // Create a spatial that represents the bounds of the avatar to use
+        // for collision. These are hardcoded values for now.
+        Vector3f origin = new Vector3f(0f, 0.92f, 0f);
+        float xExtent = 0.4f;
+        float yExtent = 0.6f;
+        float zExtent = 0.3f;
+
+        Spatial collisionGraph = new Box("AvatarCollision", origin, xExtent,
+                yExtent, zExtent);
         collisionGraph.setModelBound(new BoundingSphere());
         collisionGraph.updateModelBound();
 
-        ServerSessionManager manager = cell.getCellCache().getSession().getSessionManager();
-        CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(manager, "Default");
+        // Fetch the JME Collision system using the server manager of the Cell
+        // to which this renderer is attached.
+        ServerSessionManager manager =
+                cell.getCellCache().getSession().getSessionManager();
+        CollisionSystem collisionSystem =
+                ClientContextJME.getCollisionSystem(manager, "Default");
 
-        collisionController = new CollisionController(collisionGraph, (JMECollisionSystem) collisionSystem);
-        collisionChangeRequestListener.setCollisionController(collisionController);
-        ((AvatarController) ret.getContext().getController()).setCollisionController(collisionController);
+        // Create a new collision controller, and set on the avatar
+        CollisionController controller = new CollisionController(collisionGraph,
+                (JMECollisionSystem) collisionSystem);
+        collisionChangeRequestListener.setCollisionController(controller);
+        AvatarController ac = (AvatarController)avatar.getContext().getController();
+        ac.setCollisionController(controller);
+    }
 
-        return ret;
+
+    /**
+     * Sets the Z-buffer state on the given node.
+     * 
+     * NOTE: This method assumes it is being called in a MT-Safe manner.
+     */
+    private void setZBufferState(Node node) {
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        ZBufferState zbuf = (ZBufferState)rm.createRendererState(RenderState.StateType.ZBuffer);
+        zbuf.setEnabled(true);
+        zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+        node.setRenderState(zbuf);
     }
 
     void checkBounds(Spatial placeHolder) {

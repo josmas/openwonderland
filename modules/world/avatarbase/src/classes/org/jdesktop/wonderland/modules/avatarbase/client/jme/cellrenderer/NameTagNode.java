@@ -24,6 +24,7 @@ import com.jme.scene.Spatial;
 
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
 
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -359,7 +360,7 @@ public class NameTagNode extends Node {
         if (labelHidden) {
             return;
         }
-        ClientContextJME.getSceneWorker().addWorker(new WorkCommit() {
+        SceneWorker.addWorker(new WorkCommit() {
 
             public void commit() {
                 if (visible) {
