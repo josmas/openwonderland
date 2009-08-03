@@ -65,6 +65,10 @@
 
     <!-- HAIR -->
     <hair>
+        <name>Bald</name>
+        <description>Bald</description>
+    </hair>
+    <hair>
         <name>M_PigTailsShape</name>
         <description>Pig Tails</description>
         <model>assets/models/collada/Hair/FemaleHair/FG_Female01DefaultHair.dae</model>

@@ -22,9 +22,9 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter.WlAvatarCharacterBuilder;
@@ -43,7 +43,9 @@ public class ImiAvatarLoader implements AvatarLoaderSPI {
     /**
      * {@inheritDoc}
      */
-    public WlAvatarCharacter getAvatarCharacter(AvatarConfigInfo info) {
+    public WlAvatarCharacter getAvatarCharacter(Cell avatarCell,
+            String userName, AvatarConfigInfo info) {
+        
         // Formulate the configuration URL to load the info
         URL configURL = null;
         try {
@@ -57,7 +59,7 @@ public class ImiAvatarLoader implements AvatarLoaderSPI {
         // Formulate the base URL for all IMI avatar assets
         String baseURL = null;
         try {
-            ServerSessionManager manager = LoginManager.getPrimary();
+            ServerSessionManager manager = avatarCell.getCellCache().getSession().getSessionManager();
             String serverHostAndPort = manager.getServerNameAndPort();
             URL tmpURL = AssetUtils.getAssetURL("wla://avatarbaseart/", serverHostAndPort);
             baseURL = tmpURL.toExternalForm();

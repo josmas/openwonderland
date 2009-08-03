@@ -21,7 +21,6 @@ import com.jme.bounding.BoundingSphere;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
@@ -34,15 +33,11 @@ import com.jme.scene.Geometry;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
-import com.jme.util.export.binary.BinaryImporter;
 import com.jme.util.resource.ResourceLocator;
-import com.jme.util.resource.ResourceLocatorTool;
 import imi.character.CharacterAnimationProcessor;
 import imi.character.CharacterController;
 import imi.character.CharacterMotionListener;
-import imi.character.CharacterParams;
 import imi.character.CharacterProcessor;
-import imi.character.MaleAvatarParams;
 import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarController;
 import imi.character.statemachine.GameContextListener;
@@ -51,9 +46,7 @@ import imi.character.statemachine.corestates.CycleActionState;
 import imi.collision.CollisionController;
 import imi.input.DefaultCharacterControls;
 import imi.scene.PMatrix;
-import imi.scene.PScene;
 import imi.scene.PTransform;
-import imi.scene.polygonmodel.PPolygonMesh;
 import imi.scene.polygonmodel.PPolygonModelInstance;
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -79,11 +72,9 @@ import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -270,6 +261,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 if (configComp != null) {
                     avatarConfigInfo = configComp.getAvatarConfigInfo();
                 }
+                logger.warning("LOADING AVATAR FOR " + avatarConfigInfo);
                 pendingAvatar = loadAvatar(avatarConfigInfo);
             }
             else {
@@ -279,6 +271,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
 
             // Go ahead and change the avatar
+            logger.warning("CHANGING AVATAR IN SET STATUS");
             changeAvatar(pendingAvatar);
 
             if (cellMoveListener == null) {
@@ -510,7 +503,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             throws MalformedURLException, IOException {
         
         WlAvatarCharacter ret = null;
-        WorldManager wm = ClientContextJME.getWorldManager();
         PMatrix origin = new PMatrix();
         CellTransform transform = cell.getLocalTransform();
         origin.setTranslation(transform.getTranslation(null));
@@ -526,49 +518,25 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             avatarDetail = "low";
         }
 
+        // Check to see if there is no avatar configuration info and/or if we
+        // have the avatar details set to "low". If so, then use the default
+        AvatarLoaderRegistry registry = AvatarLoaderRegistry.getAvatarLoaderRegistry();
         if (avatarConfigInfo == null || avatarDetail.equalsIgnoreCase("low")) {
-            CharacterParams attributes = new MaleAvatarParams(username);
 
-            // Set the base URL
-            WonderlandSession session = cell.getCellCache().getSession();
-            ServerSessionManager manager = session.getSessionManager();
-            String serverHostAndPort = manager.getServerNameAndPort();
-            String baseURL = "wla://avatarbaseart@" + serverHostAndPort + "/";
-
-            // Setup simple model, needs to actually have something to
-            // play well with the system
-            PScene simpleScene = new PScene(ClientContextJME.getWorldManager());
-            simpleScene.addMeshInstance(new PPolygonMesh("PlaceholderMesh"), new PMatrix());
-            attributes.setUseSimpleStaticModel(true, simpleScene);
-            attributes.setBaseURL(baseURL);
-
-            // don't add the entity to wm
-            ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
-
-            URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
-            ResourceLocator resourceLocator = new RelativeResourceLocator(url);
-
-            ResourceLocatorTool.addThreadResourceLocator(
-                    ResourceLocatorTool.TYPE_TEXTURE,
-                    resourceLocator);
-            Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
-            ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
-
-            //checkBounds(placeHolder);
-            //placeHolder.updateModelBound();
-            //placeHolder.updateWorldBound();
-
-            //System.out.println("Default Model Bounds: " + placeHolder.getWorldBound());
-            //placeHolder.lockBounds();
-            ret.getJScene().getExternalKidsRoot().attachChild(placeHolder);
-            ret.getJScene().setExternalKidsChanged(true);
-        } else {
+            // Find the "default" factory to generate an avatar. Ask it to
+            // loader the avatar. If it does not exist (it should), simply
+            // log an error andr return.
+            AvatarLoaderFactorySPI factory = registry.getDefaultAvatarLoaderFactory();
+            if (factory == null) {
+                logger.warning("No default avatar factory is registered.");
+                return null;
+            }
+            ret = factory.getAvatarLoader().getAvatarCharacter(cell, username, avatarConfigInfo);
+        }
+        else {
             // If the avatar has a non-null configuration information, then
             // ask the loader factory to generate a new loader for this avatar
             String className = avatarConfigInfo.getLoaderFactoryClassName();
-
-            logger.warning("Loading avatar with class name " + className);
-
             if (className == null) {
                 logger.warning("No class name given for avatar configuration" +
                         " with url " + avatarConfigInfo.getAvatarConfigURL());
@@ -576,7 +544,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
 
             // Find the avatar factory, if it does not exist, return an error
-            AvatarLoaderRegistry registry = AvatarLoaderRegistry.getAvatarLoaderRegistry();
             AvatarLoaderFactorySPI factory = registry.getAvatarLoaderFactory(className);
             if (factory == null) {
                 logger.warning("No avatar loader factory for the class name " +
@@ -585,9 +552,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
 
             // Ask the avatar loader to create and return an avatar character
-            ret = factory.getAvatarLoader().getAvatarCharacter(avatarConfigInfo);
-
-            logger.warning("Done loading avatar, ret="+ ret);
+            ret = factory.getAvatarLoader().getAvatarCharacter(cell, username, avatarConfigInfo);
         }
 
         ret.getModelInst().getTransform().getLocalMatrix(true).set(origin);

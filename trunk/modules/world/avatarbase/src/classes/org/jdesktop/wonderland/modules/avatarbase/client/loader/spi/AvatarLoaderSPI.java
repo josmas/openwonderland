@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.avatarbase.client.loader.spi;
 
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 
@@ -32,8 +33,11 @@ public interface AvatarLoaderSPI {
     /**
      * Loads an avatar and returns the character to which it corresponds.
      *
+     * @param avatarCell The Cell of the avatar
+     * @param userName The user name of the avatar
      * @param info The avatar configuration info
      * @return The avatar character
      */
-    public WlAvatarCharacter getAvatarCharacter(AvatarConfigInfo info);
+    public WlAvatarCharacter getAvatarCharacter(Cell avatarCell,
+            String userName, AvatarConfigInfo info);
 }
