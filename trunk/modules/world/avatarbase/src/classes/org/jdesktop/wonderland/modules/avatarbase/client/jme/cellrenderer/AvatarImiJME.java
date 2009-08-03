@@ -21,7 +21,6 @@ import com.jme.bounding.BoundingSphere;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.jme.cellrenderer.*;
@@ -32,11 +31,10 @@ import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.Geometry;
 import com.jme.scene.shape.Box;
+import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
-import com.jme.util.export.binary.BinaryImporter;
 import com.jme.util.resource.ResourceLocator;
-import com.jme.util.resource.ResourceLocatorTool;
 import imi.character.CharacterAnimationProcessor;
 import imi.character.CharacterController;
 import imi.character.CharacterMotionListener;
@@ -55,6 +53,7 @@ import imi.scene.PScene;
 import imi.scene.PTransform;
 import imi.scene.polygonmodel.PPolygonMesh;
 import imi.scene.polygonmodel.PPolygonModelInstance;
+import imi.scene.utils.JmeUtils;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.List;
@@ -83,7 +82,6 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ViewManager;
-import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.Math3DUtils;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -545,23 +543,22 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             // don't add the entity to wm
             ret = new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
 
-            URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
-            ResourceLocator resourceLocator = new RelativeResourceLocator(url);
+//            URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
+//            ResourceLocator resourceLocator = new RelativeResourceLocator(url);
+//
+//            ResourceLocatorTool.addThreadResourceLocator(
+//                    ResourceLocatorTool.TYPE_TEXTURE,
+//                    resourceLocator);
+//            Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
+//            ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
 
-            ResourceLocatorTool.addThreadResourceLocator(
-                    ResourceLocatorTool.TYPE_TEXTURE,
-                    resourceLocator);
-            Spatial placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
-            ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
-
-            //checkBounds(placeHolder);
-            //placeHolder.updateModelBound();
-            //placeHolder.updateWorldBound();
-
-            //System.out.println("Default Model Bounds: " + placeHolder.getWorldBound());
-            //placeHolder.lockBounds();
+            // Lou - set placeholder avatar
+            URL url = new URL(baseURL+"assets/models/collada/Avatars/placeholder.bin");
+            Node placeHolder = JmeUtils.loadSerializedJmeGraph(url);
+            JmeUtils.setDefaultRenderStatesOnGraph(placeHolder, MaterialState.ColorMaterial.AmbientAndDiffuse, ClientContextJME.getWorldManager());
             ret.getJScene().getExternalKidsRoot().attachChild(placeHolder);
             ret.getJScene().setExternalKidsChanged(true);
+            
         } else {
             // If the avatar has a non-null configuration information, then
             // ask the loader factory to generate a new loader for this avatar
