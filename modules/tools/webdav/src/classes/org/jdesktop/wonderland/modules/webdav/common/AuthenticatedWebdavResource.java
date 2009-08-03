@@ -20,9 +20,11 @@ package org.jdesktop.wonderland.modules.webdav.common;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.logging.Logger;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpURL;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.webdav.lib.WebdavResource;
 import org.apache.webdav.lib.WebdavResources;
 
@@ -33,17 +35,18 @@ import org.apache.webdav.lib.WebdavResources;
  * @author jkaplan
  */
 public class AuthenticatedWebdavResource extends WebdavResource {
+    private static final Logger logger =
+            Logger.getLogger(AuthenticatedWebdavResource.class.getName());
+
     private TokenCredentials tokenCredentials;
 
     public AuthenticatedWebdavResource(HttpURL url, String authCookieName,
                                        String authCookieValue)
             throws HttpException, IOException
     {
-        super (url.getEscapedURI(),
+        super (URIUtil.decode(url.getEscapedURI()),
                new TokenCredentials(authCookieName, authCookieValue),
                true);
-
-        
     }
 
     public AuthenticatedWebdavResource(WebdavResource resource,
