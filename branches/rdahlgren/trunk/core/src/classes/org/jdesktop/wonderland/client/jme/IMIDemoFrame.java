@@ -265,16 +265,16 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
     public void setDesiredFrameRate(int desiredFrameRate) {
         this.desiredFrameRate = desiredFrameRate;
 
-        for (int i = 0; i < frameRateMenu.getItemCount(); i++) {
-            JMenuItem item = frameRateMenu.getItem(i);
-            String[] fpsString = item.getText().split(" ");
-            int fps = Integer.valueOf(fpsString[0]);
-            if (fps == desiredFrameRate) {
-                item.setSelected(true);
-            } else {
-                item.setSelected(false);
-            }
-        }
+//        for (int i = 0; i < frameRateMenu.getItemCount(); i++) {
+//            JMenuItem item = frameRateMenu.getItem(i);
+//            String[] fpsString = item.getText().split(" ");
+//            int fps = Integer.valueOf(fpsString[0]);
+//            if (fps == desiredFrameRate) {
+//                item.setSelected(true);
+//            } else {
+//                item.setSelected(false);
+//            }
+//        }
         wm.getRenderManager().setDesiredFrameRate(desiredFrameRate);
 
         removeFrameRateListener(frameRateListener);
