@@ -15,22 +15,24 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.avatarbase.client.loader.annotation;
+package org.jdesktop.wonderland.modules.avatarbase.client.basic;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.jdesktop.wonderland.modules.avatarbase.client.loader.annotation.AvatarLoaderFactory;
+import org.jdesktop.wonderland.modules.avatarbase.client.loader.spi.AvatarLoaderFactorySPI;
+import org.jdesktop.wonderland.modules.avatarbase.client.loader.spi.AvatarLoaderSPI;
 
 /**
- * Annotation that indicates this class is an avatar loader. Avatar loaders
- * must also implement the AvatarLoaderSPI interface.
+ * Generates loaders to load the basic avatars on the client.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface AvatarLoaderFactory {
-    boolean isDefault() default false;
-}
+@AvatarLoaderFactory(isDefault=true)
+public class BasicAvatarLoaderFactory implements AvatarLoaderFactorySPI {
 
+    /**
+     * {@inheritDoc}
+     */
+    public AvatarLoaderSPI getAvatarLoader() {
+        return new BasicAvatarLoader();
+    }
+}

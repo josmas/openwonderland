@@ -39,6 +39,9 @@ public class AvatarLoaderRegistry implements PrimaryServerListener {
     // A map of all avatar loader factories from the Class to the loader object
     private Map<String, AvatarLoaderFactorySPI> avatarLoaderMap = null;
 
+    // The default loader factory, if there is one
+    private AvatarLoaderFactorySPI defaultAvatarLoaderFactory = null;
+
     /** Default constructor */
     public AvatarLoaderRegistry() {
         avatarLoaderMap = new HashMap();
@@ -75,7 +78,17 @@ public class AvatarLoaderRegistry implements PrimaryServerListener {
     public AvatarLoaderFactorySPI getAvatarLoaderFactory(String className) {
         return avatarLoaderMap.get(className);
     }
-    
+
+    /**
+     * Returns the default avatar loader factory, if there is one, otherwise
+     * returns null.
+     *
+     * @return An avatar loader factory
+     */
+    public AvatarLoaderFactorySPI getDefaultAvatarLoaderFactory() {
+        return defaultAvatarLoaderFactory;
+    }
+
     /**
      * Notification that the primary server has changed. Update our maps/sets
      * accordingly.
@@ -83,17 +96,28 @@ public class AvatarLoaderRegistry implements PrimaryServerListener {
      * @param server the new primary server (may be null)
      */
     public void primaryServer(ServerSessionManager server) {
+
         // Clear out all of the existing loaders and fetch a new set
         avatarLoaderMap.clear();
 
-        // Look for all factories and add them to the map
+        // Look for all factories and add them to the map. Look to see if the
+        // 'default' flag is set on the annoation and if so mark it as the
+        // default. If there is more than one, then simply use the last 'default'
+        // factory found.
         if (server != null) {
             ScannedClassLoader cl = server.getClassloader();
             Iterator<AvatarLoaderFactorySPI> it =
                     cl.getAll(AvatarLoaderFactory.class, AvatarLoaderFactorySPI.class);
             while (it.hasNext() == true) {
                 AvatarLoaderFactorySPI factory = it.next();
-                avatarLoaderMap.put(factory.getClass().getName(), factory);
+                Class clazz = factory.getClass();
+                avatarLoaderMap.put(clazz.getName(), factory);
+
+                AvatarLoaderFactory a =
+                        (AvatarLoaderFactory) clazz.getAnnotation(AvatarLoaderFactory.class);
+                if (a != null && a.isDefault() == true) {
+                    defaultAvatarLoaderFactory = factory;
+                }
             }
         }
     }

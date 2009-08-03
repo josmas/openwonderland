@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -43,7 +44,9 @@ public class EvolverAvatarLoader implements AvatarLoaderSPI {
     /**
      * {@inheritDoc}
      */
-    public WlAvatarCharacter getAvatarCharacter(AvatarConfigInfo info) {
+    public WlAvatarCharacter getAvatarCharacter(Cell viewCell, String userName,
+            AvatarConfigInfo info) {
+        
         // Formulate the configuration URL to load the info
         URL configURL = null;
         try {

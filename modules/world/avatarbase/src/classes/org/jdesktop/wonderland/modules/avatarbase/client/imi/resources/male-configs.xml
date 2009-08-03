@@ -35,6 +35,10 @@
 
     <!-- HAIR -->
     <hair>
+        <name>Bald</name>
+        <description>Bald</description>
+    </hair>
+    <hair>
         <name>Male_PonyTailShape</name>
         <description>Pony Tail</description>
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>

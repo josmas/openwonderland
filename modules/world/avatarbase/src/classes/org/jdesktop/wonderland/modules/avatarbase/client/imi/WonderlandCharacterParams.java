@@ -538,19 +538,22 @@ public class WonderlandCharacterParams implements Cloneable {
 
     public static class HairConfigElement extends ShapesConfigElement {
         @Override
-        public void apply(CharacterParams attrs) {            
-            attrs.addLoadInstruction(getModel());
-            attrs.getMetaData().put(ConfigType.HAIR.toString(), getName());
+        public void apply(CharacterParams attrs) {
+            String model = getModel();
+            if (model != null && model.equals("") == false) {
+                attrs.addLoadInstruction(model);
+                attrs.getMetaData().put(ConfigType.HAIR.toString(), getName());
 
-            // Take the first shape as the mesh to use for the hair. We
-            // assume there is at least one
-            AttachmentParams params = new AttachmentParams(
-                    getShapes()[0],           // Mesh
-                    "HairAttach",             // Parent Joint
-                    PMatrix.IDENTITY,         // Orientation
-                    "HairAttachmentJoint",    // Attachment Joint Name
-                    getModel());              // Owning File Name
-            attrs.addAttachmentInstruction(params);
+                // Take the first shape as the mesh to use for the hair. We
+                // assume there is at least one
+                AttachmentParams params = new AttachmentParams(
+                        getShapes()[0], // Mesh
+                        "HairAttach", // Parent Joint
+                        PMatrix.IDENTITY, // Orientation
+                        "HairAttachmentJoint", // Attachment Joint Name
+                        model);              // Owning File Name
+                attrs.addAttachmentInstruction(params);
+            }
         }
 
         /**
