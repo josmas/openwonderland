@@ -79,8 +79,8 @@ public class CellPlacementUtils {
     public static Vector3f getCellOrigin(ServerSessionManager session,
             BoundingVolume bounds, CellTransform viewTransform) {
 
-        // If the view Cell is null, then find the view Cell from the primary
-        // session
+        // If the given session is null, then simply take the current primary
+        // session.
         ViewManager vm = ViewManager.getViewManager();
         if (session == null) {
             session = LoginManager.getPrimary();
