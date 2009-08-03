@@ -24,7 +24,7 @@ import java.util.Iterator;
  *
  * @author nsimpson
  */
-public interface HUDComponentManager {
+public interface HUDComponentManager extends HUDEventListener {
 
     /**
      * Adds a HUDComponent to the set of components to be managed
