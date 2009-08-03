@@ -21,6 +21,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +37,7 @@ import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -312,16 +314,21 @@ public class PlacemarkPlugin extends BaseClientPlugin
             float z = placemark.getZ();
             float angle = placemark.getAngle();
             Vector3f location = new Vector3f(x, y, z);
-            Quaternion look = new Quaternion(0.0f, 1.0f, 0.0f, angle);
-//            try {
-//                ClientContextJME.getClientMain().gotoLocation(url, location, look);
-//            } catch (IOException ex) {
-//                logger.log(Level.SEVERE, null, ex);
-//            }
+            
+            // create the rotation
+            Quaternion look = new Quaternion();
+            Vector3f axis = new Vector3f(Vector3f.UNIT_Y); 
+            look.fromAngleAxis((float) Math.toRadians(angle), axis);
 
-            JFrame frame = JmeClientMain.getFrame().getFrame();
-            JOptionPane.showMessageDialog(frame,
-                    "Placemarks are not yet functional, sorry!");
+            try {
+                ClientContextJME.getClientMain().gotoLocation(url, location, look);
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+
+//            JFrame frame = JmeClientMain.getFrame().getFrame();
+//            JOptionPane.showMessageDialog(frame,
+//                    "Placemarks are not yet functional, sorry!");
         }
     }
 

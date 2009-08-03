@@ -38,6 +38,7 @@ import com.jme.util.export.binary.BinaryImporter;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import imi.character.CharacterAnimationProcessor;
+import imi.character.CharacterController;
 import imi.character.CharacterMotionListener;
 import imi.character.CharacterParams;
 import imi.character.CharacterProcessor;
@@ -53,6 +54,7 @@ import imi.scene.PMatrix;
 import imi.scene.PScene;
 import imi.scene.PTransform;
 import imi.scene.polygonmodel.PPolygonMesh;
+import imi.scene.polygonmodel.PPolygonModelInstance;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.List;
@@ -783,6 +785,18 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 }
             }
         }
+    }
+
+    public void triggerGoto(Vector3f position, Quaternion look) {
+        CharacterController cc = avatarCharacter.getContext().getController();
+        PPolygonModelInstance body = cc.getModelInstance();
+
+        PMatrix newPosition = new PMatrix(body.getTransform().getLocalMatrix(false));
+        newPosition.setTranslation(position);
+        newPosition.setRotation(look);
+
+        body.getTransform().getLocalMatrix(true).set(newPosition);
+        cc.notifyTransfromUpdate(position, newPosition);
     }
 
     /**

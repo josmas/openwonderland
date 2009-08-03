@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.client.cell.view;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -54,6 +56,19 @@ public class AvatarCell extends ViewCell {
             CellRenderer rend = getCellRenderer(RendererType.RENDERER_JME);
             if (rend instanceof AvatarActionTrigger) {
                 ((AvatarActionTrigger)rend).trigger(trigger, pressed, animationName);
+            }
+        }
+    }
+
+    /**
+     * TODO this is a temporary interface for handling avatar goto, need
+     * to uplevel
+     */
+    public void triggerGoto(Vector3f worldPosition, Quaternion look) {
+        if (ClientContext.getRendererType()==RendererType.RENDERER_JME) {
+            CellRenderer rend = getCellRenderer(RendererType.RENDERER_JME);
+            if (rend instanceof AvatarActionTrigger) {
+                ((AvatarActionTrigger)rend).triggerGoto(worldPosition, look);
             }
         }
     }
@@ -109,5 +124,8 @@ public class AvatarCell extends ViewCell {
      */
     public interface AvatarActionTrigger {
         public void trigger(int trigger, boolean pressed, String animationName);
+    
+        // trigger for movement.  Also needs to be uplevelled.
+        public void triggerGoto(Vector3f worldPosition, Quaternion look);
     }
 }
