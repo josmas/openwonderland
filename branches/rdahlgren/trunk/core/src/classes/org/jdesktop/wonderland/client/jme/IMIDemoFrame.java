@@ -165,54 +165,53 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
                 cameraButtonGroup.add(frontPersonRB);
 
                 // Frame Rate menu
-                frameRateMenu = new JMenu(bundle.getString("Max Frame Rate"));
+//                frameRateMenu = new JMenu(bundle.getString("Max Frame Rate"));
+//                JMenuItem fps15 = new JCheckBoxMenuItem(bundle.getString("15 fps"));
+//                JMenuItem fps30 = new JCheckBoxMenuItem(bundle.getString("30 fps (default)"));
+//                JMenuItem fps60 = new JCheckBoxMenuItem(bundle.getString("60 fps"));
+//                JMenuItem fps120 = new JCheckBoxMenuItem(bundle.getString("120 fps"));
+//                JMenuItem fps200 = new JCheckBoxMenuItem(bundle.getString("200 fps"));
+//
+//                frameRateMenu.add(fps15);
+//                frameRateMenu.add(fps30);
+//                frameRateMenu.add(fps60);
+//                frameRateMenu.add(fps120);
+//                frameRateMenu.add(fps200);
 
-                JMenuItem fps15 = new JCheckBoxMenuItem(bundle.getString("15 fps"));
-                JMenuItem fps30 = new JCheckBoxMenuItem(bundle.getString("30 fps (default)"));
-                JMenuItem fps60 = new JCheckBoxMenuItem(bundle.getString("60 fps"));
-                JMenuItem fps120 = new JCheckBoxMenuItem(bundle.getString("120 fps"));
-                JMenuItem fps200 = new JCheckBoxMenuItem(bundle.getString("200 fps"));
-
-                frameRateMenu.add(fps15);
-                frameRateMenu.add(fps30);
-                frameRateMenu.add(fps60);
-                frameRateMenu.add(fps120);
-                frameRateMenu.add(fps200);
-
-                frameRateMenu.setActionCommand("IMI_HACK_FILTER");
-                addToWindowMenu(frameRateMenu, -1);
+//                frameRateMenu.setActionCommand("IMI_HACK_FILTER");
+//                addToWindowMenu(frameRateMenu, -1);
 //                addToViewMenu(frameRateMenu, 5);
 
-                fps15.addActionListener(new java.awt.event.ActionListener() {
-
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        frameRateActionPerformed(evt);
-                    }
-                });
-                fps30.addActionListener(new java.awt.event.ActionListener() {
-
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        frameRateActionPerformed(evt);
-                    }
-                });
-                fps60.addActionListener(new java.awt.event.ActionListener() {
-
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        frameRateActionPerformed(evt);
-                    }
-                });
-                fps120.addActionListener(new java.awt.event.ActionListener() {
-
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        frameRateActionPerformed(evt);
-                    }
-                });
-                fps200.addActionListener(new java.awt.event.ActionListener() {
-
-                    public void actionPerformed(java.awt.event.ActionEvent evt) {
-                        frameRateActionPerformed(evt);
-                    }
-                });
+//                fps15.addActionListener(new java.awt.event.ActionListener() {
+//
+//                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                        frameRateActionPerformed(evt);
+//                    }
+//                });
+//                fps30.addActionListener(new java.awt.event.ActionListener() {
+//
+//                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                        frameRateActionPerformed(evt);
+//                    }
+//                });
+//                fps60.addActionListener(new java.awt.event.ActionListener() {
+//
+//                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                        frameRateActionPerformed(evt);
+//                    }
+//                });
+//                fps120.addActionListener(new java.awt.event.ActionListener() {
+//
+//                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                        frameRateActionPerformed(evt);
+//                    }
+//                });
+//                fps200.addActionListener(new java.awt.event.ActionListener() {
+//
+//                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+//                        frameRateActionPerformed(evt);
+//                    }
+//                });
 
                 // frame rate meter
                 fpsMI = new JCheckBoxMenuItem(bundle.getString("FPS_Meter"));
@@ -450,15 +449,15 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
      * {@inheritDoc}
      */
     public void addToInsertMenu(JMenuItem menuItem) {
-        addToInsertMenu(menuItem, -1);
+//        addToInsertMenu(menuItem, -1);
     }
 
     /**
      * {@inheritDoc}
      */
     public void addToInsertMenu(JMenuItem menuItem, int index) {
-        if (menuItem.getActionCommand().equals("IMI_HACK_FILTER"))
-            addToMenu(insertMenu, menuItem, index);
+//        if (menuItem.getActionCommand().equals("IMI_HACK_FILTER"))
+//            addToMenu(insertMenu, menuItem, index);
     }
 
     /**
@@ -658,7 +657,6 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
         viewMenu = new javax.swing.JMenu();
         windowMenu = new javax.swing.JMenu();
         avatarsMenu = new javax.swing.JMenu();
-        insertMenu = new javax.swing.JMenu();
 
         jLabel1.setText("jLabel1");
 
@@ -696,9 +694,6 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
         avatarsMenu.setToolTipText("Select an Avatar");
         mainMenuBar.add(avatarsMenu);
 
-        insertMenu.setText("Insert");
-        mainMenuBar.add(insertMenu);
-
         setJMenuBar(mainMenuBar);
 
         pack();
@@ -708,7 +703,6 @@ public class IMIDemoFrame extends JFrame implements MainFrame {
     private javax.swing.JMenu avatarsMenu;
     private javax.swing.JPanel centerPanel;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JMenu insertMenu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JPanel serverPanel;
