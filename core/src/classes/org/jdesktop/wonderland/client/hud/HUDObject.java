@@ -21,17 +21,15 @@ import com.jme.math.Vector3f;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.List;
 import javax.swing.ImageIcon;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
-import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 
 /**
  * A generic HUD type that defines a rectangular 2D visual.
  *
  * @author nsimpson
  */
-public interface HUDObject {
+public interface HUDObject extends HUDEventSource {
 
     /**
      * Display modes
@@ -340,34 +338,4 @@ public interface HUDObject {
      * @return the icon image
      */
     public ImageIcon getIcon();
-
-    /**
-     * Adds a listener for HUD object events
-     * @param listener a new listener
-     */
-    public void addEventListener(HUDEventListener listener);
-
-    /**
-     * Removes a listener for HUD object events
-     * @param listener the listener to remove
-     */
-    public void removeEventListener(HUDEventListener listener);
-
-    /**
-     * Gets the listeners for this HUD object
-     * @return a list of event listeners
-     */
-    public List<HUDEventListener> getEventListeners();
-
-    /**
-     * Notifies this HUD object's event listeners of an event
-     * @param event a HUD event
-     */
-    public void notifyEventListeners(HUDEvent event);
-
-    /**
-     * Convenience method for notifying event listeners
-     * @param eventType the type of the notification event
-     */
-    public void notifyEventListeners(HUDEventType eventType);
 }

@@ -36,9 +36,13 @@ public class HUDEvent {
     public enum HUDEventType {
 
         /**
-         * A HUD object has been created
+         * A HUD object has been added
          */
-        CREATED,
+        ADDED,
+        /**
+         * A HUD object has been removed
+         */
+        REMOVED,
         /**
          * A HUD object is visible
          */
@@ -79,10 +83,6 @@ public class HUDEvent {
          * A HUD object is maximized
          */
         MAXIMIZED,
-        /**
-         * A HUD object is iconified
-         */
-        ICONIFIED,
         /**
          * A HUD object is enabled
          */

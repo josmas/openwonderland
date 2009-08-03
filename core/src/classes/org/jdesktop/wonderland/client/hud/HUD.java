@@ -86,7 +86,7 @@ public interface HUD extends HUDObject {
      * @return a new HUD component
      */
     public HUDComponent createComponent(HUDDisplayable displayable);
-    
+
     /**
      * Creates a new HUD component bound to a Swing component
      * @param component a Swing component to display in this HUD component
@@ -150,20 +150,14 @@ public interface HUD extends HUDObject {
     public Iterator<HUDComponent> getComponents();
 
     /**
+     * Gets whether this HUD contains the specified HUD component
+     * @return true if the HUD has the component, false otherwise
+     */
+    public boolean hasComponent(HUDComponent component);
+
+    /**
      * Gets whether this HUD has one or more HUD components
      * @return true if the HUD has HUD components, false otherwise
      */
     public boolean hasComponents();
-
-    /**
-     * Sets the manager of HUD components within this HUD
-     * @param manager the manager of HUD components
-     */
-    public void setComponentManager(HUDComponentManager manager);
-
-    /**
-     * Gets the component manager associated with this HUD
-     * @return the component manager
-     */
-    public HUDComponentManager getComponentManager();
 }
