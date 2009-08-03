@@ -211,6 +211,11 @@ public class AvatarClientPlugin extends BaseClientPlugin
                             ImiAvatar avatar = new ImiAvatar(avatarName, 0);
                             WonderlandCharacterParams params = WonderlandCharacterParams.loadMale();
                             // extra config
+                            params = WonderlandCharacterParams.loadMale(); // Get defaults, init metadata
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HAIR, "Male_PartLeftShape");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HEAD, "FaceGen Low-Poly Head");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.TORSO, "Polo Shirt");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.LEGS, "Shorts");
                             avatar.setAvatarParams(params);
                             // Register the avatar
                             registry.registerAvatar(avatar, true);
@@ -256,6 +261,10 @@ public class AvatarClientPlugin extends BaseClientPlugin
                             ImiAvatar avatar = new ImiAvatar(avatarName, 0);
                             WonderlandCharacterParams params = WonderlandCharacterParams.loadFemale();
                             // extra config
+                            params = WonderlandCharacterParams.loadFemale(); // Get defaults, init metadata
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HAIR, "Med_Pt_BangzShape");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HEAD, "Female Low-Poly Head");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.LEGS, "Dress Pants");
                             avatar.setAvatarParams(params);
                             // Register the avatar
                             registry.registerAvatar(avatar, true);
