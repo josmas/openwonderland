@@ -32,7 +32,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
-import org.jdesktop.wonderland.modules.appbase.client.View2DSet;
 import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
 
 /**
@@ -56,8 +55,12 @@ public abstract class App2D {
 
     private static final Logger logger = Logger.getLogger(App2D.class.getName());
 
+    // TODO: Part 1: temporary. This gives the ability to disable app-specific placement.
+    // The other part of the boolean is in XAppCellFactory.
+    public static final boolean doAppInitialPlacement = false;
+
     /** All of the apps which have been created by this client. */
-    private static LinkedList<App2D> apps = new LinkedList<App2D>();
+    private static final LinkedList<App2D> apps = new LinkedList<App2D>();
 
     /** The global default appbase View2DCell factory.*/
     private static View2DCellFactory view2DCellFactory;
@@ -93,16 +96,23 @@ public abstract class App2D {
     private LinkedList<HUDComponent> hudComponents;
 
     /**
+     * The first-visible initializer for this app. If non-null, this will perform
+     * some sort of initialization for the app the first time a window is made visible.
+     */
+    private FirstVisibleInitializer fvi;
+
+    /**
      * There are some deadlock situations during app cleanup. I would prefer to address this
      * by replacing all app base locks with a single app-wide lock, but that is to big a change
      * to do at this point. For now, we'll just use this lock to force the cleanup process to be
      * single threaded.
      */
-    private Integer appCleanupLock = new Integer(0);
+    private final Integer appCleanupLock = new Integer(0);
 
     // Register the appbase shutdown hook
     static {
         Runtime.getRuntime().addShutdownHook(new Thread("App Base Shutdown Hook") {
+            @Override
             public void run() { App2D.shutdown(); }
         });
     }
@@ -381,7 +391,7 @@ public abstract class App2D {
 
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-            LinkedList<HUDComponent> hudComponents = new LinkedList<HUDComponent>();
+            hudComponents = new LinkedList<HUDComponent>();
 
             for (Window2D window : windows) {
 
@@ -417,5 +427,20 @@ public abstract class App2D {
                 hudComponents = null;
             }
         }
+    }
+
+    /**
+     * Specify a first-visible initializer for this app. If non-null, this will perform
+     * some sort of initialization for the app the first time a window is made visible.
+     */
+    public void setFirstVisibleInitializer (FirstVisibleInitializer fvi) {
+        this.fvi = fvi;
+    }
+
+    /**
+     * Return the first-visible initializer for this app. 
+     */
+    public FirstVisibleInitializer getFirstVisibleInitializer () {
+        return fvi;
     }
 }

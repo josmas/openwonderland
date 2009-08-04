@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
 import com.jme.bounding.BoundingBox;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
 
 /**
  * An abstract server-side app.base cell for 2D apps. 
@@ -38,6 +39,12 @@ public abstract class App2DCellMO extends AppCellMO {
     /** The pixel scale. */
     protected Vector2f pixelScale;
 
+    /** The view transform of the cell creator. */
+    private CellTransform creatorViewTransform;
+
+    /** Whether the initial placement of the cell has been completed. */
+    private boolean initialPlacementDone;
+
     /** Create an instance of App2DCellMO. */
     public App2DCellMO() {
         // Unfortunately, the bounds cannot be modified later, so we need to leave
@@ -45,10 +52,10 @@ public abstract class App2DCellMO extends AppCellMO {
         // 4K x 4K is the max, so 2K x 2K seems like a reasonable number. Also 
         // unfortunately, we don't know the pixel scale at this point so, out of 
         // desparation, we choose the default value of 0.01 meters per pixel.
-        // This gives values of approx. 21 x 21 for the local width and height
-        // of the bounds. 10 meters should be reasonable for the depth because the 
+        // This gives values of approx. A radius of 10 x 10 for the local width and height
+        // of the bounds. 5 meters (in front) should be reasonable for the depth because the 
         // step per window stack level is only 0.01 meter and the stack never gets too large.
-        super(new BoundingBox(new Vector3f(), 21, 21, 10), new CellTransform(null, null));
+        super(new BoundingBox(new Vector3f(), 10, 10, 5), new CellTransform(null, null));
     }
 
     /**
@@ -59,6 +66,13 @@ public abstract class App2DCellMO extends AppCellMO {
         super.setServerState(state);
         App2DCellServerState serverState = (App2DCellServerState) state;
         pixelScale = new Vector2f(serverState.getPixelScaleX(), serverState.getPixelScaleY());
+
+        ViewComponentServerState vcss =
+                (ViewComponentServerState) serverState.getComponentServerState(ViewComponentServerState.class);
+        if (vcss != null) {
+	    creatorViewTransform = vcss.getCellTransform();
+        }
+	logger.warning("Cell creator view transform = " + creatorViewTransform);
     }
 
     /**
@@ -66,6 +80,8 @@ public abstract class App2DCellMO extends AppCellMO {
      */
     protected void populateClientState(App2DCellClientState clientState) {
         clientState.setPixelScale(pixelScale);
+        clientState.setCreatorViewTransform(creatorViewTransform);
+        clientState.setInitialPlacementDone(initialPlacementDone);
     }
 
     /**
@@ -83,4 +99,13 @@ public abstract class App2DCellMO extends AppCellMO {
 
         return super.getServerState(stateToFill);
     }
+
+    void setInitialPlacementDone (boolean done) {
+        initialPlacementDone = done;
+    }
+
+    boolean isInitialPlacementDone () {
+        return initialPlacementDone;
+    }
+
 }

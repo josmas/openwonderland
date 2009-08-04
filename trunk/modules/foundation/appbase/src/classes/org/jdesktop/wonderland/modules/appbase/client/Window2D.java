@@ -663,6 +663,8 @@ public abstract class Window2D implements HUDDisplayable {
             return;
         }
 
+        performFirstVisibleInitialization();
+
         setVisibleAppPart1(visible);
         setVisibleAppPart2();
     }
@@ -695,7 +697,7 @@ public abstract class Window2D implements HUDDisplayable {
     }
 
     /** 
-     * Does the app want the window to be visible?
+     * Do both the  the app want the window to be visible?
      */
     public boolean isVisibleApp() {
         return visibleApp;
@@ -705,6 +707,7 @@ public abstract class Window2D implements HUDDisplayable {
      * Specifies whether the user wants the window to be visible in the given displayer.
      */
     public synchronized void setVisibleUser(View2DDisplayer displayer, boolean visible) {
+        performFirstVisibleInitialization();
         View2D view = getView(displayer);
         if (view != null) {
             // Note: update immediately
@@ -721,6 +724,23 @@ public abstract class Window2D implements HUDDisplayable {
             return view.isVisibleUser();
         } else {
             return false;
+        }
+    }
+
+    /**
+     * If necessary, do the first-visible initialization.
+     */
+    private void performFirstVisibleInitialization () {
+        if (visibleApp) {
+            FirstVisibleInitializer fvi = app.getFirstVisibleInitializer();
+            if (fvi != null) {
+                float width3D = size.width * pixelScale.x;
+                float height3D = size.height * pixelScale.y;
+                fvi.initialize(width3D, height3D);
+
+                // Make it one time only
+                app.setFirstVisibleInitializer(null);
+            }
         }
     }
 

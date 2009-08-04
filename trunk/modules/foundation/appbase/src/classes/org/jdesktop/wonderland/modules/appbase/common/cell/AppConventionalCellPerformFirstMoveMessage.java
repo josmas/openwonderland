@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.common.cell;
 
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -27,27 +28,27 @@ import org.jdesktop.wonderland.common.messages.Message;
  * @author deronj
  */
 @InternalAPI
-public class AppConventionalCellSetConnectionInfoMessage extends Message {
+public class AppConventionalCellPerformFirstMoveMessage extends Message {
 
-    /** The ID of the cell whose connection info is to be changed. */
+    /** The ID of the cell who is to be moved. */
     private CellID cellID;
-    /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
-    private String connectionInfo;
+    /** The transform of the cell. */
+    private CellTransform cellTransform;
 
     /** The default constructor */
-    public AppConventionalCellSetConnectionInfoMessage() {
+    public AppConventionalCellPerformFirstMoveMessage() {
     }
 
     /**
-     * Creates a new instance of AppConventionalSetConnectionInfoMessage.
+     * Creates a new instance of AppConventionalPerformFirstMoveMessage.
      * 
      * @param cellID The ID of the cell whose connection info is to be changed.
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between 
      * master and slave.
      */
-    public AppConventionalCellSetConnectionInfoMessage(CellID cellID, String connectionInfo) {
+    public AppConventionalCellPerformFirstMoveMessage(CellID cellID, CellTransform cellTransform) {
         this.cellID = cellID;
-        this.connectionInfo = connectionInfo;
+        this.cellTransform = cellTransform;
     }
 
     /**
@@ -65,17 +66,17 @@ public class AppConventionalCellSetConnectionInfoMessage extends Message {
     }
 
     /**
-     * Sets the subclass data of the message.
+     * Sets the cell transform of the message.
      */
-    public void setConnectionInfo(String connInfo) {
-        connectionInfo = connInfo;
+    public void setCellTransform(CellTransform cellTransform) {
+        this.cellTransform = cellTransform;
     }
 
     /**
-     * Returns the subclass data.
+     * Returns the cell transform.
      */
-    public String getConnectionInfo() {
-        return connectionInfo;
+    public CellTransform getCellTransform () {
+        return cellTransform;
     }
 }
 
