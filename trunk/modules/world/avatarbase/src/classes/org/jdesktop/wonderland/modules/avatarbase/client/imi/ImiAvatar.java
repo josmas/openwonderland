@@ -295,6 +295,10 @@ public class ImiAvatar implements AvatarSPI {
 
             if (cp.isMale()) {
                 Manipulator.setSkinTone(wlc, new Color(177.0f / 255.0f, 84.0f / 255.0f, 24.0f / 255.0f, 1.0f));
+                Manipulator.setShirtColor(wlc, new Color(83.0f / 255.0f, 154.0f / 255.0f, 157.0f / 255.0f, 1));
+            } else {
+            // female 
+                Manipulator.setShirtColor(wlc, new Color(244.0f / 255.0f, 236.0f / 255.0f, 83.0f / 255.0f, 1));
             }
 //        }
         return wlc;

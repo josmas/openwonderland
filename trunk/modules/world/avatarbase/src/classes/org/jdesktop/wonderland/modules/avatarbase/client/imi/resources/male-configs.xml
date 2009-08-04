@@ -124,6 +124,12 @@
         <model>assets/models/collada/Hair/MaleHair/FG_Male01HairDefaults.dae</model>
         <shapes>Male_PartRightShape</shapes>
     </hair>
+    <hair>
+        <name>Bald</name>
+        <description>Bald</description>
+        <model></model>
+        <shapes></shapes>
+    </hair>
 
     <!-- HANDS -->
     <hands>

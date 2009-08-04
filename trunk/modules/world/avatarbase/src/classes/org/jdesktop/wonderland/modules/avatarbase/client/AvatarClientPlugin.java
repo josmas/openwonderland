@@ -180,13 +180,14 @@ public class AvatarClientPlugin extends BaseClientPlugin
         chaseCameraMI = new JRadioButtonMenuItem(bundle.getString("Chase_Camera"));
         chaseCameraMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent arg0) {
-                Vector3f offsetVec = new Vector3f(0.0f, 4.0f, -10.0f);
+                Vector3f offsetVec = new Vector3f(0.0f, 2.5f, -4.0f);
                 // change camera hook
                 if (camState == null) {
                     camModel = (ChaseCamModel) CameraModels.getCameraModel(ChaseCamModel.class);
                     camState = new ChaseCamState(offsetVec, new Vector3f(0.0f, 1.8f, 0.0f));
                     camState.setDamping(1.7f);
                     camState.setLookAtDamping(1.7f);
+                    camState.setyModifier(0);
                 }
                 camState.setCameraPosition(avatarCellRenderer.getCell().getLocalTransform().getTranslation(null).add(offsetVec));
                 camState.setTargetCharacter(avatarCellRenderer.getAvatarCharacter());
@@ -213,10 +214,11 @@ public class AvatarClientPlugin extends BaseClientPlugin
                             WonderlandCharacterParams params = WonderlandCharacterParams.loadMale();
                             // extra config
                             params = WonderlandCharacterParams.loadMale(); // Get defaults, init metadata
-                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HAIR, "Male_PartLeftShape");
-                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HEAD, "FaceGen Low-Poly Head");
-                            params.setElementPreset(WonderlandCharacterParams.ConfigType.TORSO, "Polo Shirt");
-                            params.setElementPreset(WonderlandCharacterParams.ConfigType.LEGS, "Shorts");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HAIR, "Male_PartLeftShape"); // Overridden with bald
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HEAD, "FaceGen Medium-Poly Head 2"); // Black guy
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.TORSO, "Dress Shirt");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.LEGS, "Jeans");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.FEET, "Dress Shoes");
                             avatar.setAvatarParams(params);
                             // Register the avatar
                             registry.registerAvatar(avatar, true);
@@ -265,9 +267,11 @@ public class AvatarClientPlugin extends BaseClientPlugin
                             WonderlandCharacterParams params = WonderlandCharacterParams.loadFemale();
                             // extra config
                             params = WonderlandCharacterParams.loadFemale(); // Get defaults, init metadata
-                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HAIR, "Med_Pt_BangzShape");
-                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HEAD, "Female Low-Poly Head");
-                            params.setElementPreset(WonderlandCharacterParams.ConfigType.LEGS, "Dress Pants");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HAIR, "Med_pt_CenterShape");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.HEAD, "Female C Head");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.LEGS, "Jeans");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.TORSO, "Dress Shirt");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.FEET, "Bare Feet");
                             avatar.setAvatarParams(params);
                             // Register the avatar
                             registry.registerAvatar(avatar, true);
@@ -576,7 +580,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
             if (frame instanceof IMIDemoFrame) { // Only until the MainFrame interface gets this method
                 ((IMIDemoFrame) frame).addToCameraChoices(chaseCameraMI, 3);
                 ((IMIDemoFrame) frame).addToAvatarsMenu(maleAvatarMI);
-              //((IMIDemoFrame) frame).addToAvatarsMenu(femaleAvatarMI);
+              ((IMIDemoFrame) frame).addToAvatarsMenu(femaleAvatarMI);
 
             }
             else {
