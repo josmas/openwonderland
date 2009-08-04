@@ -576,7 +576,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
             if (frame instanceof IMIDemoFrame) { // Only until the MainFrame interface gets this method
                 ((IMIDemoFrame) frame).addToCameraChoices(chaseCameraMI, 3);
                 ((IMIDemoFrame) frame).addToAvatarsMenu(maleAvatarMI);
-                ((IMIDemoFrame) frame).addToAvatarsMenu(femaleAvatarMI);
+              //((IMIDemoFrame) frame).addToAvatarsMenu(femaleAvatarMI);
 
             }
             else {
