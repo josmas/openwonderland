@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.avatarbase.client.imi;
 
 import imi.character.CharacterParams;
 import imi.character.Manipulator;
+import imi.scene.PNode;
 import java.awt.Color;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -250,6 +251,11 @@ public class ImiAvatar implements AvatarSPI {
         cp.setBaseURL(baseURL);
 
         WorldManager wm = ClientContextJME.getWorldManager();
+        if (cp.isMale())
+        {
+            cp.setApplySkinToneOnHead(false);
+            cp.clearAttachmentInstructions();
+        }
         WlAvatarCharacter wlc = new WlAvatarCharacter.WlAvatarCharacterBuilder(cp, wm).addEntity(false).build();
 
         // We need to manually apply all of the colors if they are present
@@ -281,13 +287,16 @@ public class ImiAvatar implements AvatarSPI {
             float b = ((ColorConfigElement)ce).getB();
             Manipulator.setShoesColor(wlc, new Color(r, g, b));
         }
-        ce = params.getElement(ConfigType.SKIN_COLOR);
-        if (ce != null) {
-            float r = ((ColorConfigElement)ce).getR();
-            float g = ((ColorConfigElement)ce).getG();
-            float b = ((ColorConfigElement)ce).getB();
-            Manipulator.setSkinTone(wlc, new Color(r, g, b));
-        }
+//        ce = params.getElement(ConfigType.SKIN_COLOR);
+//        if (ce != null) {
+//            float r = ((ColorConfigElement)ce).getR();
+//            float g = ((ColorConfigElement)ce).getG();
+//            float b = ((ColorConfigElement)ce).getB();
+
+            if (cp.isMale()) {
+                Manipulator.setSkinTone(wlc, new Color(177.0f / 255.0f, 84.0f / 255.0f, 24.0f / 255.0f, 1.0f));
+            }
+//        }
         return wlc;
    }
 
