@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer;
 
 import imi.character.CharacterEyes;
+import imi.character.avatar.AvatarContext.TriggerNames;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -46,21 +47,22 @@ public class GestureHUD {
     private HUD mainHUD;
     // map gestures to column, row locations on gesture HUD
     private String[][] gestures = {
-        {"Answer Cell", "0", "4"},
-        {"Take Damage", "0", "3"},
-        {"Public Speaking", "1", "4"},
-        {"Bow", "1", "3"},
-        {"Laugh", "2", "4"},
-        {"Clap", "2", "3"},
-        {"Cheer", "2", "2"},
-        {"Left Wink", "2", "1"},
-        {"Right Wink", "2", "0"},
-        {"Wave", "3", "4"},
-        {"Raise Hand", "3", "3"},
-        {"Shake Hands", "3", "2"},
-        {"Follow", "3", "1"},
-        {"Yes", "4", "4"},
-        {"No", "4", "3"},};
+        {"Answer Cell", "0", "1"},
+        {"Sit", "0", "2"},
+        /*{"Take Damage", "0", "3"},*/
+        {"Public Speaking", "1", "0"},
+        {"Bow", "1", "1"},
+        {"Shake Hands", "1", "2"},
+        {"Cheer", "2", "0"},
+        {"Clap", "2", "1"},
+        {"Laugh", "2", "2"},
+        {"Wave", "3", "2"},
+        {"Raise Hand", "3", "1"},
+        {"Follow", "3", "0"},
+        /*{"Left Wink", "4", "0"},*/
+        {"Wink", "4", "0"},
+        {"No", "4", "1"},
+        {"Yes", "4", "2"}};
     private int leftMargin = 20;
     private int bottomMargin = 10;
     private int rowHeight = 30;
@@ -121,8 +123,7 @@ public class GestureHUD {
                 // remove existing gesture buttons
                 for (String name : buttonMap.keySet()) {
                     HUDButton button = buttonMap.get(name);
-                    button.setVisible(false);
-                // REMIND: really delete button
+                    mainHUD.removeComponent(button);
                 }
                 buttonMap.clear();
                 gestureMap.clear();
@@ -147,8 +148,9 @@ public class GestureHUD {
                 }
 
                 // Add the left and right wink
-                gestureMap.put("Left Wink", "LeftWink");
-                gestureMap.put("Right Wink", "RightWink");
+                //gestureMap.put("Left Wink", "LeftWink");
+                gestureMap.put("Wink", "RightWink");
+                gestureMap.put("Sit", "Sit");
 
                 // Create HUD buttons for each of the actions
                 for (String name : gestureMap.keySet()) {
@@ -171,12 +173,14 @@ public class GestureHUD {
                                 public void actionPerformed(ActionEvent event) {
                                     String action = gestureMap.get(event.getActionCommand());
                                     logger.info("playing animation: " + event.getActionCommand());
-                                    if (action.equals("LeftWink") == true) {
-                                        CharacterEyes eyes = avatar.getEyes();
-                                        eyes.wink(false);
+                                    if (action.equals("Sit") == true) {
+                                        avatar.triggerActionStart(TriggerNames.SitOnGround);
                                     } else if (action.equals("RightWink") == true) {
                                         CharacterEyes eyes = avatar.getEyes();
-                                        eyes.wink(true);
+                                        eyes.wink(false);
+//                                  } else if (action.equals("RightWink") == true) {
+//                                        CharacterEyes eyes = avatar.getEyes();
+//                                        eyes.wink(true);
                                     } else {
                                         avatar.playAnimation(action);
                                     }
