@@ -75,7 +75,13 @@ public class WlAvatarCharacter extends Avatar {
 //            if (attributeParams != null && !attributeParams.isUseSimpleStaticModel())
 //            {
 //                System.out.println("\n\nInitializing collision component IMI\n\n");
+//                Thread.dumpStack();
 //                initializer(new CharacterCollisionInitialization(true, false, false, false)); // disables picking and gravity
+//            }
+//            else
+//            {
+//                System.out.println("\n\nNOT initializing the collision component IMI\n\n");
+//                Thread.dumpStack();
 //            }
             WlAvatarCharacter result = new WlAvatarCharacter(this);
             return result;

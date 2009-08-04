@@ -3003,7 +3003,7 @@ dereferenceXRefs=0;cameraXFov=0;cameraYFov=1</comments>
                       </technique>
                     </extra>
                   </node>
-                  <node id="HeadAttach" name="HeadAttach" type="JOINT">
+                  <node id="HeadAttach" name="HairAttach" type="JOINT">
                     <matrix sid="transform">-1 0 0 0.001988 0 0.985514 0.169593 0.031325 0 0.169593 -0.985514 0.017886 0 0 0 1</matrix>
                     <extra>
                       <technique profile="MAYA">
