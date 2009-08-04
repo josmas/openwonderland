@@ -99,14 +99,14 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
                 }
             });
             return null;
+        } finally {
+            // Close down the dialog indicating success
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    dialog.setVisible(false);
+                }
+            });
         }
-
-        // Close down the dialog indicating success
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                dialog.setVisible(false);
-            }
-        });
         
         // Finally, go ahead and create the cell.
         createCell(uri);
