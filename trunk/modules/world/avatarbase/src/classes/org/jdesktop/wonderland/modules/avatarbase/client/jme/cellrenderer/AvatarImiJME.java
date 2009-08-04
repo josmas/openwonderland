@@ -41,6 +41,7 @@ import imi.character.CharacterMotionListener;
 import imi.character.CharacterParams;
 import imi.character.CharacterProcessor;
 import imi.character.MaleAvatarParams;
+import imi.character.Manipulator;
 import imi.character.avatar.Avatar;
 import imi.character.avatar.AvatarController;
 import imi.character.statemachine.GameContextListener;
@@ -381,6 +382,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         if (newAvatar == null) {
             return;
         }
+
+        // Lou - ambient
+        Manipulator.setAmbient(newAvatar, 0.5f);
 
         // Add all of the default components to the renderer, but remove the
         // collision component, since we use our own collision graph

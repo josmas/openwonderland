@@ -271,7 +271,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
                             params.setElementPreset(WonderlandCharacterParams.ConfigType.HEAD, "Female C Head");
                             params.setElementPreset(WonderlandCharacterParams.ConfigType.LEGS, "Jeans");
                             params.setElementPreset(WonderlandCharacterParams.ConfigType.TORSO, "Dress Shirt");
-                            params.setElementPreset(WonderlandCharacterParams.ConfigType.FEET, "Bare Feet");
+                            params.setElementPreset(WonderlandCharacterParams.ConfigType.FEET, "Dress Shoes");
                             avatar.setAvatarParams(params);
                             // Register the avatar
                             registry.registerAvatar(avatar, true);
