@@ -29,10 +29,12 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.OKMessage;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellPerformFirstMoveMessage;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -65,31 +67,39 @@ public class AppConventionalConnectionHandler implements ClientConnectionHandler
         // Nothing to do
     }
     
-    public void messageReceived (WonderlandClientSender sender, WonderlandClientID clientID, Message message)
+    public void messageReceived (WonderlandClientSender sender, WonderlandClientID clientID, Message message) 
     {
-        if (!(message instanceof AppConventionalCellSetConnectionInfoMessage)) {
+        if (message instanceof AppConventionalCellSetConnectionInfoMessage) {
+            handleSetConnectionInfo(sender, clientID, (AppConventionalCellSetConnectionInfoMessage)message);
+
+        } else if (message instanceof AppConventionalCellPerformFirstMoveMessage) {
+            handlePerformFirstMove(sender, clientID, (AppConventionalCellPerformFirstMoveMessage)message);
+
+        } else {
+            logger.warning("Unexpected message type: " + message.getClass());
             sender.send(clientID, new ErrorMessage(message.getMessageID(),
 						  "Unexpected message type: " + message.getClass()));
-            return;
         }
+    }
 
-        AppConventionalCellSetConnectionInfoMessage msg =
-            (AppConventionalCellSetConnectionInfoMessage) message;           
+    public void handleSetConnectionInfo (WonderlandClientSender sender, WonderlandClientID clientID, 
+                                         AppConventionalCellSetConnectionInfoMessage msg) {
+
         CellID cellID = msg.getCellID();
         CellMO cell = CellManagerMO.getCell(cellID);
         if (cell == null) {
-            sender.send(clientID, new ErrorMessage(message.getMessageID(), "Cannot find cell " + cellID));
+            sender.send(clientID, new ErrorMessage(msg.getMessageID(), "Cannot find cell " + cellID));
             return;
         }
         if (!(cell instanceof AppConventionalCellMO)) {
-            sender.send(clientID, new ErrorMessage(message.getMessageID(), "Cell " + cellID + 
+            sender.send(clientID, new ErrorMessage(msg.getMessageID(), "Cell " + cellID +
                                                        " is not an AppConventionalCellMO."));
             return;
         }
 
         // The connection info must be non-null
         if (msg.getConnectionInfo() == null) {
-            sender.send(clientID, new ErrorMessage(message.getMessageID(),
+            sender.send(clientID, new ErrorMessage(msg.getMessageID(),
                                                    "Cannot set null connection info for cell " + cellID));
             return;
         }
@@ -99,12 +109,45 @@ public class AppConventionalConnectionHandler implements ClientConnectionHandler
         appConvCell.setConnectionInfo(msg.getConnectionInfo());
 
         // Reply success
-        sender.send(clientID, new OKMessage(message.getMessageID()));
+        sender.send(clientID, new OKMessage(msg.getMessageID()));
 
         // Now send this message to all clients to notify them of the change
-        sender.send(message);
+        sender.send(msg);
     }
   
+    private void handlePerformFirstMove (WonderlandClientSender sender, WonderlandClientID clientID, 
+                                         AppConventionalCellPerformFirstMoveMessage msg) {
+
+        CellID cellID = msg.getCellID();
+        CellMO cell = CellManagerMO.getCell(cellID);
+        if (cell == null) {
+            sender.send(clientID, new ErrorMessage(msg.getMessageID(), "Cannot find cell " + cellID));
+            return;
+        }
+        if (!(cell instanceof AppConventionalCellMO)) {
+            sender.send(clientID, new ErrorMessage(msg.getMessageID(), "Cell " + cellID +
+                                                       " is not an AppConventionalCellMO."));
+            return;
+        }
+        AppConventionalCellMO appCell = (AppConventionalCellMO) cell;
+
+        // Only the first message moves the cell; ignore all subsequent
+        if (appCell.isInitialPlacementDone()) return;
+
+        // Make sure the cell has a movable component
+        MovableComponentMO mc = appCell.getComponent(MovableComponentMO.class);
+        if (mc == null) {
+            mc = new MovableComponentMO(appCell);
+            appCell.addComponent(mc);
+        }
+
+        // Request the move
+        logger.warning("Perform first move to transform = " + msg.getCellTransform());
+        mc.moveRequest(null, msg.getCellTransform());
+
+        appCell.setInitialPlacementDone(true);
+    }
+
     /**
      * Get the channel used for sending to all clients of this type
      * @return the channel to send to all clients

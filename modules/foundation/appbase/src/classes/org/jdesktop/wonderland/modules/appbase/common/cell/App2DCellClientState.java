@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.common.cell;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * The cell client state information used by generic 2D apps.
@@ -33,6 +34,10 @@ public class App2DCellClientState extends CellClientState {
     public static final float DEFAULT_PIXEL_SCALE = 0.01f;
     /** The pixel scale. */
     private Vector2f pixelScale = new Vector2f(DEFAULT_PIXEL_SCALE, DEFAULT_PIXEL_SCALE);
+    /** The view transform of the cell creator. */
+    private CellTransform creatorViewTransform;
+    /** Whether the initial placement of the cell has been completed. */
+    private boolean initialPlacementDone;
 
     /**
      * Create a new instance of App2DCellClientState with the default pixel scale.
@@ -42,7 +47,8 @@ public class App2DCellClientState extends CellClientState {
     }
 
     /**
-     * Create a new instance of App2DCellClientState with the given pixel scale.
+     * Create a new instance of App2DCellClientState with the given pixel scale and a null 
+     * creator view transform.
      */
     public App2DCellClientState(Vector2f pixelScale) {
         super();
@@ -63,6 +69,34 @@ public class App2DCellClientState extends CellClientState {
      */
     public Vector2f getPixelScale() {
         return new Vector2f(pixelScale);
+    }
+
+    /**
+     * Specify the creator view transform.
+     */
+    public void setCreatorViewTransform (CellTransform creatorViewTransform) {
+        this.creatorViewTransform = creatorViewTransform;
+    }
+
+    /**
+     * Return the creator view transform.
+     */
+    public CellTransform getCreatorViewTransform () {
+        return creatorViewTransform;
+    }
+
+    /**
+     * Specify whether the initial placement of the cell has been done.
+     */
+    public void setInitialPlacementDone (boolean done) {
+        initialPlacementDone = done;
+    }
+
+    /**
+     * Return whether the initial placement of the cell has been done.
+     */
+    public boolean isInitialPlacementDone () {
+        return initialPlacementDone;
     }
 }
 

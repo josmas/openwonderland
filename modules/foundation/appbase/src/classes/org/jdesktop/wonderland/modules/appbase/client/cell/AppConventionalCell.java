@@ -27,7 +27,10 @@ import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellPerformFirstMoveMessage;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
 /**
  * The client-side cell for an 2D conventional application.
@@ -148,12 +151,13 @@ public abstract class AppConventionalCell extends App2DCell {
 
                 // Master case
 
-                connectionInfo = startMaster(appName, command, false);
-                if (connectionInfo == null) {
+                StartMasterReturnInfo ret = startMaster(appName, command);
+                if (ret == null || ret.connInfo == null) {
                     logger.warning("Cannot launch app " + appName);
                     // TODO: what else to do? Delete the cell? If so, how?
                     return;
                 }
+                connectionInfo = ret.connInfo;
                 logger.info("AppConventional cellID " + getCellID() + " connectionInfo = " + 
                             connectionInfo);
 
@@ -166,6 +170,8 @@ public abstract class AppConventionalCell extends App2DCell {
                 // message synchronously and wait for a response because we are already in a
                 // darkstar message handler.
                 connection.send(msg);
+
+                setApp(ret.app);
 
             } else {
 
@@ -211,30 +217,51 @@ public abstract class AppConventionalCell extends App2DCell {
     }
 
     private void startTheSlave (String connectionInfo) {
-        if (startSlave(connectionInfo)) {
+        App2D theApp = startSlave(connectionInfo);
+        if (theApp != null) {
             slaveStarted = true;
+            setApp(theApp);
             logger.info("Connected slave to app at " + connectionInfo);
         } else {
             slaveStarted = false;
-            logger.warning("Could not connect to slave at " + connectionInfo);
+            logger.warning("Could not create slave app, connectionInfo" + connectionInfo);
         }
     }
+
+    /** Information returned from startMaster. */
+    public static class StartMasterReturnInfo {
+        /** The app created. */
+        public App2D app;
+        /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
+        public String connInfo;
+        public StartMasterReturnInfo (App2D app, String connInfo) {
+            this.app = app;
+            this.connInfo = connInfo;
+        }                                                                        
+    }
+
 
     /** 
      * Launch a master client.
      * @param appName The name of the app.
      * @param command The command string which launches the master app program (used only by master).
-     * @param initInBestView Force this cell to be initialized in approximately the best view
-     * based on the viewer position at the time of client cell creation.
-     * @return Subclass-specific data for making a peer-to-peer connection between master and slave.
+     * @return The app created and the subclass-specific connect info. 
      */
-    protected abstract String startMaster(String appName, String command, boolean initInBestView);
+    protected abstract StartMasterReturnInfo startMaster(String appName, String command);
 
     /** 
      * Launch a slave client.
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between 
      * master and slave.
-     * @return True if the slave was successfully started.
+     * @return the app, if successfully started. Otherwise returns null.
      */
-    protected abstract boolean startSlave(String connectionInfo);
+    protected abstract App2D startSlave(String connectionInfo);
+
+
+    public void performFirstMove (CellTransform cellTransform) {
+        AppConventionalCellPerformFirstMoveMessage msg =
+            new AppConventionalCellPerformFirstMoveMessage(getCellID(), cellTransform);
+        connection.send(msg);
+    }
+
 }

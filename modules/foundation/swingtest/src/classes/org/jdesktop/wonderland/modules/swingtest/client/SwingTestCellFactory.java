@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.swingtest.common.cell.SwingTestCellServerState;
+import org.jdesktop.wonderland.modules.appbase.client.swing.SwingCellFactoryUtils;
 
 /**
  * The cell factory for the Swing Test.
@@ -47,6 +48,9 @@ public class SwingTestCellFactory implements CellFactorySPI {
         Map<String, String> metadata = new HashMap();
         metadata.put("sizing-hint", "2.0");
         state.setMetaData(metadata);
+
+        // Minor Optimization
+        SwingCellFactoryUtils.skipSystemInitialPlacement(state);
 
         return (T)state;
     }

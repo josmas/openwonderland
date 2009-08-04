@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.AppXrw;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwMaster;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwSlave;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwConnectionInfo;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
 /**
  * An Xremwin client-side app cell.
@@ -54,36 +55,39 @@ public class AppCellXrw extends AppConventionalCell {
     /**
      * {@inheritDoc}
      */
-    protected String startMaster(String appName, String command, boolean initInBestView) {
+    protected AppConventionalCell.StartMasterReturnInfo startMaster(String appName, String command) {
+        App2D theApp = null;
         try {
-            app = new AppXrwMaster(appName, command, pixelScale,
-                                   ProcessReporterFactory.getFactory().create(appName), session);
+            theApp = new AppXrwMaster(appName, command, pixelScale,
+                                      ProcessReporterFactory.getFactory().create(appName), session);
         } catch (InstantiationException ex) {
             return null;
         }
 
-        ((AppConventional) app).addDisplayer(this);
+        ((AppConventional) theApp).addDisplayer(this);
 
         // Now it is safe to enable the master client loop
-        ((AppXrw)app).getClient().enable();
+        ((AppXrw)theApp).getClient().enable();
 
-        return ((AppXrwMaster)app).getConnectionInfo().toString();
+        return new AppConventionalCell.StartMasterReturnInfo(theApp,
+                       ((AppXrwMaster)theApp).getConnectionInfo().toString());
     }
 
     /**
      * {@inheritDoc}
      */
-    protected boolean startSlave(String connectionInfo) {
+    protected App2D startSlave(String connectionInfo) {
+        App2D theApp = null;
         try {
-            app = new AppXrwSlave(appName, pixelScale,
-                                  ProcessReporterFactory.getFactory().create(appName),
-                                  new AppXrwConnectionInfo(connectionInfo), session, this);
+            theApp = new AppXrwSlave(appName, pixelScale,
+                                     ProcessReporterFactory.getFactory().create(appName),
+                                     new AppXrwConnectionInfo(connectionInfo), session, this);
 
         } catch (InstantiationException ex) {
             ex.printStackTrace();
-            return false;
+            return null;
         }
 
-        return true;
+        return theApp;
     }
 }

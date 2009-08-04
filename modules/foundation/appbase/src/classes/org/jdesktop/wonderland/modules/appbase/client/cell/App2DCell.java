@@ -50,6 +50,8 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
 /**
  * The generic 2D application superclass. Displays the windows of a single 2D application. 
@@ -86,6 +88,11 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     private ContextMenuFactorySPI menuFactory = null;
     private ContextMenuListener menuListener = null;
 
+    /** 
+     * The cell's first visible initializer. This is non-null if this cell has 
+     * volunteered to do the initialization.
+     */
+    private FirstVisibleInitializerCell fvi;
 
     /** 
      * Creates a new instance of App2DCell.
@@ -147,6 +154,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
 
     /**
      * Associate the app with this cell. May only be called one time.
+     * Note: this is only called by Swing app cells.
      *
      * @param app The world cell containing the app.
      * @throws IllegalArgumentException If the app already is associated with a cell .
@@ -162,6 +170,10 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         }
 
         this.app = app;
+
+        if (App2D.doAppInitialPlacement) {
+            app.setFirstVisibleInitializer(fvi);
+        }
     }
 
     /**
@@ -178,6 +190,16 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     public void setClientState(CellClientState clientState) {
         super.setClientState(clientState);
         pixelScale = ((App2DCellClientState) clientState).getPixelScale();
+
+        logger.warning("initialPlacementDone = " + 
+                       ((App2DCellClientState) clientState).isInitialPlacementDone());
+
+        if (App2D.doAppInitialPlacement &&
+            !((App2DCellClientState) clientState).isInitialPlacementDone()) {
+            // Initial cell placement hasn't yet been done. Volunteer to do it.
+            fvi = new FirstVisibleInitializerCell(this, 
+                          ((App2DCellClientState) clientState).getCreatorViewTransform());
+        }
     }
 
     /**
@@ -333,7 +355,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         if (app == null) return;
         synchronized (app.getAppCleanupLock()) {
             synchronized (this) {
-                if (views.remove(view)) {
+                if (views.remove((View2DCell)view)) {
                     Window2D window = view.getWindow();
                     window.removeView(view);
                     view.cleanup();
@@ -385,6 +407,14 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     // TODO: getter
     public void setViewFactory (View2DCellFactory vFactory) {
         view2DCellFactory = vFactory;
+    }
+
+    /**
+     * Performs the initial move for the cell using a special app-specific first move
+     * protocol.
+     */
+    public void performFirstMove (CellTransform cellTransform) {
+        // TODO: eventually implement for swing cells too
     }
 
     /**
