@@ -17,10 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.xremwin.client.cell;
 
+import javax.crypto.SecretKey;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.AppConventional;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporterFactory;
 import org.jdesktop.wonderland.modules.appbase.client.cell.AppConventionalCell;
@@ -28,6 +30,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.AppXrw;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwMaster;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwSlave;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwConnectionInfo;
+import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwClientState;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
 /**
@@ -41,6 +44,9 @@ public class AppCellXrw extends AppConventionalCell {
     /** The session used by the cell cache of this cell to connect to the server */
     private WonderlandSession session;
 
+    /** The shared secret */
+    private SecretKey secret;
+
     /**
      * Create an instance of AppCellXrw.
      *
@@ -53,13 +59,23 @@ public class AppCellXrw extends AppConventionalCell {
     }
 
     /**
+     * @{inheritDoc}
+     */
+    @Override
+    public void setClientState(CellClientState clientState) {
+        super.setClientState(clientState);
+
+        secret = ((AppCellXrwClientState) clientState).getSecret();
+    }
+
+    /**
      * {@inheritDoc}
      */
     protected AppConventionalCell.StartMasterReturnInfo startMaster(String appName, String command) {
         App2D theApp = null;
         try {
-            theApp = new AppXrwMaster(appName, command, pixelScale,
-                                      ProcessReporterFactory.getFactory().create(appName), session);
+            app = new AppXrwMaster(appName, command, getCellID(), pixelScale,
+                                   ProcessReporterFactory.getFactory().create(appName), session);
         } catch (InstantiationException ex) {
             return null;
         }
@@ -79,10 +95,9 @@ public class AppCellXrw extends AppConventionalCell {
     protected App2D startSlave(String connectionInfo) {
         App2D theApp = null;
         try {
-            theApp = new AppXrwSlave(appName, pixelScale,
-                                     ProcessReporterFactory.getFactory().create(appName),
-                                     new AppXrwConnectionInfo(connectionInfo), session, this);
-
+            app = new AppXrwSlave(appName, pixelScale,
+                                  ProcessReporterFactory.getFactory().create(appName),
+                                  new AppXrwConnectionInfo(connectionInfo, secret), session, this);
         } catch (InstantiationException ex) {
             ex.printStackTrace();
             return null;

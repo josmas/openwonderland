@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.logging.Level;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  * The main logic for the SAS Xremwin provider client.
@@ -143,7 +144,7 @@ public class SasXrwProviderMain
      * {@inheritDoc}
      */
     public String launch (String appName, String command, SasProviderConnection connection, 
-                          MessageID launchMessageID) {
+                          MessageID launchMessageID, CellID cellID) {
         AppXrwMaster app = null;
         
         // resolve the command based on the app name. A command value of null
@@ -154,7 +155,7 @@ public class SasXrwProviderMain
         }
 
         try {
-            app = new AppXrwMaster(appName, command, null, 
+            app = new AppXrwMaster(appName, command, cellID, null,
                                    ProcessReporterFactory.getFactory().create(appName), session, true);
         } catch (InstantiationException ex) {
             return null;

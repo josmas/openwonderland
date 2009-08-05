@@ -77,6 +77,21 @@ public class MasterSocketSet implements Runnable {
     }
 
     /**
+     * Close a particular child socket
+     */
+    public void close (BigInteger slaveID) {
+        MasterClientSocket mcs;
+        synchronized (clientSocketMap) {
+	    mcs = clientSocketMap.get(slaveID);
+	}
+        if (mcs == null) {
+            logger.warning("Slave to be closed isn't connected, slaveID = " + slaveID);
+            return;
+        }
+	mcs.close();
+    }
+
+    /**
      * Closes this MasterSocketSet. Also closes the server socket which was passed into the constructor.
      */
     public void close() {

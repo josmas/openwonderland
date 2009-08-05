@@ -18,11 +18,17 @@
 package org.jdesktop.wonderland.modules.xremwin.server.cell;
 
 import java.util.logging.Logger;
+import javax.crypto.SecretKey;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.security.annotation.Actions;
 import org.jdesktop.wonderland.modules.appbase.server.cell.AppConventionalCellMO;
+import org.jdesktop.wonderland.modules.xremwin.common.TakeControlAction;
+import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwClientState;
 import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwServerState;
+import org.jdesktop.wonderland.modules.xremwin.server.XrwSecretManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -31,6 +37,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author deronj
  */
 @ExperimentalAPI
+@Actions(TakeControlAction.class)
 public class AppCellMOXrw extends AppConventionalCellMO {
 
     private static final Logger logger = Logger.getLogger(AppCellMOXrw.class.getName());
@@ -48,6 +55,25 @@ public class AppCellMOXrw extends AppConventionalCellMO {
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.xremwin.client.cell.AppCellXrw";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected CellClientState getClientState(CellClientState clientState,
+                                             WonderlandClientID clientID,
+                                             ClientCapabilities capabilities)
+    {
+        if (clientState == null) {
+            clientState = new AppCellXrwClientState();
+        }
+
+        // find the shared secret to give to the client
+        SecretKey secret = XrwSecretManager.getInstance().getSecret(clientID);
+        ((AppCellXrwClientState) clientState).setSecret(secret);
+
+        return super.getClientState(clientState, clientID, capabilities);
     }
 
     /**

@@ -20,6 +20,10 @@ package org.jdesktop.wonderland.modules.security.client;
 
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -42,12 +46,18 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.modules.security.common.ActionDTO;
 import org.jdesktop.wonderland.modules.security.common.CellPermissions;
 import org.jdesktop.wonderland.modules.security.common.Permission;
@@ -65,7 +75,7 @@ public class SecurityComponentProperties extends JPanel
 {
     private CellPropertiesEditor editor = null;
     private PermTableModel perms = new PermTableModel();
-    private EditPermsTableModel editPerms = null;
+    private DefaultMutableTreeNode edit = new DefaultMutableTreeNode("Permissions");
 
     // The original permissions before any editing took place
     private CellPermissions originalPermissions = null;
@@ -82,12 +92,31 @@ public class SecurityComponentProperties extends JPanel
                 new EditButtonSelectionListener());
         perms.addTableModelListener(new TableDirtyListener());
 
-        editPermsTable.setDefaultRenderer(ActionDTO.class,
-                                          new PermissionTableCellRenderer());
-        editPermsTable.setDefaultRenderer(Permission.Access.class,
-                                          new AccessTableCellRenderer());
-        editPermsTable.setDefaultEditor(Permission.Access.class,
-                                        new AccessTableCellEditor());
+        editPermsTree.setModel(new DefaultTreeModel(edit));
+        editPermsTree.addTreeSelectionListener(new TreeSelectionListener() {
+            public void valueChanged(TreeSelectionEvent e) {
+                TreePath path = e.getPath();
+                if (path == null) {
+                    editPermPermCombo.setEnabled(false);
+                    editPermDescription.setText("Choose a permission.");
+                    return;
+                }
+
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode)
+                        path.getLastPathComponent();
+                ActionHolder action = (ActionHolder) node.getUserObject();
+                if (action.getAccess() == null) {
+                    editPermPermCombo.setSelectedIndex(0);
+                } else if (action.getAccess() == Permission.Access.GRANT) {
+                    editPermPermCombo.setSelectedIndex(1);
+                } else if (action.getAccess() == Permission.Access.DENY) {
+                    editPermPermCombo.setSelectedIndex(2);
+                }
+
+                editPermPermCombo.setEnabled(true);
+                editPermDescription.setText(action.getAction().getToolTip());
+            }
+        });
 
         addNameTF.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
@@ -202,7 +231,13 @@ public class SecurityComponentProperties extends JPanel
         editPermsOKButton = new javax.swing.JButton();
         editPermsCancelButton = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
-        editPermsTable = new javax.swing.JTable();
+        editPermsTree = new javax.swing.JTree();
+        editPermPermCombo = new javax.swing.JComboBox();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        editPermDescription = new javax.swing.JTextArea();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        editPermsPrincipalLabel = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
@@ -305,30 +340,27 @@ public class SecurityComponentProperties extends JPanel
             }
         });
 
-        editPermsTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+        jScrollPane2.setViewportView(editPermsTree);
 
-            },
-            new String [] {
-                "Name", "Permission"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
+        editPermPermCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Unspecified", "Granted", "Denied" }));
+        editPermPermCombo.setEnabled(false);
+        editPermPermCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editPermPermComboActionPerformed(evt);
             }
         });
-        jScrollPane2.setViewportView(editPermsTable);
+
+        editPermDescription.setColumns(20);
+        editPermDescription.setEditable(false);
+        editPermDescription.setLineWrap(true);
+        editPermDescription.setRows(5);
+        jScrollPane3.setViewportView(editPermDescription);
+
+        jLabel4.setText("Description:");
+
+        jLabel5.setText("Permission:");
+
+        editPermsPrincipalLabel.setText("Permissions for ");
 
         org.jdesktop.layout.GroupLayout editPermsDialogLayout = new org.jdesktop.layout.GroupLayout(editPermsDialog.getContentPane());
         editPermsDialog.getContentPane().setLayout(editPermsDialogLayout);
@@ -338,17 +370,39 @@ public class SecurityComponentProperties extends JPanel
                 .addContainerGap()
                 .add(editPermsDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, editPermsDialogLayout.createSequentialGroup()
+                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editPermsDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(editPermsDialogLayout.createSequentialGroup()
+                                .add(jLabel4)
+                                .add(127, 127, 127))
+                            .add(editPermsDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(jLabel5)
+                                .add(editPermPermCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 201, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 204, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(editPermsPrincipalLabel)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, editPermsDialogLayout.createSequentialGroup()
                         .add(editPermsCancelButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(editPermsOKButton))
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
+                        .add(editPermsOKButton)))
                 .addContainerGap())
         );
         editPermsDialogLayout.setVerticalGroup(
             editPermsDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, editPermsDialogLayout.createSequentialGroup()
+            .add(editPermsDialogLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                .add(editPermsPrincipalLabel)
+                .add(6, 6, 6)
+                .add(editPermsDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(editPermsDialogLayout.createSequentialGroup()
+                        .add(jLabel5)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editPermPermCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel4)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE))
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 209, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(editPermsDialogLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(editPermsOKButton)
@@ -418,11 +472,10 @@ public class SecurityComponentProperties extends JPanel
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
                         .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -477,31 +530,109 @@ public class SecurityComponentProperties extends JPanel
 
         Principal p = perms.getPrincipal(curRow);
         SortedSet<Permission> ps = perms.getPerms(curRow);
-        Set<ActionDTO> aps = perms.getAllPerms();
+        Set<ActionDTO> aps = new HashSet<ActionDTO>(perms.getAllPerms());
 
-        // clear existing rows
-        if (editPerms != null) {
-            editPerms.clear();
+        edit.removeAllChildren();
+        edit.setUserObject(new PrincipalHolder(p));
+
+        // build the tree of actions
+        Map<Action, DefaultMutableTreeNode> actions =
+                new HashMap<Action, DefaultMutableTreeNode>();
+        while (!aps.isEmpty()) {
+            for (Iterator<ActionDTO> i = aps.iterator(); i.hasNext();) {
+                ActionDTO action = i.next();
+                DefaultMutableTreeNode node = null;
+                
+                if (action.getAction().getParent() == null) {
+                    // top level action
+                    node = new DefaultMutableTreeNode(new ActionHolder(action.getAction()));
+                    edit.add(node);
+                } else if (actions.containsKey(action.getAction().getParent())) {
+                    // we found the parent of this action -- add it to
+                    // the tree
+                    node = new DefaultMutableTreeNode(new ActionHolder(action.getAction()));
+                    actions.get(action.getAction().getParent()).add(node);
+                }
+
+                if (node != null) {
+                    i.remove();
+                    actions.put(action.getAction(), node);
+
+                    // find the associated permission, if any
+                    Permission search = new Permission(p, action, null);
+                    SortedSet<Permission> tail = ps.tailSet(search);
+                    if (!tail.isEmpty() && tail.first().equals(search)) {
+                        ActionHolder ah = (ActionHolder) node.getUserObject();
+                        ah.setAccess(tail.first().getAccess());
+                    }
+                }
+            }
         }
 
-        editPerms = new EditPermsTableModel(p, aps, ps);
-        editPermsTable.setModel(editPerms);
-        editPermsTable.clearSelection();
+        // expand the tree
+        int row = 0;
+        while (row < editPermsTree.getRowCount()) {
+            editPermsTree.expandRow(row);
+            row++;
+        }
 
+        editPermsTree.setRootVisible(false);
+        editPermsPrincipalLabel.setText("Edit permissions for " + p.getId());
         editPermsDialog.pack();
         editPermsDialog.setVisible(true);
-        editPermsTable.repaint();
+        editPermsTree.repaint();
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void editPermsOKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPermsOKButtonActionPerformed
         editPermsDialog.setVisible(false);
 
-        perms.setPerms(editPerms.getPrincipal(), editPerms.toPermissions());
+        // create permissions
+        SortedSet<Permission> res = new TreeSet<Permission>();
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode)
+                editPermsTree.getModel().getRoot();
+        PrincipalHolder p = (PrincipalHolder) root.getUserObject();
+
+        // walk each child and record its permission
+        for (Enumeration e = root.depthFirstEnumeration(); e.hasMoreElements();) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
+            if (!(node.getUserObject() instanceof ActionHolder)) {
+                return;
+            }
+
+            ActionHolder ah = (ActionHolder) node.getUserObject();
+
+            if (ah.getAccess() != null) {
+                res.add(new Permission(p.getPrincipal(),
+                                       new ActionDTO(ah.getAction()),
+                                       ah.getAccess()));
+            }
+        }
+
+        perms.setPerms(p.getPrincipal(), res);
     }//GEN-LAST:event_editPermsOKButtonActionPerformed
 
     private void editPermsCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPermsCancelButtonActionPerformed
         editPermsDialog.setVisible(false);
     }//GEN-LAST:event_editPermsCancelButtonActionPerformed
+
+    private void editPermPermComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPermPermComboActionPerformed
+        TreePath path = editPermsTree.getSelectionPath();
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) 
+                path.getLastPathComponent();
+        ActionHolder ah = (ActionHolder) node.getUserObject();
+        
+        switch (editPermPermCombo.getSelectedIndex()) {
+            case 0:
+                ah.setAccess(null);
+                break;
+            case 1:
+                ah.setAccess(Permission.Access.GRANT);
+                break;
+            case 2:
+                ah.setAccess(Permission.Access.DENY);
+                break; 
+        }
+    }//GEN-LAST:event_editPermPermComboActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup addBG;
@@ -514,15 +645,21 @@ public class SecurityComponentProperties extends JPanel
     private javax.swing.JButton addSearchButton;
     private javax.swing.JRadioButton addUserRB;
     private javax.swing.JButton editButton;
+    private javax.swing.JTextArea editPermDescription;
+    private javax.swing.JComboBox editPermPermCombo;
     private javax.swing.JButton editPermsCancelButton;
     private javax.swing.JDialog editPermsDialog;
     private javax.swing.JButton editPermsOKButton;
-    private javax.swing.JTable editPermsTable;
+    private javax.swing.JLabel editPermsPrincipalLabel;
+    private javax.swing.JTree editPermsTree;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable permsTable;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
@@ -726,184 +863,46 @@ public class SecurityComponentProperties extends JPanel
         }
     }
 
-    class EditPermsTableModel extends AbstractTableModel {
-        private Principal principal;
-        private List<Permission.Access> perms;
-        private List<ActionDTO> allPerms;
+    class PrincipalHolder {
+        private Principal p;
 
-        public EditPermsTableModel(Principal principal,
-                                   Set<ActionDTO> allPerms,
-                                   SortedSet<Permission> sortedPerms)
-        {
-            this.principal = principal;
-            this.allPerms = new ArrayList<ActionDTO>(allPerms);
-
-            // order the permissions list correctly
-            this.perms = new ArrayList<Permission.Access>(allPerms.size());
-            for (ActionDTO a : allPerms) {
-                Permission p = new Permission(principal, a, null);
-                
-                SortedSet<Permission> tail = sortedPerms.tailSet(p);
-                if (tail.isEmpty() || !tail.first().equals(p)) {
-                    perms.add(null);
-                } else {
-                    perms.add(tail.first().getAccess());
-                }
-            }
+        public PrincipalHolder(Principal p) {
+            this.p = p;
         }
 
         public Principal getPrincipal() {
-            return principal;
-        }
-
-        public SortedSet<Permission> toPermissions() {
-            SortedSet<Permission> out = new TreeSet<Permission>();
-            for (int i = 0; i < allPerms.size(); i++) {
-                ActionDTO action = allPerms.get(i);
-                Permission.Access access = perms.get(i);
-
-                if (access != null) {
-                    out.add(new Permission(principal, action, access));
-                }
-            }
-
-            return out;
-        }
-
-        public void clear() {
-            int size = perms.size();
-
-            perms.clear();
-            allPerms.clear();
-
-            fireTableRowsDeleted(0, size);
-            fireTableDataChanged();
-        }
-
-        public int getRowCount() {
-            return allPerms.size();
-        }
-
-        public int getColumnCount() {
-            return 2;
-        }
-
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            switch (columnIndex) {
-                case 0:
-                    return allPerms.get(rowIndex);
-                case 1:
-                    return perms.get(rowIndex);
-                default:
-                    throw new IllegalArgumentException("Unknown column " +
-                                                       columnIndex);
-            }
+            return p;
         }
 
         @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            switch (columnIndex) {
-                case 1:
-                    perms.set(rowIndex, (Permission.Access) aValue);
-                    fireTableCellUpdated(rowIndex, columnIndex);
-                    return;
-                default:
-                    throw new IllegalStateException("Column " + columnIndex +
-                                                    " not editable.");
-            }
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            switch (column) {
-                case 0:
-                    return "Permission";
-                case 1:
-                    return "Value";
-                default:
-                    throw new IllegalStateException("Unknown column " + column);
-            }
-        }
-
-        @Override
-        public Class<?> getColumnClass(int column) {
-            switch (column) {
-                case 0:
-                    return ActionDTO.class;
-                case 1:
-                    return Permission.Access.class;
-                default:
-                    throw new IllegalStateException("Unknown column " + column);
-            }
-        }
-
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return (columnIndex == 1);
+        public String toString() {
+            return "Permssions";
         }
     }
 
-    class PermissionTableCellRenderer extends DefaultTableCellRenderer {
+    class ActionHolder {
+        private Action action;
+        private Permission.Access access;
+
+        public ActionHolder(Action action) {
+            this.action = action;
+        }
+
+        public Action getAction() {
+            return action;
+        }
+
+        public Permission.Access getAccess() {
+            return access;
+        }
+
+        public void setAccess(Permission.Access access) {
+            this.access = access;
+        }
 
         @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected,
-                                                       boolean hasFocus,
-                                                       int row, int column)
-        {
-            ActionDTO a = (ActionDTO) value;
-            String name = a.getAction().getDisplayName();
-            if (name == null) {
-                name = a.getAction().getName();
-            }
-
-            Component c = super.getTableCellRendererComponent(table, name, isSelected,
-                                                              hasFocus, row, column);
-            if (c instanceof JComponent) {
-                ((JComponent) c).setToolTipText(a.getAction().getToolTip());
-            }
-
-            return c;
-        }
-
-    }
-
-    class AccessTableCellRenderer extends DefaultTableCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected,
-                                                       boolean hasFocus,
-                                                       int row, int column)
-        {
-            Permission.Access a = (Permission.Access) value;
-            String name = "Unspecified";
-
-            if (a != null) {
-                switch (a) {
-                    case GRANT:
-                        name = "Granted";
-                        break;
-                    case DENY:
-                        name = "Denied";
-                        break;
-                }
-            }
-
-            return super.getTableCellRendererComponent(table, name, isSelected,
-                                                       hasFocus, row, column);
-        }
-    }
-
-    static class AccessTableCellEditor extends DefaultCellEditor {
-        public AccessTableCellEditor() {
-            super (createComboBox());
-        }
-
-        private static JComboBox createComboBox() {
-            JComboBox jcb = new JComboBox(new Object[] {
-                null, Permission.Access.GRANT, Permission.Access.DENY });
-            jcb.setRenderer(new AccessCBRenderer());
-            return jcb;
+        public String toString() {
+            return action.getDisplayName();
         }
     }
 

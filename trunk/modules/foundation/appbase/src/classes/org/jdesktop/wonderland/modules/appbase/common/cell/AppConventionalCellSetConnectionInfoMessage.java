@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.common.cell;
 
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
  * The app base conventional cell set connection info message.
@@ -27,10 +27,8 @@ import org.jdesktop.wonderland.common.messages.Message;
  * @author deronj
  */
 @InternalAPI
-public class AppConventionalCellSetConnectionInfoMessage extends Message {
+public class AppConventionalCellSetConnectionInfoMessage extends CellMessage {
 
-    /** The ID of the cell whose connection info is to be changed. */
-    private CellID cellID;
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
     private String connectionInfo;
 
@@ -46,24 +44,11 @@ public class AppConventionalCellSetConnectionInfoMessage extends Message {
      * master and slave.
      */
     public AppConventionalCellSetConnectionInfoMessage(CellID cellID, String connectionInfo) {
-        this.cellID = cellID;
+        super (cellID);
+
         this.connectionInfo = connectionInfo;
     }
-
-    /**
-     * Sets the cell ID of the message.
-     */
-    public void setCellID(CellID cellID) {
-        this.cellID = cellID;
-    }
-
-    /**
-     * Returns the ID of the cell.
-     */
-    public CellID getCellID() {
-        return cellID;
-    }
-
+    
     /**
      * Sets the subclass data of the message.
      */

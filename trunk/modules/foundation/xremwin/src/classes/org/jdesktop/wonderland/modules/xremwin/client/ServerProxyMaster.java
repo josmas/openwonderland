@@ -41,13 +41,19 @@ import com.jme.math.Vector3f;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.SocketException;
+import java.util.logging.Level;
+import javax.crypto.SecretKey;
+import org.jdesktop.wonderland.client.comms.ClientConnection;
+import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
 // TODO: 0.4 protocol: temporarily insert
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DisplayCursorMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.MoveCursorMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.ShowCursorMsgArgs;
+import org.jdesktop.wonderland.modules.xremwin.common.XrwSecurityConnectionType;
 
 /**
  * An implementation of a ServerProxy broadcasts to slave clients
@@ -118,6 +124,10 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
     // The client id and the user name of the last SLAVE_HELLO message received.
     private BigInteger connectingSlaveID;
     private String connectingUserName;
+
+    /** The CellID this app is associated with */
+    private CellID cellID;
+
     /** This app's Wonderland session. */
     protected WonderlandSession session;
     /** The server socket to which slaves should connect. */
@@ -146,25 +156,47 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
     /** 
      * Create a new instance of ServerXrwMaster.
      * @param session This app's Wonderland session.
+     * @param cellID The id of the cell this app is associated with.
      * @param masterHost The master host name (this host).
      * @param wsDisplayNum The X11 display number used by the window system for this app.
      * @param serverSocket The server socket to which slaves should connect.
      * @param client The client to which this proxy belongs.
      */
-    public ServerProxyMaster(WonderlandSession session, String masterHost, int wsDisplayMaster,
-                             ServerSocket serverSocket, ClientXrwMaster client) {
+    public ServerProxyMaster(WonderlandSession session, CellID cellID, String masterHost,
+                             int wsDisplayMaster, ServerSocket serverSocket, ClientXrwMaster client) {
         super(masterHost, wsDisplayMaster);
         this.session = session;
         this.serverSocket = serverSocket;
         this.client = client;
+        this.cellID = cellID;
     }
 
     public void connect() throws IOException {
+        // make sure the connection is connected on this session.  Do it in
+        // a separate thread so we don't block the Darkstar thread
+        new Thread(new Runnable() {
+            public void run() {
+                setupConnection();
+            }
+        }, "XrwSecurityConnection").start();
+
         setClientId(MASTER_CLIENT_ID);
 
         establishConnection();
 
         sf = new SlaveForwarder(this, session.getID(), serverSocket);
+    }
+
+    private void setupConnection() {
+        // make sure the security connection is available
+        if (session.getConnection(XrwSecurityConnectionType.TYPE) == null) {
+            try {
+                ClientConnection conn = new XrwSecurityConnection();
+                session.connect(conn);
+            } catch (ConnectionFailureException cfe) {
+                AppXrw.logger.log(Level.WARNING, "Unable to add connection", cfe);
+            }
+        }
     }
 
     @Override
@@ -282,6 +314,32 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
 
     public void sendWelcomeMessageToSlave(BigInteger slaveID, String userName) {
         sf.unicastWelcomeMessage(slaveID, userName);
+    }
+
+    /**
+     * Used by the slave forwarder to get the shared secret associated with
+     * a given user.
+     * @param clientID the id of the client to get a secret for
+     * @return the client's secret, or null if the given client doesn't have
+     * permission to access the app.
+     */
+    SecretKey getSecret(BigInteger clientID) {
+        XrwSecurityConnection conn = session.getConnection(XrwSecurityConnectionType.TYPE,
+                                                           XrwSecurityConnection.class);
+        return conn.getSecret(clientID, cellID);
+    }
+
+    /**
+     * Used by the slave forwarder to check if a user has permission to take
+     * control
+     * @param clientID the id of the client trying to take control
+     * @return true if the client has permission to take control, or false if
+     * not
+     */
+    boolean checkTakeControl(BigInteger clientID) {
+        XrwSecurityConnection conn = session.getConnection(XrwSecurityConnectionType.TYPE,
+                                                           XrwSecurityConnection.class);
+        return conn.checkTakeControl(clientID, cellID);
     }
 
     public void getData(CreateWindowMsgArgs msgArgs) {

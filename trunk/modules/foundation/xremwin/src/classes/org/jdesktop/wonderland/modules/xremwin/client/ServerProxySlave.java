@@ -24,7 +24,12 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.ShortBufferException;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.CreateWindowMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DestroyWindowMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.ShowWindowMsgArgs;
@@ -81,21 +86,25 @@ class ServerProxySlave implements ServerProxy {
     private int scanLineWidth;
     private byte[] scanLineBuf;
 
+    // security
+    private Mac mac;
+    private int counter = (int) (Math.random() * Integer.MAX_VALUE);
+
+
     // List of byte arrays which have come from the remote window server
     private DataBufferQueue bufQueue = new DataBufferQueue();
     /** Which user is currently controlling the app */
     private String controllingUserName = null;
-    private byte[] keyEventBuf = new byte[Proto.KEY_EVENT_MESSAGE_SIZE];
-    private byte[] pointerEventBuf = new byte[Proto.POINTER_EVENT_MESSAGE_SIZE];
-    private byte[] takeControlBuf = new byte[Proto.TAKE_CONTROL_MESSAGE_SIZE];
-    private byte[] releaseControlBuf = new byte[Proto.RELEASE_CONTROL_MESSAGE_SIZE];
-    private byte[] setWindowTitleBuf = new byte[Proto.SET_WINDOW_TITLE_MESSAGE_SIZE];
-    private byte[] setUserDisplBuf = new byte[Proto.WINDOW_SET_USER_DISPL_MESSAGE_SIZE];
-    private byte[] setSizeBuf = new byte[Proto.WINDOW_SET_SIZE_MESSAGE_SIZE];
-    private byte[] setRotateYBuf = new byte[Proto.WINDOW_SET_ROTATE_Y_MESSAGE_SIZE];
-    private byte[] toFrontBuf = new byte[Proto.WINDOW_TO_FRONT_MESSAGE_SIZE];
-    private byte[] destroyWindowBuf = new byte[Proto.DESTROY_WINDOW_MESSAGE_SIZE];
-    private byte[] slaveCloseWindowBuf = new byte[Proto.SLAVE_CLOSE_WINDOW_MESSAGE_SIZE];
+    private byte[] keyEventBuf         = new byte[Proto.ClientMessageType.EVENT_KEY.size() + Proto.SIGNATURE_SIZE];
+    private byte[] pointerEventBuf     = new byte[Proto.ClientMessageType.EVENT_POINTER.size() + Proto.SIGNATURE_SIZE];
+    private byte[] takeControlBuf      = new byte[Proto.ClientMessageType.TAKE_CONTROL.size() + Proto.SIGNATURE_SIZE];
+    private byte[] releaseControlBuf   = new byte[Proto.ClientMessageType.RELEASE_CONTROL.size() + Proto.SIGNATURE_SIZE];
+    private byte[] setUserDisplBuf     = new byte[Proto.ClientMessageType.WINDOW_SET_USER_DISPLACEMENT.size() + Proto.SIGNATURE_SIZE];
+    private byte[] setSizeBuf          = new byte[Proto.ClientMessageType.WINDOW_SET_SIZE.size() + Proto.SIGNATURE_SIZE];
+    private byte[] setRotateYBuf       = new byte[Proto.ClientMessageType.WINDOW_SET_ROTATE_Y.size() + Proto.SIGNATURE_SIZE];
+    private byte[] toFrontBuf          = new byte[Proto.ClientMessageType.WINDOW_TO_FRONT.size() + Proto.SIGNATURE_SIZE];
+    private byte[] destroyWindowBuf    = new byte[Proto.ClientMessageType.DESTROY_WINDOW.size() + Proto.SIGNATURE_SIZE];
+    private byte[] slaveCloseWindowBuf = new byte[Proto.ClientMessageType.SLAVE_CLOSE_WINDOW.size() + Proto.SIGNATURE_SIZE];
     private int lastPointerX = 0;
     private int lastPointerY = 0;
 
@@ -115,6 +124,15 @@ class ServerProxySlave implements ServerProxy {
         this.session = session;
         this.connectionInfo = connectionInfo;
         this.disconnectListener = disconnectListener;
+
+        try {
+            this.mac = Mac.getInstance("HmacSHA1");
+            mac.init(connectionInfo.getSecret());
+        } catch (NoSuchAlgorithmException nsae) {
+            throw new IllegalStateException(nsae);
+        } catch (InvalidKeyException ike) {
+            throw new IllegalStateException(ike);
+        }
     }
 
     public void connect() throws IOException {
@@ -186,14 +204,14 @@ class ServerProxySlave implements ServerProxy {
 
         // Inform the server  that we have connected by sending a hello message
         // with the name of this user
-        byte[] helloBuf = new byte[Proto.HELLO_MESSAGE_SIZE + strLen];
+        byte[] helloBuf = new byte[Proto.ClientMessageType.HELLO.size() + strLen + Proto.SIGNATURE_SIZE];
         helloBuf[0] = (byte) Proto.ClientMessageType.HELLO.ordinal();
         helloBuf[1] = (byte) 0; // pad
         helloBuf[2] = (byte) ((strLen >> 8) & 0xff);
         helloBuf[3] = (byte) (strLen & 0xff);
         System.arraycopy(userName.getBytes(), 0, helloBuf, 4, strLen);
         try {
-            slaveSocket.send(helloBuf);
+            slaveSocket.send(sign(helloBuf));
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -643,7 +661,7 @@ class ServerProxySlave implements ServerProxy {
         pointerEventBuf[n++] = (byte) ((clientId >> 8) & 0xff);
         pointerEventBuf[n++] = (byte) (clientId & 0xff);
 
-        slaveSocket.send(pointerEventBuf);
+        slaveSocket.send(sign(pointerEventBuf));
     }
 
     public void writeWheelEvent(int wid, MouseWheelEvent event) throws IOException {
@@ -671,7 +689,7 @@ class ServerProxySlave implements ServerProxy {
         pointerEventBuf[n++] = (byte) ((clientId >> 16) & 0xff);
         pointerEventBuf[n++] = (byte) ((clientId >> 8) & 0xff);
         pointerEventBuf[n++] = (byte) (clientId & 0xff);
-        slaveSocket.send(pointerEventBuf);
+        slaveSocket.send(sign(pointerEventBuf));
 
         /* Then send button release event */
         mask = 0;
@@ -692,7 +710,7 @@ class ServerProxySlave implements ServerProxy {
         pointerEventBuf[n++] = (byte) ((clientId >> 16) & 0xff);
         pointerEventBuf[n++] = (byte) ((clientId >> 8) & 0xff);
         pointerEventBuf[n++] = (byte) (clientId & 0xff);
-        slaveSocket.send(pointerEventBuf);
+        slaveSocket.send(sign(pointerEventBuf));
     }
 
     public void writeEvent(KeyEvent event) throws IOException {
@@ -743,7 +761,7 @@ class ServerProxySlave implements ServerProxy {
         keyEventBuf[n++] = (byte) ((clientId >> 8) & 0xff);
         keyEventBuf[n++] = (byte) (clientId & 0xff);
 
-        slaveSocket.send(keyEventBuf);
+        slaveSocket.send(sign(keyEventBuf));
     }
 
     public void writeTakeControl(boolean steal) throws IOException {
@@ -758,7 +776,7 @@ class ServerProxySlave implements ServerProxy {
         takeControlBuf[n++] = (byte) ((clientId >> 16) & 0xff);
         takeControlBuf[n++] = (byte) ((clientId >> 8) & 0xff);
         takeControlBuf[n++] = (byte) (clientId & 0xff);
-        slaveSocket.send(takeControlBuf);
+        slaveSocket.send(sign(takeControlBuf));
     }
 
     public void writeReleaseControl() throws IOException {
@@ -773,12 +791,17 @@ class ServerProxySlave implements ServerProxy {
         releaseControlBuf[n++] = (byte) ((clientId >> 16) & 0xff);
         releaseControlBuf[n++] = (byte) ((clientId >> 8) & 0xff);
         releaseControlBuf[n++] = (byte) (clientId & 0xff);
-        slaveSocket.send(releaseControlBuf);
+        slaveSocket.send(sign(releaseControlBuf));
     }
 
     public void writeSetWindowTitle(int wid, String title) throws IOException {
         int strLen = title.length();
         int n = 0;
+
+        // allocate dynamically, since we don't know ahead of time how big
+        // the string will be
+        byte[] setWindowTitleBuf = new byte[Proto.ClientMessageType.SET_WINDOW_TITLE.size() +
+                                            strLen + Proto.SIGNATURE_SIZE];
 
         /* First send header */
         setWindowTitleBuf[n++] = (byte) Proto.ClientMessageType.SET_WINDOW_TITLE.ordinal();
@@ -793,17 +816,11 @@ class ServerProxySlave implements ServerProxy {
         setWindowTitleBuf[n++] = (byte) ((strLen >> 16) & 0xff);
         setWindowTitleBuf[n++] = (byte) ((strLen >> 8) & 0xff);
         setWindowTitleBuf[n++] = (byte) (strLen & 0xff);
-        slaveSocket.send(setWindowTitleBuf);
 
-        /* Then send the string */
-        byte[] strBytes = title.getBytes();
-        slaveSocket.send(strBytes);
+        // copy the string's bytes into the message buffer
+        System.arraycopy(title.getBytes(), 0, setWindowTitleBuf, n, strLen);
 
-        /* DEBUG */
-        if (strBytes.length != strLen) {
-            throw new RuntimeException("title length mismatch");
-        }
-
+        slaveSocket.send(sign(setWindowTitleBuf));
     }
 
     public void windowSetUserDisplacement(int cid, int wid, Vector3f userDispl) throws IOException {
@@ -837,7 +854,7 @@ class ServerProxySlave implements ServerProxy {
         setUserDisplBuf[n++] = (byte) ((iz >> 8) & 0xff);
         setUserDisplBuf[n++] = (byte) (iz & 0xff);
 
-        slaveSocket.send(setUserDisplBuf);
+        slaveSocket.send(sign(setUserDisplBuf));
     }
 
     public void windowSetSize(int cid, int wid, int w, int h) throws IOException {
@@ -864,7 +881,7 @@ class ServerProxySlave implements ServerProxy {
         setSizeBuf[n++] = (byte) ((h >> 8) & 0xff);
         setSizeBuf[n++] = (byte) (h & 0xff);
 
-        slaveSocket.send(setSizeBuf);
+        slaveSocket.send(sign(setSizeBuf));
     }
 
     public void windowSetRotateY(int cid, int wid, float rotY) throws IOException {
@@ -872,7 +889,6 @@ class ServerProxySlave implements ServerProxy {
         int irotY = Float.floatToRawIntBits(rotY);
 
         setRotateYBuf[n++] = (byte) Proto.ClientMessageType.WINDOW_SET_ROTATE_Y.ordinal();
-        ;
         setRotateYBuf[n++] = 0; // Pad
         setRotateYBuf[n++] = 0; // Pad
         setRotateYBuf[n++] = 0; // Pad
@@ -889,7 +905,7 @@ class ServerProxySlave implements ServerProxy {
         setRotateYBuf[n++] = (byte) ((irotY >> 8) & 0xff);
         setRotateYBuf[n++] = (byte) (irotY & 0xff);
 
-        slaveSocket.send(setRotateYBuf);
+        slaveSocket.send(sign(setRotateYBuf));
     }
 
     public void windowToFront(int cid, int wid) throws IOException {
@@ -908,7 +924,7 @@ class ServerProxySlave implements ServerProxy {
         toFrontBuf[n++] = (byte) ((wid >> 8) & 0xff);
         toFrontBuf[n++] = (byte) (wid & 0xff);
 
-        slaveSocket.send(toFrontBuf);
+        slaveSocket.send(sign(toFrontBuf));
     }
 
     public void destroyWindow(int wid) throws IOException {
@@ -923,7 +939,7 @@ class ServerProxySlave implements ServerProxy {
         destroyWindowBuf[n++] = (byte) ((wid >> 8) & 0xff);
         destroyWindowBuf[n++] = (byte) (wid & 0xff);
 
-        slaveSocket.send(destroyWindowBuf);
+        slaveSocket.send(sign(destroyWindowBuf));
     }
 
     public void slaveCloseWindow(int clientId, int wid) throws IOException {
@@ -942,7 +958,40 @@ class ServerProxySlave implements ServerProxy {
         slaveCloseWindowBuf[n++] = (byte) ((wid >> 8) & 0xff);
         slaveCloseWindowBuf[n++] = (byte) (wid & 0xff);
 
-        slaveSocket.send(slaveCloseWindowBuf);
+        slaveSocket.send(sign(slaveCloseWindowBuf));
+    }
+
+    /**
+     * Sign a message from this slave with the shared secret.  This method
+     * will overwrite the last SIGNATURE_SIZE bytes of the given buffer with
+     * the following data:
+     * [4  bytes] - a per-client counter to prevent replays
+     * [20 bytes] - a SHA-1 signature on the rest of the client data
+     *
+     * @param message the message to sign
+     * @return the signed message.  This method does not create a new byte
+     * array, it just signs the message in place.  The return value is a
+     * convenience for chaining.
+     */
+    private synchronized byte[] sign(byte[] message) {
+        int idx = message.length - Proto.SIGNATURE_SIZE;
+
+        // encode the counter
+        counter++;
+        message[idx++] = (byte) ((counter >> 24) & 0xff);
+        message[idx++] = (byte) ((counter >> 16) & 0xff);
+        message[idx++] = (byte) ((counter >> 8) & 0xff);
+        message[idx++] = (byte) (counter & 0xff);
+
+        // now sign the whole thing
+        try {
+            mac.update(message, 0, idx);
+            mac.doFinal(message, idx);
+        } catch (ShortBufferException sbe) {
+            // shouldn't happen
+            throw new IllegalStateException(sbe);
+        }
+        return message;
     }
 
 
@@ -953,5 +1002,15 @@ class ServerProxySlave implements ServerProxy {
             System.err.print(Integer.toHexString(bytes[i] & 0xff) + " ");
         }
         System.err.println();
+    }
+
+    // For Debug
+    private static String printbytes(byte[] bytes) {
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < bytes.length; i++) {
+            sb.append(Integer.toHexString(bytes[i] & 0xff) + " ");
+        }
+        return sb.toString();
     }
 }

@@ -17,18 +17,22 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.cell;
 
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
-import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellPerformFirstMoveMessage;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellAppExittedMessage;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellPerformFirstMoveMessage;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
@@ -52,55 +56,15 @@ public abstract class AppConventionalCell extends App2DCell {
     protected String command;
     /** The connection info. */
     protected String connectionInfo;
-    /** The App Conventional connection to the server. */
-    private static AppConventionalConnection connection;
     /** The app has been started. */
     private boolean appStarted;
     /** Indicates that this cell is a slave and has connectedToTheApp. */
     private boolean slaveStarted;
+ 
+    // the cell channel
+    @UsesCellComponent
+    private ChannelComponent channel;
 
-    /** 
-     * Perform user client startup initialization for conventional apps.
-     */
-    static void initialize (ServerSessionManager loginInfo) {
-        loginInfo.addLifecycleListener(new MySessionLifecycleListener());
-    }
-    
-    /**
-     * This listens for changes in the session life cycle.
-     */
-    private static class MySessionLifecycleListener implements SessionLifecycleListener {
-
-        /**
-         * {@inheritDoc}
-         */
-        public void sessionCreated(WonderlandSession session) {
-
-            // TODO: HACK: For now, assume a non-federated environment
-            if (connection != null) {
-                logger.warning("Trying to create AppConventionalConnection when it already exists.");
-                return;
-            }
-
-            // Create a new connection
-            connection = new AppConventionalConnection(session);
-
-            // Connect the connection
-            try {
-                connection.connect(session);
-            } catch (ConnectionFailureException ex) {
-                RuntimeException re = new RuntimeException("Cannot create App Conventional connection  exception = " + ex);
-                re.initCause(ex);
-                throw re;
-            }
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public void primarySession(WonderlandSession session) {}
-    }
-    
     /** 
      * Creates a new instance of AppConventionalCell.
      *
@@ -143,6 +107,15 @@ public abstract class AppConventionalCell extends App2DCell {
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
+        if (status == CellStatus.INACTIVE && increasing) {
+            AppConventionalMessageReceiver mr = new AppConventionalMessageReceiver();
+            channel.addMessageReceiver(AppConventionalCellSetConnectionInfoMessage.class, mr);
+            channel.addMessageReceiver(AppConventionalCellAppExittedMessage.class, mr);
+        } else if (status == CellStatus.INACTIVE && !increasing) {
+            channel.removeMessageReceiver(AppConventionalCellSetConnectionInfoMessage.class);
+            channel.removeMessageReceiver(AppConventionalCellAppExittedMessage.class);
+        }
+
         // Launch the app when it is visible for the first time
         if (status == CellStatus.VISIBLE && increasing && !appStarted) {
 
@@ -151,7 +124,7 @@ public abstract class AppConventionalCell extends App2DCell {
 
                 // Master case
 
-                StartMasterReturnInfo ret = startMaster(appName, command);
+		StartMasterReturnInfo ret = startMaster(appName, command);
                 if (ret == null || ret.connInfo == null) {
                     logger.warning("Cannot launch app " + appName);
                     // TODO: what else to do? Delete the cell? If so, how?
@@ -169,7 +142,7 @@ public abstract class AppConventionalCell extends App2DCell {
                 // so we must self-ignore (see setConnectionInfo). Note that we cannot send this
                 // message synchronously and wait for a response because we are already in a
                 // darkstar message handler.
-                connection.send(msg);
+                channel.send(msg);
 
                 setApp(ret.app);
 
@@ -192,6 +165,32 @@ public abstract class AppConventionalCell extends App2DCell {
 
             appStarted = true;
         }
+    }
+
+    /**
+     * Handle a setConnectionInfo message
+     * @param message the message
+     */
+    void handleConnectionInfo(AppConventionalCellSetConnectionInfoMessage message) {
+        setConnectionInfo(message.getConnectionInfo());
+    }
+
+    /**
+     * Handle an app exitted message
+     * @param message the exited message
+     */
+    void handleAppExitted(final AppConventionalCellAppExittedMessage message) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+
+                try {
+                    JOptionPane.showMessageDialog(JmeClientMain.getFrame().getFrame(),
+                                        "App " + message.getAppName() +
+                                        " exitted with exit value = " +
+                                        message.getExitValue());
+                } catch (Exception ex) {}
+            }
+        });
     }
 
     /**
@@ -248,7 +247,7 @@ public abstract class AppConventionalCell extends App2DCell {
      * @return The app created and the subclass-specific connect info. 
      */
     protected abstract StartMasterReturnInfo startMaster(String appName, String command);
-
+  
     /** 
      * Launch a slave client.
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between 
@@ -257,11 +256,28 @@ public abstract class AppConventionalCell extends App2DCell {
      */
     protected abstract App2D startSlave(String connectionInfo);
 
-
+    @Override
     public void performFirstMove (CellTransform cellTransform) {
         AppConventionalCellPerformFirstMoveMessage msg =
             new AppConventionalCellPerformFirstMoveMessage(getCellID(), cellTransform);
-        connection.send(msg);
+        channel.send(msg);
     }
 
+    /**
+     * Message receiver
+     */
+    private class AppConventionalMessageReceiver
+            implements ChannelComponent.ComponentMessageReceiver
+    {
+        public void messageReceived(CellMessage message) {
+            if (message instanceof AppConventionalCellSetConnectionInfoMessage) {
+                handleConnectionInfo((AppConventionalCellSetConnectionInfoMessage) message);
+            } else if (message instanceof AppConventionalCellAppExittedMessage) {
+                handleAppExitted((AppConventionalCellAppExittedMessage) message);
+            } else {
+                logger.warning("Unexpected message type: " + message.getClass());
+            }
+
+        }
+    }
 }

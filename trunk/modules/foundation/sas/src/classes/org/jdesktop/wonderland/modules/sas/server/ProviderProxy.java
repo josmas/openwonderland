@@ -106,7 +106,7 @@ class ProviderProxy implements Serializable {
         logger.severe("**** Provider tryLaunch, clientID = " + clientID);
         logger.severe("command = " + command);
 
-        SasProviderLaunchMessage msg = new SasProviderLaunchMessage(executionCapability, appName, command);
+        SasProviderLaunchMessage msg = new SasProviderLaunchMessage(executionCapability, appName, command, cellID);
 
         // Record this message so we can match it up with its corresponding status message
         logger.info("message ID = " + msg.getMessageID());
