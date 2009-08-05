@@ -19,24 +19,16 @@
             </td>
         </tr>
         <tr valign="top">
-            <td rowspan="2" width="7%"><img height="50%" src="./images/button_download_notitle.png"></td>
-            <td width="15%"><b>Windows XP/Vista (32-bit)</b></td>
-            <td width="12%"><b>Mac OS X (32-bit)</b></td>
-            <td width="12%"><b>Solaris 10 (32-bit)</b></td>
-            <td width="12%"><b>Linux (32-bit)</b></td>
-            <td width="20%"><b>Web</b></td>
+            <td rowspan="2" width="7%"><img height="50%" src="./images/icons/button_download_notitle.png"></td>
+            <td width="20%"><b>All Platforms (Windows, Mac OSX, Linux, Solaris)</b></td>
             <td width="10%"><b>Documentation</b></td>
+            <td width="70%"></td>
         </tr>
         <tr valign="top">
-            <td width="15%">N/A<br></td>
-            <td width="12%">N/A</td>
-            <td width="12%">N/A</td>
-            <td width="12%">N/A</td>
-            <td width="20%">N/A</td>
-            <!--<td width="10%"><a href="https://lg3d-wonderland.dev.java.net/release-0_4-README.html">Readme</a><br><a href="https://lg3d-wonderland.dev.java.net/release-0_4-notes.html">Release Notes</a></td>-->
-            <br>
-            <td width="12%">N/A</td>
-
+            <td width="20%">N/A<br></td>
+            <td width="10%">N/A</td>
+            <td width="70%"></td>
+        </tr>
         <tr><td><br></td></tr>
         <tr>
             <td colspan="10">
@@ -59,13 +51,14 @@
     <p>
     Before you download and install the binary release of Project Wonderland, make sure you have met the following requirements:
     <ul>
-        <li>Supported Operating System: Windows XP/Vista, Linux (Debian/Ubuntu), Solaris 10, Mac OS X<br>
+        <li><b>Supported Operating Systems</b>: Windows XP/Vista, Linux (Debian/Ubuntu), Solaris 10, Mac OS X<br>
         If Wonderland does not seem to run on your system, see the note below on <a href="#platforms">platform exceptions</a>.<br><br>
         
-        <li>Java SE 5 or 6 (either JRE or JDK), which you can find here: <a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>.<br>
+        <li><b>Java SE 6 (either JRE or JDK)</b><br>
+        You can download Java SE 6 here: <a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>.<br>
         <i>Note For Macintosh Users:</i> You need to be sure that Java SE 6 is not only installed, but also set as the active Java version.  Go to Applications -> Utilities -> Java Preferences, and make sure that "Java SE 6" is first on the list under "Java Applications".<br><br>
         
-        <li>Access to a command line<br>
+        <li><b>Access to a command line</b><br>
         You will need to know how to use a few simple commands such as "cd" and "rm".
     </ul>
     
@@ -77,12 +70,12 @@
         Each night (US Pacific time), a new Wonderland binary build is created. These are known as the "nightly builds," or simply as the "nightly." To install a nightly, follow these steps:    </p>
     <ol>
         <li>Navigate to <a href="http://download.java.net/lg3d/wonderland/daily-0.5-dev/">http://download.java.net/lg3d/wonderland/daily-0.5-dev/</a><br><br>
-        <li>Scroll to the bottom of the page and select the date you want<br>
+        <li>Scroll to the bottom of the page and select the date you want.<br><br>
         Typically you will click on the last folder in the list, which is the most recent nightly build <br><br>
-        <li>Right click on "Wonderland.jar" and save it to your computer<br>
+        <li>Right click on "Wonderland.jar" and save it to your computer.<br><br>
         <i>Note:</i> Do not change the name of the jar file when you save it. If you want to keep track of which nightly is which, create a folder and name it with the date of the nightly. Then save the jar file in that folder. The jar files are large, so the download will take some time.<br><br>
-        <li>Open your terminal program to access a command line<br><br>
-        <li>Change directories to the location where you downloaded the jar file<br><br>
+        <li>Open your terminal program to access a command line.<br><br>
+        <li>Change directories to the location where you downloaded the jar file.<br><br>
         <li>Start Wonderland on Mac or Unix system by typing:<br><br>
             <ul>
             <code>java -jar Wonderland.jar</code>
@@ -94,9 +87,11 @@
         Unless you're on a Vista 64-bit system, in which case you need to type:<br><br>
             <ul>
             <code>"\Program Files (x86)\Java\jre6\bin\java" -jar Wonderland.jar</code>
-            </ul><br><br>         
+            </ul><br>         
+        <b>NOTE:</b> For Linux and Ubuntu systems, it is recommended you manually configure the IP address of the
+        server. See the <b>Configuration Options</b> section below for further instructions.<br><br>
             
-        <li>Be patient while the Wonderland server starts up.<br>
+        <li>Be patient while the Wonderland server starts up.<br><br>
         You should soon see lots of messages fly by in the terminal window, including lots of warnings. Expect some pauses. The process will take a minute or two.<br><br>
         <li>Eventually you will see a message that includes the text "Wonderland web server started successfully."<br>
         The entire message will look something like this:<br><br>
@@ -109,11 +104,11 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
 -----------------------------------------------------------
             </code>
             </ul><br>
-        <li>Make a note of the log file directory<br>
+        <li>Make a note of the log file directory.<br><br>
         You will need this information when you wish to delete this build from your computer. In addition, this directory may contain useful information for reporting Wonderland problems.<br><br>
-        <li>Copy and paste the URL in the last line  of the message into a browser window to navigate to the Wonderland launch page.<br> 
+        <li>Copy and paste the URL in the last line of the message into a browser window to navigate to the Wonderland launch page.<br><br> 
         This is the URL you can give to end users to launch Wonderland.<br><br>
-        <li>Click "Launch Wonderland 0.5" from the launch page
+        <li>Click "Launch Wonderland 0.5" from the launch page.
     </ol>
     
     <br>
@@ -127,7 +122,7 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
     For most installations, there's no need to configure the Wonderland software, but if you have properties you would like to change, you can add them at the command line. For example:</p>
     
     <ul>
-<code>java -Dwonderland.webserver.host=localhost -jar wonderland.jar</code>
+<code>java -Dwonderland.webserver.host=localhost -jar Wonderland.jar</code>
     </ul>
 
     <p>
@@ -143,9 +138,9 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
     To uninstall the Wonderland binary distribution from your machine, perform the following steps:
     
     <ol>
-        <li>Delete the Wonderland.jar file<br>
+        <li>Delete the Wonderland.jar file.<br><br>
         If you placed the jar file in a directory with the date of the build, delete the directory<br><br>
-        <li>Delete the directory <code>~/.wonderland-server/[version-number]</code><br>
+        <li>Delete the directory <code>~/.wonderland-server/[version-number]</code>.<br><br>
         The "~" notation means your home directory. The complete directory name was printed in your terminal window when you started the Wonderland server (see the log file location in Step 8 above). 
     </ol>
     
