@@ -49,6 +49,7 @@ public class FirstVisibleInitializerCell implements FirstVisibleInitializer {
     public FirstVisibleInitializerCell (App2DCell cell, CellTransform creatorViewTransform) {
         this.cell = cell;
         this.creatorViewTransform = creatorViewTransform;
+        logger.info("creatorViewTransform = " + creatorViewTransform);
     }
 
     /** {@inheritDoc} */

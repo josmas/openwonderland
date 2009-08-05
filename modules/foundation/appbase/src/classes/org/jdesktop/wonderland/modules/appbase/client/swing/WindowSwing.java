@@ -487,9 +487,4 @@ public class WindowSwing extends Window2D {
         view.removeEntityComponent(WindowSwingViewReference.class);
         view.removeEntityComponent(InputManager.WindowSwingEventConsumer.class); 
     }
-
-    /* TODO: notyet: app base swing cell placement isn't yet supported. Use system placement */
-    protected void performFirstVisibleInitialization () {
-    }
-
 }

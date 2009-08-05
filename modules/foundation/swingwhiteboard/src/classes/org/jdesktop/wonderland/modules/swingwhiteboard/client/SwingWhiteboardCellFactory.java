@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.SwingWhiteboardCellServerState;
+import org.jdesktop.wonderland.modules.appbase.client.swing.SwingCellFactoryUtils;
 
 /**
  * The cell factory for the swing whiteboard
@@ -39,6 +40,9 @@ public class SwingWhiteboardCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         // Create a setup with some default values
         SwingWhiteboardCellServerState cellServerState = new SwingWhiteboardCellServerState();
+
+        // Minor Optimization
+        SwingCellFactoryUtils.skipSystemInitialPlacement(cellServerState);
 
         return (T) cellServerState;
     }
