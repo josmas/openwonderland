@@ -52,6 +52,8 @@ import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellPerformFirstMoveMessage;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
 
 /**
  * The generic 2D application superclass. Displays the windows of a single 2D application. 
@@ -92,7 +94,11 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * The cell's first visible initializer. This is non-null if this cell has 
      * volunteered to do the initialization.
      */
-    private FirstVisibleInitializerCell fvi;
+    protected FirstVisibleInitializerCell fvi;
+
+    // the cell channel
+    @UsesCellComponent
+    protected ChannelComponent channel;
 
     /** 
      * Creates a new instance of App2DCell.
@@ -172,6 +178,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         this.app = app;
 
         if (App2D.doAppInitialPlacement) {
+            logger.info("Cell transferring fvi to app, fvi = " + fvi);
             app.setFirstVisibleInitializer(fvi);
         }
     }
@@ -191,7 +198,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         super.setClientState(clientState);
         pixelScale = ((App2DCellClientState) clientState).getPixelScale();
 
-        logger.warning("initialPlacementDone = " + 
+        logger.info("initialPlacementDone = " + 
                        ((App2DCellClientState) clientState).isInitialPlacementDone());
 
         if (App2D.doAppInitialPlacement &&
@@ -199,6 +206,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
             // Initial cell placement hasn't yet been done. Volunteer to do it.
             fvi = new FirstVisibleInitializerCell(this, 
                           ((App2DCellClientState) clientState).getCreatorViewTransform());
+            logger.info("fvi = " + fvi);
         }
     }
 
@@ -414,7 +422,9 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * protocol.
      */
     public void performFirstMove (CellTransform cellTransform) {
-        // TODO: eventually implement for swing cells too
+        App2DCellPerformFirstMoveMessage msg =
+            new App2DCellPerformFirstMoveMessage(getCellID(), cellTransform);
+        channel.send(msg);
     }
 
     /**

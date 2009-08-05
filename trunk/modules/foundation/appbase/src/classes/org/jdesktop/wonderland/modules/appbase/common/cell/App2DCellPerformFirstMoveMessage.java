@@ -28,18 +28,18 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  * @author deronj
  */
 @InternalAPI
-public class AppConventionalCellPerformFirstMoveMessage extends CellMessage {
+public class App2DCellPerformFirstMoveMessage extends CellMessage {
     /** The transform of the cell. */
     private CellTransform cellTransform;
 
     /**
-     * Creates a new instance of AppConventionalPerformFirstMoveMessage.
+     * Creates a new instance of App2DPerformFirstMoveMessage.
      * 
      * @param cellID The ID of the cell whose connection info is to be changed.
      * @param connectionInfo Subclass-specific data for making a peer-to-peer connection between 
      * master and slave.
      */
-    public AppConventionalCellPerformFirstMoveMessage(CellID cellID, CellTransform cellTransform) {
+    public App2DCellPerformFirstMoveMessage(CellID cellID, CellTransform cellTransform) {
         super (cellID);
         this.cellTransform = cellTransform;
     }

@@ -208,6 +208,8 @@ public class WindowXrw extends WindowConventional {
 
         setVisibleAppPart1(visible);
 
+        performFirstVisibleInitialization();
+
         ((AppXrw)app).trackWindowVisibility(this);
 
         // If this is still a secondary assign a parent if necessary

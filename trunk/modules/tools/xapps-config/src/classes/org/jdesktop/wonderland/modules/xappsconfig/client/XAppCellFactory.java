@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwServerState
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
+import java.util.logging.Logger;
 
 /**
  * A generic cell factory which launches a specific X11 App. Takes the name of
@@ -36,9 +37,11 @@ import com.jme.math.Vector3f;
  */
 public class XAppCellFactory implements CellFactorySPI {
 
+    private static final Logger logger = Logger.getLogger(XAppCellFactory.class.getName());
+
     // TODO: Part 2: temporary. This gives the ability to disable app-specific placement.
     // The other part of the boolean is in App2D.
-    public static final boolean doAppInitialPlacement = false;
+    public static final boolean doAppInitialPlacement = true;
 
     private String appName = null;
     private String command = null;
@@ -84,6 +87,7 @@ public class XAppCellFactory implements CellFactorySPI {
             // place an app cell until it's first window is made visible. Therefore,
             // we disable system placement and will perform the initial placement ourselves
             // later.
+            logger.info("doAppInitialPlacement: disable system placement");
             BoundingVolumeHint hint = new BoundingVolumeHint(false, null);
             serverState.setBoundingVolumeHint(hint);
         }

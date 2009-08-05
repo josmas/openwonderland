@@ -32,9 +32,9 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellCl
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellAppExittedMessage;
-import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellPerformFirstMoveMessage;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.FirstVisibleInitializer;
 
 /**
  * The client-side cell for an 2D conventional application.
@@ -61,10 +61,6 @@ public abstract class AppConventionalCell extends App2DCell {
     /** Indicates that this cell is a slave and has connectedToTheApp. */
     private boolean slaveStarted;
  
-    // the cell channel
-    @UsesCellComponent
-    private ChannelComponent channel;
-
     /** 
      * Creates a new instance of AppConventionalCell.
      *
@@ -98,7 +94,7 @@ public abstract class AppConventionalCell extends App2DCell {
 
             // Slave case
             connectionInfo = state.getConnectionInfo();
-            logger.severe("Initial connection info value for slave = " + connectionInfo);
+            logger.info("Initial connection info value for slave = " + connectionInfo);
         }
     }
 
@@ -124,7 +120,7 @@ public abstract class AppConventionalCell extends App2DCell {
 
                 // Master case
 
-		StartMasterReturnInfo ret = startMaster(appName, command);
+		StartMasterReturnInfo ret = startMaster(appName, command, fvi);
                 if (ret == null || ret.connInfo == null) {
                     logger.warning("Cannot launch app " + appName);
                     // TODO: what else to do? Delete the cell? If so, how?
@@ -144,7 +140,7 @@ public abstract class AppConventionalCell extends App2DCell {
                 // darkstar message handler.
                 channel.send(msg);
 
-                setApp(ret.app);
+                this.app = ret.app;
 
             } else {
 
@@ -158,7 +154,7 @@ public abstract class AppConventionalCell extends App2DCell {
                 // connection info.
 
                 if (connectionInfo != null) {
-                    logger.severe("Starting slave from setClientState");
+                    logger.info("Starting slave from setClientState");
                     startTheSlave(connectionInfo);
                 }
             }
@@ -210,20 +206,19 @@ public abstract class AppConventionalCell extends App2DCell {
 
         if (connInfo != null) {
             connectionInfo = connInfo;
-            logger.severe("Starting slave from setConnectionInfo");
+            logger.info("Starting slave from setConnectionInfo");
             startTheSlave(connectionInfo);
         }
     }
 
     private void startTheSlave (String connectionInfo) {
-        App2D theApp = startSlave(connectionInfo);
-        if (theApp != null) {
+        app = startSlave(connectionInfo, fvi);
+        if (app != null) {
             slaveStarted = true;
-            setApp(theApp);
             logger.info("Connected slave to app at " + connectionInfo);
         } else {
             slaveStarted = false;
-            logger.warning("Could not create slave app, connectionInfo" + connectionInfo);
+            logger.warning("Could not create slave app, connectionInfo = " + connectionInfo);
         }
     }
 
@@ -246,7 +241,8 @@ public abstract class AppConventionalCell extends App2DCell {
      * @param command The command string which launches the master app program (used only by master).
      * @return The app created and the subclass-specific connect info. 
      */
-    protected abstract StartMasterReturnInfo startMaster(String appName, String command);
+    protected abstract StartMasterReturnInfo startMaster(String appName, String command,
+                                                         FirstVisibleInitializer fvi);
   
     /** 
      * Launch a slave client.
@@ -254,14 +250,7 @@ public abstract class AppConventionalCell extends App2DCell {
      * master and slave.
      * @return the app, if successfully started. Otherwise returns null.
      */
-    protected abstract App2D startSlave(String connectionInfo);
-
-    @Override
-    public void performFirstMove (CellTransform cellTransform) {
-        AppConventionalCellPerformFirstMoveMessage msg =
-            new AppConventionalCellPerformFirstMoveMessage(getCellID(), cellTransform);
-        channel.send(msg);
-    }
+    protected abstract App2D startSlave(String connectionInfo, FirstVisibleInitializer fvi);
 
     /**
      * Message receiver
@@ -279,5 +268,20 @@ public abstract class AppConventionalCell extends App2DCell {
             }
 
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setApp(App2D app) throws IllegalArgumentException, IllegalStateException {
+        // Same as super, but doesn't move fvi into the app. This is done earlier in
+        // a conventional app
+        if (app == null) {
+            throw new NullPointerException();
+        }
+        if (this.app != null) {
+            throw new IllegalStateException("Cell already has an app");
+        }
+
+        this.app = app;
     }
 }

@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.modules.xremwin.client.AppXrwSlave;
 import org.jdesktop.wonderland.modules.xremwin.client.AppXrwConnectionInfo;
 import org.jdesktop.wonderland.modules.xremwin.common.cell.AppCellXrwClientState;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.FirstVisibleInitializer;
 
 /**
  * An Xremwin client-side app cell.
@@ -71,7 +72,8 @@ public class AppCellXrw extends AppConventionalCell {
     /**
      * {@inheritDoc}
      */
-    protected AppConventionalCell.StartMasterReturnInfo startMaster(String appName, String command) {
+    protected AppConventionalCell.StartMasterReturnInfo startMaster(String appName, String command,
+                                                                    FirstVisibleInitializer fvi) {
         App2D theApp = null;
         try {
             app = new AppXrwMaster(appName, command, getCellID(), pixelScale,
@@ -81,6 +83,12 @@ public class AppCellXrw extends AppConventionalCell {
         }
 
         ((AppConventional) theApp).addDisplayer(this);
+
+        // Must be done before enabling client
+        if (App2D.doAppInitialPlacement && fvi != null) {
+            logger.info("Cell transferring fvi to app, fvi = " + fvi);
+            app.setFirstVisibleInitializer(fvi);
+        }
 
         // Now it is safe to enable the master client loop
         ((AppXrw)theApp).getClient().enable();
@@ -92,12 +100,13 @@ public class AppCellXrw extends AppConventionalCell {
     /**
      * {@inheritDoc}
      */
-    protected App2D startSlave(String connectionInfo) {
+    protected App2D startSlave(String connectionInfo, FirstVisibleInitializer fvi) {
         App2D theApp = null;
         try {
             app = new AppXrwSlave(appName, pixelScale,
                                   ProcessReporterFactory.getFactory().create(appName),
-                                  new AppXrwConnectionInfo(connectionInfo, secret), session, this);
+                                  new AppXrwConnectionInfo(connectionInfo, secret), session, 
+                                  this, fvi);
         } catch (InstantiationException ex) {
             ex.printStackTrace();
             return null;

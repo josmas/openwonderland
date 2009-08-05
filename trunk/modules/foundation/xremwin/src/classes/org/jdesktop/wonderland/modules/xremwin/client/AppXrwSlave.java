@@ -23,6 +23,8 @@ import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import javax.swing.JOptionPane;
+import org.jdesktop.wonderland.modules.appbase.client.FirstVisibleInitializer;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 
 /**
  * A Slave Xremwin app. This is the AppXrw subclass used on a client machine
@@ -42,10 +44,12 @@ public class AppXrwSlave extends AppXrw {
      * and slave.
      * @param session This app's Wonderland session.
      * @param displayer The environment in which the app is going to be displayed.
+     * @param fvi The first visible initializer.
      */
     public AppXrwSlave(String appName, Vector2f pixelScale, 
                        ProcessReporter reporter, AppXrwConnectionInfo connectionInfo, 
-                       WonderlandSession session, View2DDisplayer displayer) 
+                       WonderlandSession session, View2DDisplayer displayer, 
+                       FirstVisibleInitializer fvi) 
         throws InstantiationException
     {
 
@@ -54,6 +58,12 @@ public class AppXrwSlave extends AppXrw {
         
         // The displayer must be added early on. The client sync from the master requires this.
         addDisplayer(displayer);
+
+        // Must be done before enabling client
+        if (App2D.doAppInitialPlacement && fvi != null) {
+            logger.info("Cell transferring fvi to app, fvi = " + fvi);
+            setFirstVisibleInitializer(fvi);
+        }
 
         // Create the Xremwin protocol client and start its interpreter loop running.
         client = null;

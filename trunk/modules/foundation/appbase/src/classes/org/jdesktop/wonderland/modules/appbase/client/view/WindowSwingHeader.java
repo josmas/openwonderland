@@ -43,4 +43,9 @@ public class WindowSwingHeader extends WindowSwing {
     public View2D getView () {
         return view;
     }
+
+    @Override
+    protected void performFirstVisibleInitialization () {
+        // No special first visible init for frame headers
+    }
 }
