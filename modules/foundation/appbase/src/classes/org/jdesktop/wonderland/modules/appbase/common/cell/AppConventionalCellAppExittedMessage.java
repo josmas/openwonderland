@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.appbase.common.cell;
 
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
  * The message sent by the server to clients when an app base conventional cell app exits.
@@ -27,10 +27,7 @@ import org.jdesktop.wonderland.common.messages.Message;
  * @author deronj
  */
 @InternalAPI
-public class AppConventionalCellAppExittedMessage extends Message {
-
-    /** The ID of the cell whose connection info is to be changed. */
-    private CellID cellID;
+public class AppConventionalCellAppExittedMessage extends CellMessage {
 
     /** The exit value of the application. */
     private int exitValue;
@@ -41,10 +38,6 @@ public class AppConventionalCellAppExittedMessage extends Message {
     /** The command which was used to execute the app. */
     private String command;
 
-    /** The default constructor */
-    public AppConventionalCellAppExittedMessage() {
-    }
-
     /**
      * Creates a new instance of AppConventionalCellAppExittedMessage.
      * 
@@ -53,27 +46,15 @@ public class AppConventionalCellAppExittedMessage extends Message {
      * master and slave.
      */
     public AppConventionalCellAppExittedMessage(CellID cellID, int exitValue, String appName, 
-                                                String command) {
-        this.cellID = cellID;
+                                                String command)
+    {
+        super (cellID);
+
         this.exitValue = exitValue;
         this.appName = appName;
         this.command = command;
     }
-
-    /**
-     * Sets the cell ID of the message.
-     */
-    public void setCellID(CellID cellID) {
-        this.cellID = cellID;
-    }
-
-    /**
-     * Returns the ID of the cell.
-     */
-    public CellID getCellID() {
-        return cellID;
-    }
-
+    
     /**
      * Sets the exit value of the message.
      */

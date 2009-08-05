@@ -17,20 +17,29 @@
  */
 package org.jdesktop.wonderland.modules.appbase.server.cell;
 
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.WonderlandContext;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellAppExittedMessage;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellPerformFirstMoveMessage;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 /**
  * TODO: rework
@@ -81,13 +90,15 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
     /** The parameters from the WFS file. */
     AppConventionalCellServerState serverState;
-    /** The parameters given to the client. */
-    AppConventionalCellClientState clientState;
+    
     /** Subclass-specific data for making a peer-to-peer connection between master and slave. */
     protected String connectionInfo;
 
     /** Opaque info which identifies the launched app to the app server. */
     private Object appServerLaunchInfo;
+
+    @UsesCellComponentMO(ChannelComponentMO.class)
+    private ManagedReference<ChannelComponentMO> channelRef;
 
     /**
      * The SAS server must implement this.
@@ -185,11 +196,11 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     @Override
     protected CellClientState getClientState(CellClientState cellClientState,
             WonderlandClientID clientID, ClientCapabilities capabilities) {
-        if (clientState == null) {
-            clientState = new AppConventionalCellClientState();
+        if (cellClientState == null) {
+            cellClientState = new AppConventionalCellClientState();
         }
-        populateClientState(clientState);
-        return super.getClientState(clientState, clientID, capabilities);
+        populateClientState((AppConventionalCellClientState) cellClientState);
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     /**
@@ -235,6 +246,21 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         super.setLive(live);
 
         if (!"server".equalsIgnoreCase(serverState.launchLocation)) {
+            // for a user launched app, add listeners for remote notification
+            // of app status.  Note this protocol is not fully implemented
+            // on the client for user launch, so these messages are never
+            // received.
+            if (live) {
+                MessageReceiver receiver = new MessageReceiver(this);
+                channelRef.get().addMessageReceiver(AppConventionalCellSetConnectionInfoMessage.class,
+                                                    receiver);
+                channelRef.get().addMessageReceiver(AppConventionalCellAppExittedMessage.class,
+                                                    receiver);
+            } else {
+                channelRef.get().removeMessageReceiver(AppConventionalCellSetConnectionInfoMessage.class);
+                channelRef.get().removeMessageReceiver(AppConventionalCellAppExittedMessage.class);
+            }
+
             return;
         }
 
@@ -283,20 +309,40 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         }
 
         setConnectionInfo(connInfo);
+    }
 
-        // Notify all client cells that connection info for a newly launched SAS master app 
-        // is now available.
-        AppConventionalCellSetConnectionInfoMessage msg = 
-            new AppConventionalCellSetConnectionInfoMessage(cellID, connInfo);
-        AppConventionalConnectionHandler.getSender().send(msg);
+    /**
+     * Handle a message to set the connection info.  Only use this if the
+     * app is client-launched.  This method is untested since the client
+     * implementation of user-launch is incomplete.
+     * @param clientID the id of the client who sent the message
+     * @param message the message to process
+     */
+    void handleSetConnectionInfo(WonderlandClientID clientID,
+                                 AppConventionalCellSetConnectionInfoMessage message)
+    {
+        // make sure the app wasn't server launched
+        if ("server".equalsIgnoreCase(serverState.launchLocation)) {
+            logger.warning("Cannot set connection info for server launched app.");
+            return;
+        }
+
+        // TODO: should we do more to make sure this actually came from the
+        // correct client?
+
+        // send a notification
+        setConnectionInfo(message.getConnectionInfo());
     }
 
     public void setConnectionInfo (String connInfo) {
         logger.warning("Connection info for cellID " + cellID + " = " + connInfo);
         connectionInfo = connInfo;
-        if (clientState != null) {
-            clientState.setConnectionInfo(connectionInfo);
-        }
+
+        // Notify all client cells that connection info for a newly launched SAS master app
+        // is now available.
+        AppConventionalCellSetConnectionInfoMessage msg =
+            new AppConventionalCellSetConnectionInfoMessage(cellID, connInfo);
+        channelRef.get().sendAll(null, msg);
     }
 
     /**
@@ -305,8 +351,30 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     public void destroy () {
         CellManagerMO.getCellManager().removeCellFromWorld(this);
         serverState = null;
-        clientState = null;
         connectionInfo = null;
+    }
+
+    /**
+     * Notification from a user that an app has exitted.  Don't trust this
+     * message unless the app is user launched.  This method is untested since
+     * the client implementation of user-launch is incomplete.
+     * @param clientID the client that sent the message
+     * @param message the message
+     */
+    void handleAppExitted(WonderlandClientID clientID,
+                          AppConventionalCellAppExittedMessage message)
+    {
+        // make sure the app wasn't server launched
+        if ("server".equalsIgnoreCase(serverState.launchLocation)) {
+            logger.warning("Cannot notify of exit for server launched app.");
+            return;
+        }
+
+        // TODO: should we do more to make sure this actually came from the
+        // correct client?
+
+        // send a notification
+        appExitted(message.getExitValue());
     }
 
     /**
@@ -315,7 +383,10 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * If < 0, the SAS provider has terminated and the app exit value is unknown.
      */
     public void appExitted (int exitValue) {
-        setConnectionInfo(null);
+        // reset the connection info, but don't send a message, since the cell
+        // is about to be destroyed and an exitted message will be sent below.
+        connectionInfo = null;
+
         if (exitValue >= 0) {
             logger.warning("App cell terminated because app exitted with exit value = " + exitValue);
         } else {
@@ -336,9 +407,58 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
                 new AppConventionalCellAppExittedMessage(cellID, exitValue, 
                                                          serverState.getAppName(), 
                                                          serverState.getCommand());
-            AppConventionalConnectionHandler.getSender().send(msg);
+            channelRef.get().sendAll(null, msg);
         }
 
         destroy();
+    }
+
+    private void handlePerformFirstMove (WonderlandClientID clientID, 
+                                         AppConventionalCellPerformFirstMoveMessage msg) {
+
+        // Only the first message moves the cell; ignore all subsequent
+        if (isInitialPlacementDone()) return;
+
+        // Make sure the cell has a movable component
+        MovableComponentMO mc = getComponent(MovableComponentMO.class);
+        if (mc == null) {
+            mc = new MovableComponentMO(this);
+            addComponent(mc);
+        }
+
+        // Request the move
+        logger.warning("Perform first move to transform = " + msg.getCellTransform());
+        mc.moveRequest(null, msg.getCellTransform());
+
+        setInitialPlacementDone(true);
+    }
+
+    private static class MessageReceiver extends AbstractComponentMessageReceiver {
+        public MessageReceiver(CellMO cellMO) {
+            super (cellMO);
+        }
+
+        @Override
+        public void messageReceived(WonderlandClientSender sender,
+                                    WonderlandClientID clientID,
+                                    CellMessage message)
+        {
+            AppConventionalCellMO cellMO = (AppConventionalCellMO) getCell();
+
+            if (message instanceof AppConventionalCellSetConnectionInfoMessage) {
+                cellMO.handleSetConnectionInfo(clientID, (AppConventionalCellSetConnectionInfoMessage) message);
+            } else if (message instanceof AppConventionalCellAppExittedMessage) {
+                cellMO.handleAppExitted(clientID, (AppConventionalCellAppExittedMessage) message);
+            } else if (message instanceof AppConventionalCellPerformFirstMoveMessage) {
+                cellMO.handlePerformFirstMove(clientID, (AppConventionalCellPerformFirstMoveMessage)message);
+            } else {
+                logger.log(Level.WARNING, "Unexpected message type " +
+                           message.getClass());
+                sender.send(clientID, new ErrorMessage(message.getMessageID(),
+                            "Unexpected message type: " + message.getClass()));
+            }
+        }
+
+
     }
 }

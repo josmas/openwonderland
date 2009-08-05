@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.appbase.common.cell;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
  * The app base conventional cell set connection info message.
@@ -28,16 +28,9 @@ import org.jdesktop.wonderland.common.messages.Message;
  * @author deronj
  */
 @InternalAPI
-public class AppConventionalCellPerformFirstMoveMessage extends Message {
-
-    /** The ID of the cell who is to be moved. */
-    private CellID cellID;
+public class AppConventionalCellPerformFirstMoveMessage extends CellMessage {
     /** The transform of the cell. */
     private CellTransform cellTransform;
-
-    /** The default constructor */
-    public AppConventionalCellPerformFirstMoveMessage() {
-    }
 
     /**
      * Creates a new instance of AppConventionalPerformFirstMoveMessage.
@@ -47,24 +40,10 @@ public class AppConventionalCellPerformFirstMoveMessage extends Message {
      * master and slave.
      */
     public AppConventionalCellPerformFirstMoveMessage(CellID cellID, CellTransform cellTransform) {
-        this.cellID = cellID;
+        super (cellID);
         this.cellTransform = cellTransform;
     }
-
-    /**
-     * Sets the cell ID of the message.
-     */
-    public void setCellID(CellID cellID) {
-        this.cellID = cellID;
-    }
-
-    /**
-     * Returns the ID of the cell.
-     */
-    public CellID getCellID() {
-        return cellID;
-    }
-
+    
     /**
      * Sets the cell transform of the message.
      */

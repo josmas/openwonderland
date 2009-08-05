@@ -26,9 +26,14 @@ import java.net.ServerSocket;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.ClientSocketListener;
 import org.jdesktop.wonderland.modules.appbase.client.utils.clientsocket.MasterSocketSet;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import com.jme.math.Vector3f;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Map;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
 
 /**
  * The module in the master which broadcasts xremwin messages to slaves.
@@ -41,9 +46,15 @@ class SlaveForwarder {
     private ServerProxyMaster serverProxy;
     private MasterSocketSet socketSet;
     private byte[] welcomeBuf = new byte[Proto.WELCOME_MESSAGE_SIZE];
+    private byte[] controlRefusedBuf = new byte[Proto.CONTROLLER_STATUS_MESSAGE_SIZE];
     static boolean perfTestEnabled = false;
     static boolean perfTestExitOnCompletion = true;
-    private final HashMap<Integer, String> clientIdToUserName = new HashMap<Integer, String>();
+
+    private final Map<Integer, String> clientIdToUserName = new HashMap<Integer, String>();
+    private final Map<Integer, BigInteger> clientIdToSlaveId = new HashMap<Integer, BigInteger>();
+    private final Map<BigInteger, Mac> slaveIdToSecret = new HashMap<BigInteger, Mac>();
+    private final Map<BigInteger, Integer> slaveIdToCounter = new HashMap<BigInteger, Integer>();
+
     private int nextNewClientId = 1;
 
     public SlaveForwarder(ServerProxyMaster serverProxy, BigInteger sessionID, ServerSocket serverSocket)
@@ -151,6 +162,12 @@ class SlaveForwarder {
             // Remember that we assigned this client id to this user
             synchronized (clientIdToUserName) {
                 clientIdToUserName.put(clientId, userName);
+            }
+
+            // Remember that we assigned this client id to this slave ID
+            // TODO: how does these get cleaned up?
+            synchronized (clientIdToSlaveId) {
+                clientIdToSlaveId.put(clientId, slaveID);
             }
         }
 
@@ -294,9 +311,17 @@ class SlaveForwarder {
     private class MyListener implements ClientSocketListener {
 
         public void receivedMessage(BigInteger otherClientID, byte[] message) {
+            int msgCode = (int) message[0];
+            Proto.ClientMessageType msgType = Proto.ClientMessageType.values()[msgCode];
 
             // See this is the hello message from the slave
-            if (message[0] == (byte) Proto.ClientMessageType.HELLO.ordinal()) {
+            if (msgType == Proto.ClientMessageType.HELLO) {
+                // set up security for this user
+                if (!addUser(otherClientID, message)) {
+                    AppXrw.logger.warning("Hello reject from " + otherClientID);
+                    return;
+                }
+
                 int strLen = (int)(message[2] << 8) | (int)message[3];
                 if (strLen <= 0) {
                     AppXrw.logger.warning("Invalid slave user name string length");
@@ -312,9 +337,45 @@ class SlaveForwarder {
                 return;
             }
 
-            // Forward event to the xremwin server
+            // verify the message to make sure it is valid before forwarding
+            // it along
+            if (!verify(otherClientID, msgType, message)) {
+                AppXrw.logger.warning("Message reject from " + otherClientID);
+                socketSet.close(otherClientID);
+            }
+
+            // if this is a take control message, perform a security
+            // check before allowing it.
+            if (msgType == Proto.ClientMessageType.TAKE_CONTROL &&
+                    !serverProxy.checkTakeControl(otherClientID))
+            {
+                AppXrw.logger.warning("Blocked take control request from " +
+                        "unauthorized user " + otherClientID);
+
+                // get the client id
+                int clientID = readInt(message, Proto.ClientMessageType.TAKE_CONTROL.clientIdIndex());
+                sendTakeControlFailure(otherClientID, clientID);
+                return;
+            }
+
+            // XXX HACK XXX we also do a take control permission check when
+            // the user attempts to destroy a window.  This is because for
+            // some reason the X server doesn't check that only a user in
+            // control can destroy a window.  This check does not guarantee
+            // that the user has control, but at least guarantees the user
+            // could potentially take control.  This should be fixed in the
+            // X server.
+            if (msgType == Proto.ClientMessageType.DESTROY_WINDOW &&
+                    !serverProxy.checkTakeControl(otherClientID))
+            {
+                AppXrw.logger.warning("Blocked destroy window request from " +
+                        "unauthorized user " + otherClientID);
+                return;
+            }
+          
+            // Forward event to the xremwin server, minus the signature
             try {
-                serverProxy.write(message);
+                serverProxy.write(message, 0, message.length - Proto.SIGNATURE_SIZE);
             } catch (IOException ex) {
                 AppXrw.logger.warning("IOException during write to xremwin server");
             }
@@ -322,7 +383,162 @@ class SlaveForwarder {
 
         public void otherClientHasLeft(BigInteger otherClientID) {
             AppXrw.logger.info("Slave has disconnected: " + otherClientID);
+        
+            // clean up
+            synchronized (slaveIdToCounter) {
+                slaveIdToCounter.remove(otherClientID);
+            }
+            synchronized (slaveIdToSecret) {
+                slaveIdToSecret.remove(otherClientID);
+            }
         }
+    }
+
+    /**
+     * Send a take control failure message
+     * @param slaveID the id of the client to send to
+     * @param clientID the clientID
+     */
+    private void sendTakeControlFailure(BigInteger slaveID, int clientId) {
+        int n = 0;
+        controlRefusedBuf[n++] = (byte) Proto.ServerMessageType.CONTROLLER_STATUS.ordinal();
+        controlRefusedBuf[n++] = (byte) Proto.ControllerStatus.REFUSED.ordinal();
+        controlRefusedBuf[n++] = 0;
+        controlRefusedBuf[n++] = 0;
+        controlRefusedBuf[n++] = (byte) ((clientId >> 24) & 0xff);
+        controlRefusedBuf[n++] = (byte) ((clientId >> 16) & 0xff);
+        controlRefusedBuf[n++] = (byte) ((clientId >> 8) & 0xff);
+        controlRefusedBuf[n++] = (byte) (clientId & 0xff);
+
+        unicastSend(slaveID, controlRefusedBuf, true);
+    }
+
+    /**
+     * Add a record for a new user.
+     * @param slaveID the id of the slave that connected
+     * @param message the initial message from this user
+     * @return true if the message is a valid message from the given
+     * Wonderland client, or false if not.
+     */
+    private boolean addUser(BigInteger slaveID, byte[] message) {
+        // get the secret for this user
+        SecretKey secret = serverProxy.getSecret(slaveID);
+        if (secret == null) {
+            return false;
+        }
+
+        // create a Mac based on that secret
+        Mac mac;
+        try {
+            mac = Mac.getInstance("HmacSHA1");
+            mac.init(secret);
+        } catch (NoSuchAlgorithmException nsae) {
+            // shouldn't happen
+            throw new IllegalStateException(nsae);
+        } catch (InvalidKeyException ike) {
+            // shouldn't happen
+            throw new IllegalStateException(ike);
+        }
+
+        // remember the secret
+        synchronized (slaveIdToSecret) {
+            slaveIdToSecret.put(slaveID, mac);
+        }
+
+        // get the initial counter for this user
+        int counterIdx = message.length - 24;
+        int counter = readInt(message, counterIdx);
+        synchronized (slaveIdToCounter) {
+            slaveIdToCounter.put(slaveID, counter);
+        }
+
+        // now that we have populated those tables, go ahead and verify the
+        // message
+        return verify(slaveID, Proto.ClientMessageType.HELLO, message);
+    }
+
+    /**
+     * Verify that a message's signature matches.  Also verify that the
+     * any embedded client IDs are valid.
+     * @param slaveID the id of the slave that sent this message
+     * @param msgType the type of message
+     * @param message the message to verify
+     * @return true if the signature matches, or false if not
+     */
+    private boolean verify(BigInteger slaveID, Proto.ClientMessageType msgType, 
+                           byte[] message)
+    {
+        // first, verify the signature matches the given slave ID
+        Mac mac;
+        synchronized (slaveIdToSecret) {
+            mac = slaveIdToSecret.get(slaveID);
+        }
+        if (mac == null) {
+            AppXrw.logger.warning("Rejected message from " + slaveID + 
+                                  ".  MAC not found.");
+            return false;
+        }
+        mac.update(message, 0, message.length - 20);
+
+        // copy the signature into its own array for processing
+        byte[] signature = new byte[20];
+        System.arraycopy(message, message.length - 20, signature, 0, 20);
+
+        // compare the signatures
+        if (!Arrays.equals(signature, mac.doFinal())) {
+            AppXrw.logger.warning("Rejected message from " + slaveID + 
+                                  ".  Signature mismatch.");
+            return false;
+        }
+
+        // now extract the client ID (if any) and compare that to the map
+        // from slave ids to client IDs
+        int idx = msgType.clientIdIndex();
+        if (idx != -1) {
+            int clientID = readInt(message, idx);
+            
+            BigInteger correctID;
+            synchronized (clientIdToSlaveId) {
+                correctID = clientIdToSlaveId.get(clientID);
+            }
+
+            if (correctID == null || !correctID.equals(slaveID)) {
+                AppXrw.logger.warning("Rejected message from " + slaveID + 
+                                  " type " + msgType + ". Client ID mismatch.");
+                return false;
+            }
+        }
+
+        // finally, check the counter for this message, to make sure it
+        // is the next counter based on the last one we received from this
+        // slave.  This prevents replay attacks.
+        int counterIdx = message.length - 24;
+        int counter = readInt(message, counterIdx);
+        
+        Integer correctCounter;
+        synchronized (slaveIdToCounter) {
+            correctCounter = slaveIdToCounter.get(slaveID);
+            
+            // update the counter while we have the lock.  If we reject the 
+            // counter below, the client will be disconnected anyway.
+            slaveIdToCounter.put(slaveID, correctCounter + 1);
+        }
+
+        if (correctCounter == null || (correctCounter.intValue() != counter)) {
+            AppXrw.logger.warning("Rejected message from " + slaveID + 
+                                  " type " + msgType + ". Counter mismatch.");
+            return false;
+        }
+        
+        // everything checked out!
+        return true;
+    }
+
+    private int readInt(byte[] buffer, int offset) {
+        return ((buffer[offset++] & 0xff) << 24) |
+               ((buffer[offset++] & 0xff) << 16) |
+               ((buffer[offset++] & 0xff) << 8) |
+               (buffer[offset++] & 0xff);
     }
 
     // For Debug

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.xremwin.client;
 
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
+import javax.crypto.SecretKey;
 import org.jdesktop.wonderland.common.InternalAPI;
 
 /**
@@ -33,16 +34,22 @@ public class AppXrwConnectionInfo {
     /** The string format delimiter. */
     private static String DELIMITER = "/";
 
-       /** The name of the host to which the slave should connect. */
+    /** The name of the host to which the slave should connect. */
     private String hostName;
     /** The port number to which the slave should connect. */
     private int portNum;
 
+    /** The shared secret between the server and this client */
+    private SecretKey secret;
+
     /**
      * Create a new instance of AppXrwConnectionInfo.
      * @param connInfo A string in AppXrwConnectionInfo string format (see toString).
+     * @param secret the secret key for connecting to the server.
      */
-    public AppXrwConnectionInfo(String connInfo) {
+    public AppXrwConnectionInfo(String connInfo, SecretKey secret) {
+        this.secret = secret;
+
         StringTokenizer st = new StringTokenizer(connInfo, DELIMITER);
 
         try {
@@ -94,6 +101,14 @@ public class AppXrwConnectionInfo {
         return portNum;
     }
 
+    /**
+     * Get the shared secret
+     * @return the shared secret
+     */
+    SecretKey getSecret() {
+        return secret;
+    }
+    
     public String toString () {
         return "AppXrwConnectionInfo" + DELIMITER + hostName + DELIMITER + portNum;
     }

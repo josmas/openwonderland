@@ -87,7 +87,8 @@ public class SasProviderConnection extends BaseConnection {
             }
 
             logger.warning("Attempting to launch X app");
-            String connInfo = listener.launch(msg.getAppName(), msg.getCommand(), this, msg.getMessageID());
+            String connInfo = listener.launch(msg.getAppName(), msg.getCommand(), 
+                                              this, msg.getMessageID(), msg.getCellID());
             logger.warning("connInfo = " + connInfo);
             sendResponse(msg.getMessageID(), connInfo);
 

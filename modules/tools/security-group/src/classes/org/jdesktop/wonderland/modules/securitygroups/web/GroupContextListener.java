@@ -121,6 +121,10 @@ public class GroupContextListener
             webserverMember.setGroup(adminGroup);
             adminGroup.getMembers().add(webserverMember);
 
+            MemberEntity sasMember = new MemberEntity("admin", "sasxprovider");
+            sasMember.setGroup(adminGroup);
+            adminGroup.getMembers().add(sasMember);
+
             groups.updateGroup(adminGroup);
 
             logger.warning("Created initial group " + adminGroup.getId() +

@@ -22,7 +22,10 @@
       <path location="${current.dir}/lib/escher-0.2.2.lg.jar"/>
     </pathconvert>
 
-    <property name="module-server.classpath" value="${current.dir}/../appbase/build/server/appbase-server.jar"/>
+    <pathconvert property="module-server.classpath">
+      <path location="${current.dir}/../appbase/build/server/appbase-server.jar"/>
+      <path location="${current.dir}/../security/build/lib/server/security-server.jar"/>
+    </pathconvert>
        
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,

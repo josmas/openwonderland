@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.utils.SmallIntegerAllocator;
 import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.utils.net.NetworkAddress;
 import org.jdesktop.wonderland.modules.appbase.client.MonitoredProcess;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
@@ -85,15 +86,16 @@ public class AppXrwMaster
      *
      * @param appName The name of the application.
      * @param command The operating system command to execute to start app program.
+     * @param cellID The id of the cell this app is associated with.
      * @param pixelScale The size of the window pixels.
      * @param processReporter Report output and exit status to this
      * @param session This app's Wonderland session.
      * @throws InstantiationException Could not launch app
      */
-    public AppXrwMaster(String appName, String command, Vector2f pixelScale,
+    public AppXrwMaster(String appName, String command, CellID cellID, Vector2f pixelScale,
                         ProcessReporter reporter, WonderlandSession session)
             throws InstantiationException {
-        this(appName, command, pixelScale, reporter, session, false);
+        this(appName, command, cellID, pixelScale, reporter, session, false);
     }
 
     /**
@@ -101,13 +103,14 @@ public class AppXrwMaster
      *
      * @param appName The name of the application.
      * @param command The operating system command to execute to start app program.
+     * @param cellID The id of the cell this app is associated with.
      * @param pixelScale The size of the window pixels.
      * @param processReporter Report output and exit status to this
      * @param session This app's Wonderland session.
      * @param sas Whether this app is being launched by a SAS provider
      * @throws InstantiationException Could not launch app
      */
-    public AppXrwMaster(String appName, String command, Vector2f pixelScale,
+    public AppXrwMaster(String appName, String command, CellID cellID, Vector2f pixelScale,
                         ProcessReporter reporter, WonderlandSession session, boolean sas)
             throws InstantiationException {
 
@@ -150,7 +153,7 @@ public class AppXrwMaster
         // Create the Xremwin protocol client.
         client = null;
         try {
-            client = new ClientXrwMaster(this, controlArb, session, masterHost, serverSocket,
+            client = new ClientXrwMaster(this, controlArb, session, cellID, masterHost, serverSocket,
                     winSys, reporter);
             ((ClientXrwMaster)client).setExitListener(this);
         } catch (InstantiationException ex) {

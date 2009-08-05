@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.sas.provider;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 
 /**
@@ -37,7 +38,7 @@ public interface SasProviderConnectionListener {
      * TODO: params
      */
     public String launch (String appName, String command, SasProviderConnection connection, 
-                          MessageID launchMessageID);
+                          MessageID launchMessageID, CellID cellID);
 
     /**
      * Stop the specified app.

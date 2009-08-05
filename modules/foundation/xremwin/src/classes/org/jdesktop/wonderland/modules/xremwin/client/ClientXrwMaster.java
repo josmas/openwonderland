@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.ProcessReporter;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.ControllerStatus;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.ControllerStatusMsgArgs;
@@ -61,14 +62,16 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
      * @param app The application for whom the client is operating.
      * @param controlArb The control arbiter for the app.
      * @param session This app's Wonderland session.
+     * @param cellID The id of the cell this app is associated with.
      * @param masterHost The master host name (this host).
      * @param serverSocket The server socket to which slaves should connect.
      * @param winSys The Xremwin window system for the app.
      * @param reporter Report output and exit status to this.
      * @throws InstantiationException If it could not make contact with the server.
      */
-    public ClientXrwMaster(AppXrw app, ControlArb controlArb, WonderlandSession session, String masterHost,
-            ServerSocket serverSocket, WindowSystemXrw winSys, ProcessReporter reporter)
+    public ClientXrwMaster(AppXrw app, ControlArb controlArb, WonderlandSession session, 
+            CellID cellID, String masterHost, ServerSocket serverSocket,
+            WindowSystemXrw winSys, ProcessReporter reporter)
             throws InstantiationException {
         super(app, controlArb, reporter);
         this.winSys = winSys;
@@ -77,7 +80,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
         // Connect to the Xremwin server
 
         int wsDisplayMaster = winSys.getDisplayNum();
-        serverProxy = new ServerProxyMaster(session, masterHost, wsDisplayMaster, serverSocket, this);
+        serverProxy = new ServerProxyMaster(session, cellID, masterHost, wsDisplayMaster, serverSocket, this);
         try {
             serverProxy.connect();
         } catch (IOException ex) {

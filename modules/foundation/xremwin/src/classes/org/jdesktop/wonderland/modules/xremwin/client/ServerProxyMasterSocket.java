@@ -85,16 +85,16 @@ abstract class ServerProxyMasterSocket implements ServerProxy {
     protected byte[] scanLineBuf;
 
     // Buffers to hold various types of messages
-    private byte[] keyEventBuf = new byte[Proto.KEY_EVENT_MESSAGE_SIZE];
-    private byte[] pointerEventBuf = new byte[Proto.POINTER_EVENT_MESSAGE_SIZE];
-    private byte[] takeControlBuf = new byte[Proto.TAKE_CONTROL_MESSAGE_SIZE];
-    private byte[] releaseControlBuf = new byte[Proto.RELEASE_CONTROL_MESSAGE_SIZE];
-    private byte[] setWindowTitleBuf = new byte[Proto.SET_WINDOW_TITLE_MESSAGE_SIZE];
-    private byte[] setUserDisplBuf = new byte[Proto.WINDOW_SET_USER_DISPL_MESSAGE_SIZE];
-    private byte[] setSizeBuf = new byte[Proto.WINDOW_SET_SIZE_MESSAGE_SIZE];
-    private byte[] setRotateYBuf = new byte[Proto.WINDOW_SET_ROTATE_Y_MESSAGE_SIZE];
-    private byte[] toFrontBuf = new byte[Proto.WINDOW_TO_FRONT_MESSAGE_SIZE];
-    private byte[] destroyWindowBuf = new byte[Proto.DESTROY_WINDOW_MESSAGE_SIZE];
+    private byte[] keyEventBuf       = new byte[Proto.ClientMessageType.EVENT_KEY.size()];
+    private byte[] pointerEventBuf   = new byte[Proto.ClientMessageType.EVENT_POINTER.size()];
+    private byte[] takeControlBuf    = new byte[Proto.ClientMessageType.TAKE_CONTROL.size()];
+    private byte[] releaseControlBuf = new byte[Proto.ClientMessageType.RELEASE_CONTROL.size()];
+    private byte[] setWindowTitleBuf = new byte[Proto.ClientMessageType.SET_WINDOW_TITLE.size()];
+    private byte[] setUserDisplBuf   = new byte[Proto.ClientMessageType.WINDOW_SET_USER_DISPLACEMENT.size()];
+    private byte[] setSizeBuf        = new byte[Proto.ClientMessageType.WINDOW_SET_SIZE.size()];
+    private byte[] setRotateYBuf     = new byte[Proto.ClientMessageType.WINDOW_SET_ROTATE_Y.size()];
+    private byte[] toFrontBuf        = new byte[Proto.ClientMessageType.WINDOW_TO_FRONT.size()];
+    private byte[] destroyWindowBuf  = new byte[Proto.ClientMessageType.DESTROY_WINDOW.size()];
 
     // We save the last pointer position in these so that we can supply
     // the current pointer position to the server when we send wheel events.

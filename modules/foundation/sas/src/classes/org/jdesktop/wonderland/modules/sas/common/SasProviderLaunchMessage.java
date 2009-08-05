@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.sas.common;
 
 import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
@@ -38,6 +39,9 @@ public class SasProviderLaunchMessage extends Message {
     /* The execution command. */
     private String command;
 
+    /** The cell id. */
+    private CellID cellID;
+
     /** The default constructor */
     public SasProviderLaunchMessage () {}
 
@@ -46,11 +50,15 @@ public class SasProviderLaunchMessage extends Message {
      * @param executionCapability The execution capability.
      * @param appName The name of the app instance.
      * @param command The command to execute.
+     * @param cellID the cellID this app is associated with
      */
-    public SasProviderLaunchMessage (String executionCapability, String appName, String command) {
+    public SasProviderLaunchMessage (String executionCapability, String appName, String command,
+                                     CellID cellID)
+    {
         this.executionCapability = executionCapability;
         this.appName = appName;
         this.command = command;
+        this.cellID = cellID;
     }
 
     public void setExecutionCapability (String executionCapability) {
@@ -75,5 +83,13 @@ public class SasProviderLaunchMessage extends Message {
 
     public String getCommand () {
         return command;
+    }
+
+    public void setCellID (CellID cellID) {
+        this.cellID = cellID;
+    }
+
+    public CellID getCellID() {
+        return cellID;
     }
 }

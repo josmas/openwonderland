@@ -81,20 +81,35 @@ public class Proto {
     }
 
     public enum ClientMessageType {
+        INVALID (0, -1),
+        EVENT_KEY (12, 8),
+        EVENT_POINTER (16, 12),
+        TAKE_CONTROL (8, 4),
+        RELEASE_CONTROL (8, 4),
+        SET_WINDOW_TITLE (12, -1), // TODO: add client ID?
+        WINDOW_SET_USER_DISPLACEMENT (24, 4),
+        WINDOW_SET_SIZE (20, 4),
+        WINDOW_SET_ROTATE_Y (16, 4),
+        WINDOW_TO_FRONT (12, 4),
+        DESTROY_WINDOW (8, -1), // TODO: add client ID?
+        SLAVE_CLOSE_WINDOW (12, 4),
+        HELLO (4, -1);
 
-        INVALID,
-        EVENT_KEY,
-        EVENT_POINTER,
-        TAKE_CONTROL,
-        RELEASE_CONTROL,
-        SET_WINDOW_TITLE,
-        WINDOW_SET_USER_DISPLACEMENT,
-        WINDOW_SET_SIZE,
-        WINDOW_SET_ROTATE_Y,
-        WINDOW_TO_FRONT,
-        DESTROY_WINDOW,
-        SLAVE_CLOSE_WINDOW,
-        HELLO
+        int size;
+        int clientIdIndex;
+
+        ClientMessageType(int size, int clientIdIndex) {
+            this.size = size;
+            this.clientIdIndex = clientIdIndex;
+        }
+
+        public int size() {
+            return size;
+        }
+
+        public int clientIdIndex() {
+            return clientIdIndex;
+        }
     }
 
     public enum ControllerStatus {
@@ -103,21 +118,16 @@ public class Proto {
         LOST,
         GAINED
     }
-    public static final int HELLO_MESSAGE_SIZE = 4;
-    public static final int KEY_EVENT_MESSAGE_SIZE = 12;
-    public static final int POINTER_EVENT_MESSAGE_SIZE = 16;
-    public static final int TAKE_CONTROL_MESSAGE_SIZE = 8;
-    public static final int RELEASE_CONTROL_MESSAGE_SIZE = 8;
-    public static final int SET_WINDOW_TITLE_MESSAGE_SIZE = 12;
+    
     public static final int WINDOW_SET_USER_DISPL_MESSAGE_SIZE = 24;
-    public static final int WINDOW_SET_SIZE_MESSAGE_SIZE = 20;
     public static final int WINDOW_SET_ROTATE_Y_MESSAGE_SIZE = 16;
-    public static final int WINDOW_TO_FRONT_MESSAGE_SIZE = 12;
-    public static final int DESTROY_WINDOW_MESSAGE_SIZE = 8;
-    public static final int SLAVE_CLOSE_WINDOW_MESSAGE_SIZE = 12;
     public static final int WELCOME_MESSAGE_SIZE = 8;
     public static final int CONTROLLING_USER_NAME_MESSAGE_SIZE = 4;
+    public static final int CONTROLLER_STATUS_MESSAGE_SIZE = 8;
     public static final int SET_POPUP_PARENT_MESSAGE_SIZE = 12;
+  
+    /** the size of the signature appended to client messages */
+    public static final int SIGNATURE_SIZE = 4 + 20;
 
     public static class MessageArgs {
     }
