@@ -22,6 +22,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import java.util.logging.Logger;
 
 /**
  * Utilities to be used by Swing module cell factory classes.
@@ -30,12 +31,15 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  */
 public class SwingCellFactoryUtils {
 
+    private static final Logger logger = Logger.getLogger(SwingCellFactoryUtils.class.getName());
+
     /**
      * Optimization: Skip the initial system placement for app cells. The app base
      * will do the initial placement itself.
      */
     public static void skipSystemInitialPlacement (CellServerState state) {
 
+        /* TODO: notyet: app base swing cell placement isn't yet supported. Use system placement
         // Minor Optimization: Skip the initial system placement for app cells. Because 
         // cell bounds are fixed at cell creation time we need to give app cells a huge 
         // bounds (see the comment in App2DCellMO()). We won't know the right location to 
@@ -43,8 +47,10 @@ public class SwingCellFactoryUtils {
         // we disable system placement to save work. The app base will perform the
         // the initial placement later.
         if (App2D.doAppInitialPlacement) {
+            logger.info("doAppInitialPlacement: disable system placement");
             BoundingVolumeHint hint = new BoundingVolumeHint(false, null);
             state.setBoundingVolumeHint(hint);
         }
+        */
     }
 }

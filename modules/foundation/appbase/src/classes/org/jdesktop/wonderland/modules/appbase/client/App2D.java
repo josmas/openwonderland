@@ -57,7 +57,7 @@ public abstract class App2D {
 
     // TODO: Part 1: temporary. This gives the ability to disable app-specific placement.
     // The other part of the boolean is in XAppCellFactory.
-    public static final boolean doAppInitialPlacement = false;
+    public static final boolean doAppInitialPlacement = true;
 
     /** All of the apps which have been created by this client. */
     private static final LinkedList<App2D> apps = new LinkedList<App2D>();
@@ -435,6 +435,7 @@ public abstract class App2D {
      */
     public void setFirstVisibleInitializer (FirstVisibleInitializer fvi) {
         this.fvi = fvi;
+        logger.info("attached fvi to app " + this + ", fvi = " + fvi);
     }
 
     /**

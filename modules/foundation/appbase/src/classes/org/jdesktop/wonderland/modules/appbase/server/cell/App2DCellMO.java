@@ -26,6 +26,19 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
 import com.jme.bounding.BoundingBox;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellPerformFirstMoveMessage;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import com.sun.sgs.app.ManagedReference;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
 
 /**
  * An abstract server-side app.base cell for 2D apps. 
@@ -36,6 +49,8 @@ import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
 @ExperimentalAPI
 public abstract class App2DCellMO extends AppCellMO {
 
+    private static Logger logger = Logger.getLogger(App2DCellMO.class.getName());
+
     /** The pixel scale. */
     protected Vector2f pixelScale;
 
@@ -44,6 +59,9 @@ public abstract class App2DCellMO extends AppCellMO {
 
     /** Whether the initial placement of the cell has been completed. */
     private boolean initialPlacementDone;
+
+    @UsesCellComponentMO(ChannelComponentMO.class)
+    protected ManagedReference<ChannelComponentMO> channelRef;
 
     /** Create an instance of App2DCellMO. */
     public App2DCellMO() {
@@ -72,7 +90,7 @@ public abstract class App2DCellMO extends AppCellMO {
         if (vcss != null) {
 	    creatorViewTransform = vcss.getCellTransform();
         }
-	logger.warning("Cell creator view transform = " + creatorViewTransform);
+	logger.info("Cell creator view transform = " + creatorViewTransform);
     }
 
     /**
@@ -108,4 +126,62 @@ public abstract class App2DCellMO extends AppCellMO {
         return initialPlacementDone;
     }
 
+    @Override
+    protected void setLive(boolean live) {
+        if (isLive()==live)
+            return;
+
+        super.setLive(live);
+
+        if (live) {
+            App2DCellMessageReceiver receiver = new App2DCellMessageReceiver(this);
+            channelRef.get().addMessageReceiver(App2DCellPerformFirstMoveMessage.class, receiver);
+        } else {
+            channelRef.get().removeMessageReceiver(App2DCellPerformFirstMoveMessage.class);
+        }
+    }
+
+    private void handlePerformFirstMove (WonderlandClientID clientID, 
+                                         App2DCellPerformFirstMoveMessage msg) {
+
+        // Only the first message moves the cell; ignore all subsequent
+        if (isInitialPlacementDone()) return;
+
+        // Make sure the cell has a movable component
+        MovableComponentMO mc = getComponent(MovableComponentMO.class);
+        if (mc == null) {
+            mc = new MovableComponentMO(this);
+            addComponent(mc);
+        }
+
+        // Request the move
+        logger.info("Perform first move for cell = " + cellID);
+        logger.info("Perform first move to transform = " + msg.getCellTransform());
+        mc.moveRequest(null, msg.getCellTransform());
+
+        setInitialPlacementDone(true);
+    }
+
+    private static class App2DCellMessageReceiver extends AbstractComponentMessageReceiver {
+        public App2DCellMessageReceiver(CellMO cellMO) {
+            super (cellMO);
+        }
+
+        @Override
+        public void messageReceived(WonderlandClientSender sender,
+                                    WonderlandClientID clientID,
+                                    CellMessage message)
+        {
+            App2DCellMO cellMO = (App2DCellMO) getCell();
+
+            if (message instanceof App2DCellPerformFirstMoveMessage) {
+                cellMO.handlePerformFirstMove(clientID, (App2DCellPerformFirstMoveMessage)message);
+            } else {
+                logger.log(Level.WARNING, "Unexpected message type " +
+                           message.getClass());
+                sender.send(clientID, new ErrorMessage(message.getMessageID(),
+                            "Unexpected message type: " + message.getClass()));
+            }
+        }
+    }
 }

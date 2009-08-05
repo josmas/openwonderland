@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.client.cell.utils.CellPlacementUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.FirstVisibleInitializer;
+import java.util.logging.Logger;
 
 /**
  * Used to move an cell to its initial location before the first time something
@@ -36,6 +37,8 @@ import org.jdesktop.wonderland.modules.appbase.client.FirstVisibleInitializer;
  */
 @ExperimentalAPI
 public class FirstVisibleInitializerCell implements FirstVisibleInitializer {
+
+    private static final Logger logger = Logger.getLogger(FirstVisibleInitializerCell.class.getName());
 
     /** The cell to be initialized. */
     private App2DCell cell;
@@ -50,23 +53,17 @@ public class FirstVisibleInitializerCell implements FirstVisibleInitializer {
 
     /** {@inheritDoc} */
     public void initialize (float width3D, float height3D) {
-        
-        // Get the cell world bounds. We can do this because first-visibility implies
-        // that the cell is live.
-        BoundingVolume origBounds = cell.getWorldBounds();
-        if (!(origBounds instanceof BoundingBox)) {
-            throw new RuntimeException("Cell " + cell.getCellID() + " has invalid type of bounds.");
-        }
-        BoundingBox origBbox = (BoundingBox) origBounds;
+        logger.info("FVI.initialize, wh3D = " + width3D + ", " + height3D);
 
         // Determine the "first visible bounds" based on the size of the first-visible window
-        BoundingBox bbox = new BoundingBox(new Vector3f(), width3D/2.0f, height3D/2.0f, 
-                                           origBbox.zExtent);
+        BoundingBox bbox = new BoundingBox(new Vector3f(), width3D/2.0f, height3D/2.0f, 1f);
+        logger.info("new bbox = " + bbox);
         
         // Calculate the "best" initial cell transform, based on the size of the first
         // window made visible.
         CellTransform ct = CellPlacementUtils.getCellTransform(null, bbox, creatorViewTransform);
         if (ct != null) {
+            logger.info("Best initial cell transform = " + ct);
             cell.performFirstMove(ct);
         }
     }

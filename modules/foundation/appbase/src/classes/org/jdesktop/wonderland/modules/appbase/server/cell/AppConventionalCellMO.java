@@ -38,8 +38,6 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellPerformFirstMoveMessage;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 /**
  * TODO: rework
@@ -96,9 +94,6 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
 
     /** Opaque info which identifies the launched app to the app server. */
     private Object appServerLaunchInfo;
-
-    @UsesCellComponentMO(ChannelComponentMO.class)
-    private ManagedReference<ChannelComponentMO> channelRef;
 
     /**
      * The SAS server must implement this.
@@ -248,10 +243,10 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         if (!"server".equalsIgnoreCase(serverState.launchLocation)) {
             // for a user launched app, add listeners for remote notification
             // of app status.  Note this protocol is not fully implemented
-            // on the client for user launch, so these messages are never
+            // on the client for user launch, so some of these messages are never
             // received.
             if (live) {
-                MessageReceiver receiver = new MessageReceiver(this);
+                AppConventionalCellMessageReceiver receiver = new AppConventionalCellMessageReceiver(this);
                 channelRef.get().addMessageReceiver(AppConventionalCellSetConnectionInfoMessage.class,
                                                     receiver);
                 channelRef.get().addMessageReceiver(AppConventionalCellAppExittedMessage.class,
@@ -335,7 +330,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
     }
 
     public void setConnectionInfo (String connInfo) {
-        logger.warning("Connection info for cellID " + cellID + " = " + connInfo);
+        logger.info("Connection info for cellID " + cellID + " = " + connInfo);
         connectionInfo = connInfo;
 
         // Notify all client cells that connection info for a newly launched SAS master app
@@ -413,28 +408,8 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
         destroy();
     }
 
-    private void handlePerformFirstMove (WonderlandClientID clientID, 
-                                         AppConventionalCellPerformFirstMoveMessage msg) {
-
-        // Only the first message moves the cell; ignore all subsequent
-        if (isInitialPlacementDone()) return;
-
-        // Make sure the cell has a movable component
-        MovableComponentMO mc = getComponent(MovableComponentMO.class);
-        if (mc == null) {
-            mc = new MovableComponentMO(this);
-            addComponent(mc);
-        }
-
-        // Request the move
-        logger.warning("Perform first move to transform = " + msg.getCellTransform());
-        mc.moveRequest(null, msg.getCellTransform());
-
-        setInitialPlacementDone(true);
-    }
-
-    private static class MessageReceiver extends AbstractComponentMessageReceiver {
-        public MessageReceiver(CellMO cellMO) {
+    private static class AppConventionalCellMessageReceiver extends AbstractComponentMessageReceiver {
+        public AppConventionalCellMessageReceiver(CellMO cellMO) {
             super (cellMO);
         }
 
@@ -449,8 +424,6 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
                 cellMO.handleSetConnectionInfo(clientID, (AppConventionalCellSetConnectionInfoMessage) message);
             } else if (message instanceof AppConventionalCellAppExittedMessage) {
                 cellMO.handleAppExitted(clientID, (AppConventionalCellAppExittedMessage) message);
-            } else if (message instanceof AppConventionalCellPerformFirstMoveMessage) {
-                cellMO.handlePerformFirstMove(clientID, (AppConventionalCellPerformFirstMoveMessage)message);
             } else {
                 logger.log(Level.WARNING, "Unexpected message type " +
                            message.getClass());
@@ -458,7 +431,5 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
                             "Unexpected message type: " + message.getClass()));
             }
         }
-
-
     }
 }

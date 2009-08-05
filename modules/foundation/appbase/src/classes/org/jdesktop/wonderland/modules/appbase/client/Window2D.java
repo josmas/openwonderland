@@ -663,9 +663,8 @@ public abstract class Window2D implements HUDDisplayable {
             return;
         }
 
-        performFirstVisibleInitialization();
-
         setVisibleAppPart1(visible);
+        performFirstVisibleInitialization();
         setVisibleAppPart2();
     }
 
@@ -730,10 +729,14 @@ public abstract class Window2D implements HUDDisplayable {
     /**
      * If necessary, do the first-visible initialization.
      */
-    private void performFirstVisibleInitialization () {
+    protected void performFirstVisibleInitialization () {
         if (visibleApp) {
+            logger.info("Perform first visible initialization for window " + this);
             FirstVisibleInitializer fvi = app.getFirstVisibleInitializer();
+            logger.info("fvi = " + fvi);
             if (fvi != null) {
+                logger.info("window size = " + size);
+                logger.info("pixel scale = " + pixelScale);
                 float width3D = size.width * pixelScale.x;
                 float height3D = size.height * pixelScale.y;
                 fvi.initialize(width3D, height3D);

@@ -63,6 +63,39 @@ import javax.swing.SwingUtilities;
  * <br>
  * setComponent(testPanel);
  * </code>
+ * <br><br>
+ * WindowSwing Sizing:
+ * <br><br>
+ * WindowSwing now supports the two sizing modes that Swing supports. I'm
+ * not sure what Swing calls these two modes but I call them "preferred
+ * size" mode and "forced size" mode.
+ * <br><br>
+ * In preferred size mode, the WindowSwing's size is computed by Swing as
+ * it lays out the contained component. This layout process is typically
+ * influenced by the preferred sizes of the component's subcomponents.
+ * <br><br>
+ * In forced size mode, the WindowSwing's size is specified by the
+ * Wonderland program calling WindowSwing.setSize with a specified
+ * non-null size. Swing will do the best it can to lay out the contained
+ * subcomponents.
+ * <br><br>
+ * Basically, you use preferred size mode to make the WindowSwing adapt
+ * to the contained component and you use forced size mode to make the
+ * contained component adapt to the size of the WindowSwing.
+ * <br><br>
+ * Initially WindowSwing defaults to preferred size mode. To force a
+ * size, use either of these two methods:
+ * <br><br>
+ * WindowSwing.setSize(int width, int height)
+ * <br><br>
+ * WindowSwing.setSize(java.awt.Dimension dims), where dims is non-null.
+ * <br><br>
+ * To return to preferred size mode invoke the following method:
+ * <br><br>
+ * WindowSwing.setSize(null)
+ * <br><br>
+ * In addition, all setSize methods require WindowSwing.setComponent to
+ * have been already called and will throw an exception if it has not.
  */
 
 // TODO: currently this has JME dependencies. It would be nice to do this in a graphics library independent fashion.
@@ -454,4 +487,9 @@ public class WindowSwing extends Window2D {
         view.removeEntityComponent(WindowSwingViewReference.class);
         view.removeEntityComponent(InputManager.WindowSwingEventConsumer.class); 
     }
+
+    /* TODO: notyet: app base swing cell placement isn't yet supported. Use system placement */
+    protected void performFirstVisibleInitialization () {
+    }
+
 }
