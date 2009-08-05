@@ -146,11 +146,8 @@ public class CellUtils {
         position.setScaling(transform.getScaling(null));
         state.addComponentServerState(position);
 
-        // If we do not want system placement to happen, then also include the
-        // transform of the View Cell that created the Cell.
-        if (hint != null && hint.isDoSystemPlacement() == false) {
-            state.addComponentServerState(new ViewComponentServerState(viewTransform));
-        }
+        // Always pass in the view transform to the Cell's server state
+        state.addComponentServerState(new ViewComponentServerState(viewTransform));
 
         // Send the message to the server
         WonderlandSession session = manager.getPrimarySession();
