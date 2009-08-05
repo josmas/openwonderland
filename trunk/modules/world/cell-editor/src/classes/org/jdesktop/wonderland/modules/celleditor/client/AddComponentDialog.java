@@ -17,8 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.celleditor.client;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JTable;
@@ -97,11 +101,21 @@ public class AddComponentDialog extends javax.swing.JDialog {
             }
         }
 
-        int size = factories.size();
+        // Put all of the factories into a list and sort based upon the display
+        // name
+        List<CellComponentFactorySPI> factoryList = new LinkedList(factories);
+        Comparator nameComparator = new Comparator<CellComponentFactorySPI>() {
+            public int compare(CellComponentFactorySPI o1, CellComponentFactorySPI o2) {
+                return o1.getDisplayName().compareTo(o2.getDisplayName());
+            }
+        };
+        Collections.sort(factoryList, nameComparator);
 
+        // Loop through the ordered list and place into the table.
+        int size = factoryList.size();
         Object[][] entries = new Object[size][2];
         int i = 0;
-        for (CellComponentFactorySPI factory : factories) {
+        for (CellComponentFactorySPI factory : factoryList) {
             entries[i][0] = factory.getDisplayName();
             entries[i][1] = factory.getDescription();
             factoryMap.put(factory.getDisplayName(), factory);
