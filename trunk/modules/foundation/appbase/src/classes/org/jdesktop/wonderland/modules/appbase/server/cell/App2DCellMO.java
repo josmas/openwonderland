@@ -39,6 +39,8 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 
 /**
  * An abstract server-side app.base cell for 2D apps. 
@@ -87,16 +89,30 @@ public abstract class App2DCellMO extends AppCellMO {
 
         ViewComponentServerState vcss =
                 (ViewComponentServerState) serverState.getComponentServerState(ViewComponentServerState.class);
+        logger.info("vcss = " + vcss);
         if (vcss != null) {
 	    creatorViewTransform = vcss.getCellTransform();
         }
 	logger.info("Cell creator view transform = " + creatorViewTransform);
     }
 
+    /** 
+     * {@inheritDoc}
+     */
+    @Override
+    protected CellClientState getClientState(CellClientState cellClientState,
+                                             WonderlandClientID clientID, ClientCapabilities capabilities) {
+        if (cellClientState == null) {
+            cellClientState = new App2DCellClientState();
+        }
+        populateClientState((App2DCellClientState) cellClientState);
+        return super.getClientState(cellClientState, clientID, capabilities);
+    }
+
     /**
      * Fill in the given client state with the cell server state.
      */
-    protected void populateClientState(App2DCellClientState clientState) {
+    private void populateClientState(App2DCellClientState clientState) {
         clientState.setPixelScale(pixelScale);
         clientState.setCreatorViewTransform(creatorViewTransform);
         clientState.setInitialPlacementDone(initialPlacementDone);

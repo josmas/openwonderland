@@ -39,7 +39,6 @@ public class SwingCellFactoryUtils {
      */
     public static void skipSystemInitialPlacement (CellServerState state) {
 
-        /* TODO: notyet: app base swing cell placement isn't yet supported. Use system placement
         // Minor Optimization: Skip the initial system placement for app cells. Because 
         // cell bounds are fixed at cell creation time we need to give app cells a huge 
         // bounds (see the comment in App2DCellMO()). We won't know the right location to 
@@ -51,6 +50,5 @@ public class SwingCellFactoryUtils {
             BoundingVolumeHint hint = new BoundingVolumeHint(false, null);
             state.setBoundingVolumeHint(hint);
         }
-        */
     }
 }

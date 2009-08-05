@@ -190,7 +190,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      */
     @Override
     protected CellClientState getClientState(CellClientState cellClientState,
-            WonderlandClientID clientID, ClientCapabilities capabilities) {
+                                             WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
             cellClientState = new AppConventionalCellClientState();
         }
@@ -202,8 +202,7 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
      * Fill in the given client state with this cell's state.
      * @param clientState The client state whose properties are to be set.
      */
-    protected void populateClientState(AppConventionalCellClientState clientState) {
-        super.populateClientState(clientState);
+    private void populateClientState(AppConventionalCellClientState clientState) {
         clientState.setAppName(serverState.getAppName());
         clientState.setLaunchLocation(serverState.getLaunchLocation());
         clientState.setLaunchUser(serverState.getLaunchUser());
