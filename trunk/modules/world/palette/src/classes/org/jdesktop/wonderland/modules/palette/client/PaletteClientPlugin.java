@@ -100,6 +100,7 @@ public class PaletteClientPlugin extends BaseClientPlugin
                 if (cellPaletteFrame.isVisible() == false) {
                     cellPaletteFrame.setVisible(true);
                 }
+                cellPaletteFrame.toFront();
             }
         });
 
