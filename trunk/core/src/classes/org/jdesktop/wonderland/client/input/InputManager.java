@@ -287,15 +287,12 @@ public abstract class InputManager
 	inputPicker.pickMouseEvent3D(e);
         mainWindowHasCursor = true;
 
-        /* TODO: notyet
-        // Fix 348 by forcing key-focus-follows-mouse behavior on the mac
         if (isMac) {
             if (!mainWindowHasFocus) {
                 System.err.println("******* Mac OS X: acquire key focus for main window");
                 ensureKeyFocusInMainWindow();
             }
         }
-        */
     }
 
     /**
