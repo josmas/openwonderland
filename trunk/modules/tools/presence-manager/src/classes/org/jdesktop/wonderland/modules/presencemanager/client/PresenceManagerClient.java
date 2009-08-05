@@ -208,6 +208,7 @@ public class PresenceManagerClient extends BaseConnection implements
             PresenceInfoChangeMessage m = (PresenceInfoChangeMessage) message;
 
             logger.fine("GOT PresenceInfoChangeMessage for " + m.getPresenceInfo());
+	    pm.presenceInfoChanged(m.getPresenceInfo());
             return;
         }
 

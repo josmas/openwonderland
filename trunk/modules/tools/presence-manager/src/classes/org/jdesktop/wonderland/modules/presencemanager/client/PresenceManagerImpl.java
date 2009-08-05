@@ -156,6 +156,10 @@ public class PresenceManagerImpl implements PresenceManager {
         return false;
     }
 
+    public void presenceInfoChanged(PresenceInfo presenceInfo) {
+	notifyListeners(presenceInfo, ChangeType.UPDATED);
+    }
+
     private void notifyListeners(PresenceInfo presenceInfo, ChangeType type) {
         /*
          * Notify listeners
@@ -356,7 +360,7 @@ public class PresenceManagerImpl implements PresenceManager {
         session.send(PresenceManagerClient.getInstance(),
 	    new PresenceInfoChangeMessage(info));
 
-        notifyListeners(info, ChangeType.UPDATED);
+        //notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -370,7 +374,7 @@ public class PresenceManagerImpl implements PresenceManager {
         session.send(PresenceManagerClient.getInstance(),
 	    new PresenceInfoChangeMessage(info));
 
-        notifyListeners(info, ChangeType.UPDATED);
+        //notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -384,7 +388,7 @@ public class PresenceManagerImpl implements PresenceManager {
         session.send(PresenceManagerClient.getInstance(),
 	    new PresenceInfoChangeMessage(info));
 
-        notifyListeners(info, ChangeType.UPDATED);
+        //notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -398,7 +402,7 @@ public class PresenceManagerImpl implements PresenceManager {
         session.send(PresenceManagerClient.getInstance(),
 	    new PresenceInfoChangeMessage(info));
 
-        notifyListeners(info, ChangeType.UPDATED);
+        //notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**
@@ -412,7 +416,7 @@ public class PresenceManagerImpl implements PresenceManager {
         session.send(PresenceManagerClient.getInstance(),
 	    new PresenceInfoChangeMessage(info));
 
-        notifyListeners(info, ChangeType.UPDATED);
+        //notifyListeners(info, ChangeType.UPDATED);
     }
 
     /**

@@ -805,11 +805,11 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
-        pm.setMute(info, isMuted);
+        pm.setMute(info, msg.isMuted());
 
         AvatarNameEvent avatarNameEvent;
 
-        if (isMuted) {
+        if (msg.isMuted()) {
             avatarNameEvent = new AvatarNameEvent(EventType.MUTE,
                     info.userID.getUsername(), info.usernameAlias);
         } else {
