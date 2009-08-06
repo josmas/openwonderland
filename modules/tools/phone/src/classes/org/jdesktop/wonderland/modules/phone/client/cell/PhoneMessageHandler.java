@@ -147,11 +147,15 @@ public class PhoneMessageHandler {
 		public void run() {
 	            phoneForm = new PhoneForm(session, phoneCell.getCellID(), channelComp,
 		        PhoneMessageHandler.this, isLocked, phoneInfo.phoneNumber, isPasswordProtected);
-	    
-		    phoneForm.setVisible(true);
 		}
 	    });
 	}
+
+	java.awt.EventQueue.invokeLater(new Runnable() {
+	    public void run() {
+		phoneForm.setVisible(true);
+	    }
+	});
     }
 
     public void processMessage(final PhoneResponseMessage message) {
