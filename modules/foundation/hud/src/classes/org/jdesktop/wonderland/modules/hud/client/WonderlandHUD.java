@@ -34,7 +34,9 @@ import org.jdesktop.wonderland.client.hud.HUDButton;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDDialog;
 import org.jdesktop.wonderland.client.hud.HUDDisplayable;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDMessage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 
@@ -53,7 +55,7 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
  *
  * @author nsimpson
  */
-public class WonderlandHUD extends HUDObject2D implements HUD {
+public class WonderlandHUD extends HUDObject2D implements HUD, HUDEventListener {
 
     private static final Logger logger = Logger.getLogger(WonderlandHUD.class.getName());
     protected List components;
@@ -237,23 +239,19 @@ public class WonderlandHUD extends HUDObject2D implements HUD {
      */
     public void addComponent(HUDComponent component) {
         components.add(component);
+        component.addEventListener(this);
 
-        event.setObject(component);
-        event.setEventType(HUDEventType.ADDED);
-        event.setEventTime(new Date());
-        notifyEventListeners(event);
+        HUDObjectChanged(new HUDEvent(component, HUDEventType.ADDED, new Date()));
     }
 
     /**
      * {@inheritDoc}
      */
     public void removeComponent(HUDComponent component) {
+        component.removeEventListener(this);
         components.remove(component);
 
-        event.setObject(component);
-        event.setEventType(HUDEventType.REMOVED);
-        event.setEventTime(new Date());
-        notifyEventListeners(event);
+        HUDObjectChanged(new HUDEvent(component, HUDEventType.REMOVED, new Date()));
     }
 
     /**
@@ -275,5 +273,12 @@ public class WonderlandHUD extends HUDObject2D implements HUD {
      */
     public boolean hasComponents() {
         return !components.isEmpty();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void HUDObjectChanged(HUDEvent event) {
+        notifyEventListeners(event);
     }
 }

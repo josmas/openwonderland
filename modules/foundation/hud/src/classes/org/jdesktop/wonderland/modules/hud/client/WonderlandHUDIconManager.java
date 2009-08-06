@@ -36,8 +36,7 @@ import org.jdesktop.wonderland.client.hud.HUDEvent;
 public class WonderlandHUDIconManager extends WonderlandHUDComponentManager {
 
     private static final Logger logger = Logger.getLogger(WonderlandHUDIconManager.class.getName());
-    private static final String DEFAULT_HUD_ICON = "/org/jdesktop/wonderland/modules/hud/client/resources/GenericWindow32x32.png";
-    // a mapping from HUD components on a HUD to icons in the icon HUD
+    // a mapping from HUD components on a HUD to icons on the icon HUD
     protected Map<HUDComponent, HUDImageComponent> hudIconMap;
 
     public WonderlandHUDIconManager(HUD iconHUD) {
@@ -53,9 +52,9 @@ public class WonderlandHUDIconManager extends WonderlandHUDComponentManager {
         if (hud.hasComponent(component)) {
             // this is a component on the icon HUD
             super.addComponent(component);
+            component.setVisible(true);
         } else {
             // this is a component on the window HUD
-            component.addEventListener(this);
         }
     }
 
@@ -160,12 +159,8 @@ public class WonderlandHUDIconManager extends WonderlandHUDComponentManager {
             hud.addComponent(icon);
         } else {
             icon = hudIconMap.get(component);
-        }
-
-        if (icon != null) {
             // display the icon
             icon.setVisible(true);
-            component.setVisible(false);
         }
     }
 
@@ -173,7 +168,7 @@ public class WonderlandHUDIconManager extends WonderlandHUDComponentManager {
     protected void componentMaximized(HUDComponent2D component) {
         if (!hudStateMap.containsKey(component)) {
             // show the window component
-            component.setVisible(true);
+            component.setMaximized();
 
             // hide the icon component
             HUDComponent icon = hudIconMap.get(component);
