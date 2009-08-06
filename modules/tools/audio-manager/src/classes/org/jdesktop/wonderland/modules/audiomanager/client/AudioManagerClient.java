@@ -131,7 +131,8 @@ public class AudioManagerClient extends BaseConnection implements
     private HUDComponent userListHUDComponent;
     private UserListHUDPanel userListHUDPanel;
     private boolean usersMenuSelected = false;
-
+    private ImageIcon voiceChatIcon;
+    private ImageIcon userListIcon;
     /** 
      * Create a new AudioManagerClient
      * @param session the session to connect to, guaranteed to be in
@@ -140,6 +141,9 @@ public class AudioManagerClient extends BaseConnection implements
      */
     public AudioManagerClient() {
         AudioMenu.getAudioMenu(this).setEnabled(false);
+
+        voiceChatIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListChatVoice32x32.png"));
+        userListIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/GenericUsers32x32.png"));
 
         userListJMenuItem = new javax.swing.JCheckBoxMenuItem();
         userListJMenuItem.setText("Users");
@@ -234,7 +238,7 @@ public class AudioManagerClient extends BaseConnection implements
             userListHUDPanel.setHUDComponent(userListHUDComponent);
             userListHUDComponent.setPreferredLocation(Layout.NORTHWEST);
             userListHUDComponent.setName("Users");
-            userListHUDComponent.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/GenericUsers32x32.png")));
+            userListHUDComponent.setIcon(userListIcon);
 
             mainHUD.addComponent(userListHUDComponent);
             userListHUDComponent.addEventListener(new HUDEventListener() {
@@ -403,6 +407,7 @@ public class AudioManagerClient extends BaseConnection implements
         addPanel.setHUDComponent(addComponent);
         addComponent.setPreferredLocation(Layout.CENTER);
         addComponent.setName("Voice Chat");
+        addComponent.setIcon(voiceChatIcon);
         mainHUD.addComponent(addComponent);
         addComponent.addEventListener(new HUDEventListener() {
 
@@ -497,6 +502,7 @@ public class AudioManagerClient extends BaseConnection implements
             final HUDComponent incomingCallHUDComponent = mainHUD.createComponent(incomingCallHUDPanel);
             incomingCallHUDPanel.setHUDComponent(incomingCallHUDComponent);
             incomingCallHUDComponent.setPreferredLocation(Layout.CENTER);
+            incomingCallHUDComponent.setIcon(voiceChatIcon);
 
             mainHUD.addComponent(incomingCallHUDComponent);
             incomingCallHUDComponent.addEventListener(new HUDEventListener() {
@@ -520,6 +526,7 @@ public class AudioManagerClient extends BaseConnection implements
             HUDComponent voiceChatBusyHUDComponent = mainHUD.createComponent(voiceChatBusyHUDPanel);
             voiceChatBusyHUDPanel.setHUDComponent(voiceChatBusyHUDComponent);
             voiceChatBusyHUDComponent.setPreferredLocation(Layout.CENTER);
+            voiceChatBusyHUDComponent.setIcon(voiceChatIcon);
 
             mainHUD.addComponent(voiceChatBusyHUDComponent);
             voiceChatBusyHUDComponent.addEventListener(new HUDEventListener() {
@@ -889,7 +896,8 @@ public class AudioManagerClient extends BaseConnection implements
         HUDComponent callEndedHUDComponent = mainHUD.createComponent(callEndedHUDPanel);
         callEndedHUDPanel.setHUDComponent(callEndedHUDComponent);
         callEndedHUDComponent.setPreferredLocation(Layout.CENTER);
-
+        callEndedHUDComponent.setIcon(voiceChatIcon);
+        
         mainHUD.addComponent(callEndedHUDComponent);
         callEndedHUDComponent.addEventListener(new HUDEventListener() {
 

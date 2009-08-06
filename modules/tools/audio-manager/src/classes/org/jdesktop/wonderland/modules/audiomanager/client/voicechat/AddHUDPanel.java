@@ -29,7 +29,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 
-import javax.swing.JFrame;
 import javax.swing.JSlider;
 
 import javax.swing.event.ChangeListener;
@@ -41,6 +40,7 @@ import java.util.ArrayList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
+import javax.swing.ImageIcon;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
@@ -51,7 +51,6 @@ import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.Vo
 
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 
-import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -492,6 +491,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         final HUDComponent addHUDComponent = mainHUD.createComponent(addHUDPanel);
         addHUDComponent.setName("Add to Voice Chat");
+        addHUDComponent.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListChatVoice32x32.png")));
 
         addHUDPanel.setHUDComponent(addHUDComponent);
 
