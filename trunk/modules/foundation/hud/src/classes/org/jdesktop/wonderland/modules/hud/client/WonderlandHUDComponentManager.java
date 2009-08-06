@@ -353,8 +353,15 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         component.setLocation((int) location.x, (int) location.y, false);
         view.setLocationOrtho(new Vector2f(location.x + view.getDisplayerLocalWidth() / 2, location.y + view.getDisplayerLocalHeight() / 2), false);
 
-        // fade the component in from invisible
-        component.changeTransparency(1.0f, component.getPreferredTransparency() != 1.0f ? component.getPreferredTransparency() : unfocusedTransparency);
+        if (component.getPreferredTransparency() != 1.0f) {
+            // component has a preferred transparency, so it at that
+            // transparency initially
+            component.setTransparency(component.getPreferredTransparency());
+        } else {
+            // fade the component in from invisible to the unfocused
+            // transparency
+            component.changeTransparency(1.0f, unfocusedTransparency);
+        }
 
         // display the component
         view.setVisibleApp(true, false);
@@ -368,8 +375,11 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
     public void setFocused(HUDComponent component, boolean focused) {
         if (component != null) {
-            component.changeTransparency(component.getTransparency(),
-                    focused ? focusedTransparency : unfocusedTransparency);
+                component.changeTransparency(component.getTransparency(),
+                    focused ? focusedTransparency : 
+                        ((component.getPreferredTransparency() != 1.0f) ?
+                            component.getPreferredTransparency() : unfocusedTransparency));
+
         }
     }
 
