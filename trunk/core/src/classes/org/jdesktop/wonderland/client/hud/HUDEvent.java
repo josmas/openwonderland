@@ -132,6 +132,15 @@ public class HUDEvent {
     }
 
     /**
+     * Clone constructor
+     * @param event the event instance to clone
+     */
+    public HUDEvent(HUDEvent event) {
+        this(event.getObject(), event.getEventType(), event.getEventTime());
+    }
+
+    
+    /**
      * Sets the HUD object that triggered the event
      * @param hudObject the HUD object that triggered the event
      */

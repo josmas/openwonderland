@@ -25,7 +25,9 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.jdesktop.wonderland.client.animation.FloatInterpolator;
@@ -56,15 +58,16 @@ public class HUDObject2D implements HUDObject {
     protected boolean decoratable = true;
     protected ImageIcon iconImage;
     protected Layout compassPoint = Layout.NONE;
-    protected List<HUDEventListener> listeners;
-    protected HUDEvent event;
-    private final Object listenerLock = new Object();
-    private boolean notifying;
+    protected ConcurrentLinkedQueue<HUDEventListener> listeners;
+    private ConcurrentLinkedQueue<HUDEvent> eventQueue;
+    private boolean notifying = false;
+    private int id;
 
     public HUDObject2D() {
-        listeners = Collections.synchronizedList(new ArrayList());
-        event = new HUDEvent(this);
+        listeners = new ConcurrentLinkedQueue();
+        eventQueue = new ConcurrentLinkedQueue();
         bounds = new Rectangle2D.Double();
+        id = (int) (Math.random() * 10000);
     }
 
     /**
@@ -446,6 +449,7 @@ public class HUDObject2D implements HUDObject {
      */
     public void addEventListener(HUDEventListener listener) {
         listeners.add(listener);
+        logger.finest(this.getClass().getSimpleName() + " added event listener: " + listener.getClass().getSimpleName() + ", " + listeners.size() + " listeners");
         // TODO: notify the new listener that the component was created?
     }
 
@@ -459,23 +463,44 @@ public class HUDObject2D implements HUDObject {
     /**
      * {@inheritDoc}
      */
-    public List<HUDEventListener> getEventListeners() {
-        return listeners;
+    public HUDEventListener[] getEventListeners() {
+        return listeners.toArray(new HUDEventListener[0]);
     }
 
     /**
      * {@inheritDoc}
      */
-    public synchronized void notifyEventListeners(final HUDEvent event) {
+    public void notifyEventListeners(final HUDEvent e) {
         if (listeners != null) {
-            notifying = true;
-            HUDEventListener[] notify = listeners.toArray(new HUDEventListener[listeners.size()]);
-            for (int i = 0; i < notify.length; i++) {
-                final HUDEventListener notifiee = notify[i];
-                logger.finest("--- notifying [" + i + "]: " + notifiee);
-                notifiee.HUDObjectChanged(event);
+            eventQueue.add(new HUDEvent(e));
+            if (notifying) {
+                // already notifying, let the current notification loop handle
+                // this new event as well
+                return;
+            } else {
+                notifying = true;
             }
-            notify = null;
+
+            //logger.finest("=== [" + id + "] START notifying listeners");
+
+            while (!eventQueue.isEmpty()) {
+                HUDEvent ev = (HUDEvent) eventQueue.remove();
+                HUDEventType type = ev.getEventType();
+                Iterator<HUDEventListener> iterator = listeners.iterator();
+                //int num = listeners.size();
+                //int i = 1;
+                while (iterator.hasNext()) {
+                    HUDEventListener notifiee = iterator.next();
+                    //logger.finest("   === [" + id + "] " + i + "/" + num + ": sending " + type + " to " + notifiee.getClass().getSimpleName());
+                    //i++;
+                    notifiee.HUDObjectChanged(ev);
+                }
+                iterator = null;
+                ev = null;
+            }
+
+            //logger.finest("=== [" + id + "] DONE notifying listeners: " + eventQueue.size());
+            notifying = false;
         }
     }
 
@@ -484,15 +509,12 @@ public class HUDObject2D implements HUDObject {
      * @param eventType the type of the notification event
      */
     public void notifyEventListeners(HUDEventType eventType) {
-        event.setObject(this);
-        event.setEventType(eventType);
-        event.setEventTime(new Date());
-        notifyEventListeners(event);
+        notifyEventListeners(new HUDEvent(this, eventType, new Date()));
     }
 
     @Override
     public String toString() {
-        return "HUDObject2D: " +
+        return "HUDObject2D: " + id +
                 ", bounds: " + bounds +
                 ", mode: " + mode +
                 ", visible: " + visible +

@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.client.hud;
 
-import java.util.List;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 
 /**
@@ -42,7 +41,7 @@ public interface HUDEventSource {
      * Gets the listeners for this HUD object
      * @return a list of event listeners
      */
-    public List<HUDEventListener> getEventListeners();
+    public HUDEventListener[] getEventListeners();
 
     /**
      * Notifies this HUD object's event listeners of an event
