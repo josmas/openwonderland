@@ -214,7 +214,6 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         addButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
 
         setTitle("Manage Placemarks");
         getContentPane().setLayout(new java.awt.GridLayout(1, 1));
@@ -267,12 +266,6 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         userMainPanel.add(userButtonPanel, gridBagConstraints);
-
-        jLabel1.setText("(Placemarks are not fully functional yet)");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        userMainPanel.add(jLabel1, gridBagConstraints);
 
         mainPanel.add(userMainPanel);
 
@@ -405,7 +398,6 @@ public class EditPlacemarksJFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton editButton;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JButton removeButton;
     private javax.swing.JPanel userButtonPanel;
