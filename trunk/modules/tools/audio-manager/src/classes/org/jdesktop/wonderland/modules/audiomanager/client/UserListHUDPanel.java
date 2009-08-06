@@ -563,11 +563,12 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         HUDComponent changeNameHUDComponent = changeNameMap.get(presenceInfo);
 
         if (changeNameHUDComponent == null) {
-            ChangeNameHUDPanel changeNameHUDPanel = new ChangeNameHUDPanel(this, pm, presenceInfo);
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+            ChangeNameHUDPanel changeNameHUDPanel = new ChangeNameHUDPanel(this, pm, presenceInfo);
             final HUDComponent comp = mainHUD.createComponent(changeNameHUDPanel);
             comp.setPreferredLocation(Layout.NORTH);
             comp.setName("Change Alias");
+            comp.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListEdit32x32.png")));
             mainHUD.addComponent(comp);
             changeNameMap.put(presenceInfo, comp);
 
@@ -588,11 +589,12 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
 
     private void propertiesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_propertiesButtonActionPerformed
         if (namePropertiesHUDComponent == null) {
-            NamePropertiesHUDPanel namePropertiesHUDPanel = new NamePropertiesHUDPanel(presenceInfo);
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+            NamePropertiesHUDPanel namePropertiesHUDPanel = new NamePropertiesHUDPanel(presenceInfo);
             namePropertiesHUDComponent = mainHUD.createComponent(namePropertiesHUDPanel);
             namePropertiesHUDComponent.setPreferredLocation(Layout.NORTH);
             namePropertiesHUDComponent.setName("User Properties");
+            namePropertiesHUDComponent.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListProperties32x32.png")));
             mainHUD.addComponent(namePropertiesHUDComponent);
 
             PropertyChangeListener plistener = new PropertyChangeListener() {
@@ -753,16 +755,14 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
     }
 
-    AddHUDPanel addHUDPanel =
-	new AddHUDPanel(client, session, presenceInfo, presenceInfo);
+    AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, presenceInfo, presenceInfo);
 
     addHUDPanel.inviteUsers(usersToInvite);
 
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     final HUDComponent addHUDComponent = mainHUD.createComponent(addHUDPanel);
-
     addHUDPanel.setHUDComponent(addHUDComponent);
-
+    addHUDComponent.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListChatVoice32x32.png")));
     mainHUD.addComponent(addHUDComponent);
     addHUDComponent.addEventListener(new HUDEventListener() {
 
@@ -814,6 +814,7 @@ private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     addHUDComponent = mainHUD.createComponent(addHUDPanel);
     addHUDComponent.setName("Call ");
+    addHUDComponent.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListChatVoice32x32.png")));
     addHUDComponent.setPreferredLocation(Layout.CENTER);
 
     addHUDPanel.setHUDComponent(addHUDComponent);

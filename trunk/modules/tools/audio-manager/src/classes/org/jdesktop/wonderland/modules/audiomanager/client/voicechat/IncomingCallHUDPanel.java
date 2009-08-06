@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFac
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
@@ -241,6 +242,7 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         addComponent = mainHUD.createComponent(addHUDPanel);
+        addComponent.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListChatVoice32x32.png")));
 
         addHUDPanel.setHUDComponent(addComponent);
 
