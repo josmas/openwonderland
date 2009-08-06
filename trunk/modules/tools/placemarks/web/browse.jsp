@@ -19,7 +19,7 @@
     <body>
         <table class="installed" id="runnerTable">
             <tr>
-                <td colspan="3"><h3>System-wide Placemarks (Placemarks are not fully functional yet)</h3></td>
+                <td colspan="3"><h3>System-wide Placemarks</h3></td>
                 <td class="refresh" id="periods"></td>
             </tr>
             <tr class="header">

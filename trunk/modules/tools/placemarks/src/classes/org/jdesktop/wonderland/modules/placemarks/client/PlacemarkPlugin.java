@@ -30,7 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
@@ -43,6 +42,7 @@ import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkClientConfigConnection.PlacemarkConfigListener;
 import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkRegistry.PlacemarkListener;
 import org.jdesktop.wonderland.modules.placemarks.client.PlacemarkRegistry.PlacemarkType;
@@ -263,7 +263,8 @@ public class PlacemarkPlugin extends BaseClientPlugin
         // position
         ViewManager manager = ViewManager.getViewManager();
         ViewCell viewCell = manager.getPrimaryViewCell();
-        Vector3f location = viewCell.getWorldTransform().getTranslation(null);
+        CellTransform viewTransform = viewCell.getWorldTransform();
+        Vector3f location = viewTransform.getTranslation(null);
         float x = location.x;
         float y = location.y;
         float z = location.z;
@@ -273,8 +274,18 @@ public class PlacemarkPlugin extends BaseClientPlugin
 
         // Compute the current look angle, as degrees from the +x axis, ignoring
         // any look in the y-axis.
-        Vector3f look = manager.getCameraLookDirection(null);
-        float lookAngle = (float) Math.atan(look.z / look.x);
+        Quaternion viewRotation = viewTransform.getRotation(null);
+
+        Vector3f v1 = new Vector3f(0, 0, 1);
+        Vector3f normal = new Vector3f(0, 1, 0);
+        Vector3f v2 = viewRotation.mult(v1);
+        v2.normalizeLocal();
+
+        // Compute the signed angle between v1 and v2. We do this with the
+        // following formula: angle = atan2(normal dot (v1 cross v2), v1 dot v2)
+        float dotProduct = v1.dot(v2);
+        Vector3f crossProduct = v1.cross(v2);
+        float lookAngle = (float)Math.atan2(normal.dot(crossProduct), dotProduct);
         lookAngle = (float)Math.toDegrees(lookAngle);
 
         return new Placemark("", url, x, y, z, lookAngle);
@@ -314,7 +325,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
             float z = placemark.getZ();
             float angle = placemark.getAngle();
             Vector3f location = new Vector3f(x, y, z);
-            
+
             // create the rotation
             Quaternion look = new Quaternion();
             Vector3f axis = new Vector3f(Vector3f.UNIT_Y); 
@@ -325,10 +336,6 @@ public class PlacemarkPlugin extends BaseClientPlugin
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
-
-//            JFrame frame = JmeClientMain.getFrame().getFrame();
-//            JOptionPane.showMessageDialog(frame,
-//                    "Placemarks are not yet functional, sorry!");
         }
     }
 
