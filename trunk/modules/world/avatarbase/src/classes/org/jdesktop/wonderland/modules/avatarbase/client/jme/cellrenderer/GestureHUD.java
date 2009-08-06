@@ -164,6 +164,7 @@ public class GestureHUD {
                             row = Integer.valueOf(gesture[2]);
                             HUDButton button = mainHUD.createButton(name);
                             button.setDecoratable(false);
+                            button.setPreferredTransparency(0.2f);
                             button.setLocation(leftMargin + column * columnWidth, bottomMargin + row * rowHeight);
                             mainHUD.addComponent(button);
                             buttonMap.put(name, button);
