@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
@@ -119,10 +120,16 @@ public class BrowserPlugin extends BaseClientPlugin {
 
     @Override
     protected void activate() {
-        // Register the content browser frame with the registry of such panels
-        ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
-        defaultBrowser = new ContentBrowserJDialog(getSessionManager());
-        manager.setDefaultContentBrowser(defaultBrowser);
+        // Register the content browser frame with the registry of such panels.
+        // Do this within the AWT Event Thread to avoid some exceptions (Issue
+        // #442).
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
+                defaultBrowser = new ContentBrowserJDialog(getSessionManager());
+                manager.setDefaultContentBrowser(defaultBrowser);
+            }
+        });
 
         // add menu items
         JmeClientMain.getFrame().addToToolsMenu(newBrowserItem, 6);
