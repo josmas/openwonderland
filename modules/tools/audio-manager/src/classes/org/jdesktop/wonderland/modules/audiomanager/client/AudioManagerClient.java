@@ -131,9 +131,11 @@ public class AudioManagerClient extends BaseConnection implements
     private HUDComponent userListHUDComponent;
     private UserListHUDPanel userListHUDPanel;
     private boolean usersMenuSelected = false;
+    private HUDComponent micVuMeterComponent;
     private ImageIcon voiceChatIcon;
     private ImageIcon userListIcon;
-    /** 
+
+    /**
      * Create a new AudioManagerClient
      * @param session the session to connect to, guaranteed to be in
      * the CONNECTED state
@@ -161,8 +163,8 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public WlAvatarCharacter getWlAvatarCharacter() {
-	AvatarImiJME rend = (AvatarImiJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-	return rend.getAvatarCharacter();
+        AvatarImiJME rend = (AvatarImiJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+        return rend.getAvatarCharacter();
     }
 
     public void addDisconnectListener(DisconnectListener listener) {
@@ -294,7 +296,7 @@ public class AudioManagerClient extends BaseConnection implements
         SoftphoneControlImpl.getInstance().removeSoftphoneListener(this);
         SoftphoneControlImpl.getInstance().sendCommandToSoftphone("endCalls");
         //JmeClientMain.getFrame().removeAudioMenuListener(this);
-	notifyDisconnectListeners();
+        notifyDisconnectListeners();
     }
 
     public void addMenus() {
@@ -391,7 +393,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void personalPhone() {
-	voiceChat();
+        voiceChat();
     }
 
     public void voiceChat() {
@@ -455,7 +457,6 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void microphoneGainTooHigh() {
     }
-    private MicVuMeterFrame micVuMeterFrame;
 
     public void microphoneVolume() {
         try {
@@ -466,10 +467,37 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
-        if (micVuMeterFrame != null) {
-            micVuMeterFrame.startVuMeter(false);
+        if (micVuMeterComponent == null) {
+            final MicVuMeterPanel micVuMeterPanel = new MicVuMeterPanel(this);
+
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+            micVuMeterComponent = mainHUD.createComponent(micVuMeterPanel);
+            micVuMeterComponent.setPreferredLocation(Layout.SOUTH);
+            micVuMeterComponent.setName("Microphone Level");
+            micVuMeterComponent.setIcon(voiceChatIcon);
+            micVuMeterComponent.addEventListener(new HUDEventListener() {
+
+                public void HUDObjectChanged(HUDEvent event) {
+                    switch (event.getEventType()) {
+                        case APPEARED:
+                            System.err.println("--- visible, starting meter");
+                            micVuMeterPanel.startVuMeter(true);
+                            break;
+                        case DISAPPEARED:
+                            System.err.println("--- invisible, stopping meter");
+                            micVuMeterPanel.startVuMeter(false);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+            mainHUD.addComponent(micVuMeterComponent);
+            micVuMeterPanel.startVuMeter(true);
         }
-        micVuMeterFrame = new MicVuMeterFrame(this);
+
+        micVuMeterComponent.setVisible(true);
     }
 
     public void transferCall(String phoneNumber) {
@@ -509,7 +537,7 @@ public class AudioManagerClient extends BaseConnection implements
 
                 public void HUDObjectChanged(HUDEvent e) {
                     if (e.getEventType().equals(HUDEventType.DISAPPEARED)) {
-			incomingCallHUDPanel.busy();
+                        incomingCallHUDPanel.busy();
                     }
                 }
             });
@@ -758,7 +786,7 @@ public class AudioManagerClient extends BaseConnection implements
         logger.warning("Call ended for " + callee + " Reason:  " + reason);
 
         if (reason.equalsIgnoreCase("Hung up") == false &&
-		reason.equalsIgnoreCase("User requested call termination") == false) {
+                reason.equalsIgnoreCase("User requested call termination") == false) {
             callEnded(callee, reason);
         }
 
@@ -897,7 +925,7 @@ public class AudioManagerClient extends BaseConnection implements
         callEndedHUDPanel.setHUDComponent(callEndedHUDComponent);
         callEndedHUDComponent.setPreferredLocation(Layout.CENTER);
         callEndedHUDComponent.setIcon(voiceChatIcon);
-        
+
         mainHUD.addComponent(callEndedHUDComponent);
         callEndedHUDComponent.addEventListener(new HUDEventListener() {
 
