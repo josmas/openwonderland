@@ -42,7 +42,7 @@ public class Meter extends JPanel {
     private int rightIndent = 2;
     private int labelGap = 2;
     private int bottomIndent = 5;
-    private int barHeight = 15;
+    private int barHeight = 10;
     private int barGap = 2;
     private int tickLength = 5;
     private int fontSize = 12;
