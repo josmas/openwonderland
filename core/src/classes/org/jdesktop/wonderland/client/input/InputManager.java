@@ -289,7 +289,6 @@ public abstract class InputManager
 
         if (isMac) {
             if (!mainWindowHasFocus) {
-                System.err.println("******* Mac OS X: acquire key focus for main window");
                 ensureKeyFocusInMainWindow();
             }
         }
