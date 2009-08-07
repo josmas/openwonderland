@@ -447,7 +447,13 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
                 ContentResource r = (ContentResource)tableSelectedNode;
                 r.get(out);
             } catch (java.lang.Exception cre) {
-                logger.log(Level.WARNING, "Unable to download " + out, cre);
+                logger.log(Level.WARNING, "Unable to download " + fileName, cre);
+
+                // Display a dialog indicating that the delete failed.
+                String msg = "Failed to download " + fileName + ". Please " +
+                        "check your client logs for further details.";
+                String title = "Download Failed";
+                JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_downloadButtonActionPerformed
@@ -460,8 +466,14 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
             jtable.setContentCollection(parent);
             jtree.refresh();
         } catch (java.lang.Exception excp) {
-            logger.log(Level.WARNING, "Unable to delete " +
-                    tableSelectedNode.getName(), excp);
+            String nodeName = tableSelectedNode.getName();
+            logger.log(Level.WARNING, "Unable to delete " + nodeName, excp);
+
+            // Display a dialog indicating that the delete failed.
+            String msg = "Failed to delete " + nodeName + ". Please check " +
+                    "your client logs for further details.";
+            String title = "Deletion Failed";
+            JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_deleteCollectionButtonActionPerformed
 
@@ -483,10 +495,14 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
                 ContentResource r = (ContentResource)c.createChild(name, ContentNode.Type.RESOURCE);
                 r.put(file);
                 jtable.setContentCollection(c);
-            } catch (ContentRepositoryException cre) {
-                logger.log(Level.WARNING, "Unable to upload " + file, cre);
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Unable to read " + file, ioe);
+            } catch (java.lang.Exception excp) {
+                logger.log(Level.WARNING, "Unable to upload " + file, excp);
+
+                // Display a dialog indicating that the delete failed.
+                String msg = "Failed to upload " + file + ". Please check " +
+                        "your client logs for further details.";
+                String title = "Upload Failed";
+                JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_uploadButtonActionPerformed
@@ -506,13 +522,19 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
 
         // Go ahead and create the new directory in the content repository
         String name = s.trim();
-           try {
-               ContentCollection collection = (ContentCollection)treeSelectedNode;
-               collection.createChild(name, ContentNode.Type.COLLECTION);
-               jtree.refresh();
-               jtable.setContentCollection(collection);
+        try {
+            ContentCollection collection = (ContentCollection) treeSelectedNode;
+            collection.createChild(name, ContentNode.Type.COLLECTION);
+            jtree.refresh();
+            jtable.setContentCollection(collection);
         } catch (ContentRepositoryException ex) {
-            logger.log(Level.WARNING, "Unable to create directory", ex);
+            logger.log(Level.WARNING, "Unable to create directory " + name, ex);
+
+            // Display a dialog indicating that the delete failed.
+            String msg = "Failed to create " + name + ". Please check your " +
+                    "client logs for further details.";
+            String title = "Creation Failed";
+            JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_newCollectionButtonActionPerformed
 
