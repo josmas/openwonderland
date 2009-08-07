@@ -493,7 +493,9 @@ public class PhoneMessageHandler extends AbstractComponentMessageReceiver
 	synchronized (this) {
 	    callNumber++;
 	
-            return getCell().getCellID() + "_" + callNumber;
+            listing.setExternalCallID(getCell().getCellID() + "_" + callNumber);
+
+	    return listing.getExternalCallID();
 	}
     }
 
