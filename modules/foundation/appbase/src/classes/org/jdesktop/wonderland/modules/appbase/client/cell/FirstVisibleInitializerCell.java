@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.appbase.client.cell;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.utils.CellPlacementUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -47,15 +47,40 @@ public class FirstVisibleInitializerCell implements FirstVisibleInitializer {
     /** The view transform of the cell creator. */
     private CellTransform creatorViewTransform;
 
+    /** The overriding initial placement size. */
+    private Vector2f initialPlacementSize;
+
     public FirstVisibleInitializerCell (App2DCell cell, CellTransform creatorViewTransform) {
+        this(cell, creatorViewTransform, null);
+    }
+
+    public FirstVisibleInitializerCell (App2DCell cell, CellTransform creatorViewTransform,
+                                        Vector2f initialPlacementSize) {
         this.cell = cell;
         this.creatorViewTransform = creatorViewTransform;
+        if (initialPlacementSize != null) {
+            this.initialPlacementSize = new Vector2f(initialPlacementSize);
+        }
         logger.info("creatorViewTransform = " + creatorViewTransform);
+    }
+
+    public void setInitialPlacementSize (Vector2f size) {
+        initialPlacementSize = size;
     }
 
     /** {@inheritDoc} */
     public void initialize (float width3D, float height3D) {
         logger.info("FVI.initialize, wh3D = " + width3D + ", " + height3D);
+
+        // The size provided on the constructor overrides the first window visible size.
+        if (initialPlacementSize != null) {
+            if (initialPlacementSize.x != 0.0f) {
+                width3D = initialPlacementSize.x;
+            }
+            if (initialPlacementSize.y != 0.0f) {
+                height3D = initialPlacementSize.y;
+            }
+        }
 
         // Include the frame header and footer
         float height = height3D + Frame2DCell.HEADER_HEIGHT + Frame2DCell.SIDE_THICKNESS;
