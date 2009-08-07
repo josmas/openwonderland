@@ -351,13 +351,13 @@ public abstract class BasicRenderer implements CellRendererJME {
 
     /**
      * Callback notifying the renderer that the cell transform has changed.
-     * @param worldTransform
+     * @param localTransform the new local transform of the cell
      */
-    public void cellTransformUpdate(CellTransform worldTransform) {
+    public void cellTransformUpdate(CellTransform localTransform) {
         // The fast-path case is if the move processor already exists, in
         // which case, we move the cell
         if (moveProcessor != null) {
-            moveProcessor.cellMoved(worldTransform);
+            moveProcessor.cellMoved(localTransform);
             return;
         }
 
@@ -366,7 +366,7 @@ public abstract class BasicRenderer implements CellRendererJME {
         if (cell.getComponent(MovableComponent.class) != null && rootNode != null) {
             moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
             getEntity().addComponent(MoveProcessor.class, moveProcessor);
-            moveProcessor.cellMoved(worldTransform);
+            moveProcessor.cellMoved(localTransform);
         }
     }
 
@@ -489,10 +489,10 @@ public abstract class BasicRenderer implements CellRendererJME {
 
             synchronized(this) {
                 if (dirty) {
+//                    System.err.println("BasicRenderer.cellMoved "+node.getLocalTranslation()+"  "+cellTransform.getTranslation(null));
                     node.setLocalTranslation(cellTransform.getTranslation(tmpV3f));
                     node.setLocalRotation(cellTransform.getRotation(tmpQuat));
                     node.setLocalScale(cellTransform.getScaling(tmp2V3f));
-//                    System.err.println("BasicRenderer.cellMoved "+tmpV3f+"  "+arg0.size());
                     dirty = false;
                     worldManager.addToUpdateList(node);
 //            System.err.println("--------------------------------");

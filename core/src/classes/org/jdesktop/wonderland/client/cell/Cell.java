@@ -375,7 +375,7 @@ public class Cell {
 
         // Notify Renderers that the cell has moved
         for (CellRenderer rend : cellRenderers.values()) {
-            rend.cellTransformUpdate(worldTransform);
+            rend.cellTransformUpdate(localTransform);
         }
 
     }
