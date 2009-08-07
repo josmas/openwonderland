@@ -92,8 +92,8 @@ public abstract class App2D {
     /** Whether to display the app in the HUD. */
     private boolean showInHUD;
 
-    /** HUD components for windows shown in the HUD. */
-    private LinkedList<HUDComponent> hudComponents;
+    /** The displayer for apps-in-HUD. */
+    private HUDDisplayer hudDisplayer;
 
     /**
      * The first-visible initializer for this app. If non-null, this will perform
@@ -388,44 +388,12 @@ public abstract class App2D {
         if (this.showInHUD == showInHUD) return;
         this.showInHUD = showInHUD;
         if (showInHUD) {
-
-            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-
-            hudComponents = new LinkedList<HUDComponent>();
-
-            for (Window2D window : windows) {
-
-                // Don't ever show frame headers in the HUD
-                if (window instanceof WindowSwingHeader) continue;
-
-                HUDComponent component = mainHUD.createComponent(window);
-                component.setPreferredLocation(Layout.CENTER);
-                hudComponents.add(component);
-
-                component.addEventListener(new HUDEventListener() {
-                    public void HUDObjectChanged(HUDEvent e) {
-                        if (e.getEventType().equals(HUDEvent.HUDEventType.CLOSED)) {
-                            // TODO: currently we take the entire app off the HUD when
-                            // any HUD view of any app window is quit
-                            setShowInHUD(false);
-                        }
-                    }
-                });
-                
-                mainHUD.addComponent(component);
-                component.setVisible(true);
-            }
-
+            hudDisplayer = new HUDDisplayer(this);
+            viewSet.add(hudDisplayer);
         } else {
-            if (hudComponents != null) {
-                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-                for (HUDComponent component : hudComponents) {
-                    component.setVisible(false);
-                    mainHUD.removeComponent(component);
-                }
-                hudComponents.clear();
-                hudComponents = null;
-            }
+            viewSet.remove(hudDisplayer);
+            hudDisplayer.cleanup();
+            hudDisplayer = null;
         }
     }
 
