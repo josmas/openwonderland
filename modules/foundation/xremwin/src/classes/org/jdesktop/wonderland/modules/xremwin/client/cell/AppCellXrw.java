@@ -84,6 +84,8 @@ public class AppCellXrw extends AppConventionalCell {
 
         ((AppConventional) theApp).addDisplayer(this);
 
+        setApp(theApp);
+
         // Must be done before enabling client
         if (App2D.doAppInitialPlacement && fvi != null) {
             logger.info("Cell transferring fvi to app, fvi = " + fvi);
@@ -103,7 +105,7 @@ public class AppCellXrw extends AppConventionalCell {
     protected App2D startSlave(String connectionInfo, FirstVisibleInitializer fvi) {
         App2D theApp = null;
         try {
-            app = new AppXrwSlave(appName, pixelScale,
+            theApp = new AppXrwSlave(appName, pixelScale,
                                   ProcessReporterFactory.getFactory().create(appName),
                                   new AppXrwConnectionInfo(connectionInfo, secret), session, 
                                   this, fvi);
@@ -111,6 +113,8 @@ public class AppCellXrw extends AppConventionalCell {
             ex.printStackTrace();
             return null;
         }
+
+        setApp(theApp);
 
         return theApp;
     }

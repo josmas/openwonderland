@@ -276,7 +276,7 @@ public abstract class AppConventionalCell extends App2DCell {
         // Same as super, but doesn't move fvi into the app. This is done earlier in
         // a conventional app
         if (app == null) {
-            throw new NullPointerException();
+            throw new IllegalArgumentException("Argument app is null");
         }
         if (this.app != null) {
             throw new IllegalStateException("Cell already has an app");
