@@ -50,21 +50,22 @@ public class JmeLoginUI implements LoginUI, SessionCreator<JmeClientSession> {
     }
 
     public void requestLogin(final NoAuthLoginControl control) {
+        // see if we have properties for automatic login
+        String username = System.getProperty("auth.username");
+        String fullname = System.getProperty("auth.fullname");
+        if (username != null && fullname != null) {
+            try {
+                control.authenticate(username, fullname);
+                return;
+            } catch (LoginFailureException lfe) {
+                // error trying to login in.  Fall back to
+                // showing a dialog
+            }
+        }
+
+        // start the login panel in the AWT event thread
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                // see if we have properties for automatic login
-                String username = System.getProperty("auth.username");
-                String fullname = System.getProperty("auth.fullname");
-                if (username != null && fullname != null) {
-                    try {
-                        control.authenticate(username, fullname);
-                        return;
-                    } catch (LoginFailureException lfe) {
-                        // error trying to login in.  Fall back to 
-                        // showing a dialog
-                    }
-                }
-
                 LoginPanel lp = new NoAuthLoginPanel(control.getServerURL(),
                                                      control);
                 WonderlandLoginDialog dialog = new WonderlandLoginDialog(
