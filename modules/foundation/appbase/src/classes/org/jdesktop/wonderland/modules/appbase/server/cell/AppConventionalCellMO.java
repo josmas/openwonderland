@@ -27,6 +27,8 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSe
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.Task;
+import java.io.Serializable;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellSetConnectionInfoMessage;
 import org.jdesktop.wonderland.modules.appbase.common.cell.AppConventionalCellAppExittedMessage;
@@ -302,7 +304,28 @@ public abstract class AppConventionalCellMO extends App2DCellMO {
             return;
         }
 
-        setConnectionInfo(connInfo);
+        // TODO: workaround for 405
+        // setConnectionInfo(connInfo);
+        // schedule a task to delay the set for 2 seconds. This avoids a problem
+        // on the client receiving the setConnectionInfo message before the
+        // cell is properly set up.  This is due to bug #405, and should
+        // be removed once that bug is fixed
+        SetConnectionInfoTask scit = new SetConnectionInfoTask(this, connInfo);
+        AppContext.getTaskManager().scheduleTask(scit, 2000);
+    }
+
+    private static final class SetConnectionInfoTask implements Task, Serializable {
+        private ManagedReference<AppConventionalCellMO> cellRef;
+        private String connInfo;
+
+        public SetConnectionInfoTask(AppConventionalCellMO cell, String connInfo) {
+            this.cellRef = AppContext.getDataManager().createReference(cell);
+            this.connInfo = connInfo;
+        }
+
+        public void run() throws Exception {
+            cellRef.get().setConnectionInfo(connInfo);
+        }
     }
 
     /**

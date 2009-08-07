@@ -44,11 +44,6 @@ public class SwingTestCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         SwingTestCellServerState state = new SwingTestCellServerState();
 
-        // HACK!
-        Map<String, String> metadata = new HashMap();
-        metadata.put("sizing-hint", "2.0");
-        state.setMetaData(metadata);
-
         // Minor Optimization
         SwingCellFactoryUtils.skipSystemInitialPlacement(state);
 
