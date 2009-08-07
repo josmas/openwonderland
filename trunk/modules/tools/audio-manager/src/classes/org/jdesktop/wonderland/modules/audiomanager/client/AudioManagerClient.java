@@ -481,11 +481,9 @@ public class AudioManagerClient extends BaseConnection implements
                 public void HUDObjectChanged(HUDEvent event) {
                     switch (event.getEventType()) {
                         case APPEARED:
-                            System.err.println("--- visible, starting meter");
                             micVuMeterPanel.startVuMeter(true);
                             break;
                         case DISAPPEARED:
-                            System.err.println("--- invisible, stopping meter");
                             micVuMeterPanel.startVuMeter(false);
                             break;
                         default:
