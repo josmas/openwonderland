@@ -17,90 +17,82 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
-
+import java.awt.Dimension;
+import java.io.IOException;
+import org.jdesktop.wonderland.client.jme.Meter;
+import org.jdesktop.wonderland.client.softphone.MicrophoneInfoListener;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
-import org.jdesktop.wonderland.client.softphone.MicrophoneInfoListener;
-
-import org.jdesktop.wonderland.client.jme.Meter;
-
-
-import java.io.IOException;
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 /**
+ * A microphone level control panel.
  *
- * @author  jp
+ * @author jp
+ * @author nsimpson
  */
-public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneListener,
-	MicrophoneInfoListener, DisconnectListener {
+public class MicVuMeterPanel extends javax.swing.JPanel implements SoftphoneListener,
+        MicrophoneInfoListener, DisconnectListener {
 
     private AudioManagerClient client;
-
     private Meter meter;
 
-    public MicVuMeterFrame() {
-        initComponents();
+    public MicVuMeterPanel() {
+        this(null);
     }
 
-    /** Creates new form MicVuMeterFrame */
-    public MicVuMeterFrame(AudioManagerClient client) {
-	this.client = client;
+    public MicVuMeterPanel(AudioManagerClient client) {
+        this.client = client;
 
         initComponents();
+        if (client != null) {
+            client.addDisconnectListener(this);
+        }
 
-	client.addDisconnectListener(this);
-
-        meter = new Meter("Vu:");
-
-        meter.setPreferredSize(vuMeterPanel.getSize());
-
+        meter = new Meter("");
+        meter.setPreferredSize(vuMeterPanel.getPreferredSize());
         meter.setMaxValue(1D);
         meter.setWarningValue(0.90);
-        
         meter.setVisible(true);
 
         vuMeterPanel.add(meter);
-
-        pack();
         validate();
-
         vuMeterPanel.setVisible(true);
 
-	startVuMeter(true);
+        startVuMeter(true);
     }
 
     public void disconnected() {
-	startVuMeter(false);
+        startVuMeter(false);
     }
 
     public void startVuMeter(final boolean startVuMeter) {
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
-	client.removeDisconnectListener(this);
+        client.removeDisconnectListener(this);
 
         sc.removeSoftphoneListener(this);
         sc.removeMicrophoneInfoListener(this);
 
-	if (startVuMeter) {
-	    client.addDisconnectListener(this);
+        if (startVuMeter) {
+            client.addDisconnectListener(this);
             sc.addSoftphoneListener(this);
             sc.addMicrophoneInfoListener(this);
 
-	    try {
-	        sc.sendCommandToSoftphone("getMicrophoneVolume");
-	    } catch (IOException e) {
-		System.out.println("Unable to get Microphone volume:  " 
-		    + e.getMessage());
-	    }
-	}
+            try {
+                sc.sendCommandToSoftphone("getMicrophoneVolume");
+            } catch (IOException e) {
+                System.out.println("Unable to get Microphone volume:  " + e.getMessage());
+            }
+        }
 
         sc.startVuMeter(startVuMeter);
 
-	java.awt.EventQueue.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
-		setVisible(startVuMeter);
+                setVisible(startVuMeter);
             }
         });
     }
@@ -120,39 +112,37 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
 
     public void microphoneGainTooHigh() {
     }
-
     private static final int VU_COUNT = 10;
-
     private int count;
-
     private double volume;
 
     public void microphoneData(String data) {
         if (count == VU_COUNT) {
-	    count = 0;
+            count = 0;
 
             volume = Math.round(Math.sqrt(volume) * 100) / 100D;
 
-	    java.awt.EventQueue.invokeLater(new Runnable() {
-           	public void run() { 
-		    meter.setValue(volume);
-		}
-	    });
+            java.awt.EventQueue.invokeLater(new Runnable() {
 
-	    volume = 0;
+                public void run() {
+                    meter.setValue(volume);
+                }
+            });
+
+            volume = 0;
         } else {
-	    double volume = Math.abs(Double.parseDouble(data));
+            double volume = Math.abs(Double.parseDouble(data));
 
-	    if (volume > this.volume) {
-		this.volume = volume;
-	    }
-	}
+            if (volume > this.volume) {
+                this.volume = volume;
+            }
+        }
 
-	count++;
+        count++;
     }
 
     public void microphoneVolume(String data) {
-	micVolumeSlider.setValue(VolumeUtil.getClientVolume(Double.parseDouble(data)));
+        micVolumeSlider.setValue(VolumeUtil.getClientVolume(Double.parseDouble(data)));
     }
 
     /** This method is called from within the constructor to
@@ -160,19 +150,16 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
+    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        micVolumeSlider = new javax.swing.JSlider();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        micVolumeSlider = new javax.swing.JSlider();
         vuMeterPanel = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
 
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                formWindowClosing(evt);
-            }
-        });
+        jLabel1.setText("Mic Volume:");
 
         micVolumeSlider.setMajorTickSpacing(1);
         micVolumeSlider.setMaximum(10);
@@ -186,12 +173,14 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
             }
         });
 
-        jLabel1.setText("Microphone Volume:");
+        vuMeterPanel.setMinimumSize(new java.awt.Dimension(230, 26));
+        vuMeterPanel.setPreferredSize(new java.awt.Dimension(230, 26));
 
-        jLabel2.setText("VuMeter Value:");
+        jLabel2.setFont(jLabel2.getFont());
+        jLabel2.setText("Level:");
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -201,26 +190,28 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
                     .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(micVolumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
-                    .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, micVolumeSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabel1))
-                    .add(micVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+                    .add(jLabel2))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2)
-                    .add(vuMeterPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(micVolumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(15, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(jLabel1)
+                        .add(35, 35, 35))))
         );
-
-        pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void micVolumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_micVolumeSliderStateChanged
@@ -233,23 +224,7 @@ public class MicVuMeterFrame extends javax.swing.JFrame implements SoftphoneList
         } catch (IOException e) {
             System.out.println("Unable to send microphone volume command to softphone:  " + e.getMessage());
         }
-    }//GEN-LAST:event_micVolumeSliderStateChanged
-
-    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
-	startVuMeter(false);
-    }//GEN-LAST:event_formWindowClosing
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                new MicVuMeterFrame().setVisible(true);
-            }
-        });
-    }
+}//GEN-LAST:event_micVolumeSliderStateChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
