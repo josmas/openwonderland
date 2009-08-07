@@ -83,7 +83,7 @@ public class BasicAvatarLoader implements AvatarLoaderSPI {
                 new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
 
         // Load the avatar as a static Collada model.
-        Spatial placeHolder = null;
+        Spatial spatial = null;
         try {
             URL url = new URL(baseURL + "assets/models/collada/Avatars/StoryTeller.kmz/models/StoryTeller.wbm");
             ResourceLocator resourceLocator = new RelativeResourceLocator(url, avatarCell);
@@ -91,20 +91,38 @@ public class BasicAvatarLoader implements AvatarLoaderSPI {
             ResourceLocatorTool.addThreadResourceLocator(
                     ResourceLocatorTool.TYPE_TEXTURE,
                     resourceLocator);
-            placeHolder = (Spatial) BinaryImporter.getInstance().load(url);
+            spatial = (Spatial) BinaryImporter.getInstance().load(url);
             ResourceLocatorTool.removeThreadResourceLocator(ResourceLocatorTool.TYPE_TEXTURE, resourceLocator);
         } catch (IOException excp) {
             logger.log(Level.WARNING, "Unable to load avatar character", excp);
             return avatar;
         }
 
+//        // Load the avatar using the new collada loading manager
+//        Spatial spatial = null;
+//        try {
+//            URL url = new URL(baseURL + "maleCartoonAvatar.dae/maleCartoonAvatar.dae.gz.dep");
+//            DeployedModel dm = LoaderManager.getLoaderManager().getLoaderFromDeployment(url);
+//            spatial = dm.getModelLoader().loadDeployedModel(dm);
+//            spatial.setLocalScale(0.053f);
+//            spatial.setLocalTranslation(0.0f, 1.7f, 0.0f);
+//            spatial.setLocalRotation(new Quaternion().fromAngleAxis(
+//                    (float)Math.toRadians(-90f), new Vector3f(1.0f, 0.0f, 0.0f)));
+//        } catch (MalformedURLException excp) {
+//            logger.log(Level.WARNING, "Unable to for .dep URL", excp);
+//            return null;
+//        } catch (IOException excp) {
+//            logger.log(Level.WARNING, "Error loading avatar model", excp);
+//            return null;
+//        }
+        
         //checkBounds(placeHolder);
         //placeHolder.updateModelBound();
         //placeHolder.updateWorldBound();
 
         //System.out.println("Default Model Bounds: " + placeHolder.getWorldBound());
         //placeHolder.lockBounds();
-        avatar.getJScene().getExternalKidsRoot().attachChild(placeHolder);
+        avatar.getJScene().getExternalKidsRoot().attachChild(spatial);
         avatar.getJScene().setExternalKidsChanged(true);
         return avatar;
     }
