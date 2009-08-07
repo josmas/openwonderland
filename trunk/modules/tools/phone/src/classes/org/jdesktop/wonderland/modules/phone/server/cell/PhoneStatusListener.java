@@ -94,7 +94,12 @@ public class PhoneStatusListener implements ManagedCallStatusListener,
 
 	VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	Call externalCall = vm.getCall(listing.getExternalCallID());
+	Call externalCall = null;
+
+	if (listing.getExternalCallID() != null) {
+	    externalCall = vm.getCall(listing.getExternalCallID());
+	}
+
 	Call softphoneCall = vm.getCall(listing.getSoftphoneCallID());
 
 	logger.fine("external call:  " + externalCall);

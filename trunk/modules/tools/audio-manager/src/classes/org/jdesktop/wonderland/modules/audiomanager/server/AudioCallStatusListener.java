@@ -205,7 +205,9 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
 		    audioGroups[i].removePlayer(player);
 	        }
 
-	        vm.removePlayer(player);
+		if (player.getSetup().isOutworlder) {
+	            vm.removePlayer(player);
+		}
 	    } else {
 		logger.warning("Couldn't find player for " + status);
 		System.out.println("Couldn't find player for " + status);
@@ -218,7 +220,7 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
 	case CallStatus.BRIDGE_OFFLINE:
             logger.info("Bridge offline: " + status);
 		// XXX need a way to tell the voice manager to reset all of the private mixes.
-		Call c = vm.getCall(callId);
+	    Call c = vm.getCall(callId);
 
 	    if (callId == null || callId.length() == 0) {
                 /*
