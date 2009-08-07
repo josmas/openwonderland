@@ -182,6 +182,7 @@ public abstract class Window2D implements HUDDisplayable {
 
         }
     }
+
     /** 
      * The entity components which should be attached to the views of this window.
      */
@@ -197,6 +198,16 @@ public abstract class Window2D implements HUDDisplayable {
 
     /** The attached close listeners. */
     private final LinkedList<CloseListener> closeListeners = new LinkedList<CloseListener>();
+
+    /**
+     * A resize listener is a listener which is called whenever the setSize window method is called.
+     */
+    public interface ResizeListener {
+        public void windowResized (Window2D window, Dimension oldSize, Dimension newSize);
+    }
+
+    /** The attached resize listeners. */
+    private final LinkedList<ResizeListener> resizeListeners = new LinkedList<ResizeListener>();
 
     /**
      * Create an instance of Window2D with a default name. The first such window created for an app 
@@ -579,6 +590,7 @@ public abstract class Window2D implements HUDDisplayable {
         if (this.size.width == width && this.size.height == height) {
             return;
         }
+        Dimension oldSize = this.size;
         this.size = new Dimension(width, height);
         if (surface != null) {
             surface.setTexture(texture);
@@ -586,6 +598,14 @@ public abstract class Window2D implements HUDDisplayable {
         }
         changeMask |= CHANGED_SIZE;
         updateViews();
+
+        // Call resize listeners
+        synchronized (resizeListeners) {
+            for (ResizeListener listener : resizeListeners) {
+                listener.windowResized(this, oldSize, this.size);
+            }
+        }
+
     }
 
     /**
@@ -1242,6 +1262,36 @@ public abstract class Window2D implements HUDDisplayable {
     public Iterator<CloseListener> getCloseListeners () {
         synchronized (closeListeners) {
             return closeListeners.iterator();
+        }
+    }
+
+    /**
+     * Add a resize listener to this window. The listener will be called when the window is resized.
+     */
+    public void addResizeListener (ResizeListener listener) {
+        synchronized (resizeListeners) {
+            resizeListeners.add(listener);
+        }
+    }
+
+    /**
+     * Remove a resize listener from this window. 
+     */
+    public void removeResizeListener (ResizeListener listener) {
+        if (app == null) return;
+        synchronized (app.getAppCleanupLock()) {
+            synchronized (resizeListeners) {
+                resizeListeners.remove(listener);
+            }
+        }
+    }
+
+    /**
+     * Return an iterator over the resize listeners for this window. 
+     */
+    public Iterator<ResizeListener> getResizeListeners () {
+        synchronized (resizeListeners) {
+            return resizeListeners.iterator();
         }
     }
 
