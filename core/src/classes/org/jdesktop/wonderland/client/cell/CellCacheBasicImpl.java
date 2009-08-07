@@ -152,9 +152,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             cells.put(cellId, cell);
 
             // record the set of root cells
-            logger.fine("-----> LOADING CELL " + cell.getName());
+            logger.fine("LOADING CELL " + cell.getName());
             if (parent == null) {
-                logger.fine("------> LOADING ROOT CELL " + cell.getName());
+                logger.fine("LOADING ROOT CELL " + cell.getName());
                 rootCells.add(cell);
             }
 
@@ -234,7 +234,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
      */
     public void unloadCell(CellID cellId) {
         Cell cell = cells.remove(cellId);
-        logger.warning("------> UNLOADING CELL " + cell.getName());
+        logger.fine("UNLOADING CELL " + cell.getName());
         if (cell != null) {
             // notify listeners
             fireCellUnloaded(cell);
@@ -243,7 +243,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             setCellStatus(cell, CellStatus.DISK);
 
             if (cell.getParent() == null) {
-                logger.warning("-------> UNLOADING ROOT CELL " + cell.getName());
+                logger.fine("UNLOADING ROOT CELL " + cell.getName());
                 rootCells.remove(cell);
             }
         }
