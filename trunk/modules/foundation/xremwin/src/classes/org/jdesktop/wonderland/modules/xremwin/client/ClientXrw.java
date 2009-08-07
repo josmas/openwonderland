@@ -508,7 +508,7 @@ public abstract class ClientXrw implements Runnable {
                 }
 
             case WINDOW_SET_ROTATE_Y:
-                /* TODO:someday: not yet supported for secondaries 
+                /* TODO:someday: not yet supported for secondaries (Part 1)
                 // If this was performed interactively by this client, ignore it
                 if (winSetRotateYMsgArgs.clientId != clientId) {
                     win = lookupWindow(winSetRotateYMsgArgs.wid);
@@ -931,6 +931,7 @@ public abstract class ClientXrw implements Runnable {
      * @param angle The new Y rotation angle of the window.
      */
     public void windowSetRotateY(WindowXrw win, float angle) {
+        /* TODO:someday. not yet supported for secondaries  (Part 2)
         int wid = ((WindowXrw) win).getWid();
         AppXrw.logger.finer("To server: SetRotateY: wid = " + wid + ", angle = " + angle);
 
@@ -939,6 +940,7 @@ public abstract class ClientXrw implements Runnable {
         } catch (IOException ex) {
             AppXrw.logger.warning("Client cannot send rotation Y for window " + wid);
         }
+        */
     }
 
     /**
