@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -24,9 +25,9 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D.ResizeListener;
 
 /**
  * A HUDComponent2D is a 2D object that can be displayed on the HUD.
@@ -81,6 +82,14 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
     public HUDComponent2D(Window2D window) {
         this.window = window;
         setBounds(getX(), getY(), window.getWidth(), window.getHeight());
+        window.addResizeListener(new ResizeListener() {
+
+            public void windowResized(Window2D window, Dimension oldSize, Dimension newSize) {
+                // TODO: generate a resize event so the HUD frame can adapt
+                logger.fine("window2D resized: " + window);
+                setSize(newSize);
+            }
+        });
     }
 
     /**
@@ -117,7 +126,10 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
             public void componentResized(ComponentEvent e) {
                 // TODO: generate a resize event so the HUD frame can adapt
                 logger.fine("swing component resized: " + e);
-                notifyEventListeners(HUDEventType.RESIZED);
+                Component comp = e.getComponent();
+                if (comp != null) {
+                    setSize(comp.getSize());
+                }
             }
         });
     }

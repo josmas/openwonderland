@@ -583,8 +583,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                 HUDView2D frameView = state.getFrameView();
                 if (frameView != null) {
                     HUDFrameHeader2D frame = state.getFrame();
+                    Window2D window = state.getFrameWindow();
+                    window.setSize(component.getWidth(), window.getHeight());
                     frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * frame.getHeight() / 2 + 0.75f * component.getSize().height / 2)));
-                    frameView.setSizeApp(new Dimension((int) (component.getWidth()), frame.getHeight()));
                 }
             }
         }
