@@ -30,7 +30,6 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
-import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
@@ -95,6 +94,9 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * volunteered to do the initialization.
      */
     protected FirstVisibleInitializerCell fvi;
+
+    /** The overriding initial placement size. */
+    private Vector2f initialPlacementSize;
 
     // the cell channel
     @UsesCellComponent
@@ -207,7 +209,8 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
             logger.info("creatorViewTransform = " +
                           ((App2DCellClientState) clientState).getCreatorViewTransform());
             fvi = new FirstVisibleInitializerCell(this, 
-                          ((App2DCellClientState) clientState).getCreatorViewTransform());
+                       ((App2DCellClientState) clientState).getCreatorViewTransform(),
+                       initialPlacementSize);
             logger.info("fvi = " + fvi);
         }
     }
@@ -427,6 +430,27 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         App2DCellPerformFirstMoveMessage msg =
             new App2DCellPerformFirstMoveMessage(getCellID(), cellTransform);
         channel.send(msg);
+    }
+
+    /**
+     * Specify an initial placement width and or height to use instead of the
+     * one calculated based on the first visible window size. If size.x is non-zero,
+     * it overrides the calculated width in the cell initial placement calculation.
+     * If size.y is non-zero, it overrides the calculated height.
+     */
+    public void setInitialPlacementSize (Vector2f size) {
+        if (size == null) {
+            initialPlacementSize = size;
+        } else {
+            initialPlacementSize = new Vector2f(size);
+        }
+        if (fvi != null) {
+            fvi.setInitialPlacementSize(initialPlacementSize);
+        }
+    }
+
+    public Vector2f getInitialPlacementSize () {
+        return initialPlacementSize;
     }
 
     /**
