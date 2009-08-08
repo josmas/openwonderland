@@ -248,10 +248,12 @@ public class WonderlandHUD extends HUDObject2D implements HUD, HUDEventListener 
      * {@inheritDoc}
      */
     public void removeComponent(HUDComponent component) {
-        component.removeEventListener(this);
-        components.remove(component);
+        if (component != null) {
+            component.removeEventListener(this);
+            components.remove(component);
 
-        HUDObjectChanged(new HUDEvent(component, HUDEventType.REMOVED, new Date()));
+            HUDObjectChanged(new HUDEvent(component, HUDEventType.REMOVED, new Date()));
+        }
     }
 
     /**

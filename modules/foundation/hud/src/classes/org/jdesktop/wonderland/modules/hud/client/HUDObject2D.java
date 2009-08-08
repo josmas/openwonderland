@@ -517,6 +517,7 @@ public class HUDObject2D implements HUDObject {
                 ", visible: " + visible +
                 ", world visible: " + worldVisible +
                 ", enabled: " + enabled +
-                ", transparency: " + transparency;
+                ", transparency: " + transparency +
+                ", decoratable: " + decoratable;
     }
 }
