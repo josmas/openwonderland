@@ -569,6 +569,12 @@ public class SecurityComponentProperties extends JPanel
             }
         }
 
+        // reset the model on the tree
+        editPermsTree.setModel(new DefaultTreeModel(edit));
+        editPermPermCombo.setEnabled(false);
+        editPermPermCombo.setSelectedIndex(0);
+        editPermDescription.setText("Choose a permission.");
+        
         // expand the tree
         int row = 0;
         while (row < editPermsTree.getRowCount()) {
@@ -580,7 +586,11 @@ public class SecurityComponentProperties extends JPanel
         editPermsPrincipalLabel.setText("Edit permissions for " + p.getId());
         editPermsDialog.pack();
         editPermsDialog.setVisible(true);
-        editPermsTree.repaint();
+        
+        editPermsTree.invalidate();
+        editPermPermCombo.invalidate();
+        editPermDescription.invalidate();
+        editPermsDialog.repaint();
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void editPermsOKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPermsOKButtonActionPerformed
@@ -596,7 +606,7 @@ public class SecurityComponentProperties extends JPanel
         for (Enumeration e = root.depthFirstEnumeration(); e.hasMoreElements();) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.nextElement();
             if (!(node.getUserObject() instanceof ActionHolder)) {
-                return;
+                continue;
             }
 
             ActionHolder ah = (ActionHolder) node.getUserObject();
@@ -617,6 +627,10 @@ public class SecurityComponentProperties extends JPanel
 
     private void editPermPermComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editPermPermComboActionPerformed
         TreePath path = editPermsTree.getSelectionPath();
+        if (path == null) {
+            return;
+        }
+
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) 
                 path.getLastPathComponent();
         ActionHolder ah = (ActionHolder) node.getUserObject();
@@ -959,7 +973,32 @@ public class SecurityComponentProperties extends JPanel
     
     class TableDirtyListener implements TableModelListener {
         public void tableChanged(TableModelEvent tme) {
-            editor.setPanelDirty(SecurityComponentProperties.class, true);
+            CellPermissions cur = perms.toPermissions();
+
+            // compare the owners array
+            boolean equal = cur.getOwners().equals(originalPermissions.getOwners());
+
+            // compare the size of the permissions sets
+            equal &= cur.getPermissions().size() == originalPermissions.getPermissions().size();
+
+            // compare each permission -- these have to be compared manually, since the
+            // equals method on Permission doesn't take the access into account
+            if (equal) {
+                Iterator<Permission> c = cur.getPermissions().iterator();
+                Iterator<Permission> o = originalPermissions.getPermissions().iterator();
+
+                while (c.hasNext()) {
+                    Permission cp = c.next();
+                    Permission op = o.next();
+
+                    if (!cp.equals(op) || cp.getAccess() != op.getAccess()) {
+                        equal = false;
+                        break;
+                    }
+                }
+            }
+
+            editor.setPanelDirty(SecurityComponentProperties.class, !equal);
         }
     }
 }
