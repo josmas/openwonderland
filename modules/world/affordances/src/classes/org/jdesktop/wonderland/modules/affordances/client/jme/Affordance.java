@@ -142,6 +142,7 @@ public abstract class Affordance extends Entity {
                 loadCollisionSystem(JMECollisionSystem.class);
 
         CollisionComponent cc = collisionSystem.createCollisionComponent(node);
+        cc.setCollidable(false);  // Not collidable
         entity.addComponent(CollisionComponent.class, cc);
     }
 
