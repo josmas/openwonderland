@@ -21,7 +21,6 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 
 import com.sun.mpk20.voicelib.app.ManagedCallBeginEndListener;
-import com.sun.mpk20.voicelib.app.ManagedPlayerInRangeListener;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.PlayerInRangeListener;
 
