@@ -347,7 +347,7 @@ public class DeployManager {
         for (Class clazz : clazzes) {
             // do nothing if we have already instantiated this class
             if (deployers.containsKey(clazz)) {
-                break;
+                continue;
             }
 
             // this is a new deployer.  Add an instance.
