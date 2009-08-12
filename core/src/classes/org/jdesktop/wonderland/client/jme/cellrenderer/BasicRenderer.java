@@ -258,14 +258,14 @@ public abstract class BasicRenderer implements CellRendererJME {
                 entity.addComponent(CollisionComponent.class, cc);
             }
 
-            PhysicsSystem jBulletPhysicsSystem = ClientContextJME.getPhysicsSystem(session.getSessionManager(), "Physics");
-            CollisionSystem jBulletCollisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Physics");
-            if (jBulletPhysicsSystem!=null) {
-                CollisionComponent jBulletCollisionComponent = setupPhysicsCollision(jBulletCollisionSystem, rootNode);
-                PhysicsComponent pc = setupPhysics(jBulletCollisionComponent, jBulletPhysicsSystem, rootNode);
-                entity.addComponent(JBulletCollisionComponent.class, jBulletCollisionComponent);
-                entity.addComponent(JBulletPhysicsComponent.class, pc);
-            }
+//            PhysicsSystem jBulletPhysicsSystem = ClientContextJME.getPhysicsSystem(session.getSessionManager(), "Physics");
+//            CollisionSystem jBulletCollisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Physics");
+//            if (jBulletPhysicsSystem!=null) {
+//                CollisionComponent jBulletCollisionComponent = setupPhysicsCollision(jBulletCollisionSystem, rootNode);
+//                PhysicsComponent pc = setupPhysics(jBulletCollisionComponent, jBulletPhysicsSystem, rootNode);
+//                entity.addComponent(JBulletCollisionComponent.class, jBulletCollisionComponent);
+//                entity.addComponent(JBulletPhysicsComponent.class, pc);
+//            }
         } else {
             logger.warning("**** BASIC RENDERER - ROOT NODE WAS NULL !");
         }
