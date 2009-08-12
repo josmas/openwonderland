@@ -74,9 +74,10 @@
             <jvmarg value="-Djme.checkRenderThread=true"/>
 
             <!--start debug-->
+            <!--
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8890,suspend=n"/>
-            <!--
+            
             -->
             <!--end debug-->
 
