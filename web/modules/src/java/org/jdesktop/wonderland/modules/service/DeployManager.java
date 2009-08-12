@@ -25,9 +25,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
 import org.jdesktop.wonderland.modules.Module;
 import org.jdesktop.wonderland.modules.ModulePart;
@@ -41,9 +43,10 @@ import sun.misc.Service;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class DeployManager {
-    /* A set of deployer objects */
-    private HashSet<ModuleDeployerSPI> deployers = new LinkedHashSet();
-    
+    /** The instantiated deployers, mapped by class */
+    private final Map<Class, ModuleDeployerSPI> deployers =
+            new LinkedHashMap<Class, ModuleDeployerSPI>();
+
     /* The error logger */
     private Logger logger = Logger.getLogger(DeployManager.class.getName());
     
@@ -51,21 +54,6 @@ public class DeployManager {
      * Constructor
      */
     public DeployManager() {
-        /*
-         * Initialize the list of deployers. For each found, create a deployer
-         * object and put into the set of deployer objects
-         */
-        Class[] clazzes = this.getClasses();
-        for (Class clazz : clazzes) {
-            try {
-                ModuleDeployerSPI deployer = (ModuleDeployerSPI) clazz.newInstance();
-                this.deployers.add(deployer);
-            } catch (InstantiationException ex) {
-                logger.log(Level.WARNING, "[DEPLOY] INSTANTIATE", ex);
-            } catch (IllegalAccessException ex) {
-                logger.log(Level.WARNING, "[DEPLOY] INSTANTIATE", ex);
-            }
-        }
     }
     
     /**
@@ -92,7 +80,7 @@ public class DeployManager {
          * part. If so, deploy the module.
          */
         Map<String, ModulePart> parts = module.getParts();
-        Iterator<ModuleDeployerSPI> it = this.deployers.iterator();
+        Iterator<ModuleDeployerSPI> it = getDeployers().iterator();
         logger.info("[DEPLOY] Module has parts " + parts.keySet().toString());
         logger.info("[DEPLOY] Number of Deployers " + this.deployers.size());
         while (it.hasNext() == true) {
@@ -155,7 +143,7 @@ public class DeployManager {
          * part. If so, deploy the module.
          */
         Map<String, ModulePart> parts = module.getParts();
-        Iterator<ModuleDeployerSPI> it = this.deployers.iterator();
+        Iterator<ModuleDeployerSPI> it = getDeployers().iterator();
         while (it.hasNext() == true) {
             /*
              * Fetch the module part types that the deployer supports. If none,
@@ -204,7 +192,7 @@ public class DeployManager {
          * part. If so, ask the deployer whether it is ready to deploy
          */
         Map<String, ModulePart> parts = module.getParts();
-        Iterator<ModuleDeployerSPI> it = this.deployers.iterator();
+        Iterator<ModuleDeployerSPI> it = getDeployers().iterator();
         while (it.hasNext() == true) {
             ModuleDeployerSPI deployer = it.next();
             String[] partTypes = deployer.getTypes();
@@ -235,7 +223,7 @@ public class DeployManager {
          * part. If so, ask the deployer whether it is ready to deploy
          */
         Map<String, ModulePart> parts = module.getParts();
-        Iterator<ModuleDeployerSPI> it = this.deployers.iterator();
+        Iterator<ModuleDeployerSPI> it = getDeployers().iterator();
         while (it.hasNext() == true) {
             ModuleDeployerSPI deployer = it.next();
             String[] partTypes = deployer.getTypes();
@@ -344,6 +332,37 @@ public class DeployManager {
         return out;
     }
 
+    /**
+     * Calculate the set of deployers.  This checks to make sure no new
+     * deployers have been deployed, so always returns an up-to-date set
+     * of deployers.
+     * @return the current set of deployers 
+     */
+    private Collection<ModuleDeployerSPI> getDeployers() {
+        /*
+         * Initialize the list of deployers. For each found, create a deployer
+         * object and put into the set of deployer objects
+         */
+        Class[] clazzes = this.getClasses();
+        for (Class clazz : clazzes) {
+            // do nothing if we have already instantiated this class
+            if (deployers.containsKey(clazz)) {
+                break;
+            }
+
+            // this is a new deployer.  Add an instance.
+            try {
+                ModuleDeployerSPI deployer = (ModuleDeployerSPI) clazz.newInstance();
+                deployers.put(clazz, deployer);
+            } catch (InstantiationException ex) {
+                logger.log(Level.WARNING, "[DEPLOY] INSTANTIATE", ex);
+            } catch (IllegalAccessException ex) {
+                logger.log(Level.WARNING, "[DEPLOY] INSTANTIATE", ex);
+            }
+        }
+
+        return deployers.values();
+    }
 
     /**
      * Find and return all the classes that implement the ModuleDeployerSPI
