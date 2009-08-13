@@ -85,9 +85,9 @@ public class MovableComponentMO extends CellComponentMO {
         ChannelComponentMO channelComponent;
         cell.setLocalTransform(transform);
         
-        channelComponent = channelComponentRef.getForUpdate();
 
         if (cell.isLive()) {
+            channelComponent = channelComponentRef.getForUpdate();
             channelComponent.sendAll(clientID, MovableMessage.newMovedMessage(cell.getCellID(), transform));
         }
     }
