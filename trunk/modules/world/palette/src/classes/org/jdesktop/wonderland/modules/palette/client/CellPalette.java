@@ -50,6 +50,7 @@ import org.jdesktop.wonderland.modules.palette.client.dnd.PaletteDragGestureList
  */
 public class CellPalette extends javax.swing.JFrame implements ListSelectionListener {
     /* A map of cell display names and their cell factories */
+
     private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
 
     /* The "No Preview Available" image */
@@ -89,10 +90,12 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         // factories, to be used in setVisible(). When the list changes we
         // simply do a fresh update of all values.
         cellListener = new CellRegistryListener() {
+
             public void cellRegistryChanged() {
                 // Since this is not happening (necessarily) in the AWT Event
                 // Thread, we should put it in one
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         updateListValues();
                     }
@@ -109,8 +112,7 @@ public class CellPalette extends javax.swing.JFrame implements ListSelectionList
         if (visible == true) {
             updateListValues();
             CellRegistry.getCellRegistry().addCellRegistryListener(cellListener);
-        }
-        else {
+        } else {
             CellRegistry.getCellRegistry().removeCellRegistryListener(cellListener);
         }
 
@@ -201,18 +203,23 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     // interfere with any changes in the map.
     synchronized (cellFactoryMap) {
         // From the selected value, find the proper means to create the object
-        String cellDisplayName = (String) cellList.getSelectedValue();
-        CellFactorySPI factory = cellFactoryMap.get(cellDisplayName);
-        CellServerState setup = factory.getDefaultCellServerState(null);
+        final String cellDisplayName = (String) cellList.getSelectedValue();
+        final CellFactorySPI factory = cellFactoryMap.get(cellDisplayName);
+        new Thread(new Runnable() {
 
-        // Create the new cell at a distance away from the avatar
-        try {
-            CellUtils.createCell(setup);
-        } catch (CellCreationException excp) {
-            Logger logger = Logger.getLogger(CellPalette.class.getName());
-            logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +
-                    " using palette", excp);
-        }
+            public void run() {
+                CellServerState setup = factory.getDefaultCellServerState(null);
+
+                // Create the new cell at a distance away from the avatar
+                try {
+                    CellUtils.createCell(setup);
+                } catch (CellCreationException excp) {
+                    Logger logger = Logger.getLogger(CellPalette.class.getName());
+                    logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +
+                            " using palette", excp);
+                }
+            }
+        }).start();
     }
 }//GEN-LAST:event_createActionPerformed
 
@@ -256,7 +263,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             cellList.setDragEnabled(true);
         }
     }
-    
+
     /**
      * Handles when a selection has been made of the list of cell type names.
      * @param e
@@ -310,8 +317,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 // Pass the necessary information for drag and drop
                 gestureListener.cellFactory = cellFactory;
                 gestureListener.previewImage = previewImage;
-            }
-            else {
+            } else {
                 ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
                 previewLabel.setIcon(icon);
 
@@ -326,8 +332,7 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 previewRecognizer =
                         dragSource.createDefaultDragGestureRecognizer(previewLabel,
                         DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
-            }
-            else {
+            } else {
                 previewRecognizer.setComponent(previewLabel);
             }
 
@@ -337,13 +342,11 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 listRecognizer =
                         dragSource.createDefaultDragGestureRecognizer(cellList,
                         DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
-            }
-            else {
+            } else {
                 listRecognizer.setComponent(cellList);
             }
         }
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList cellList;
     private javax.swing.JScrollPane cellScrollPane;
