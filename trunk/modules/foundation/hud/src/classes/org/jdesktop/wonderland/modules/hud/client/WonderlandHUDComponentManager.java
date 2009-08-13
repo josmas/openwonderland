@@ -88,10 +88,14 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     protected int dragY = 0;
     protected static final float DEFAULT_FOCUSED_TRANSPARENCY = 0.0f;
     protected static final float DEFAULT_UNFOCUSED_TRANSPARENCY = 0.2f;
+    protected static final long DEFAULT_FADE_IN_TIME = 250;
+    protected static final long DEFAULT_FADE_OUT_TIME = 1500;
     protected static final String DEFAULT_HUD_ICON = "/org/jdesktop/wonderland/modules/hud/client/resources/GenericWindow32x32.png";
     // TODO: set these from user properties
     protected float focusedTransparency = DEFAULT_FOCUSED_TRANSPARENCY;
     protected float unfocusedTransparency = DEFAULT_UNFOCUSED_TRANSPARENCY;
+    protected long fadeInTime = DEFAULT_FADE_IN_TIME;
+    protected long fadeOutTime = DEFAULT_FADE_OUT_TIME;
 
     public WonderlandHUDComponentManager(HUD hud) {
         this.hud = hud;
@@ -408,7 +412,8 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
     public void setFocused(HUDComponent component, boolean focused) {
         if (component != null) {
             component.changeTransparency(component.getTransparency(),
-                    focused ? focusedTransparency : ((component.getPreferredTransparency() != 1.0f) ? component.getPreferredTransparency() : unfocusedTransparency));
+                    focused ? focusedTransparency : ((component.getPreferredTransparency() != 1.0f) ? component.getPreferredTransparency() : unfocusedTransparency),
+                    focused ? fadeInTime : fadeOutTime);
 
         }
     }
