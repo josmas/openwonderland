@@ -21,6 +21,8 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import com.jme.scene.state.CullState;
+import com.jme.scene.state.RenderState;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jme.util.resource.SimpleResourceLocator;
@@ -44,7 +46,9 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
@@ -107,6 +111,11 @@ public class JmeColladaLoader implements ModelLoader {
         Node modelNode;
         ColladaImporter.load(in, name);
         modelNode = ColladaImporter.getModel();
+
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        CullState culls = (CullState) rm.createRendererState(RenderState.StateType.Cull);
+        culls.setCullFace(CullState.Face.Back);
+        modelNode.setRenderState(culls);
 
         if (applyColladaAxisAndScale) {
             // Adjust the scene transform to match the scale and axis specified in
