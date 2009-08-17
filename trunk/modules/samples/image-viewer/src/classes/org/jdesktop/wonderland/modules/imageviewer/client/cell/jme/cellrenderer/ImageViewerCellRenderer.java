@@ -99,6 +99,11 @@ public class ImageViewerCellRenderer extends BasicRenderer {
         ts.setEnabled(true);
         box.setRenderState(ts);
 
+        // Make sure we do not cache the texture in memory, this will mess
+        // up asset caching with WL (if the URL stays the same, but the
+        // underlying asset changes).
+        TextureManager.releaseTexture(texture);
+
         return node;
     }
 }

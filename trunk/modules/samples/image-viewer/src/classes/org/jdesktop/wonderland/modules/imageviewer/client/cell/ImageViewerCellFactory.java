@@ -74,6 +74,11 @@ public class ImageViewerCellFactory implements CellFactorySPI {
            float height = image.getHeight() * ImageViewerCell.HEIGHT_SCALE_FACTOR;
            boundingVolume = new BoundingBox(Vector3f.ZERO, width, height,
                    ImageViewerCellRenderer.IMAGE_DEPTH);
+
+           // Make sure we do not cache the texture in memory, this will mess
+           // up asset caching with WL (if the URL stays the same, but the
+           // underlying asset changes).
+           TextureManager.releaseTexture(texture);
        } catch (MalformedURLException excp) {
            logger.log(Level.WARNING, "Unable to form url from " +
                    state.getImageURI(), excp);
