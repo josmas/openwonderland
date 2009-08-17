@@ -120,5 +120,5 @@
     </switch>
 
     <!-- all supported ostypes -->
-    <property name="ostypes" value="win32,win64,linux,solaris,macosx"/>
+    <property name="ostypes" value="win32,win64,linux,linux64,solaris,macosx"/>
 </project>
