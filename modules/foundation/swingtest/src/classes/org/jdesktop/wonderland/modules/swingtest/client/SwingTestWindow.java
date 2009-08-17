@@ -21,15 +21,10 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
-import com.jme.scene.Node;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.utils.graphics.GraphicsUtils;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.swingtest.client.cell.SwingTestCell;
-import com.jme.math.Vector3f;
 
 /**
  *

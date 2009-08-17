@@ -213,6 +213,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         AppXrw.logger.severe("ServerProxyMaster disconnected");
     }
 
+    @Override
     public void cleanup() {
         disconnect();
 
@@ -238,6 +239,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
     /**
      * Used by the Client to read the next incoming message.
      */
+    @Override
     public ServerMessageType getMessageType() {
 
         // Loop until we get a message from either server or a
@@ -342,6 +344,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         return conn.checkTakeControl(clientID, cellID);
     }
 
+    @Override
     public void getData(CreateWindowMsgArgs msgArgs) {
         try {
             createWindowBuf[0] = lastMsgCode;
@@ -362,6 +365,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(DestroyWindowMsgArgs msgArgs) {
         try {
             destroyWindowBuf[0] = lastMsgCode;
@@ -375,6 +379,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(ShowWindowMsgArgs msgArgs) {
         try {
             showWindowBuf[0] = lastMsgCode;
@@ -398,6 +403,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(ConfigureWindowMsgArgs msgArgs) {
         try {
             configureWindowBuf[0] = lastMsgCode;
@@ -424,6 +430,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(PositionWindowMsgArgs msgArgs) {
         try {
             positionWindowBuf[0] = lastMsgCode;
@@ -440,6 +447,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(RestackWindowMsgArgs msgArgs) {
         try {
             restackWindowBuf[0] = lastMsgCode;
@@ -455,6 +463,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(WindowSetDecoratedMsgArgs msgArgs) {
         try {
             windowSetDecoratedBuf[0] = lastMsgCode;
@@ -470,6 +479,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(WindowSetBorderWidthMsgArgs msgArgs) {
         try {
             windowSetBorderWidthBuf[0] = lastMsgCode;
@@ -484,6 +494,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(WindowSetUserDisplMsgArgs msgArgs) {
         try {
             winSetUserDisplBuf[0] = lastMsgCode;
@@ -504,6 +515,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(WindowSetRotateYMsgArgs msgArgs) {
         try {
             winSetRotateYBuf[0] = lastMsgCode;
@@ -520,6 +532,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(DisplayPixelsMsgArgs msgArgs) {
         try {
             displayPixelsBuf[0] = lastMsgCode;
@@ -544,6 +557,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(CopyAreaMsgArgs msgArgs) {
         try {
             copyAreaBuf[0] = lastMsgCode;
@@ -565,6 +579,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(ControllerStatusMsgArgs msgArgs) {
         try {
             controllerStatusBuf[0] = lastMsgCode;
@@ -663,6 +678,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(SetWindowTitleMsgArgs msgArgs) {
         try {
             setWindowTitleBuf[0] = lastMsgCode;
@@ -689,6 +705,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData(SlaveCloseWindowMsgArgs msgArgs) {
         try {
             slaveCloseWindowBuf[0] = lastMsgCode;
@@ -703,11 +720,13 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void getData() {
         beepBuf[0] = lastMsgCode;
         sf.broadcastSend(beepBuf);
     }
 
+    @Override
     public void setScanLineWidth(int width) {
         if (scanLineWidth != width) {
             scanLineBuf = new byte[width * 4];
@@ -719,6 +738,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
     static int scanLinesRead = 0;
     static int bytesRead = 0;
      */
+    @Override
     public byte[] readScanLine() {
         try {
             in.readFully(scanLineBuf);
@@ -737,6 +757,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public int readRleInt() {
         try {
             in.readFully(integerBuf);
@@ -752,6 +773,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void readRleChunk(byte[] chunkBuf) {
         try {
             in.readFully(chunkBuf);
@@ -763,6 +785,7 @@ class ServerProxyMaster extends ServerProxyMasterSocket {
         }
     }
 
+    @Override
     public void readRleChunk(byte[] chunkBuf, int len) {
         try {
             in.readFully(chunkBuf, 0, len);

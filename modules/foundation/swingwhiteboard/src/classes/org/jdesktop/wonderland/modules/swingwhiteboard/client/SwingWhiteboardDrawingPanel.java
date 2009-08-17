@@ -55,6 +55,7 @@ public class SwingWhiteboardDrawingPanel extends JPanel {
         this.penColor = penColor;
     }
 
+    @Override
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         switch (action) {

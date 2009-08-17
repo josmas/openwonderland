@@ -21,20 +21,16 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import org.jdesktop.wonderland.client.jme.MainFrame;
-import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwingEmbeddedToolkit.WindowSwingEmbeddedPeer;
 import com.sun.embeddedswing.EmbeddedPeer;
 import com.jme.math.Vector2f;
-import java.awt.Canvas;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.input.InputManager.WindowSwingViewMarker;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
@@ -45,11 +41,9 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
-import javax.swing.SwingUtilities;
 
 /**
  * A 2D window in which a Swing panel can be displayed. Use <code>setComponent</code> to specify the Swing panel.
@@ -217,6 +211,7 @@ public class WindowSwing extends Window2D {
         initializeViews();
     }
 
+    @Override
     public void cleanup () {
         cleanupViews();
         super.cleanup();
@@ -402,6 +397,7 @@ public class WindowSwing extends Window2D {
     /**
      * Repaint out the contents of this window.
      */
+    @Override
     public void repaint () {
         if (embeddedPeer == null) {
             throw new RuntimeException("You must first set a component for this WindowSwing.");

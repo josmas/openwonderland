@@ -21,13 +21,8 @@ import java.awt.Color;
 import java.awt.Point;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import com.jme.math.Vector2f;
-import java.awt.BasicStroke;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import java.math.BigInteger;
-import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -35,7 +30,6 @@ import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardAction;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCellMessage;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 
 /**
  *

@@ -204,7 +204,7 @@ public abstract class InputPicker {
     private MyCameraListener cameraListener = new MyCameraListener();
 
     /** An object used to lock the following camera-related variables */
-    private Integer cameraLock = new Integer(0);
+    private final Integer cameraLock = new Integer(0);
 
     /** The current camera position (in world coordinates). */
     private Vector3f cameraPositionWorld = new Vector3f();

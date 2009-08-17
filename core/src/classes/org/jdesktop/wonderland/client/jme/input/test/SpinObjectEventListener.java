@@ -49,6 +49,7 @@ public class SpinObjectEventListener extends EventClassListener {
     /**
      * Consume only mouse button events.
      */
+    @Override
     public Class[] eventClassesToConsume () {
 	return new Class[] { MouseButtonEvent3D.class };
     }
@@ -58,6 +59,7 @@ public class SpinObjectEventListener extends EventClassListener {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void commitEvent (Event event) {
 	if (!((MouseButtonEvent3D)event).isPressed()) {
 	    return;

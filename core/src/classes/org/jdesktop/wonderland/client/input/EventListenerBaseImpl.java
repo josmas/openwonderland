@@ -54,7 +54,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     private int numEntitiesAttached;
 
     /** The list of events which was encountered when computeEvent was last called. */
-    private LinkedList<Event> computedEvents = new LinkedList<Event>();
+    private final LinkedList<Event> computedEvents = new LinkedList<Event>();
 
     /** The MTGame event used by the input system. */
     private static long mtgameEventID;
@@ -70,6 +70,7 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
      * {@inheritDoc}
      * Note: A listener is enabled by default.
      */
+    @Override
     public boolean isEnabled () {
 	return enabled;
     }
@@ -77,8 +78,10 @@ public class EventListenerBaseImpl extends ProcessorComponent implements EventLi
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setEnabled (boolean enable) {
-	this.enabled = enabled;
+	if (this.enabled == enable) return;
+        this.enabled = enable;
 
 	if (enabled && numEntitiesAttached > 0) {
 	    // Make sure listener is armed if it is enabled and attached.

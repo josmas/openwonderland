@@ -46,8 +46,6 @@ import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.wonderland.common.InternalAPI;
 import java.lang.reflect.Method;
 import javax.media.opengl.GLContext;
-import java.nio.ByteBuffer;
-import com.jme.image.Image;
 
 /**
  * INTERNAL API 

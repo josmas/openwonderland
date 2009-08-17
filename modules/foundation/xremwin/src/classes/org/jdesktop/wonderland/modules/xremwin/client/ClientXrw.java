@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.xremwin.client;
 
 import java.awt.Toolkit;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.logging.Level;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.CreateWindowMsgArgs;

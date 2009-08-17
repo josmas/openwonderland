@@ -51,6 +51,7 @@ public class SwingWhiteboardApp extends App2D  {
     /** 
      * Clean up resources.
      */
+    @Override
     public void cleanup () {
 	super.cleanup();
     }

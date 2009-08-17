@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
@@ -34,6 +32,7 @@ abstract public class ControlArbSingle extends ControlArbAppFocus {
     protected String controller;
 
     /** {@inheritDoc} */
+    @Override
     public void cleanup () {
         controller = null;
     }

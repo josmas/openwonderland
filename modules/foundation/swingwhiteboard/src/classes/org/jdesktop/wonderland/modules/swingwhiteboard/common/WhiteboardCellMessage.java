@@ -165,6 +165,7 @@ public class WhiteboardCellMessage extends CellMessage {
      * Get a string representation of the whiteboard cell message
      * @return a the cell message as as String
      */
+    @Override
     public String toString() {
         return getClientID() + ", " + getCellID() + ", " + getActionType() + ", " + getAction() 
         + ", " + getCommand() + ", " + getColor() + ", " + getPosition();

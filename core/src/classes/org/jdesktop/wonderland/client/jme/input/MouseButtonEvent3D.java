@@ -21,7 +21,6 @@ import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.mtgame.PickDetails;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import com.jme.math.Vector2f;
 
 /**
  * An event which indicates that a mouse button action occurred. 
@@ -86,6 +85,7 @@ public class MouseButtonEvent3D extends MouseEvent3D {
         return ((MouseEvent) awtEvent).getClickCount();
     }
 
+    @Override
     public String toString() {
         return "Mouse Button " + butAction();
     }

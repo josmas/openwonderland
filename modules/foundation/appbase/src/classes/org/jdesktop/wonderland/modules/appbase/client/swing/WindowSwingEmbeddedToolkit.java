@@ -39,7 +39,6 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurfaceBufferedImage;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
-import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 
 /**
  * The main interface to Embedded Swing. This singleton provides access to the three basic capabilities

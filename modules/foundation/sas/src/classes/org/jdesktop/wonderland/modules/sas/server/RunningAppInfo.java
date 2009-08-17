@@ -33,7 +33,7 @@ import java.util.LinkedList;
 @ExperimentalAPI
 public class RunningAppInfo implements ManagedObject, Serializable {
 
-    public class AppInfo implements Serializable {
+    class AppInfo implements Serializable {
         public ProviderProxy provider;
         public CellID cellID;
         public AppInfo (ProviderProxy provider, CellID cellID) {
@@ -44,25 +44,25 @@ public class RunningAppInfo implements ManagedObject, Serializable {
 
     private HashMap<MessageID,AppInfo> runningAppMap = new HashMap<MessageID,AppInfo>();
 
-    public void addAppInfo (MessageID msgID, ProviderProxy provider, CellID cellID) {
+    void addAppInfo (MessageID msgID, ProviderProxy provider, CellID cellID) {
         AppInfo msgInfo = new AppInfo(provider, cellID);
         runningAppMap.put(msgID, msgInfo);
         AppContext.getDataManager().markForUpdate(this);
     }
 
-    public void removeAppInfo (MessageID msgID) {
+    void removeAppInfo (MessageID msgID) {
         runningAppMap.remove(msgID);
         AppContext.getDataManager().markForUpdate(this);
     }
 
-    public AppInfo getAppInfo (MessageID msgID) {
+    AppInfo getAppInfo (MessageID msgID) {
         return runningAppMap.get(msgID);
     }
 
     /**
      * Removes all app infos that are for the given provider.
      */
-    public void removeAppInfosForProvider (ProviderProxy provider) {
+    void removeAppInfosForProvider (ProviderProxy provider) {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : runningAppMap.keySet()) {
             AppInfo appInfo = runningAppMap.get(msgID);
@@ -80,7 +80,7 @@ public class RunningAppInfo implements ManagedObject, Serializable {
     /**
      * Removes all app infos that are for the given provider.
      */
-    public void removeAppInfosForCellAndProvider (ProviderProxy provider, CellID cellID) {
+    void removeAppInfosForCellAndProvider (ProviderProxy provider, CellID cellID) {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : runningAppMap.keySet()) {
             AppInfo appInfo = runningAppMap.get(msgID);
@@ -97,7 +97,7 @@ public class RunningAppInfo implements ManagedObject, Serializable {
 
     // Given an an app identified by a provider and a cell, returns the launch message ID
     // for that app. TODO: someday: assumes only one app launched per cell.
-    public MessageID getLaunchMessageIDForCellAndProvider (ProviderProxy provider, CellID cellID) {
+    MessageID getLaunchMessageIDForCellAndProvider (ProviderProxy provider, CellID cellID) {
         for (MessageID msgID : runningAppMap.keySet()) {
             AppInfo appInfo = runningAppMap.get(msgID);
             if (appInfo.provider == provider && appInfo.cellID == cellID) {

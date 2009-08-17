@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.jeditortest.common;
 
-import com.jme.math.Vector2f;
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -43,14 +41,6 @@ public class JEditorTestCellServerState extends App2DCellServerState {
 
     public int preferredHeight = 300;
     
-    /** The X pixel scale of the JEditor test window. */
-    @XmlElement(name="pixelScaleX")
-    public float pixelScaleX = 0.01f;
-
-    /** The Y pixel scale of the JEditor test window. */
-    @XmlElement(name="pixelScaleY")
-    public float pixelScaleY = 0.01f;
-    
     /** Default constructor */
     public JEditorTestCellServerState() {}
     
@@ -74,22 +64,6 @@ public class JEditorTestCellServerState extends App2DCellServerState {
         this.preferredHeight = preferredHeight;
     }
     
-    @XmlTransient public float getPixelScaleX () {
-        return pixelScaleX;
-    }
-    
-    public void setPixelScaleX (float pixelScale) {
-        this.pixelScaleX = pixelScaleX;
-    }
-
-    @XmlTransient public float getPixelScaleY () {
-        return pixelScaleY;
-    }
-    
-    public void setPixelScaleY (float pixelScale) {
-        this.pixelScaleY = pixelScaleY;
-    }
-
     /**
      * Returns a string representation of this class.
      *

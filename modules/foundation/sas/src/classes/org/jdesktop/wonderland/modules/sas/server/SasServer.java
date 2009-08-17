@@ -70,6 +70,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             this.command = command;
         }
 
+        @Override
         public String toString () {
             return "cell = " + cellID + ", executionCapability = " + executionCapability +
                 "appName = " + appName + ", command = " + command;
@@ -133,7 +134,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
     /**
      * Called when provider client disconnects from the SAS server.
      */
-    public ProviderProxy providerDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
+    ProviderProxy providerDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         logger.info("**** Sas provider disconnnected, clientID = " + clientID);
         ProviderProxy providerToRemove = null;
 

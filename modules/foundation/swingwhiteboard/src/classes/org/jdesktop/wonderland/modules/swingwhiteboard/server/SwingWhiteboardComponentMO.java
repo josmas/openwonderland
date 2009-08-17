@@ -17,14 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.swingwhiteboard.server;
 
-import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;

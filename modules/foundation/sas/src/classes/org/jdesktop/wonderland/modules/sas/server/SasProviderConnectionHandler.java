@@ -27,7 +27,6 @@ import org.jdesktop.wonderland.modules.sas.common.SasProviderConnectionType;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.AppContext;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.sas.common.SasProviderLaunchStatusMessage;
@@ -91,7 +90,7 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
         server.providerConnected(sender, clientID);
     }
 
-    public static void addProviderMessageInFlight (MessageID msgID, ProviderProxy provider, CellID cellID) {
+    static void addProviderMessageInFlight (MessageID msgID, ProviderProxy provider, CellID cellID) {
         getProviderMessagesInFlight().addMessageInfo(msgID, provider, cellID);
     }
 
@@ -167,7 +166,7 @@ public class SasProviderConnectionHandler implements ClientConnectionHandler, Se
     }
 
     // Called when the app is stopped (usually when the cell is deleted).
-    public static void removeCell (CellID cellID, ProviderProxy provider) {
+    static void removeCell (CellID cellID, ProviderProxy provider) {
         getProviderMessagesInFlight().removeMessagesForCellAndProvider(provider, cellID);
         getRunningApps().removeAppInfosForCellAndProvider(provider, cellID);
     }

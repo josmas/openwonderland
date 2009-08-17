@@ -61,6 +61,7 @@ public class SwingEnterExitEvent3D extends Event {
     /**
      * Returns the event's entity.
      */
+    @Override
     public Entity getEntity() {
         return entity;
     }

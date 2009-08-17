@@ -17,18 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.swingwhiteboard.client;
 
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.SwingWhiteboardCellServerState;
 import org.jdesktop.wonderland.modules.appbase.client.swing.SwingCellFactoryUtils;
 
 /**
- * The cell factory for the swing whiteboard
+ * The cell factory for the Swing Example Whiteboard.
+ * 
+ * @author Paul Byrne
  */
 @CellFactory
 public class SwingWhiteboardCellFactory implements CellFactorySPI {
@@ -38,21 +40,19 @@ public class SwingWhiteboardCellFactory implements CellFactorySPI {
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
-        // Create a setup with some default values
-        SwingWhiteboardCellServerState cellServerState = new SwingWhiteboardCellServerState();
+        SwingWhiteboardCellServerState state = new SwingWhiteboardCellServerState();
 
         // Minor Optimization
-        SwingCellFactoryUtils.skipSystemInitialPlacement(cellServerState);
+        SwingCellFactoryUtils.skipSystemInitialPlacement(state);
 
-        return (T) cellServerState;
+        return (T)state;
     }
 
     public String getDisplayName() {
-        return "Swing Whiteboard";
+        return "Swing Example Whiteboard";
     }
 
     public Image getPreviewImage() {
-        URL url = SwingWhiteboardCellFactory.class.getResource("resources/swingwhiteboard_preview.png");
-        return Toolkit.getDefaultToolkit().createImage(url);
+        return null;
     }
 }

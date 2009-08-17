@@ -120,6 +120,7 @@ public class ClientXrwMaster extends ClientXrw implements WindowSystemXrw.ExitLi
     /**
      * Return the app of this client.
      */
+    @Override
     public AppXrw getApp () {
         return (AppXrw) app;
     }

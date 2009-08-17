@@ -32,12 +32,15 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 public class ControlArbNull extends ControlArb {
 
     /** {@inheritDoc} */
+    @Override
     public void takeControl() {}
 
     /** {@inheritDoc} */
+    @Override
     public void releaseControl() {}
 
     /** {@inheritDoc} */
+    @Override
     public boolean hasControl() { return false; }
 
     /**
@@ -51,10 +54,12 @@ public class ControlArbNull extends ControlArb {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void deliverEvent(Window2D window, KeyEvent event) {}
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public void deliverEvent(Window2D window, MouseEvent event) {}
 }

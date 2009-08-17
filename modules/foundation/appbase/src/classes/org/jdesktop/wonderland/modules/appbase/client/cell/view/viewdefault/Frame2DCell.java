@@ -18,9 +18,6 @@
 package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import com.jme.scene.Node;
-import java.awt.event.MouseEvent;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;

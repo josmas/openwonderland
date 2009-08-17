@@ -37,6 +37,7 @@ public class EventClassFocusListener extends EventClassListener {
      * Note on subclassing: the subclass should override this method.
      * @return An array of the event classes the listener wishes to consume.
      */
+    @Override
     public Class[] eventClassesToConsume () {
 	return null;
     }
@@ -45,6 +46,7 @@ public class EventClassFocusListener extends EventClassListener {
      * INTERNAL ONLY.
      */
     @InternalAPI
+    @Override
     public boolean consumesEvent (Event event) {
 	if (!event.isFocussed()) return false;
 	return super.consumesEvent(event);

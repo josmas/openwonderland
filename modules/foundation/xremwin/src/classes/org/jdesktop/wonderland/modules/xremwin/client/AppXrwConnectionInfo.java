@@ -109,6 +109,7 @@ public class AppXrwConnectionInfo {
         return secret;
     }
     
+    @Override
     public String toString () {
         return "AppXrwConnectionInfo" + DELIMITER + hostName + DELIMITER + portNum;
     }

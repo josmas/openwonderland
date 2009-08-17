@@ -48,9 +48,6 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
-import org.jdesktop.wonderland.modules.appbase.client.view.Gui2DInterior;
-import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
-import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D.Type;
 import java.awt.Button;
 import org.jdesktop.wonderland.modules.appbase.client.DrawingSurface;
@@ -272,7 +269,7 @@ public abstract class View2DEntity implements View2D {
         changeMask = 0;
         disableGUI();
 
-        setParent(null);;
+        setParent(null);
         setVisibleUser(false, false);
         setOrtho(false, false);
         setGeometryNode(null, false);

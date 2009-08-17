@@ -33,13 +33,15 @@ public class ConfigureNotifyBugFixed extends ConfigureNotify
 	super(dpy, data); 
     }
 
-    public int x () { 
+    @Override
+    public int x () {
 	int x = read2(16); 
 	// Be sure to sign extend
 	return (x<<16)>>16;
     }
 
-    public int y () { 
+    @Override
+    public int y () {
 	int y = read2(18); 
 	// Be sure to sign extend
 	return (y<<16)>>16;

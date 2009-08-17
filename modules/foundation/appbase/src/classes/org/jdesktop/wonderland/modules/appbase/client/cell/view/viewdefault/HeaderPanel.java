@@ -104,6 +104,7 @@ public class HeaderPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void setBackground (final Color color) {
         SwingUtilities.invokeLater(new Runnable () {
             public void run () {

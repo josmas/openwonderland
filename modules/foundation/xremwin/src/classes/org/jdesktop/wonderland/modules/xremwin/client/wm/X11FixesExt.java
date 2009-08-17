@@ -316,6 +316,7 @@ typedef struct {
      */
     public Enum rectangles () {
       return new Enum (this, 32, rectangle_count ()) {
+        @Override
         public Object next () {
           int x = this.read2 (0);
           int y = this.read2 (2);
@@ -364,6 +365,7 @@ typedef struct {
 //    return new FetchRegionReply (reply);
 //  }
 
+    @Override
   public String more_string () {
     return "\n  client-version: " 
       + CLIENT_MAJOR_VERSION + "." + CLIENT_MINOR_VERSION
