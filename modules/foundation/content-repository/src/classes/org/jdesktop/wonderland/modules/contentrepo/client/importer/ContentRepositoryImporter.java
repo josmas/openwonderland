@@ -117,17 +117,20 @@ public class ContentRepositoryImporter extends AbstractContentImporter
      * @inheritDoc()
      */
     @Override
-    public boolean isContentExists(File file) {
+    public String isContentExists(File file) {
         String fileName = file.getName();
         ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
         ContentRepository repo = registry.getRepository(loginInfo);
         try {
             ContentCollection userRoot = repo.getUserRoot();
-            return userRoot.getChild(fileName) != null;
+            if (userRoot.getChild(fileName) != null) {
+                return "wlcontent://users/" + loginInfo.getUsername() + "/" + fileName;
+            }
+            return null;
         } catch (ContentRepositoryException excp) {
             logger.log(Level.WARNING, "Error while try to find " + fileName +
                     " in content repository", excp);
-            return false;
+            return null;
         }
     }
 
