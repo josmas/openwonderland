@@ -157,6 +157,19 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                             // then remove it from the tree.
                             if (node != null) {
                                 logger.warning("CELL IS DISK, REMOVING NODE " + cell.getName());
+
+                                // We need to handle a special case here: if the
+                                // node is currently selected and we have made
+                                // edits, the GUI will think the panel is in
+                                // the "dirty" state so we need to pretend the
+                                // edits have not happened and just delete the
+                                // Cell.
+                                if (selectedCell == cell) {
+                                    dirtyPanelSet.clear();
+                                }
+
+                                // Now just go ahead and remove the Cell from
+                                // the tree.
                                 TreeModel m = cellHierarchyTree.getModel();
                                 ((DefaultTreeModel) m).removeNodeFromParent(node);
                                 cellNodes.remove(cell);
