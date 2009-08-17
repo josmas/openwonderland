@@ -631,7 +631,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
         CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
         for(DeployedModel info : deploymentInfo) {
-            System.err.println("SENDING cell create "+info.getCellServerState());
+//            System.err.println("SENDING cell create "+info.getCellServerState());
             CellID parentCellID = null;
             CellCreateMessage msg = new CellCreateMessage(parentCellID, info.getCellServerState());
             connection.send(msg);
