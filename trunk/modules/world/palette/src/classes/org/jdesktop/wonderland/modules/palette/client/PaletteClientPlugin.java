@@ -284,7 +284,10 @@ public class PaletteClientPlugin extends BaseClientPlugin
                     "Are you sure you wish to delete cell " + cell.getName(),
                     "Confirm Delete",
                     JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.NO_OPTION) {
+
+            // Note that pressing the Esc key results in -1, so we must check
+            // for that too (CLOSED_OPTION)
+            if (result == JOptionPane.NO_OPTION || result == JOptionPane.CLOSED_OPTION) {
                 return;
             }
 
