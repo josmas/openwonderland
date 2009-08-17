@@ -50,7 +50,6 @@ public class HelpUtils {
             // Open an HTTP connection to the Jersey RESTful service using the
             // base URL of the primary connection.
             String serverURL =  manager.getServerURL();
-            System.out.println("HELP URL " + serverURL + BASE_URL + "info/get");
             URL url = new URL(serverURL + BASE_URL + "info/get");
             return HelpInfo.decode(new InputStreamReader(url.openStream()));
         } catch (java.lang.Exception excp) {
