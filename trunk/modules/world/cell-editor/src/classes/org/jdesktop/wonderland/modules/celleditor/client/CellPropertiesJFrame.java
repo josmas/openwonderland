@@ -255,7 +255,8 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
 
         // Check to see if there have been changes to the values in the Cell
         // Properties. If so, then prompt the user whether these should be
-        // applies first. If so, then apply, otherwise not.
+        // applies first. If so, then apply, otherwise restore the values so
+        // the GUI is in a clean state.
         if (dirtyPanelSet.isEmpty() == false) {
             int result = JOptionPane.showConfirmDialog(this,
                     "Do you wish to apply the properties before switching?",
@@ -263,6 +264,9 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                     JOptionPane.QUESTION_MESSAGE);
             if (result == JOptionPane.YES_OPTION) {
                 applyValues();
+            }
+            else {
+                restoreValues();
             }
         }
 
