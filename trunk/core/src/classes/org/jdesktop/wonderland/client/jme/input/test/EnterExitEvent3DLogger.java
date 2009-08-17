@@ -61,10 +61,12 @@ public class EnterExitEvent3DLogger extends EventClassListener {
     /**
      * Consume all mouse events.
      */
+    @Override
     public Class[] eventClassesToConsume () {
 	return new Class[] { MouseEnterExitEvent3D.class };
     }
 
+    @Override
     public void commitEvent (Event event) {
 	MouseEnterExitEvent3D eeEvent = (MouseEnterExitEvent3D) event;
 

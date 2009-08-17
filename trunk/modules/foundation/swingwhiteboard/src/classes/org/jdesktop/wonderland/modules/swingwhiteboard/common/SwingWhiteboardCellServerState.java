@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.swingwhiteboard.common;
 
-import com.jme.math.Vector2f;
-import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -42,14 +40,6 @@ public class SwingWhiteboardCellServerState extends App2DCellServerState {
     @XmlElement(name="preferredHeight")
     public int preferredHeight = 768;
     
-    /** The X pixel scale of the whiteboard window. */
-    @XmlElement(name="pixelScaleX")
-    public float pixelScaleX = 0.01f;
-
-    /** The Y pixel scale of the whiteboard window. */
-    @XmlElement(name="pixelScaleY")
-    public float pixelScaleY = 0.01f;
-    
     /** Default constructor */
     public SwingWhiteboardCellServerState() {}
     
@@ -71,22 +61,6 @@ public class SwingWhiteboardCellServerState extends App2DCellServerState {
     
     public void setPreferredHeight (int preferredHeight) {
         this.preferredHeight = preferredHeight;
-    }
-    
-    @XmlTransient public float getPixelScaleX () {
-        return pixelScaleX;
-    }
-    
-    public void setPixelScaleX (float pixelScale) {
-        this.pixelScaleX = pixelScaleX;
-    }
-
-    @XmlTransient public float getPixelScaleY () {
-        return pixelScaleY;
-    }
-    
-    public void setPixelScaleY (float pixelScale) {
-        this.pixelScaleY = pixelScaleY;
     }
 
     /**

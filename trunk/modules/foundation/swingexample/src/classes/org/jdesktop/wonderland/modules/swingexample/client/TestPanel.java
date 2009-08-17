@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules.swingexample.client;
 
-import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.JWindow;
 import javax.swing.JFrame;

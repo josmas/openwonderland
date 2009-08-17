@@ -115,7 +115,7 @@ public abstract class DrawingSurfaceImageGraphics implements DrawingSurface {
      */
     public void setWindow(Window2D window) {
         this.window = window;
-        isInSas = window.getApp().isInSas();
+        isInSas = App2D.isInSas();
         setSize(window.getWidth(), window.getHeight());
     }
 

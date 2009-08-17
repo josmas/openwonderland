@@ -47,6 +47,7 @@ public class EventClassListener extends EventListenerBaseImpl {
      * INTERNAL ONLY.
      */
     @InternalAPI
+    @Override
     public boolean consumesEvent (Event event) {
         Class<Event>[] eventClasses = eventClassesToConsume();
 	if (eventClasses == null) return false;

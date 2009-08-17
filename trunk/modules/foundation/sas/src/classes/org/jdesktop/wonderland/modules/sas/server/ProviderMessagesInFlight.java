@@ -30,7 +30,7 @@ import java.util.LinkedList;
 @ExperimentalAPI
 public class ProviderMessagesInFlight implements ManagedObject, Serializable {
 
-    public class MessageInfo implements Serializable {
+    class MessageInfo implements Serializable {
         public ProviderProxy provider;
         public CellID cellID;
         public MessageInfo (ProviderProxy provider, CellID cellID) {
@@ -41,25 +41,25 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
 
     private HashMap<MessageID,MessageInfo> messageMap = new HashMap<MessageID,MessageInfo>();
 
-    public void addMessageInfo (MessageID msgID, ProviderProxy provider, CellID cellID) {
+    void addMessageInfo (MessageID msgID, ProviderProxy provider, CellID cellID) {
         MessageInfo msgInfo = new MessageInfo(provider, cellID);
         messageMap.put(msgID, msgInfo);
         AppContext.getDataManager().markForUpdate(this);
     }
 
-    public void removeMessageInfo (MessageID msgID) {
+    void removeMessageInfo (MessageID msgID) {
         messageMap.remove(msgID);
         AppContext.getDataManager().markForUpdate(this);
     }
 
-    public MessageInfo getMessageInfo (MessageID msgID) {
+    MessageInfo getMessageInfo (MessageID msgID) {
         return messageMap.get(msgID);
     }
 
     /**
      * Removes all messages that are in-flight for a given cell and provider.
      */
-    public void removeMessagesForCellAndProvider (ProviderProxy provider, CellID cellID) {
+    void removeMessagesForCellAndProvider (ProviderProxy provider, CellID cellID) {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : messageMap.keySet()) {
             MessageInfo messageInfo = messageMap.get(msgID);
@@ -77,7 +77,7 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
     /**
      * Removes all messages that are in-flight to the given provider.
      */
-    public void removeMessagesForProvider (ProviderProxy provider) {
+    void removeMessagesForProvider (ProviderProxy provider) {
         LinkedList<MessageID> removeList = new LinkedList<MessageID>();
         for (MessageID msgID : messageMap.keySet()) {
             MessageInfo messageInfo = messageMap.get(msgID);
@@ -94,7 +94,7 @@ public class ProviderMessagesInFlight implements ManagedObject, Serializable {
 
     // Given an an app identified by a provider and a cell, returns the launch message ID
     // for that app. TODO: someday: assumes only one app launched per cell.
-    public MessageID getLaunchMessageIDForCellAndProvider (ProviderProxy provider, CellID cellID) {
+    MessageID getLaunchMessageIDForCellAndProvider (ProviderProxy provider, CellID cellID) {
         for (MessageID msgID : messageMap.keySet()) {
             MessageInfo messageInfo = messageMap.get(msgID);
             if (messageInfo.provider == provider && messageInfo.cellID == cellID) {

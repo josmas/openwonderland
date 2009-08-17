@@ -41,14 +41,6 @@ public class SwingExampleCellServerState extends App2DCellServerState {
 
     public int preferredHeight = 300;
     
-    /** The X pixel scale of the Swing example window. */
-    @XmlElement(name="pixelScaleX")
-    public float pixelScaleX = 0.01f;
-
-    /** The Y pixel scale of the Swing example window. */
-    @XmlElement(name="pixelScaleY")
-    public float pixelScaleY = 0.01f;
-    
     /** Default constructor */
     public SwingExampleCellServerState() {}
     
@@ -72,23 +64,6 @@ public class SwingExampleCellServerState extends App2DCellServerState {
         this.preferredHeight = preferredHeight;
     }
     
-    @XmlTransient public float getPixelScaleX () {
-        return pixelScaleX;
-    }
-    
-    public void setPixelScaleX (float pixelScale) {
-        this.pixelScaleX = pixelScaleX;
-    }
-
-    @XmlTransient public float getPixelScaleY () {
-        return pixelScaleY;
-    }
-    
-    @Override
-    public void setPixelScaleY (float pixelScale) {
-        this.pixelScaleY = pixelScaleY;
-    }
-
     /**
      * Returns a string representation of this class.
      *

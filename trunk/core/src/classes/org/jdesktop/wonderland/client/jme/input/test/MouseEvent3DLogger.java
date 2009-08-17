@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.client.jme.input.test;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
@@ -61,10 +60,12 @@ public class MouseEvent3DLogger extends EventClassListener {
     /**
      * Consume all mouse events.
      */
+    @Override
     public Class[] eventClassesToConsume () {
 	return new Class[] { MouseEvent3D.class };
     }
 
+    @Override
     public void commitEvent (Event event) {
 	StringBuffer sb = new StringBuffer();
 	if (name != null) {

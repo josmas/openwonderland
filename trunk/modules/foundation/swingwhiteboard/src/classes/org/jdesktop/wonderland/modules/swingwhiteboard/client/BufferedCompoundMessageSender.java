@@ -59,6 +59,7 @@ public class BufferedCompoundMessageSender extends BufferedSender {
      * Add a message to the queue
      * @param obj the message to add to the queue
      */
+    @Override
     public synchronized void enqueue(Object obj) {
         super.enqueue(obj);
         if (isSenderEnabled() == false) {
@@ -74,6 +75,7 @@ public class BufferedCompoundMessageSender extends BufferedSender {
      * Sequential messages with the same action are coalesced into a
      * single message
      */
+    @Override
     public synchronized void dequeue() {
         if (isSenderEnabled()) {
             if (queue.size() > 0) {

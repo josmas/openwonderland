@@ -62,7 +62,7 @@ public class AppXrwMaster
     /** The information that slaves use to connect to the server socket */
     private AppXrwConnectionInfo connectionInfo;
     /** List of master apps created by this client. */
-    private static LinkedList<AppXrwMaster> masterApps = new LinkedList<AppXrwMaster>();
+    private static final LinkedList<AppXrwMaster> masterApps = new LinkedList<AppXrwMaster>();
     /** The process exit value. */
     private int exitValue = -2;
 
@@ -77,6 +77,7 @@ public class AppXrwMaster
     // Register the X11 appbase shutdown hook
     static {
         Runtime.getRuntime().addShutdownHook(new Thread("X11 App Base Master Shutdown Hook") {
+            @Override
             public void run() { AppXrwMaster.shutdownAllApps(); }
         });
     }

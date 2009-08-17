@@ -25,7 +25,6 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.swingwhiteboard.client.BufferedCompoundMessageSender;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCompoundCellMessage;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardAction;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCellMessage;
@@ -46,9 +45,7 @@ public class SwingWhiteboardComponent extends CellComponent {
     private ChannelComponent channelComp;
     /** The message receiver of this class */
     private ChannelComponent.ComponentMessageReceiver msgReceiver;
-    /** The cell to which this component belongs. */
-    private SwingWhiteboardCell cell;
-
+    
     /** 
      * Create a new instance of SwingWhiteboardComponent. 
      * @param cell The cell to which this component belongs.
@@ -63,6 +60,7 @@ public class SwingWhiteboardComponent extends CellComponent {
      * React to cell status changes by listening to 
      * @param status The current status of this cell.
      */
+    @Override
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
         switch (status) {
@@ -87,8 +85,8 @@ public class SwingWhiteboardComponent extends CellComponent {
                                 // back to us! Therefore we must ignore the echoed messages.
                                 BigInteger msgClientID = msg.getClientID();
                                 if (msgClientID == null ||
-                                        !msgClientID.equals(cell.getClientID())) {
-                                    cell.processMessage(msg);
+                                        !msgClientID.equals(((SwingWhiteboardCell)cell).getClientID())) {
+                                    ((SwingWhiteboardCell)cell).processMessage(msg);
                                 }
                             }
                         };
@@ -119,7 +117,7 @@ public class SwingWhiteboardComponent extends CellComponent {
      * messages which provide the latest data.
      */
     private void sync() {
-        WhiteboardCompoundCellMessage cmsg = new WhiteboardCompoundCellMessage(cell.getClientID(), cell.getCellID(),
+        WhiteboardCompoundCellMessage cmsg = new WhiteboardCompoundCellMessage(((SwingWhiteboardCell)cell).getClientID(), cell.getCellID(),
                 WhiteboardAction.REQUEST_SYNC);
         channelComp.send(cmsg);
     }

@@ -18,38 +18,16 @@
 package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
 import org.jdesktop.mtgame.Entity;
-import com.jme.image.Image;
-import com.jme.image.Texture;
 import com.jme.math.Quaternion;
-import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
-import com.jme.scene.Node;
-import java.awt.Point;
-import com.jme.scene.state.TextureState;
-import java.awt.Button;
-import java.awt.Dimension;
-import java.awt.event.MouseEvent;
-import java.util.LinkedList;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.CollisionComponent;
-import org.jdesktop.mtgame.EntityComponent;
-import org.jdesktop.mtgame.JMECollisionSystem;
-import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
-import org.jdesktop.wonderland.client.input.EventListener;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.client.jme.input.MouseWheelEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.modules.appbase.client.App2D;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
-import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D.Type;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
@@ -105,6 +83,7 @@ public class View2DCell extends View2DEntity {
     }
 
     /** Clean up resources. */
+    @Override
     public synchronized void cleanup () {
         super.cleanup();
 
@@ -182,6 +161,7 @@ public class View2DCell extends View2DEntity {
     }                
 
     // Uses: type, ortho, parent, stack
+    @Override
     protected Vector3f calcStackTranslation () {
         if (isOrtho()) {
             return new Vector3f(0f, 0f, 0f);
@@ -216,6 +196,7 @@ public class View2DCell extends View2DEntity {
 
     /** {@inheritDoc} */
     // Uses: deltaRotationToApply, deltaTranslationToApply
+    @Override
     protected void userTransformApplyDeltas (CellTransform userTransform) {
         userTransformApplyDeltaRotation(userTransform);
         userTransformApplyDeltaTranslation(userTransform);

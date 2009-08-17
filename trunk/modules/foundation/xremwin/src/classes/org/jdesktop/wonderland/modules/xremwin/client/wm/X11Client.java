@@ -51,13 +51,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.jdesktop.wonderland.modules.xremwin.client.wm;
 
 import gnu.x11.Atom;
-import gnu.x11.Display;
 import gnu.x11.Enum;
 import gnu.x11.Visual;
 import gnu.x11.Window;
-import gnu.x11.event.ConfigureNotify;
-import gnu.x11.event.Event;
-import gnu.x11.extension.NotFoundException;
 import java.util.logging.Logger;
 
 final class X11Client extends Window implements NativeWindowControl {
@@ -191,6 +187,7 @@ final class X11Client extends Window implements NativeWindowControl {
         "destroyed",
     };
     
+    @Override
     public String toString () {
 	return "#X11Client " 
 	    + ((name == null)?(""):("\"" + name + "\" "))
@@ -292,6 +289,7 @@ final class X11Client extends Window implements NativeWindowControl {
 	// Obsolete for Wonderland
     }
     
+    @Override
     public void destroy() {
         if (state == DESTROYED) {
             return;

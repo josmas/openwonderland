@@ -126,12 +126,14 @@ public class WindowXrw extends WindowConventional {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setType (Type type) throws IllegalStateException {
         super.setType(type);
         updateOffset();
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setParent(Window2D parent) {
         super.setParent(parent);
         updateOffset();
@@ -297,6 +299,7 @@ public class WindowXrw extends WindowConventional {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void deliverEvent(MouseEvent event) {
 
         // TODO: temporary: until winTransientFor: used to determine parents of popups

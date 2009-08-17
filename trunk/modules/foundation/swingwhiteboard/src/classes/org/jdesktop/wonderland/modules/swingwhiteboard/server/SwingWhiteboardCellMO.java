@@ -18,10 +18,7 @@
 package org.jdesktop.wonderland.modules.swingwhiteboard.server;
 
 import com.jme.math.Vector2f;
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
-import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
@@ -30,7 +27,6 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.SwingWhiteboardCellServerState;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCompoundCellMessage;

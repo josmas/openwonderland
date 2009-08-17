@@ -18,8 +18,6 @@
 package org.jdesktop.wonderland.modules.appbase.client.swing;
 
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
-import com.jme.bounding.BoundingBox;
-import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import java.util.logging.Logger;

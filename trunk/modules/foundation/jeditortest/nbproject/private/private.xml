@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/home/dj/wl/svn/trunk/modules/foundation/jeditortest/src/classes/org/jdesktop/wonderland/modules/jeditortest/client/JEditorTestApp.java</file>
+        <file>file:/home/dj/wl/svn/trunk/modules/foundation/jeditortest/src/classes/org/jdesktop/wonderland/modules/jeditortest/client/JEditorTestCell.java</file>
+        <file>file:/home/dj/wl/svn/trunk/modules/foundation/jeditortest/src/classes/org/jdesktop/wonderland/modules/jeditortest/client/JEditorTestWindow.java</file>
+        <file>file:/home/dj/wl/svn/trunk/modules/foundation/jeditortest/src/classes/org/jdesktop/wonderland/modules/jeditortest/client/TestJEditorPane.java</file>
+        <file>file:/home/dj/wl/svn/trunk/modules/foundation/jeditortest/src/classes/org/jdesktop/wonderland/modules/jeditortest/client/TestTestJEditorPane.java</file>
+        <file>file:/home/dj/wl/svn/trunk/modules/foundation/jeditortest/src/classes/org/jdesktop/wonderland/modules/jeditortest/common/JEditorTestCellClientState.java</file>
+        <file>file:/home/dj/wl/svn/trunk/modules/foundation/jeditortest/src/classes/org/jdesktop/wonderland/modules/jeditortest/common/JEditorTestCellServerState.java</file>
+        <file>file:/home/dj/wl/svn/trunk/modules/foundation/jeditortest/src/classes/org/jdesktop/wonderland/modules/jeditortest/server/JEditorTestCellMO.java</file>
+    </open-files>
 </project-private>

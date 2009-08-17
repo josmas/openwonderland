@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.client.jme.input;
 
 import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 

@@ -17,12 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault;
 
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.Gui2D;

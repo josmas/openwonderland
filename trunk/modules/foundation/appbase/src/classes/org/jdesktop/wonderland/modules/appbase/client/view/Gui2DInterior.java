@@ -27,7 +27,6 @@ import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
-import javax.media.opengl.GLContext;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.jme.input.InputManager3D;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;

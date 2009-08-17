@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.client.jme.input.test;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
@@ -61,10 +60,12 @@ public class KeyEvent3DLogger extends EventClassListener {
     /**
      * Consume all key events.
      */
+    @Override
     public Class[] eventClassesToConsume () {
 	return new Class[] { KeyEvent3D.class };
     }
 
+    @Override
     public void commitEvent (Event event) {
 	StringBuffer sb = new StringBuffer();
 	if (name != null) {

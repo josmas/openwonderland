@@ -72,11 +72,13 @@ public class FocusEvent3D extends Event {
     }
 
     /** Always returns null. This event doesn't have an associated entity. */
+    @Override
     public Entity getEntity () {
 	return null;
     }
 
     /** Always returns false. This event doesn't have an associated entity. */
+    @Override
     public boolean isFocussed () {
         return false;
     }

@@ -32,7 +32,6 @@ import org.jdesktop.wonderland.modules.sas.common.SasProviderAppStopMessage;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ManagedObject;
 import org.jdesktop.wonderland.common.messages.MessageID;
 
 /**

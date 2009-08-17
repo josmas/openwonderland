@@ -40,8 +40,6 @@ import org.jdesktop.wonderland.modules.xremwin.common.message.TakeControlRequest
 import org.jdesktop.wonderland.modules.xremwin.common.message.XrwSecurityMessage;
 import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.UserManager;
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.CellResourceManager;
 import org.jdesktop.wonderland.server.comms.SecureClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.SessionMapManager;
@@ -49,8 +47,6 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.comms.annotation.ClientHandler;
 import org.jdesktop.wonderland.server.security.Resource;
-import org.jdesktop.wonderland.server.security.ResourceMap;
-import org.jdesktop.wonderland.server.security.SecureTask;
 
 /**
  * A connection handler that implements the server-side of the

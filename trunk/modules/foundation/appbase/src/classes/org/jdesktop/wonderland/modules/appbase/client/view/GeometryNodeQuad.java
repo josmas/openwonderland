@@ -25,8 +25,6 @@ import com.jme.scene.state.TextureState;
 import com.jme.util.geom.BufferUtils;
 import java.nio.FloatBuffer;
 import org.jdesktop.wonderland.client.jme.utils.graphics.TexturedQuad;
-import org.jdesktop.wonderland.modules.appbase.client.view.GeometryNode;
-import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 

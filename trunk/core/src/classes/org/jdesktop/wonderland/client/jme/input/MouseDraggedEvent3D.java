@@ -29,8 +29,6 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.client.input.InputPicker;
-import org.jdesktop.wonderland.client.jme.ThirdPersonCameraProcessor;
 import org.jdesktop.wonderland.common.InternalAPI;
 
 /**

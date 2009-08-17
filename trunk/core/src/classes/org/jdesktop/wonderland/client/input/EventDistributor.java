@@ -29,7 +29,6 @@ import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.wonderland.common.ThreadManager;
 import org.jdesktop.wonderland.client.input.InputManager.FocusChange;
 import org.jdesktop.wonderland.client.jme.input.SwingEnterExitEvent3D;
-import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 
 /**
  * The abstract base class for an Event Distributor singleton. The Entity Distributor is part of the input 
@@ -90,7 +89,7 @@ public abstract class EventDistributor implements Runnable {
 
     private LinkedBlockingQueue<Entry> inputQueue = new LinkedBlockingQueue<Entry>();
 
-    private EventListenerCollection globalEventListeners = new EventListenerCollection();
+    private final EventListenerCollection globalEventListeners = new EventListenerCollection();
 
     protected void start () {
 	thread = new Thread(ThreadManager.getThreadGroup(), this, "EventDistributor");

@@ -17,13 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.jeditortest.common;
 
-import java.awt.Point;
-import java.lang.reflect.Array;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.logging.Logger;
 import com.jme.math.Vector2f;
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 

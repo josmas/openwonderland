@@ -81,7 +81,7 @@ public class SasXrwProviderMain
     }
 
     /** Information about the apps which are running in this provider. */
-    private HashMap<AppXrwMaster,AppInfo> runningAppInfos = new HashMap<AppXrwMaster,AppInfo>();
+    private final HashMap<AppXrwMaster,AppInfo> runningAppInfos = new HashMap<AppXrwMaster,AppInfo>();
 
     /**
      * @param args the command line arguments

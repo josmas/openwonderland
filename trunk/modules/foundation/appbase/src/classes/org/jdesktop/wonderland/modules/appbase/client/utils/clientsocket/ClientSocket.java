@@ -420,7 +420,7 @@ public class ClientSocket {
             Message msg = null;
 
             synchronized (writeQueue) {
-                boolean closed = false;
+                closed = false;
 
                 while (!closed && (writeQueue.size() <= 0)) {
                     closed = writeQueueWait();

@@ -22,17 +22,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
-import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDEvent;
-import org.jdesktop.wonderland.client.hud.HUDEventListener;
-import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
-import org.jdesktop.wonderland.modules.appbase.client.view.WindowSwingHeader;
 
 /**
  * The generic 2D application superclass. All 2D apps in Wonderland have this

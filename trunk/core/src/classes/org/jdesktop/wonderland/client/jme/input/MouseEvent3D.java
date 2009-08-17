@@ -20,14 +20,12 @@ package org.jdesktop.wonderland.client.jme.input;
 import com.jme.math.Matrix4f;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.PickDetails;
 import org.jdesktop.mtgame.JMEPickDetails;
 import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.InputPicker;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
 
@@ -93,6 +91,7 @@ public abstract class MouseEvent3D extends InputEvent3D {
      * by the input system. Normally, this will be the pick hit entity unless previously overridden by 
      * the input system grab calculations. 
      */
+    @Override
     public Entity getEntity() {
         if (entity == null) {
 	    if (pickDetails != null) {

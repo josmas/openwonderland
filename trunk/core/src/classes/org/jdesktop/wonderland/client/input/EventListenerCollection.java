@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.common.InternalAPI;
 @InternalAPI
 class EventListenerCollection extends EntityComponent {
 
-    private LinkedList<EventListener> listeners = new LinkedList<EventListener>();
+    private final LinkedList<EventListener> listeners = new LinkedList<EventListener>();
 
     /**
      * Returns true if the given event listener if it is in the collection. Otherwise return false.

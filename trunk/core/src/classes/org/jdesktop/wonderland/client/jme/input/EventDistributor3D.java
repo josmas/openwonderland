@@ -26,7 +26,6 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.FocusChangeEvent;
 import org.jdesktop.wonderland.client.input.InputManager;
-import org.jdesktop.wonderland.client.input.InputPicker;
 import org.jdesktop.wonderland.common.InternalAPI;
 
 /**

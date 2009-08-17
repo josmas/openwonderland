@@ -32,8 +32,6 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import com.jme.image.Texture;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.mtgame.PickDetails;
-import org.jdesktop.mtgame.PickInfo;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**

@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.swingexample.client.cell;
 
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -36,8 +35,6 @@ import org.jdesktop.wonderland.modules.swingexample.client.SwingExampleWindow;
 @ExperimentalAPI
 public class SwingExampleCell extends App2DCell {
 
-    /** The logger used by this class */
-    private static final Logger logger = Logger.getLogger(SwingExampleCell.class.getName());
     /** The (singleton) window created by the Swing example app */
     private SwingExampleWindow window;
     /** The cell client state message received from the server cell */

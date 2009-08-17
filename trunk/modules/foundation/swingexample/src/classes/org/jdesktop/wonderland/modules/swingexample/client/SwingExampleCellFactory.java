@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.swingtest.client;
+package org.jdesktop.wonderland.modules.swingexample.client;
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -24,23 +24,23 @@ import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.swingtest.common.cell.SwingTestCellServerState;
+import org.jdesktop.wonderland.modules.swingexample.common.cell.SwingExampleCellServerState;
 import org.jdesktop.wonderland.modules.appbase.client.swing.SwingCellFactoryUtils;
 
 /**
- * The cell factory for the Swing Test.
+ * The cell factory for the Swing Example.
  * 
- * @author Paul Byrne
+ * @author Paul Byrne, deronj
  */
 @CellFactory
-public class SwingTestCellFactory implements CellFactorySPI {
+public class SwingExampleCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
         return new String[] {};
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
-        SwingTestCellServerState state = new SwingTestCellServerState();
+        SwingExampleCellServerState state = new SwingExampleCellServerState();
 
         // Minor Optimization
         SwingCellFactoryUtils.skipSystemInitialPlacement(state);
@@ -49,11 +49,10 @@ public class SwingTestCellFactory implements CellFactorySPI {
     }
 
     public String getDisplayName() {
-        return "Swing Test";
+        return "Swing Example";
     }
 
     public Image getPreviewImage() {
-        URL url = SwingTestCellFactory.class.getResource("resources/swingtest_preview.png");
-        return Toolkit.getDefaultToolkit().createImage(url);
+        return null;
     }
 }

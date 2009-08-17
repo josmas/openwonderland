@@ -28,7 +28,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import javax.crypto.Mac;
-import javax.crypto.SecretKey;
 import javax.crypto.ShortBufferException;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.CreateWindowMsgArgs;
 import org.jdesktop.wonderland.modules.xremwin.client.Proto.DestroyWindowMsgArgs;
