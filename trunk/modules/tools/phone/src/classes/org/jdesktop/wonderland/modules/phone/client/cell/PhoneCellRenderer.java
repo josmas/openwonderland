@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 import org.jdesktop.mtgame.Entity;
 
 import com.jme.scene.Node;
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 
 /**
  * @author jkaplan
@@ -38,8 +39,8 @@ public class PhoneCellRenderer extends ModelRenderer {
 
     private MyMouseListener listener;
 
-    public PhoneCellRenderer(Cell cell, URL deployedModelURL) {
-        super(cell, deployedModelURL);
+    public PhoneCellRenderer(Cell cell, DeployedModel deployedModel) {
+        super(cell, deployedModel);
     }
 
     @Override

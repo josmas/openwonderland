@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.phone.client.cell;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.modules.phone.common.CallListing;
@@ -32,6 +33,8 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.phone.common.PhoneCellClientState;
 import org.jdesktop.wonderland.modules.phone.common.PhoneInfo;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 
 /**
  *
@@ -113,8 +116,13 @@ public class PhoneCell extends Cell {
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
             try {
-                return new PhoneCellRenderer(this, AssetUtils.getAssetURL("wla://phone/conference_phone.dae"));
+                DeployedModel m =
+                       LoaderManager.getLoaderManager().getLoaderFromDeployment(AssetUtils.getAssetURL("wla://phone/conference_phone.dae/conference_phone.dae.gz.dep"));
+
+                return new PhoneCellRenderer(this, m);
             } catch (MalformedURLException ex) {
+                Logger.getLogger(PhoneCell.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
                 Logger.getLogger(PhoneCell.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
