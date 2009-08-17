@@ -83,7 +83,8 @@ public class JmeColladaLoader implements ModelLoader {
         ImportedModel importedModel = new ImportedModel(origFile, textureFilesMapping);
         SimpleResourceLocator resourceLocator=null;
         try {
-            resourceLocator = new RecordingResourceLocator(origFile, textureFilesMapping);
+            URL baseDir = new URL(origFile.toExternalForm().substring(0, origFile.toExternalForm().lastIndexOf('/')+1));
+            resourceLocator = new RecordingResourceLocator(baseDir, textureFilesMapping);
             ResourceLocatorTool.addThreadResourceLocator(
                     ResourceLocatorTool.TYPE_TEXTURE,
                     resourceLocator);
@@ -159,7 +160,7 @@ public class JmeColladaLoader implements ModelLoader {
         InputStream in = null;
         try {
             LoaderData data=null;
-            System.err.println("LOADING DEPLOYED MODEL "+model.getDeployedURL());
+//            System.err.println("LOADING DEPLOYED MODEL "+model.getDeployedURL());
             URL url = AssetUtils.getAssetURL(getLoaderDataURL(model));
             in = url.openStream();
             if (in==null) {
@@ -254,7 +255,6 @@ public class JmeColladaLoader implements ModelLoader {
             cellSetup.addComponentServerState(setup);
 
             setup.setModel(deployedModel.getDeployedURL());
-            System.err.println("****** SCALE "+importedModel.getModelBG().getLocalScale());
             setup.setModelScale(importedModel.getModelBG().getLocalScale());
             setup.setModelRotation(importedModel.getModelBG().getLocalRotation());
 
@@ -286,7 +286,7 @@ public class JmeColladaLoader implements ModelLoader {
             deployedModel.recordModelBGTransform(importedModel.getModelBG());
             deployedModel.addCellServerState(cellSetup);
 
-            System.err.println("DEPLOYING "+deployedModel);
+//            System.err.println("DEPLOYING "+deployedModel);
 
             return deployedModel;
     
