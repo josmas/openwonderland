@@ -57,16 +57,34 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         final JFrame frame = JmeClientMain.getFrame().getFrame();
 
         // Next check whether the content already exists and ask the user if
-        // the upload should still proceed.
-        if (isContentExists(file) == true) {
-            int result = JOptionPane.showConfirmDialog(frame,
-                    "The file " + file.getName() + " already exists in the " +
-                    "content repository. Do you wish to replace it and " +
-                    "continue?", "Replace content?",
-                    JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.NO_OPTION) {
+        // the upload should still proceed. By default (result == 0), the
+        // system will upload (and overwrite) and files.
+        int result = JOptionPane.YES_OPTION;
+        String uri = isContentExists(file);
+        if (uri != null) {
+            Object[] options = {"Replace", "Use Existing", "Cancel" };
+            String msg = "The file " + file.getName() + " already exists in" +
+                    "the content repository. Do you wish to replace it and " +
+                    "continue?";
+            String title = "Replace Content?";
+            result = JOptionPane.showOptionDialog(frame, msg, title,
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+
+            logger.warning("RESULT = " + result);
+
+            // If the user hits Cancel or a "closed" action (e.g. Escape key)
+            // then just return
+            if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
                 return null;
             }
+        }
+
+        // If the content exists and we do not want to upload a new version,
+        // then simply create it and return.
+        if (result == JOptionPane.NO_OPTION) {
+            createCell(uri);
+            return uri;
         }
 
         // Display a dialog showing a wait message while we import. We need
@@ -80,9 +98,10 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
             }
         });
 
+        logger.warning("Uploading content");
+        
         // Next, do the actual upload of the file. This should display a
         // progress dialog if the upload is going to take a long time.
-        String uri = null;
         try {
             uri = uploadContent(file);
         } catch (java.io.IOException excp) {
@@ -114,14 +133,13 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
     }
 
     /**
-     * Returns true if content already exists upload, false if not. This method
-     * should return false if the content already exists, but should and can
-     * be overwritten.
+     * If the content already exists in the user's content repository, return
+     * it's URI. If the content does not exist, return null.
      *
      * @param file The File of the imported content
-     * @return True if the content has already been uploaded, false if not.
+     * @return The URL of the existing content, null if it does not exist
      */
-    public abstract boolean isContentExists(File file);
+    public abstract String isContentExists(File file);
 
     /**
      * Uploads the content file. Throws IOException upon error. Returns a URI
