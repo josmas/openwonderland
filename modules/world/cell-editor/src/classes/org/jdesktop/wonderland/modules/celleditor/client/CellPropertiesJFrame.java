@@ -229,8 +229,12 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                             "Do you wish to apply the properties before closing?",
                             "Apply values?", JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
+
                     if (result == JOptionPane.YES_OPTION) {
                         applyValues();
+                    }
+                    else {
+                        restoreValues();
                     }
                 }
 
