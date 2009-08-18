@@ -50,6 +50,8 @@ public class HUDObject2D implements HUDObject {
     protected boolean worldVisible = false;
     protected float preferredTransparency = 1.0f;
     protected float transparency = preferredTransparency;
+    protected Thread animationThread;
+    protected HUDAnimator animator;
     protected boolean enabled = false;
     protected boolean minimized = false;
     protected boolean decoratable = true;
@@ -352,14 +354,21 @@ public class HUDObject2D implements HUDObject {
      * {@inheritDoc}
      */
     public void changeTransparency(Float from, Float to) {
-        new Thread(new HUDAnimator(this, "transparency", new FloatInterpolator(), from, to)).start();
+        changeTransparency(from, to, HUDAnimator.DEFAULT_DURATION);
     }
 
     /**
      * {@inheritDoc}
      */
     public void changeTransparency(Float from, Float to, long duration) {
-        new Thread(new HUDAnimator(this, "transparency", new FloatInterpolator(), from, to, duration)).start();
+        if ((animator != null) && (animator.isAnimating())) {
+            animator.cancel();
+            animator = null;
+            animationThread = null;
+        }
+        animator = new HUDAnimator(this, "transparency", new FloatInterpolator(), from, to, duration);
+        animationThread = new Thread(animator);
+        animationThread.start();
     }
 
     /**
