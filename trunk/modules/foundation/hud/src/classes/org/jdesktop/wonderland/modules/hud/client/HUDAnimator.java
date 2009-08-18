@@ -32,7 +32,7 @@ public class HUDAnimator implements Runnable {
     private HUDObject animatee;
     private HUDView2D animateeView;
     private Timeline timeline;
-    private static final long DEFAULT_DURATION = 500; // 500 milliseconds
+    public static final long DEFAULT_DURATION = 500; // 500 milliseconds
 
     public HUDAnimator(HUDObject animatee, String property, PropertyInterpolator interpolator,
             Object from, Object to) {
@@ -54,6 +54,7 @@ public class HUDAnimator implements Runnable {
     public HUDAnimator(HUDView2D animatee, String property, PropertyInterpolator interpolator,
             Object from, Object to) {
         this(animatee, property, interpolator, from, to, DEFAULT_DURATION);
+
     }
 
     public HUDAnimator(HUDView2D animateeView, String property, PropertyInterpolator interpolator,
@@ -68,6 +69,16 @@ public class HUDAnimator implements Runnable {
         timeline.setDuration(duration);
     }
 
+    public boolean isAnimating() {
+        return ((timeline != null) && !timeline.isDone());
+    }
+
+    public void cancel() {
+        if ((timeline != null) && !timeline.isDone()) {
+            timeline.cancel();
+        }
+    }
+    
     public void run() {
         if (timeline != null) {
             timeline.play();
