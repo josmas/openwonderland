@@ -45,7 +45,6 @@
                 <include name="ant-launcher.jar"/>
                 <include name="jmejtree_jme2.jar"/>
                 <include name="propertytable.jar"/>
-                <include name="scenemonitor_jme2.jar"/>
                 <include name="sm_properties_jme2.jar"/>
 
             </client>

@@ -33,7 +33,6 @@ public class ArtToolsPlugin extends javax.swing.JPanel
         implements ClientPlugin
 {
     private ImportSessionFrame importSessionFrame = null;
-    private CellViewerFrame cellViewerFrame = null; 
 
     /** a BaseClientPlugin that delegates the activate and deactivate methods
      *  back to this class.
@@ -67,16 +66,12 @@ public class ArtToolsPlugin extends javax.swing.JPanel
 
     public void register() {
         // activate
-        JmeClientMain.getFrame().addToToolsMenu(cellViewerMI, 7);
         JmeClientMain.getFrame().addToInsertMenu(importModelMI, 1);
-        JmeClientMain.getFrame().addToFileMenu(createModuleMI, 1);
     }
 
     public void unregister() {
         // deactivate
-        JmeClientMain.getFrame().removeFromToolsMenu(cellViewerMI);
         JmeClientMain.getFrame().removeFromInsertMenu(importModelMI);
-        JmeClientMain.getFrame().removeFromFileMenu(createModuleMI);
     }
 
     /** This method is called from within the constructor to
@@ -88,29 +83,13 @@ public class ArtToolsPlugin extends javax.swing.JPanel
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cellViewerMI = new javax.swing.JMenuItem();
         importModelMI = new javax.swing.JMenuItem();
-        createModuleMI = new javax.swing.JMenuItem();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle"); // NOI18N
-        cellViewerMI.setText(bundle.getString("Cell_Viewer...")); // NOI18N
-        cellViewerMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cellViewerMIActionPerformed(evt);
-            }
-        });
-
         importModelMI.setText(bundle.getString("Import_Model...")); // NOI18N
         importModelMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importModelMIActionPerformed(evt);
-            }
-        });
-
-        createModuleMI.setText(bundle.getString("Create_Module")); // NOI18N
-        createModuleMI.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createModuleMIActionPerformed(evt);
             }
         });
 
@@ -126,13 +105,6 @@ public class ArtToolsPlugin extends javax.swing.JPanel
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void cellViewerMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cellViewerMIActionPerformed
-        if (cellViewerFrame==null) {
-            cellViewerFrame = new CellViewerFrame();
-        }
-        cellViewerFrame.setVisible(true);
-}//GEN-LAST:event_cellViewerMIActionPerformed
-
     private void importModelMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importModelMIActionPerformed
         if (importSessionFrame==null) {
                 importSessionFrame = new ImportSessionFrame();
@@ -140,17 +112,8 @@ public class ArtToolsPlugin extends javax.swing.JPanel
         importSessionFrame.setVisible(true);
 }//GEN-LAST:event_importModelMIActionPerformed
 
-    private void createModuleMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createModuleMIActionPerformed
-
-        ModuleManagerUI mm = new ModuleManagerUI();
-        mm.setVisible(true);
-
-}//GEN-LAST:event_createModuleMIActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem cellViewerMI;
-    private javax.swing.JMenuItem createModuleMI;
     private javax.swing.JMenuItem importModelMI;
     // End of variables declaration//GEN-END:variables
 

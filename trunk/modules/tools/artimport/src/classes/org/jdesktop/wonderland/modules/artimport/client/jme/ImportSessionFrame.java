@@ -111,16 +111,9 @@ public class ImportSessionFrame extends javax.swing.JFrame
     
     private int editingRow = -1;
     
-    private SceneGraphViewFrame sgViewFrame;
-
-    private String targetModuleDir = null;
-
     /** Creates new form ImportSessionFrame */
     public ImportSessionFrame() {
         initComponents();
-        
-        sgViewFrame = new SceneGraphViewFrame();
-        sgViewFrame.setVisible(false);
         
         tableModel = (DefaultTableModel) importTable.getModel();
         importTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -755,7 +748,6 @@ private void saveAsModuleBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 }//GEN-LAST:event_saveAsModuleBActionPerformed
 
 private void sceneGraphWindowMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sceneGraphWindowMIActionPerformed
-    sgViewFrame.setVisible(true);
 }//GEN-LAST:event_sceneGraphWindowMIActionPerformed
 
 private void saveAsSrcBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsSrcBActionPerformed
@@ -887,7 +879,6 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
         entity.addComponent(TransformProcessorComponent.class, new TransformProcessorComponent(wm, modelBG, rootBG));
         
         wm.addEntity(entity);
-        sgViewFrame.addEntity(entity);
         loadedModel.setEntity(entity);
         
 //        findTextures(modelBG);
