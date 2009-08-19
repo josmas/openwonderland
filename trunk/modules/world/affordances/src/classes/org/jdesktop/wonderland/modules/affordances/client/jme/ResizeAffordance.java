@@ -342,9 +342,6 @@ public class ResizeAffordance extends Affordance {
         private JLabel resizeLabel = null;
 
         public ResizeDragListener() {
-            // Tell the processor component super class that we are going to
-            // post some Swing UI
-            setSwingSafe(true);
 
             // Create a label to display the current drag amount
             labelFrame = new JFrame();
