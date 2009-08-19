@@ -285,38 +285,66 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
             String treatmentId = CallID.getCallID(cellRef.get().getCellID());
 
-            if (treatment.startsWith("wls://")) {
+	    String pattern = "wlcontent://";
+
+            if (treatment.startsWith(pattern)) {
                 /*
-                 * We need to create a URL from wls:<module>/path
+                 * We need to create a URL
                  */
-                treatment = treatment.substring(6);  // skip past wls://
-
-                int ix = treatment.indexOf("/");
-
-                if (ix < 0) {
-                    logger.warning("Bad treatment:  " + treatments[i]);
-                    continue;
-                }
-
-                String moduleName = treatment.substring(0, ix);
-
-                String path = treatment.substring(ix + 1);
-
-                logger.fine("Module:  " + moduleName + " treatment " + treatment);
+                String path = treatment.substring(pattern.length());
 
                 URL url;
 
                 try {
+                    path = path.replaceAll(" ", "%20");
+
                     url = new URL(new URL(serverURL),
-                            "webdav/content/modules/installed/" + moduleName + "/audio/" + path);
+                            "webdav/content/" + path);
 
                     treatment = url.toString();
-                    logger.fine("Treatment: " + treatment);
+                    System.out.println("Treatment: " + treatment);
                 } catch (MalformedURLException e) {
                     logger.warning("bad url:  " + e.getMessage());
-                    continue;
+                    return;
+		}
+	    } else {
+	        pattern = "wls://";
+
+	        if (treatment.startsWith(pattern)) {
+                    /*
+                     * We need to create a URL from wls:<module>/path
+                     */
+                    treatment = treatment.substring(pattern.length());  // skip past wls://
+
+                    int ix = treatment.indexOf("/");
+
+                    if (ix < 0) {
+                        logger.warning("Bad treatment:  " + treatments[i]);
+                        continue;
+                    }
+
+                    String moduleName = treatment.substring(0, ix);
+
+                    String path = treatment.substring(ix + 1);
+
+                    logger.fine("Module:  " + moduleName + " treatment " + treatment);
+
+                    URL url;
+
+                    try {
+			path = path.replaceAll(" ", "%20");
+
+                        url = new URL(new URL(serverURL),
+                            "webdav/content/modules/installed/" + moduleName + "/audio/" + path);
+
+                        treatment = url.toString();
+                        logger.fine("Treatment: " + treatment);
+                    } catch (MalformedURLException e) {
+                        logger.warning("bad url:  " + e.getMessage());
+                        continue;
+                    }
                 }
-            }
+	    }
 
             setup.treatment = treatment;
 	    setup.managedListenerRef = 
