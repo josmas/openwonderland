@@ -35,14 +35,20 @@ public class VolumeControlJFrame extends javax.swing.JFrame {
         initComponents();
     }
 
-    public VolumeControlJFrame(CellID cellID, VolumeChangeListener listener, String name, String otherCallID) {
+    public VolumeControlJFrame(CellID cellID, VolumeChangeListener listener, String name, String otherCallID,
+	    int volume) {
+
 	this.cellID = cellID;
 	this.listener = listener;
 	this.otherCallID = otherCallID;
 
         initComponents();
 
+	volumeControlSlider.setValue(volume);
+
 	setTitle(name);
+
+	setVisible(true);
     }
 
     /** This method is called from within the constructor to
@@ -92,6 +98,7 @@ public class VolumeControlJFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
 private void volumeControlSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeControlSliderStateChanged
+
     javax.swing.JSlider source = (javax.swing.JSlider) evt.getSource();
 
     int volume = source.getValue();

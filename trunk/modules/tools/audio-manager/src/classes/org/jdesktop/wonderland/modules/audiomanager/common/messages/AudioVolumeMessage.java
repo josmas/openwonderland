@@ -30,13 +30,17 @@ public class AudioVolumeMessage extends CellMessage {
     private String softphoneCallID;
     private String otherCallID;
     private double volume;
+    private boolean isSetVolume;
 
-    public AudioVolumeMessage(CellID cellID, String softphoneCallID, String otherCallID, double volume) {
+    public AudioVolumeMessage(CellID cellID, String softphoneCallID, String otherCallID, double volume, 
+	    boolean isSetVolume) {
+
 	super(cellID);
 
 	this.softphoneCallID = softphoneCallID;
 	this.otherCallID = otherCallID;
 	this.volume = volume;
+	this.isSetVolume = isSetVolume;
     }
     
     public String getSoftphoneCallID() {
@@ -47,8 +51,16 @@ public class AudioVolumeMessage extends CellMessage {
 	return otherCallID;
     }
 
+    public void setVolume(double volume) {
+	this.volume = volume;
+    }
+
     public double getVolume() {
 	return volume;
+    }
+
+    public boolean isSetVolume() {
+	return isSetVolume;
     }
 
 }

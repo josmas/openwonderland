@@ -254,7 +254,7 @@ public class AudioManagerConnectionHandler
         }
 
 	if (message instanceof AudioVolumeMessage) {
-	    changeAudioVolume((AudioVolumeMessage) message);
+	    handleAudioVolume(sender, clientID, (AudioVolumeMessage) message);
 	    return;
 	}
 
@@ -405,12 +405,17 @@ public class AudioManagerConnectionHandler
         vm.getVoiceManagerParameters().stationaryPlayerAudioGroup.addPlayer(player, info);
     }
 
-    private void changeAudioVolume(AudioVolumeMessage msg) {
+    private void handleAudioVolume(WonderlandClientSender sender, WonderlandClientID clientID,
+	    AudioVolumeMessage msg) {
+
 	String softphoneCallID = msg.getSoftphoneCallID();
 
 	String otherCallID = msg.getOtherCallID();
 
         double volume = msg.getVolume();
+
+        logger.fine("GOT Volume message:  call " + softphoneCallID
+	    + " volume " + volume + " other callID " + otherCallID);
 
         logger.fine("GOT Volume message:  call " + softphoneCallID
 	    + " volume " + volume + " other callID " + otherCallID);
@@ -421,10 +426,17 @@ public class AudioManagerConnectionHandler
 
         if (softphonePlayer == null) {
             logger.warning("Can't find softphone player, callID " + softphoneCallID);
+            System.out.println("Can't find softphone player, callID " + softphoneCallID);
             return;
         }
 
         if (softphoneCallID.equals(otherCallID)) {
+	    if (msg.isSetVolume() == false) {
+		msg.setVolume(softphonePlayer.getMasterVolume());
+		sender.send(clientID, msg);
+		return;
+	    }
+
             softphonePlayer.setMasterVolume(volume);
             return;
         }
@@ -433,8 +445,17 @@ public class AudioManagerConnectionHandler
 
  	if (player == null) {
             logger.warning("Can't find player for callID " + otherCallID);
+            System.out.println("Can't find player for callID " + otherCallID);
 	    return;
         } 
+
+	if (msg.isSetVolume() == false) {
+	    Spatializer spatializer = softphonePlayer.getPrivateSpatializer(player);
+	    msg.setVolume(spatializer.getAttenuator());
+	    sender.send(clientID, msg);
+	    logger.fine("Sending vol message " + msg.getVolume());
+	    return;
+	}
 
 	if (volume == 1.0) {
 	    softphonePlayer.removePrivateSpatializer(player);
@@ -459,6 +480,7 @@ public class AudioManagerConnectionHandler
 
         spatializer.setAttenuator(volume);
 
+	logger.fine("Setting pm " + spatializer);
         softphonePlayer.setPrivateSpatializer(player, spatializer);
     }
 
