@@ -401,10 +401,6 @@ public class TranslateAffordance extends Affordance {
         public TranslateDragListener(TranslateAxis direction) {
             this.direction = direction;
 
-            // Tell the processor component super class that we are going to
-            // post some Swing UI
-            setSwingSafe(true);
-
             // Create a label to display the current drag amount. Since this
             // is not visible yet, we do not need to do it in the AWT Event
             // Thread.

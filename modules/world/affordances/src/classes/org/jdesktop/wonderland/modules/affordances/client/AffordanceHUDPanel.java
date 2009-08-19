@@ -486,7 +486,6 @@ public class AffordanceHUDPanel extends javax.swing.JPanel {
     class SelectionListener extends EventClassListener {
 
         public SelectionListener() {
-            setSwingSafe(true);
         }
         
         @Override
