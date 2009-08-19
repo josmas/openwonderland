@@ -753,14 +753,19 @@ public class SoftphoneControlImpl implements SoftphoneControl {
         
     }
 
+    private boolean closed;
+
     private void close(final String failureMessage) {
-	connected = false;
-        
+	if (closed) {
+	    return;
+	}
+
+	closed = true;
+
 	if (failureMessage != null) {
 	    logger.info("SipStarter close:  " + failureMessage);
 	}
 
-        boolean wasOpen = false;
         synchronized(this) {
             if (softphoneOutputStream != null) {
 		logger.finer("SipStarter sending Shutdown to softphone");
