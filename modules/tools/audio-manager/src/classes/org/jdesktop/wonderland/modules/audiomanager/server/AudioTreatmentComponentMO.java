@@ -252,9 +252,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	    falloff = .999;
 	}
 
-	//System.out.println("id " + groupId + " cellRadius " + cellRadius 
-	//    + " extent " + extent + " fvr " + fullVolumeRadius + " falloff " 
-	//    + falloff + " volume " + volume);
+	logger.info("id " + groupId + " cellRadius " + cellRadius 
+	    + " extent " + extent + " fvr " + fullVolumeRadius + " falloff " 
+	    + falloff + " volume " + volume);
 
         for (int i = 0; i < treatments.length; i++) {
             TreatmentSetup setup = new TreatmentSetup();
@@ -276,10 +276,10 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
 		falloffFunction.setFalloff(falloff);
             } else {
-                setup.spatializer = new FullVolumeSpatializer(cellRadius);
+                setup.spatializer = new FullVolumeSpatializer(extent);
             }
 
-	    setup.spatializer.setAttenuator(volume);
+	    setup.spatializer.setAttenuator(volume * DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME);
 
             String treatment = treatments[i];
 
@@ -446,19 +446,16 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
             }
 
 	    if (message instanceof AudioVolumeMessage) {
-		changeAudioVolume((AudioVolumeMessage) message);
-		return;
-	    }
-
-	    if (message instanceof AudioVolumeMessage) {
-		sender.send(message);
+		handleAudioVolume(sender, clientID, (AudioVolumeMessage) message);
 		return;
 	    }
 
             logger.warning("Unknown message:  " + message);
         }
 
-        private void changeAudioVolume(AudioVolumeMessage msg) {
+        private void handleAudioVolume(WonderlandClientSender sender, WonderlandClientID clientID,
+		AudioVolumeMessage msg) {
+
 	    String softphoneCallID = msg.getSoftphoneCallID();
 
 	    String otherCallID = msg.getOtherCallID();
@@ -467,6 +464,9 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 
             logger.fine("GOT Volume message:  call " + softphoneCallID
 	        + " volume " + volume + " other callID " + otherCallID);
+
+	    logger.fine("GOT Volume message:  call " + softphoneCallID
+                + " volume " + volume + " other callID " + otherCallID);
 
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -483,6 +483,18 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
                 logger.warning("Can't find player for callID " + otherCallID);
 	        return;
             } 
+
+	    if (msg.isSetVolume() == false) {
+            	Spatializer spatializer = softphonePlayer.getPrivateSpatializer(player);
+	
+	 	if (spatializer != null) {
+                    msg.setVolume(spatializer.getAttenuator());
+		}
+
+                sender.send(clientID, msg);
+                logger.fine("Sending vol message " + msg.getVolume());
+                return;
+            }
 
 	    if (volume == 1.0) {
 	        softphonePlayer.removePrivateSpatializer(player);
@@ -539,9 +551,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
         // We are making this component live, add a listener to the proximity component.
 	BoundingVolume[] bounds = new BoundingVolume[1];
 
-	float cellRadius = getCellRadius();
-
-        bounds[0] = new BoundingSphere(cellRadius, new Vector3f());
+        bounds[0] = new BoundingSphere((float) extent, new Vector3f());
 
         AudioTreatmentProximityListener proximityListener = 
 	    new AudioTreatmentProximityListener(cellRef.get(), treatment);

@@ -79,6 +79,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
                 if (msgReceiver != null) {
                     channelComp.removeMessageReceiver(AudioTreatmentRequestMessage.class);
                     channelComp.removeMessageReceiver(AudioTreatmentMenuChangeMessage.class);
+                    channelComp.removeMessageReceiver(AudioVolumeMessage.class);
                     msgReceiver = null;
                 }
                 break;
@@ -96,6 +97,7 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
                         channelComp = cell.getComponent(ChannelComponent.class);
                         channelComp.addMessageReceiver(AudioTreatmentRequestMessage.class, msgReceiver);
                         channelComp.addMessageReceiver(AudioTreatmentMenuChangeMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(AudioVolumeMessage.class, msgReceiver);
                     }
 
                     if (menuItemAdded == false) {
@@ -158,7 +160,9 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
         }
 
         if (event.getContextMenuItem().getLabel().equals("Volume")) {
-	    new VolumeControlJFrame(cell.getCellID(), this, "", CallID.getCallID(cell.getCellID()));
+	    String softphoneCallID = SoftphoneControlImpl.getInstance().getCallID();
+            channelComp.send(new AudioVolumeMessage(cell.getCellID(), softphoneCallID,
+		CallID.getCallID(cell.getCellID()), 5, false));
 	    return;
         }
 
@@ -170,17 +174,27 @@ public class AudioTreatmentComponent extends AudioParticipantComponent implement
         channelComp.send(new AudioTreatmentRequestMessage(cell.getCellID(), true, true));
     }
 
-    public void volumeChanged(CellID CellID, String otherCallID, int volume) {
-   	channelComp.send(new AudioVolumeMessage(cell.getCellID(), CallID.getCallID(cell.getCellID()),
-	    otherCallID, VolumeUtil.getServerVolume(volume)));
+    public void volumeChanged(CellID cellID, String otherCallID, int volume) {
+	logger.fine("Volume changed " + volume);
+
+	String softphoneCallID = SoftphoneControlImpl.getInstance().getCallID();
+
+   	channelComp.send(new AudioVolumeMessage(cellID, softphoneCallID,
+	    otherCallID, VolumeUtil.getServerVolume(volume), true));
     }
 
     private void receive(CellMessage message) {
-	if (message instanceof AudioTreatmentMenuChangeMessage == false) {
+	if (message instanceof AudioTreatmentMenuChangeMessage) {
+	    addMenuItems(((AudioTreatmentMenuChangeMessage) message).getMenuItems());
 	    return;
 	}
 	
-	addMenuItems(((AudioTreatmentMenuChangeMessage) message).getMenuItems());
+	if (message instanceof AudioVolumeMessage) {
+	    logger.fine("Got volume message " + ((AudioVolumeMessage) message).getVolume());
+	    new VolumeControlJFrame(cell.getCellID(), this, "", CallID.getCallID(cell.getCellID()),
+	        VolumeUtil.getClientVolume(((AudioVolumeMessage) message).getVolume()));
+	    return;
+	}
     }
 
     /**

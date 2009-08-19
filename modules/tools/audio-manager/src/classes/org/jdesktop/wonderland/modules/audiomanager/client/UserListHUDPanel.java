@@ -641,7 +641,7 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
         SoftphoneControlImpl sc = SoftphoneControlImpl.getInstance();
 
         session.send(client, new AudioVolumeMessage(cellID, sc.getCallID(), otherCallID,
-                VolumeUtil.getServerVolume(volume)));
+                VolumeUtil.getServerVolume(volume), true));
     }
 
     private void userListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_userListValueChanged
