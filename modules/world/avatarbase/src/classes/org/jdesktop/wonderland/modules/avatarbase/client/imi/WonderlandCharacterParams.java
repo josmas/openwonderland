@@ -54,8 +54,8 @@ public class WonderlandCharacterParams implements Cloneable {
 
     // Pointers to the XML files that define the various avatar configurations
     // available.
-    private static final String MALE_CONFIGS   = "resources/male-configs.xml";
-    private static final String FEMALE_CONFIGS = "resources/female-configs.xml";
+    private static final String MALE_CONFIGS   = "resources/male-configs-binary.xml";
+    private static final String FEMALE_CONFIGS = "resources/female-configs-binary.xml";
 
     public enum ConfigType {
         GENDER, HAIR, HAIR_COLOR, HEAD, SKIN_COLOR, TORSO,

@@ -33,7 +33,6 @@ import com.jme.scene.Geometry;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
-import com.jme.util.resource.ResourceLocator;
 import imi.character.CharacterAnimationProcessor;
 import imi.character.CharacterController;
 import imi.character.CharacterMotionListener;
@@ -49,7 +48,6 @@ import imi.scene.PMatrix;
 import imi.scene.PTransform;
 import imi.scene.polygonmodel.PPolygonModelInstance;
 import java.lang.ref.WeakReference;
-import java.net.URL;
 import java.util.List;
 import javolution.util.FastList;
 import org.jdesktop.mtgame.CollisionComponent;
@@ -168,6 +166,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     currentTrigger = trigger;
                     currentPressed = pressed;
                 }
+
                 GameState state = avatarCharacter.getContext().getCurrentState();
                 String animationName=null;
                 if (state instanceof CycleActionState) {
@@ -853,75 +852,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
          * @param newAvatar The newly assigned avatar.
          */
         public void avatarChanged(Avatar newAvatar);
-    }
-
-    /**
-     * Hack for the binary loader, this will need to be made general purpose once
-     * we implement a core binary loader
-     */
-    class RelativeResourceLocator implements ResourceLocator {
-
-        private String modulename;
-        private String path;
-        private String protocol;
-
-        /**
-         * Locate resources for the given file
-         * @param url
-         */
-        public RelativeResourceLocator(URL url) {
-            // The modulename can either be in the "user info" field or the
-            // "host" field. If "user info" is null, then use the host name.
-//            System.out.println("ASSET RESOURCE LOCATOR FOR URL " + url.toExternalForm());
-
-            if (url.getUserInfo() == null) {
-                modulename = url.getHost();
-            }
-            else {
-                modulename = url.getUserInfo();
-            }
-            path = url.getPath();
-            path = path.substring(0, path.lastIndexOf('/')+1);
-            protocol = url.getProtocol();
-
-//            System.out.println("MODULE NAME " + modulename + " PATH " + path);
-        }
-
-        public URL locateResource(String resource) {
-//            System.err.println("Looking for resource "+resource);
-//            System.err.println("Module "+modulename+"  path "+path);
-            try {
-
-                    String urlStr = trimUrlStr(protocol + "://"+modulename+path+".." + resource);
-
-                    URL url = getAssetURL(urlStr);
-//                    System.err.println("Using " + url.toExternalForm());
-                    return url;
-
-            } catch (MalformedURLException ex) {
-                logger.log(Level.SEVERE, "Unable to locateResource "+resource, ex);
-                return null;
-            }
-        }
-
-        /**
-         * Trim ../ from url
-         * @param urlStr
-         */
-        private String trimUrlStr(String urlStr) {
-            int pos = urlStr.indexOf("/../");
-            if (pos==-1)
-                return urlStr;
-
-            StringBuilder buf = new StringBuilder(urlStr);
-            int start = pos;
-            while(buf.charAt(--start)!='/') {}
-            buf.replace(start, pos+4, "/");
-//            System.out.println("Trimmed "+buf.toString());
-
-           return buf.toString();
-        }
-
     }
 
     class DebugNode extends Node {

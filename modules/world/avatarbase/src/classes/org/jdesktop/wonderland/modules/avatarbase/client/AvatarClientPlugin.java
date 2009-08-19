@@ -21,6 +21,8 @@ import com.jme.math.Vector3f;
 import imi.camera.CameraModels;
 import imi.camera.ChaseCamModel;
 import imi.camera.ChaseCamState;
+//import imi.character.AvatarSystem;
+import imi.character.AvatarSystem;
 import imi.character.avatar.Avatar;
 import imi.character.behavior.CharacterBehaviorManager;
 import imi.character.behavior.GoTo;
@@ -301,6 +303,9 @@ public class AvatarClientPlugin extends BaseClientPlugin
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "Unable to form avatar base URL", excp);
         }
+
+        // Initialize the AvatarSystem after we set up caching
+        AvatarSystem.initialize(ClientContextJME.getWorldManager());
         
         super.initialize(manager);
     }
