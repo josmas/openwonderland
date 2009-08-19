@@ -73,6 +73,8 @@ public class WlContentAssetRepository implements AssetRepository {
             return new WlContentAssetStream(AssetResponse.ASSET_INVALID, assetURI);
         }
 
+        logger.fine("For URI " + urlString + " last modified " + lastModified);
+        
         // Open the URL to the asset stream, giving the last modified date if
         // we have one. We fetch the response back from the server and set
         // whether the asset is already cached or whether we should download
