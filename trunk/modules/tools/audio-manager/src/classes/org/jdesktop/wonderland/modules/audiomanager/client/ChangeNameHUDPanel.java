@@ -193,7 +193,7 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
             if (info[i].usernameAlias.equals(alias) ||
 		    info[i].userID.getUsername().equals(alias)) {
 
-		if (presenceInfo.usernameAlias.equals(alias) == false) {
+		if (presenceInfo.equals(info[i]) == false) {
 		    statusLabel.setText("Alias is already being used!");
 		    return;
 		}
