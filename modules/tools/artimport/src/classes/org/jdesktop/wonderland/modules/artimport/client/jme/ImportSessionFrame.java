@@ -955,7 +955,8 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
             tg.setLocalTranslation(imp.getTranslation());
         }
 
-        ClientContextJME.getWorldManager().removeEntity(model.getEntity());
+        if (model!=null)
+            ClientContextJME.getWorldManager().removeEntity(model.getEntity());
     }
     
     void addToTable(ImportedModel config) {
