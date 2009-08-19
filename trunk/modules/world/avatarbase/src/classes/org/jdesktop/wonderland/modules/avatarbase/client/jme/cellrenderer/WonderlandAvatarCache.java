@@ -181,7 +181,7 @@ public class WonderlandAvatarCache implements CacheBehavior {
         // XXX HACK
         String urlString = location.toExternalForm();
         if (location.getProtocol().equalsIgnoreCase("file") == true) {
-            if (urlString.endsWith(".bhf") == true) {
+//            if (urlString.endsWith(".bhf") == true) {
                 int assetsIndex = urlString.indexOf("assets/");
                 if (assetsIndex != -1) {
                     urlString = urlString.substring(assetsIndex);
@@ -196,7 +196,7 @@ public class WonderlandAvatarCache implements CacheBehavior {
                             baseURL + urlString, excp);
                     return null;
                 }
-            }
+//            }
         }
         return TextureManager.loadTexture(location);
     }
