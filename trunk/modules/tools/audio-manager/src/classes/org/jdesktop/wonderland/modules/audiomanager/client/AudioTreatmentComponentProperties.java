@@ -143,9 +143,11 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             String treatment = treatmentList[i];
 
             if (treatment.indexOf("://") > 0) {
-                originalUrlTreatments += treatment + " ";
-            } else {
-                originalFileTreatments += treatment + " ";
+		if (treatment.indexOf("file://") < 0) {
+                    originalUrlTreatments += treatment + " ";
+                } else {
+                    originalFileTreatments += treatment + " ";
+		}
             }
         }
 
