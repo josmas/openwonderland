@@ -43,6 +43,7 @@ public class WlHttpAssetRepositoryFactory extends AssetRepositoryFactory {
     public WlHttpAssetRepositoryFactory(AssetURI assetURI) {
         super(assetURI);
         lastModified = getAsLastModified(getChecksumFromDB(assetURI));
+        isAlwaysDownload = true;
     }
 
     /**

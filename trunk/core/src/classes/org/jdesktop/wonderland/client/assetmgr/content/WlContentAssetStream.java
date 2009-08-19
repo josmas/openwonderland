@@ -91,6 +91,9 @@ public class WlContentAssetStream extends AssetStream {
         }
         lastModified = urlConnection.getLastModified();
         contentLength = urlConnection.getContentLength();
+
+        logger.fine("Opening asset stream last modified " + lastModified +
+                " content length " + contentLength);
     }
 
     /**

@@ -216,10 +216,15 @@ public class AssetManager {
             synchronized (loadedAssets) {
 
                 // Otherwise, see if the asset has already been loaded. An
-                // equivalent Asset object is in the list of loaded assets.
-                if (loadedAssets.containsKey(assetID) == true) {
+                // equivalent Asset object is in the list of loaded assets. We
+                // only take the loaded asset immediately if we do not care
+                // to check again whether we really do have the latest asset.
+                // (e.g. in HTTP if-modified-since)
+                if (factory.isAlwaysDownload() == false) {
+                    if (loadedAssets.containsKey(assetID) == true) {
                     logger.fine("Asset has already been downloaded " + assetURI);
-                    return loadedAssets.get(assetID);
+                        return loadedAssets.get(assetID);
+                    }
                 }
 
                 // Submit a request to download the asset from the server
@@ -425,7 +430,7 @@ public class AssetManager {
      * the success or failure information in the asset. Returns the asset
      * upon success, and null upon failure.
      */
-    private Asset loadAssetFromCache(Asset asset) {
+    private Asset loadAssetFromCache(Asset asset, String originalChecksum) {
         AssetURI assetURI = asset.getAssetURI();
         String uriString = assetURI.toExternalForm();
         String checksum = asset.getChecksum();
@@ -443,8 +448,25 @@ public class AssetManager {
         // and place in the list of loaded assets.
         synchronized (loadingAssets) {
             synchronized (loadedAssets) {
+
+                // We need to remove the asset using the original checksum from
+                // the "loading" list. The checksum may have changed after we
+                // have downloaded (e.g. HTTP if-modified-since)
+                AssetID originalID = new AssetID(assetURI, originalChecksum);
+
+                logger.fine("Removing from loading assets with uri=" + uriString +
+                        ", old checksum=" + originalChecksum);
+                logger.fine("Does asset exist in loading list? " +
+                        loadingAssets.containsKey(originalID));
+
+                loadingAssets.remove(originalID);
+
+                // Next we put the new asset ID into the "loaded" list
                 AssetID assetID = new AssetID(assetURI, checksum);
-                loadingAssets.remove(assetID);
+
+                logger.fine("Adding to loaded assets with uri=" + uriString +
+                        ", new checksum=" + checksum);
+
                 loadedAssets.put(assetID, asset);
                 assetSuccess(asset);
                 logger.fine("Got asset from cache, put on loaded list " + uriString);
@@ -572,6 +594,12 @@ public class AssetManager {
             AssetURI assetURI = asset.getAssetURI();
             String uriString = assetURI.toExternalForm();
 
+            // Keep a copy of the original asset checksum. Sometimes (e.g. in
+            // the case of HTTP if-modified-since) the "checksum" can change
+            // after we have downloaded. We need to make sure we remove the
+            // proper thing from the "loading" and "loaded" lists.
+            String originalChecksum = asset.getChecksum();
+            
             // Using the repository factory, fetch the list of repositories
             // from which to fetch the asset. It is up to each of the
             // individual repositories to determine whether the asset is
@@ -599,7 +627,7 @@ public class AssetManager {
                     // cache file first
                     AssetID assetID = new AssetID(assetURI, asset.getChecksum());
                     asset.setLocalCacheFile(new File(assetCache.getAssetCacheFileName(assetID)));
-                    return loadAssetFromCache(asset);
+                    return loadAssetFromCache(asset, originalChecksum);
                 }
                 else if (response == AssetResponse.STREAM_READY) {
 
@@ -612,7 +640,7 @@ public class AssetManager {
                         loadAssetFromServer(asset, stream);
                         assetCache.addAsset(asset, stream.getCachePolicy());
                         stream.close();
-                        return loadAssetFromCache(asset);
+                        return loadAssetFromCache(asset, originalChecksum);
                     } catch (java.io.IOException excp) {
                         logger.log(Level.WARNING, "Failed to download asset " +
                                 "from this stream " + uriString, excp);
