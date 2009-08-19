@@ -514,7 +514,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         // Check to see if the system supports OpenGL 2.0. If not, then
         // always use the low-detail avatar character
         RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        if (rm.supportsOpenGL20() == false) {
+        if (rm.supportsOpenGL20() == false || rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB < 1000) {
             avatarDetail = "low";
         }
 
