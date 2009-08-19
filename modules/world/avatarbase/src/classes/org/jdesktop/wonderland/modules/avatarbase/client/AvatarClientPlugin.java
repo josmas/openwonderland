@@ -233,11 +233,12 @@ public class AvatarClientPlugin extends BaseClientPlugin
                 // system. If not, then display a dialog saying you cannot
                 // configure your avatar.
                 RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-                if (rm.supportsOpenGL20() == false) {
+                if (rm.supportsOpenGL20() == false ||
+                    rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB < 1000) {
                     String msg = "Unfortunately your system graphics does not" +
-                            " support OpenGL 2.0 which is required to configure" +
+                            " support the shaders which are required to configure" +
                             " the avatar system.";
-                    String title = "OpenGL 2.0 Required";
+                    String title = "Advanced Shaders Required";
                     JFrame frame = JmeClientMain.getFrame().getFrame();
                     JOptionPane.showMessageDialog(frame, msg, title, JOptionPane.ERROR_MESSAGE);
                     return;
