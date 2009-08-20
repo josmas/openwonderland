@@ -18,15 +18,12 @@
 package org.jdesktop.wonderland.client.cell;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.ClientConnection.Status;
 import org.jdesktop.wonderland.client.comms.ResponseListener;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
@@ -49,29 +46,10 @@ public class ChannelComponent extends CellComponent {
     /** the connection to send on */
     private CellChannelConnection connection;
 
-    /** a list of delayed messages to replay when the cell becomes active */
-    private List<CellMessage> delayedMessages;
-
-    /** a lock to make sure delayed messages are delivered before any others */
-    private final Object delayLock = new Object();
-
     public ChannelComponent(Cell cell) {
         super(cell);
 
         setCellChannelConnection(cell.getCellCache().getCellChannelConnection());
-
-        // add a status change listener to the parent cell.  When the status
-        // changes to bounds, this listener will deliver delayed messages
-        cell.addStatusChangeListener(new CellStatusChangeListener() {
-            public void cellStatusChanged(Cell cell, CellStatus status) {
-                logger.fine("[ChannelComponent] status of cell " +
-                               cell.getCellID() + " is " + status);
-
-                if (status == CellStatus.INACTIVE) {
-                    deliverDelayedMessages();
-                }
-            }
-        });
     }
 
     /**
@@ -91,7 +69,7 @@ public class ChannelComponent extends CellComponent {
      * @param msgClass
      * @param receiver
      */
-    public void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver) {
+    public synchronized void addMessageReceiver(Class<? extends CellMessage> msgClass, ComponentMessageReceiver receiver) {
         Object old = messageReceivers.put(msgClass, receiver);
 
         // XXX hack to ignore duplicate registrations XXX
@@ -103,8 +81,16 @@ public class ChannelComponent extends CellComponent {
      * Remove the message receiver listening on the specifed message class
      * @param msgClass
      */
-    public void removeMessageReceiver(Class<? extends CellMessage> msgClass) {
+    public synchronized void removeMessageReceiver(Class<? extends CellMessage> msgClass) {
         messageReceivers.remove(msgClass);
+    }
+
+    /**
+     * Get a message receiver for the given class
+     * @param msgClass the class of message to get a receiver for
+     */
+    protected synchronized ComponentMessageReceiver getMessageReceiver(Class<? extends CellMessage> msgClass) {
+        return messageReceivers.get(msgClass);
     }
 
     /**
@@ -125,33 +111,8 @@ public class ChannelComponent extends CellComponent {
             return;
         }
 
-        // if the component status is DISK it means the cell has been
-        // instantiated but not yet activated to receive messages.  Queue
-        // up messages to deliver when the cell becomes active
-        synchronized (delayLock) {
-            if (delayedMessages != null || cell.getStatus() == CellStatus.DISK) {
-                logger.warning("Delaying message " + message.getClass() +
-                               " to cell " + cell.getCellID() +
-                               " (" + cell.getClass().getName() + ")");
-                if (delayedMessages == null) {
-                    delayedMessages = new LinkedList<CellMessage>();
-                }
-
-                delayedMessages.add(message);
-                return;
-            }
-        }
-
-        deliverMessage(message);
-    }
-
-    /**
-     * Deliver the message to the proper receiver on the cell
-     * @param message the message to deliver
-     */
-    protected void deliverMessage(CellMessage message) {
         // if we get here, we can actually deliver the message
-        ComponentMessageReceiver recvRef = messageReceivers.get(message.getClass());
+        ComponentMessageReceiver recvRef = getMessageReceiver(message.getClass());
         if (recvRef == null) {
             logger.warning("No listener for message " + message.getClass() +
                            " from cell " + cell.getClass().getName() +
@@ -160,34 +121,6 @@ public class ChannelComponent extends CellComponent {
         }
 
         recvRef.messageReceived(message);
-    }
-
-    /**
-     * When the status is set to bounds, deliver any queued messages
-     */
-    protected void deliverDelayedMessages() {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Delivering delayed messages to cell " +
-                       cell.getCellID() + " (" + cell.getClass().getName() + ")");
-        }
-
-        // deliver delayed messaged
-        synchronized (delayLock) {
-            if (delayedMessages != null) {
-//                logger.warning("Delivering " + delayedMessages.size() +
-//                               " messages to cell " + cell.getCellID());
-
-                try {
-                    for (CellMessage message : delayedMessages) {
-                        deliverMessage(message);
-                    }
-                } finally {
-                    // make sure to clear the delayed messages list, otherwise
-                    // all future messages will be delayed
-                    delayedMessages = null;
-                }
-            }
-        }
     }
 
     public Status getStatus() {
