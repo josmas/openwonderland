@@ -14,6 +14,7 @@
        
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/animationbase/build/client/animationbase-client.jar"/>
+        <path location="${modules.dir}/foundation/animationbase/lib/trident.jar"/>
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
     </pathconvert>
