@@ -820,7 +820,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 		NameTagNode.getDisplayName(bystander.usernameAlias, bystander.isSpeaking, bystander.isMuted);
 
 	    //System.out.println("Adding bystander " + displayName + " FOR " + member
-		+ " size " + userListModel.size());
+		//+ " size " + userListModel.size());
 
 	    addElementLater(bystander, displayName);
 	}
@@ -913,7 +913,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    }
 
 	    //System.out.println("In map " + desiredPosition + " username " + username
-	    	+ " map " + usernameMap.get(username));
+	    	//+ " map " + usernameMap.get(username));
 
             setElementAt(info, displayName, desiredPosition);
 	}
