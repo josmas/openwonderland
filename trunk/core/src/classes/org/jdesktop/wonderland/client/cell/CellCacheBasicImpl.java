@@ -90,8 +90,10 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         this.session = session;
         this.classLoader = classLoader;
         this.cellCacheConnection = cellCacheConnection;
+
         this.cellChannelConnection = cellChannelConnection;
-        
+        this.cellChannelConnection.setCellCache(this);
+
         ClientContext.registerCellCache(this, session);
         if (this.classLoader == null) {
             this.classLoader = getClass().getClassLoader();
@@ -340,6 +342,7 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
             while(currentStatus!=requiredStatus) {
                 currentStatus += dir;
                 cell.setStatus(CellStatus.values()[currentStatus], increasing);
+                cell.fireCellStatusChanged(CellStatus.values()[currentStatus]);
             }
         }
     }

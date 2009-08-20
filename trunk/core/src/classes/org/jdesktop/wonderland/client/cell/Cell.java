@@ -665,6 +665,15 @@ public class Cell {
                  break;
             }
         }
+    }
+
+    /**
+     * Notify listeners that the cell status has changed.  If you manually
+     * call setStatus() on the cell, you must also call this method to notify
+     * listeners, after the call to setStatus() completes.
+     * @param status the new status
+     */
+    protected void fireCellStatusChanged(CellStatus status) {
         // update both local and global listeners.  This is done after the
         // lock is released, so the status may change again before the listeners
         // are called
