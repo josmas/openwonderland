@@ -24,6 +24,7 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -111,6 +112,33 @@ public class GestureHUD {
         return visible;
     }
 
+    /**
+     * Invoke the Sit gesture.
+     */
+    private void doSitGesture(final WlAvatarCharacter avatar) {
+        // Create a thread that sleeps and tells the sit action to stop.
+        final Runnable stopSitRunnable = new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    logger.log(Level.WARNING, "Sleep failed.", ex);
+                }
+                avatar.triggerActionStop(TriggerNames.SitOnGround);
+            }
+        };
+
+        // Spawn a thread to start the animation, which then spawns a thread
+        // to stop the animation after a small sleep.
+        new Thread() {
+            @Override
+            public void run() {
+                avatar.triggerActionStart(TriggerNames.SitOnGround);
+                new Thread(stopSitRunnable).start();
+            }
+        }.start();
+    }
+
     public void setAvatarCharacter(final WlAvatarCharacter avatar) {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -175,7 +203,7 @@ public class GestureHUD {
                                     String action = gestureMap.get(event.getActionCommand());
                                     logger.info("playing animation: " + event.getActionCommand());
                                     if (action.equals("Sit") == true) {
-                                        avatar.triggerActionStart(TriggerNames.SitOnGround);
+                                        doSitGesture(avatar);
                                     } else if (action.equals("RightWink") == true) {
                                         CharacterEyes eyes = avatar.getEyes();
                                         eyes.wink(false);
