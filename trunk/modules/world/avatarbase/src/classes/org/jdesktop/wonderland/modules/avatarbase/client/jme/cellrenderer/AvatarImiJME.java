@@ -243,6 +243,8 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
+        logger.warning("AVATAR RENDERER STATUS " + status + " DIR " + increasing);
+        
         // If we are increasing to the ACTIVE state, then turn everything on.
         // Add the listeners to the avatar Cell and set the avatar character
         if (status == CellStatus.ACTIVE && increasing == true) {

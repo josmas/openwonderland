@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,9 +61,11 @@ public class PlacemarkPlugin extends BaseClientPlugin
         implements SessionLifecycleListener, SessionStatusListener {
 
     private static Logger logger = Logger.getLogger(PlacemarkPlugin.class.getName());
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/placemarks/client/resources/Bundle");
     private WeakReference<EditPlacemarksJFrame> managePlacemarksFrameRef = null;
     private JMenuItem manageMI = null;
     private JMenuItem addMI = null;
+    private JMenuItem startingLocationMI = null;
     private PlacemarkListener listener = null;
     private PlacemarkClientConfigConnection placemarksConfigConnection = null;
     private PlacemarkConfigListener configListener = null;
@@ -159,6 +162,21 @@ public class PlacemarkPlugin extends BaseClientPlugin
             }
         });
 
+        // Menu item to take avatar to starting location
+        startingLocationMI = new JMenuItem(bundle.getString("Starting_Location"));
+        startingLocationMI.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Vector3f position = new Vector3f();
+                Quaternion look = new Quaternion();
+                try {
+                    ClientContextJME.getClientMain().gotoLocation(null, position, look);
+                } catch (IOException ex) {
+                    logger.log(Level.WARNING, "Failed to go to starting " +
+                            "location.", ex);
+                }
+            }
+        });
+
         super.initialize(sessionManager);
     }
 
@@ -190,6 +208,7 @@ public class PlacemarkPlugin extends BaseClientPlugin
         // Add the "Manage Placemarks..." and "Add Placemark..." to the main frame
         JmeClientMain.getFrame().addToPlacemarksMenu(manageMI, -1);
         JmeClientMain.getFrame().addToPlacemarksMenu(addMI, -1);
+        JmeClientMain.getFrame().addToPlacemarksMenu(startingLocationMI, 0);
     }
 
     /**
@@ -198,7 +217,9 @@ public class PlacemarkPlugin extends BaseClientPlugin
     @Override
     protected void deactivate() {
         // Remove the "Manage Placemarks..." from the main frame
+        JmeClientMain.getFrame().removeFromPlacemarksMenu(addMI);
         JmeClientMain.getFrame().removeFromPlacemarksMenu(manageMI);
+        JmeClientMain.getFrame().removeFromPlacemarksMenu(startingLocationMI);
     }
 
         /**
