@@ -13,6 +13,7 @@
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
     <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/animationbase/build/client/animationbase-client.jar"/>
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
     </pathconvert>
@@ -34,6 +35,7 @@
         <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar"
  	                moduleDescription="${module.description}" builddir="${build.dir}">
             
+            <requires name="animationbase" version="1"/>
             <client dir="${current.dir}/lib">
                 <include name="*.jar"/>
 
@@ -53,7 +55,7 @@
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
                 </serverjar>
-            </server -->
+            </server> -->
             
             <!-- art dir="${current.dir}/art"/-->
         </module>
