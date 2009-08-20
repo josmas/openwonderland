@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.web.wfs;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -50,6 +51,8 @@ public class WFSRecording extends WFSRoot {
      * recording root directory.
      */
     private static final String RECORDING_DESC = "recording.xml";
+
+    private static final String POSITION_DESC = "position.xml";
 
     /**
      * The name of the WFS recording changes file relative to the
@@ -289,6 +292,22 @@ public class WFSRecording extends WFSRoot {
         changesWriter.println("<Wonderland_Changes timestamp=\"" + timestamp + "\">");
     }
 
+    /**
+     * Record the position info on the position file
+     * @param positionInfo an xml-ised description of the position of a cell
+     * @throws java.io.FileNotFoundException if we can't find the position file
+     */
+    public void recordPositionInfo(String positionInfo) throws FileNotFoundException {
+        // read the changes file if it exists
+        File pFile = getPositionFile();
+        if (pFile.exists()) {
+            logger.warning("position file for " + getName() + " already exists, deleting");
+            pFile.delete();
+        }
+        PrintWriter positionWriter = new PrintWriter(new FileOutputStream(pFile), true);
+        positionWriter.append(positionInfo);
+        positionWriter.close();
+    }
     
 
     /**
@@ -321,6 +340,14 @@ public class WFSRecording extends WFSRoot {
      */
     public File getChangesFile() {
         return new File(getDirectory(), CHANGES_DESC);
+    }
+
+    /**
+     * Public accessor for the position file for this recording
+     * @return the position file, may be null or non-existent file
+     */
+    public File getPositionFile() {
+        return new File(getDirectory(), POSITION_DESC);
     }
 
 
