@@ -52,7 +52,7 @@ public class SharedStateComponentServerState extends CellComponentServerState
         this.maps = maps;
     }
     
-    public static class MapEntry {
+    public static class MapEntry implements Serializable {
         private String name;
         private SharedDataEntry[] data;
         
@@ -82,7 +82,7 @@ public class SharedStateComponentServerState extends CellComponentServerState
         }
     }
 
-    public static class SharedDataEntry {
+    public static class SharedDataEntry implements Serializable {
         private String key;
         private SharedData value;
 
