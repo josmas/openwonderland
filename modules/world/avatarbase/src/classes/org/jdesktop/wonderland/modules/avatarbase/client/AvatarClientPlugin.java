@@ -130,9 +130,6 @@ public class AvatarClientPlugin extends BaseClientPlugin
     // The avatar configuration menu item
     private JMenuItem avatarConfigMI = null;
 
-    // Menu item to take avatar to the starting location
-    private JMenuItem startingLocationMI = null;
-
     /**
      * {@inheritDoc]
      */
@@ -274,17 +271,6 @@ public class AvatarClientPlugin extends BaseClientPlugin
             }
         });
 
-        // Menu item to take avatar to starting location
-        startingLocationMI = new JMenuItem(bundle.getString("Starting_Location"));
-        startingLocationMI.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                GameContext context = avatarCellRenderer.getAvatarCharacter().getContext();
-                CharacterBehaviorManager helm = avatarCellRenderer.getAvatarCharacter().getContext().getBehaviorManager();
-                helm.addTaskToTop(new GoTo(new Vector3f(0, 0, 0), context));
-                helm.setEnable(true);
-            }
-        });
-
         // register the renderer for this session
         ClientContextJME.getAvatarRenderManager().registerRenderer(manager,
                 AvatarImiJME.class, AvatarControls.class);
@@ -368,7 +354,6 @@ public class AvatarClientPlugin extends BaseClientPlugin
             frame.removeFromToolsMenu(collisionEnabledMI);
             frame.removeFromToolsMenu(gravityEnabledMI);
             frame.removeFromEditMenu(avatarConfigMI);
-            frame.removeFromPlacemarksMenu(startingLocationMI);
             
             if (frame instanceof MainFrameImpl) { // Until MainFrame gets this method added
                 ((MainFrameImpl) frame).removeFromCameraChoices(chaseCameraMI);
@@ -476,7 +461,6 @@ public class AvatarClientPlugin extends BaseClientPlugin
             frame.addToToolsMenu(gravityEnabledMI, -1);
             frame.addToToolsMenu(collisionEnabledMI, -1);
             frame.addToEditMenu(avatarConfigMI, 0);
-            frame.addToPlacemarksMenu(startingLocationMI, 0);
 
             if (frame instanceof MainFrameImpl) { // Only until the MainFrame interface gets this method
                 ((MainFrameImpl) frame).addToCameraChoices(chaseCameraMI, 3);
