@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import org.jdesktop.wonderland.client.animation.FloatInterpolator;
+import org.jdesktop.wonderland.modules.animationbase.client.interpolators.FloatInterpolator;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
