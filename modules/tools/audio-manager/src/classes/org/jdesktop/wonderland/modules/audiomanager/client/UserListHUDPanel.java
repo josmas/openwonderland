@@ -762,6 +762,7 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     final HUDComponent addHUDComponent = mainHUD.createComponent(addHUDPanel);
     addHUDPanel.setHUDComponent(addHUDComponent);
+    addHUDComponent.setName("Voice Chat");
     addHUDComponent.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListChatVoice32x32.png")));
     mainHUD.addComponent(addHUDComponent);
     addHUDComponent.addEventListener(new HUDEventListener() {

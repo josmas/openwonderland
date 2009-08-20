@@ -302,7 +302,6 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
                             "webdav/content/" + path);
 
                     treatment = url.toString();
-                    System.out.println("Treatment: " + treatment);
                 } catch (MalformedURLException e) {
                     logger.warning("bad url:  " + e.getMessage());
                     return;

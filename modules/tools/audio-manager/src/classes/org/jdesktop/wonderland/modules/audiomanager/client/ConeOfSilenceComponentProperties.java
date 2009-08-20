@@ -186,7 +186,7 @@ public class ConeOfSilenceComponentProperties extends javax.swing.JPanel
 
             String name = nameTextField.getText();
 
-	    System.out.println("COS name " + name + " orig " + originalName);
+	    //System.out.println("COS name " + name + " orig " + originalName);
 
 	    if (name.equals(originalName) == false) {
 		editor.setPanelDirty(ConeOfSilenceComponentProperties.class, true);

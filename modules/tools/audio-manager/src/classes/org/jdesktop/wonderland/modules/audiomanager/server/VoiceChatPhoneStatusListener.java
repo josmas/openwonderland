@@ -110,7 +110,7 @@ public class VoiceChatPhoneStatusListener implements ManagedCallStatusListener, 
             WonderlandClientSender sender = WonderlandContext.getCommsManager().getSender(
 	        AudioManagerConnectionType.CONNECTION_TYPE);
 
-	    System.out.println("Sending VoiceChatCallEndedMessage");
+	    //System.out.println("Sending VoiceChatCallEndedMessage");
 
             sender.send(clientID, new VoiceChatCallEndedMessage(group, presenceInfo, 
 		status.getOption("Reason")));
