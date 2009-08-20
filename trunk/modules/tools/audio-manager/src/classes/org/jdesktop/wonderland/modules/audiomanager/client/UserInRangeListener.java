@@ -21,12 +21,11 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  *
- * @author jm57878
+ * @author jprovino
  */
-public interface MemberChangeListener {
+public interface UserInRangeListener {
 
-    public void memberChange(PresenceInfo member, boolean added);
-
-    public void setMemberList(PresenceInfo[] memberList);
+    public void userInRange(PresenceInfo user, PresenceInfo userInRange, 
+	boolean added);
 
 }

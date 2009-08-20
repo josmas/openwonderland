@@ -138,7 +138,6 @@ public class ConeOfSilenceComponentMO extends CellComponentMO {
         super.setLive(live);
 
 	addProximityListener(live);
-	System.out.println("setLive " + live);
     }
 
     private void addProximityListener(boolean live) {

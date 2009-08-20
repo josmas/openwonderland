@@ -441,6 +441,9 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    logger.info("Asking " + info + " to join audio group " 
 		+ group + " chatType " + msg.getChatType());
 
+	    System.out.println("Asking " + info + " to join audio group " 
+		+ group + " chatType " + msg.getChatType());
+
 	    requestPlayerJoinAudioGroup(sender, id, group, caller,
 		calleeList, msg.getChatType());
 	}
@@ -525,6 +528,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	VoiceChatMessage message = new VoiceChatJoinRequestMessage(group, 
 	    caller, getChatters(group), chatType);
 
+	System.out.println("Sending VoiceChatJoinRequestMessage to clientID " + clientID);
         sender.send(clientID, message);
     }
 

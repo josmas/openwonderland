@@ -236,9 +236,7 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
     private void AnswerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AnswerButtonActionPerformed
         logger.info("Sent join accepted message");
 
-        AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, myPresenceInfo, caller, group);
-
-	addHUDPanel.setMode(Mode.IN_PROGRESS);
+        AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, myPresenceInfo, caller, group, Mode.IN_PROGRESS);
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         addComponent = mainHUD.createComponent(addHUDPanel);

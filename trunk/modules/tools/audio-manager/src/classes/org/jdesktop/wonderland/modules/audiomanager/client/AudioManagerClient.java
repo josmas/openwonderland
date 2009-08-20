@@ -128,6 +128,7 @@ public class AudioManagerClient extends BaseConnection implements
     private JMenuItem userListJMenuItem;
     private ArrayList<DisconnectListener> disconnectListeners = new ArrayList();
     private HashMap<String, ArrayList<MemberChangeListener>> memberChangeListeners = new HashMap();
+    private ArrayList<UserInRangeListener> userInRangeListeners = new ArrayList();
     private HUDComponent userListHUDComponent;
     private UserListHUDPanel userListHUDPanel;
     private boolean usersMenuSelected = false;
@@ -199,6 +200,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void notifyMemberChangeListeners(String group, PresenceInfo member, boolean added) {
+	//System.out.println("Member change for group " + group + " member " + member + " added " + added);
         ArrayList<MemberChangeListener> listeners = memberChangeListeners.get(group);
 
         if (listeners == null) {
@@ -226,6 +228,26 @@ public class AudioManagerClient extends BaseConnection implements
         for (MemberChangeListener listener : listeners) {
             listener.setMemberList(members);
         }
+    }
+
+    public void addUserInRangeListener(UserInRangeListener listener) {
+	if (userInRangeListeners.contains(listener)) {
+	    return;
+	}
+
+	userInRangeListeners.add(listener);
+    }
+
+    public void removeUserInRangeListener(UserInRangeListener listener) {
+	userInRangeListeners.remove(listener);
+    }
+
+    public void notifyUserInRangeListeners(PresenceInfo info, PresenceInfo userInRange,
+	    boolean isInRange) {
+
+	for (UserInRangeListener listener : userInRangeListeners) { 
+	    listener.userInRange(info, userInRange, isInRange);
+	}
     }
 
     public void showUsers(java.awt.event.ActionEvent evt) {
@@ -521,6 +543,8 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         if (message instanceof VoiceChatJoinRequestMessage) {
+	    System.out.println("Got VoiceChatJoinRequestMessage");
+
             final IncomingCallHUDPanel incomingCallHUDPanel = new IncomingCallHUDPanel(this,
                     session, cell.getCellID(), (VoiceChatJoinRequestMessage) message);
 
@@ -605,7 +629,23 @@ public class AudioManagerClient extends BaseConnection implements
         if (message instanceof PlayerInRangeMessage) {
             PlayerInRangeMessage msg = (PlayerInRangeMessage) message;
 
-            logger.info("Player in range " + msg.isInRange() + " " + msg.getPlayerID() + " player in range " + msg.getPlayerInRangeID());
+            //System.out.println("Player in range " + msg.isInRange() + " " + msg.getPlayerID() + " player in range " + msg.getPlayerInRangeID());
+
+	    PresenceInfo info = pm.getPresenceInfo(msg.getPlayerID());
+
+	    if (info == null) {
+		logger.warning("No PresenceInfo for " + msg.getPlayerID());
+		return;
+	    }
+
+	    PresenceInfo userInRangeInfo = pm.getPresenceInfo(msg.getPlayerInRangeID());
+
+	    if (userInRangeInfo == null) {
+		logger.warning("No PresenceInfo for " + msg.getPlayerInRangeID());
+		return;
+	    }
+
+	    notifyUserInRangeListeners(info, userInRangeInfo, msg.isInRange());
             return;
         }
 
