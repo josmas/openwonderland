@@ -348,7 +348,7 @@ public class Cell {
             this.localTransform = (CellTransform) localTransform.clone(null);
             if (parent != null) {
                 worldTransform = (CellTransform) localTransform.clone(null);
-                worldTransform = worldTransform.mul(parent.getWorldTransform());
+                worldTransform = parent.getWorldTransform().mul(worldTransform);
                 cachedVWBounds = localBounds.clone(cachedVWBounds);
                 worldTransform.transform(cachedVWBounds);
 
