@@ -8,6 +8,7 @@
         <file name="security/build.xml"/>
         <file name="appbase/build.xml"/>
         <file name="content-repository/build.xml"/>
+        <file name="animationbase/build.xml"/> 
         <file name="hud/build.xml"/>
 
         <file name="xremwin/build.xml"/>
