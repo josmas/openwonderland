@@ -29,8 +29,9 @@ public class Model implements Serializable {
 
     private URL originalFile; // Original file from which model was loaded
 
-    private Vector3f translation;
-    private Vector3f orientation;
+    private Vector3f translation=new Vector3f(0,0,0);
+    private Vector3f orientation=new Vector3f();
+    private Vector3f scale = new Vector3f(1,1,1);
     private String wonderlandName;
 
     protected Model() {
@@ -56,23 +57,35 @@ public class Model implements Serializable {
     }
 
     public Vector3f getTranslation() {
-        return translation;
+        return translation.clone();
     }
 
     public void setTranslation(Vector3f translation) {
-        this.translation = translation;
+        this.translation.set(translation);
     }
 
     public Vector3f getOrientation() {
-        return orientation;
+        return orientation.clone();
     }
 
     public void setOrientation(Vector3f orientation) {
-        this.orientation = orientation;
+        this.orientation.set(orientation);
+    }
+
+    public void setScale(Vector3f scale) {
+        this.scale.set(scale);
+    }
+
+    public Vector3f getScale() {
+        return scale.clone();
     }
 
     public String getWonderlandName() {
         return wonderlandName;
+    }
+
+    public void setWonderlandName(String name) {
+        wonderlandName = name;
     }
 
     @Override
