@@ -41,8 +41,8 @@ public class UniverseServiceManagerImpl implements UniverseManager {
         service.addChild(parent, child);
     }
 
-    public void createCell(CellMO cellMO) {
-        service.createCell(cellMO);
+    public void createCell(CellMO cellMO, boolean notify) {
+        service.createCell(cellMO, notify);
     }
 
     public void revalidateCell(CellMO cellMO) {
