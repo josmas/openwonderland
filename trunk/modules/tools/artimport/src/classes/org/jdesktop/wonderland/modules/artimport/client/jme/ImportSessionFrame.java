@@ -64,6 +64,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellEditChannelConnection;
@@ -837,8 +838,6 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
      */
     ImportedModel loadModel(ImportSettings settings) throws IOException {
         Node rootBG = new Node();
-//        rootBG.setLocalRotation(calcRotationMatrix(rot.x, rot.y, rot.z));
-//        rootBG.setLocalTranslation(model.getTranslation());
 
         URL url = settings.getModelURL();
         if (url.getProtocol().equalsIgnoreCase("file")) {
@@ -946,13 +945,19 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
      * Called when the user cancels the load
      */
     void loadCancelled(ImportedModel model) {
-        if (editingRow>=0) {
+        if (editingRow>=0 && imports.contains(model)) {
             // Restore Position of model
-            ImportedModel imp = imports.get(editingRow);
-            Node tg = imp.getRootBG();
-            Vector3f rot = imp.getOrientation();
-            tg.setLocalRotation(calcRotationMatrix(rot.x, rot.y, rot.z));
-            tg.setLocalTranslation(imp.getTranslation());
+            final ImportedModel imp = model; //imports.get(editingRow);
+            final Node tg = imp.getRootBG();
+            final Vector3f rot = imp.getOrientation();
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                public void update(Object arg0) {
+                    tg.setLocalRotation(calcRotationMatrix(rot.x, rot.y, rot.z));
+                    tg.setLocalTranslation(imp.getTranslation());
+                    ClientContextJME.getWorldManager().addToUpdateList(tg);
+                }
+            }, null);
         }
 
         if (model!=null)
