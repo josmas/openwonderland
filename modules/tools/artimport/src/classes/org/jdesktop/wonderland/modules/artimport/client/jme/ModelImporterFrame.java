@@ -138,8 +138,6 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 CellTransform t = cell.getWorldTransform();
                 t.getLookAt(pos, look);
 
-                System.err.println(pos+"  "+look);
-                
                 look.mult(3);
                 pos.addLocal(look);
 
@@ -163,6 +161,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                     y!=currentTranslation.y ||
                     z!=currentTranslation.z) {
                     currentTranslation.set(x,y,z);
+                    importedModel.setTranslation(currentTranslation);
                     if (transformProcessor!=null)
                         transformProcessor.setTransform(currentRotation, currentTranslation);
                 }
@@ -180,6 +179,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                     y!=currentRotationValues.y ||
                     z!=currentRotationValues.z) {
                     currentRotationValues.set(x,y,z);
+                    importedModel.setOrientation(currentRotationValues);
                     calcCurrentRotationMatrix();
                     if (transformProcessor!=null)
                         transformProcessor.setTransform(currentRotation, currentTranslation);
@@ -200,6 +200,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 
                 if (x!=currentScale.x ) {
                     currentScale.set(x,x,x);
+                    importedModel.setScale(currentScale);
                     if (transformProcessor!=null)
                         transformProcessor.setTransform(currentRotation, currentTranslation, currentScale);
                 }
@@ -234,6 +235,13 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         rotationZTF.setValue((float)Math.toDegrees(angles[2]));
 
         scaleTF.setValue(scale.x);
+
+        importedModel.setTranslation(translation);
+        importedModel.setOrientation(new Vector3f(
+                (float)Math.toDegrees(angles[0]),
+                (float)Math.toDegrees(angles[1]),
+                (float)Math.toDegrees(angles[2])));
+        importedModel.setScale(new Vector3f(scale.x, scale.x, scale.x));
     }
 
     private void calcCurrentRotationMatrix() {
@@ -247,13 +255,15 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         texturePrefixTF.setText("");
         modelNameTF.setText("");
         modelX3dTF.setText("");
+        importedModel = null;
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 JFileChooser chooser = new JFileChooser();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter(LoaderManager.getLoaderManager().getLoaderExtensions());
                 chooser.setFileFilter(filter);
-//                chooser.setCurrentDirectory(lastModelDir);
+                if (lastModelDir!=null)
+                    chooser.setCurrentDirectory(lastModelDir);
                 int returnVal = chooser.showOpenDialog(ModelImporterFrame.this);
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
                     try {
@@ -265,7 +275,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                     }
                    setVisible(true);
                    lastModelDir = chooser.getSelectedFile().getParentFile();
-                }
+                } 
             }
             
         });
@@ -278,7 +288,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     void editModel(ImportedModel model) {
 //        texturePrefixTF.setText(model.getTexturePrefix());
         modelX3dTF.setText(model.getOriginalURL().toExternalForm());
-//        modelNameTF.setText(model.getWonderlandName());
+        modelNameTF.setText(model.getWonderlandName());
         currentTranslation.set(model.getTranslation());
         currentRotationValues.set(model.getOrientation());
         calcCurrentRotationMatrix();
@@ -288,6 +298,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         ((SpinnerNumberModel)translationXTF.getModel()).setValue(model.getTranslation().x);
         ((SpinnerNumberModel)translationYTF.getModel()).setValue(model.getTranslation().y);
         ((SpinnerNumberModel)translationZTF.getModel()).setValue(model.getTranslation().x);
+        ((SpinnerNumberModel)scaleTF.getModel()).setValue(model.getScale().x);
         
         avatarMoveCB.setSelected(false);
         populateTextureList(model.getRootBG());
@@ -856,7 +867,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 (Float)rotationYTF.getValue(), 
                 (Float)rotationZTF.getValue());
         
-//        importedModel.setWonderlandName(modelNameTF.getText());
+        importedModel.setWonderlandName(modelNameTF.getText());
 //        importedModel.setTexturePrefix(texturePrefixTF.getText());
         
         sessionFrame.loadCompleted(importedModel);
