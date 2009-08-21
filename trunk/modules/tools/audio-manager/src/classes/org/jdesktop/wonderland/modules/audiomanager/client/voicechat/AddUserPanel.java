@@ -231,7 +231,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	animateCallAnswer();
 
         if (users.contains(myPresenceInfo) == false) {
-            session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo, new PresenceInfo[0], chatType));
+            session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo, 
+		new PresenceInfo[0], chatType));
         }
 
         for (PresenceInfo info : users) {
@@ -242,7 +243,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
                 continue;
             }
 
-            session.send(client, new VoiceChatJoinMessage(group, info, new PresenceInfo[0], chatType));
+            session.send(client, new VoiceChatJoinMessage(group, info, 
+		new PresenceInfo[0], chatType));
         }
     }
 
@@ -256,13 +258,14 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	animateCallAnswer();
 
         session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
-                new PresenceInfo[0], chatType));
+            new PresenceInfo[0], chatType));
 
         SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
         String callID = sc.getCallID();
 
-        PresenceInfo presenceInfo = new PresenceInfo(null, null, new WonderlandIdentity(name, name, null), callID);
+        PresenceInfo presenceInfo = new PresenceInfo(null, null, 
+	    new WonderlandIdentity(name, name, null), callID);
 
         pm.addPresenceInfo(presenceInfo);
 
@@ -294,15 +297,16 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
         for (PresenceInfo info : usersToInvite) {
 	    synchronized (invitedMembers) {
+                invitedMembers.remove(info);
                 invitedMembers.add(info);
 	    }
 
 	    //setUserList(info, ChangeType.USER_ADDED);
 	    setUserList();
+	}
 
-            session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
-                usersToInvite.toArray(new PresenceInfo[0]), chatType));
-        }
+        session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
+            usersToInvite.toArray(new PresenceInfo[0]), chatType));
     }
 
 
