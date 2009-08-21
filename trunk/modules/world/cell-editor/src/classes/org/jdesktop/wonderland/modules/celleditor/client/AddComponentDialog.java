@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.basic.BasicListUI.ListSelectionHandler;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.registry.CellComponentRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
@@ -67,6 +71,17 @@ public class AddComponentDialog extends javax.swing.JDialog {
         // scroll pane
         componentsTable = createTable();
         capabilityScrollPane.setViewportView(componentsTable);
+
+        // Listen for selections on the table, and when a row is selected then
+        // enable the OK button (or not)
+        ListSelectionModel selectionModel = componentsTable.getSelectionModel();
+        selectionModel.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+               boolean isEnabled = componentsTable.getSelectedRow() != -1;
+               okButton.setEnabled(isEnabled);
+            }
+        });
+
     }
 
     /** @return the return status of this dialog - one of RET_OK or RET_CANCEL */
@@ -125,6 +140,7 @@ public class AddComponentDialog extends javax.swing.JDialog {
         // Create a table with the entry and table names
         Object[] names = new Object[] { "Capability", "Description" };
         JTable table = new JTable(entries, names);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         return table;
     }
 
@@ -149,6 +165,7 @@ public class AddComponentDialog extends javax.swing.JDialog {
         });
 
         okButton.setText("OK");
+        okButton.setEnabled(false);
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
