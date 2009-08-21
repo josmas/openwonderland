@@ -64,7 +64,7 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
         if (uri != null) {
             Object[] options = {"Replace", "Use Existing", "Cancel" };
             String msg = "The file " + file.getName() + " already exists in" +
-                    "the content repository. Do you wish to replace it and " +
+                    " the content repository. Do you wish to replace it and " +
                     "continue?";
             String title = "Replace Content?";
             result = JOptionPane.showOptionDialog(frame, msg, title,
