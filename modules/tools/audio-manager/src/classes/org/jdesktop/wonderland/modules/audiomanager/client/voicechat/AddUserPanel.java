@@ -358,8 +358,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	//userListModel.removeElement(usernameAlias);
         userListModel.addElement(usernameAlias);
 	usernameMap.put(info.userID.getUsername(), usernameAlias);
-	dump("addElement later size " + userListModel.size() + " " 
-	    + usernameAlias);
+	//dump("addElement later size " + userListModel.size() + " " 
+	//    + usernameAlias);
     }
 
     private void removeElement(final PresenceInfo info, final String usernameAlias) {
@@ -578,7 +578,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    updatePresenceInfo(info, members.get(ix));
 	}
 
-	dumpu();
+	//dumpu();
 
 	Collection<CopyOnWriteArrayList<PresenceInfo>> c = usersInRangeMap.values();
 
@@ -752,7 +752,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    //System.out.println("Removing user in range " + userInRange);
 	}
 
-	dumpu();
+	//dumpu();
 
 	//setUserList(info, userInRange, isInRange, null);
 
@@ -806,7 +806,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
 	if (bystanders == null) {
 	    //System.out.println("No bystanders");
-	    dumpu();
+	    //dumpu();
 	    return;
 	}
 	    
@@ -1034,7 +1034,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
 	    // TODO if it's a member or a bystander, make it black.
 
-	    if (isMember) {
+	    if (isMember || mode.equals(Mode.INITIATE)) {
                 renderer.setFont(font);
                 renderer.setForeground(Color.BLACK);
             } else {
