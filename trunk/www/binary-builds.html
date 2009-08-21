@@ -2,10 +2,11 @@
 <html>
 <head>
     <title>Project Wonderland v0.5 Binary Downloads</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+    <META NAME="CHANGED" CONTENT="20090821">
 </head>
 
-<body>
+<body LANG="en-US">
     
     <br>
     
@@ -58,7 +59,8 @@
         <li><b>Java SE 6 (either JRE or JDK)</b><br><br>
         You can download Java SE 6 here: <a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>.<br><br>
         <i>Note For Macintosh Users:</i> You need to be sure that Java SE 6 is not only installed, but also set as the active Java version.  Go to Applications -> Utilities -> Java Preferences, and make sure that "Java SE 6" is first on the list under "Java Applications".<br><br>
-        
+        <i>Note For Windows Users:</i> Windows requires JDK 6 to be installed and will not work with the JRE.<br><br>
+
         <li><b>Access to a command line</b><br><br>
         You will need to know how to use a few simple commands such as "cd" and "rm".
     </ul>
@@ -168,13 +170,16 @@ Web server running on http://nicole-yankelovichs-computer.local:8080/<br>
     Apple only provides 64-bit Java SE JRE/JDK, so you have to have a 64-bit system (hardware).</p>
 
     <p><b>Windows</b><br>
-    32-bit and 64-bit systems are supported, but <i>only</i> with the Java SE 32-bit JRE/JDK.  Wonderland doesn't mind running on a 32-bit JRE on a 64-bit system.</p>
-
+    32-bit and 64-bit systems are supported, but <i>only</i> with the Java SE 32-bit JRE/JDK.  Wonderland doesn't mind running on a 32-bit JRE on a 64-bit system.<br><br>
+    The glassfish application server fails to pick up the jdk from JAVA_HOME, even if you set it as one of your Windows environment variables. Please use the following workaround--adjust it according to your Java installation:</p>
+    <ul>
+        <code>java -Djava.home="C:\Program Files\Java\jdk1.6.0_14" -jar Wonderland.jar</code>
+    </ul>
     <p><b>Linux</b><br>
     Only 32-bit systems are supported right now. In the future, we will try to bundle 64-bit versions of the native client libraries to run the Wonderland client on a 64-bit JRE/JDK. Running the Wonderland server on a 64-bit system is a not currently possible since the Darkstar server component only ships a 32-bit Berkeley DB native library. Once Darkstar moves over to the Java version of Berkeley DB this will no longer be an issue. 
     <p>
     </ul>
-    </ul>    
+      
 
     </td></tr>
     </table>
