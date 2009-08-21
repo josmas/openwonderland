@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.defaultenvironment.client.jme;
 
 import com.jme.image.Texture;
 import com.jme.light.LightNode;
-import com.jme.light.PointLight;
+import com.jme.light.DirectionalLight;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Skybox;
@@ -105,15 +105,16 @@ public class DefaultEnvironment implements Environment, ViewManagerListener, Tra
 
     private LightNode createLight(float x, float y, float z) {
         LightNode lightNode = new LightNode();
-        PointLight light = new PointLight();
+        DirectionalLight light = new DirectionalLight();
         light.setDiffuse(new ColorRGBA(0.5f, 0.5f, 0.5f, 1.0f));
         light.setAmbient(new ColorRGBA(0.1f, 0.1f, 0.1f, 1.0f));
         light.setSpecular(new ColorRGBA(0.4f, 0.4f, 0.4f, 1.0f));
         light.setEnabled(true);
         lightNode.setLight(light);
         lightNode.setLocalTranslation(x, y, z);
-        return(lightNode);
-    } 
+        light.setDirection(new Vector3f(-x, -y, -z));
+        return (lightNode);
+    }
 
     /**
      * @{inheritDoc}
