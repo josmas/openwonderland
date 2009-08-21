@@ -59,11 +59,10 @@ public class TransformProcessorComponent extends ProcessorComponent {
                     modelBG.setLocalRotation(rotation);
                     rootBG.setLocalTranslation(translation);
                     modelBG.setLocalScale(scale);
+                    worldManager.addToUpdateList(modelBG);
                     updatePending = false;
-                }
-
+                }  
             }
-            worldManager.addToUpdateList(modelBG);
         }
 
         @Override
