@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;

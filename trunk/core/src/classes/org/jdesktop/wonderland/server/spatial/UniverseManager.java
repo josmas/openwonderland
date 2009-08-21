@@ -43,7 +43,7 @@ public interface UniverseManager {
 
     public void addTransformChangeListener(CellMO cell, TransformChangeListenerSrv listener);
 
-    public void createCell(CellMO cellMO);
+    public void createCell(CellMO cellMO, boolean notify);
 
     public void revalidateCell(CellMO cellMO);
 

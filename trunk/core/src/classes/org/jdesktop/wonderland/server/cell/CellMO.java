@@ -412,7 +412,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
             createChannelComponent();
             resolveAutoComponentAnnotationsForCell();
 
-            addToUniverse(UniverseManagerFactory.getUniverseManager());
+            addToUniverse(UniverseManagerFactory.getUniverseManager(), true);
 
             this.live = live;  // Needs to happen after resolveAutoComponentAnnotationsForCell
 
@@ -556,6 +556,11 @@ public abstract class CellMO implements ManagedObject, Serializable {
             } catch (IllegalArgumentException ex) {
                 Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
             } catch (InvocationTargetException ex) {
+                // bug #527 -- rethrow Runtime exceptions
+                if (ex.getCause() != null && ex.getCause() instanceof RuntimeException) {
+                    throw (RuntimeException) ex.getCause();
+                }
+                
                 Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, "Error in " + this + " invoking constructor on component "+componentClazz, ex);
             } catch (NoSuchMethodException ex) {
                 Logger.getLogger(CellMO.class.getName()).log(Level.SEVERE, null, ex);
@@ -582,8 +587,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
     /**
      * Add this cell to the universe
      */
-    void addToUniverse(UniverseManager universe) {
-        universe.createCell(this);
+    void addToUniverse(UniverseManager universe, boolean notify) {
+        universe.createCell(this, notify);
+
 //        System.err.println("CREATING SPATIAL CELL " + getCellID().toString() + " " + this.getClass().getName());
 
         if (transformChangeListeners != null) {

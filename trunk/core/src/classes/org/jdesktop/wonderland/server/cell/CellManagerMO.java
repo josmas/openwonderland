@@ -329,6 +329,13 @@ public class CellManagerMO implements ManagedObject, Serializable {
                 } catch (IllegalArgumentException ex) {
                     logger.log(Level.WARNING, null, ex);
                 } catch (InvocationTargetException ex) {
+                    // bug #527 -- rethrow Runtime exceptions
+                    if (ex.getCause() != null &&
+                            ex.getCause() instanceof RuntimeException)
+                    {
+                        throw (RuntimeException) ex.getCause();
+                    }
+
                     logger.log(Level.WARNING, null, ex);
                 }
             }

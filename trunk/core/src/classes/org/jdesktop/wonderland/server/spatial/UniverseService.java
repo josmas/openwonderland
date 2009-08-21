@@ -268,7 +268,7 @@ public class UniverseService extends AbstractService implements UniverseManager 
         });
     }
 
-    public void createCell(CellMO cellMO) {
+    public void createCell(CellMO cellMO, boolean notify) {
         final Class cellClazz = cellMO.getClass();
         final Identity identity = txnProxy.getCurrentOwner();
         final BigInteger dsID = AppContext.getDataManager().createReference(cellMO).getId();
@@ -281,9 +281,11 @@ public class UniverseService extends AbstractService implements UniverseManager 
             }
         });
 
-        // notify listeners
-        for (CellMOListener listener : getCellListeners()) {
-            listener.cellAdded(cellMO);
+        if (notify) {
+            // notify listeners
+            for (CellMOListener listener : getCellListeners()) {
+                listener.cellAdded(cellMO);
+            }
         }
     }
 

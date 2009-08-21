@@ -98,7 +98,7 @@ public class CellPersistence {
         }
 
         // add this cell to the universe
-        cell.addToUniverse(universe);
+        cell.addToUniverse(universe, false);
 
         // now update all children
         for (ManagedReference<CellMO> childRef : cell.getAllChildrenRefs()) {
