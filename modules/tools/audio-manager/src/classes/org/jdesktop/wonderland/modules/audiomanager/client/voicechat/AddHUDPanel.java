@@ -289,7 +289,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
 
         if (addUserPanel == null) {
             addUserPanel = new AddUserPanel(client, session, myPresenceInfo,
-		caller, group);
+		caller, group, Mode.ADD);
 
 	    addUserPanel.addUserListSelectionListener(new javax.swing.event.ListSelectionListener() {
                 public void valueChanged(javax.swing.event.ListSelectionEvent e) {
