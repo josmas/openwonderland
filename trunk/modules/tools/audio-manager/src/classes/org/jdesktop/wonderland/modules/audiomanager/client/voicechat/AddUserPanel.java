@@ -98,7 +98,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
     private PresenceInfo caller;
     private String group;
 
-    private Mode mode = Mode.INITIATE;
+    private Mode mode;
 
     private ChatType chatType = ChatType.PRIVATE;
 
@@ -109,13 +109,15 @@ public class AddUserPanel extends javax.swing.JPanel implements
     private boolean personalPhone;
 
     public AddUserPanel(AudioManagerClient client, WonderlandSession session,
-            PresenceInfo myPresenceInfo, PresenceInfo caller, String group) {
+            PresenceInfo myPresenceInfo, PresenceInfo caller, String group,
+	    Mode mode) {
 
 	this.client = client;
 	this.session = session;
 	this.myPresenceInfo = myPresenceInfo;
 	this.caller = caller;
 	this.group = group;
+	this.mode = mode;
 
         initComponents();
 
@@ -163,6 +165,9 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
         addUserDetailsPanel.add(privacyPanel, BorderLayout.CENTER);
         validate();
+
+	//System.out.println("Sending vc info request for " + group 
+	//    + " mode " + mode);
 
 	session.send(client, new VoiceChatInfoRequestMessage(group));
     }
@@ -467,6 +472,11 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
 	    synchronized (members) {
 	        if (members.contains(info) || invitedMembers.contains(info)) {
+		    if (members.contains(info)) {
+		        //System.out.println("Add NON: remove member " + info);
+		    } else {
+		        //System.out.println("Add NON: remove invited " + info);
+		    }
                     removeFromUserList(info);
                 } else {
                     addToUserList(info);
@@ -632,7 +642,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    invitedMembers.remove(presenceInfo);
 	}
 
-	System.out.println("member change:  " + presenceInfo + " added " + added + " mode " + mode);
+	//System.out.println("member change:  " + presenceInfo + " added " + added + " mode " + mode);
 
 	if (added) {
 	    synchronized (members) {
@@ -681,7 +691,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    }
 	}
 
-	setUserList();
+	updateUserList();
     }
 
     private void leave() {
@@ -1038,7 +1048,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
 	    // TODO if it's a member or a bystander, make it black.
 
-	    if (isMember || mode.equals(Mode.INITIATE)) {
+	    if (isMember || mode.equals(Mode.INITIATE) || mode.equals(Mode.ADD)) {
                 renderer.setFont(font);
                 renderer.setForeground(Color.BLACK);
             } else {
