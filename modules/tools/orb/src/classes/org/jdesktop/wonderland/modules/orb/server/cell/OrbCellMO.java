@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.orb.server.cell;
 
+import java.util.logging.Level;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbAttachVirtualPlayerMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbChangeNameMessage;
 import org.jdesktop.wonderland.modules.orb.common.messages.OrbBystandersMessage;
@@ -90,8 +91,21 @@ public class OrbCellMO extends CellMO {
 	    Constructor[] cArray = audioParticipantClass.getConstructors();
 
 	    addComponent((CellComponentMO) cArray[0].newInstance(this));
-	} catch (Exception e) {
-            logger.warning("Unable to find AudioParticipantComponentMO!");
+	} catch (InstantiationException ex) {
+            logger.log(Level.WARNING, null, ex);
+        } catch (IllegalAccessException ex) {
+            logger.log(Level.WARNING, null, ex);
+        } catch (IllegalArgumentException ex) {
+            logger.log(Level.WARNING, null, ex);
+        } catch (InvocationTargetException ex) {
+            // issue #527: rethrow nested runtime exceptions
+            if (ex.getCause() != null && ex.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) ex.getCause();
+            }
+
+            logger.log(Level.WARNING, null, ex);
+        } catch (ClassNotFoundException ex) {
+            logger.log(Level.WARNING, null, ex);
         }
     }
 
