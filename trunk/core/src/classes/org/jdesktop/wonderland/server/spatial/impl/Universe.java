@@ -44,7 +44,7 @@ public interface Universe {
      * Remove the root cell (and all it's children)
      * @param cell
      */
-    public void removeRootSpatialCell(CellID cellID, Identity identity);
+//    public void removeRootSpatialCell(CellID cellID, Identity identity);
 
     /**
      * Create a Spatial cell

@@ -62,7 +62,6 @@ public class SpatialCellImpl implements SpatialCell {
 
     private ReentrantReadWriteLock readWriteLock = null;
 
-    private WorldBoundsChangeListener boundsChangeListener = null;
     private TransformChangeListener worldTransformChangeListener=null;
 
     private HashSet<Space> spaces = null;
@@ -76,7 +75,6 @@ public class SpatialCellImpl implements SpatialCell {
     private final Object viewUpdateListenersSync = new Object();
 
     private boolean isRoot = false;
-    private HashSet<ProximityListenerSrv> proximityListeners = null;
 
     public SpatialCellImpl(CellID id, BigInteger dsID) {
 //        System.out.println("Creating SpatialCell "+id);
@@ -251,7 +249,7 @@ public class SpatialCellImpl implements SpatialCell {
             oldWorld = worldTransform.clone(null);
 
         if (parent!=null) {
-            CellTransform parentWorld = parent.worldTransform;
+            CellTransform parentWorld = parent.worldTransform.clone(null);
             worldTransform = parentWorld.mul(localTransform);
         } else {
             worldTransform = localTransform.clone(null);
@@ -310,6 +308,10 @@ public class SpatialCellImpl implements SpatialCell {
         }
     }
 
+    /** Return the children, or null
+     * 
+     * @return
+     */
     Iterable<SpatialCellImpl> getChildren() {
         return children;
     }
@@ -363,6 +365,7 @@ public class SpatialCellImpl implements SpatialCell {
                     readWriteLock = null;
                     this.viewCacheSet = null;
                     spaces = null;
+                    return;
                 }
             }
 
@@ -454,7 +457,7 @@ public class SpatialCellImpl implements SpatialCell {
             viewCacheSet.removeViewCache(caches, space);
 
         // Notify all cells in the graph that caches have
-        // been added. TODO this could be optimized to only notify
+        // been removed. TODO this could be optimized to only notify
         // children that have expressed an interest
         try {
             acquireRootReadLock();
@@ -537,6 +540,10 @@ public class SpatialCellImpl implements SpatialCell {
                 for(Space space : spaces) {
                     space.removeRootSpatialCell(this);
                 }
+                spaces.clear();
+                isRoot=false;
+                this.viewCacheSet = null;
+                spaces = null;
             }
         } finally {
             releaseRootWriteLock();
@@ -550,7 +557,6 @@ public class SpatialCellImpl implements SpatialCell {
     public interface TransformChangeListener {
         public void transformChanged(SpatialCell cell);
     }
-
 
     class TransformChangeNotificationTask implements KernelRunnable {
 

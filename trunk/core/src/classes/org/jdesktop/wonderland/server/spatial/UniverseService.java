@@ -258,12 +258,12 @@ public class UniverseService extends AbstractService implements UniverseManager 
     }
 
     public void removeRootFromUniverse(CellMO rootCellMO) {
-        final Identity identity = txnProxy.getCurrentOwner();
+//        final Identity identity = txnProxy.getCurrentOwner();
         scheduleChange(new Change(rootCellMO.getCellID(), null, null) {
             public void run() {
                 if (logger.isLoggable(Level.FINE))
                     logger.log(Level.FINE, "RUN removeRootFromUniverse");
-                universe.removeRootSpatialCell(cellID, identity);
+                universe.removeCell(cellID);
             }
         });
     }

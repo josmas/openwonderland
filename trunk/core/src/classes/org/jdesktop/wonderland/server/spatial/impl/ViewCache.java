@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -73,7 +74,7 @@ class ViewCache {
 
     private BoundingSphere proximityBounds = new BoundingSphere(AvatarBoundsHelper.PROXIMITY_SIZE, new Vector3f());
 
-    private final LinkedList<ViewUpdateListenerContainer> viewUpdateListeners = new LinkedList();
+    private final LinkedHashMap<CellID, ViewUpdateListenerContainer> viewUpdateListeners = new LinkedHashMap();
 
     private Vector3f v3f = new Vector3f();      // Temporary vector
 
@@ -114,7 +115,7 @@ class ViewCache {
 
             public void run() throws Exception {
                 synchronized(viewUpdateListeners) {
-                    for(ViewUpdateListenerContainer cont : viewUpdateListeners)
+                    for(ViewUpdateListenerContainer cont : viewUpdateListeners.values())
                         cont.notifyListeners(worldTransform);
                 }
             }
@@ -136,7 +137,7 @@ class ViewCache {
 
             public void run() throws Exception {
                 synchronized(viewUpdateListeners) {
-                    for(ViewUpdateListenerContainer cont : viewUpdateListeners)
+                    for(ViewUpdateListenerContainer cont : viewUpdateListeners.values())
                         cont.notifyListenersLogin();
                 }
             }
@@ -167,7 +168,7 @@ class ViewCache {
 
             public void run() throws Exception {
                 synchronized(viewUpdateListeners) {
-                    for(ViewUpdateListenerContainer cont : viewUpdateListeners)
+                    for(ViewUpdateListenerContainer cont : viewUpdateListeners.values())
                         cont.notifyListenersLogout();
                 }
             }
@@ -178,13 +179,13 @@ class ViewCache {
 
     void addViewUpdateListener(CellID cellID, ViewUpdateListener listener) {
         synchronized(viewUpdateListeners) {
-            viewUpdateListeners.add(new ViewUpdateListenerContainer(cellID, listener));
+            viewUpdateListeners.put(cellID, new ViewUpdateListenerContainer(cellID, listener));
         }
     }
 
     void removeViewUpdateListener(CellID cellID, ViewUpdateListener listener) {
         synchronized(viewUpdateListeners) {
-            viewUpdateListeners.remove(new ViewUpdateListenerContainer(cellID, listener));
+            viewUpdateListeners.remove(cellID);
         }
     }
 
@@ -216,11 +217,8 @@ class ViewCache {
     }
 
     void cellDestroyed(SpatialCell cell) {
-
-        // TODO remove ViewUpdateListeners for destroyed cell
-        
-
-        Logger.getAnonymousLogger().warning("ViewCache.cellDestroyed not implemented");
+        CellID cellID = ((SpatialCellImpl)cell).getCellID();
+        removeViewUpdateListener(cellID, null);
     }
 
     /**
@@ -579,7 +577,7 @@ class ViewCache {
             child.acquireRootReadLock();
             try {
                 newCells.add(new CellDesc(child.getCellID()));
-                processChildCells(newCells, child, CellStatus.ACTIVE);
+                processChildCells(newCells, child, null);       // The status field is not used, so set it to null
             } finally {
                 child.releaseRootReadLock();
             }
@@ -645,7 +643,7 @@ class ViewCache {
         }
 
         private void processChildCells(List<CellDescription> cells, SpatialCellImpl parent, CellStatus status) {
-//            System.err.println("Processing Child Cells "+parent.getCellID()+"  "+parent.getChildren());
+//            System.err.println("Processing Child Cells "+parent.getCellID()+"  "+parent.getChildren()+"  "+status);
             if (parent.getChildren()==null)
                 return;
             
