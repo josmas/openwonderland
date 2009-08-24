@@ -114,13 +114,10 @@ class ProviderProxy implements Serializable {
         // Now send the message. The response will come back asynchronously via the 
         // SasProviderConnectionHandler and it will report the launch status to the 
         // SasServer.appLaunchResult method
-        try {
-            sender.send(clientID, msg);
-        } catch (Exception ex) {
-            InstantiationException ie = new InstantiationException();
-            ie.initCause(ex);
-            throw ie;
-        }
+        //
+        // Issue #527: removed try/catch so as not to break darkstar
+        //
+        sender.send(clientID, msg);
     }
 
 

@@ -533,6 +533,11 @@ public class UniverseService extends AbstractService implements UniverseManager 
             task.setDataService(dataService);
             transactionScheduler.runTask(task, taskOwner);
         } catch (Exception ex) {
+            // rethrow runtime exceptions to avoid Darkstar issues
+            if (ex instanceof RuntimeException) {
+                throw (RuntimeException) ex;
+            }
+
             Logger.getLogger(UniverseService.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

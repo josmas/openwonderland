@@ -784,7 +784,26 @@ public abstract class CellMO implements ManagedObject, Serializable {
                 else {
                     comp.setServerState(compState);
                 }
-            } catch (Exception ex) {
+            } catch (InstantiationException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (IllegalArgumentException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (InvocationTargetException ex) {
+                // issue #527: rethrow nested runtime exceptions
+                if (ex.getCause() != null &&
+                        ex.getCause() instanceof RuntimeException)
+                {
+                    throw (RuntimeException) ex.getCause();
+                }
+
+                logger.log(Level.SEVERE, null, ex);
+            } catch (NoSuchMethodException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (SecurityException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
         }
