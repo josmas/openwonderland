@@ -367,7 +367,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
             rootEntity.removeEntity(avatarCharacter);
             avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTagNode);
-            enableInputListeners(false);
+            selectForInput(false);
             avatarCharacter.destroy();
         }
 
@@ -691,17 +691,17 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     public void selectForInput(boolean selected) {
-        selectedForInput = selected;
-        enableInputListeners(selected);
-    }
+        if (selectedForInput==selected)
+            return;
 
-    private void enableInputListeners(boolean enabled) {
+        selectedForInput = selected;
+
         if (avatarCharacter!=null) {
              WorldManager wm = ClientContextJME.getWorldManager();
 
             ((WlAvatarContext) avatarCharacter.getContext()).getBehaviorManager().setEnable(false);
 
-            if (controlScheme == null && enabled) {
+            if (controlScheme == null && selectedForInput) {
                 controlScheme = new DefaultCharacterControls(ClientContextJME.getWorldManager());
                 ((AvatarControls)wm.getUserData(AvatarControls.class)).setDefault(controlScheme);
                 avatarCharacter.selectForInput();
@@ -709,7 +709,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 controlScheme.setCharacter(avatarCharacter);
 //                controlScheme = (AvatarControls) ((JSceneEventProcessor) wm.getUserData(JSceneEventProcessor.class)).setDefault(new AvatarControlScheme(avatarCharacter));
             }
-            if (enabled) {
+            if (selectedForInput) {
                 // Listen for avatar movement and update the cell
                 avatarCharacter.getContext().getController().addCharacterMotionListener(characterMotionListener);
 
