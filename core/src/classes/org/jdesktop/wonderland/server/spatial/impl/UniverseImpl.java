@@ -116,17 +116,20 @@ public class UniverseImpl implements Universe {
     }
 
     public void removeRootSpatialCell(CellID cellID, Identity identity) {
-        logger.fine("removeSpatialCell "+cellID);
-        SpatialCellImpl cellImpl = (SpatialCellImpl)getSpatialCell(cellID);
+        // Handled in removeCell();
 
-        if (cellImpl==null) {
-            logger.warning("removeRootSpatialCell FAILED, unable to find cell "+cellID);
-            return;
-        }
-
-        // Set the root node to null. Internally this method will lock correctly
-        // and ensure the graph is removed from spaces etc
-        cellImpl.setRoot(null, null, identity);
+        
+//        logger.fine("removeSpatialCell "+cellID);
+//        SpatialCellImpl cellImpl = (SpatialCellImpl)getSpatialCell(cellID);
+//
+//        if (cellImpl==null) {
+//            logger.warning("removeRootSpatialCell FAILED, unable to find cell "+cellID);
+//            return;
+//        }
+//
+//        // Set the root node to null. Internally this method will lock correctly
+//        // and ensure the graph is removed from spaces etc
+//        cellImpl.setRoot(null, null, identity);
 
     }
 
@@ -158,10 +161,14 @@ public class UniverseImpl implements Universe {
         logger.fine("removeCell "+id);
         
         SpatialCellImpl cell = (SpatialCellImpl) getSpatialCell(id);
-//        print((SpatialCellImpl) cell, 1);
-
         if (cell.getParent()!=null) {
             cell.getParent().removeChild(cell);
+        }
+
+        Iterable<SpatialCellImpl> children = cell.getChildren();
+        if (children!=null) {
+            for(SpatialCellImpl child : cell.getChildren())
+                removeCell(child.getCellID());
         }
 
         cell.destroy();
