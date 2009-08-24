@@ -763,7 +763,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 }
             }
         } else {
-//            System.out.println("The avatar was null during enableInputListeners().");
+            logger.severe("The avatar was null during enableInputListeners().");
         }
     }
 
