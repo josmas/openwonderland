@@ -232,8 +232,13 @@ public class AvatarClientPlugin extends BaseClientPlugin
                 // system. If not, then display a dialog saying you cannot
                 // configure your avatar.
                 RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-                if (rm.supportsOpenGL20() == false ||
-                    rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB < 1000) {
+                String shaderCheck = System.getProperty("avatar.shaderCheck");
+                boolean shaderPass = true;
+
+                if (shaderCheck != null && shaderCheck.equals("true")) {
+                    shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
+                }
+                if (rm.supportsOpenGL20() == false || !shaderPass) {
                     String msg = "Unfortunately your system graphics does not" +
                             " support the shaders which are required to configure" +
                             " the avatar system.";

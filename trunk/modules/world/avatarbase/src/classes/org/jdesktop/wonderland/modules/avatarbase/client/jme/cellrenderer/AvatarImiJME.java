@@ -511,11 +511,16 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 
         // Create the character
         String avatarDetail = System.getProperty("avatar.detail", "high");
+        String shaderCheck = System.getProperty("avatar.shaderCheck");
+        boolean shaderPass = true;
 
         // Check to see if the system supports OpenGL 2.0. If not, then
         // always use the low-detail avatar character
         RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        if (rm.supportsOpenGL20() == false || rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB < 1000) {
+        if (shaderCheck != null && shaderCheck.equals("true")) {
+            shaderPass = rm.getContextCaps().GL_MAX_VERTEX_UNIFORM_COMPONENTS_ARB >= 512;
+        }
+        if (rm.supportsOpenGL20() == false || !shaderPass) {
             avatarDetail = "low";
         }
 
