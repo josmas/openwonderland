@@ -470,7 +470,14 @@ public class AudioManagerClient extends BaseConnection implements
 
     public void softphoneExited() {
         logger.warning("Softphone exited, reconnect");
-        connectSoftphone();
+
+	/*
+	 * If presenceInfo is null, connectSoftphone will be called when
+	 * the presenceInfo is set.
+	 */
+	if (presenceInfo != null) {
+            connectSoftphone();
+	}
     }
 
     public void microphoneGainTooHigh() {
