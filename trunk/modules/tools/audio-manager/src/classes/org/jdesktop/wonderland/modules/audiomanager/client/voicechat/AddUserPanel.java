@@ -352,23 +352,12 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void animateCallAnswer() {
-	WlAvatarCharacter avatar = client.getWlAvatarCharacter();
-
-	if (avatar == null) {
-	    return;
-	}
-	
-	for (String action : avatar.getAnimationNames()) {
-            String name = action;
-            if (action.equalsIgnoreCase("Male_AnswerCall") == true) {
-		if (chatType.equals(ChatType.PRIVATE)) {
-	    	    client.getWlAvatarCharacter().playAnimation("Male_AnswerCell");
-	    	    logger.warning("Playing animation...");
-		} else {
-	    	    client.getWlAvatarCharacter().stop();
-	    	    logger.warning("Stopping animation...");
-		}
-	    }
+	if (chatType.equals(ChatType.PRIVATE)) {
+	    client.getWlAvatarCharacter().playAnimation("Male_AnswerCell");
+	    logger.warning("Playing animation...");
+	} else {
+	    client.getWlAvatarCharacter().stop();
+	    logger.warning("Stopping animation...");
 	}
     }
 
