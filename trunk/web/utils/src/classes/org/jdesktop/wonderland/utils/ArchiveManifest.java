@@ -68,7 +68,6 @@ public class ArchiveManifest {
      */
     public ArchiveManifest(File file) throws IOException {
         this.url = file.toURI().toURL();
-        System.out.println("file " + file.getAbsolutePath() + " " + file.exists());
         this.jarfile = new JarFile(file);
         this.createArchiveMap(jarfile);
     }
