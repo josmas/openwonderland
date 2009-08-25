@@ -26,7 +26,6 @@ import org.jdesktop.wonderland.client.jme.artimport.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
@@ -40,7 +39,6 @@ import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.content.spi.ContentImporterSPI;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.content.AbstractContentImporter;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.FileUtils;
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
@@ -81,14 +79,44 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         final JFrame frame = JmeClientMain.getFrame().getFrame();
 
         // Next check whether the content already exists and ask the user if
-        // the upload should still proceed.
-        if (isContentExists(file) == true) {
-            int result = JOptionPane.showConfirmDialog(frame,
-                    "The file " + file.getName() + " already exists in the " +
-                    "content repository. Do you wish to replace it and " +
-                    "continue?", "Replace content?",
-                    JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.NO_OPTION) {
+        // the upload should still proceed. By default (result == 0), the
+        // system will upload (and overwrite) and files.
+        int result = JOptionPane.YES_OPTION;
+        ContentResource resource = isContentExists(file);
+        if (resource != null) {
+            Object[] options = {"Replace", "Use Existing", "Cancel" };
+            String msg = "The file " + file.getName() + " already exists in" +
+                    "the content repository. Do you wish to replace it and " +
+                    "continue?";
+            String title = "Replace Content?";
+            result = JOptionPane.showOptionDialog(frame, msg, title,
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+
+            // If the user hits Cancel or a "closed" action (e.g. Escape key)
+            // then just return
+            if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION) {
+                return null;
+            }
+        }
+
+        // If the content exists and we do not want to upload a new version,
+        // then simply create it and return.
+        if (result == JOptionPane.NO_OPTION) {
+            URL url = null;
+            try {
+                url = resource.getURL();
+                LoaderManager manager = LoaderManager.getLoaderManager();
+                DeployedModel dm = manager.getLoaderFromDeployment(url);
+                createCell(dm);
+                return dm.getDeployedURL();
+            } catch (java.lang.Exception excp) {
+                logger.log(Level.WARNING, "Unable to load existing model, url=" +
+                        url, excp);
+                JOptionPane.showMessageDialog(frame,
+                        "Failed to display existing model " + file.getAbsolutePath(),
+                        "Display Failed",
+                        JOptionPane.ERROR_MESSAGE);
                 return null;
             }
         }
@@ -123,14 +151,14 @@ public class ModelDndContentImporter implements ContentImporterSPI {
                 }
             });
             return null;
+        } finally {
+            // Close down the dialog indicating success
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    dialog.setVisible(false);
+                }
+            });
         }
-
-        // Close down the dialog indicating success
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                dialog.setVisible(false);
-            }
-        });
 
         // Finally, go ahead and create the cell.
         createCell(deployedModel);
@@ -138,18 +166,25 @@ public class ModelDndContentImporter implements ContentImporterSPI {
     }
 
     /**
-     * @inheritDoc()
+     * Check to see if the model already exists on the server. If so, return
+     * the ContentResource of the model's .dep file, or null otherwise.
      */
-    public boolean isContentExists(File file) {
-        String fileName = file.getName();
+    private ContentResource isContentExists(File file) {
+        // Check to see if the model already exists on the server. It should
+        // be under a file named: <filename>/<filename>.dep. If so, then return
+        // the ContentResource that points to the file, otherwise, return null.
+        String fileName = "art/" + file.getName() + "/" + file.getName() + ".dep";
         ContentCollection userRoot = getUserRoot();
         try {
-            boolean exists = (userRoot.getChild(fileName) != null);
-            return exists;
+            ContentNode node = userRoot.getChild(fileName);
+            if (node != null && node instanceof ContentResource) {
+                return (ContentResource)node;
+            }
+            return null;
         } catch (ContentRepositoryException excp) {
             logger.log(Level.WARNING, "Error while try to find " + fileName +
                     " in content repository", excp);
-            return false;
+            return null;
         }
     }
 
@@ -200,7 +235,7 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         }
 
         URL tmpUrl = new URL(deployedModel.getDeployedURL());
-        String modelFile = "art"+tmpUrl.getPath();
+        String modelFile = "art" + tmpUrl.getPath();
 
         // THIS IS A HACK, should not be assuming JmeColladaCellComponentServerState, but
         // we don't have any other loaders yet (kmzloader is a subclass)
@@ -214,22 +249,51 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         return deployedModel;
     }
 
-    private void copyFiles(File f, ContentCollection n) throws ContentRepositoryException, IOException {
-        if (f.isDirectory()) {
-//            System.err.println("CREATE DIR "+f.getName());
-            ContentCollection dir = (ContentCollection) ((ContentCollection)n).getChild(f.getName());
-            if (dir==null) {
-                dir = (ContentCollection) n.createChild(f.getName(), Type.COLLECTION);
+    /**
+     * Copies all files recursively from a local File to a remote content
+     * collection, creating all of the necessary files and directories.
+     */
+    private void copyFiles(File f, ContentCollection n)
+            throws ContentRepositoryException, IOException {
+
+        // If the given File is a directory, then attempt to create it if it
+        // does not exist and the recursively copy all of its contents
+        String fName = f.getName();
+        if (f.isDirectory() == true) {
+            // We need to create the child directory if it does not yet exist.
+            // If it does exist, but is not a collection, then we need to delete
+            // the existing resource and create the new collection
+            ContentNode node = n.getChild(fName);
+            if (node == null) {
+                node = n.createChild(fName, Type.COLLECTION);
             }
+            else if (!(node instanceof ContentCollection)) {
+                node.getParent().removeChild(node.getName());
+                node = n.createChild(fName, Type.COLLECTION);
+            }
+            ContentCollection dir = (ContentCollection)node;
+
+            // Recursively descend the children and copy them over too.
             File[] subdirs = f.listFiles();
-            if (subdirs!=null) {
-                for(File child : subdirs)
+            if (subdirs != null) {
+                for (File child : subdirs) {
                     copyFiles(child, dir);
+                }
             }
         } else {
-//            System.err.println("CREATE FILE "+f.getName());
-            ContentResource r = (ContentResource) n.createChild(f.getName(), Type.RESOURCE);
-            r.put(f);
+            // For a file, create the file if it does not yet exist. If it does
+            // exist, but is not a resource, then delete the existing node and
+            // create a new resource
+            ContentNode node = n.getChild(fName);
+            if (node == null) {
+                node = n.createChild(fName, Type.RESOURCE);
+            }
+            else if (!(node instanceof ContentResource)) {
+                node.getParent().removeChild(node.getName());
+                node = n.createChild(fName, Type.RESOURCE);
+            }
+            ContentResource resource = (ContentResource)node;
+            resource.put(f);
         }
     }
 
