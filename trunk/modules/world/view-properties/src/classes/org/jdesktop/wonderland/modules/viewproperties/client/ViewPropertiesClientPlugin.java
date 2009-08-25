@@ -23,15 +23,12 @@ import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
-import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
-import org.jdesktop.wonderland.client.contextmenu.annotation.ContextMenuFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.ViewProperties;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
-import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 
 /**
  * Client-side plugin for the view properties. Installs a "Properties..." menu
@@ -40,7 +37,6 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-@ContextMenuFactory
 public class ViewPropertiesClientPlugin extends BaseClientPlugin {
 
     private static Logger logger = Logger.getLogger(ViewPropertiesClientPlugin.class.getName());
