@@ -68,10 +68,10 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListener {
 
     public enum Mode {
-
         ADD, INITIATE, IN_PROGRESS, HOLD
     };
-    public Mode mode = Mode.ADD;
+
+    public Mode mode;
     private AddTypePanel addTypePanel;
     private AddUserPanel addUserPanel;
     private AddPhoneUserPanel addPhoneUserPanel;
@@ -98,9 +98,9 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
     }
 
     public AddHUDPanel(AudioManagerClient client, WonderlandSession session,
-            PresenceInfo myPresenceInfo, PresenceInfo caller) {
+            PresenceInfo myPresenceInfo, PresenceInfo caller, Mode mode) {
 
-        this(client, session, myPresenceInfo, caller, null, Mode.INITIATE);
+	this(client, session, myPresenceInfo, caller, null, mode);
     }
 
     public AddHUDPanel(AudioManagerClient client, WonderlandSession session,
@@ -288,8 +288,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
         }
 
         if (addUserPanel == null) {
-            addUserPanel = new AddUserPanel(client, session, myPresenceInfo,
-		caller, group, Mode.ADD);
+            addUserPanel = new AddUserPanel(this, client, session, myPresenceInfo, caller, group);
 
 	    addUserPanel.addUserListSelectionListener(new javax.swing.event.ListSelectionListener() {
                 public void valueChanged(javax.swing.event.ListSelectionEvent e) {
@@ -298,7 +297,7 @@ public class AddHUDPanel extends javax.swing.JPanel implements DisconnectListene
             });
         }
 
-        addUserPanel.setVisible(showPanel, mode);
+        addUserPanel.setVisible(showPanel);
 
         if (showPanel) {
             add(addUserPanel, BorderLayout.CENTER);

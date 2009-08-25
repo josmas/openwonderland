@@ -241,6 +241,7 @@ public class IncomingCallHUDPanel extends javax.swing.JPanel {
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         addComponent = mainHUD.createComponent(addHUDPanel);
         addComponent.setIcon(new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/UserListChatVoice32x32.png")));
+	addComponent.setName("Voice Chat");
 
         addHUDPanel.setHUDComponent(addComponent);
 

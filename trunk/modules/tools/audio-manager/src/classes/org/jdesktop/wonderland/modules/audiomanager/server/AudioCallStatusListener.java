@@ -210,7 +210,6 @@ public class AudioCallStatusListener implements ManagedCallStatusListener {
 		}
 	    } else {
 		logger.warning("Couldn't find player for " + status);
-		System.out.println("Couldn't find player for " + status);
 	    } 
 
 	    ended = true;

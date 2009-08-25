@@ -39,6 +39,8 @@ import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerLis
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetPlayersInRangeRequestMessage;
+
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.audio.EndCallMessage;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.voicechat.VoiceChatInfoRequestMessage;
@@ -91,14 +93,13 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
     private static final String BYSTANDER_SYMBOL = "\u25B8 ";
 
+    private AddHUDPanel addHUDPanel;
     private AudioManagerClient client;
     private WonderlandSession session;
     private PresenceManager pm;
     private PresenceInfo myPresenceInfo;
     private PresenceInfo caller;
     private String group;
-
-    private Mode mode;
 
     private ChatType chatType = ChatType.PRIVATE;
 
@@ -108,16 +109,15 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
     private boolean personalPhone;
 
-    public AddUserPanel(AudioManagerClient client, WonderlandSession session,
-            PresenceInfo myPresenceInfo, PresenceInfo caller, String group,
-	    Mode mode) {
+    public AddUserPanel(AddHUDPanel addHUDPanel, AudioManagerClient client, WonderlandSession session,
+            PresenceInfo myPresenceInfo, PresenceInfo caller, String group) {
 
+	this.addHUDPanel = addHUDPanel;
 	this.client = client;
 	this.session = session;
 	this.myPresenceInfo = myPresenceInfo;
 	this.caller = caller;
 	this.group = group;
-	this.mode = mode;
 
         initComponents();
 
@@ -125,16 +125,6 @@ public class AddUserPanel extends javax.swing.JPanel implements
         addUserList.setModel(userListModel);
 	addUserList.setCellRenderer(new UserListCellRenderer());
 	
-	synchronized (members) {
-            members.add(myPresenceInfo);
-	}
-
-        if (caller.equals(myPresenceInfo) == false) {
-	    synchronized (members) {
-                members.add(caller);
-	    }
-        }
-     
         pm = PresenceManagerFactory.getPresenceManager(session);
 
         pm.addPresenceManagerListener(this);
@@ -164,12 +154,19 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	});
 
         addUserDetailsPanel.add(privacyPanel, BorderLayout.CENTER);
+
         validate();
 
-	//System.out.println("Sending vc info request for " + group 
-	//    + " mode " + mode);
-
+	/*
+	 * Ask for group members
+	 */
 	session.send(client, new VoiceChatInfoRequestMessage(group));
+
+	/*
+	 * Ask for users in range
+	 */
+	session.send(client, new GetPlayersInRangeRequestMessage(
+	    myPresenceInfo.callID));
     }
 
     public void addUserListSelectionListener(javax.swing.event.ListSelectionListener listener) {
@@ -180,10 +177,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
         addUserList.removeListSelectionListener(listener);
     }
 
-    public void setVisible(boolean isVisible, Mode mode) {
-	this.mode = mode;
-
-	setVisible(isVisible);
+    public void setVisible(boolean isVisible) {
+	super.setVisible(isVisible);
 
 	if (isVisible == false) {
 	    return;
@@ -193,6 +188,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void updateUserList() {
+	Mode mode = addHUDPanel.getMode();
+
 	if (mode.equals(Mode.ADD) || mode.equals(Mode.INITIATE)) {
 	    addNonMembers();
 	} else if (mode.equals(Mode.IN_PROGRESS)) {
@@ -200,10 +197,86 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	}
     }
 
+    private void addNonMembers() {
+	clearUserList();
+
+        PresenceInfo[] presenceInfoList = pm.getAllUsers();
+
+	for (int i = 0; i < presenceInfoList.length; i++) {
+	    PresenceInfo info = presenceInfoList[i];
+
+	    if (info.callID == null) {
+                // It's a virtual player, skip it.
+		continue;
+            }
+
+	    synchronized (members) {
+	        if (members.contains(info) || invitedMembers.contains(info)) {
+                    removeFromUserList(info);
+                } else {
+                    addToUserList(info);
+                }
+	    }
+	}
+    }
+
+    private void addMembers() {
+	clearUserList();
+
+	addToUserList(myPresenceInfo);
+
+        PresenceInfo[] presenceInfoList = pm.getAllUsers();
+
+	for (int i = 0; i < presenceInfoList.length; i++) {
+	    PresenceInfo info = presenceInfoList[i];
+
+	    if (info.callID == null) {
+                // It's a virtual player, skip it.
+                continue;
+            }
+
+	    synchronized (members) {
+	        if (members.contains(info)) {
+	    	    if (info.equals(myPresenceInfo) == false) {
+                        addToUserList(info);
+		    }
+
+		    addBystanders(info);  // add bystanders
+		}
+	    }
+	}
+    }
+
+    private void addBystanders(PresenceInfo member) {
+	logger.fine("Add bystanders for " + member);
+
+	if (chatType.equals(ChatType.PUBLIC) == false) {
+	    logger.fine("Chat type not public");
+	    return;
+	}
+
+	CopyOnWriteArrayList<PresenceInfo> bystanders = usersInRangeMap.get(member.userID.getUsername());
+
+	if (bystanders == null) {
+	    logger.fine("No bystanders");
+	    dumpu();
+	    return;
+	}
+	    
+	for (PresenceInfo bystander : bystanders) {
+	    if (members.contains(bystander)) {
+		logger.fine("bystander is a member " + bystander);
+		continue;
+	    }
+
+	    addToUserList(bystander, true);
+	}
+    }
+
     public void secretButtonActionPerformed(ActionEvent e) {
 	chatType = chatType.SECRET;
 
-	if (mode.equals(Mode.IN_PROGRESS) == false) {
+	if (addHUDPanel.getMode().equals(Mode.IN_PROGRESS) == false) {
 	    return;
 	}
 
@@ -213,7 +286,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
     public void privateButtonActionPerformed(ActionEvent e) {
 	chatType = chatType.PRIVATE;
 
-	if (mode.equals(Mode.IN_PROGRESS) == false) {
+	if (addHUDPanel.getMode().equals(Mode.IN_PROGRESS) == false) {
 	    return;
 	}
 
@@ -223,7 +296,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
     public void publicButtonActionPerformed(ActionEvent e) {
 	chatType = chatType.PUBLIC;
 
-	if (mode.equals(Mode.IN_PROGRESS) == false) {
+	if (addHUDPanel.getMode().equals(Mode.IN_PROGRESS) == false) {
 	    return;
 	}
 
@@ -274,18 +347,17 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
         pm.addPresenceInfo(presenceInfo);
 
-        //setUserList(presenceInfo, ChangeType.USER_ADDED);
-	setUserList();
+	updateUserList();
         session.send(client, new VoiceChatDialOutMessage(group, callID, chatType, presenceInfo, number));
     }
 
     private void animateCallAnswer() {
 	if (chatType.equals(ChatType.PRIVATE)) {
 	    client.getWlAvatarCharacter().playAnimation("Male_AnswerCell");
-	    System.out.println("Playing animation...");
+	    logger.warning("Playing animation...");
 	} else {
 	    client.getWlAvatarCharacter().stop();
-	    System.out.println("Stopping animation...");
+	    logger.warning("Stopping animation...");
 	}
     }
 
@@ -304,12 +376,11 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    synchronized (invitedMembers) {
                 invitedMembers.remove(info);
                 invitedMembers.add(info);
+		logger.warning("Sending invite to " + info);
 	    }
-
-	    //setUserList(info, ChangeType.USER_ADDED);
-	    setUserList();
 	}
 
+	updateUserList();
         session.send(client, new VoiceChatJoinMessage(group, myPresenceInfo,
             usersToInvite.toArray(new PresenceInfo[0]), chatType));
     }
@@ -372,6 +443,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void removeElement(final PresenceInfo info, final String usernameAlias) {
+	//new Exception("removed " + info.userID.getUsername() + " mode " + addHUDPanel.getMode()).printStackTrace();
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
 		removeElementLater(info, usernameAlias);
@@ -382,27 +455,38 @@ public class AddUserPanel extends javax.swing.JPanel implements
     private void removeElementLater(PresenceInfo info, String usernameAlias) {
 	userListModel.removeElement(usernameAlias);
 	usernameMap.remove(info.userID.getUsername());
-	//System.out.println("removed " + info.userID.getUsername());
     }
 
     private void addToUserList(final PresenceInfo info) {
+	addToUserList(info, false);
+    }
+
+    private void addToUserList(final PresenceInfo info, final boolean isBystander) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-		addToUserListLater(info);
+		addToUserListLater(info, isBystander);
             }
         });
     }
 
-    private void addToUserListLater(PresenceInfo info) {
+    private void addToUserListLater(PresenceInfo info, boolean isBystander) {
         removeFromUserListLater(info);
 
         String displayName = NameTagNode.getDisplayName(info.usernameAlias,
                 info.isSpeaking, info.isMuted);
 
+	if (isBystander) {
+	    displayName = BYSTANDER_SYMBOL + displayName;
+
+	    logger.fine("Adding bystander " + displayName + " FOR " + info);
+	}
+
         addElementLater(info, displayName);
     }
 
     private void removeFromUserList(final PresenceInfo info) {
+	//new Exception("removed " + info.userID.getUsername() + " mode " + addHUDPanel.getMode()).printStackTrace();
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
 		removeFromUserListLater(info);
@@ -459,66 +543,11 @@ public class AddUserPanel extends javax.swing.JPanel implements
     private void removeElementAt(PresenceInfo info, int ix) {
 	usernameMap.remove(info.userID.getUsername());
 	userListModel.removeElementAt(ix);
-	//System.out.println("Removed element at " + ix + " " + info.userID.getUsername());
-    }
-
-    private void addNonMembers() {
-	clearUserList();
-
-        PresenceInfo[] presenceInfoList = pm.getAllUsers();
-
-	for (int i = 0; i < presenceInfoList.length; i++) {
-	    PresenceInfo info = presenceInfoList[i];
-
-	    synchronized (members) {
-	        if (members.contains(info) || invitedMembers.contains(info)) {
-		    if (members.contains(info)) {
-		        //System.out.println("Add NON: remove member " + info);
-		    } else {
-		        //System.out.println("Add NON: remove invited " + info);
-		    }
-                    removeFromUserList(info);
-                } else {
-                    addToUserList(info);
-                }
-	    }
-	}
-    }
-
-    private void addAllUsers() {
-	clearUserList();
-
-        PresenceInfo[] presenceInfoList = pm.getAllUsers();
-
-	for (int i = 0; i < presenceInfoList.length; i++) {
-	    if (presenceInfoList[i].equals(myPresenceInfo)) {
-		continue;
-	    }
-
-	    addToUserList(presenceInfoList[i]);
-	}
-    }
-
-    private void addMembers() {
-	clearUserList();
-
-        PresenceInfo[] presenceInfoList = pm.getAllUsers();
-
-	for (int i = 0; i < presenceInfoList.length; i++) {
-	    PresenceInfo info = presenceInfoList[i];
-
-	    synchronized (members) {
-	        if (members.contains(info)) {
-                    addToUserList(info);
-                } else {
-                    removeFromUserList(info);
-                }
-	    }
-	}
+	logger.fine("Removed element at " + ix + " " + info.userID.getUsername());
     }
 
     public void presenceInfoChanged(PresenceInfo presenceInfo, ChangeType type) {
-	switch (mode) {
+	switch (addHUDPanel.getMode()) {
 	case ADD:
 	    switch (type) {
 	    case USER_ADDED:
@@ -528,7 +557,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 		        break;
 		    }
 		}
-		addToUserList(presenceInfo);
+		addToUserList(presenceInfo, false);
 		break;
 
 	    case USER_REMOVED:
@@ -546,7 +575,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 		    break;
 		}
 
-		addToUserList(presenceInfo);
+		addToUserList(presenceInfo, false);
 		break;
 
 	    case USER_REMOVED:
@@ -566,19 +595,21 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	case IN_PROGRESS:
 	    switch (type) {
 	    case USER_ADDED:
+		break;
+
 	    case USER_REMOVED:
-		//setUserList();
+		removeFromInRangeMaps(presenceInfo);
+		removeFromUserList(presenceInfo);
 		break;
 
 	    case UPDATED:
-		//System.out.println("PI UPDATED " + presenceInfo);
-	        //setUserList(presenceInfo, type);
 		updatePresenceInfo(presenceInfo);
-		setUserList();
 	    }
 
 	    break;
 	}
+
+	updateUserList();
     }
 
     private void updatePresenceInfo(PresenceInfo info) {
@@ -614,6 +645,18 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	dest.inSecretChat = source.inSecretChat;
     }
 
+    private void removeFromInRangeMaps(PresenceInfo presenceInfo) {
+	Enumeration<String> e = usersInRangeMap.keys();
+
+	while (e.hasMoreElements()) {
+	    String username = e.nextElement();
+
+	    CopyOnWriteArrayList<PresenceInfo> usersInRange = usersInRangeMap.get(username);
+
+	    usersInRange.remove(presenceInfo);
+	}
+    }
+		
     private void dumpu() {
 	System.out.println("+++++++++");
 
@@ -642,7 +685,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	    invitedMembers.remove(presenceInfo);
 	}
 
-	//System.out.println("member change:  " + presenceInfo + " added " + added + " mode " + mode);
+	logger.fine("member change:  " + presenceInfo + " added " + added + " mode " + addHUDPanel.getMode());
 
 	if (added) {
 	    synchronized (members) {
@@ -650,16 +693,10 @@ public class AddUserPanel extends javax.swing.JPanel implements
 		    members.add(presenceInfo);
 	        }
 	    }
-
-	    //presenceInfoChanged(presenceInfo, ChangeType.USER_ADDED);
 	} else {
 	    synchronized (members) {
 	        members.remove(presenceInfo);
 	    }
-
-	    //System.out.println("removed " + presenceInfo + " mode " + mode);
-
-	    //presenceInfoChanged(presenceInfo, ChangeType.USER_REMOVED);
 
 	    synchronized (members) {
 	        if (personalPhone && members.size() == 1) {
@@ -672,7 +709,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     public void setMemberList(PresenceInfo[] memberList) {
-	//System.out.println("Set member list...");
+	logger.fine("Set member list...");
 
 	synchronized (invitedMembers) {
 	    synchronized (members) {
@@ -681,11 +718,11 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
 		    invitedMembers.remove(info);
 
-		    //System.out.println("Member " + info);
+		    logger.fine("Member " + info);
 
 	            if (members.contains(info) == false) {
 		        members.add(info);
-			//System.out.println("added " + members.size());
+			logger.fine("added " + members.size());
 	            }
 	        }
 	    }
@@ -741,8 +778,8 @@ public class AddUserPanel extends javax.swing.JPanel implements
     public void userInRange(PresenceInfo info, PresenceInfo userInRange, boolean isInRange) {
 	CopyOnWriteArrayList<PresenceInfo> usersInRange = usersInRangeMap.get(info.userID.getUsername());
 
-	//System.out.println("userInRange:  " + info + " userInRange " + userInRange + " inRange "
-	//    + isInRange);
+	logger.fine("userInRange:  " + info + " userInRange " + userInRange + " inRange "
+	    + isInRange);
  
 	if (usersInRange == null) {
 	    if (isInRange == false) {
@@ -751,7 +788,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
 	    usersInRange = new CopyOnWriteArrayList();
 	    usersInRangeMap.put(info.userID.getUsername(), usersInRange);
-	    //System.out.println("ADDING NEW MAP FOR " + info);
+	    logger.fine("ADDING NEW MAP FOR " + info);
 	}
 
 	if (isInRange) {
@@ -759,178 +796,16 @@ public class AddUserPanel extends javax.swing.JPanel implements
 		return;
 	    }
 
-	    //System.out.println("Adding in RANGE:  " + userInRange + " FOR " + info);
+	    logger.fine("Adding in RANGE:  " + userInRange + " FOR " + info);
 	    usersInRange.add(userInRange);
 	} else {
 	    usersInRange.remove(userInRange);
-	    //System.out.println("Removing user in range " + userInRange);
+	    logger.fine("Removing user out of range " + userInRange);
 	}
 
 	//dumpu();
 
-	//setUserList(info, userInRange, isInRange, null);
-
-	//if (members.contains(info) && members.contains(userInRange) == false) {
-	    setUserList();
-	//}
-    }
-
-    public synchronized void setUserList() {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                setUserListLater();
-            }
-        });
-    }
-
-    public synchronized void setUserListLater() {
-	clearUserListLater();
-
-	setUserListLater(myPresenceInfo, ChangeType.USER_ADDED);
-	addBystanders(myPresenceInfo);
-
-	for (PresenceInfo member : members) {
-	    if (member.equals(myPresenceInfo)) {
-		continue;
-	    }
-
-	    //System.out.println("FOO " + userListModel.size() + " " + member);
-
-	    setUserListLater(member, ChangeType.USER_ADDED);
-
-	    if (mode.equals(Mode.IN_PROGRESS)) {
-	        addBystanders(member);
-	    }
-	}
-
-	for (PresenceInfo member : invitedMembers) {
-	    setUserListLater(member, ChangeType.USER_ADDED);
-	}
-    }
-
-    private void addBystanders(PresenceInfo member) {
-	//System.out.println("Add bystanders for " + member);
-
-	if (chatType.equals(ChatType.PUBLIC) == false) {
-	    //System.out.println("Chat type not public");
-	    return;
-	}
-
-	CopyOnWriteArrayList<PresenceInfo> bystanders = usersInRangeMap.get(member.userID.getUsername());
-
-	if (bystanders == null) {
-	    //System.out.println("No bystanders");
-	    //dumpu();
-	    return;
-	}
-	    
-	for (PresenceInfo bystander : bystanders) {
-	    if (members.contains(bystander)) {
-		//System.out.println("bystander is a member");
-		continue;
-	    }
-
-	    String displayName = BYSTANDER_SYMBOL + 
-		NameTagNode.getDisplayName(bystander.usernameAlias, bystander.isSpeaking, bystander.isMuted);
-
-	    //System.out.println("Adding bystander " + displayName + " FOR " + member
-		//+ " size " + userListModel.size());
-
-	    addElementLater(bystander, displayName);
-	}
-    }
-
-    public synchronized void setUserList(final PresenceInfo info, final ChangeType type) {
-    //	setUserList(info, null, false, type);
-    //}
-    //
-    //public synchronized void setUserList(final PresenceInfo info, final PresenceInfo userInRange,
-   	//final boolean isInRange, final ChangeType type) {
-
-	if (mode.equals(Mode.IN_PROGRESS) == false) {
-	    return;
-	}
-
-	if (info.callID == null) {
-            // It's a virtual player, skip it.
-            return;
-        }
-
-	//if (userInRange != null) {
-        //    java.awt.EventQueue.invokeLater(new Runnable() {
-        //        public void run() {
-	//    	    userInRange(info, userInRange, isInRange, type);
-        //        }
-        //    });
-
-	//    return;
-	//}
-
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                setUserListLater(info, type);
-            }
-        });
-    }
-
-    private void setUserListLater(PresenceInfo info, ChangeType type) {
-	//System.out.println("setUserLIstLater " + info + " type " + type);
-
-	if (type.equals(ChangeType.USER_REMOVED) || ((members.contains(info) == false &&
-		invitedMembers.contains(info) == false &&
-		isInRangeOfSomebody(info) == false))) {
-
-	    remove(info);
-	    return;
-	}
-
-	if (mode.equals(Mode.ADD) && members.contains(info)) {
-	    remove(info);
-	    return;
-	}
-
-        String displayName = NameTagNode.getDisplayName(info.usernameAlias, info.isSpeaking,
-            info.isMuted);
-
-	if (members.contains(info) == false && invitedMembers.contains(info) == false) {
-	    /*
-	     * It's a bystander
-	     */
-	    displayName = BYSTANDER_SYMBOL + displayName;
-	}
-
-        String username = info.userID.getUsername();
-
-        int desiredPosition;
-
-        if (usernameMap.containsKey(username) == false) {
-	    // new user
-            if (isMe(info)) {
-                // this user always goes at the top of the list
-                desiredPosition = 0;
-            } else {
-                desiredPosition = userListModel.size();
-            }
-
-	    //System.out.println("NOT IN MAP:  " + displayName + " size " + userListModel.size());
-
-	    if (type.equals(ChangeType.UPDATED) == false) {
-		//System.out.println("About to call setElementAt...");
-                setElementAt(info, displayName, desiredPosition);
-	    }
-        } else {
-            desiredPosition = userListModel.indexOf(usernameMap.get(username));
-
-	    if (desiredPosition < 0) {
-		//System.out.println("hmmmm, in map but not in list " + username);
-		return;
-	    }
-
-	    //System.out.println("In map " + desiredPosition + " username " + username
-	    	//+ " map " + usernameMap.get(username));
-
-            setElementAt(info, displayName, desiredPosition);
-	}
+	updateUserList();
     }
 
     private void remove(PresenceInfo info) {
@@ -947,78 +822,6 @@ public class AddUserPanel extends javax.swing.JPanel implements
 	int position = userListModel.indexOf(mapEntry);
         removeFromUserListLater(info);
 	removeBystanders(position);
-    }
-
-    private void xxxuserInRange(PresenceInfo info, PresenceInfo userInRange, boolean isInRange,
-            ChangeType type) {
-
-	if (members.contains(info) == false || members.contains(userInRange)) {
-	    return;
-	}
-
-        String displayName = NameTagNode.getDisplayName(userInRange.usernameAlias, userInRange.isSpeaking,
-            userInRange.isMuted);
-
-	if (members.contains(info) == false) {
-	    displayName = BYSTANDER_SYMBOL + displayName;
-	}
-
-        int position = userListModel.indexOf(usernameMap.get(userInRange.userID.getUsername()));
-
-	if (position > 0) {
-	    if (isInRange) {
-	        // already in the list, just update
-	  	//System.out.println("already in list at " + position + " " + userInRange);
-	        setElementAt(userInRange, displayName, position); 
-	    } else {
-		//System.out.println("removing " + position + " " + userInRange);
-	        removeElementAt(userInRange, position); 
-	    }
-
-	    return;
-	} else {
-	    if (isInRange == false) {
-		return;
-	    }
-	}
-	
-	// unknown user just came in range
-
-	if (userListModel.indexOf(usernameMap.get(info.userID.getUsername())) < 0) {
-	    return;
-	    /*
-	     * user who had someone come into range isn't in the list yet.
-	     */
-	    //System.out.println("ADDING MAIN USER FIRST " + info);
-	    //setUserListLater(info, ChangeType.USER_ADDED);
-	}
-
-	position = userListModel.indexOf(usernameMap.get(info.userID.getUsername())) + 1;
-
-	//System.out.println("Adding unknown user at " + position + " " + userInRange);
-
-	if (position == userListModel.size()) {
-	    addElementLater(info, displayName);
-	    return;
-	}
-	
-	insertBystander(position, userInRange);
-    }
-
-    private void insertBystander(int position, PresenceInfo bystander) {
-	/*
-	 * Shuffle everything up to make room for new entry
-	 */
-	for (int i = userListModel.size() - 1; i > position; i--) {
-	    //System.out.println("Shuffle " + i);
-	    //setElementAt((String) userListModel.getElementAt(i - 1), i);
-	}
-
-        String displayName = BYSTANDER_SYMBOL + NameTagNode.getDisplayName(bystander.usernameAlias, bystander.isSpeaking,
-            bystander.isMuted);
-
-	//System.out.println("INSERTING AFTER SHUFFLE " + position + " " + displayName);
-	setElementAt(bystander, displayName, position);
     }
 
     private void removeBystanders(int position) {
@@ -1048,7 +851,7 @@ public class AddUserPanel extends javax.swing.JPanel implements
 
 	    // TODO if it's a member or a bystander, make it black.
 
-	    if (isMember || mode.equals(Mode.INITIATE) || mode.equals(Mode.ADD)) {
+	    if (isMember || addHUDPanel.getMode().equals(Mode.INITIATE) || addHUDPanel.getMode().equals(Mode.ADD)) {
                 renderer.setFont(font);
                 renderer.setForeground(Color.BLACK);
             } else {

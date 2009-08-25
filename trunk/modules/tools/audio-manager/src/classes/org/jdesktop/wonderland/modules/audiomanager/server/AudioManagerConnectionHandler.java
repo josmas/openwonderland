@@ -25,6 +25,8 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetPlayersInRangeRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetPlayersInRangeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallRequestMessage;
@@ -124,17 +126,42 @@ public class AudioManagerConnectionHandler
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+        if (message instanceof GetPlayersInRangeRequestMessage) {
+	    GetPlayersInRangeRequestMessage msg = (GetPlayersInRangeRequestMessage) message;
+
+	    Player player = vm.getPlayer(msg.getPlayerID());
+
+	    if (player == null) {
+		logger.warning("No player for " + msg.getPlayerID());
+		return;
+
+	    }
+
+	    Player[] playersInRange = player.getPlayersInRange();
+
+	    String[] playerIDList = new String[playersInRange.length];
+
+	    for (int i = 0; i < playersInRange.length; i++) {
+		playerIDList[i] = playersInRange[i].getId();		
+	    }
+	
+	    sender.send(clientID, new GetPlayersInRangeResponseMessage(msg.getPlayerID(),
+		playerIDList));
+
+	    return;
+	}
+
         if (message instanceof GetVoiceBridgeRequestMessage) {
-            //System.out.println("Got GetVoiceBridgeMessage");
+            logger.fine("Got GetVoiceBridgeMessage");
 
             BridgeInfo bridgeInfo;
 
             try {
                 bridgeInfo = vm.getVoiceBridge();
 
-                System.out.println("Sending voice bridge info '" + bridgeInfo + "'");
+                logger.info("Sending voice bridge info '" + bridgeInfo + "'");
             } catch (IOException e) {
-                System.out.println("unable to get voice bridge:  " + e.getMessage());
+                logger.warning("unable to get voice bridge:  " + e.getMessage());
                 return;
             }
 
@@ -426,7 +453,6 @@ public class AudioManagerConnectionHandler
 
         if (softphonePlayer == null) {
             logger.warning("Can't find softphone player, callID " + softphoneCallID);
-            System.out.println("Can't find softphone player, callID " + softphoneCallID);
             return;
         }
 
@@ -445,7 +471,6 @@ public class AudioManagerConnectionHandler
 
  	if (player == null) {
             logger.warning("Can't find player for callID " + otherCallID);
-            System.out.println("Can't find player for callID " + otherCallID);
 	    return;
         } 
 

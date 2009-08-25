@@ -31,7 +31,6 @@ public class VolumeUtil {
 	    clientVolume = (int) (Math.round((((serverVolume - 1) / .6) + 5) * 10) / 10.);
 	}
 
-	//System.out.println(" Server Volume " + serverVolume + " Client Volume " + clientVolume);
 	return clientVolume;
     }
 
@@ -44,7 +43,6 @@ public class VolumeUtil {
 	    serverVolume = (double) (clientVolume / 5.);
 	}
 
-	//System.out.println("Client Volume " + clientVolume + " Server Volume " + serverVolume);
 	return serverVolume;
     }
 
