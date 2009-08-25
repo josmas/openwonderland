@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.sasxremwin.provider;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -58,6 +59,13 @@ public class SasXrwProviderMain
     private static final String COMMAND_URL_DEFAULT =
             "/xapps-config/wonderland-xapps-config/browse?action=check&app=";
 
+    /** The property to set with the username */
+    private static final String USERNAME_PROP = "sas.user";
+    /** The default username */
+    private static final String USERNAME_DEFAULT = "sasxprovider";
+    /** The property to set with the password file location */
+    private static final String PASSWORD_FILE_PROP = "sas.password.file";
+
     /** The URL of the Wonderland server */
     private final String serverUrl;
 
@@ -94,11 +102,16 @@ public class SasXrwProviderMain
 
         checkPlatform();
 
-        // TODO: parse args
+        // parse username from the system property
+        String username = System.getProperty(USERNAME_PROP, USERNAME_DEFAULT);
 
-        String userName = "sasxprovider";
-        String fullName = "SAS Provider for Xremwin";
-        String password = "foo";
+        // parse the password file from the system property.  This may be
+        // null if no password file is specified (for insecure deployments)
+        String passwordFileName = System.getProperty(PASSWORD_FILE_PROP);
+        File passwordFile = null;
+        if (passwordFileName != null && passwordFileName.trim().length() > 0) {
+            passwordFile = new File(passwordFileName);
+        }
 
         // read the server URL property
         serverUrl = System.getProperty("wonderland.web.server.url", "http://localhost:8080");
@@ -112,7 +125,7 @@ public class SasXrwProviderMain
         commandURL = System.getProperty(COMMAND_URL_PROP, COMMAND_URL_DEFAULT);
 
         try {
-            SasProvider provider = new SasProvider(userName, fullName, password, serverUrl, this);
+            SasProvider provider = new SasProvider(username, passwordFile, serverUrl, this);
         } catch (Exception ex) {
             logger.severe("Exception " + ex);
             logger.severe("Cannot connect to server " + serverUrl);

@@ -43,58 +43,74 @@ public class SasProvider {
     /** The execution site dependent listener for messages from the SAS server to provider. */
     private SasProviderConnectionListener listener;
 
+    /** The username to log in with */
+    private String userName;
+
+    /** The optional password file */
+    private File passwordFile;
+
+    /** The login object to connect with */
+    private SasLogin login;
+
+    /** the property to set to "false" in order to not reconnect */
+    private static final String RECONNECT_PROP = "sas.reconnect";
+    /** the default value of the reconnect property */
+    private static final String RECONNECT_DEFAULT = "true";
+    /** whether or not to reconnect */
+    private boolean reconnect;
+
     /**
      * Create a new instance of SasProvider, given login information.
      */
-    public SasProvider (String userName, String fullName, String password, String serverUrl,
+    public SasProvider (String userName, File passwordFile, String serverUrl,
                         SasProviderConnectionListener listener) {
 
+        this.userName = userName;
+        this.passwordFile = passwordFile;
         this.listener = listener;
 
+        // determine whether or not to reconnect automatically
+        reconnect = Boolean.parseBoolean(System.getProperty(RECONNECT_PROP,
+                                                            RECONNECT_DEFAULT));
+
         // create a new programmatic login object
-        SasLogin login = new SasLogin(serverUrl);
+        this.login = new SasLogin(serverUrl);
 
-        // if the password isn't null, write it to a temporary file to use
-        // during login
-        File pwfile = null;
-        if (password != null) {
-            try {
-                pwfile = File.createTempFile("pwfile", "out");
-                PrintWriter out = new PrintWriter(new FileWriter(pwfile));
-                out.println(password);
-                out.close();
-            } catch (IOException ioe) {
-                // didn't work
-                logger.log(Level.WARNING, "Error writing password", ioe);
-                pwfile = null;
-            }
-        }
-
-        SasProviderSession curSession;
+        // perform the login
+        doLogin();
+    }
+    
+    protected void doLogin() {
+        // Log in.  This will wait until the server is available, and then
+        // connect when the server is available.
+        SasProviderSession curSession = login.login(userName, passwordFile);
         
-        try {
-            // log in to the session
-            curSession = login.login(userName, pwfile);
-        } finally {
-            // make sure to delete the password file after login
-            if (pwfile != null) {
-                pwfile.delete();
-            }
-        }
-        
-
         // make sure we logged in successfully
         if (curSession == null) {
             throw new RuntimeException("Unable to create session.");
         }
 
+        // add a listener that will attempt to log in again when the server
+        // disconnects
         curSession.addSessionStatusListener(new SessionStatusListener() {
-                public void sessionStatusChanged(WonderlandSession session, WonderlandSession.Status status) {
-                    if (status==WonderlandSession.Status.DISCONNECTED) {
-                        logger.warning("Server disconnected.");
+            public void sessionStatusChanged(WonderlandSession session,
+                                             WonderlandSession.Status status)
+            {
+                if (status == WonderlandSession.Status.DISCONNECTED) {
+                    logger.warning("Server disconnected.");
+
+                    // reconnect in a new thread
+                    if (reconnect) {
+                        Thread t = new Thread(new Runnable() {
+                            public void run() {
+                                doLogin();
+                            }
+                        },  "SAS Reconnect");
+                        t.start();
                     }
                 }
-            });
+            }
+        });
     }
 
     /**
