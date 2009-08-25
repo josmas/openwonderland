@@ -13,7 +13,10 @@
 <link href="modules.css" rel="stylesheet" type="text/css" media="screen" />
 </head>
 <body>
+    <%@ page import="java.util.Collections" %>
     <%@ page import="java.util.Map" %>
+    <%@ page import="java.util.List" %>
+    <%@ page import="java.util.LinkedList" %>
     <%@ page import="java.util.Iterator" %>
     <%@ page import="org.jdesktop.wonderland.modules.Module" %>
     <%@ page import="org.jdesktop.wonderland.common.modules.ModuleInfo" %>
@@ -30,11 +33,10 @@
             <%
             ModuleManager manager = ModuleManager.getModuleManager();
             Map<String, Module> installed = manager.getInstalledModules();
-            Iterator<Map.Entry<String, Module>> it = installed.entrySet().iterator();
-            while (it.hasNext() == true) {
-                Map.Entry<String, Module> entry = it.next();
-                String moduleName = entry.getKey();
-                ModuleInfo moduleInfo = entry.getValue().getInfo();
+            List<String> nameList = new LinkedList(installed.keySet());
+            Collections.sort(nameList);
+            for (String moduleName : nameList) {
+                ModuleInfo moduleInfo = installed.get(moduleName).getInfo();
                 String description = moduleInfo.getDescription();
             %>
             <tr class="installed_a">
@@ -55,7 +57,7 @@
             <td width="70%" class="installed"><b>Description</b></td>
         </tr>
         <%
-        Map<String, Module> pending = manager.getPendingModules();
+            Map<String, Module> pending = manager.getPendingModules();
             Iterator<Map.Entry<String, Module>> it2 = pending.entrySet().iterator();
             while (it2.hasNext() == true) {
                 Map.Entry<String, Module> entry = it2.next();
