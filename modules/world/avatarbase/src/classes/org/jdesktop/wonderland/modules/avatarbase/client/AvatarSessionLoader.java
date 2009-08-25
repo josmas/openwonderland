@@ -74,7 +74,7 @@ public class AvatarSessionLoader {
      */
     public void setState(State state) {
         synchronized (currentState) {
-            logger.warning("Setting state to " + state);
+            logger.info("Setting state to " + state);
             currentState = state;
             fireAvatarLoaderStateEvent(state);
         }
@@ -108,7 +108,7 @@ public class AvatarSessionLoader {
      */
     public void loadingComplete(Class<AvatarFactorySPI> clazz) {
         synchronized (loadingSet) {
-            logger.warning("Loading is complete for factory " + clazz.getName());
+            logger.info("Loading is complete for factory " + clazz.getName());
             loadingSet.remove(clazz);
             if (loadingSet.isEmpty() == true) {
                 setState(State.READY);
@@ -153,7 +153,7 @@ public class AvatarSessionLoader {
         // factory. We catch exceptions just in case.
         for (AvatarFactorySPI factory : factorySet) {
             final AvatarFactorySPI f = factory;
-            logger.warning("Loading avatar from factory " + f.getClass().getName());
+            logger.info("Loading avatar from factory " + f.getClass().getName());
             new Thread() {
                 @Override
                 public void run() {

@@ -177,8 +177,10 @@ public class GestureHUD {
 
                 // Add the left and right wink
                 //gestureMap.put("Left Wink", "LeftWink");
-                gestureMap.put("Wink", "RightWink");
-                gestureMap.put("Sit", "Sit");
+                if (avatar.getCharacterParams().isAnimatingFace()) {
+                    gestureMap.put("Wink", "RightWink");
+                    gestureMap.put("Sit", "Sit");
+                }
 
                 // Create HUD buttons for each of the actions
                 for (String name : gestureMap.keySet()) {

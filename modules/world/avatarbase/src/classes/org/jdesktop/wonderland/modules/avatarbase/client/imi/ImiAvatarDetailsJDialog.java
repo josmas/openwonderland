@@ -331,7 +331,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
      */
     public void setAttributes(WonderlandCharacterParams attributes) {
         if (EventQueue.isDispatchThread() == false) {
-            logger.warning("SET ATTRIBUTES NOT IN AWT EVENT THREAD!");
+            logger.severe("SET ATTRIBUTES NOT IN AWT EVENT THREAD!");
         }
 
         // Make a copy of the attributes given, so that any changes we make
@@ -552,7 +552,7 @@ public class ImiAvatarDetailsJDialog extends javax.swing.JDialog {
         // avatar, close the window and return. We do this in a thread to make
         // sure the UI does not block without indication.
         if (newAvatarName.equals(originalAvatarName) == true) {
-            logger.warning("Original avatar name equals new avatar name, " + originalAvatarName);
+//            logger.warning("Original avatar name equals new avatar name, " + originalAvatarName);
             setBusy(true);
             new Thread() {
                 @Override

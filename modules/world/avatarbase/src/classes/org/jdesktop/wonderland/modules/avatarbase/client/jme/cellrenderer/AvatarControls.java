@@ -64,7 +64,6 @@ public class AvatarControls extends ViewControls {
     @Override
     public void compute(ProcessorArmingCollection arg0) {
             for (Event evt : events) {
-                System.err.println(evt);
                 if (evt instanceof KeyEvent3D && evt.isFocussed()) {
                     // Strip out KEY_PRESSED caused by auto repeat and ignore KEY_TYPED
                     KeyEvent ke = (KeyEvent) ((KeyEvent3D)evt).getAwtEvent();

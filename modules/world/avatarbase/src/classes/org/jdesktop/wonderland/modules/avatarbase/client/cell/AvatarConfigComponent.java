@@ -86,7 +86,7 @@ public class AvatarConfigComponent extends CellComponent {
                     if (str.startsWith("assets") == true) {
                         // FOR NPC
                         URL newURL = AssetUtils.getAssetURL("wla://avatarbaseart/" + str, cell);
-                        System.err.println("------> NPC URL " + str);
+//                        System.err.println("------> NPC URL " + str);
                         avatarConfigInfo = new AvatarConfigInfo(newURL.toExternalForm(),
                                 avatarConfigInfo.getLoaderFactoryClassName());
                     }
