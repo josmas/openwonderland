@@ -121,7 +121,7 @@ public class PresenceManagerImpl implements PresenceManager {
             info = cellIDMap.get(presenceInfo.cellID);
 
             if (info != null && info.equals(presenceInfo) == false) {
-                logger.warning("Already in cellIDMap:  Existing PI " + info + " new PI " + presenceInfo);
+                logger.info("Already in cellIDMap:  Existing PI " + info + " new PI " + presenceInfo);
                 return true;
             }
         }
@@ -130,7 +130,7 @@ public class PresenceManagerImpl implements PresenceManager {
             info = sessionIDMap.get(presenceInfo.clientID);
 
             if (info != null && info.equals(presenceInfo) == false) {
-                logger.warning("Already in clientIDMap:  Existing PI " + info + " new PI " + presenceInfo);
+                logger.info("Already in clientIDMap:  Existing PI " + info + " new PI " + presenceInfo);
                 return true;
             }
         }
@@ -139,7 +139,7 @@ public class PresenceManagerImpl implements PresenceManager {
             info = userIDMap.get(presenceInfo.userID);
 
             if (info != null && info.equals(presenceInfo) == false) {
-                logger.warning("Already in userIDMap:  Existing PI " + info + " new PI " + presenceInfo);
+                logger.info("Already in userIDMap:  Existing PI " + info + " new PI " + presenceInfo);
                 return true;
             }
         }
@@ -148,7 +148,7 @@ public class PresenceManagerImpl implements PresenceManager {
             info = callIDMap.get(presenceInfo.callID);
 
             if (info != null && info.equals(presenceInfo) == false) {
-                logger.warning("Already in callIDMap:  Existing PI " + info + " new PI " + presenceInfo);
+                logger.info("Already in callIDMap:  Existing PI " + info + " new PI " + presenceInfo);
                 return true;
             }
         }
@@ -428,7 +428,7 @@ public class PresenceManagerImpl implements PresenceManager {
 
         synchronized (listeners) {
             if (listeners.contains(listener)) {
-                logger.warning("Listener is already added:  " + listener);
+                logger.info("Listener is already added:  " + listener);
                 return;
             }
 

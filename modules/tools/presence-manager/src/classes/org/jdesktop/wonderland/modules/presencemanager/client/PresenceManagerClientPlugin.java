@@ -88,7 +88,7 @@ public class PresenceManagerClientPlugin extends BaseClientPlugin
         try {
             client.connect(session);
         } catch (ConnectionFailureException e) {
-            logger.log(Level.WARNING, "Connect client error", e);
+            logger.warning("Connect client error " + e.getMessage());
         }
     }
 
