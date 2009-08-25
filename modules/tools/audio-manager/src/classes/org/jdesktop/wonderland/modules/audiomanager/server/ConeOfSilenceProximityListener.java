@@ -127,7 +127,7 @@ public class ConeOfSilenceProximityListener implements ProximityListenerSrv,
         audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
        	    AudioGroupPlayerInfo.ChatType.SECRET));
 
-	//System.out.println("Attenuate other groups to " + outsideAudioVolume + " name " + name);
+	logger.fine("Attenuate other groups to " + outsideAudioVolume + " name " + name);
 
 	WonderlandClientSender sender =
             WonderlandContext.getCommsManager().getSender(AudioManagerConnectionType.CONNECTION_TYPE);

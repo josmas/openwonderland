@@ -24,6 +24,7 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel;
+import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel.Mode;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -626,7 +627,6 @@ public class UserListHUDPanel extends javax.swing.JPanel implements PresenceMana
 
                 if (info == null) {
                     logger.warning("no PresenceInfo for " + username);
-                    System.out.println("no PresenceInfo for " + username);
                     continue;
                 }
                 logger.info("changing volume for " + username + " to: " + volume);
@@ -740,7 +740,7 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             PresenceInfo info = pm.getAliasPresenceInfo(username);
 
             if (info == null) {
-                System.out.println("no PresenceInfo for " + username);
+                logger.warning("no PresenceInfo for " + username);
                 continue;
             }
 
@@ -755,7 +755,8 @@ private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
     }
 
-    AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, presenceInfo, presenceInfo);
+    AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, presenceInfo, presenceInfo,
+	Mode.IN_PROGRESS);
 
     addHUDPanel.inviteUsers(usersToInvite);
 
@@ -808,7 +809,7 @@ private void panelToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {/
 private HUDComponent addHUDComponent;
 
 private void phoneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phoneButtonActionPerformed
-    AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, presenceInfo, presenceInfo);
+    AddHUDPanel addHUDPanel = new AddHUDPanel(client, session, presenceInfo, presenceInfo, Mode.INITIATE);
 
     addHUDPanel.setPhoneType();
 

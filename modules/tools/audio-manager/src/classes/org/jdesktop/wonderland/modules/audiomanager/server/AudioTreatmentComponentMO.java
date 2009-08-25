@@ -375,7 +375,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	            addProximityListener(t);
 	        }
             } catch (IOException e) {
-                System.out.println("Unable to create treatment " + setup.treatment + e.getMessage());
+                logger.warning("Unable to create treatment " + setup.treatment + e.getMessage());
                 return;
             }
         }
@@ -394,15 +394,15 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	    Call call = treatment.getCall();
 	
 	    if (call == null) {
-		System.out.println("No call for treatment " + treatment);
+		logger.warning("No call for treatment " + treatment);
 		group.removeTreatment(treatment);
 	    } else {
-		System.out.println("Ending call for treatment " + treatment);
+		logger.info("Ending call for treatment " + treatment);
 
 		try {
 		    call.end(true);
 		} catch (IOException e) {
-		    System.out.println("Unable to end call " + call + ":  " + e.getMessage());
+		    logger.warning("Unable to end call " + call + ":  " + e.getMessage());
 		}
 	    }
 	}
@@ -410,7 +410,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 	try {
 	    vm.removeTreatmentGroup(group);
 	} catch (IOException e) {
-	    System.out.println("Unable to remove treatment group " + group);
+	    logger.warning("Unable to remove treatment group " + group);
 	}
 
 	vm.dump("all");
@@ -458,7 +458,7 @@ public class AudioTreatmentComponentMO extends AudioParticipantComponentMO imple
 		}
 
 		if (treatment == null) {
-		    System.out.println("Can't find treatment " + treatmentId);
+		    logger.warning("Can't find treatment " + treatmentId);
 		    return;
 		}
 

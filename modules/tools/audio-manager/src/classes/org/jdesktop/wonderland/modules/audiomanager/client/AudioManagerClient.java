@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel;
+import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel.Mode;
 import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.IncomingCallHUDPanel;
 
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -49,6 +50,8 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioManagerConnectio
 
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ConeOfSilenceEnterExitMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetPlayersInRangeRequestMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetPlayersInRangeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.GetVoiceBridgeResponseMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.MuteCallRequestMessage;
@@ -200,7 +203,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void notifyMemberChangeListeners(String group, PresenceInfo member, boolean added) {
-	//System.out.println("Member change for group " + group + " member " + member + " added " + added);
+	logger.fine("Member change for group " + group + " member " + member + " added " + added);
         ArrayList<MemberChangeListener> listeners = memberChangeListeners.get(group);
 
         if (listeners == null) {
@@ -220,10 +223,6 @@ public class AudioManagerClient extends BaseConnection implements
             logger.fine("NO LISTENERS!");
             return;
         }
-
-        //for (int i = 0; i < members.length; i++) {
-        //    System.out.println("setMembers:  " + members[i]);
-        //}
 
         for (MemberChangeListener listener : listeners) {
             listener.setMemberList(members);
@@ -369,7 +368,7 @@ public class AudioManagerClient extends BaseConnection implements
     public void setAudioQuality(AudioQuality audioQuality) {
         SoftphoneControlImpl.getInstance().setAudioQuality(audioQuality);
 
-        System.out.println("Set audio quality, now reconnect softphone");
+        logger.info("Set audio quality to " + audioQuality + ", now reconnect softphone");
         reconnectSoftphone();
     }
 
@@ -423,7 +422,7 @@ public class AudioManagerClient extends BaseConnection implements
             return;
         }
 
-        AddHUDPanel addPanel = new AddHUDPanel(this, session, presenceInfo, presenceInfo);
+        AddHUDPanel addPanel = new AddHUDPanel(this, session, presenceInfo, presenceInfo, Mode.INITIATE);
 
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
@@ -470,10 +469,7 @@ public class AudioManagerClient extends BaseConnection implements
     }
 
     public void softphoneExited() {
-        System.out.println("Softphone exited, reconnect");
-
-        logger.fine("Softphone exited, reconnect");
-
+        logger.warning("Softphone exited, reconnect");
         connectSoftphone();
     }
 
@@ -532,6 +528,18 @@ public class AudioManagerClient extends BaseConnection implements
     public void handleMessage(Message message) {
         logger.fine("got a message...");
 
+        if (message instanceof GetPlayersInRangeResponseMessage) {
+	    GetPlayersInRangeResponseMessage msg = (GetPlayersInRangeResponseMessage) message;
+
+	    String[] playersInRange = msg.getPlayersInRange();
+
+	    for (int i = 0; i < playersInRange.length; i++) {
+	        playerInRange(new PlayerInRangeMessage(msg.getPlayerID(), playersInRange[i], true));
+	    }
+	    
+	    return;
+	}
+
         if (message instanceof GetVoiceBridgeResponseMessage) {
             startSoftphone((GetVoiceBridgeResponseMessage) message);
             return;
@@ -543,7 +551,7 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         if (message instanceof VoiceChatJoinRequestMessage) {
-	    System.out.println("Got VoiceChatJoinRequestMessage");
+	    logger.warning("Got VoiceChatJoinRequestMessage");
 
             final IncomingCallHUDPanel incomingCallHUDPanel = new IncomingCallHUDPanel(this,
                     session, cell.getCellID(), (VoiceChatJoinRequestMessage) message);
@@ -627,27 +635,9 @@ public class AudioManagerClient extends BaseConnection implements
         }
 
         if (message instanceof PlayerInRangeMessage) {
-            PlayerInRangeMessage msg = (PlayerInRangeMessage) message;
-
-            //System.out.println("Player in range " + msg.isInRange() + " " + msg.getPlayerID() + " player in range " + msg.getPlayerInRangeID());
-
-	    PresenceInfo info = pm.getPresenceInfo(msg.getPlayerID());
-
-	    if (info == null) {
-		logger.warning("No PresenceInfo for " + msg.getPlayerID());
-		return;
-	    }
-
-	    PresenceInfo userInRangeInfo = pm.getPresenceInfo(msg.getPlayerInRangeID());
-
-	    if (userInRangeInfo == null) {
-		logger.warning("No PresenceInfo for " + msg.getPlayerInRangeID());
-		return;
-	    }
-
-	    notifyUserInRangeListeners(info, userInRangeInfo, msg.isInRange());
-            return;
-        }
+	    playerInRange((PlayerInRangeMessage) message);
+	    return;
+	}
 
         if (message instanceof CallEstablishedMessage) {
             if (callMigrationForm != null) {
@@ -748,7 +738,7 @@ public class AudioManagerClient extends BaseConnection implements
                     session.send(this,
                             new PlaceCallRequestMessage(presenceInfo, sipURL, 0., 0., 0., 90., false));
                 } else {
-                    System.out.println("Failed to start softphone, retrying.");
+                    logger.warning("Failed to start softphone, retrying.");
 
                     try {
                         Thread.sleep(2000);
@@ -976,7 +966,32 @@ public class AudioManagerClient extends BaseConnection implements
         callEndedHUDComponent.setVisible(true);
     }
 
+    private void playerInRange(PlayerInRangeMessage message) {
+	logger.info("Player in range " + message.isInRange() + " " + message.getPlayerID() 
+	    + " player in range " + message.getPlayerInRangeID());
+
+	PresenceInfo info = pm.getPresenceInfo(message.getPlayerID());
+
+	if (info == null) {
+	    logger.warning("No PresenceInfo for " + message.getPlayerID());
+	    System.out.println("playerInRange:  No PresenceInfo for " + message.getPlayerID());
+	    return;
+	}
+
+	PresenceInfo userInRangeInfo = pm.getPresenceInfo(message.getPlayerInRangeID());
+
+	if (userInRangeInfo == null) {
+	    logger.warning("No PresenceInfo for " + message.getPlayerInRangeID());
+	    System.out.println("inRange user No PresenceInfo for " + message.getPlayerInRangeID());
+	    return;
+	}
+
+	notifyUserInRangeListeners(info, userInRangeInfo, message.isInRange());
+        return;
+    }
+
     public ConnectionType getConnectionType() {
         return AudioManagerConnectionType.CONNECTION_TYPE;
     }
+
 }
