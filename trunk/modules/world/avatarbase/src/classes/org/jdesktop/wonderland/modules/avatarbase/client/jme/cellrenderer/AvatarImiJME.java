@@ -173,7 +173,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                     animationName = avatarCharacter.getContext().getState(CycleActionState.class).getAnimationName();
                 }
                 if (c.getComponent(MovableComponent.class)==null)
-                    System.err.println("!!!! NULL MovableComponent");
+                    logger.warning("!!!! NULL MovableComponent");
                 else
                     ((MovableAvatarComponent) c.getComponent(MovableComponent.class)).localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, animationName, null);
             }
@@ -243,7 +243,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
-        logger.warning("AVATAR RENDERER STATUS " + status + " DIR " + increasing);
+        logger.info("AVATAR RENDERER STATUS " + status + " DIR " + increasing);
         
         // If we are increasing to the ACTIVE state, then turn everything on.
         // Add the listeners to the avatar Cell and set the avatar character
@@ -262,7 +262,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
                 if (configComp != null) {
                     avatarConfigInfo = configComp.getAvatarConfigInfo();
                 }
-                logger.warning("LOADING AVATAR FOR " + avatarConfigInfo);
+                logger.info("LOADING AVATAR FOR " + avatarConfigInfo);
                 pendingAvatar = loadAvatar(avatarConfigInfo);
             }
             else {
@@ -272,7 +272,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
 
             // Go ahead and change the avatar
-            logger.warning("CHANGING AVATAR IN SET STATUS");
+            logger.info("CHANGING AVATAR IN SET STATUS");
             changeAvatar(pendingAvatar);
 
             if (cellMoveListener == null) {
@@ -294,11 +294,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             }
             cell.getComponent(MovableComponent.class).addServerCellMoveListener(cellMoveListener);
         }
-        else if (status == CellStatus.RENDERING) {
-            // Only if increasing? XXX
-            if (((AvatarCell) cell).isSelectedForInput())
-                selectForInput(true);
-        }
+
     }
 
     /**
@@ -352,6 +348,9 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
      */
     private void changeAvatarInternal(WlAvatarCharacter newAvatar) {
 
+        if (newAvatar==null)
+            return;
+
         // Turn on an indication that the avatar is being loaded
         LoadingInfo.startedLoading(cell.getCellID(), newAvatar.getName());
 
@@ -363,10 +362,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         // away its position. Remove the name tag, turn off input and destroy
         // the avatar character.
         PMatrix currentLocation = null;
+        boolean wasSelectedForInput = false;
         if (avatarCharacter != null) {
             currentLocation = avatarCharacter.getModelInst().getTransform().getWorldMatrix(true);
             rootEntity.removeEntity(avatarCharacter);
             avatarCharacter.getJScene().getExternalKidsRoot().detachChild(nameTagNode);
+            wasSelectedForInput = selectedForInput;
             selectForInput(false);
             avatarCharacter.destroy();
         }
@@ -397,7 +398,7 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         externalRoot.updateModelBound();
         externalRoot.updateGeometricState(0, true);
         rootEntity.addEntity(avatarCharacter);
-        selectForInput(selectedForInput);
+        selectForInput(((AvatarCell) cell).isSelectedForInput());
 
         // Notify listeners that the avatar has changed.
         for (WeakReference<AvatarChangedListener> listenerRef : avatarChangedListeners) {
@@ -437,7 +438,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
 //            System.err.println("Steering "+avatarCharacter.getContext().getSteering().isEnabled()+"  "+avatarCharacter.getContext().getSteering().getCurrentTask());
             if (avatarCharacter.getContext().getBehaviorManager().isEnabled()
                     && avatarCharacter.getContext().getBehaviorManager().getCurrentTask() != null) {
-                System.err.println("Avatar steering !");
             } else {
                 Vector3f pos = transform.getTranslation(null);
                 Vector3f dir = new Vector3f(0, 0, -1);
@@ -455,11 +455,11 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
     }
 
     public void loadAndChangeAvatar(final AvatarConfigInfo avatarConfigInfo) {
-        logger.warning("Loading avatar info");
+        logger.info("Loading avatar info");
         WlAvatarCharacter avatar = loadAvatar(avatarConfigInfo);
-        logger.warning("Changing avatar character");
+        logger.info("Changing avatar character");
         changeAvatar(avatar);
-        logger.warning("Done changing avatar character");
+        logger.info("Done changing avatar character");
     }
 
     /**
@@ -474,12 +474,12 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         LoadingInfo.startedLoading(cell.getCellID(), username);
         try {
             if (avatarConfigInfo != null) {
-                logger.warning("Loading avatar with config info url " +
+                logger.info("Loading avatar with config info url " +
                         avatarConfigInfo.getAvatarConfigURL() + " with loader " +
                         avatarConfigInfo.getLoaderFactoryClassName());
             }
             else {
-                logger.warning("Loading default avatar.");
+                logger.info("Loading default avatar.");
             }
 
             return loadAvatarInternal(avatarConfigInfo);
@@ -699,6 +699,13 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         if (selectedForInput==selected)
             return;
 
+        if (avatarCharacter==null) {
+            logger.warning("selectForInput called with null avatarCharacter");
+            Thread.dumpStack();
+            return;
+        }
+
+        logger.info("selectedForInput "+selected);
         selectedForInput = selected;
 
         if (avatarCharacter!=null) {
@@ -709,10 +716,6 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
             if (controlScheme == null && selectedForInput) {
                 controlScheme = new DefaultCharacterControls(ClientContextJME.getWorldManager());
                 ((AvatarControls)wm.getUserData(AvatarControls.class)).setDefault(controlScheme);
-                avatarCharacter.selectForInput();
-                controlScheme.addCharacterToTeam(avatarCharacter);
-                controlScheme.setCharacter(avatarCharacter);
-//                controlScheme = (AvatarControls) ((JSceneEventProcessor) wm.getUserData(JSceneEventProcessor.class)).setDefault(new AvatarControlScheme(avatarCharacter));
             }
             if (selectedForInput) {
                 // Listen for avatar movement and update the cell

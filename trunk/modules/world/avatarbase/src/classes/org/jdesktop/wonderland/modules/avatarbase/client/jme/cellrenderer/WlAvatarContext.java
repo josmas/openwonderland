@@ -37,9 +37,10 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
     public WlAvatarContext(Avatar avatar) {
         super(avatar);
 
-        for(ActionInfo actionInfo : getGenericAnimations()) {
-            actionMap.put(actionInfo.getAnimationName(), actionInfo);
-        }
+        if (avatar.getCharacterParams().isAnimateBody())
+            for(ActionInfo actionInfo : getGenericAnimations()) {
+                actionMap.put(actionInfo.getAnimationName(), actionInfo);
+            }
     }
 
     /**
@@ -51,14 +52,16 @@ public class WlAvatarContext extends imi.character.avatar.AvatarContext {
     }
 
     void playMiscAnimation(String name) {
-        setMiscAnimation(name);
+        if (getavatar().getCharacterParams().isAnimateBody()) {
+            setMiscAnimation(name);
 
-        // Force the trigger, note that this transition is so fast that the
-        // state machine may not actually change state. Therefore in triggerAlert
-        // we check for the trigger and force the state change.
-        triggerReleased(TriggerNames.MiscAction.ordinal());
-        triggerPressed(TriggerNames.MiscAction.ordinal());
-        triggerReleased(TriggerNames.MiscAction.ordinal());
+            // Force the trigger, note that this transition is so fast that the
+            // state machine may not actually change state. Therefore in triggerAlert
+            // we check for the trigger and force the state change.
+            triggerReleased(TriggerNames.MiscAction.ordinal());
+            triggerPressed(TriggerNames.MiscAction.ordinal());
+            triggerReleased(TriggerNames.MiscAction.ordinal());
+        }
     }
 
     void setMiscAnimation(String animationName) {

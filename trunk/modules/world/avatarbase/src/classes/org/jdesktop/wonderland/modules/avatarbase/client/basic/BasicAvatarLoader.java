@@ -77,6 +77,10 @@ public class BasicAvatarLoader implements AvatarLoaderSPI {
         simpleScene.addMeshInstance(new PPolygonMesh("PlaceholderMesh"), new PMatrix());
         attributes.setUseSimpleStaticModel(true, simpleScene);
         attributes.setBaseURL(baseURL);
+        
+        // Turn of animations for the simple avatar
+        attributes.setAnimateBody(false);
+        attributes.setAnimateFace(false);
 
         // Create the avatar character, but don't add it to the world just yet.
         WlAvatarCharacter avatar =

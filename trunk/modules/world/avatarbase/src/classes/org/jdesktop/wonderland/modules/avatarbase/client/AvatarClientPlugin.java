@@ -401,7 +401,7 @@ public class AvatarClientPlugin extends BaseClientPlugin
      */
     public void primaryViewCellChanged(ViewCell oldViewCell, final ViewCell newViewCell) {
 
-        logger.warning("Primary view Cell Changes to " + newViewCell.getName());
+        logger.info("Primary view Cell Changes to " + newViewCell.getName());
 
         // Fetch the cell renderer for the new primary view Cell. It should
         // be of type AvatarImiJME. If not, log a warning and return
