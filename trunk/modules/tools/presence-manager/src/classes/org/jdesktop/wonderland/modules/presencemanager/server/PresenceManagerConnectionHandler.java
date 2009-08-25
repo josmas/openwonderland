@@ -136,7 +136,7 @@ public class PresenceManagerConnectionHandler implements
 	    PresenceInfo info = presenceInfoMap.get(clientID.getID());
 
 	    if (info == null) {
-		System.out.println("PlayerInRangeListenerMessage:  No presence info for clientID "
+		logger.warning("PlayerInRangeListenerMessage:  No presence info for clientID "
 		    + clientID.getID());
 		return;
 	    }
@@ -217,7 +217,7 @@ public class PresenceManagerConnectionHandler implements
 	PlayerInRangeNotifier notifier = notifiers.remove(clientID.getID());
 
 	if (notifier == null) {
-	    System.out.println("Can't find notifier for " + clientID.getID());	
+	    logger.warning("Can't find notifier for " + clientID.getID());	
 	} else {
 	    notifier.done();
 	}
@@ -249,7 +249,7 @@ public class PresenceManagerConnectionHandler implements
 	 * For some reason, we don't get called at clientDisconnected()
 	 * during warm start, so we cleanup here.
 	 */
-	System.out.println("Clearing presence info");
+	logger.warning("Clearing presence info");
 	presenceInfoList.clear();
     }
 
@@ -267,7 +267,7 @@ public class PresenceManagerConnectionHandler implements
 	    Player player = vm.getPlayer(presenceInfo.callID);
 
 	    if (player == null) {
-	        System.out.println("PlayerInRangeListener:  No player for " + presenceInfo.callID);
+	        logger.warning("PlayerInRangeListener:  No player for " + presenceInfo.callID);
 		return;
 	    }
 
@@ -282,7 +282,7 @@ public class PresenceManagerConnectionHandler implements
 	    Player player = vm.getPlayer(presenceInfo.callID);
 
 	    if (player == null) {
-	        System.out.println("PRESENCE clientDisconnected:  No player for " + presenceInfo.callID);
+	        logger.warning("PRESENCE clientDisconnected:  No player for " + presenceInfo.callID);
 	    } else {
 	        player.removePlayerInRangeListener(this);
 	    }
