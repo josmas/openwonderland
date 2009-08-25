@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.client.jme.content;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -31,7 +30,9 @@ import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
+import org.jdesktop.wonderland.client.cell.utils.CellSelectionRegistry;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
+import org.jdesktop.wonderland.client.cell.utils.spi.CellSelectionSPI;
 import org.jdesktop.wonderland.client.content.spi.ContentImporterSPI;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -166,22 +167,41 @@ public abstract class AbstractContentImporter implements ContentImporterSPI {
             logger.warning("Could not find extension for " + uri);
             return;
         }
-        
-        // Next look for a cell type that handles content with this file
-        // extension and create a new cell with it.
-        CellRegistry registry = CellRegistry.getCellRegistry();
-        Set<CellFactorySPI> factories = registry.getCellFactoriesByExtension(extension);
-        if (factories == null) {
-            final JFrame frame = JmeClientMain.getFrame().getFrame();
-            logger.warning("Could not find cell factory for " + extension);
+
+        // First look for the SPI that tells us which Cell to use. If there
+        // is none, then it is a fairly big error. (There should be at least
+        // one registered in the system).
+        CellSelectionSPI spi = CellSelectionRegistry.getCellSelectionSPI();
+        if (spi == null) {
+             final JFrame frame = JmeClientMain.getFrame().getFrame();
+            logger.warning("Could not find the CellSelectionSPI factory");
             JOptionPane.showMessageDialog(frame,
                     "Unable to launch Cell that supports " + uri,
                     "Launch Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        CellFactorySPI factory = factories.iterator().next();
+        // Next look for a cell type that handles content with this file
+        // extension and create a new cell with it.
+        CellFactorySPI factory = null;
+        try {
+            factory = spi.getCellSelection(extension);
+        } catch (CellCreationException excp) {
+            final JFrame frame = JmeClientMain.getFrame().getFrame();
+            logger.log(Level.WARNING,
+                    "Could not find cell factory for " + extension, excp);
+            JOptionPane.showMessageDialog(frame,
+                    "Unable to launch Cell that supports " + uri,
+                    "Launch Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
+        // If the returned factory is null, it means that the user has cancelled
+        // the action, so we just return
+        if (factory == null) {
+            return;
+        }
+        
         // Get the cell server state, injecting the content URI into it via
         // the properties
         Properties props = new Properties();
