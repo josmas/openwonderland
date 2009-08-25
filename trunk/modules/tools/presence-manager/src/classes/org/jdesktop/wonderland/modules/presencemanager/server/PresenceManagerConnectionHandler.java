@@ -136,7 +136,7 @@ public class PresenceManagerConnectionHandler implements
 	    PresenceInfo info = presenceInfoMap.get(clientID.getID());
 
 	    if (info == null) {
-		logger.warning("PlayerInRangeListenerMessage:  No presence info for clientID "
+		logger.info("PlayerInRangeListenerMessage:  No presence info for clientID "
 		    + clientID.getID());
 		return;
 	    }
@@ -204,10 +204,10 @@ public class PresenceManagerConnectionHandler implements
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
 	PresenceInfo info = presenceInfoMap.get(clientID.getID());
 
-	logger.warning("client disconnected " + clientID.getID() + " " + info);
+	logger.info("client disconnected " + clientID.getID() + " " + info);
 
 	if (info == null) {
-	    logger.warning("PRESENCE:  No PresenceInfo for " + clientID.getID());
+	    logger.info("PRESENCE:  No PresenceInfo for " + clientID.getID());
 	    return;
 	}
 
@@ -217,7 +217,7 @@ public class PresenceManagerConnectionHandler implements
 	PlayerInRangeNotifier notifier = notifiers.remove(clientID.getID());
 
 	if (notifier == null) {
-	    logger.warning("Can't find notifier for " + clientID.getID());	
+	    logger.info("Can't find notifier for " + clientID.getID());	
 	} else {
 	    notifier.done();
 	}
@@ -249,7 +249,7 @@ public class PresenceManagerConnectionHandler implements
 	 * For some reason, we don't get called at clientDisconnected()
 	 * during warm start, so we cleanup here.
 	 */
-	logger.warning("Clearing presence info");
+	logger.info("Clearing presence info");
 	presenceInfoList.clear();
     }
 
@@ -267,7 +267,7 @@ public class PresenceManagerConnectionHandler implements
 	    Player player = vm.getPlayer(presenceInfo.callID);
 
 	    if (player == null) {
-	        logger.warning("PlayerInRangeListener:  No player for " + presenceInfo.callID);
+	        logger.info("PlayerInRangeListener:  No player for " + presenceInfo.callID);
 		return;
 	    }
 
@@ -282,7 +282,7 @@ public class PresenceManagerConnectionHandler implements
 	    Player player = vm.getPlayer(presenceInfo.callID);
 
 	    if (player == null) {
-	        logger.warning("PRESENCE clientDisconnected:  No player for " + presenceInfo.callID);
+	        logger.info("PRESENCE clientDisconnected:  No player for " + presenceInfo.callID);
 	    } else {
 	        player.removePlayerInRangeListener(this);
 	    }

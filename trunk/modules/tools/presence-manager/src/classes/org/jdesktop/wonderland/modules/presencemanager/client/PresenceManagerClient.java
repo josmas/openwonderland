@@ -178,7 +178,7 @@ public class PresenceManagerClient extends BaseConnection implements
 	    PresenceInfo info = pm.getPresenceInfo(msg.getCallID());
 
 	    if (info == null) {
-		logger.warning("no presence info for callID " + msg.getCallID());
+		logger.info("no presence info for callID " + msg.getCallID());
 		return;
 	    }
 
@@ -247,7 +247,7 @@ public class PresenceManagerClient extends BaseConnection implements
 		    PresenceInfo info = pm.getUserPresenceInfo(name);
 
 		    if (info == null) {
-			logger.warning("No presence info for " + name);
+			logger.info("No presence info for " + name);
 			continue;
 		    }
 		
