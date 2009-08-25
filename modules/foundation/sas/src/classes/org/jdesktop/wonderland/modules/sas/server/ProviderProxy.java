@@ -190,19 +190,6 @@ class ProviderProxy implements Serializable {
      * Clean up resources.
      */
     public void cleanup () {
-        // Traverse through cells which have launched an app on this provider and ensure
-        // that their connection infos are cleaned up.
-        Iterator<CellID> it = getProviderCellsLaunched().getIterator();
-        while (it.hasNext()) {
-            CellID cellID = it.next();
-            CellMO cell = CellManagerMO.getCell(cellID);
-            if (cell != null) {
-                if (!(cell instanceof AppConventionalCellMO)) {
-                    logger.warning("Cell being cleaned up is not an AppConventionalMO");
-                }
-                ((AppConventionalCellMO)cell).appExitted(-1);
-            }
-        }
         getProviderCellsLaunched().clear();
     }
 }
