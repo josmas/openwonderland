@@ -62,12 +62,17 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         String executionCapability;
         String appName;
         String command;
+        ProviderProxy provider;
 
         LaunchRequest (CellID cellID, String executionCapability, String appName, String command) {
             this.cellID = cellID;
             this.executionCapability = executionCapability;
             this.appName = appName;
             this.command = command;
+        }
+
+        void setProvider (ProviderProxy provider) {
+            this.provider = provider;
         }
 
         @Override
@@ -95,7 +100,13 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
     /**
      * A list of the app launch requests which still must be honored.
      */
-    private PendingLaunches pendingLaunches = new PendingLaunches();
+    private LaunchList pendingLaunches = new LaunchList();
+
+    /**
+     * A list of the app launch requests that have succeeded. This is the list
+     * of currently running apps.
+     */
+     private LaunchList runningLaunches = new LaunchList();
 
     /**
      * Called when a new provider client connects to the SAS server.
@@ -148,6 +159,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
                 if (provider.getClientID().equals(clientID)) {
                     providerToRemove = provider;
                     provider.cleanup();
+                    persistProviderApps(provider, execCap);
                     break;
                 }
             }
@@ -199,6 +211,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         }
 
         // Now request the provider to launch the app
+        launchReq.setProvider(provider);
         launchesInFlight.put(cellID, launchReq);
         provider.tryLaunch(cellID, executionCapability, appName, command);
 
@@ -251,6 +264,9 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             return;
         }
 
+        // The app is now running
+        runningLaunches.add(launchReq);
+
         ((AppConventionalCellMO)cell).appLaunchResult(status, connInfo);
     }
     
@@ -264,11 +280,14 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
 
         // First, remove cell from the launches in flight map.
         launchesInFlight.remove(cellID);
-        AppContext.getDataManager().markForUpdate(this);
+
+        // Next, remove cell from the list of running apps
+        runningLaunches.remove(cellID, sasLaunchInfo.executionCapability);
 
         // Next, remove cell from pending launch list. 
         // TODO: someday: For now, this code assumes only one app launch per cell.
         pendingLaunches.remove(cellID, sasLaunchInfo.executionCapability);
+
         AppContext.getDataManager().markForUpdate(this);
 
         // Finally tell the provider to stop the app.
@@ -290,7 +309,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
     }
 
     private void tryPendingLaunches (String executionCapability) throws InstantiationException {
-        LinkedList<LaunchRequest> reqs = pendingLaunches.getPendingLaunches(executionCapability);
+        LinkedList<LaunchRequest> reqs = pendingLaunches.getLaunches(executionCapability);
         if (reqs == null) {
             return;
         }
@@ -315,6 +334,43 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
             launchesInFlight.put(req.cellID, req);
             provider.tryLaunch(req.cellID, req.executionCapability, req.appName, req.command);
         }
+    }
+
+    /**
+     * Make the currently running apps persist by transferring them to the pending
+     * launches list. They will be rerun the next time a suitable provider connects.
+     * @param provider The provider whose running apps should be persisted.
+     * @param execCap The execution capability of the running apps that should be persisted.
+     */
+    private void persistProviderApps (ProviderProxy provider, String execCap) {
+
+        // First, persist the in-flight launches (i.e. the launches that have been requested
+        // but have not yet occurred.
+        LinkedList<CellID> cellsToRemove = new LinkedList<CellID>();
+        for (CellID cellID : launchesInFlight.keySet()) {
+            LaunchRequest launchReq = launchesInFlight.get(cellID);
+            if (launchReq != null && launchReq.cellID == cellID && launchReq.provider == provider) {
+                pendingLaunches.add(launchReq);
+                cellsToRemove.add(cellID);
+            }
+        }
+        for (CellID cellID : cellsToRemove) {
+            launchesInFlight.remove(cellID);
+        }
+        cellsToRemove.clear();
+
+        // Next, persist the running apps.
+        LinkedList<LaunchRequest> launches = runningLaunches.getLaunches(execCap);
+        for (LaunchRequest launchReq : launches) {
+            pendingLaunches.add(launchReq);
+            cellsToRemove.add(launchReq.cellID);
+        }
+         for (CellID cellID : cellsToRemove) {
+            runningLaunches.remove(cellID, execCap);
+        }
+        cellsToRemove.clear();
+
+        AppContext.getDataManager().markForUpdate(this);
     }
 }
 
