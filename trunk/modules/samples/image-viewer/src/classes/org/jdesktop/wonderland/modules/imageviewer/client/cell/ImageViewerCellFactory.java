@@ -106,4 +106,18 @@ public class ImageViewerCellFactory implements CellFactorySPI {
         URL url = AssetUtils.getAssetURL(uri);
         return TextureManager.loadTexture(url);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        // XXX HACK
+        // In order for this NOT to display in the Cell Palettes then the
+        // getDisplayName() method must return null. However, this prevents it
+        // from appearing in a list of Cells when more than one supports the
+        // the PNG/JPG extensions. So we return a good display name here
+        // XXX
+        return "Image Viewer";
+    }
 }

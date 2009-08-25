@@ -23,15 +23,15 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.net.URL;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
+import org.jdesktop.wonderland.client.cell.utils.CellSelectionRegistry;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
+import org.jdesktop.wonderland.client.cell.utils.spi.CellSelectionSPI;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.dnd.spi.DataFlavorHandlerSPI;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -115,19 +115,39 @@ public class URLDataFlavorHandler implements DataFlavorHandlerSPI {
         // create
         String extension = DragAndDropManager.getFileExtension(url.getFile());
 
+        // First look for the SPI that tells us which Cell to use. If there
+        // is none, then it is a fairly big error. (There should be at least
+        // one registered in the system).
+        CellSelectionSPI spi = CellSelectionRegistry.getCellSelectionSPI();
+        if (spi == null) {
+             final JFrame frame = JmeClientMain.getFrame().getFrame();
+            logger.warning("Could not find the CellSelectionSPI factory");
+            JOptionPane.showMessageDialog(frame,
+                    "Unable to launch Cell that supports " + url.toExternalForm(),
+                    "Launch Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         // Next look for a cell type that handles content with this file
         // extension and create a new cell with it.
-        CellRegistry registry = CellRegistry.getCellRegistry();
-        Set<CellFactorySPI> factories = registry.getCellFactoriesByExtension(extension);
-        if (factories == null) {
-            logger.warning("Could not find cell factory for " + extension);
+        CellFactorySPI factory = null;
+        try {
+            factory = spi.getCellSelection(extension);
+        } catch (CellCreationException excp) {
+            logger.log(Level.WARNING,
+                    "Could not find cell factory for " + extension, excp);
             JFrame frame = JmeClientMain.getFrame().getFrame();
             JOptionPane.showMessageDialog(frame,
                     "The content type for this URL is not supported: " +
                     url.toExternalForm());
             return;
         }
-        CellFactorySPI factory = factories.iterator().next();
+
+        // If the returned factory is null, it means that the user has cancelled
+        // the action, so we just return
+        if (factory == null) {
+            return;
+        }
 
         // Get the cell server state, injecting the content URI into it via
         // the properties
