@@ -615,9 +615,9 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
 
         final HUDView2D view = state.getView();
         if (view != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
+//            SwingUtilities.invokeLater(new Runnable() {
+//
+//                public void run() {
                     view.setSizeApp(component.getSize());
                     if (component.getDecoratable()) {
                         HUDView2D frameView = state.getFrameView();
@@ -628,8 +628,8 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
                             frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * frame.getHeight() / 2 + 0.75f * component.getSize().height / 2)));
                         }
                     }
-                }
-            });
+//                }
+//            });
         }
     }
 
