@@ -29,11 +29,15 @@
                     <include name="${module.src}/common/**"/>
                     <exclude name="${module.src}/client/cell/**"/>
                     <exclude name="${module.src}/common/cell/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/**/*.properties"/>
+                    </fileset>
                 </clientjar>
                 <clientjar name="appbase-client-cell" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/cell/**"/>
                     <fileset dir="${current.dir}/src/classes">
                         <include name="${module.src}/client/cell/view/viewdefault/resources/**/*.png"/>
+                        <include name="${module.src}/client/**/*.properties"/>
                     </fileset>
                     <include name="${module.src}/common/cell/**"/>
                 </clientjar>

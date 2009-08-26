@@ -21,83 +21,85 @@ import com.jme.math.Vector2f;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.View2DCellFactory;
 import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
-import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
-import org.jdesktop.wonderland.client.cell.utils.CellUtils;
-import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
-import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager;
-import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
-import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
-import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellPerformFirstMoveMessage;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
 
 /**
- * The generic 2D application superclass. Displays the windows of a single 2D application. 
- * It's only extra attribute is the
- * pixel scale for all app windows created in the cell. The pixel scale is a Vector2f. 
- * The x component specifies the size (in local cell coordinates) of the windows along 
- * the local cell X axis. The y component specifies the same along the local cell 
- * Y axis. The pixel scale is in the cell client data (which must be of type 
- * <code>App2DCellClientState</code>) sent by the server when it instantiates this cell.
+ * The generic 2D application superclass. Displays the windows of a single 2D
+ * application. It's only extra attribute is the pixel scale for all app windows
+ * created in the cell. The pixel scale is a Vector2f. The x component specifies
+ * the size (in local cell coordinates) of the windows along the local cell X
+ * axis. The y component specifies the same along the local cell Y axis. The
+ * pixel scale is in the cell client data (which must be of type
+ * <code>App2DCellClientState</code>) sent by the server when it instantiates
+ * this cell.
  *
  * @author deronj
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
+ *
  */
 @ExperimentalAPI
 public abstract class App2DCell extends Cell implements View2DDisplayer {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/appbase/client/Bundle");
     /** A list of all App2DCells in this client */
-    private static final ArrayList<App2DCell> appCells = new ArrayList<App2DCell>();
-
+    private static final ArrayList<App2DCell> appCells =
+            new ArrayList<App2DCell>();
     /** The view factory to use to create views for this cell. */
     private View2DCellFactory view2DCellFactory;
-
-    /** The number of world units per pixel in the cell local X and Y directions */
+    /**
+     * The number of world units per pixel in the cell local X and Y directions
+     */
     // TODO: eliminate
     protected Vector2f pixelScale = new Vector2f();
-
     /** All app views displayed by this cell. */
     private LinkedList<View2DCell> views = new LinkedList<View2DCell>();
-
     /** The app displayed in this cell. */
     protected App2D app;
-
     // For the Window Menu
-    @UsesCellComponent private ContextMenuComponent contextMenuComp = null;
+    @UsesCellComponent
+    private ContextMenuComponent contextMenuComp = null;
     private ContextMenuFactorySPI menuFactory = null;
     private ContextMenuListener menuListener = null;
-
     /** 
      * The cell's first visible initializer. This is non-null if this cell has 
      * volunteered to do the initialization.
      */
     protected FirstVisibleInitializerCell fvi;
-
     /** The overriding initial placement size. */
     private Vector2f initialPlacementSize;
-
     // the cell channel
     @UsesCellComponent
     protected ChannelComponent channel;
@@ -119,7 +121,9 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * {@inheritDoc}
      */
     public void cleanup() {
-        if (app == null) return;
+        if (app == null) {
+            return;
+        }
         synchronized (app.getAppCleanupLock()) {
             synchronized (appCells) {
                 appCells.remove(this);
@@ -134,7 +138,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     /**
      * Destroy the app cell.
      */
-    public void destroy () {
+    public void destroy() {
         app.cleanup();
         cleanup();
 
@@ -165,10 +169,13 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * Note: this is only called by Swing app cells.
      *
      * @param app The world cell containing the app.
-     * @throws IllegalArgumentException If the app already is associated with a cell .
-     * @throws IllegalStateException If the cell is already associated with an app.
+     * @throws IllegalArgumentException If the app already is associated with a
+     * cell.
+     * @throws IllegalStateException If the cell is already associated with an
+     * app.
      */
-    public void setApp(App2D app) throws IllegalArgumentException, IllegalStateException {
+    public void setApp(App2D app)
+            throws IllegalArgumentException, IllegalStateException {
 
         if (app == null) {
             throw new NullPointerException();
@@ -198,19 +205,17 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     @Override
     public void setClientState(CellClientState clientState) {
         super.setClientState(clientState);
-        pixelScale = ((App2DCellClientState) clientState).getPixelScale();
+        App2DCellClientState state = (App2DCellClientState) clientState;
+        pixelScale = state.getPixelScale();
 
-        logger.info("initialPlacementDone = " + 
-                       ((App2DCellClientState) clientState).isInitialPlacementDone());
+        logger.info("initialPlacementDone = " + state.isInitialPlacementDone());
 
-        if (App2D.doAppInitialPlacement &&
-            !((App2DCellClientState) clientState).isInitialPlacementDone()) {
+        if (App2D.doAppInitialPlacement && !state.isInitialPlacementDone()) {
             // Initial cell placement hasn't yet been done. Volunteer to do it.
-            logger.info("creatorViewTransform = " +
-                          ((App2DCellClientState) clientState).getCreatorViewTransform());
-            fvi = new FirstVisibleInitializerCell(this, 
-                       ((App2DCellClientState) clientState).getCreatorViewTransform(),
-                       initialPlacementSize);
+            logger.info("creatorViewTransform = " + 
+                    state.getCreatorViewTransform());
+            fvi = new FirstVisibleInitializerCell(this,
+                    state.getCreatorViewTransform(), initialPlacementSize);
             logger.info("fvi = " + fvi);
         }
     }
@@ -229,8 +234,11 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                 if (increasing) {
                     if (menuFactory == null) {
                         menuFactory = new ContextMenuFactorySPI() {
-                            public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                                return windowMenuItemsForEvent(event, contextMenuComp);
+
+                            public ContextMenuItem[] getContextMenuItems(
+                                    ContextEvent event) {
+                                return windowMenuItemsForEvent(
+                                        event, contextMenuComp);
                             }
                         };
                         contextMenuComp.addContextMenuFactory(menuFactory);
@@ -241,18 +249,23 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                     // menu is displayed
                     if (menuListener == null) {
                         menuListener = new ContextMenuListener() {
-                            public void contextMenuDisplayed(ContextMenuEvent event) {
+
+                            public void contextMenuDisplayed(
+                                    ContextMenuEvent event) {
                                 windowMenuDisplayed(event, contextMenuComp);
                             }
                         };
-                        ContextMenuManager cmm = ContextMenuManager.getContextMenuManager();
+                        ContextMenuManager cmm =
+                                ContextMenuManager.getContextMenuManager();
                         cmm.addContextMenuListener(menuListener);
                     }
                 } else {
-                    // If the cell has decreased to ACTIVE it is no longer visible and is no longer
-                    // close enough to the viewer to be potentially viewable, so we release control
-                    // of the app if it is controlled. We did a similar thing in 0.4 Wonderland, 
-                    // where we released control on a teleport. But this is a more elegant solution.
+                    // If the cell has decreased to ACTIVE it is no longer
+                    // visible and is no longer close enough to the viewer to be
+                    // potentially viewable, so we release control of the app if
+                    // it is controlled. We did a similar thing in 0.4
+                    // Wonderland, where we released control on a teleport. But
+                    // this is a more elegant solution.
                     if (app != null) {
                         ControlArb controlArb = app.getControlArb();
                         if (controlArb != null) {
@@ -273,7 +286,8 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
                     }
 
                     if (menuListener != null) {
-                        ContextMenuManager cmm = ContextMenuManager.getContextMenuManager();
+                        ContextMenuManager cmm =
+                                ContextMenuManager.getContextMenuManager();
                         cmm.removeContextMenuListener(menuListener);
                         menuListener = null;
                     }
@@ -286,21 +300,25 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
      * Performs any special pre-processing when a context menu is about to
      * be displayed
      */
-   private void windowMenuDisplayed (ContextMenuEvent event,
-                                     ContextMenuComponent contextMenuComp) {
+    private void windowMenuDisplayed(ContextMenuEvent event,
+            ContextMenuComponent contextMenuComp) {
         if (event.getSource() instanceof Window2D.WindowContextMenuEvent) {
-            Window2D.WindowContextMenuEvent windowMenuEvent = (Window2D.WindowContextMenuEvent) event.getSource();
-            windowMenuEvent.getWindow().contextMenuDisplayed(event, contextMenuComp);
+            Window2D.WindowContextMenuEvent windowMenuEvent =
+                    (Window2D.WindowContextMenuEvent) event.getSource();
+            windowMenuEvent.getWindow().contextMenuDisplayed(
+                    event, contextMenuComp);
         }
     }
-   
+
     /**
-     * Returns the window menu items that are appropriate for the given context event.
+     * Returns the window menu items that are appropriate for the given context
+     * event.
      */
-    private ContextMenuItem[] windowMenuItemsForEvent (ContextEvent event, 
-                                                       ContextMenuComponent contextMenuComp) {
+    private ContextMenuItem[] windowMenuItemsForEvent(ContextEvent event,
+            ContextMenuComponent contextMenuComp) {
         if (event instanceof Window2D.WindowContextMenuEvent) {
-            Window2D.WindowContextMenuEvent windowMenuEvent = (Window2D.WindowContextMenuEvent) event;
+            Window2D.WindowContextMenuEvent windowMenuEvent =
+                    (Window2D.WindowContextMenuEvent) event;
             return windowMenuEvent.getWindow().windowMenuItems(contextMenuComp);
         } else {
             return windowMenuItemsForNoControl(contextMenuComp);
@@ -308,23 +326,31 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /**
-     * Return the app-specific window menu items for the case where the app doesn't have control.
+     * Return the app-specific window menu items for the case where the app
+     * doesn't have control.
      */
-    private ContextMenuItem[] windowMenuItemsForNoControl (ContextMenuComponent contextMenuComp) {
+    private ContextMenuItem[] windowMenuItemsForNoControl(
+            ContextMenuComponent contextMenuComp) {
         contextMenuComp.setShowStandardMenuItems(true);
 
-        return new ContextMenuItem[] {
-            new SimpleContextMenuItem("Take Control", new ContextMenuActionListener () {
-                public void actionPerformed(ContextMenuItemEvent event) {
-                    app.getControlArb().takeControl();
-                }
-            }),
-            new SimpleContextMenuItem("Show in HUD", new ContextMenuActionListener () {
-                public void actionPerformed(ContextMenuItemEvent event) {
-                    app.setShowInHUD(true);
-                }
-            })
-        };
+        return new ContextMenuItem[]{
+                    new SimpleContextMenuItem(BUNDLE.getString("Take_Control"),
+                    new ContextMenuActionListener() {
+
+                        public void actionPerformed(
+                                ContextMenuItemEvent event) {
+                            app.getControlArb().takeControl();
+                        }
+                    }),
+                    new SimpleContextMenuItem(BUNDLE.getString("Show_in_HUD"),
+                    new ContextMenuActionListener() {
+
+                        public void actionPerformed(
+                                ContextMenuItemEvent event) {
+                            app.setShowInHUD(true);
+                        }
+                    })
+                };
     }
 
     /**
@@ -335,22 +361,24 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /** Returns the view cell factory */
-    private View2DCellFactory getViewFactory () {
+    private View2DCellFactory getViewFactory() {
         View2DCellFactory vFactory = view2DCellFactory;
         if (vFactory == null) {
             vFactory = App2D.getView2DCellFactory();
         }
 
         if (vFactory == null) {
-            throw new RuntimeException("App2D View2DCellFactory is not defined.");
+            throw new RuntimeException(
+                    "App2D View2DCellFactory is not defined.");
         }
 
         return vFactory;
     }
 
     /** {@inheritDoc} */
-    public synchronized View2D createView (Window2D window) {
-        View2DCell view = (View2DCell) getViewFactory().createView(this, window);
+    public synchronized View2D createView(Window2D window) {
+        View2DCell view =
+                (View2DCell) getViewFactory().createView(this, window);
 
         // This type of cell allows the app to fully control the visibility
         view.setVisibleUser(true);
@@ -364,11 +392,13 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /** {@inheritDoc} */
-    public void destroyView (View2D view) {
-        if (app == null) return;
+    public void destroyView(View2D view) {
+        if (app == null) {
+            return;
+        }
         synchronized (app.getAppCleanupLock()) {
             synchronized (this) {
-                if (views.remove((View2DCell)view)) {
+                if (views.remove((View2DCell) view)) {
                     Window2D window = view.getWindow();
                     window.removeView(view);
                     view.cleanup();
@@ -378,11 +408,14 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /** {@inheritDoc} */
-    public void destroyAllViews () {
-        if (app == null) return;
+    public void destroyAllViews() {
+        if (app == null) {
+            return;
+        }
         synchronized (app.getAppCleanupLock()) {
             synchronized (this) {
-                LinkedList<View2D> toRemoveList = (LinkedList<View2D>) views.clone();
+                LinkedList<View2D> toRemoveList =
+                        (LinkedList<View2D>) views.clone();
                 for (View2D view : toRemoveList) {
                     Window2D window = view.getWindow();
                     if (window != null) {
@@ -397,10 +430,9 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     /** {@inheritDoc} */
-    public synchronized Iterator<? extends View2D> getViews () {
+    public synchronized Iterator<? extends View2D> getViews() {
         return views.iterator();
     }
-    
 
     /**
      * {@inheritDoc}
@@ -418,27 +450,28 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     }
 
     // TODO: getter
-    public void setViewFactory (View2DCellFactory vFactory) {
+    public void setViewFactory(View2DCellFactory vFactory) {
         view2DCellFactory = vFactory;
     }
 
     /**
-     * Performs the initial move for the cell using a special app-specific first move
-     * protocol.
+     * Performs the initial move for the cell using a special app-specific first
+     * move protocol.
      */
-    public void performFirstMove (CellTransform cellTransform) {
+    public void performFirstMove(CellTransform cellTransform) {
         App2DCellPerformFirstMoveMessage msg =
-            new App2DCellPerformFirstMoveMessage(getCellID(), cellTransform);
+                new App2DCellPerformFirstMoveMessage(
+                getCellID(), cellTransform);
         channel.send(msg);
     }
 
     /**
      * Specify an initial placement width and or height to use instead of the
-     * one calculated based on the first visible window size. If size.x is non-zero,
-     * it overrides the calculated width in the cell initial placement calculation.
-     * If size.y is non-zero, it overrides the calculated height.
+     * one calculated based on the first visible window size. If size.x is
+     * non-zero, it overrides the calculated width in the cell initial placement
+     * calculation. If size.y is non-zero, it overrides the calculated height.
      */
-    public void setInitialPlacementSize (Vector2f size) {
+    public void setInitialPlacementSize(Vector2f size) {
         if (size == null) {
             initialPlacementSize = size;
         } else {
@@ -449,7 +482,7 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
         }
     }
 
-    public Vector2f getInitialPlacementSize () {
+    public Vector2f getInitialPlacementSize() {
         return initialPlacementSize;
     }
 
@@ -462,10 +495,13 @@ public abstract class App2DCell extends Cell implements View2DDisplayer {
     public void logSceneGraph(RendererType rendererType) {
         switch (rendererType) {
             case RENDERER_JME:
-                ((App2DCellRenderer) getCellRenderer(rendererType)).logSceneGraph();
+                App2DCellRenderer renderer =
+                        (App2DCellRenderer) getCellRenderer(rendererType);
+                renderer.logSceneGraph();
                 break;
             default:
-                throw new RuntimeException("Unsupported cell renderer type: " + rendererType);
+                throw new RuntimeException(
+                        "Unsupported cell renderer type: " + rendererType);
         }
     }
 }
