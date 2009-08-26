@@ -15,11 +15,12 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.contentrepo.client.ui;
+
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.swing.UIManager;
 import javax.swing.table.AbstractTableModel;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
@@ -31,9 +32,12 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
  * or directory, its name, its size, and its last modified date.
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class AsyncTableModel extends AbstractTableModel {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/Bundle");
     private List<ContentNode> nodeList = null;
     protected Object dirIcon = null;
     protected Object fileIcon = null;
@@ -63,7 +67,7 @@ public class AsyncTableModel extends AbstractTableModel {
     public ContentNode getContentNode(int n) {
         return nodeList.get(n);
     }
-    
+
     /**
      * @inheritDoc()
      */
@@ -92,19 +96,20 @@ public class AsyncTableModel extends AbstractTableModel {
         switch (column) {
             case 0:
                 return (node instanceof ContentCollection) ? dirIcon : fileIcon;
-                
+
             case 1:
                 return node.getName();
 
             case 2:
                 if (node instanceof ContentResource) {
-                    return "" + ((ContentResource)node).getSize();
+                    return "" + ((ContentResource) node).getSize();
                 }
                 return "";
 
             case 3:
                 if (node instanceof ContentResource) {
-                    Date lastModified = ((ContentResource)node).getLastModified();
+                    Date lastModified =
+                            ((ContentResource) node).getLastModified();
                     DateFormat df = DateFormat.getDateInstance();
                     return df.format(lastModified);
                 }
@@ -120,16 +125,16 @@ public class AsyncTableModel extends AbstractTableModel {
      * @inheritDoc()
      */
     @Override
-    public String getColumnName( int column ) {
+    public String getColumnName(int column) {
         switch (column) {
             case 0:
                 return "";
             case 1:
-                return "Name";
+                return BUNDLE.getString("Name");
             case 2:
-                return "Size";
+                return BUNDLE.getString("Size");
             case 3:
-                return "Last Modified";
+                return BUNDLE.getString("Last_Modified");
             default:
                 return "unknown";
         }
@@ -139,11 +144,10 @@ public class AsyncTableModel extends AbstractTableModel {
      * @inheritDoc()
      */
     @Override
-    public Class getColumnClass( int column ) {
+    public Class getColumnClass(int column) {
         if (column == 0) {
             return getValueAt(0, column).getClass();
-        }
-        else {
+        } else {
             return super.getColumnClass(column);
         }
     }
