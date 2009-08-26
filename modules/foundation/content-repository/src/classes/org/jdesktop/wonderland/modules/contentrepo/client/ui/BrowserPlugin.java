@@ -21,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,11 +43,15 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 /**
  *
  * @author jkaplan
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @Plugin
 public class BrowserPlugin extends BaseClientPlugin {
-    
-    private static Logger logger = Logger.getLogger(BrowserPlugin.class.getName());
+
+    private static Logger logger =
+            Logger.getLogger(BrowserPlugin.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/Bundle");
     private WeakReference<ContentBrowserJDialog> browserDialogRef = null;
     private JMenuItem newBrowserItem;
     private ContentBrowserJDialog defaultBrowser;
@@ -54,58 +59,70 @@ public class BrowserPlugin extends BaseClientPlugin {
     @Override
     public void initialize(final ServerSessionManager loginInfo) {
 
+        final ContentBrowserListener listener = new ContentBrowserListener() {
+
+            public void okAction(String uri) {
+                // Figure out what the file extension is from the uri, looking
+                // for the final '.'.
+                int index = uri.lastIndexOf(".");
+                if (index == -1) {
+                    logger.warning("Could not find extension for " + uri);
+                    return;
+                }
+                String extension = uri.substring(index + 1);
+
+                // Next look for a cell type that handles content with
+                // this file extension and create a new cell with it.
+                CellRegistry registry = CellRegistry.getCellRegistry();
+                Set<CellFactorySPI> factories =
+                        registry.getCellFactoriesByExtension(extension);
+                if (factories == null) {
+                    logger.warning(
+                            "Could not find cell factory for " + extension);
+                }
+                CellFactorySPI factory = factories.iterator().next();
+
+                // Create the cell, inject the content uri
+                Properties props = new Properties();
+                props.put("content-uri", uri);
+                CellServerState state =
+                        factory.getDefaultCellServerState(props);
+
+                // Create the new cell at a distance away from the avatar
+                try {
+                    CellUtils.createCell(state);
+                } catch (CellCreationException excp) {
+                    logger.log(Level.WARNING,
+                            "Unable to create cell for uri " + uri, excp);
+                }
+            }
+
+            public void cancelAction() {
+                // Do nothing
+            }
+        };
+
         // Add the Palette menu and the Cell submenu and dialog that lets users
         // create new cells.
-        newBrowserItem = new JMenuItem("Content Browser");
+        newBrowserItem = new JMenuItem(BUNDLE.getString("Content_Browser"));
         newBrowserItem.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 ContentBrowserJDialog contentBrowserFrame;
-                if (browserDialogRef == null || browserDialogRef.get() == null) {
+                if (browserDialogRef == null ||
+                        browserDialogRef.get() == null) {
                     contentBrowserFrame = new ContentBrowserJDialog(loginInfo);
                     contentBrowserFrame.setModal(false);
-                    contentBrowserFrame.setActionName(BrowserAction.OK_ACTION, "Create");
-                    contentBrowserFrame.setActionName(BrowserAction.CANCEL_ACTION, "Cancel");
+                    contentBrowserFrame.setActionName(
+                            BrowserAction.OK_ACTION,
+                            BUNDLE.getString("Create"));
+                    contentBrowserFrame.setActionName(
+                            BrowserAction.CANCEL_ACTION,
+                            BUNDLE.getString("Cancel"));
 
-                    contentBrowserFrame.addContentBrowserListener(new ContentBrowserListener() {
-                        public void okAction(String uri) {
-                            // Figure out what the file extension is from the uri, looking for
-                            // the final '.'.
-                            int index = uri.lastIndexOf(".");
-                            if (index == -1) {
-                                logger.warning("Could not find extension for " + uri);
-                                return;
-                            }
-                            String extension = uri.substring(index + 1);
-
-                            // Next look for a cell type that handles content with this file
-                            // extension and create a new cell with it.
-                            CellRegistry registry = CellRegistry.getCellRegistry();
-                            Set<CellFactorySPI> factories = registry.getCellFactoriesByExtension(extension);
-                            if (factories == null) {
-                                logger.warning("Could not find cell factory for " + extension);
-                            }
-                            CellFactorySPI factory = factories.iterator().next();
-
-                            // Create the cell, inject the content uri
-                            Properties props = new Properties();
-                            props.put("content-uri", uri);
-                            CellServerState state = factory.getDefaultCellServerState(props);
-
-                            // Create the new cell at a distance away from the avatar
-                            try {
-                                CellUtils.createCell(state);
-                            } catch (CellCreationException excp) {
-                                logger.log(Level.WARNING, "Unable to create cell for uri " + uri, excp);
-                            }
-                        }
-
-                        public void cancelAction() {
-                            // Do nothing
-                        }
-                    });
+                    contentBrowserFrame.addContentBrowserListener(listener);
                     browserDialogRef = new WeakReference(contentBrowserFrame);
-                }
-                else {
+                } else {
                     contentBrowserFrame = browserDialogRef.get();
                 }
 
@@ -124,8 +141,10 @@ public class BrowserPlugin extends BaseClientPlugin {
         // Do this within the AWT Event Thread to avoid some exceptions (Issue
         // #442).
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
-                ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
+                ContentBrowserManager manager =
+                        ContentBrowserManager.getContentBrowserManager();
                 defaultBrowser = new ContentBrowserJDialog(getSessionManager());
                 manager.setDefaultContentBrowser(defaultBrowser);
             }
@@ -133,12 +152,13 @@ public class BrowserPlugin extends BaseClientPlugin {
 
         // add menu items
         JmeClientMain.getFrame().addToToolsMenu(newBrowserItem, 6);
-    } 
-    
+    }
+
     @Override
     protected void deactivate() {
         // Reset the default content browser back to null
-        ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
+        ContentBrowserManager manager =
+                ContentBrowserManager.getContentBrowserManager();
         if (defaultBrowser == manager.getDefaultContentBrowser()) {
             manager.setDefaultContentBrowser(null);
             defaultBrowser = null;

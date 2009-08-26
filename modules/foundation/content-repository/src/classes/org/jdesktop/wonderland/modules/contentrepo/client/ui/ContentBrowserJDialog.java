@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.contentrepo.client.ui;
 
 import java.awt.event.ActionEvent;
@@ -23,11 +22,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,9 +54,13 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
-public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI {
+public class ContentBrowserJDialog
+        extends JDialog implements ContentBrowserSPI {
 
-    private static final Logger logger = Logger.getLogger(ContentBrowserJDialog.class.getName());
+    private static final Logger logger =
+            Logger.getLogger(ContentBrowserJDialog.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/Bundle");
     private ServerSessionManager session = null;
     private AsynchronousJTree jtree = null;
     private AsynchronousJTable jtable = null;
@@ -85,13 +88,15 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
 
         // Add roots in the JTree for the System area and Users area in the
         // default content repository.
-        ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
+        ContentRepositoryRegistry registry =
+                ContentRepositoryRegistry.getInstance();
         ContentRepository repo = registry.getRepository(session);
         try {
             ContentCollection sysCollection = repo.getSystemRoot();
-            ContentCollection userCollection = (ContentCollection)repo.getRoot().getChild("users");
-            jtree.addTreeRoot("System", sysCollection);
-            jtree.addTreeRoot("Users", userCollection);
+            ContentCollection userCollection =
+                    (ContentCollection) repo.getRoot().getChild("users");
+            jtree.addTreeRoot(BUNDLE.getString("System"), sysCollection);
+            jtree.addTreeRoot(BUNDLE.getString("Users"), userCollection);
             factoryMap.put(sysCollection, new ContentRepoNodeURIFactory());
             factoryMap.put(userCollection, new ContentRepoNodeURIFactory());
         } catch (ContentRepositoryException excp) {
@@ -108,8 +113,9 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         // Add the Module tree root, using a wrapper for the content repo to
         // present the modules properly
         try {
-            ContentCollection moduleCollection = new ModuleRootContentCollection(repo);
-            jtree.addTreeRoot("Modules", moduleCollection);
+            ContentCollection moduleCollection =
+                    new ModuleRootContentCollection(repo);
+            jtree.addTreeRoot(BUNDLE.getString("Modules"), moduleCollection);
             factoryMap.put(moduleCollection, new ModuleNodeURIFactory());
         } catch (ContentRepositoryException excp) {
             logger.log(Level.WARNING, "Unable to create module root", excp);
@@ -126,12 +132,12 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         // Listen for selections on the tree and update the right-hand table
         // with the children for the currently selected node.
         jtree.addAsyncTreeSelectionListener(new AsyncTreeSelectionListener() {
+
             public void treeSelectionChanged(ContentNode node) {
                 treeSelectedNode = node;
                 if (node == null) {
                     jtable.setContentCollection(null);
-                }
-                else if (node instanceof ContentCollection) {
+                } else if (node instanceof ContentCollection) {
                     jtable.setContentCollection((ContentCollection) node);
                 }
             }
@@ -140,7 +146,9 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         // Listen for when a new directory/file is selected in the list of
         // files in a content repository. Update the state of the buttons
         jtable.addAsyncTableSelectionListener(new AsyncTableSelectionListener() {
-            public void tableSelectionChanged(ContentNode node, boolean changeTo) {
+
+            public void tableSelectionChanged(
+                    ContentNode node, boolean changeTo) {
                 // If we select a node that isn't been selected then update
                 // the table with the new selection.
                 if (tableSelectedNode != node) {
@@ -161,6 +169,7 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
 
         // When the Cancel button is pressed, fire off events to the listeners
         cancelButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
                 dispose();
@@ -173,6 +182,7 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         // When the Ok button is pressed, fire off events to the listeners,
         // passing them the URI of the selected item
         okButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
                 dispose();
@@ -203,14 +213,14 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         // When the window becomes visible, then display the Home directory
         // by default
         addWindowListener(new WindowAdapter() {
+
             @Override
             public void windowOpened(WindowEvent e) {
                 homeButton.doClick();
             }
-
         });
     }
-            
+
     /**
      * @inheritDoc()
      */
@@ -271,8 +281,7 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
             downloadButton.setEnabled(false);
             deleteCollectionButton.setEnabled(true);
             okButton.setEnabled(false);
-        }
-        else {
+        } else {
             downloadButton.setEnabled(true);
             deleteCollectionButton.setEnabled(true);
             okButton.setEnabled(true);
@@ -304,13 +313,13 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         treePanel = new javax.swing.JPanel();
         tablePanel = new javax.swing.JPanel();
 
-        setTitle("Content Browser");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("ContentBrowserJDialog.title")); // NOI18N
 
         topPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
         homeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserHome32x32.png"))); // NOI18N
-        homeButton.setToolTipText("Home");
-        homeButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        homeButton.setToolTipText(bundle.getString("ContentBrowserJDialog.homeButton.toolTipText")); // NOI18N
         homeButton.setMaximumSize(new java.awt.Dimension(32, 32));
         homeButton.setMinimumSize(new java.awt.Dimension(32, 32));
         homeButton.setPreferredSize(new java.awt.Dimension(32, 32));
@@ -322,8 +331,7 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         topButtonPanel.add(homeButton);
 
         newCollectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserNewDirectory32x32.png"))); // NOI18N
-        newCollectionButton.setToolTipText("New Directory");
-        newCollectionButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        newCollectionButton.setToolTipText(bundle.getString("ContentBrowserJDialog.newCollectionButton.toolTipText")); // NOI18N
         newCollectionButton.setMaximumSize(new java.awt.Dimension(32, 32));
         newCollectionButton.setMinimumSize(new java.awt.Dimension(32, 32));
         newCollectionButton.setPreferredSize(new java.awt.Dimension(32, 32));
@@ -335,9 +343,8 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         topButtonPanel.add(newCollectionButton);
 
         deleteCollectionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserDeleteFile32x32.png"))); // NOI18N
-        deleteCollectionButton.setToolTipText("Delete");
+        deleteCollectionButton.setToolTipText(bundle.getString("ContentBrowserJDialog.deleteCollectionButton.toolTipText")); // NOI18N
         deleteCollectionButton.setEnabled(false);
-        deleteCollectionButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         deleteCollectionButton.setMaximumSize(new java.awt.Dimension(32, 32));
         deleteCollectionButton.setMinimumSize(new java.awt.Dimension(32, 32));
         deleteCollectionButton.setPreferredSize(new java.awt.Dimension(32, 32));
@@ -349,8 +356,7 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         topButtonPanel.add(deleteCollectionButton);
 
         uploadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserUploadFile32x32.png"))); // NOI18N
-        uploadButton.setToolTipText("Upload File");
-        uploadButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        uploadButton.setToolTipText(bundle.getString("ContentBrowserJDialog.uploadButton.toolTipText")); // NOI18N
         uploadButton.setMaximumSize(new java.awt.Dimension(32, 32));
         uploadButton.setMinimumSize(new java.awt.Dimension(32, 32));
         uploadButton.setPreferredSize(new java.awt.Dimension(32, 32));
@@ -362,9 +368,8 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         topButtonPanel.add(uploadButton);
 
         downloadButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/contentrepo/client/ui/resources/ContentBrowserDownloadFile32x32.png"))); // NOI18N
-        downloadButton.setToolTipText("Download File");
+        downloadButton.setToolTipText(bundle.getString("ContentBrowserJDialog.downloadButton.toolTipText")); // NOI18N
         downloadButton.setEnabled(false);
-        downloadButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         downloadButton.setMaximumSize(new java.awt.Dimension(32, 32));
         downloadButton.setMinimumSize(new java.awt.Dimension(32, 32));
         downloadButton.setPreferredSize(new java.awt.Dimension(32, 32));
@@ -381,10 +386,10 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
 
         bottomPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 3, 5));
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("ContentBrowserJDialog.cancelButton.text")); // NOI18N
         bottomPanel.add(cancelButton);
 
-        okButton.setText("OK");
+        okButton.setText(bundle.getString("ContentBrowserJDialog.okButton.text")); // NOI18N
         okButton.setEnabled(false);
         bottomPanel.add(okButton);
 
@@ -423,8 +428,10 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
 
         // Display a file choose and select a directory in which to save the
         // content
+        // rst: This constructor is nonsense!
         JFileChooser chooser = new JFileChooser("Choose a directory");
         chooser.setFileFilter(new FileFilter() {
+
             @Override
             public boolean accept(File f) {
                 return f.isDirectory();
@@ -432,7 +439,7 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
 
             @Override
             public String getDescription() {
-                return "Directories";
+                return BUNDLE.getString("Directories");
             }
         });
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -444,16 +451,18 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
             String fileName = tableSelectedNode.getName();
             File out = new File(chooser.getSelectedFile(), fileName);
             try {
-                ContentResource r = (ContentResource)tableSelectedNode;
+                ContentResource r = (ContentResource) tableSelectedNode;
                 r.get(out);
             } catch (java.lang.Exception cre) {
-                logger.log(Level.WARNING, "Unable to download " + fileName, cre);
+                logger.log(Level.WARNING,
+                        "Unable to download " + fileName, cre);
 
                 // Display a dialog indicating that the delete failed.
                 String msg = "Failed to download " + fileName + ". Please " +
                         "check your client logs for further details.";
                 String title = "Download Failed";
-                JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        this, msg, title, JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_downloadButtonActionPerformed
@@ -473,7 +482,8 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
             String msg = "Failed to delete " + nodeName + ". Please check " +
                     "your client logs for further details.";
             String title = "Deletion Failed";
-            JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this, msg, title, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_deleteCollectionButtonActionPerformed
 
@@ -491,8 +501,9 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
         String name = file.getName();
         if (file.exists() == true) {
             try {
-                ContentCollection c = (ContentCollection)treeSelectedNode;
-                ContentResource r = (ContentResource)c.createChild(name, ContentNode.Type.RESOURCE);
+                ContentCollection c = (ContentCollection) treeSelectedNode;
+                ContentResource r = (ContentResource) c.createChild(
+                        name, ContentNode.Type.RESOURCE);
                 r.put(file);
                 jtable.setContentCollection(c);
             } catch (java.lang.Exception excp) {
@@ -502,7 +513,8 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
                 String msg = "Failed to upload " + file + ". Please check " +
                         "your client logs for further details.";
                 String title = "Upload Failed";
-                JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        this, msg, title, JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_uploadButtonActionPerformed
@@ -510,10 +522,10 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
     private void newCollectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newCollectionButtonActionPerformed
 
         // Display a dialog that queries for the next directory name.
-       String s = (String)JOptionPane.showInputDialog(this,
-               "Please enter the name of the directory:",
-               "Create New Directory",
-               JOptionPane.QUESTION_MESSAGE);
+        String s = (String) JOptionPane.showInputDialog(this,
+                BUNDLE.getString("New_Directory_Message"),
+                BUNDLE.getString("Create_New_Directory"),
+                JOptionPane.QUESTION_MESSAGE);
 
         // XXX Probably should check if it already exists.
         if (s == null) {
@@ -534,7 +546,8 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
             String msg = "Failed to create " + name + ". Please check your " +
                     "client logs for further details.";
             String title = "Creation Failed";
-            JOptionPane.showMessageDialog(this, msg, title, JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this, msg, title, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_newCollectionButtonActionPerformed
 
@@ -547,6 +560,7 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
      * ContentNode
      */
     public interface NodeURIFactory {
+
         /**
          * Returns a String URI given a content node
          */
@@ -558,6 +572,7 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
      * content repository
      */
     private class ContentRepoNodeURIFactory implements NodeURIFactory {
+
         public String getURI(ContentNode node) {
             String assetPath = node.getPath();
 
@@ -575,6 +590,7 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
      * repository
      */
     private class ModuleNodeURIFactory implements NodeURIFactory {
+
         public String getURI(ContentNode node) {
             String assetPath = node.getPath();
 
@@ -592,7 +608,6 @@ public class ContentBrowserJDialog extends JDialog implements ContentBrowserSPI 
             return "wla://" + assetPath;
         }
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanel;
     private javax.swing.JButton cancelButton;
