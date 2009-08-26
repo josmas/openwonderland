@@ -18,7 +18,8 @@
 package org.jdesktop.wonderland.client.hud;
 
 /**
- * A generic HUD view
+ * A generic HUD view.
+ * 
  * @author nsimpson
  */
 public interface HUDView {

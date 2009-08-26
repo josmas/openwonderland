@@ -23,6 +23,8 @@ import java.util.Iterator;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.hud.HUDDialog.BUTTONS;
+import org.jdesktop.wonderland.client.hud.HUDDialog.MESSAGE_TYPE;
 
 /**
  * A HUD is a 2D region of the Wonderland client window on which HUD components
@@ -35,7 +37,6 @@ import org.jdesktop.wonderland.client.cell.Cell;
  * A HUD contains HUD components which are visual objects such as a 2D control
  * panel or a representation of a 3D object. HUD components are laid out within
  * a HUD by a HUDLayoutManager.
- *
  *
  * @author nsimpson
  */
@@ -104,18 +105,37 @@ public interface HUD extends HUDObject {
     public HUDComponent createComponent(JComponent component, Cell cell);
 
     /**
-     * Creates a new HUD dialog
+     * Creates a new HUD dialog configured as type INFO, with OK and Cancel
+     * buttons
      * @param text the text to display in the dialog
      * @return a new HUD dialog component
      */
     public HUDDialog createDialog(String text);
 
     /**
-     * Creates a new HUD message
+     * Creates a new HUD dialog with the specified configuration
+     * @param text the text to display in the dialog
+     * @param type the dialog type: INFO, WARNING, ERROR, or QUERY
+     * @param buttons which buttons to display: NONE, OK, OK_CANCEL
+     * @return a new HUD dialog component
+     */
+    public HUDDialog createDialog(String text, MESSAGE_TYPE type, BUTTONS buttons);
+
+    /**
+     * Creates a new HUD message configured as type INFO, with no buttons
      * @param message the message to display
      * @return a new HUD message component
      */
     public HUDMessage createMessage(String message);
+
+    /**
+     * Creates a new HUD message with the specified configuration
+     * @param message the message to display
+     * @param type the dialog type: INFO, WARNING, ERROR, or QUERY
+     * @param buttons which buttons to display: NONE, OK, OK_CANCEL
+     * @return a new HUD message component
+     */
+    public HUDMessage createMessage(String text, MESSAGE_TYPE type, BUTTONS buttons);
 
     /**
      * Creates a new HUD button

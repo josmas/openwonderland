@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.client.hud;
 import java.util.Date;
 
 /**
- * Defines an event that applies to a HUD object.
+ * Defines events that apply to HUD objects.
  *
  * @author nsimpson
  */
