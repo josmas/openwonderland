@@ -173,14 +173,14 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         setBounds(new java.awt.Rectangle(0, 0, 0, 0));
         setResizable(false);
 
-        jTabbedPane1.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
+        jTabbedPane1.setFont(new java.awt.Font("Dialog", 0, 13));
         jTabbedPane1.setMaximumSize(new java.awt.Dimension(426, 287));
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Web Proxies"));
-        jPanel2.setFont(new java.awt.Font("Dialog", 0, 13));
+        jPanel2.setFont(jPanel2.getFont());
 
         proxyBG.add(noProxyRB);
-        noProxyRB.setFont(new java.awt.Font("Dialog", 0, 13));
+        noProxyRB.setFont(noProxyRB.getFont());
         noProxyRB.setSelected(true);
         noProxyRB.setText("No proxy");
         noProxyRB.addActionListener(new java.awt.event.ActionListener() {
@@ -190,7 +190,7 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         });
 
         proxyBG.add(systemProxyRB);
-        systemProxyRB.setFont(new java.awt.Font("Dialog", 0, 13));
+        systemProxyRB.setFont(systemProxyRB.getFont());
         systemProxyRB.setText("Use system proxy settings");
         systemProxyRB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -199,7 +199,7 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         });
 
         proxyBG.add(wlProxyRB);
-        wlProxyRB.setFont(new java.awt.Font("Dialog", 0, 13));
+        wlProxyRB.setFont(wlProxyRB.getFont());
         wlProxyRB.setText("Manual proxy configuration:");
         wlProxyRB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -207,12 +207,12 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
             }
         });
 
-        httpProxyTFLabel.setFont(new java.awt.Font("Dialog", 0, 13));
+        httpProxyTFLabel.setFont(httpProxyTFLabel.getFont());
         httpProxyTFLabel.setText("HTTP Proxy:");
 
         httpProxyTF.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        httpProxyPortTFLabel.setFont(new java.awt.Font("Dialog", 0, 13));
+        httpProxyPortTFLabel.setFont(httpProxyPortTFLabel.getFont());
         httpProxyPortTFLabel.setText("Port:");
 
         httpProxyPortTF.setFont(new java.awt.Font("Dialog", 0, 13));
@@ -222,20 +222,20 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
             }
         });
 
-        httpsProxyTFLabel.setFont(new java.awt.Font("Dialog", 0, 13));
+        httpsProxyTFLabel.setFont(httpsProxyTFLabel.getFont());
         httpsProxyTFLabel.setText("HTTPS Proxy:");
 
         httpsProxyTF.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        httpsProxyPortTFLabel.setFont(new java.awt.Font("Dialog", 0, 13));
+        httpsProxyPortTFLabel.setFont(httpsProxyPortTFLabel.getFont());
         httpsProxyPortTFLabel.setText("Port:");
 
         httpsProxyPortTF.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        noProxyTFLabel.setFont(new java.awt.Font("Dialog", 0, 13));
+        noProxyTFLabel.setFont(noProxyTFLabel.getFont());
         noProxyTFLabel.setText("No Proxy For:");
 
-        noProxyTF.setFont(new java.awt.Font("Dialog", 0, 13));
+        noProxyTF.setFont(new java.awt.Font("Dialog", 0, 13)); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -303,9 +303,9 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         );
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Network Interface"));
-        jPanel1.setFont(new java.awt.Font("Dialog", 0, 13));
+        jPanel1.setFont(jPanel1.getFont());
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel1.setFont(jLabel1.getFont());
         jLabel1.setText("Local IP Address:");
 
         ipAddressComboBox.setEditable(true);
@@ -349,16 +349,17 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
 
         jTabbedPane1.addTab("Network", networkPanel);
 
+        audioPanel.setFont(audioPanel.getFont());
         audioPanel.setMaximumSize(new java.awt.Dimension(426, 287));
         audioPanel.setMinimumSize(new java.awt.Dimension(426, 287));
         audioPanel.setPreferredSize(new java.awt.Dimension(426, 287));
 
-        jLabel4.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel4.setFont(jLabel4.getFont());
         jLabel4.setText("Audio Quality:");
 
         audioQualityComboBox.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        jLabel3.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel3.setFont(jLabel3.getFont());
         jLabel3.setText("Phone number:");
 
         phoneNumber.setFont(new java.awt.Font("Dialog", 0, 13));
@@ -368,7 +369,7 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
             }
         });
 
-        jLabel5.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel5.setFont(jLabel5.getFont());
         jLabel5.setText("Use this phone number instead of the softphone");
 
         org.jdesktop.layout.GroupLayout audioPanelLayout = new org.jdesktop.layout.GroupLayout(audioPanel);
@@ -409,13 +410,13 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
 
         jTabbedPane1.addTab("Audio", audioPanel);
 
-        jLabel2.setFont(new java.awt.Font("Dialog", 0, 13));
+        jLabel2.setFont(jLabel2.getFont());
         jLabel2.setText("Cache Directory:");
 
         cacheLocation.setEditable(false);
         cacheLocation.setFont(new java.awt.Font("Dialog", 0, 13));
 
-        clearCacheButton.setFont(new java.awt.Font("Dialog", 0, 13));
+        clearCacheButton.setFont(clearCacheButton.getFont());
         clearCacheButton.setText("Clear Cache");
         clearCacheButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -450,6 +451,7 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
 
         jTabbedPane1.addTab("Cache", cachePanel);
 
+        okButton.setFont(okButton.getFont());
         okButton.setText("OK");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -457,6 +459,7 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
             }
         });
 
+        cancelButton.setFont(cancelButton.getFont());
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -469,12 +472,12 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(132, 132, 132)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(263, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(okButton)
-                .addContainerGap(137, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {cancelButton, okButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -485,8 +488,8 @@ public class LoginOptionsFrame extends javax.swing.JDialog {
                 .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(cancelButton)
-                    .add(okButton))
+                    .add(okButton)
+                    .add(cancelButton))
                 .addContainerGap())
         );
 
