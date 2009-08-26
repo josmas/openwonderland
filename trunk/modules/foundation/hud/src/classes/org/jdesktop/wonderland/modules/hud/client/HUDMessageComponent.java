@@ -18,21 +18,24 @@
 package org.jdesktop.wonderland.modules.hud.client;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.hud.HUDDialog.BUTTONS;
+import org.jdesktop.wonderland.client.hud.HUDDialog.DIALOG_MODE;
+import org.jdesktop.wonderland.client.hud.HUDDialog.MESSAGE_TYPE;
 import org.jdesktop.wonderland.client.hud.HUDMessage;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**
- * A dialog for displaying a message on the HUD
+ * A dialog for displaying a message on the HUD.
+ *
  * @author nsimpson
  */
 public class HUDMessageComponent extends HUDComponent2D implements HUDMessage {
 
     private static final Logger logger = Logger.getLogger(HUDMessageComponent.class.getName());
-    private HUDMessageImpl dialogImpl;
-    protected String message;
-    protected int rows = 1;
+    private HUDDialogImpl dialogImpl;
+    private Font messageFont;
 
     public HUDMessageComponent() {
         super();
@@ -45,9 +48,11 @@ public class HUDMessageComponent extends HUDComponent2D implements HUDMessage {
         setMessage(message);
     }
 
-    public HUDMessageComponent(String message, int rows) {
-        this(message);
-        setRows(rows);
+    public HUDMessageComponent(String message, MESSAGE_TYPE type, BUTTONS buttons) {
+        this();
+        setMessage(message);
+        setType(type);
+        setButtons(buttons);
     }
 
     /**
@@ -55,52 +60,82 @@ public class HUDMessageComponent extends HUDComponent2D implements HUDMessage {
      */
     private void initializeDialog() {
         if (dialogImpl == null) {
-            component = dialogImpl = new HUDMessageImpl();
+            dialogImpl = new HUDDialogImpl();
+            dialogImpl.setMode(DIALOG_MODE.MESSAGE);
+            dialogImpl.setButtons(BUTTONS.NONE);
             Dimension size = dialogImpl.getPreferredSize();
             setBounds(0, 0, size.width, size.height);
-            JmeClientMain.getFrame().getCanvas3DPanel().add(component);
+            setComponent(dialogImpl);
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setMessage(String message) {
-        dialogImpl.setText(message);
+    public void setMode(DIALOG_MODE mode) {
+        dialogImpl.setMode(mode);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public DIALOG_MODE getMode() {
+        return dialogImpl.getMode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setType(MESSAGE_TYPE type) {
+        dialogImpl.setType(type);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public MESSAGE_TYPE getType() {
+        return dialogImpl.getType();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setButtons(BUTTONS buttons) {
+        dialogImpl.setButtons(buttons);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public BUTTONS getButtons() {
+        return dialogImpl.getButtons();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setMessage(final String message) {
+        dialogImpl.setMessage(message);
     }
 
     /**
      * {@inheritDoc}
      */
     public String getMessage() {
-        return dialogImpl.getText();
+        return dialogImpl.getMessage();
     }
 
     /**
      * {@inheritDoc}
      */
-    public void setRows(int rows) {
-        dialogImpl.setRows(rows);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public int getRows() {
-        return dialogImpl.getRows();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public synchronized void addPropertyChangeListener(final PropertyChangeListener listener) {
         dialogImpl.addPropertyChangeListener(listener);
     }
 
     /**
      * {@inheritDoc}
      */
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public synchronized void removePropertyChangeListener(final PropertyChangeListener listener) {
         dialogImpl.removePropertyChangeListener(listener);
     }
 }

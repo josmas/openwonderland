@@ -23,7 +23,8 @@ import org.pushingpixels.trident.Timeline;
 import org.pushingpixels.trident.interpolator.PropertyInterpolator;
 
 /**
- * A class for running Timeline based animations
+ * A class for running Timeline based animations.
+ *
  * @author nsimpson
  */
 public class HUDAnimator implements Runnable {
@@ -78,7 +79,7 @@ public class HUDAnimator implements Runnable {
             timeline.cancel();
         }
     }
-    
+
     public void run() {
         if (timeline != null) {
             timeline.play();

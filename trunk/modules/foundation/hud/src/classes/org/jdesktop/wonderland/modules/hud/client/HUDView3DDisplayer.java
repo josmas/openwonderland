@@ -25,7 +25,8 @@ import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DDisplayer;
 
 /**
- * Creates and manages in-world views of HUD component windows
+ * Creates and manages in-world views of HUD component windows.
+ *
  * @author nsimpson
  */
 public class HUDView3DDisplayer implements View2DDisplayer {

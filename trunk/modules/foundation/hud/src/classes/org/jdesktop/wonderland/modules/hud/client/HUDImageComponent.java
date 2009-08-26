@@ -26,10 +26,10 @@ import java.util.ListIterator;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 
 /**
- * A HUD component that displays an image
+ * A HUD component that displays an image.
+ *
  * @author nsimpson
  */
 public class HUDImageComponent extends HUDComponent2D {
@@ -77,14 +77,6 @@ public class HUDImageComponent extends HUDComponent2D {
      */
     public ImageIcon getImage() {
         return imageIcon;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setComponent(JComponent component) {
-        super.setComponent(component);
     }
 
     public void addActionListener(ActionListener listener) {

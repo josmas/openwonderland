@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 
 /**
- * A 2D frame for a HUDComponent2D
+ * A 2D frame for a HUDComponent2D.
  *
  * @author nsimpson
  */

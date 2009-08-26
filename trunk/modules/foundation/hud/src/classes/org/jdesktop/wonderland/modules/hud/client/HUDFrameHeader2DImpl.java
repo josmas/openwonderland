@@ -31,7 +31,8 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 
 /**
- *
+ * The 2D frame header Swing implementation.
+ * 
  * @author nsimpson
  */
 public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
@@ -184,7 +185,7 @@ public class HUDFrameHeader2DImpl extends javax.swing.JPanel {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                JFrame frame = new JFrame("HUD Frame test");
+                JFrame frame = new JFrame(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/hud/client/resources/Bundle").getString("HUD_FRAME_TEST"));
                 frame.addWindowListener(new java.awt.event.WindowAdapter() {
 
                     @Override
