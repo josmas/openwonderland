@@ -91,6 +91,21 @@ public class SasXrwProviderMain
     /** Information about the apps which are running in this provider. */
     private final HashMap<AppXrwMaster,AppInfo> runningAppInfos = new HashMap<AppXrwMaster,AppInfo>();
 
+    /** The xremwin-specific provider object. */
+    private static SasXrwProvider provider;
+
+    // Register the sas provider shutdown hook
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread("SasXrw Shutdown Hook") {
+            @Override
+            public void run() { 
+                if (provider != null) {
+                    provider.cleanup(); 
+                }
+            }
+        });
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -125,7 +140,7 @@ public class SasXrwProviderMain
         commandURL = System.getProperty(COMMAND_URL_PROP, COMMAND_URL_DEFAULT);
 
         try {
-            SasProvider provider = new SasProvider(username, passwordFile, serverUrl, this);
+            provider = new SasXrwProvider(username, passwordFile, serverUrl, this, this);
         } catch (Exception ex) {
             logger.severe("Exception " + ex);
             logger.severe("Cannot connect to server " + serverUrl);
@@ -166,6 +181,7 @@ public class SasXrwProviderMain
         if (command == null) {
             return null;
         }
+        logger.warning("Resolved command = " + command);
 
         try {
             app = new AppXrwMaster(appName, command, cellID, null,
