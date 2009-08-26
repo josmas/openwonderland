@@ -18,38 +18,42 @@
 package org.jdesktop.wonderland.modules.swingexample.client;
 
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.swingexample.common.cell.SwingExampleCellServerState;
 import org.jdesktop.wonderland.modules.appbase.client.swing.SwingCellFactoryUtils;
+import org.jdesktop.wonderland.modules.swingexample.common.cell.SwingExampleCellServerState;
 
 /**
  * The cell factory for the Swing Example.
  * 
  * @author Paul Byrne, deronj
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellFactory
 public class SwingExampleCellFactory implements CellFactorySPI {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/swingexample/client/Bundle");
+
     public String[] getExtensions() {
-        return new String[] {};
+        return new String[]{};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+    public <T extends CellServerState> T getDefaultCellServerState(
+            Properties props) {
         SwingExampleCellServerState state = new SwingExampleCellServerState();
 
         // Minor Optimization
         SwingCellFactoryUtils.skipSystemInitialPlacement(state);
 
-        return (T)state;
+        return (T) state;
     }
 
     public String getDisplayName() {
-        return "Swing Example";
+        return BUNDLE.getString("Swing_Example");
     }
 
     public Image getPreviewImage() {
