@@ -18,7 +18,8 @@
 package org.jdesktop.wonderland.client.hud;
 
 /**
- * An object that can be displayed on the HUD
+ * An object that can be displayed on the HUD.
+ *
  * @author nsimpson
  */
 public interface HUDDisplayable {

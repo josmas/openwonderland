@@ -206,6 +206,15 @@ public interface HUDObject extends HUDEventSource {
     public void setVisible(boolean visible);
 
     /**
+     * Sets the visibility of the HUD object after a specified time
+     * @param visible if true, shows the HUD object, otherwise hides the
+     * HUD object
+     * @param when the visibility of the object will change after when
+     * milliseconds
+     */
+    public void setVisible(boolean visible, long when);
+
+    /**
      * Gets whether the HUD object is visible
      * @return true if the HUD object should be visible, false otherwise
      */
@@ -217,6 +226,15 @@ public interface HUDObject extends HUDEventSource {
      * the HUD object
      */
     public void setWorldVisible(boolean worldVisible);
+
+    /**
+     * Sets the visibility of the HUD object in-world after a specified time
+     * @param worldVisible if true, shows the HUD object in world, otherwise hides
+     * the HUD object
+     * @param when the visibility of the object will change after when
+     * milliseconds
+     */
+    public void setWorldVisible(boolean visible, long when);
 
     /**
      * Gets whether the HUD object is visible in-world

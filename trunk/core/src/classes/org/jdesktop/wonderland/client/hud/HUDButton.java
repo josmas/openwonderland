@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.client.hud;
 import java.awt.event.ActionListener;
 
 /**
+ * A HUD component consisting of a clickable button.
  *
  * @author nsimpson
  */

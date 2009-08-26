@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.client.hud;
 
 /**
+ * A generic message type.
  *
  * @author nsimpson
  */
@@ -34,17 +35,5 @@ public interface HUDMessage extends HUDComponent {
      * @return the message text
      */
     public String getMessage();
-
-    /**
-     * Sets the visible number of rows of text
-     * @param rows the number of rows
-     */
-    public void setRows(int rows);
-
-    /**
-     * Gets the visible number of rows of text
-     * @return the number of rows of text
-     */
-    public int getRows();
 }
 

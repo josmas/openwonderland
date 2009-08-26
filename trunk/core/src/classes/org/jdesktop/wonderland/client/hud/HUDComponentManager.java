@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.client.hud;
 import java.util.Iterator;
 
 /**
- * A manager for a set of HUDComponents
+ * A manager for a set of HUDComponents.
  *
  * @author nsimpson
  */

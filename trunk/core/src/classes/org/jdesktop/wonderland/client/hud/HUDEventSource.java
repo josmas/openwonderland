@@ -20,7 +20,8 @@ package org.jdesktop.wonderland.client.hud;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 
 /**
- * A source of HUD events
+ * A source of HUD events.
+ *
  * @author nsimpson
  */
 public interface HUDEventSource {

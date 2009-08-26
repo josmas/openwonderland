@@ -18,7 +18,8 @@
 package org.jdesktop.wonderland.client.hud;
 
 /**
- * A listener for HUD events
+ * A listener for HUD events.
+ *
  * @author nsimpson
  */
 public interface HUDListener {

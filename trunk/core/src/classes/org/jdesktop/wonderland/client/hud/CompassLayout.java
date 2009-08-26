@@ -18,7 +18,8 @@
 package org.jdesktop.wonderland.client.hud;
 
 /**
- * Defines layout positions based on compass points
+ * Defines layout positions based on compass points.
+ *
  * @author nsimpson
  */
 public interface CompassLayout {
