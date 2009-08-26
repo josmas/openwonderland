@@ -23,6 +23,7 @@ import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import com.jme.math.Vector2f;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -36,18 +37,18 @@ import org.jdesktop.wonderland.common.cell.CellID;
  * The window for the whiteboard.
  *
  * @author deronj
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @ExperimentalAPI
 public class SwingWhiteboardWindow extends WindowSwing {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/swingwhiteboard/client/resources/Bundle");
     private SwingWhiteboardComponent commComponent;
     private WhiteboardCellMessage msg;
-
     SwingWhiteboardDrawingPanel drawingPanel;
-    private int penX,  penY;
-
+    private int penX, penY;
     private SwingWhiteboardCell cell;
-
     private CellID cellID;
 
     /**
@@ -59,21 +60,22 @@ public class SwingWhiteboardWindow extends WindowSwing {
      * @param height The height of the window (in pixels).
      * @param decorated Whether the window is decorated with a frame.
      * @param pixelScale The size of the window pixels.
-     * @param commComponent The communications component for communicating with the server.
+     * @param commComponent The communications component for communicating with
+     * the server.
      */
-    public SwingWhiteboardWindow(SwingWhiteboardCell cell, App2D app, int width, int height, 
-                                 boolean decorated, Vector2f pixelScale, 
-                                 SwingWhiteboardComponent commComponent)
+    public SwingWhiteboardWindow(SwingWhiteboardCell cell, App2D app, int width,
+            int height, boolean decorated, Vector2f pixelScale,
+            SwingWhiteboardComponent commComponent)
             throws InstantiationException {
         super(app, width, height, decorated, pixelScale);
         this.cell = cell;
         this.commComponent = commComponent;
 
-        setTitle("Swing Whiteboard Window");
+        setTitle(BUNDLE.getString("Swing_Whiteboard_Window"));
 
         SwingWhiteboardPanel panel = new SwingWhiteboardPanel(this);
 
-	// Parent to Wonderland main window for proper focus handling 
+        // Parent to Wonderland main window for proper focus handling
         JmeClientMain.getFrame().getCanvas3DPanel().add(panel);
 
         setComponent(panel);
@@ -97,10 +99,11 @@ public class SwingWhiteboardWindow extends WindowSwing {
      * Called from the GUI to set the pen color.
      */
     public void setPenColor(Color color) {
-	drawingPanel.setPenColor(color);
+        drawingPanel.setPenColor(color);
 
         // Notify other clients
-        msg = new WhiteboardCellMessage(cell.getClientID(), cellID, WhiteboardAction.SET_COLOR, color);
+        msg = new WhiteboardCellMessage(cell.getClientID(), cellID,
+                WhiteboardAction.SET_COLOR, color);
         commComponent.sendMessage(msg);
     }
 
@@ -109,12 +112,13 @@ public class SwingWhiteboardWindow extends WindowSwing {
      */
     public void erase() {
 
-	drawingPanel.setEraseAction();
-	drawingPanel.repaint();
+        drawingPanel.setEraseAction();
+        drawingPanel.repaint();
 
         // Notify other clients
-        msg = new WhiteboardCellMessage(cell.getClientID(), cellID, WhiteboardAction.EXECUTE_COMMAND,  
-                                        Command.ERASE);
+        msg = new WhiteboardCellMessage(cell.getClientID(), cellID,
+                WhiteboardAction.EXECUTE_COMMAND,
+                Command.ERASE);
         commComponent.sendMessage(msg);
     }
 
@@ -126,7 +130,8 @@ public class SwingWhiteboardWindow extends WindowSwing {
         penY = loc.y;
 
         // notify other clients
-        msg = new WhiteboardCellMessage(cell.getClientID(), cellID, WhiteboardAction.MOVE_TO, loc);
+        msg = new WhiteboardCellMessage(cell.getClientID(), cellID,
+                WhiteboardAction.MOVE_TO, loc);
         commComponent.sendMessage(msg);
     }
 
@@ -135,14 +140,14 @@ public class SwingWhiteboardWindow extends WindowSwing {
      */
     void drag(Point loc) {
 
-	drawingPanel.setDrawLineAction(penX, penY, loc.x, loc.y);
-	drawingPanel.repaint();
+        drawingPanel.setDrawLineAction(penX, penY, loc.x, loc.y);
+        drawingPanel.repaint();
         penX = loc.x;
         penY = loc.y;
 
         // notify other clients
         msg = new WhiteboardCellMessage(cell.getClientID(), cellID,
-                                        WhiteboardAction.DRAG_TO, loc);
+                WhiteboardAction.DRAG_TO, loc);
         commComponent.sendMessage(msg);
     }
 }
