@@ -15,18 +15,17 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.swingexample.client;
-
 
 import javax.swing.JWindow;
 import javax.swing.JFrame;
 
 /**
- *
+ * The JPanel for the Swing example
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class TestPanel extends javax.swing.JPanel {
-    
+
     private JFrame frame;
 
     /** Creates new form TestPanel */
@@ -34,8 +33,8 @@ public class TestPanel extends javax.swing.JPanel {
         initComponents();
     }
 
-    public void setFrame (JFrame frame) {
-	this.frame = frame;
+    public void setFrame(JFrame frame) {
+        this.frame = frame;
     }
 
     /** This method is called from within the constructor to
@@ -57,7 +56,8 @@ public class TestPanel extends javax.swing.JPanel {
         });
         setLayout(new java.awt.GridBagLayout());
 
-        jButton2.setText("Press Me");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/swingexample/client/Bundle"); // NOI18N
+        jButton2.setText(bundle.getString("TestPanel.jButton2.text")); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
@@ -70,23 +70,20 @@ public class TestPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
-// TODO add your handling code here:
+        // TODO add your handling code here:
         //System.out.println("Panel focus Gained");
     }//GEN-LAST:event_formFocusGained
 
 private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
     System.err.println("Button pressed");
 }//GEN-LAST:event_jButton2ActionPerformed
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton jButton2;
     // End of variables declaration//GEN-END:variables
-    
 
     public static void main(String args[]) {
-	JWindow j = new JWindow();
+        JWindow j = new JWindow();
         //JFrame j = new JFrame();
 //        j.addMouseMotionListener(new MouseMotionAdapter() {
 //           public void mouseMoved(java.awt.event.MouseEvent evt) {
