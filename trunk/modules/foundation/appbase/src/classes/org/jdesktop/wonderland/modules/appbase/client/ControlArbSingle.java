@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author deronj
  */
 @ExperimentalAPI
-abstract public class ControlArbSingle extends ControlArbAppFocus {
+public class ControlArbSingle extends ControlArbAppFocus {
 
     /** The user name of the one and only controller */
     protected String controller;
