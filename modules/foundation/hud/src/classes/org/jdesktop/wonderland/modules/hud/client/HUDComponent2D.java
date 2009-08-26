@@ -54,12 +54,9 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
      *
      * @param component the Swing component
      */
-    public HUDComponent2D(JComponent component) {
+    public HUDComponent2D(final JComponent component) {
         this();
         setComponent(component);
-        Dimension size = component.getPreferredSize();
-        setBounds(0, 0, size.width, size.height);
-        JmeClientMain.getFrame().getCanvas3DPanel().add(component);
     }
 
     /**
@@ -111,7 +108,9 @@ public class HUDComponent2D extends HUDObject2D implements HUDComponent {
      */
     public void setComponent(JComponent component) {
         this.component = component;
+        JmeClientMain.getFrame().getCanvas3DPanel().add(component);
         setBounds(0, 0, (int) component.getPreferredSize().getWidth(), (int) component.getPreferredSize().getHeight());
+
         component.addComponentListener(new ComponentListener() {
 
             public void componentShown(ComponentEvent e) {

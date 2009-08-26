@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -604,26 +605,31 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
         }
     }
 
-    protected void componentResized(HUDComponent2D component) {
+    protected void componentResized(final HUDComponent2D component) {
         logger.finest("resizing HUD component: " + component);
 
-        HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
+        final HUDComponentState state = (HUDComponentState) hudStateMap.get(component);
         if (state == null) {
             return;
         }
 
-        HUDView2D view = state.getView();
+        final HUDView2D view = state.getView();
         if (view != null) {
-            view.setSizeApp(component.getSize());
-            if (component.getDecoratable()) {
-                HUDView2D frameView = state.getFrameView();
-                if (frameView != null) {
-                    HUDFrameHeader2D frame = state.getFrame();
-                    Window2D window = state.getFrameWindow();
-                    window.setSize(component.getWidth(), window.getHeight());
-                    frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * frame.getHeight() / 2 + 0.75f * component.getSize().height / 2)));
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    view.setSizeApp(component.getSize());
+                    if (component.getDecoratable()) {
+                        HUDView2D frameView = state.getFrameView();
+                        if (frameView != null) {
+                            HUDFrameHeader2D frame = state.getFrame();
+                            Window2D window = state.getFrameWindow();
+                            window.setSize(component.getWidth(), window.getHeight());
+                            frameView.setLocationOrtho(new Vector2f(0.0f, (float) (0.75 * frame.getHeight() / 2 + 0.75f * component.getSize().height / 2)));
+                        }
+                    }
                 }
-            }
+            });
         }
     }
 
@@ -687,7 +693,7 @@ public class WonderlandHUDComponentManager implements HUDComponentManager,
      * {@inheritDoc}
      */
     public void HUDObjectChanged(HUDEvent event) {
-        logger.finest("HUD object changed: " + event);
+        logger.fine("HUD object changed: " + event);
         if (event.getObject() instanceof HUDComponent2D) {
             HUDComponent2D comp = (HUDComponent2D) event.getObject();
 

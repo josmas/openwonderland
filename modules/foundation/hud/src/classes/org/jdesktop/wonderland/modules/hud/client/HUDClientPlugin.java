@@ -30,7 +30,8 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
 /**
- * Plugin for initializing the HUD
+ * Plugin for initializing the HUD.
+ *
  * @author nsimpson
  */
 @Plugin

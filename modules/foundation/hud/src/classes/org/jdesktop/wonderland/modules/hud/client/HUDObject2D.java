@@ -24,9 +24,12 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
@@ -273,6 +276,38 @@ public class HUDObject2D implements HUDObject {
     /**
      * {@inheritDoc}
      */
+    public void setVisible(final boolean visible, final long when) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                Timer t = new Timer();
+                t.schedule(new VisibilityTask(DisplayMode.HUD, visible), when);
+            }
+        });
+    }
+
+    private class VisibilityTask extends TimerTask {
+
+        private boolean visible = true;
+        private DisplayMode mode;
+
+        public VisibilityTask(DisplayMode mode, boolean visible) {
+            this.mode = mode;
+            this.visible = visible;
+        }
+
+        public void run() {
+            if (mode == DisplayMode.HUD) {
+                setVisible(visible);
+            } else if (mode == DisplayMode.WORLD) {
+                setWorldVisible(visible);
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean isVisible() {
         return visible;
     }
@@ -288,6 +323,19 @@ public class HUDObject2D implements HUDObject {
 
         notifyEventListeners((worldVisible == true) ? HUDEventType.APPEARED_WORLD
                 : HUDEventType.DISAPPEARED_WORLD);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setWorldVisible(final boolean worldVisible, final long when) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                Timer t = new Timer();
+                t.schedule(new VisibilityTask(DisplayMode.WORLD, worldVisible), when);
+            }
+        });
     }
 
     /**

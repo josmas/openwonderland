@@ -30,7 +30,8 @@ import org.jdesktop.wonderland.client.hud.HUDEvent;
 
 /**
  * A manager which manages a mapping of HUD components on one HUD to icons
- * on another
+ * on another.
+ *
  * @author nsimpson
  */
 public class WonderlandHUDIconManager extends WonderlandHUDComponentManager {

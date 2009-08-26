@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
 
 /**
  * A simple control arbiter which always enables control.
+ *
  * @author nsimpson
  */
 public class ControlArbHUD extends ControlArbAppFocus {

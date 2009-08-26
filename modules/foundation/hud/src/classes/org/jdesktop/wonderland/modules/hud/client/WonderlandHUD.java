@@ -33,6 +33,8 @@ import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDButton;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDDialog;
+import org.jdesktop.wonderland.client.hud.HUDDialog.BUTTONS;
+import org.jdesktop.wonderland.client.hud.HUDDialog.MESSAGE_TYPE;
 import org.jdesktop.wonderland.client.hud.HUDDisplayable;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
@@ -51,7 +53,6 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
  * A HUD contains HUDComponents which are visual objects such as a 2D control
  * panel or a representation of a 3D object. HUDComponents are laid out within
  * a HUD by a HUDLayoutManager.
- *
  *
  * @author nsimpson
  */
@@ -209,6 +210,20 @@ public class WonderlandHUD extends HUDObject2D implements HUD, HUDEventListener 
     /**
      * {@inheritDoc}
      */
+    public HUDDialog createDialog(String text) {
+        return new HUDDialogComponent(text);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public HUDDialog createDialog(String text, MESSAGE_TYPE type, BUTTONS buttons) {
+        return new HUDDialogComponent(text, type, buttons);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public HUDMessage createMessage(String message) {
         return new HUDMessageComponent(message);
     }
@@ -216,8 +231,8 @@ public class WonderlandHUD extends HUDObject2D implements HUD, HUDEventListener 
     /**
      * {@inheritDoc}
      */
-    public HUDDialog createDialog(String text) {
-        return new HUDDialogComponent(text);
+    public HUDMessage createMessage(String message, MESSAGE_TYPE type, BUTTONS buttons) {
+        return new HUDMessageComponent(message, type, buttons);
     }
 
     /**

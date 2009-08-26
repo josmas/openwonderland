@@ -33,6 +33,7 @@ import org.jdesktop.wonderland.client.hud.HUDView;
 /**
  * A layout manager which lays out HUD components according to compass point
  * positions.
+ *
  * @author nsimpson
  */
 public class HUDCompassLayoutManager extends HUDAbsoluteLayoutManager {

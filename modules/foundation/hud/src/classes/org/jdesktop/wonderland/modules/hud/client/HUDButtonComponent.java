@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.hud.client;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -26,9 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JButton;
 import org.jdesktop.wonderland.client.hud.HUDButton;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**
+ * A HUD component that displays a clickable button.
  *
  * @author nsimpson
  */
@@ -39,7 +38,8 @@ public class HUDButtonComponent extends HUDComponent2D implements HUDButton {
 
     public HUDButtonComponent() {
         super();
-        component = button = initializeButton("");
+        button = initializeButton("");
+        setComponent(button);
         button.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent event) {
@@ -69,9 +69,6 @@ public class HUDButtonComponent extends HUDComponent2D implements HUDButton {
 
     private JButton initializeButton(String label) {
         JButton b = new JButton(label);
-        Dimension size = b.getPreferredSize();
-        setBounds(0, 0, size.width, size.height);
-        JmeClientMain.getFrame().getCanvas3DPanel().add(b);
         return b;
     }
 

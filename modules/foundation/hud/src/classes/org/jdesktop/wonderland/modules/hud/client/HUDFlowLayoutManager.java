@@ -28,7 +28,8 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDView;
 
 /**
- * A layout manager which lays out HUD components from left to right
+ * A layout manager which lays out HUD components from left to right.
+ *
  * @author nsimpson
  */
 public class HUDFlowLayoutManager extends HUDAbsoluteLayoutManager {
