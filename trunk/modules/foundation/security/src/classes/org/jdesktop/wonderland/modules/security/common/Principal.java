@@ -18,22 +18,41 @@
 package org.jdesktop.wonderland.modules.security.common;
 
 import java.io.Serializable;
+import java.util.ResourceBundle;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * A principal that can be added to the security component.
  * @author jkaplan
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-@XmlRootElement(name="principal")
+@XmlRootElement(name = "principal")
 public class Principal implements Serializable, Comparable {
-    public enum Type { USER, GROUP };
 
+    public enum Type {
+
+        USER, GROUP;
+
+        @Override
+        public String toString() {
+            switch (this) {
+                case GROUP:
+                    return BUNDLE.getString("Group");
+                case USER:
+                    return BUNDLE.getString("User");
+                default:
+                    return "unknown";
+            }
+        }
+    };
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/security/common/Bundle");
     private String id;
     private Type type;
 
     public Principal() {
-        this (null, null);
+        this(null, null);
     }
 
     public Principal(String id, Type type) {
@@ -49,7 +68,7 @@ public class Principal implements Serializable, Comparable {
     public void setId(String id) {
         this.id = id;
     }
-    
+
     @XmlElement
     public Type getType() {
         return type;
@@ -58,7 +77,7 @@ public class Principal implements Serializable, Comparable {
     public void setType(Type type) {
         this.type = type;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -68,12 +87,10 @@ public class Principal implements Serializable, Comparable {
             return false;
         }
         final Principal other = (Principal) obj;
-        if ((this.id == null) ? (other.id != null) : 
-            !this.id.equals(other.id)) 
-        {
+        if ((id == null) ? (other.id != null) : !id.equals(other.id)) {
             return false;
         }
-        if (this.type != other.type) {
+        if (type != other.type) {
             return false;
         }
         return true;
@@ -82,8 +99,8 @@ public class Principal implements Serializable, Comparable {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 73 * hash + (this.id != null ? this.id.hashCode() : 0);
-        hash = 73 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 73 * hash + (id != null ? id.hashCode() : 0);
+        hash = 73 * hash + (type != null ? type.hashCode() : 0);
         return hash;
     }
 
