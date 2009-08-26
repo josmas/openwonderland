@@ -149,6 +149,15 @@ public class ImiAvatarConfigManager {
         synchronized (avatarConfigServers) {
             t = avatarConfigServers.get(session);
         }
+
+        // XXX DEBUG CODE
+        // Check for NULL, since we are getting an NPE here
+        // XXX DEBUG CODE
+        if (t == null || avatar == null) {
+            logger.warning("Invalid Null here t=" + t + ", avatar="+ avatar);
+            logger.warning("Session=" + session.toString());
+            logger.warning("Avatar config servers=" + avatarConfigServers.toString());
+        }
         return t.getAvatarServerURL(avatar);
     }
 
