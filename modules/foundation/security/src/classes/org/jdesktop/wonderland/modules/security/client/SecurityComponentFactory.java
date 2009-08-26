@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.security.client;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -35,16 +36,20 @@ import org.jdesktop.wonderland.common.cell.security.ViewAction;
  * The cell component factory for the sample cell component.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellComponentFactory
-public class SecurityComponentFactory implements CellComponentFactorySPI
-{
+public class SecurityComponentFactory implements CellComponentFactorySPI {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/security/client/Bundle");
 
     public String getDisplayName() {
-        return "Security";
+        return BUNDLE.getString("Security");
     }
 
-    public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
+    public <T extends CellComponentServerState> T
+            getDefaultCellComponentServerState() {
         SecurityComponentServerState state = new SecurityComponentServerState();
 
         CellPermissions perms = new CellPermissions();
@@ -54,8 +59,9 @@ public class SecurityComponentFactory implements CellComponentFactorySPI
         if (primarySM != null) {
             WonderlandSession primarySession = primarySM.getPrimarySession();
             if (primarySession != null) {
-                Principal owner = new Principal(primarySession.getUserID().getUsername(),
-                                                Principal.Type.USER);
+                Principal owner = new Principal(
+                        primarySession.getUserID().getUsername(),
+                        Principal.Type.USER);
                 perms.getOwners().add(owner);
             }
         }
@@ -63,15 +69,17 @@ public class SecurityComponentFactory implements CellComponentFactorySPI
         // add view permissions for all users
         Principal p = new Principal("users", Principal.Type.GROUP);
         ActionDTO view = new ActionDTO(new ViewAction());
-        perms.getPermissions().add(new Permission(p, view, Permission.Access.GRANT));
+        perms.getPermissions().add(new Permission(
+                p, view, Permission.Access.GRANT));
         ActionDTO modify = new ActionDTO(new ModifyAction());
-        perms.getPermissions().add(new Permission(p, modify, Permission.Access.DENY));
+        perms.getPermissions().add(new Permission(
+                p, modify, Permission.Access.DENY));
 
         state.setPermissions(perms);
         return (T) state;
     }
 
     public String getDescription() {
-        return "Add security configurtation to a cell";
+        return BUNDLE.getString("Security_Description");
     }
 }
