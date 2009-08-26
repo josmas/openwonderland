@@ -494,9 +494,9 @@ public abstract class InputPicker {
 		    e.getY() == entry.mouseEvent.getY()) {
 		    swingHitPickInfo = entry.hitPickInfo;
 		} else {
-		    logger.warning("Swing pickInfo event doesn't match 3D event. Repicking.");
-		    logger.warning("3D event = " + e);
-		    logger.warning("pickInfo event = " + entry.mouseEvent);
+		    logger.finest("Swing pickInfo event doesn't match 3D event. Repicking.");
+		    logger.finest("3D event = " + e);
+		    logger.finest("pickInfo event = " + entry.mouseEvent);
 		}
 	    } catch (InterruptedException ex) {}
 	}
