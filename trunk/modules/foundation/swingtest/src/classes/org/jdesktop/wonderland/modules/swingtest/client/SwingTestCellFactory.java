@@ -21,6 +21,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -31,29 +32,35 @@ import org.jdesktop.wonderland.modules.appbase.client.swing.SwingCellFactoryUtil
  * The cell factory for the Swing Test.
  * 
  * @author Paul Byrne
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellFactory
 public class SwingTestCellFactory implements CellFactorySPI {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/swingtest/client/resources/Bundle");
+
     public String[] getExtensions() {
-        return new String[] {};
+        return new String[]{};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+    public <T extends CellServerState> T getDefaultCellServerState(
+            Properties props) {
         SwingTestCellServerState state = new SwingTestCellServerState();
 
         // Minor Optimization
         SwingCellFactoryUtils.skipSystemInitialPlacement(state);
 
-        return (T)state;
+        return (T) state;
     }
 
     public String getDisplayName() {
-        return "Swing Test";
+        return BUNDLE.getString("Swing_Test_Cell");
     }
 
     public Image getPreviewImage() {
-        URL url = SwingTestCellFactory.class.getResource("resources/swingtest_preview.png");
+        URL url = SwingTestCellFactory.class.getResource(
+                "resources/swingtest_preview.png");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
