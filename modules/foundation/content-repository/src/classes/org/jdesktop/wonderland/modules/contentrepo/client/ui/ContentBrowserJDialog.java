@@ -428,8 +428,7 @@ public class ContentBrowserJDialog
 
         // Display a file choose and select a directory in which to save the
         // content
-        // rst: This constructor is nonsense!
-        JFileChooser chooser = new JFileChooser("Choose a directory");
+        JFileChooser chooser = new JFileChooser();
         chooser.setFileFilter(new FileFilter() {
 
             @Override
