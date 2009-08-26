@@ -350,6 +350,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         for (CellID cellID : launchesInFlight.keySet()) {
             LaunchRequest launchReq = launchesInFlight.get(cellID);
             if (launchReq != null && launchReq.cellID == cellID && launchReq.provider == provider) {
+                logger.warning("Persisting in-flight app to pending list, appName = " + launchReq.appName);
                 pendingLaunches.add(launchReq);
                 cellsToRemove.add(cellID);
             }
@@ -362,6 +363,7 @@ public class SasServer implements ManagedObject, Serializable, AppServerLauncher
         // Next, persist the running apps.
         LinkedList<LaunchRequest> launches = runningLaunches.getLaunches(execCap);
         for (LaunchRequest launchReq : launches) {
+            logger.warning("Persisting running app to pending list, appName = " + launchReq.appName);
             pendingLaunches.add(launchReq);
             cellsToRemove.add(launchReq.cellID);
         }

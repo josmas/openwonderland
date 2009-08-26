@@ -37,8 +37,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  */
 @ExperimentalAPI
 public class SasProvider {
-    private static final Logger logger =
-            Logger.getLogger(SasProvider.class.getName());
+    protected static final Logger logger = Logger.getLogger(SasProvider.class.getName());
 
     /** The execution site dependent listener for messages from the SAS server to provider. */
     private SasProviderConnectionListener listener;
@@ -80,6 +79,9 @@ public class SasProvider {
         doLogin();
     }
     
+    /** Executed before the SAS session is reconnected */
+    protected void cleanup () {}
+
     protected void doLogin() {
         // Log in.  This will wait until the server is available, and then
         // connect when the server is available.
@@ -96,6 +98,9 @@ public class SasProvider {
             public void sessionStatusChanged(WonderlandSession session,
                                              WonderlandSession.Status status)
             {
+                // Give the subclass a chance to clean up before we reconnect
+                cleanup();
+
                 if (status == WonderlandSession.Status.DISCONNECTED) {
                     logger.warning("Server disconnected.");
 
