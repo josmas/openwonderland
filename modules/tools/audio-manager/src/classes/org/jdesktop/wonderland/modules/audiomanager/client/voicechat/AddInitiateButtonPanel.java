@@ -22,6 +22,7 @@ import java.awt.event.ActionListener;
 /**
  *
  * @author nsimpson
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class AddInitiateButtonPanel extends javax.swing.JPanel {
 
@@ -34,23 +35,23 @@ public class AddInitiateButtonPanel extends javax.swing.JPanel {
     }
 
     public void addActionButtonListener(ActionListener actionListener) {
-	actionButton.addActionListener(actionListener);
+        actionButton.addActionListener(actionListener);
     }
 
     public void removeActionButtonListener(ActionListener actionListener) {
-	actionButton.removeActionListener(actionListener);
+        actionButton.removeActionListener(actionListener);
     }
 
     public void addCancelButtonListener(ActionListener actionListener) {
-	cancelButton.addActionListener(actionListener);
+        cancelButton.addActionListener(actionListener);
     }
 
     public void removeCancelButtonListener(ActionListener actionListener) {
-	cancelButton.removeActionListener(actionListener);
+        cancelButton.removeActionListener(actionListener);
     }
 
     public void setEnabledActionButton(boolean isEnabled) {
-	actionButton.setEnabled(isEnabled);
+        actionButton.setEnabled(isEnabled);
     }
 
     /** This method is called from within the constructor to
@@ -68,7 +69,8 @@ public class AddInitiateButtonPanel extends javax.swing.JPanel {
 
         actionButtonPanel.setName("actionButtonPanel"); // NOI18N
 
-        cancelButton.setText("Cancel");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        cancelButton.setText(bundle.getString("AddInitiateButtonPanel.cancelButton.text")); // NOI18N
         cancelButton.setName("cancelButton"); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -76,7 +78,7 @@ public class AddInitiateButtonPanel extends javax.swing.JPanel {
             }
         });
 
-        actionButton.setText("Invite");
+        actionButton.setText(bundle.getString("AddInitiateButtonPanel.actionButton.text")); // NOI18N
         actionButton.setName("actionButton"); // NOI18N
         actionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -89,7 +91,7 @@ public class AddInitiateButtonPanel extends javax.swing.JPanel {
         actionButtonPanelLayout.setHorizontalGroup(
             actionButtonPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, actionButtonPanelLayout.createSequentialGroup()
-                .addContainerGap(124, Short.MAX_VALUE)
+                .addContainerGap(142, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(actionButton))
@@ -124,12 +126,9 @@ public class AddInitiateButtonPanel extends javax.swing.JPanel {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cancelButtonActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton actionButton;
     private javax.swing.JPanel actionButtonPanel;
     private javax.swing.JButton cancelButton;
     // End of variables declaration//GEN-END:variables
-
 }

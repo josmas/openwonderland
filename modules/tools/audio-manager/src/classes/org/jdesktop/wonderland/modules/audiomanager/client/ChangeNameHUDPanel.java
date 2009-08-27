@@ -25,6 +25,8 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
@@ -33,27 +35,31 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  *
  * @author jp
  * @author nsimpson
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class ChangeNameHUDPanel extends javax.swing.JPanel {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
     private UsernameAliasChangeListener listener;
     private PresenceManager pm;
     private PresenceInfo presenceInfo;
     private PropertyChangeSupport listeners;
 
-
     public ChangeNameHUDPanel() {
         initComponents();
     }
 
-    public ChangeNameHUDPanel(UsernameAliasChangeListener listener, PresenceManager pm,
-	    PresenceInfo presenceInfo) {
+    public ChangeNameHUDPanel(UsernameAliasChangeListener listener,
+            PresenceManager pm, PresenceInfo presenceInfo) {
 
         this();
         this.listener = listener;
-	this.pm = pm;
+        this.pm = pm;
         this.presenceInfo = presenceInfo;
-        aliasLabel.setText("Change alias for " + presenceInfo.userID.getUsername());
+        String text = BUNDLE.getString("Change_Alias_For");
+        text = MessageFormat.format(text, presenceInfo.userID.getUsername());
+        aliasLabel.setText(text);
         usernameAliasTextField.setText(presenceInfo.userID.getUsername());
         setVisible(true);
     }
@@ -63,7 +69,8 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
      * @param listener a listener for dialog events
      */
     @Override
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public synchronized void addPropertyChangeListener(
+            PropertyChangeListener listener) {
         if (listeners == null) {
             listeners = new PropertyChangeSupport(this);
         }
@@ -75,7 +82,8 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
      * @param listener the listener to remove
      */
     @Override
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public synchronized void removePropertyChangeListener(
+            PropertyChangeListener listener) {
         if (listeners != null) {
             listeners.removePropertyChangeListener(listener);
         }
@@ -98,7 +106,8 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
         statusLabel = new javax.swing.JLabel();
 
         nameLabel.setFont(nameLabel.getFont());
-        nameLabel.setText("Display name as:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        nameLabel.setText(bundle.getString("ChangeNameHUDPanel.nameLabel.text")); // NOI18N
 
         usernameAliasTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -111,14 +120,14 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("ChangeNameHUDPanel.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
 
-        okButton.setText("OK");
+        okButton.setText(bundle.getString("ChangeNameHUDPanel.okButton.text")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
@@ -126,7 +135,7 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
         });
 
         aliasLabel.setFont(aliasLabel.getFont().deriveFont(aliasLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        aliasLabel.setText("Change alias for user");
+        aliasLabel.setText(bundle.getString("ChangeNameHUDPanel.aliasLabel.text")); // NOI18N
 
         statusLabel.setFont(statusLabel.getFont());
 
@@ -141,20 +150,20 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(layout.createSequentialGroup()
                                 .add(aliasLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 92, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 162, Short.MAX_VALUE))
                             .add(layout.createSequentialGroup()
-                                .add(cancelButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(cancelButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                        .add(okButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(okButton))
                     .add(layout.createSequentialGroup()
                         .add(6, 6, 6)
                         .add(nameLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(usernameAliasTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 193, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addContainerGap(29, Short.MAX_VALUE))))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(12, 12, 12)
-                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -181,41 +190,35 @@ public class ChangeNameHUDPanel extends javax.swing.JPanel {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         listeners.firePropertyChange("cancel", new String(""), null);
-
 }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         PresenceInfo[] info = pm.getAllUsers();
 
-	String alias = usernameAliasTextField.getText();
+        String alias = usernameAliasTextField.getText();
 
         for (int i = 0; i < info.length; i++) {
             if (info[i].usernameAlias.equals(alias) ||
-		    info[i].userID.getUsername().equals(alias)) {
+                    info[i].userID.getUsername().equals(alias)) {
 
-		if (presenceInfo.equals(info[i]) == false) {
-		    statusLabel.setText("Alias is already being used!");
-		    return;
-		}
+                if (!presenceInfo.equals(info[i])) {
+                    statusLabel.setText(BUNDLE.getString("Alias_Used"));
+                    return;
+                }
             }
         }
 
-	statusLabel.setText("");
+        statusLabel.setText("");
 
         presenceInfo.usernameAlias = usernameAliasTextField.getText();
-	pm.changeUsernameAlias(presenceInfo);
+        pm.changeUsernameAlias(presenceInfo);
         listener.changeUsernameAlias(presenceInfo);
         listeners.firePropertyChange("ok", new String(""), null);
 }//GEN-LAST:event_okButtonActionPerformed
 
     private void usernameAliasTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_usernameAliasTextFieldKeyReleased
-        if (usernameAliasTextField.getText().length() == 0) {
-            okButton.setEnabled(false);
-        } else {
-            okButton.setEnabled(true);
-        }
+        okButton.setEnabled(usernameAliasTextField.getText().length() != 0);
     }//GEN-LAST:event_usernameAliasTextFieldKeyReleased
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel aliasLabel;
     private javax.swing.JButton cancelButton;

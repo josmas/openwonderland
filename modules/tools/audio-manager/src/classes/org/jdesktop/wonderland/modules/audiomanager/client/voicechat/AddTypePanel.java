@@ -22,6 +22,7 @@ import java.awt.event.ActionListener;
 /**
  *
  * @author nsimpson
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class AddTypePanel extends javax.swing.JPanel {
 
@@ -30,7 +31,7 @@ public class AddTypePanel extends javax.swing.JPanel {
     }
 
     public void setPhoneType() {
-	phoneUserRadioButton.setSelected(true);
+        phoneUserRadioButton.setSelected(true);
     }
 
     public void addUserModeListener(ActionListener listener) {
@@ -64,13 +65,14 @@ public class AddTypePanel extends javax.swing.JPanel {
         phoneUserRadioButton = new javax.swing.JRadioButton();
 
         addLabel.setFont(addLabel.getFont().deriveFont(addLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        addLabel.setText("Add:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        addLabel.setText(bundle.getString("AddTypePanel.addLabel.text")); // NOI18N
         addLabel.setName("addLabel"); // NOI18N
 
         buttonGroup1.add(userRadioButton);
         userRadioButton.setFont(userRadioButton.getFont());
         userRadioButton.setSelected(true);
-        userRadioButton.setText("Wonderland User");
+        userRadioButton.setText(bundle.getString("AddTypePanel.userRadioButton.text")); // NOI18N
         userRadioButton.setName("userRadioButton"); // NOI18N
         userRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -80,7 +82,7 @@ public class AddTypePanel extends javax.swing.JPanel {
 
         buttonGroup1.add(phoneUserRadioButton);
         phoneUserRadioButton.setFont(phoneUserRadioButton.getFont());
-        phoneUserRadioButton.setText("Phone User");
+        phoneUserRadioButton.setText(bundle.getString("AddTypePanel.phoneUserRadioButton.text")); // NOI18N
         phoneUserRadioButton.setName("phoneUserRadioButton"); // NOI18N
         phoneUserRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

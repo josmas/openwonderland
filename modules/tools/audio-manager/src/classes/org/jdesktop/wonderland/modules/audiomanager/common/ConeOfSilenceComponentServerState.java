@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.common;
 
+import java.util.ResourceBundle;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -28,13 +29,17 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  * world.
  * 
  * @author jprovino
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-@XmlRootElement(name="cone-of-silence-component")
+@XmlRootElement(name = "cone-of-silence-component")
 @ServerState
-public class ConeOfSilenceComponentServerState extends CellComponentServerState {
+public class ConeOfSilenceComponentServerState
+        extends CellComponentServerState {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/common/Bundle");
     @XmlElement(name = "name")
-    private String name = "ConeOfSilence";
+    private String name = BUNDLE.getString("ConeOfSilence");
     @XmlElement(name = "fullVolumeRadius")
     private double fullVolumeRadius = 1.5;
     @XmlElement(name = "outsideAudioVolume")
@@ -44,13 +49,15 @@ public class ConeOfSilenceComponentServerState extends CellComponentServerState 
     public ConeOfSilenceComponentServerState() {
     }
 
-    public ConeOfSilenceComponentServerState(String name, double fullVolumeRadius) {
+    public ConeOfSilenceComponentServerState(
+            String name, double fullVolumeRadius) {
         this.name = name;
         this.fullVolumeRadius = fullVolumeRadius;
     }
 
     public String getServerComponentClassName() {
-        return "org.jdesktop.wonderland.modules.audiomanager.server.ConeOfSilenceComponentMO";
+        return "org.jdesktop.wonderland.modules.audiomanager." +
+                "server.ConeOfSilenceComponentMO";
     }
 
     public void setName(String name) {
@@ -79,5 +86,4 @@ public class ConeOfSilenceComponentServerState extends CellComponentServerState 
     public double getOutsideAudioVolume() {
         return outsideAudioVolume;
     }
-
 }

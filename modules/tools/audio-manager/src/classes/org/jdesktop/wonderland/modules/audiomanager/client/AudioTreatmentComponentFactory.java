@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -26,21 +27,25 @@ import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentCompone
  * The cell component factory for the AudioTreatmentComponent.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellComponentFactory
 public class AudioTreatmentComponentFactory implements CellComponentFactorySPI {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+
     public String getDisplayName() {
-        return "Audio Capabilities";
+        return BUNDLE.getString("Audio_Capabilities");
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
-        AudioTreatmentComponentServerState state = new AudioTreatmentComponentServerState();
-        return (T)state;
+        AudioTreatmentComponentServerState state =
+                new AudioTreatmentComponentServerState();
+        return (T) state;
     }
 
     public String getDescription() {
-        return "Audio Capabilities";
+        return BUNDLE.getString("Audio_Capabilities_Description");
     }
-
 }

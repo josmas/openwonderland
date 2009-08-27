@@ -25,8 +25,10 @@ package org.jdesktop.wonderland.modules.audiomanager.client;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ResourceBundle;
 import javax.swing.JCheckBox;
 import javax.swing.JSpinner.DefaultEditor;
+import javax.swing.SpinnerListModel;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
@@ -38,9 +40,15 @@ import org.jdesktop.wonderland.modules.orb.client.cell.OrbCell;
  *
  * @author jp
  * @author nsimpson
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+    private final static String SMALL_STRING = BUNDLE.getString("Small");
+    private final static String REGULAR_STRING = BUNDLE.getString("Regular");
+    private final static String LARGE_STRING = BUNDLE.getString("Large");
     private PresenceInfo presenceInfo;
     private PropertyChangeSupport listeners;
 
@@ -51,17 +59,27 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
         REGULAR_FONT,
         LARGE_FONT
     };
-    private NameTagAttribute originalMyNameTagAttribute = NameTagAttribute.REGULAR_FONT;
-    private NameTagAttribute myNameTagAttribute = NameTagAttribute.REGULAR_FONT;
-    private NameTagAttribute originalOtherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
-    private NameTagAttribute otherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
+    private NameTagAttribute originalMyNameTagAttribute =
+            NameTagAttribute.REGULAR_FONT;
+    private NameTagAttribute myNameTagAttribute =
+            NameTagAttribute.REGULAR_FONT;
+    private NameTagAttribute originalOtherNameTagAttributes =
+            NameTagAttribute.REGULAR_FONT;
+    private NameTagAttribute otherNameTagAttributes =
+            NameTagAttribute.REGULAR_FONT;
 
     public NamePropertiesHUDPanel() {
         initComponents();
-        myNameFontSizeSpinner.setValue("Regular");
-        otherNamesFontSizeSpinner.setValue("Regular");
-        ((DefaultEditor) myNameFontSizeSpinner.getEditor()).getTextField().setEditable(false);
-        ((DefaultEditor) otherNamesFontSizeSpinner.getEditor()).getTextField().setEditable(false);
+        String[] spinnerValues = new String[]{
+            SMALL_STRING, REGULAR_STRING, LARGE_STRING};
+        myNameFontSizeSpinner.setModel(new SpinnerListModel(spinnerValues));
+        myNameFontSizeSpinner.setValue(REGULAR_STRING);
+        otherNamesFontSizeSpinner.setModel(new SpinnerListModel(spinnerValues));
+        otherNamesFontSizeSpinner.setValue(REGULAR_STRING);
+        ((DefaultEditor) myNameFontSizeSpinner.getEditor()).getTextField().
+                setEditable(false);
+        ((DefaultEditor) otherNamesFontSizeSpinner.getEditor()).getTextField().
+                setEditable(false);
     }
 
     public NamePropertiesHUDPanel(PresenceInfo presenceInfo) {
@@ -74,7 +92,8 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
      * @param listener a listener for dialog events
      */
     @Override
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public synchronized void addPropertyChangeListener(
+            PropertyChangeListener listener) {
         if (listeners == null) {
             listeners = new PropertyChangeSupport(this);
         }
@@ -86,7 +105,8 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
      * @param listener the listener to remove
      */
     @Override
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public synchronized void removePropertyChangeListener(
+            PropertyChangeListener listener) {
         if (listeners != null) {
             listeners.removePropertyChangeListener(listener);
         }
@@ -101,22 +121,26 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
             switch (myNameTagAttribute) {
                 case HIDE:
                     NameTagNode.setMyNameTag(EventType.HIDE,
-                            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+                            presenceInfo.userID.getUsername(),
+                            presenceInfo.usernameAlias);
                     break;
 
                 case SMALL_FONT:
                     NameTagNode.setMyNameTag(EventType.SMALL_FONT,
-                            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+                            presenceInfo.userID.getUsername(),
+                            presenceInfo.usernameAlias);
                     break;
 
                 case REGULAR_FONT:
                     NameTagNode.setMyNameTag(EventType.REGULAR_FONT,
-                            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+                            presenceInfo.userID.getUsername(),
+                            presenceInfo.usernameAlias);
                     break;
 
                 case LARGE_FONT:
                     NameTagNode.setMyNameTag(EventType.LARGE_FONT,
-                            presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+                            presenceInfo.userID.getUsername(),
+                            presenceInfo.usernameAlias);
                     break;
             }
         }
@@ -130,25 +154,29 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
         switch (otherNameTagAttributes) {
             case HIDE:
                 NameTagNode.setOtherNameTags(EventType.HIDE,
-                        presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+                        presenceInfo.userID.getUsername(),
+                        presenceInfo.usernameAlias);
                 OrbCell.makeOrbsVisible(false);
                 break;
 
             case SMALL_FONT:
                 NameTagNode.setOtherNameTags(EventType.SMALL_FONT,
-                        presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+                        presenceInfo.userID.getUsername(),
+                        presenceInfo.usernameAlias);
                 OrbCell.makeOrbsVisible(true);
                 break;
 
             case REGULAR_FONT:
                 NameTagNode.setOtherNameTags(EventType.REGULAR_FONT,
-                        presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+                        presenceInfo.userID.getUsername(),
+                        presenceInfo.usernameAlias);
                 OrbCell.makeOrbsVisible(true);
                 break;
 
             case LARGE_FONT:
                 NameTagNode.setOtherNameTags(EventType.LARGE_FONT,
-                        presenceInfo.userID.getUsername(), presenceInfo.usernameAlias);
+                        presenceInfo.userID.getUsername(),
+                        presenceInfo.usernameAlias);
                 OrbCell.makeOrbsVisible(true);
                 break;
         }
@@ -173,50 +201,49 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
         myNameFontSizeSpinner = new javax.swing.JSpinner();
         otherNamesFontSizeSpinner = new javax.swing.JSpinner();
 
-        avatarNamesLabel.setText("Avatar Names");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        avatarNamesLabel.setText(bundle.getString("NamePropertiesHUDPanel.avatarNamesLabel.text")); // NOI18N
 
         showMyNameCheckBox.setSelected(true);
-        showMyNameCheckBox.setText("Show my name");
+        showMyNameCheckBox.setText(bundle.getString("NamePropertiesHUDPanel.showMyNameCheckBox.text")); // NOI18N
         showMyNameCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 showMyNameCheckBoxItemStateChanged(evt);
             }
         });
 
-        myFontSizeLabel.setText("Font size:");
+        myFontSizeLabel.setText(bundle.getString("NamePropertiesHUDPanel.myFontSizeLabel.text")); // NOI18N
 
         showOtherNamesCheckBox.setSelected(true);
-        showOtherNamesCheckBox.setText("Show other's names");
+        showOtherNamesCheckBox.setText(bundle.getString("NamePropertiesHUDPanel.showOtherNamesCheckBox.text")); // NOI18N
         showOtherNamesCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 showOtherNamesCheckBoxItemStateChanged(evt);
             }
         });
 
-        otherFontSizeLabel.setText("Font size:");
+        otherFontSizeLabel.setText(bundle.getString("NamePropertiesHUDPanel.otherFontSizeLabel.text")); // NOI18N
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("NamePropertiesHUDPanel.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
 
-        okButton.setText("OK");
+        okButton.setText(bundle.getString("NamePropertiesHUDPanel.okButton.text")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
 
-        myNameFontSizeSpinner.setModel(new javax.swing.SpinnerListModel(new String[] {"Small", "Regular", "Large"}));
         myNameFontSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 myNameFontSizeSpinnerStateChanged(evt);
             }
         });
 
-        otherNamesFontSizeSpinner.setModel(new javax.swing.SpinnerListModel(new String[] {"Small", "Regular", "Large"}));
         otherNamesFontSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 otherNamesFontSizeSpinnerStateChanged(evt);
@@ -244,12 +271,12 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, otherFontSizeLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(myNameFontSizeSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
-                            .add(otherNamesFontSizeSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE))
+                            .add(myNameFontSizeSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                            .add(otherNamesFontSizeSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE))
                         .add(24, 24, 24)))
                 .add(14, 14, 14))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(108, Short.MAX_VALUE)
+                .addContainerGap(164, Short.MAX_VALUE)
                 .add(cancelButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(okButton))
@@ -288,19 +315,18 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
     private void updateMyNameTag(boolean showingName) {
         if (showingName) {
-            if (myNameFontSizeSpinner.getValue().equals("Small")) {
+            Object value = myNameFontSizeSpinner.getValue();
+            if (value.equals(SMALL_STRING)) {
                 myNameTagAttribute = NameTagAttribute.SMALL_FONT;
-            } else if (myNameFontSizeSpinner.getValue().equals("Regular")) {
+            } else if (value.equals(REGULAR_STRING)) {
                 myNameTagAttribute = NameTagAttribute.REGULAR_FONT;
-            } else if (myNameFontSizeSpinner.getValue().equals("Large")) {
+            } else if (value.equals(LARGE_STRING)) {
                 myNameTagAttribute = NameTagAttribute.LARGE_FONT;
             }
-
-            myNameFontSizeSpinner.setEnabled(true);
         } else {
             myNameTagAttribute = NameTagAttribute.HIDE;
-            myNameFontSizeSpinner.setEnabled(false);
         }
+        myNameFontSizeSpinner.setEnabled(showingName);
         applyChanges();
     }
 
@@ -312,19 +338,18 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
 
     private void updateOthersNameTag(boolean showingName) {
         if (showingName) {
-            if (otherNamesFontSizeSpinner.getValue().equals("Small")) {
+            Object value = otherNamesFontSizeSpinner.getValue();
+            if (value.equals(SMALL_STRING)) {
                 otherNameTagAttributes = NameTagAttribute.SMALL_FONT;
-            } else if (otherNamesFontSizeSpinner.getValue().equals("Regular")) {
+            } else if (value.equals(REGULAR_STRING)) {
                 otherNameTagAttributes = NameTagAttribute.REGULAR_FONT;
-            } else if (otherNamesFontSizeSpinner.getValue().equals("Large")) {
+            } else if (value.equals(LARGE_STRING)) {
                 otherNameTagAttributes = NameTagAttribute.LARGE_FONT;
             }
-
-            otherNamesFontSizeSpinner.setEnabled(true);
         } else {
             otherNameTagAttributes = NameTagAttribute.HIDE;
-            otherNamesFontSizeSpinner.setEnabled(false);
         }
+        otherNamesFontSizeSpinner.setEnabled(showingName);
         applyChanges();
     }
 
@@ -341,7 +366,6 @@ public class NamePropertiesHUDPanel extends javax.swing.JPanel {
     private void otherNamesFontSizeSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_otherNamesFontSizeSpinnerStateChanged
         updateOthersNameTag(showOtherNamesCheckBox.isSelected());
 }//GEN-LAST:event_otherNamesFontSizeSpinnerStateChanged
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel avatarNamesLabel;
     private javax.swing.JButton cancelButton;

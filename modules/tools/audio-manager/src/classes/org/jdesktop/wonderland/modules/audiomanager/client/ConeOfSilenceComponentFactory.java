@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -26,21 +27,24 @@ import org.jdesktop.wonderland.modules.audiomanager.common.ConeOfSilenceComponen
  * The cell component factory for the ConeOfSilenceComponent.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellComponentFactory
 public class ConeOfSilenceComponentFactory implements CellComponentFactorySPI {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
+
     public String getDisplayName() {
-        return "Cone of Silence";
+        return BUNDLE.getString("Cone_of_Silence");
     }
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
         ConeOfSilenceComponentServerState state = new ConeOfSilenceComponentServerState();
-        return (T)state;
+        return (T) state;
     }
 
     public String getDescription() {
-        return "Surrounds area with a Cone of Silence";
+        return BUNDLE.getString("Cone_of_Silence_Description");
     }
-
 }
