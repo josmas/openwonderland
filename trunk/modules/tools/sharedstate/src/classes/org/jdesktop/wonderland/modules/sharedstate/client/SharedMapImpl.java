@@ -794,9 +794,10 @@ class SharedMapImpl implements SharedMapCli {
         {
             for (ListenerRecord lr : listeners) {
                 if (lr.matches(key)) {
-                    lr.getListener().propertyChanged(SharedMapImpl.this, 
+                    lr.getListener().propertyChanged(new SharedMapEventCli(
+                                                     SharedMapImpl.this,
                                                      senderID,key, oldValue,
-                                                     newValue);
+                                                     newValue));
                 }
             }
         }
