@@ -32,26 +32,14 @@ import com.jme.scene.Geometry;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.state.TextureState;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPOutputStream;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -61,10 +49,8 @@ import javax.swing.table.DefaultTableModel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
@@ -74,24 +60,26 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 /**
  *
  * @author  paulby
+ * @author  Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class ModelImporterFrame extends javax.swing.JFrame {
-    
+
+    private static final Logger LOGGER =
+            Logger.getLogger(ModelImporterFrame.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle");
     private File lastModelDir;
 //    private GeometryStatsDialog geometryStatsDialog = null;
     private TransformChangeListener userMotionListener = null;
     private ChangeListener translationChangeListener = null;
     private ChangeListener rotationChangeListener = null;
     private ChangeListener scaleChangeListener = null;
-    
     private Vector3f currentTranslation = new Vector3f();
     private Vector3f currentRotationValues = new Vector3f();
     private Vector3f currentScale = new Vector3f();
     private Matrix3f currentRotation = new Matrix3f();
-
     private ImportSessionFrame sessionFrame;
-    
-    private ImportSettings importSettings=null;
+    private ImportSettings importSettings = null;
     private ImportedModel importedModel = null;
     private TransformProcessorComponent transformProcessor;
 
@@ -101,28 +89,65 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         sessionFrame = session;
         initComponents();
 
-        Float value = new Float(0); 
+        textureTable.setModel(new DefaultTableModel() {
+
+            String[] names = new String[]{
+                BUNDLE.getString("Original_Filename"),
+                BUNDLE.getString("Wonderland_Path"),
+                BUNDLE.getString("Wonderland_Filename")
+            };
+            Class[] types = new Class[]{
+                String.class, String.class, String.class
+            };
+            boolean[] canEdit = new boolean[]{
+                false, false, false
+            };
+
+            @Override
+            public String getColumnName(int column) {
+                return names[column];
+            }
+
+            @Override
+            public Class getColumnClass(int columnIndex) {
+                return types[columnIndex];
+            }
+
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        });
+
+        Float value = new Float(0);
         Float min = new Float(Float.NEGATIVE_INFINITY);
-        Float max = new Float(Float.POSITIVE_INFINITY); 
-        Float step = new Float(0.1); 
-        SpinnerNumberModel translationX = new SpinnerNumberModel(value, min, max, step); 
-        SpinnerNumberModel translationY = new SpinnerNumberModel(value, min, max, step); 
-        SpinnerNumberModel translationZ = new SpinnerNumberModel(value, min, max, step); 
+        Float max = new Float(Float.POSITIVE_INFINITY);
+        Float step = new Float(0.1);
+        SpinnerNumberModel translationX =
+                new SpinnerNumberModel(value, min, max, step);
+        SpinnerNumberModel translationY =
+                new SpinnerNumberModel(value, min, max, step);
+        SpinnerNumberModel translationZ =
+                new SpinnerNumberModel(value, min, max, step);
         translationXTF.setModel(translationX);
         translationYTF.setModel(translationY);
         translationZTF.setModel(translationZ);
 
         value = new Float(1);
-        SpinnerNumberModel scaleX = new SpinnerNumberModel(value, min, max, step);
+        SpinnerNumberModel scaleX =
+                new SpinnerNumberModel(value, min, max, step);
         scaleTF.setModel(scaleX);
-                
+
         value = new Float(0);
         min = new Float(-360);
         max = new Float(360);
         step = new Float(1);
-        SpinnerNumberModel rotationX = new SpinnerNumberModel(value, min, max, step); 
-        SpinnerNumberModel rotationY = new SpinnerNumberModel(value, min, max, step); 
-        SpinnerNumberModel rotationZ = new SpinnerNumberModel(value, min, max, step); 
+        SpinnerNumberModel rotationX =
+                new SpinnerNumberModel(value, min, max, step);
+        SpinnerNumberModel rotationY =
+                new SpinnerNumberModel(value, min, max, step);
+        SpinnerNumberModel rotationZ =
+                new SpinnerNumberModel(value, min, max, step);
         rotationXTF.setModel(rotationX);
         rotationYTF.setModel(rotationY);
         rotationZTF.setModel(rotationZ);
@@ -130,10 +155,12 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
 
         // TODO add Float editors to the spinners
-                
+
         userMotionListener = new TransformChangeListener() {
+
             private Vector3f look = new Vector3f();
             private Vector3f pos = new Vector3f();
+
             public void transformChanged(Cell cell, ChangeSource source) {
                 CellTransform t = cell.getWorldTransform();
                 t.getLookAt(pos, look);
@@ -142,74 +169,88 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 pos.addLocal(look);
 
                 currentTranslation.set(pos);
-                ((SpinnerNumberModel)translationXTF.getModel()).setValue(new Float(pos.x));
-                ((SpinnerNumberModel)translationYTF.getModel()).setValue(new Float(pos.y));
-                ((SpinnerNumberModel)translationZTF.getModel()).setValue(new Float(pos.z));
-                if (transformProcessor!=null)
-                    transformProcessor.setTransform(currentRotation, currentTranslation);
-            }
-
-        };
-                
-        translationChangeListener = new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                float x = (Float)((SpinnerNumberModel)translationXTF.getModel()).getValue();
-                float y = (Float)((SpinnerNumberModel)translationYTF.getModel()).getValue();
-                float z = (Float)((SpinnerNumberModel)translationZTF.getModel()).getValue();
-                
-                if (x!=currentTranslation.x ||
-                    y!=currentTranslation.y ||
-                    z!=currentTranslation.z) {
-                    currentTranslation.set(x,y,z);
-                    importedModel.setTranslation(currentTranslation);
-                    if (transformProcessor!=null)
-                        transformProcessor.setTransform(currentRotation, currentTranslation);
+                ((SpinnerNumberModel) translationXTF.getModel()).setValue(
+                        new Float(pos.x));
+                ((SpinnerNumberModel) translationYTF.getModel()).setValue(
+                        new Float(pos.y));
+                ((SpinnerNumberModel) translationZTF.getModel()).setValue(
+                        new Float(pos.z));
+                if (transformProcessor != null) {
+                    transformProcessor.setTransform(
+                            currentRotation, currentTranslation);
                 }
             }
-
         };
-        
-        rotationChangeListener = new ChangeListener() {
+
+        translationChangeListener = new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
-                float x = (Float)((SpinnerNumberModel)rotationXTF.getModel()).getValue();
-                float y = (Float)((SpinnerNumberModel)rotationYTF.getModel()).getValue();
-                float z = (Float)((SpinnerNumberModel)rotationZTF.getModel()).getValue();
-                
-                if (x!=currentRotationValues.x ||
-                    y!=currentRotationValues.y ||
-                    z!=currentRotationValues.z) {
-                    currentRotationValues.set(x,y,z);
+                float x = (Float) ((SpinnerNumberModel) translationXTF.getModel()).getValue();
+                float y = (Float) ((SpinnerNumberModel) translationYTF.getModel()).getValue();
+                float z = (Float) ((SpinnerNumberModel) translationZTF.getModel()).getValue();
+
+                if (x != currentTranslation.x ||
+                        y != currentTranslation.y ||
+                        z != currentTranslation.z) {
+                    currentTranslation.set(x, y, z);
+                    importedModel.setTranslation(currentTranslation);
+                    if (transformProcessor != null) {
+                        transformProcessor.setTransform(
+                                currentRotation, currentTranslation);
+                    }
+                }
+            }
+        };
+
+        rotationChangeListener = new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                float x = (Float) ((SpinnerNumberModel) rotationXTF.getModel()).getValue();
+                float y = (Float) ((SpinnerNumberModel) rotationYTF.getModel()).getValue();
+                float z = (Float) ((SpinnerNumberModel) rotationZTF.getModel()).getValue();
+
+                if (x != currentRotationValues.x ||
+                        y != currentRotationValues.y ||
+                        z != currentRotationValues.z) {
+                    currentRotationValues.set(x, y, z);
                     importedModel.setOrientation(currentRotationValues);
                     calcCurrentRotationMatrix();
-                    if (transformProcessor!=null)
-                        transformProcessor.setTransform(currentRotation, currentTranslation);
+                    if (transformProcessor != null) {
+                        transformProcessor.setTransform(
+                                currentRotation, currentTranslation);
+                    }
                 }
             }
-
         };
 
-        ((SpinnerNumberModel)rotationXTF.getModel()).addChangeListener(rotationChangeListener);
-        ((SpinnerNumberModel)rotationYTF.getModel()).addChangeListener(rotationChangeListener);
-        ((SpinnerNumberModel)rotationZTF.getModel()).addChangeListener(rotationChangeListener);            
-                
+        ((SpinnerNumberModel) rotationXTF.getModel()).addChangeListener(
+                rotationChangeListener);
+        ((SpinnerNumberModel) rotationYTF.getModel()).addChangeListener(
+                rotationChangeListener);
+        ((SpinnerNumberModel) rotationZTF.getModel()).addChangeListener(
+                rotationChangeListener);
+
         scaleChangeListener = new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
-                float x = (Float)((SpinnerNumberModel)scaleTF.getModel()).getValue();
+                float x = (Float) ((SpinnerNumberModel) scaleTF.getModel()).getValue();
 //                float y = (Float)((SpinnerNumberModel)translationYTF.getModel()).getValue();
 //                float z = (Float)((SpinnerNumberModel)translationZTF.getModel()).getValue();
-                
-                if (x!=currentScale.x ) {
-                    currentScale.set(x,x,x);
+
+                if (x != currentScale.x) {
+                    currentScale.set(x, x, x);
                     importedModel.setScale(currentScale);
-                    if (transformProcessor!=null)
-                        transformProcessor.setTransform(currentRotation, currentTranslation, currentScale);
+                    if (transformProcessor != null) {
+                        transformProcessor.setTransform(
+                                currentRotation, currentTranslation, currentScale);
+                    }
                 }
             }
-
         };
 
-        ((SpinnerNumberModel)scaleTF.getModel()).addChangeListener(scaleChangeListener);
-        
+        ((SpinnerNumberModel) scaleTF.getModel()).addChangeListener(
+                scaleChangeListener);
+
         // Disable move with avatar
         avatarMoveCB.setSelected(false);
         enableSpinners(true);
@@ -217,7 +258,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     }
 
     /**
-     * Set the spinners to the rotation, translation and scale local coords of this node
+     * Set the spinners to the rotation, translation and scale local coords of
+     * this node
      * @param node
      */
     private void setSpinners(Node modelBG, Node rootBG) {
@@ -230,54 +272,56 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         translationYTF.setValue(translation.y);
         translationZTF.setValue(translation.z);
 
-        rotationXTF.setValue((float)Math.toDegrees(angles[0]));
-        rotationYTF.setValue((float)Math.toDegrees(angles[1]));
-        rotationZTF.setValue((float)Math.toDegrees(angles[2]));
+        rotationXTF.setValue((float) Math.toDegrees(angles[0]));
+        rotationYTF.setValue((float) Math.toDegrees(angles[1]));
+        rotationZTF.setValue((float) Math.toDegrees(angles[2]));
 
         scaleTF.setValue(scale.x);
 
         importedModel.setTranslation(translation);
         importedModel.setOrientation(new Vector3f(
-                (float)Math.toDegrees(angles[0]),
-                (float)Math.toDegrees(angles[1]),
-                (float)Math.toDegrees(angles[2])));
+                (float) Math.toDegrees(angles[0]),
+                (float) Math.toDegrees(angles[1]),
+                (float) Math.toDegrees(angles[2])));
         importedModel.setScale(new Vector3f(scale.x, scale.x, scale.x));
     }
 
     private void calcCurrentRotationMatrix() {
-        currentRotation = sessionFrame.calcRotationMatrix(
-                (float)Math.toRadians(currentRotationValues.x),
-                (float)Math.toRadians(currentRotationValues.y),
-                (float)Math.toRadians(currentRotationValues.z));
+        currentRotation = ImportSessionFrame.calcRotationMatrix(
+                (float) Math.toRadians(currentRotationValues.x),
+                (float) Math.toRadians(currentRotationValues.y),
+                (float) Math.toRadians(currentRotationValues.z));
     }
-        
+
     void chooseFile() {
         texturePrefixTF.setText("");
         modelNameTF.setText("");
         modelX3dTF.setText("");
         importedModel = null;
-        
+
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 JFileChooser chooser = new JFileChooser();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter(LoaderManager.getLoaderManager().getLoaderExtensions());
+                FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                        LoaderManager.getLoaderManager().getLoaderExtensions());
                 chooser.setFileFilter(filter);
-                if (lastModelDir!=null)
+                if (lastModelDir != null) {
                     chooser.setCurrentDirectory(lastModelDir);
+                }
                 int returnVal = chooser.showOpenDialog(ModelImporterFrame.this);
-                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
                     try {
                         importModel(chooser.getSelectedFile(), false);
                     } catch (FileNotFoundException ex) {
-                        Logger.getLogger(ModelImporterFrame.class.getName()).log(Level.SEVERE, null, ex);
-                    } catch(IOException ioe) {
-                        Logger.getLogger(ModelImporterFrame.class.getName()).log(Level.SEVERE, null, ioe);                        
+                        LOGGER.log(Level.SEVERE, null, ex);
+                    } catch (IOException ioe) {
+                        LOGGER.log(Level.SEVERE, null, ioe);
                     }
-                   setVisible(true);
-                   lastModelDir = chooser.getSelectedFile().getParentFile();
-                } 
+                    setVisible(true);
+                    lastModelDir = chooser.getSelectedFile().getParentFile();
+                }
             }
-            
         });
     }
 
@@ -292,87 +336,107 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         currentTranslation.set(model.getTranslation());
         currentRotationValues.set(model.getOrientation());
         calcCurrentRotationMatrix();
-        ((SpinnerNumberModel)rotationXTF.getModel()).setValue(model.getOrientation().x);
-        ((SpinnerNumberModel)rotationYTF.getModel()).setValue(model.getOrientation().y);
-        ((SpinnerNumberModel)rotationZTF.getModel()).setValue(model.getOrientation().z);
-        ((SpinnerNumberModel)translationXTF.getModel()).setValue(model.getTranslation().x);
-        ((SpinnerNumberModel)translationYTF.getModel()).setValue(model.getTranslation().y);
-        ((SpinnerNumberModel)translationZTF.getModel()).setValue(model.getTranslation().x);
-        ((SpinnerNumberModel)scaleTF.getModel()).setValue(model.getScale().x);
-        
+        ((SpinnerNumberModel) rotationXTF.getModel()).setValue(
+                model.getOrientation().x);
+        ((SpinnerNumberModel) rotationYTF.getModel()).setValue(
+                model.getOrientation().y);
+        ((SpinnerNumberModel) rotationZTF.getModel()).setValue(
+                model.getOrientation().z);
+        ((SpinnerNumberModel) translationXTF.getModel()).setValue(
+                model.getTranslation().x);
+        ((SpinnerNumberModel) translationYTF.getModel()).setValue(
+                model.getTranslation().y);
+        ((SpinnerNumberModel) translationZTF.getModel()).setValue(
+                model.getTranslation().x);
+        ((SpinnerNumberModel) scaleTF.getModel()).setValue(model.getScale().x);
+
         avatarMoveCB.setSelected(false);
         populateTextureList(model.getRootBG());
-        
+
         processBounds(model.getModelBG());
     }
-    
+
     /**
      * Import a model from a file
      * 
      * @param origFile
      */
-    void importModel(final File origFile, boolean attachToAvatar) throws IOException {
+    void importModel(final File origFile, boolean attachToAvatar)
+            throws IOException {
         avatarMoveCB.setSelected(attachToAvatar);
-        
+
         modelX3dTF.setText(origFile.getAbsolutePath());
         importSettings = new ImportSettings(origFile.toURI().toURL());
 
-        sessionFrame.asyncLoadModel(importSettings, new ImportSessionFrame.LoadCompleteListener() {
+        sessionFrame.asyncLoadModel(
+                importSettings, new ImportSessionFrame.LoadCompleteListener() {
 
             public void loadComplete(ImportedModel importedModel) {
                 ModelImporterFrame.this.importedModel = importedModel;
                 Entity entity = importedModel.getEntity();
-                transformProcessor = (TransformProcessorComponent) entity.getComponent(TransformProcessorComponent.class);
-                setSpinners(importedModel.getModelBG(), importedModel.getRootBG());
+                transformProcessor =
+                        (TransformProcessorComponent) entity.getComponent(
+                        TransformProcessorComponent.class);
+                setSpinners(
+                        importedModel.getModelBG(), importedModel.getRootBG());
 
-                entity.addComponent(LoadCompleteProcessor.class, new LoadCompleteProcessor(importedModel));
-                
+                entity.addComponent(LoadCompleteProcessor.class,
+                        new LoadCompleteProcessor(importedModel));
+
                 String dir = origFile.getAbsolutePath();
-                dir = dir.substring(0,dir.lastIndexOf(File.separatorChar));
-                dir = dir.substring(dir.lastIndexOf(File.separatorChar)+1);
+                dir = dir.substring(0, dir.lastIndexOf(File.separatorChar));
+                dir = dir.substring(dir.lastIndexOf(File.separatorChar) + 1);
                 texturePrefixTF.setText(dir);
 
                 String filename = origFile.getAbsolutePath();
-                filename = filename.substring(filename.lastIndexOf(File.separatorChar)+1);
+                filename = filename.substring(
+                        filename.lastIndexOf(File.separatorChar) + 1);
                 filename = filename.substring(0, filename.lastIndexOf('.'));
                 modelNameTF.setText(filename);
 
                 if (avatarMoveCB.isSelected()) {
-                    ViewManager.getViewManager().getPrimaryViewCell().addTransformChangeListener(userMotionListener);
+                    ViewManager viewManager = ViewManager.getViewManager();
+                    ViewCell viewCell = viewManager.getPrimaryViewCell();
+                    viewCell.addTransformChangeListener(userMotionListener);
                 }
             }
         });
-        
+
     }
 
     private void populateTextureList(Node bg) {
-        final DefaultTableModel model = (DefaultTableModel)textureTable.getModel();
-        while(model.getRowCount()!=0)
+        final DefaultTableModel model =
+                (DefaultTableModel) textureTable.getModel();
+        while (model.getRowCount() != 0) {
             model.removeRow(0);
-        
+        }
+
         final String texturePath = texturePrefixTF.getText();
         final HashSet<String> textureSet = new HashSet();
-        
+
         TreeScan.findNode(bg, Geometry.class, new ProcessNodeInterface() {
 
             public boolean processNode(Spatial node) {
-                TextureState ts = (TextureState)node.getRenderState(TextureState.RS_TEXTURE);
-                if (ts==null)
+                TextureState ts =
+                        (TextureState) node.getRenderState(
+                        TextureState.RS_TEXTURE);
+                if (ts == null) {
                     return true;
+                }
 
                 Texture t = ts.getTexture();
-                if (t!=null) {
+                if (t != null) {
                     String tFile = t.getImageLocation();
-                    if (textureSet.add(tFile))
-                        model.addRow(new Object[] {new String(tFile),
-                                                   "not implemented",
-                                                   "not implemented" });
+                    if (textureSet.add(tFile)) {
+                        model.addRow(new Object[]{new String(tFile),
+                                    "not implemented",
+                                    "not implemented"});
+                    }
                 }
                 return true;
             }
         }, false, true);
     }
-    
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -430,37 +494,38 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         boundsSizeYTF = new javax.swing.JTextField();
         boundsSizeZTF = new javax.swing.JTextField();
 
-        setTitle("Model Import");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("ModelImporterFrame.title")); // NOI18N
 
         jTabbedPane1.setPreferredSize(new java.awt.Dimension(102, 167));
 
         basicPanel.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
             public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
                 basicPanelInputMethodTextChanged(evt);
-            }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
             }
         });
 
         avatarMoveCB.setSelected(true);
-        avatarMoveCB.setText("Move with Avatar");
+        avatarMoveCB.setText(bundle.getString("ModelImporterFrame.avatarMoveCB.text")); // NOI18N
         avatarMoveCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 avatarMoveCBActionPerformed(evt);
             }
         });
 
-        jLabel7.setText("Location");
+        jLabel7.setText(bundle.getString("ModelImporterFrame.jLabel7.text")); // NOI18N
 
-        jLabel6.setText("X :");
+        jLabel6.setText(bundle.getString("ModelImporterFrame.jLabel6.text")); // NOI18N
 
         translationXTF.setEnabled(false);
 
         translationYTF.setEnabled(false);
 
-        jLabel8.setText("Y :");
+        jLabel8.setText(bundle.getString("ModelImporterFrame.jLabel8.text")); // NOI18N
 
-        jLabel9.setText("Z :");
+        jLabel9.setText(bundle.getString("ModelImporterFrame.jLabel9.text")); // NOI18N
 
         translationZTF.setEnabled(false);
 
@@ -507,13 +572,13 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel10.setText("Rotation");
+        jLabel10.setText(bundle.getString("ModelImporterFrame.jLabel10.text")); // NOI18N
 
-        jLabel11.setText("X :");
+        jLabel11.setText(bundle.getString("ModelImporterFrame.jLabel11.text")); // NOI18N
 
-        jLabel13.setText("Y :");
+        jLabel13.setText(bundle.getString("ModelImporterFrame.jLabel13.text")); // NOI18N
 
-        jLabel12.setText("Z :");
+        jLabel12.setText(bundle.getString("ModelImporterFrame.jLabel12.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel5Layout = new org.jdesktop.layout.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -539,6 +604,9 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                                 .add(rotationZTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 154, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(28, Short.MAX_VALUE))
         );
+
+        jPanel5Layout.linkSize(new java.awt.Component[] {jLabel11, jLabel12, jLabel13}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel5Layout.createSequentialGroup()
@@ -558,32 +626,32 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 .addContainerGap(49, Short.MAX_VALUE))
         );
 
-        modelNameTF.setText("jTextField1");
-        modelNameTF.setToolTipText("The name of the model used in wonderland");
+        modelNameTF.setText(bundle.getString("ModelImporterFrame.modelNameTF.text")); // NOI18N
+        modelNameTF.setToolTipText(bundle.getString("ModelImporterFrame.modelNameTF.toolTipText")); // NOI18N
 
-        jLabel5.setText("Wonderland Model Name :");
+        jLabel5.setText(bundle.getString("ModelImporterFrame.jLabel5.text")); // NOI18N
 
         modelX3dTF.setEditable(false);
-        modelX3dTF.setText("jTextField1");
-        modelX3dTF.setToolTipText("The model file being imported");
+        modelX3dTF.setText(bundle.getString("ModelImporterFrame.modelX3dTF.text")); // NOI18N
+        modelX3dTF.setToolTipText(bundle.getString("ModelImporterFrame.modelX3dTF.toolTipText")); // NOI18N
 
-        jLabel1.setText("Original Model File :");
+        jLabel1.setText(bundle.getString("ModelImporterFrame.jLabel1.text")); // NOI18N
 
-        okB1.setText("OK");
+        okB1.setText(bundle.getString("ModelImporterFrame.okB1.text")); // NOI18N
         okB1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okB1ActionPerformed(evt);
             }
         });
 
-        cancelB1.setText("Cancel");
+        cancelB1.setText(bundle.getString("ModelImporterFrame.cancelB1.text")); // NOI18N
         cancelB1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelB1ActionPerformed(evt);
             }
         });
 
-        jLabel3.setText("Scale");
+        jLabel3.setText(bundle.getString("ModelImporterFrame.jLabel3.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout basicPanelLayout = new org.jdesktop.layout.GroupLayout(basicPanel);
         basicPanel.setLayout(basicPanelLayout);
@@ -618,7 +686,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                         .add(okB1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cancelB1)))
-                .addContainerGap(135, Short.MAX_VALUE))
+                .addContainerGap(126, Short.MAX_VALUE))
         );
         basicPanelLayout.setVerticalGroup(
             basicPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -649,90 +717,67 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Basic", basicPanel);
+        jTabbedPane1.addTab(bundle.getString("ModelImporterFrame.basicPanel.TabConstraints.tabTitle"), basicPanel); // NOI18N
 
         advancedPanel.setMinimumSize(new java.awt.Dimension(615, 647));
 
-        textureTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Original Filename", "Wonderland Path", "Wonderland Filename"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Object.class, java.lang.Object.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
         jScrollPane1.setViewportView(textureTable);
 
-        jLabel2.setText("Wonderland Texture Dir :");
+        jLabel2.setText(bundle.getString("ModelImporterFrame.jLabel2.text")); // NOI18N
 
         texturePrefixTF.setEditable(false);
-        texturePrefixTF.setText("jTextField1");
-        texturePrefixTF.setToolTipText("The directory in which the model textures will be placed");
+        texturePrefixTF.setText(bundle.getString("ModelImporterFrame.texturePrefixTF.text")); // NOI18N
+        texturePrefixTF.setToolTipText(bundle.getString("ModelImporterFrame.texturePrefixTF.toolTipText")); // NOI18N
 
-        okB.setText("OK");
+        okB.setText(bundle.getString("ModelImporterFrame.okB.text")); // NOI18N
         okB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okBActionPerformed(evt);
             }
         });
 
-        cancelB.setText("Cancel");
+        cancelB.setText(bundle.getString("ModelImporterFrame.cancelB.text")); // NOI18N
         cancelB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelBActionPerformed(evt);
             }
         });
 
-        jLabel25.setText("Bounds Center :");
+        jLabel25.setText(bundle.getString("ModelImporterFrame.jLabel25.text")); // NOI18N
 
         jLabel27.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        jLabel27.setText("X");
+        jLabel27.setText(bundle.getString("ModelImporterFrame.jLabel27.text")); // NOI18N
 
         boundsCenterYTF.setColumns(12);
         boundsCenterYTF.setEditable(false);
         boundsCenterYTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        boundsCenterYTF.setText("jTextField1");
+        boundsCenterYTF.setText(bundle.getString("ModelImporterFrame.boundsCenterYTF.text")); // NOI18N
 
         boundsCenterXTF.setColumns(12);
         boundsCenterXTF.setEditable(false);
         boundsCenterXTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        boundsCenterXTF.setText("jTextField1");
+        boundsCenterXTF.setText(bundle.getString("ModelImporterFrame.boundsCenterXTF.text")); // NOI18N
 
         jLabel28.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        jLabel28.setText("Y");
+        jLabel28.setText(bundle.getString("ModelImporterFrame.jLabel28.text")); // NOI18N
 
         jLabel29.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        jLabel29.setText("Z");
+        jLabel29.setText(bundle.getString("ModelImporterFrame.jLabel29.text")); // NOI18N
 
         boundsCenterZTF.setColumns(12);
         boundsCenterZTF.setEditable(false);
         boundsCenterZTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        boundsCenterZTF.setText("jTextField1");
+        boundsCenterZTF.setText(bundle.getString("ModelImporterFrame.boundsCenterZTF.text")); // NOI18N
 
         boundsSizeXTF.setColumns(12);
         boundsSizeXTF.setEditable(false);
         boundsSizeXTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        boundsSizeXTF.setText("jTextField1");
+        boundsSizeXTF.setText(bundle.getString("ModelImporterFrame.boundsSizeXTF.text")); // NOI18N
 
-        jLabel26.setText("Bounds Size :");
+        jLabel26.setText(bundle.getString("ModelImporterFrame.jLabel26.text")); // NOI18N
 
-        geometryStatsB.setText("Geometry Stats...");
-        geometryStatsB.setToolTipText("Show the geometry statistics");
+        geometryStatsB.setText(bundle.getString("ModelImporterFrame.geometryStatsB.text")); // NOI18N
+        geometryStatsB.setToolTipText(bundle.getString("ModelImporterFrame.geometryStatsB.toolTipText")); // NOI18N
         geometryStatsB.setEnabled(false);
         geometryStatsB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -740,17 +785,17 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             }
         });
 
-        jLabel30.setText("Texture Details");
+        jLabel30.setText(bundle.getString("ModelImporterFrame.jLabel30.text")); // NOI18N
 
         boundsSizeYTF.setColumns(12);
         boundsSizeYTF.setEditable(false);
         boundsSizeYTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        boundsSizeYTF.setText("jTextField1");
+        boundsSizeYTF.setText(bundle.getString("ModelImporterFrame.boundsSizeYTF.text")); // NOI18N
 
         boundsSizeZTF.setColumns(12);
         boundsSizeZTF.setEditable(false);
         boundsSizeZTF.setFont(new java.awt.Font("Lucida Grande", 0, 10));
-        boundsSizeZTF.setText("jTextField1");
+        boundsSizeZTF.setText(bundle.getString("ModelImporterFrame.boundsSizeZTF.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout advancedPanelLayout = new org.jdesktop.layout.GroupLayout(advancedPanel);
         advancedPanel.setLayout(advancedPanelLayout);
@@ -765,7 +810,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                         .add(texturePrefixTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 146, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedPanelLayout.createSequentialGroup()
                         .add(44, 44, 44)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 571, Short.MAX_VALUE))
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE))
                     .add(advancedPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -776,15 +821,15 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                                     .add(advancedPanelLayout.createSequentialGroup()
                                         .add(jLabel27)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(boundsCenterYTF))
+                                        .add(boundsCenterYTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))
                                     .add(advancedPanelLayout.createSequentialGroup()
                                         .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                             .add(jLabel29)
                                             .add(jLabel28))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(boundsCenterXTF)
-                                            .add(boundsCenterZTF))))
+                                            .add(boundsCenterXTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+                                            .add(boundsCenterZTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))))
                                 .add(18, 18, 18)
                                 .add(jLabel26)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -793,13 +838,13 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                                     .add(boundsSizeYTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 133, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(boundsSizeXTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 133, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                             .add(jLabel30))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 130, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 170, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedPanelLayout.createSequentialGroup()
                         .add(123, 123, 123)
                         .add(okB)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(cancelB)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 174, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 250, Short.MAX_VALUE)
                         .add(geometryStatsB)))
                 .addContainerGap())
         );
@@ -836,10 +881,10 @@ public class ModelImporterFrame extends javax.swing.JFrame {
                     .add(okB)
                     .add(cancelB)
                     .add(geometryStatsB))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Advanced", advancedPanel);
+        jTabbedPane1.addTab(bundle.getString("ModelImporterFrame.advancedPanel.TabConstraints.tabTitle"), advancedPanel); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -856,28 +901,31 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okBActionPerformed
-        if (avatarMoveCB.isSelected()) {            
-            ViewManager.getViewManager().getPrimaryViewCell().removeTransformChangeListener(userMotionListener);
+        if (avatarMoveCB.isSelected()) {
+            ViewManager viewManager = ViewManager.getViewManager();
+            ViewCell viewCell = viewManager.getPrimaryViewCell();
+            viewCell.removeTransformChangeListener(userMotionListener);
         }
         setVisible(false);
-        Vector3f translation=new Vector3f((Float)translationXTF.getValue(), 
-                (Float)translationYTF.getValue(), 
-                (Float)translationZTF.getValue());
-        Vector3f orientation=new Vector3f((Float)rotationXTF.getValue(), 
-                (Float)rotationYTF.getValue(), 
-                (Float)rotationZTF.getValue());
-        
+        Vector3f translation = new Vector3f((Float) translationXTF.getValue(),
+                (Float) translationYTF.getValue(),
+                (Float) translationZTF.getValue());
+        Vector3f orientation = new Vector3f((Float) rotationXTF.getValue(),
+                (Float) rotationYTF.getValue(),
+                (Float) rotationZTF.getValue());
+
         importedModel.setWonderlandName(modelNameTF.getText());
 //        importedModel.setTexturePrefix(texturePrefixTF.getText());
-        
+
         sessionFrame.loadCompleted(importedModel);
 }//GEN-LAST:event_okBActionPerformed
 
-    
     private void cancelBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelBActionPerformed
         this.setVisible(false);
-        if (userMotionListener!=null) {
-            ViewManager.getViewManager().getPrimaryViewCell().removeTransformChangeListener(userMotionListener);
+        if (userMotionListener != null) {
+            ViewManager viewManager = ViewManager.getViewManager();
+            ViewCell viewCell = viewManager.getPrimaryViewCell();
+            viewCell.removeTransformChangeListener(userMotionListener);
         }
         sessionFrame.loadCancelled(importedModel);
     }//GEN-LAST:event_cancelBActionPerformed
@@ -899,15 +947,18 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 }//GEN-LAST:event_geometryStatsBActionPerformed
 
     private void avatarMoveCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_avatarMoveCBActionPerformed
-        if (userMotionListener==null)
+        if (userMotionListener == null) {
             return;
-        
+        }
+
+        ViewManager viewManager = ViewManager.getViewManager();
+        ViewCell viewCell = viewManager.getPrimaryViewCell();
         if (avatarMoveCB.isSelected()) {
             enableSpinners(false);
-            ViewManager.getViewManager().getPrimaryViewCell().addTransformChangeListener(userMotionListener);
+            viewCell.addTransformChangeListener(userMotionListener);
         } else {
             enableSpinners(true);
-            ViewManager.getViewManager().getPrimaryViewCell().removeTransformChangeListener(userMotionListener);
+            viewCell.removeTransformChangeListener(userMotionListener);
         }
 
     }//GEN-LAST:event_avatarMoveCBActionPerformed
@@ -916,8 +967,6 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
         System.err.println(evt);
     }//GEN-LAST:event_basicPanelInputMethodTextChanged
-    
-    
 
     private void enableSpinners(boolean enabled) {
         translationXTF.setEnabled(enabled);
@@ -926,41 +975,54 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         rotationXTF.setEnabled(enabled);
         rotationYTF.setEnabled(enabled);
         rotationZTF.setEnabled(enabled);
-        
+
         if (enabled) {
-            ((SpinnerNumberModel)translationXTF.getModel()).addChangeListener(translationChangeListener);
-            ((SpinnerNumberModel)translationYTF.getModel()).addChangeListener(translationChangeListener);
-            ((SpinnerNumberModel)translationZTF.getModel()).addChangeListener(translationChangeListener);
-            ((SpinnerNumberModel)rotationXTF.getModel()).addChangeListener(rotationChangeListener);
-            ((SpinnerNumberModel)rotationYTF.getModel()).addChangeListener(rotationChangeListener);
-            ((SpinnerNumberModel)rotationZTF.getModel()).addChangeListener(rotationChangeListener);
+            ((SpinnerNumberModel) translationXTF.getModel()).addChangeListener(
+                    translationChangeListener);
+            ((SpinnerNumberModel) translationYTF.getModel()).addChangeListener(
+                    translationChangeListener);
+            ((SpinnerNumberModel) translationZTF.getModel()).addChangeListener(
+                    translationChangeListener);
+            ((SpinnerNumberModel) rotationXTF.getModel()).addChangeListener(
+                    rotationChangeListener);
+            ((SpinnerNumberModel) rotationYTF.getModel()).addChangeListener(
+                    rotationChangeListener);
+            ((SpinnerNumberModel) rotationZTF.getModel()).addChangeListener(
+                    rotationChangeListener);
         } else {
-            ((SpinnerNumberModel)translationXTF.getModel()).removeChangeListener(translationChangeListener);
-            ((SpinnerNumberModel)translationYTF.getModel()).removeChangeListener(translationChangeListener);
-            ((SpinnerNumberModel)translationZTF.getModel()).removeChangeListener(translationChangeListener);
-            ((SpinnerNumberModel)rotationXTF.getModel()).removeChangeListener(rotationChangeListener);
-            ((SpinnerNumberModel)rotationYTF.getModel()).removeChangeListener(rotationChangeListener);
-            ((SpinnerNumberModel)rotationZTF.getModel()).removeChangeListener(rotationChangeListener);           
+            ((SpinnerNumberModel) translationXTF.getModel()).removeChangeListener(
+                    translationChangeListener);
+            ((SpinnerNumberModel) translationYTF.getModel()).removeChangeListener(
+                    translationChangeListener);
+            ((SpinnerNumberModel) translationZTF.getModel()).removeChangeListener(
+                    translationChangeListener);
+            ((SpinnerNumberModel) rotationXTF.getModel()).removeChangeListener(
+                    rotationChangeListener);
+            ((SpinnerNumberModel) rotationYTF.getModel()).removeChangeListener(
+                    rotationChangeListener);
+            ((SpinnerNumberModel) rotationZTF.getModel()).removeChangeListener(
+                    rotationChangeListener);
         }
     }
-    
+
     /**
      * Process the bounds of the graph, updating the UI.
      */
-    private void processBounds( Node bg ) {
+    private void processBounds(Node bg) {
 //        System.err.println("Model Node "+bg);
 
-        if (bg==null) {
+        if (bg == null) {
             return;
         }
 
         BoundingVolume bounds = bg.getWorldBound();
 
-        if (bounds==null) {
+        if (bounds == null) {
             bounds = calcBounds(bg);
         }
 
-        // Remove the rotation from the bounds because it will be reapplied by the cell
+        // Remove the rotation from the bounds because it will be reapplied by
+        // the cell
 //        Quaternion rot = bg.getWorldRotation();
 //        rot.inverseLocal();
 //        bounds = bounds.transform(rot, new Vector3f(), new Vector3f(1,1,1), bounds);
@@ -969,7 +1031,7 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 //        System.err.println(rot.toAngleAxis(null));
 
         if (bounds instanceof BoundingSphere) {
-            BoundingSphere sphere = (BoundingSphere)bounds;
+            BoundingSphere sphere = (BoundingSphere) bounds;
             Vector3f center = new Vector3f();
             sphere.getCenter(center);
             boundsCenterXTF.setText(Double.toString(center.x));
@@ -978,14 +1040,14 @@ public class ModelImporterFrame extends javax.swing.JFrame {
             boundsSizeXTF.setText(Double.toString(sphere.getRadius()));
             boundsSizeYTF.setText("N/A Sphere");
             boundsSizeZTF.setText("N/A Sphere");
-       } else if (bounds instanceof BoundingBox) {
-            BoundingBox box = (BoundingBox)bounds;
+        } else if (bounds instanceof BoundingBox) {
+            BoundingBox box = (BoundingBox) bounds;
             Vector3f center = new Vector3f();
             box.getCenter();
             boundsCenterXTF.setText(Double.toString(center.x));
             boundsCenterYTF.setText(Double.toString(center.y));
             boundsCenterZTF.setText(Double.toString(center.z));
-            
+
             boundsSizeXTF.setText(Float.toString(box.xExtent));
             boundsSizeYTF.setText(Float.toString(box.yExtent));
             boundsSizeZTF.setText(Float.toString(box.zExtent));
@@ -998,36 +1060,43 @@ public class ModelImporterFrame extends javax.swing.JFrame {
      * @param bv
      */
     BoundingVolume calcBounds(Spatial n) {
-        BoundingVolume bounds=null;
+        BoundingVolume bounds = null;
 
         if (n instanceof Geometry) {
             bounds = new BoundingBox();
-            bounds.computeFromPoints(((Geometry)n).getVertexBuffer());
+            bounds.computeFromPoints(((Geometry) n).getVertexBuffer());
 
-            bounds.transform(n.getLocalRotation(), n.getLocalTranslation(), n.getLocalScale());
-        } 
+            bounds.transform(
+                    n.getLocalRotation(),
+                    n.getLocalTranslation(),
+                    n.getLocalScale());
+        }
 
-        if (n instanceof Node && ((Node)n).getQuantity()>0) {
-            for(Spatial child : ((Node)n).getChildren()) {
+        if (n instanceof Node && ((Node) n).getQuantity() > 0) {
+            for (Spatial child : ((Node) n).getChildren()) {
                 BoundingVolume childB = calcBounds(child);
-                if (bounds==null)
+                if (bounds == null) {
                     bounds = childB;
-                else
+                } else {
                     bounds.mergeLocal(childB);
+                }
             }
         }
 
-        if (bounds!=null)
-            bounds.transform(n.getLocalRotation(), n.getLocalTranslation(), n.getLocalScale(), bounds);
+        if (bounds != null) {
+            bounds.transform(
+                    n.getLocalRotation(),
+                    n.getLocalTranslation(),
+                    n.getLocalScale(),
+                    bounds);
+        }
 //        Vector3f axis = new Vector3f();
 //        float angle = n.getLocalRotation().toAngleAxis(axis);
 //        System.err.println("Applying transform "+n.getLocalTranslation()+"  "+angle+"  "+axis);
 //        System.err.println("BOunds "+bounds);
-        
+
         return bounds;
     }
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel advancedPanel;
     private javax.swing.JCheckBox avatarMoveCB;
@@ -1077,38 +1146,41 @@ public class ModelImporterFrame extends javax.swing.JFrame {
     private javax.swing.JSpinner translationYTF;
     private javax.swing.JSpinner translationZTF;
     // End of variables declaration//GEN-END:variables
-    
+
     /**
      * Case independent filename extension filter
      */
     class FileNameExtensionFilter extends FileFilter {
+
         private HashSet<String> extensions;
         private String description;
-        
+
         public FileNameExtensionFilter(String ext) {
             extensions = new HashSet();
             extensions.add(ext);
             description = new String(ext);
         }
-        
+
         public FileNameExtensionFilter(String[] ext) {
             extensions = new HashSet();
             StringBuffer desc = new StringBuffer();
-            for(String e : ext) {
+            for (String e : ext) {
                 extensions.add(e);
-                desc.append(e+", ");
+                desc.append(e + ", ");
             }
             description = desc.toString();
         }
-        
+
         public boolean accept(File pathname) {
-            if (pathname.isDirectory())
+            if (pathname.isDirectory()) {
                 return true;
+            }
             String e = pathname.getName();
-            e = e.substring(e.lastIndexOf('.')+1);
-            if (extensions.contains(e.toLowerCase()))
+            e = e.substring(e.lastIndexOf('.') + 1);
+            if (extensions.contains(e.toLowerCase())) {
                 return true;
-            
+            }
+
             return false;
         }
 
@@ -1116,9 +1188,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         public String getDescription() {
             return description;
         }
-        
     }
-    
+
     class LoadCompleteProcessor extends ProcessorComponent {
 
         private ImportedModel importedModel;
@@ -1134,7 +1205,8 @@ public class ModelImporterFrame extends javax.swing.JFrame {
 
             populateTextureList(importedModel.getModelBG());
 
-            importedModel.getEntity().removeComponent(LoadCompleteProcessor.class);
+            importedModel.getEntity().removeComponent(
+                    LoadCompleteProcessor.class);
             setArmingCondition(null);
         }
 
@@ -1146,7 +1218,5 @@ public class ModelImporterFrame extends javax.swing.JFrame {
         public void initialize() {
             setArmingCondition(new NewFrameCondition(this));
         }
-
     }
-
 }
