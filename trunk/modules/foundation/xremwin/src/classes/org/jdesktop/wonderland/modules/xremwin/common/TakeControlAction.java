@@ -17,18 +17,22 @@
  */
 package org.jdesktop.wonderland.modules.xremwin.common;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.common.cell.security.ModifyAction;
 import org.jdesktop.wonderland.common.security.Action;
 
 /**
  * Permission to take control of an application.
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class TakeControlAction extends Action {
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/xremwin/common/Bundle");
     private static final String NAME = "TakeControl";
 
     public TakeControlAction() {
-        super (NAME, ModifyAction.class, "Take Control",
-               "Permission to take control of this cell.");
+        super (NAME, ModifyAction.class, BUNDLE.getString("Take_Control"),
+                BUNDLE.getString("Take_Control_Description"));
     }
 }
