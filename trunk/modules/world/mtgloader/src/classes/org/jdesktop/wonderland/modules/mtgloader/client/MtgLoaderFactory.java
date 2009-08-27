@@ -73,7 +73,7 @@ public class MtgLoaderFactory extends ModelLoaderFactory
     }
 
     public String getFileExtension() {
-        return "mtg";
+        return null;
     }
 
     public ModelLoader getLoader() {

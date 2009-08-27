@@ -21,7 +21,7 @@ import com.jme.math.Quaternion;
 import com.jme.scene.Node;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
-import com.jmex.model.collada.ColladaImporter;
+import com.jmex.model.collada.ThreadSafeColladaImporter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.protocols.wlzip.WlzipManager;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 
 /**
  *
@@ -149,23 +150,25 @@ class KmzLoader extends JmeColladaLoader {
         ZipEntry modelEntry = zipFile.getEntry(filename);
         BufferedInputStream in = new BufferedInputStream(zipFile.getInputStream(modelEntry));
 
-        ColladaImporter.load(in, filename);
-        Node modelNode = ColladaImporter.getModel();
+        ThreadSafeColladaImporter importer = new ThreadSafeColladaImporter(filename);
+        importer.load(in);
+        Node modelNode = importer.getModel();
 
         // Adjust the scene transform to match the scale and axis specified in
         // the collada file
-        float unitMeter = ColladaImporter.getInstance().getUnitMeter();
+        float unitMeter = importer.getInstance().getUnitMeter();
         modelNode.setLocalScale(unitMeter);
 
-        String upAxis = ColladaImporter.getInstance().getUpAxis();
+        String upAxis = importer.getInstance().getUpAxis();
         if (upAxis.equals("Z_UP")) {
             modelNode.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
         } else if (upAxis.equals("X_UP")) {
             modelNode.setLocalRotation(new Quaternion(new float[] {0f, 0f, (float)Math.PI/2}));
         } // Y_UP is the Wonderland default
 
-        ColladaImporter.cleanUp();
+        importer.cleanUp();
 
+        setupBounds(modelNode);
         return modelNode;
     }
 
@@ -174,12 +177,6 @@ class KmzLoader extends JmeColladaLoader {
         return new RelativeResourceLocator(baseURL);
     }
 
-    protected String getLoaderDataURL(DeployedModel model) {
-        String str = model.getDeployedURL()+".ldr";
-
-        // For kmz files the dep file is in the directory above the dae file
-        return str.replaceFirst("/model", "");
-    }
     /**
      * KMZ files keep all the models in the /models directory, copy all the
      * models into the module
@@ -192,12 +189,12 @@ class KmzLoader extends JmeColladaLoader {
             while(entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
                 if (entry.getName().endsWith(".dae")) {
-                    File target = new File(targetDir, "/"+entry.getName());
+                    File target = new File(targetDir, "/"+entry.getName()+".gz");
                     target.getParentFile().mkdirs();
 //                    System.err.println("Creating file "+target.getAbsolutePath());
                     target.createNewFile();
                     
-                    copyAsset(zipFile, entry, target, false);
+                    copyAsset(zipFile, entry, target, true);
                 }
             }
             
@@ -215,7 +212,8 @@ class KmzLoader extends JmeColladaLoader {
             String moduleName,
             DeployedModel deployedModel,
             ImportedModel importedModel,
-            HashMap<String, String> deploymentMapping) {
+            HashMap<String, String> deploymentMapping,
+            ModelCellComponentServerState state) {
         URL modelURL = importedModel.getImportSettings().getModelURL();
         
 
@@ -237,8 +235,10 @@ class KmzLoader extends JmeColladaLoader {
             deployZipModels(zipFile, targetDir);
             String kmzFilename = modelURL.toExternalForm();
             kmzFilename = kmzFilename.substring(kmzFilename.lastIndexOf('/')+1);
-            deployedModel.setDeployedURL("wla://"+moduleName+"/"+kmzFilename+"/"+((KmzImportedModel)importedModel).getPrimaryModel());
+            deployedModel.setModelURL("wla://"+moduleName+"/"+kmzFilename+"/"+((KmzImportedModel)importedModel).getPrimaryModel()+".gz");
+            deployedModel.setLoaderDataURL("wla://"+moduleName+"/"+kmzFilename+"/"+kmzFilename+".ldr");
             deployDeploymentData(targetDir, deployedModel, kmzFilename);
+            state.setDeployedModelURL("wla://"+moduleName+"/"+kmzFilename+"/"+kmzFilename+".dep");
         } catch (ZipException ex) {
             Logger.getLogger(KmzLoader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
