@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
@@ -33,15 +34,20 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
  * The cell factory for the sample cell.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellFactory
 public class SampleCellFactory implements CellFactorySPI {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/sample/client/resources/Bundle");
+
     public String[] getExtensions() {
-        return new String[] {};
+        return new String[]{};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+    public <T extends CellServerState> T getDefaultCellServerState(
+            Properties props) {
         SampleCellServerState state = new SampleCellServerState();
         state.setShapeType("BOX");
 
@@ -50,15 +56,16 @@ public class SampleCellFactory implements CellFactorySPI {
         BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
         state.setBoundingVolumeHint(hint);
 
-        return (T)state;
+        return (T) state;
     }
 
     public String getDisplayName() {
-        return "Sample Cell";
+        return BUNDLE.getString("Sample_Cell");
     }
 
     public Image getPreviewImage() {
-        URL url = SampleCellFactory.class.getResource("resources/sample_preview.jpg");
+        URL url = SampleCellFactory.class.getResource(
+                "resources/sample_preview.jpg");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
 }

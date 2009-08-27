@@ -15,9 +15,9 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.sample.client;
 
+import java.util.ResourceBundle;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -31,10 +31,14 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentServerSt
 /**
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @PropertiesFactory(SampleCellComponentServerState.class)
-public class SampleComponentProperties extends JPanel implements PropertiesFactorySPI {
+public class SampleComponentProperties
+        extends JPanel implements PropertiesFactorySPI {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/sample/client/resources/Bundle");
     private CellPropertiesEditor editor = null;
     private String originalInfo = null;
 
@@ -44,14 +48,15 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
         initComponents();
 
         // Listen for changes to the info text field
-        infoTextField.getDocument().addDocumentListener(new InfoTextFieldListener());
+        infoTextField.getDocument().addDocumentListener(
+                new InfoTextFieldListener());
     }
 
     /**
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "Sample Component";
+        return BUNDLE.getString("Sample_Component");
     }
 
     /**
@@ -73,10 +78,12 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
      */
     public void open() {
         CellServerState state = editor.getCellServerState();
-        CellComponentServerState compState =
-                state.getComponentServerState(SampleCellComponentServerState.class);
+        CellComponentServerState compState = state.getComponentServerState(
+                SampleCellComponentServerState.class);
         if (state != null) {
-            originalInfo = ((SampleCellComponentServerState) compState).getInfo();
+            SampleCellComponentServerState sampleCellComponentServerState =
+                    (SampleCellComponentServerState) compState;
+            originalInfo = sampleCellComponentServerState.getInfo();
             infoTextField.setText(originalInfo);
         }
     }
@@ -94,9 +101,10 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
     public void apply() {
         // Fetch the latest from the info text field and set it.
         CellServerState state = editor.getCellServerState();
-        CellComponentServerState compState =
-                state.getComponentServerState(SampleCellComponentServerState.class);
-        ((SampleCellComponentServerState)compState).setInfo(infoTextField.getText());
+        CellComponentServerState compState = state.getComponentServerState(
+                SampleCellComponentServerState.class);
+        ((SampleCellComponentServerState) compState).setInfo(
+                infoTextField.getText());
         editor.addToUpdateList(compState);
     }
 
@@ -113,6 +121,7 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
      * or clean indications to the cell properties editor.
      */
     class InfoTextFieldListener implements DocumentListener {
+
         public void insertUpdate(DocumentEvent e) {
             checkDirty();
         }
@@ -129,8 +138,7 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
             String name = infoTextField.getText();
             if (editor != null && name.equals(originalInfo) == false) {
                 editor.setPanelDirty(SampleComponentProperties.class, true);
-            }
-            else if (editor != null) {
+            } else if (editor != null) {
                 editor.setPanelDirty(SampleComponentProperties.class, false);
             }
         }
@@ -171,7 +179,6 @@ public class SampleComponentProperties extends JPanel implements PropertiesFacto
                 .addContainerGap(252, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField infoTextField;
     private javax.swing.JLabel jLabel1;
