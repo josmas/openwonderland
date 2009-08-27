@@ -18,7 +18,8 @@
        
     <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
-                                                -module-compile-client">
+                                                -module-compile-client,
+						-module-jar-common">
         <!-- copy resource bundles -->
         <copy todir="${build.classes.dir}/${module.src}/client/resources">
             <fileset dir="${current.dir}/src/classes/${module.src}/client/resources"/>
@@ -31,6 +32,15 @@
         </copy>
     </target>
     
+    <target name="-module-jar-common" depends="-module-compile-common">
+      <mkdir dir="${current.dir}/build/lib"/>
+      <jar destfile="${current.dir}/build/lib/avatarbase-common.jar">
+        <fileset dir="${build.classes.dir}">
+          <include name="${module.src}/common/**"/>
+        </fileset>
+      </jar>
+    </target>
+
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
