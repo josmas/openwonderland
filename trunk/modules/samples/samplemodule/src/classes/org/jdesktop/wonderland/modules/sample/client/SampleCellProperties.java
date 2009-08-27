@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.sample.client;
 
 import java.awt.BorderLayout;
@@ -26,8 +25,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -42,6 +44,7 @@ import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI;
 import org.jdesktop.wonderland.client.content.spi.ContentBrowserSPI.ContentBrowserListener;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.contentrepo.client.utils.ContentRepositoryUtils;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
@@ -50,9 +53,16 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
  * A property sheet for the sample cell type
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @PropertiesFactory(SampleCellServerState.class)
-public class SampleCellProperties extends JPanel implements PropertiesFactorySPI {
+public class SampleCellProperties
+        extends JPanel implements PropertiesFactorySPI {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/sample/client/resources/Bundle");
+    private static final Logger LOGGER =
+            Logger.getLogger(SampleCellProperties.class.getName());
     CellPropertiesEditor editor = null;
     private String originalShapeType = null;
 
@@ -60,17 +70,27 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
     public SampleCellProperties() {
         initComponents();
 
+        ComboBoxModel shapeTypeComboBoxModel = new DefaultComboBoxModel(
+                new String[]{
+                    BUNDLE.getString("BOX"),
+                    BUNDLE.getString("SPHERE")});
+        shapeTypeComboBox.setModel(shapeTypeComboBoxModel);
+
         // Listen for when the Browse... button is selected and display a
         // GUI to browser the content repository. Wait until OK has been
         // selected and fill in the text field with the URI
         browseButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 // Fetch the browser for the webdav protocol and display it.
                 // Add a listener for the result and update the value of the
                 // text field for the URI
-                ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
-                final ContentBrowserSPI browser = manager.getDefaultContentBrowser();
+                ContentBrowserManager manager =
+                        ContentBrowserManager.getContentBrowserManager();
+                final ContentBrowserSPI browser =
+                        manager.getDefaultContentBrowser();
                 browser.addContentBrowserListener(new ContentBrowserListener() {
+
                     public void okAction(String uri) {
                         uriTextField.setText(uri);
                         browser.removeContentBrowserListener(this);
@@ -83,10 +103,11 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
                 browser.setVisible(true);
             }
         });
-        
+
         // Listen for when the Edit button is selected and display a simple
         // text editor with the URI in the text field
         editButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 String uri = uriTextField.getText();
                 SimpleTextEditor editor = new SimpleTextEditor(uri);
@@ -99,7 +120,7 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "Sample Cell";
+        return BUNDLE.getString("Sample_Cell");
     }
 
     /**
@@ -124,11 +145,11 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
         // the GUI.
         CellServerState state = editor.getCellServerState();
         if (state != null) {
-            originalShapeType = ((SampleCellServerState)state).getShapeType();
+            originalShapeType = ((SampleCellServerState) state).getShapeType();
             shapeTypeComboBox.setSelectedItem(originalShapeType);
         }
     }
-    
+
     /**
      * @inheritDoc()
      */
@@ -144,7 +165,7 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
         // with it.
         String newShapeType = (String) shapeTypeComboBox.getSelectedItem();
         CellServerState state = editor.getCellServerState();
-        ((SampleCellServerState)state).setShapeType(newShapeType);
+        ((SampleCellServerState) state).setShapeType(newShapeType);
         editor.addToUpdateList(state);
     }
 
@@ -171,9 +192,9 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
         browseButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
 
-        jLabel1.setText("Shape Type:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/sample/client/resources/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("SampleCellProperties.jLabel1.text")); // NOI18N
 
-        shapeTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "BOX", "SPHERE" }));
         shapeTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 shapeTypeActionPerformed(evt);
@@ -185,11 +206,11 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
             }
         });
 
-        jLabel2.setText("URI:");
+        jLabel2.setText(bundle.getString("SampleCellProperties.jLabel2.text")); // NOI18N
 
-        browseButton.setText("Browse...");
+        browseButton.setText(bundle.getString("SampleCellProperties.browseButton.text")); // NOI18N
 
-        editButton.setText("Edit");
+        editButton.setText(bundle.getString("SampleCellProperties.editButton.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -232,13 +253,18 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
     }// </editor-fold>//GEN-END:initComponents
 
     private void shapeTypePropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_shapeTypePropertyChange
+        // early return needed because of late model setting
+        if (editor == null) {
+            return;
+        }
+
         // If the shape type has changed since the initial value, then
         // set the dirty bit to try
-        String newShapeType = (String)shapeTypeComboBox.getSelectedItem();
-        if (originalShapeType != null && originalShapeType.equals(newShapeType) == false) {
+        String newShapeType = (String) shapeTypeComboBox.getSelectedItem();
+        if ((originalShapeType != null) &&
+                (originalShapeType.equals(newShapeType) == false)) {
             editor.setPanelDirty(SampleCellProperties.class, true);
-        }
-        else {
+        } else {
             editor.setPanelDirty(SampleCellProperties.class, false);
         }
     }//GEN-LAST:event_shapeTypePropertyChange
@@ -247,20 +273,20 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
         // TODO add your handling code here:
         // If the shape type has changed since the initial value, then
         // set the dirty bit to try
-        String newShapeType = (String)shapeTypeComboBox.getSelectedItem();
-        if (originalShapeType != null && originalShapeType.equals(newShapeType) == false) {
+        String newShapeType = (String) shapeTypeComboBox.getSelectedItem();
+        if ((originalShapeType != null) &&
+                (originalShapeType.equals(newShapeType) == false)) {
             editor.setPanelDirty(SampleCellProperties.class, true);
-        }
-        else {
+        } else {
             editor.setPanelDirty(SampleCellProperties.class, false);
         }
     }//GEN-LAST:event_shapeTypeActionPerformed
-
 
     /**
      * A simple text frame with a "Save" button
      */
     private class SimpleTextEditor extends JFrame {
+
         private String uri = null;
         private JTextArea textArea = null;
 
@@ -273,7 +299,7 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
             textArea = new JTextArea();
             JScrollPane scrollPane = new JScrollPane(textArea);
             getContentPane().add(scrollPane, BorderLayout.CENTER);
-            JButton saveButton = new JButton("Save");
+            JButton saveButton = new JButton(BUNDLE.getString("Save"));
             getContentPane().add(saveButton, BorderLayout.SOUTH);
 
             // Download the URI and text in the text area
@@ -282,20 +308,23 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
                 URL url = AssetUtils.getAssetURL(uri);
                 textArea.setText(getURLAsString(url));
             } catch (MalformedURLException ex) {
-                Logger.getLogger(SampleCellProperties.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
-                Logger.getLogger(SampleCellProperties.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
 
             // Listen for the "Save" button
             saveButton.addActionListener(new ActionListener() {
+
                 public void actionPerformed(ActionEvent e) {
-                    ContentResource res = (ContentResource)ContentRepositoryUtils.findContentNode(null, uri);
+                    ContentNode contentNode =
+                            ContentRepositoryUtils.findContentNode(null, uri);
+                    ContentResource res = (ContentResource) contentNode;
                     String text = textArea.getText();
                     try {
                         res.put(text.getBytes());
                     } catch (ContentRepositoryException ex) {
-                        Logger.getLogger(SampleCellProperties.class.getName()).log(Level.SEVERE, null, ex);
+                        LOGGER.log(Level.SEVERE, null, ex);
                     }
                 }
             });
@@ -306,7 +335,8 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
 
         private String getURLAsString(URL url) throws IOException {
             StringBuilder sb = new StringBuilder();
-            BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream()));
+            BufferedReader r = new BufferedReader(
+                    new InputStreamReader(url.openStream()));
             String line = null;
             while ((line = r.readLine()) != null) {
                 sb.append(line + "\n");
@@ -314,7 +344,6 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
             return sb.toString();
         }
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JButton editButton;
@@ -325,12 +354,13 @@ public class SampleCellProperties extends JPanel implements PropertiesFactorySPI
     // End of variables declaration//GEN-END:variables
 
     public <T extends CellServerState> void updateGUI(T cellServerState) {
-        SampleCellServerState state = (SampleCellServerState)cellServerState;
+        SampleCellServerState state = (SampleCellServerState) cellServerState;
         originalShapeType = state.getShapeType();
         shapeTypeComboBox.setSelectedItem(originalShapeType);
     }
 
     public <T extends CellServerState> void getCellServerState(T state) {
-       ((SampleCellServerState)state).setShapeType((String)shapeTypeComboBox.getSelectedItem());
+        ((SampleCellServerState) state).setShapeType(
+                (String) shapeTypeComboBox.getSelectedItem());
     }
 }

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.sample.client;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -38,22 +39,26 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
  * Client-side cell for rendering JME content
  * 
  * @author jkaplan
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class SampleCell extends Cell {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/sample/client/resources/Bundle");
+
     /* The type of shape: BOX or SPHERE */
     private String shapeType = null;
-
     private SampleRenderer cellRenderer = null;
-
-    @UsesCellComponent ContextMenuComponent menuComponent;
+    @UsesCellComponent
+    ContextMenuComponent menuComponent;
 
     public SampleCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
-    
+
     /**
-     * Called when the cell is initially created and any time there is a 
-     * major configuration change. The cell will already be attached to it's parent
+     * Called when the cell is initially created and any time there is a major
+     * configuration change. The cell will already be attached to it's parent
      * before the initial call of this method
      * 
      * @param clientState
@@ -61,12 +66,12 @@ public class SampleCell extends Cell {
     @Override
     public void setClientState(CellClientState clientState) {
         super.setClientState(clientState);
-        shapeType = ((SampleCellClientState)clientState).getShapeType();
+        shapeType = ((SampleCellClientState) clientState).getShapeType();
         if (cellRenderer != null) {
             cellRenderer.updateShape();
         }
     }
-    
+
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
@@ -81,16 +86,17 @@ public class SampleCell extends Cell {
     }
 
     @Override
-    protected void setStatus(CellStatus status,boolean increasing) {
-        super.setStatus(status,increasing);
-        switch(status) {
-            case ACTIVE :
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
+        switch (status) {
+            case ACTIVE:
                 if (increasing) {
-    //                menuComponent.setShowStandardMenuItems(false);
-                    menuComponent.addContextMenuFactory(new SampleContextMenuFactory());
+//                    menuComponent.setShowStandardMenuItems(false);
+                    menuComponent.addContextMenuFactory(
+                            new SampleContextMenuFactory());
                 }
                 break;
-            case DISK :
+            case DISK:
                 // TODO cleanup
                 break;
         }
@@ -101,11 +107,12 @@ public class SampleCell extends Cell {
      * Context menu factory for the Sample menu item
      */
     class SampleContextMenuFactory implements ContextMenuFactorySPI {
+
         public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-            return new ContextMenuItem[] {
-                        new SimpleContextMenuItem("Sample", null,
-                                new SampleContextMenuListener())
-            };
+            return new ContextMenuItem[]{new SimpleContextMenuItem(
+                        BUNDLE.getString("Sample"), null,
+                        new SampleContextMenuListener())
+                    };
         }
     }
 
