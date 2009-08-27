@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
 import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
@@ -38,7 +39,7 @@ import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
  */
 @XmlRootElement(name="jme-collada-cell-component")
 @ServerState
-public class JmeColladaCellComponentServerState extends CellComponentServerState implements Serializable {
+public class JmeColladaCellComponentServerState extends ModelCellComponentServerState implements Serializable {
     
     /* The URI of the static model file */
     @XmlElement(name="model")
@@ -162,6 +163,9 @@ public class JmeColladaCellComponentServerState extends CellComponentServerState
         if (ret == null)
             ret = new JmeColladaCellComponentServerState();
 
+        super.clone(ret);
+
+        ret.deployedModelURL = this.deployedModelURL;
         ret.model = this.model;
         ret.modelAuthor = this.modelAuthor;
         ret.modelGroup = this.modelGroup;
@@ -174,6 +178,8 @@ public class JmeColladaCellComponentServerState extends CellComponentServerState
     }
 
     public CellComponentClientState setClientState(JmeColladaCellComponentClientState state) {
+        super.setClientState(state);
+        state.setDeployedModelURL(deployedModelURL);
         state.setModelGroupURI(modelGroup);
         state.setModelRotation(modelRotation);
         state.setModelScale(modelScale);

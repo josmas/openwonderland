@@ -109,7 +109,7 @@ public class ModelDndContentImporter implements ContentImporterSPI {
                 LoaderManager manager = LoaderManager.getLoaderManager();
                 DeployedModel dm = manager.getLoaderFromDeployment(url);
                 createCell(dm);
-                return dm.getDeployedURL();
+                return dm.getModelURL();
             } catch (java.lang.Exception excp) {
                 logger.log(Level.WARNING, "Unable to load existing model, url=" +
                         url, excp);
@@ -162,7 +162,7 @@ public class ModelDndContentImporter implements ContentImporterSPI {
 
         // Finally, go ahead and create the cell.
         createCell(deployedModel);
-        return deployedModel.getDeployedURL();
+        return deployedModel.getModelURL();
     }
 
     /**
@@ -234,7 +234,7 @@ public class ModelDndContentImporter implements ContentImporterSPI {
             Logger.getLogger(ModelDndContentImporter.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        URL tmpUrl = new URL(deployedModel.getDeployedURL());
+        URL tmpUrl = new URL(deployedModel.getModelURL());
         String modelFile = "art" + tmpUrl.getPath();
 
         // THIS IS A HACK, should not be assuming JmeColladaCellComponentServerState, but
@@ -244,7 +244,7 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         compState.setModel("wlcontent://users/" + loginInfo.getUsername() + "/" + modelFile);
         // END HACK
 
-        deployedModel.setDeployedURL(compState.getModel()); // Make everything consistent with the state
+        deployedModel.setModelURL(compState.getModel()); // Make everything consistent with the state
 
         return deployedModel;
     }
@@ -341,7 +341,7 @@ public class ModelDndContentImporter implements ContentImporterSPI {
         try {
             CellUtils.createCell(state);
         } catch (CellCreationException excp) {
-            logger.log(Level.WARNING, "Unable to create cell for uri " + deployedModel.getDeployedURL(), excp);
+            logger.log(Level.WARNING, "Unable to create cell for uri " + deployedModel.getModelURL(), excp);
         }
     }
 }

@@ -18,14 +18,11 @@
 
 package org.jdesktop.wonderland.modules.jmecolladaloader.client.cell;
 
-import com.jme.scene.Node;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ModelCellComponent;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
-import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
 import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -38,23 +35,8 @@ import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeCol
 @ComponentLookupClass(ModelCellComponent.class)
 public class JmeColladaCellComponent extends ModelCellComponent {
 
-    private DeployedModel deployedModel=null;
-
     public JmeColladaCellComponent(Cell cell) {
         super(cell);
-    }
-
-    @Override
-    public Node loadModel() {
-        Node ret = new Node();
-        ModelLoader loader = deployedModel.getModelLoader();
-        Node model = loader.loadDeployedModel(deployedModel);
-        if (model != null) {
-            deployedModel.applyModelTransform(ret);
-            model.setName(deployedModel.getDeployedURL());
-            ret.attachChild(model);
-        }
-        return ret;
     }
 
     @Override
@@ -62,13 +44,15 @@ public class JmeColladaCellComponent extends ModelCellComponent {
         super.setClientState(clientState);
 
         JmeColladaCellComponentClientState jmeState = (JmeColladaCellComponentClientState) clientState;
+        setDeployedModelURL(jmeState.getDeployedModelURL());
 
-        deployedModel = getDeployedModel(jmeState);
+        if (jmeState.getDeployedModelURL()==null)  // Legacy support
+            deployedModel = getDeployedModel(jmeState);
     }
 
     private DeployedModel getDeployedModel(JmeColladaCellComponentClientState state) {
         DeployedModel ret = new DeployedModel(state.getModelLoaderClassname());
-        ret.setDeployedURL(state.getModelURI());
+        ret.setModelURL(state.getModelURI());
         ret.setModelRotation(state.getModelRotation());
         ret.setModelScale(state.getModelScale());
         ret.setModelTranslation(state.getModelTranslation());

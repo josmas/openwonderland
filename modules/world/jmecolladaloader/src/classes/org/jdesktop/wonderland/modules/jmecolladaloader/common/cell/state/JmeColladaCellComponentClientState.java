@@ -20,12 +20,13 @@ package org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentClientState;
 
 /**
  * A cell component that encapsulates all the information required to load a
  * collada model.
  */
-public class JmeColladaCellComponentClientState extends CellComponentClientState {
+public class JmeColladaCellComponentClientState extends ModelCellComponentClientState {
     /* The unique URL that describes the model data */
     private String modelURI = null;
     private String modelGroupURI = null;
