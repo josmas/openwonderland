@@ -398,8 +398,13 @@ public class AvatarImiJME extends BasicRenderer implements AvatarActionTrigger {
         externalRoot.updateModelBound();
         externalRoot.updateGeometricState(0, true);
         rootEntity.addEntity(avatarCharacter);
-        selectForInput(((AvatarCell) cell).isSelectedForInput());
 
+        // Turn on input handle for the renderer, if we wish. Check for AvatarCell
+        // to allow NPC's to work
+        if (cell instanceof AvatarCell) {
+            selectForInput(((AvatarCell) cell).isSelectedForInput());
+        }
+        
         // Notify listeners that the avatar has changed.
         for (WeakReference<AvatarChangedListener> listenerRef : avatarChangedListeners) {
             AvatarChangedListener listener = listenerRef.get();
