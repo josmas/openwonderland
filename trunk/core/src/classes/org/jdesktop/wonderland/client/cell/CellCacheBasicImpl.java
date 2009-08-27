@@ -479,9 +479,9 @@ public class CellCacheBasicImpl implements CellCache, CellCacheConnection.CellCa
         public void run() {
             try {
                 setCellStatus(cell, cellStatus);
-            } catch(Exception e) {
+            } catch(Throwable t) {
                 // Report the exception, otherwise it will get swallowed
-                logger.log(Level.WARNING, "Exception thrown in Cell.setStatus "+e.getLocalizedMessage(), e);
+                logger.log(Level.WARNING, "Exception thrown in Cell.setStatus "+t.getLocalizedMessage(), t);
             }
         }
 
