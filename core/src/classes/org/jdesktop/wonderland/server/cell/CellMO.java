@@ -771,8 +771,9 @@ public abstract class CellMO implements ManagedObject, Serializable {
             if (className == null) {
                 continue;
             }
+            Class clazz=null;
             try {
-                Class clazz = Class.forName(className);
+                clazz = Class.forName(className);
                 Class lookupClazz = CellComponentMO.getLookupClass(clazz);
                 CellComponentMO comp = this.getComponent(lookupClazz);
                 if (comp == null) {
@@ -785,7 +786,7 @@ public abstract class CellMO implements ManagedObject, Serializable {
                     comp.setServerState(compState);
                 }
             } catch (InstantiationException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, "Error instantiating "+clazz, ex);
             } catch (IllegalAccessException ex) {
                 logger.log(Level.SEVERE, null, ex);
             } catch (IllegalArgumentException ex) {
