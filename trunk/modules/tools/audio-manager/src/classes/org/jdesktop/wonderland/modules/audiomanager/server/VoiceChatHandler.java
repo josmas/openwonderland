@@ -444,8 +444,6 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    requestPlayerJoinAudioGroup(sender, id, group, caller,
 		calleeList, msg.getChatType());
 	}
-
-	return;
     }
 
     public static void updateAttenuation(Player player) {
@@ -464,7 +462,7 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 
 	    AudioGroupPlayerInfo playerInfo = audioGroup.getPlayerInfo(player);
 
-	    if (playerInfo.isSpeaking && playerInfo.chatType == AudioGroupPlayerInfo.ChatType.PUBLIC == false) {
+	    if (playerInfo.isSpeaking && playerInfo.chatType.equals(AudioGroupPlayerInfo.ChatType.PUBLIC) == false) {
 		nonPublicAudioGroup = audioGroup;
 		break;
 	    }
@@ -830,6 +828,8 @@ public class VoiceChatHandler implements AudioGroupListener, VirtualPlayerListen
 	    if (orb.addToUseCount(-1) == 0) {
 		logger.fine("Removing " + vp.getId() + " from orbs");
 		orbs.remove(vp.getId());
+
+		vp.realPlayer.setPrivateMixes(true);
 
 		if (orbs.size() == 0) {
 		    orbMap.remove(vp.realPlayer.getId());
