@@ -25,7 +25,7 @@
                 <clientjar name="asset-meter-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <fileset dir="${current.dir}/src/classes">
-                        <include name="${module.src}/client/resources/**/*.png"/>
+                        <include name="${module.src}/client/resources/**"/>
                     </fileset>
                 </clientjar> 
             </client>

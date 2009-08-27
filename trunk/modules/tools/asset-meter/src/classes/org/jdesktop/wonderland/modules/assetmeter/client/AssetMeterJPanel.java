@@ -22,11 +22,13 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -44,10 +46,15 @@ import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetProgressListene
 /**
  *
  * @author jkaplan
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class AssetMeterJPanel extends javax.swing.JPanel {
-    /* A synchronized ordered map of Assets to their downloading status objects */
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/assetmeter/client/resources/Bundle");
+    /**
+     * A synchronized ordered map of Assets to their downloading status objects
+     */
     private final Map<String, DownloadingAsset> downloadingAssetMap;
 
     /* The default list model */
@@ -287,14 +294,16 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
     /**
      * Updates the given downloading asset
      */
-    private void updateDownloadingAsset(Asset asset, final int readBytes, final int percent) {
+    private void updateDownloadingAsset(
+            Asset asset, final int readBytes, final int percent) {
         // Update the values in the downloading asset indicator using a swing
         // worker for thread safeness.
         final Asset[] assetArray = new Asset[]{asset};
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                DownloadingAsset da = downloadingAssetMap.get(assetArray[0].getAssetURI().toExternalForm());
+                DownloadingAsset da = downloadingAssetMap.get(
+                        assetArray[0].getAssetURI().toExternalForm());
                 if (da != null) {
                     da.readBytes = readBytes;
                     da.percentage = percent;
@@ -317,7 +326,8 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
         da.asset = asset;
         da.readBytes = 0;
         da.percentage = 0;
-        downloadingAssetMap.put(asset.getAssetURI().toExternalForm(), da);
+        final String assetURIString = asset.getAssetURI().toExternalForm();
+        downloadingAssetMap.put(assetURIString, da);
 
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -325,7 +335,7 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
                 // set up the indicator in the AWT event thread
                 da.indicator = new AssetIndicator();
                 da.indicator.setAssetProgressValue(0);
-                da.indicator.setAssetLabel(asset.getAssetURI().toExternalForm());
+                da.indicator.setAssetLabel(assetURIString);
 
                 listModel.addElementToTail(da.indicator);
             }
@@ -335,13 +345,14 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Removes a downloading asset from the list and updates the UI as necessary.
+     * Removes a downloading asset from the list and updates the UI as
+     * necessary.
      */
     private void removeDownloadingAsset(Asset asset) {
         // Removes a downloading asset from the list using a swing worker for
         // thread safeness
-        final DownloadingAsset da = downloadingAssetMap.get(asset.getAssetURI().toExternalForm());
-        downloadingAssetMap.remove(asset.getAssetURI().toExternalForm());
+        final DownloadingAsset da = downloadingAssetMap.remove(
+                asset.getAssetURI().toExternalForm());
 
         new Timer(750, new ActionListener() {
 
@@ -385,7 +396,9 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                combinedLabel.setText(fCount + " files.");
+                String text = BUNDLE.getString("Files");
+                text = MessageFormat.format(text, fCount);
+                combinedLabel.setText(text);
                 combinedProgressBar.setValue(fPercent);
             }
         });
@@ -409,12 +422,14 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
      */
     class MeterProgressListener implements AssetProgressListener {
 
-        public void downloadProgress(Asset asset, int readBytes, int percentage) {
+        public void downloadProgress(
+                Asset asset, int readBytes, int percentage) {
             // Check to see if the asset is already in the list, otherwise
             // add it. We need to synchronized according to the asset to make
             // sure we do not add it twice
             synchronized (this) {
-                if (downloadingAssetMap.containsKey(asset.getAssetURI().toExternalForm()) == false) {
+                if (downloadingAssetMap.containsKey(
+                        asset.getAssetURI().toExternalForm()) == false) {
                     addDownloadingAsset(asset);
                 } else {
                     updateDownloadingAsset(asset, readBytes, percentage);
@@ -457,7 +472,8 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
 
         public synchronized void addElementToTail(AssetIndicator ai) {
             indicatorList.add(ai);
-            fireIntervalAdded(ai, indicatorList.size() - 1, indicatorList.size() - 1);
+            int index = indicatorList.size() - 1;
+            fireIntervalAdded(ai, index, index);
         }
 
         public synchronized void removeElement(AssetIndicator ai) {
@@ -481,7 +497,8 @@ public class AssetMeterJPanel extends javax.swing.JPanel {
      */
     class AssetIndicatorCellRenderer implements ListCellRenderer {
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
             return ((AssetIndicator) value);
         }
     }
