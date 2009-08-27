@@ -26,14 +26,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class ModelCell extends Cell {
     
-    /* The URI of the model asset */
-//    private String modelURI = null;
-//    private String modelGroupURI = null;
-//    private Vector3f geometryTranslation;
-//    private Quaternion geometryRotation;
-//    private Vector3f geometryScale;
-//    private DeployedModel deployedModel;
-    
     public ModelCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }

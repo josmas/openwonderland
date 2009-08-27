@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.client.jme.artimport;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -87,7 +86,8 @@ public class LoaderManager {
         }
 
         loader.setEnabled(true);
-        activeLoaders.put(loader.getFileExtension(), loader);
+        if (loader.getFileExtension()!=null)
+            activeLoaders.put(loader.getFileExtension(), loader);
     }
 
     /**

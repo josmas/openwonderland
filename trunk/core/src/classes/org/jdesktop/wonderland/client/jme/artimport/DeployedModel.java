@@ -55,8 +55,11 @@ public class DeployedModel {
     @XmlElement(name="version")
     private short version = 1;
 
-    @XmlElement(name="deployedURL")
-    private String deployedURL = null;
+    @XmlElement(name="modelURL")
+    private String modelURL = null;
+
+    @XmlElement(name="loaderDataURL")
+    private String loaderDataURL = null;
 
     @XmlElement(name="modelBGScale", nillable=true)
     @XmlJavaTypeAdapter(Vector3fAdapter.class)
@@ -85,9 +88,9 @@ public class DeployedModel {
     public DeployedModel() {
     }
 
-    public DeployedModel(URL deployedURL, ModelLoader modelLoader) {
+    public DeployedModel(URL modelURL, ModelLoader modelLoader) {
         this.modelLoaderClassname = modelLoader.getClass().getName();
-        this.deployedURL = deployedURL.toExternalForm();
+        this.modelURL = modelURL.toExternalForm();
     }
 
     public DeployedModel(String modelLoaderClassname) {
@@ -97,15 +100,15 @@ public class DeployedModel {
     /**
      * @return the deployedURL
      */
-    @XmlTransient public String getDeployedURL() {
-        return deployedURL;
+    @XmlTransient public String getModelURL() {
+        return modelURL;
     }
 
     /**
      * @param deployedURL the deployedURL to set
      */
-    public void setDeployedURL(String deployedURL) {
-        this.deployedURL = deployedURL;
+    public void setModelURL(String deployedURL) {
+        this.modelURL = deployedURL;
     }
 
     @Override
@@ -113,7 +116,7 @@ public class DeployedModel {
         StringBuffer ret = new StringBuffer();
 
         ret.append(super.toString()+"\n");
-        ret.append("Deployed to "+deployedURL+"\n");
+        ret.append("Deployed to "+modelURL+"\n");
 
         return ret.toString();
     }
@@ -140,12 +143,9 @@ public class DeployedModel {
      * Apply the model transform the modelBG node
      */
     public void applyModelTransform(Node modelBG) {
-        if (getModelScale()!=null)
-            modelBG.setLocalScale(getModelScale());
-        if (getModelTranslation()!=null)
-            modelBG.setLocalTranslation(getModelTranslation());
-        if (getModelRotation()!=null)
-            modelBG.setLocalRotation(getModelRotation());
+        modelBG.setLocalScale(modelBGScale);
+        modelBG.setLocalTranslation(modelBGTranslation);
+        modelBG.setLocalRotation(modelBGRotation);
     }
 
     public void addCellServerState(CellServerState cellServerState) {
@@ -235,6 +235,22 @@ public class DeployedModel {
     }
 
     /**
+     * The URL of the .ldr file that contains loader specific data
+     *
+     * @return the loaderDataURL
+     */
+    @XmlTransient public String getLoaderDataURL() {
+        return loaderDataURL;
+    }
+
+    /**
+     * @param loaderDataURL the loaderDataURL to set
+     */
+    public void setLoaderDataURL(String loaderDataURL) {
+        this.loaderDataURL = loaderDataURL;
+    }
+
+    /**
      * Writes the ModuleInfo class to an output stream.
      * <p>
      * @param os The output stream to write to
@@ -258,7 +274,4 @@ public class DeployedModel {
     void setModelLoader(ModelLoader loader) {
         this.modelLoader = loader;
     }
-
-
-
 }

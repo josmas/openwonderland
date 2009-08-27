@@ -17,13 +17,58 @@
  */
 package org.jdesktop.wonderland.server.cell;
 
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+
 /**
  *
  * @author paulby
  */
-public abstract class ModelCellComponentMO extends CellComponentMO {
+public class ModelCellComponentMO extends CellComponentMO {
+
+    protected ModelCellComponentServerState serverState = null;
 
     public ModelCellComponentMO(CellMO cell) {
         super(cell);
+    }
+    @Override
+    protected String getClientClass() {
+        return "org.jdesktop.wonderland.client.cell.ModelCellComponent";
+    }
+
+    @Override
+    public void setServerState(CellComponentServerState state) {
+        if (!(state instanceof ModelCellComponentServerState)) {
+            Logger.getLogger(this.getClass().getName()).warning("Incorrect server state passed to setServerState "+state.getClass().getName());
+            return;
+        }
+        this.serverState = (ModelCellComponentServerState) state;
+    }
+
+    @Override
+    public CellComponentServerState getServerState(CellComponentServerState state) {
+        return serverState.clone(state);
+    }
+
+    @Override
+    public CellComponentClientState getClientState(CellComponentClientState state,
+            WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
+
+
+        // If the given cellClientState is null, create a new one
+        if (state == null) {
+            state = new ModelCellComponentClientState();
+        }
+
+        serverState.setClientState((ModelCellComponentClientState)state);
+        System.err.println("******** getClientState "+serverState.getDeployedModelURL());
+
+        return state;
     }
 }
