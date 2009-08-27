@@ -17,35 +17,34 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
-
 import java.util.ArrayList;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
-import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
-import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentClientState;
 import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
-import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentMenuChangeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioTreatmentRequestMessage;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.AudioVolumeMessage;
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 /**
  * A component that provides audio audio treatments

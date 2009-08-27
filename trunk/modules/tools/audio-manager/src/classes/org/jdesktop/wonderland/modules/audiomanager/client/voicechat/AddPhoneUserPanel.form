@@ -11,11 +11,12 @@
     </Property>
   </Properties>
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_formBundle" type="java.lang.String" value="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -91,7 +92,9 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="nameLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Name:"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="AddPhoneUserPanel.nameLabel.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
             <Property name="name" type="java.lang.String" value="nameLabel" noResource="true"/>
           </Properties>
         </Component>
@@ -106,7 +109,9 @@
         </Component>
         <Component class="javax.swing.JLabel" name="phoneLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Phone #:"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="AddPhoneUserPanel.phoneLabel.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+            </Property>
             <Property name="name" type="java.lang.String" value="phoneLabel" noResource="true"/>
           </Properties>
         </Component>

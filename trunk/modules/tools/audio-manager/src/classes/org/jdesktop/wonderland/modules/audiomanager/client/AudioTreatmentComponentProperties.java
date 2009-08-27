@@ -17,34 +17,37 @@
  */
 package org.jdesktop.wonderland.modules.audiomanager.client;
 
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
-import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 import java.awt.Toolkit;
 import java.net.URL;
-import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.SpinnerNumberModel;
+import java.util.ResourceBundle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+import javax.swing.SpinnerNumberModel;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState;
+import org.jdesktop.wonderland.modules.audiomanager.common.AudioTreatmentComponentServerState.PlayWhen;
+import org.jdesktop.wonderland.modules.audiomanager.common.VolumeUtil;
 
 /**
  *
  * @author  jp
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @PropertiesFactory(AudioTreatmentComponentServerState.class)
 public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         implements PropertiesFactorySPI {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
     private CellPropertiesEditor editor;
-
     private String originalGroupId;
     private String originalFileTreatments;
     private String originalUrlTreatments;
@@ -54,23 +57,20 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     private double originalFullVolumeAreaPercent;
     private boolean originalDistanceAttenuated;
     private int originalFalloff;
-
     private SpinnerNumberModel fullVolumeAreaPercentModel;
     private SpinnerNumberModel extentRadiusModel;
-
     private double extentRadius = 0;
-
     private PlayWhen playWhen;
-    
     private boolean distanceAttenuated;
 
     /** Creates new form AudioTreatmentComponentProperties */
     public AudioTreatmentComponentProperties() {
         initComponents();
 
-        URL url = AudioTreatmentComponentProperties.class.getResource("resources/AudioCapabilitiesDiagram.png");
-
-        ImageIcon icon = new ImageIcon(Toolkit.getDefaultToolkit().createImage(url));
+        URL url = AudioTreatmentComponentProperties.class.getResource(
+                "resources/AudioCapabilitiesDiagram.png");
+        ImageIcon icon = new ImageIcon(
+                Toolkit.getDefaultToolkit().createImage(url));
         AudioCapabilitiesLabel.setIcon(icon);
 
         AudioCapabilitiesLabel.setVisible(true);
@@ -81,7 +81,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         Double min = new Double(0);
         Double max = new Double(100);
         Double step = new Double(1);
-        fullVolumeAreaPercentModel = new SpinnerNumberModel(value, min, max, step);
+        fullVolumeAreaPercentModel =
+                new SpinnerNumberModel(value, min, max, step);
         fullVolumeAreaPercentSpinner.setModel(fullVolumeAreaPercentModel);
 
         value = new Double(10);
@@ -92,18 +93,23 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         extentRadiusSpinner.setModel(extentRadiusModel);
 
         // Listen for changes to the text fields and spinners
-        audioGroupIdTextField.getDocument().addDocumentListener(new AudioGroupTextFieldListener());
-        fileTextField.getDocument().addDocumentListener(new AudioFileTreatmentsTextFieldListener());
-        urlTextField.getDocument().addDocumentListener(new AudioUrlTreatmentsTextFieldListener());
-        fullVolumeAreaPercentModel.addChangeListener(new FullVolumeAreaPercentChangeListener());
-        extentRadiusModel.addChangeListener(new ExtentRadiusChangeListener());
+        audioGroupIdTextField.getDocument().addDocumentListener(
+                new AudioGroupTextFieldListener());
+        fileTextField.getDocument().addDocumentListener(
+                new AudioFileTreatmentsTextFieldListener());
+        urlTextField.getDocument().addDocumentListener(
+                new AudioUrlTreatmentsTextFieldListener());
+        fullVolumeAreaPercentModel.addChangeListener(
+                new FullVolumeAreaPercentChangeListener());
+        extentRadiusModel.addChangeListener(
+                new ExtentRadiusChangeListener());
     }
 
     /**
      * @{inheritDoc}
      */
     public String getDisplayName() {
-        return "Audio Capabilities";
+        return BUNDLE.getString("Audio_Capabilities");
     }
 
     /**
@@ -126,7 +132,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
     public void open() {
         CellServerState cellServerState = editor.getCellServerState();
         AudioTreatmentComponentServerState state =
-                (AudioTreatmentComponentServerState)cellServerState.getComponentServerState(AudioTreatmentComponentServerState.class);
+                (AudioTreatmentComponentServerState) cellServerState.getComponentServerState(
+                AudioTreatmentComponentServerState.class);
         if (state == null) {
             return;
         }
@@ -143,11 +150,11 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             String treatment = treatmentList[i];
 
             if (treatment.indexOf("://") > 0) {
-		if (treatment.indexOf("file://") < 0) {
+                if (treatment.indexOf("file://") < 0) {
                     originalUrlTreatments += treatment + " ";
                 } else {
                     originalFileTreatments += treatment + " ";
-		}
+                }
             }
         }
 
@@ -218,7 +225,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         // component.
         CellServerState cellServerState = editor.getCellServerState();
         AudioTreatmentComponentServerState state =
-                (AudioTreatmentComponentServerState)cellServerState.getComponentServerState(AudioTreatmentComponentServerState.class);
+                (AudioTreatmentComponentServerState) cellServerState.getComponentServerState(
+                AudioTreatmentComponentServerState.class);
         if (state == null) {
             return;
         }
@@ -248,7 +256,8 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         state.setVolume(VolumeUtil.getServerVolume(volumeSlider.getValue()));
         state.setPlayWhen(playWhen);
         state.setExtent((Double) extentRadiusModel.getValue());
-        state.setFullVolumeAreaPercent((Double) fullVolumeAreaPercentModel.getValue());
+        state.setFullVolumeAreaPercent(
+                (Double) fullVolumeAreaPercentModel.getValue());
         state.setDistanceAttenuated(distanceAttenuated);
         state.setFalloff(falloffSlider.getValue());
         editor.addToUpdateList(state);
@@ -291,6 +300,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
      * or clean indications to the cell properties editor.
      */
     class AudioGroupTextFieldListener implements DocumentListener {
+
         public void insertUpdate(DocumentEvent e) {
             checkDirty();
         }
@@ -306,12 +316,9 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         private void checkDirty() {
             String audioGroupId = audioGroupIdTextField.getText();
 
-            if (editor != null) { 
-		if (audioGroupId.equals(originalGroupId) == false) {
-                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-                } else {
-                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
-		}
+            if (editor != null) {
+                editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                        !audioGroupId.equals(originalGroupId));
             }
         }
     }
@@ -321,6 +328,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
      * or clean indications to the cell properties editor.
      */
     class AudioFileTreatmentsTextFieldListener implements DocumentListener {
+
         public void insertUpdate(DocumentEvent e) {
             checkDirty();
         }
@@ -336,12 +344,9 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         private void checkDirty() {
             String treatments = fileTextField.getText();
 
-            if (editor != null) { 
-		if (treatments.equals(originalFileTreatments) == false) {
-                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-                } else {
-                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
-		}
+            if (editor != null) {
+                editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                        !treatments.equals(originalFileTreatments));
             }
         }
     }
@@ -351,6 +356,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
      * or clean indications to the cell properties editor.
      */
     class AudioUrlTreatmentsTextFieldListener implements DocumentListener {
+
         public void insertUpdate(DocumentEvent e) {
             checkDirty();
         }
@@ -366,37 +372,32 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         private void checkDirty() {
             String treatments = urlTextField.getText();
 
-            if (editor != null) { 
-		if (treatments.equals(originalUrlTreatments) == false) {
-                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-                } else {
-                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
-		}
+            if (editor != null) {
+                editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                        !treatments.equals(originalUrlTreatments));
             }
         }
     }
+
     class FullVolumeAreaPercentChangeListener implements ChangeListener {
+
         public void stateChanged(ChangeEvent e) {
-            Double fullVolumeAreaPercent = (Double) fullVolumeAreaPercentModel.getValue();
-            if (editor != null) { 
-		if (fullVolumeAreaPercent != originalFullVolumeAreaPercent) {
-                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-		} else {
-                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
-		}
+            Double fullVolumeAreaPercent =
+                    (Double) fullVolumeAreaPercentModel.getValue();
+            if (editor != null) {
+                editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                        fullVolumeAreaPercent != originalFullVolumeAreaPercent);
             }
         }
     }
 
     class ExtentRadiusChangeListener implements ChangeListener {
+
         public void stateChanged(ChangeEvent e) {
             Double extentRadius = (Double) extentRadiusModel.getValue();
-            if (editor != null) { 
-		if (extentRadius != originalExtentRadius) {
-                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-		} else {
-                    editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
-		}
+            if (editor != null) {
+                editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                        extentRadius != originalExtentRadius);
             }
         }
     }
@@ -442,29 +443,30 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         jLabel15 = new javax.swing.JLabel();
         volumeSlider = new javax.swing.JSlider();
 
-        jLabel5.setText("Fast");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        jLabel5.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel5.text")); // NOI18N
 
-        jLabel1.setText("Audio Source:");
+        jLabel1.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel1.text")); // NOI18N
 
-        jLabel2.setText("Volume:");
+        jLabel2.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel2.text")); // NOI18N
 
-        jLabel7.setText("Audio Group:");
+        jLabel7.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel7.text")); // NOI18N
 
-        jLabel8.setText("File:");
+        jLabel8.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel8.text")); // NOI18N
 
-        jLabel9.setText("URL:");
+        jLabel9.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel9.text")); // NOI18N
 
-        browseButton.setText("Browse...");
+        browseButton.setText(bundle.getString("AudioTreatmentComponentProperties.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
 
-        jLabel10.setText("Play:");
+        jLabel10.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel10.text")); // NOI18N
 
         buttonGroup1.add(alwaysRadioButton);
-        alwaysRadioButton.setText("Always");
+        alwaysRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.alwaysRadioButton.text")); // NOI18N
         alwaysRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 alwaysRadioButtonActionPerformed(evt);
@@ -472,7 +474,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         });
 
         buttonGroup1.add(proximityRadioButton);
-        proximityRadioButton.setText("When first avatar is in range");
+        proximityRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.proximityRadioButton.text")); // NOI18N
         proximityRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 proximityRadioButtonActionPerformed(evt);
@@ -480,14 +482,14 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         });
 
         buttonGroup1.add(manualRadioButton);
-        manualRadioButton.setText("Manually");
+        manualRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.manualRadioButton.text")); // NOI18N
         manualRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manualRadioButtonActionPerformed(evt);
             }
         });
 
-        jLabel11.setText("Extent:");
+        jLabel11.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel11.text")); // NOI18N
 
         extentRadiusSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -495,7 +497,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             }
         });
 
-        jLabel12.setText("Full Volume Area:");
+        jLabel12.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel12.text")); // NOI18N
 
         fullVolumeAreaPercentSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -503,12 +505,12 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             }
         });
 
-        jLabel13.setText("% from center");
+        jLabel13.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel13.text")); // NOI18N
 
-        jLabel14.setText("Characteristics:");
+        jLabel14.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel14.text")); // NOI18N
 
         buttonGroup3.add(ambientRadioButton);
-        ambientRadioButton.setText("Ambient");
+        ambientRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.ambientRadioButton.text")); // NOI18N
         ambientRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ambientRadioButtonActionPerformed(evt);
@@ -516,7 +518,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         });
 
         buttonGroup3.add(distanceAttenuatedRadioButton);
-        distanceAttenuatedRadioButton.setText("Distance attenuated");
+        distanceAttenuatedRadioButton.setText(bundle.getString("AudioTreatmentComponentProperties.distanceAttenuatedRadioButton.text")); // NOI18N
         distanceAttenuatedRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 distanceAttenuatedRadioButtonActionPerformed(evt);
@@ -531,13 +533,13 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
             }
         });
 
-        jLabel3.setText("Fall-off:");
+        jLabel3.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel3.text")); // NOI18N
 
         AudioCapabilitiesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/audiomanager/client/resources/AudioCapabilitiesDiagram.png"))); // NOI18N
 
-        jLabel6.setText("Circle with radius");
+        jLabel6.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel6.text")); // NOI18N
 
-        jLabel15.setText("Slow");
+        jLabel15.setText(bundle.getString("AudioTreatmentComponentProperties.jLabel15.text")); // NOI18N
 
         volumeSlider.setMajorTickSpacing(1);
         volumeSlider.setMaximum(10);
@@ -555,7 +557,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap(13, Short.MAX_VALUE)
+                .addContainerGap(27, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jLabel1)
                     .add(jLabel11)
@@ -587,7 +589,7 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
                                     .add(manualRadioButton)
                                     .add(layout.createSequentialGroup()
                                         .add(jLabel6)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 55, Short.MAX_VALUE)
                                         .add(extentRadiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 51, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                     .add(layout.createSequentialGroup()
                                         .add(fullVolumeAreaPercentSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 50, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -675,140 +677,90 @@ public class AudioTreatmentComponentProperties extends javax.swing.JPanel
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
     JFileChooser chooser = new JFileChooser(fileTextField.getText());
 
-     int returnVal = chooser.showOpenDialog(this);
+    int returnVal = chooser.showOpenDialog(this);
 
     if (returnVal == JFileChooser.APPROVE_OPTION) {
-	fileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
+        fileTextField.setText(chooser.getSelectedFile().getAbsolutePath());
     }
 }//GEN-LAST:event_browseButtonActionPerformed
 
 private void alwaysRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_alwaysRadioButtonActionPerformed
     playWhen = PlayWhen.ALWAYS;
 
-    if (editor == null) { 
-	return;
-    }
-
-    if (playWhen != originalPlayWhen) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-    } else {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                playWhen != originalPlayWhen);
     }
 }//GEN-LAST:event_alwaysRadioButtonActionPerformed
 
 private void proximityRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proximityRadioButtonActionPerformed
     playWhen = PlayWhen.FIRST_IN_RANGE;
 
-    if (editor == null) { 
-	return;
-    }
-
-    if (playWhen != originalPlayWhen) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-    } else {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                playWhen != originalPlayWhen);
     }
 }//GEN-LAST:event_proximityRadioButtonActionPerformed
 
 private void manualRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manualRadioButtonActionPerformed
     playWhen = PlayWhen.MANUAL;
 
-    if (editor == null) { 
-	return;
-    }
-
-    if (playWhen != originalPlayWhen) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-    } else {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                playWhen != originalPlayWhen);
     }
 }//GEN-LAST:event_manualRadioButtonActionPerformed
 
 private void extentRadiusSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_extentRadiusSpinnerStateChanged
     extentRadius = (Double) extentRadiusModel.getValue();
 
-    if (editor == null) {
-        return;
-    }
-
-    if (extentRadius != originalExtentRadius) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-    } else {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                extentRadius != originalExtentRadius);
     }
 }//GEN-LAST:event_extentRadiusSpinnerStateChanged
 
 private void fullVolumeAreaPercentSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_fullVolumeAreaPercentSpinnerStateChanged
-    if (editor == null) {
-        return;
-    }
-
-    if (((Double) fullVolumeAreaPercentModel.getValue()) != originalFullVolumeAreaPercent) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-    } else {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+    if (editor != null) {
+        double newValue = (Double) fullVolumeAreaPercentModel.getValue();
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                newValue != originalFullVolumeAreaPercent);
     }
 }//GEN-LAST:event_fullVolumeAreaPercentSpinnerStateChanged
 
 private void falloffSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_falloffSliderStateChanged
-    if (editor == null) {
-        return;
-    }
-
-    if (falloffSlider.getValue() != originalFalloff) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-    } else {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                falloffSlider.getValue() != originalFalloff);
     }
 }//GEN-LAST:event_falloffSliderStateChanged
 
 private void distanceAttenuatedRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_distanceAttenuatedRadioButtonActionPerformed
     falloffSlider.setEnabled(true);
-
     distanceAttenuated = true;
 
-    if (editor == null) {
-        return;
-    }
-
-    if (distanceAttenuated != originalDistanceAttenuated) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-    } else {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                distanceAttenuated != originalDistanceAttenuated);
     }
 }//GEN-LAST:event_distanceAttenuatedRadioButtonActionPerformed
 
 private void ambientRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ambientRadioButtonActionPerformed
     falloffSlider.setEnabled(false);
-
     distanceAttenuated = false;
 
-    if (editor == null) {
-        return;
-    }
-
-    if (distanceAttenuated != originalDistanceAttenuated) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-    } else {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                distanceAttenuated != originalDistanceAttenuated);
     }
 }//GEN-LAST:event_ambientRadioButtonActionPerformed
 
 private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_volumeSliderStateChanged
-    if (editor == null) {
-        return;
-    }
-
-    int volume = volumeSlider.getValue();
-
-    if (volume != originalVolume) {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, true);
-    } else {
-        editor.setPanelDirty(AudioTreatmentComponentProperties.class, false);
+    if (editor != null) {
+        editor.setPanelDirty(AudioTreatmentComponentProperties.class,
+                volumeSlider.getValue() != originalVolume);
     }
 }//GEN-LAST:event_volumeSliderStateChanged
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel AudioCapabilitiesLabel;
     private javax.swing.JRadioButton alwaysRadioButton;
@@ -842,5 +794,4 @@ private void volumeSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-
     private javax.swing.JTextField urlTextField;
     private javax.swing.JSlider volumeSlider;
     // End of variables declaration//GEN-END:variables
-
 }

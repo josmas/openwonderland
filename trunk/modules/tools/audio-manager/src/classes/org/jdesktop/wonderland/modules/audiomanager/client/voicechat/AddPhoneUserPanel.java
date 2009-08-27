@@ -18,10 +18,13 @@
 package org.jdesktop.wonderland.modules.audiomanager.client.voicechat;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 
 /**
  *
  * @author nsimpson
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class AddPhoneUserPanel extends javax.swing.JPanel {
 
@@ -46,36 +49,36 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
     public void setStatusMessage(String message) {
         statusLabel.setText(message);
     }
-    
-    public void addNameTextActionListener(java.awt.event.ActionListener listener) {
-	nameTextField.addActionListener(listener);
+
+    public void addNameTextActionListener(ActionListener listener) {
+        nameTextField.addActionListener(listener);
     }
 
-    public void removeNameTextActionListener(java.awt.event.ActionListener listener) {
-	nameTextField.removeActionListener(listener);
+    public void removeNameTextActionListener(ActionListener listener) {
+        nameTextField.removeActionListener(listener);
     }
 
-    public void addPhoneTextActionListener(java.awt.event.ActionListener listener) {
-	phoneTextField.addActionListener(listener);
+    public void addPhoneTextActionListener(ActionListener listener) {
+        phoneTextField.addActionListener(listener);
     }
 
-    public void removePhoneTextActionListener(java.awt.event.ActionListener listener) {
-	phoneTextField.removeActionListener(listener);
+    public void removePhoneTextActionListener(ActionListener listener) {
+        phoneTextField.removeActionListener(listener);
     }
 
-    public void addNameTextKeyReleasedListener(java.awt.event.KeyAdapter listener) {
+    public void addNameTextKeyReleasedListener(KeyAdapter listener) {
         nameTextField.addKeyListener(listener);
     }
 
-    public void removeNameTextKeyReleasedListener(java.awt.event.KeyAdapter listener) {
+    public void removeNameTextKeyReleasedListener(KeyAdapter listener) {
         nameTextField.addKeyListener(listener);
     }
 
-    public void addPhoneTextKeyReleasedListener(java.awt.event.KeyAdapter listener) {
+    public void addPhoneTextKeyReleasedListener(KeyAdapter listener) {
         phoneTextField.addKeyListener(listener);
     }
 
-    public void removePhoneTextKeyReleasedListener(java.awt.event.KeyAdapter listener) {
+    public void removePhoneTextKeyReleasedListener(KeyAdapter listener) {
         phoneTextField.addKeyListener(listener);
     }
 
@@ -103,7 +106,8 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
         phonePanel.setMinimumSize(new java.awt.Dimension(100, 91));
         phonePanel.setName("phonePanel"); // NOI18N
 
-        nameLabel.setText("Name:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        nameLabel.setText(bundle.getString("AddPhoneUserPanel.nameLabel.text")); // NOI18N
         nameLabel.setName("nameLabel"); // NOI18N
 
         nameTextField.setName("nameTextField"); // NOI18N
@@ -118,7 +122,7 @@ public class AddPhoneUserPanel extends javax.swing.JPanel {
             }
         });
 
-        phoneLabel.setText("Phone #:");
+        phoneLabel.setText(bundle.getString("AddPhoneUserPanel.phoneLabel.text")); // NOI18N
         phoneLabel.setName("phoneLabel"); // NOI18N
 
         phoneTextField.setName("phoneTextField"); // NOI18N
@@ -202,7 +206,6 @@ private void nameTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:
 private void phoneTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_phoneTextFieldKeyReleased
 // TODO add your handling code here:
 }//GEN-LAST:event_phoneTextFieldKeyReleased
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel addUserDetailsPanel;
     private javax.swing.JLabel nameLabel;

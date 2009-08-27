@@ -18,48 +18,57 @@
 package org.jdesktop.wonderland.modules.audiomanager.client.voicechat;
 
 import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 
 /**
  *
  * @author nsimpson
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class PrivacyPanel extends javax.swing.JPanel {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle");
     public static final String SECRET_DESCRIPTION =
-	"Call cannot be seen or heard by others";
-
+            BUNDLE.getString("Secret_Description");
     public static final String PRIVATE_DESCRIPTION =
-	"Call is visible, not audible to others";
-
+            BUNDLE.getString("Private_Description");
     public static final String PUBLIC_DESCRIPTION =
-	"Call is heard by everyone nearby";
+            BUNDLE.getString("Public_Description");
 
     public PrivacyPanel() {
         initComponents();
         validate();
     }
 
-    public void addSecretRadioButtonActionListener(ActionListener actionListener) {
-	secretRadioButton.addActionListener(actionListener);
+    public void addSecretRadioButtonActionListener(
+            ActionListener actionListener) {
+        secretRadioButton.addActionListener(actionListener);
     }
 
-    public void removeSecretRadioButtonActionListener(ActionListener actionListener) {
-	secretRadioButton.removeActionListener(actionListener);
+    public void removeSecretRadioButtonActionListener(
+            ActionListener actionListener) {
+        secretRadioButton.removeActionListener(actionListener);
     }
 
-    public void addPrivateRadioButtonActionListener(ActionListener actionListener) {
-	privateRadioButton.addActionListener(actionListener);
+    public void addPrivateRadioButtonActionListener(
+            ActionListener actionListener) {
+        privateRadioButton.addActionListener(actionListener);
     }
 
-    public void removePrivateRadioButtonActionListener(ActionListener actionListener) {
-	privateRadioButton.removeActionListener(actionListener);
+    public void removePrivateRadioButtonActionListener(
+            ActionListener actionListener) {
+        privateRadioButton.removeActionListener(actionListener);
     }
 
-    public void addPublicRadioButtonActionListener(ActionListener actionListener) {
-	publicRadioButton.addActionListener(actionListener);
+    public void addPublicRadioButtonActionListener(
+            ActionListener actionListener) {
+        publicRadioButton.addActionListener(actionListener);
     }
 
-    public void removePublicPrivateRadioButtonActionListener(ActionListener actionListener) {
-	publicRadioButton.removeActionListener(actionListener);
+    public void removePublicPrivateRadioButtonActionListener(
+            ActionListener actionListener) {
+        publicRadioButton.removeActionListener(actionListener);
     }
 
     /** This method is called from within the constructor to
@@ -83,7 +92,8 @@ public class PrivacyPanel extends javax.swing.JPanel {
 
         buttonGroup1.add(privateRadioButton);
         privateRadioButton.setSelected(true);
-        privateRadioButton.setText("Private");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
+        privateRadioButton.setText(bundle.getString("PrivacyPanel.privateRadioButton.text")); // NOI18N
         privateRadioButton.setName("privateRadioButton"); // NOI18N
         privateRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -92,7 +102,7 @@ public class PrivacyPanel extends javax.swing.JPanel {
         });
 
         buttonGroup1.add(secretRadioButton);
-        secretRadioButton.setText("Secret");
+        secretRadioButton.setText(bundle.getString("PrivacyPanel.secretRadioButton.text")); // NOI18N
         secretRadioButton.setName("secretRadioButton"); // NOI18N
         secretRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -101,7 +111,7 @@ public class PrivacyPanel extends javax.swing.JPanel {
         });
 
         buttonGroup1.add(publicRadioButton);
-        publicRadioButton.setText("SpeakerPhone");
+        publicRadioButton.setText(bundle.getString("PrivacyPanel.publicRadioButton.text")); // NOI18N
         publicRadioButton.setName("publicRadioButton"); // NOI18N
         publicRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -109,7 +119,7 @@ public class PrivacyPanel extends javax.swing.JPanel {
             }
         });
 
-        privacyDescriptionLabel.setText("Call is visible, not audible to others");
+        privacyDescriptionLabel.setText(bundle.getString("PrivacyPanel.privacyDescriptionLabel.text")); // NOI18N
         privacyDescriptionLabel.setName("privacyDescriptionLabel"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -120,14 +130,14 @@ public class PrivacyPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .add(29, 29, 29)
+                        .add(privacyDescriptionLabel))
+                    .add(layout.createSequentialGroup()
                         .add(privateRadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(secretRadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(publicRadioButton))
-                    .add(layout.createSequentialGroup()
-                        .add(29, 29, 29)
-                        .add(privacyDescriptionLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)))
+                        .add(publicRadioButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -155,7 +165,6 @@ public class PrivacyPanel extends javax.swing.JPanel {
     private void publicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_publicRadioButtonActionPerformed
         privacyDescriptionLabel.setText(PUBLIC_DESCRIPTION);
     }//GEN-LAST:event_publicRadioButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel privacyDescriptionLabel;
@@ -163,5 +172,4 @@ public class PrivacyPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton publicRadioButton;
     private javax.swing.JRadioButton secretRadioButton;
     // End of variables declaration//GEN-END:variables
-
 }

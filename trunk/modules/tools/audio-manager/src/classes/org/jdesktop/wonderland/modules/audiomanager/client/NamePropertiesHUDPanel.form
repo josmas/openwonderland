@@ -2,11 +2,12 @@
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_formBundle" type="java.lang.String" value="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -37,8 +38,8 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="myNameFontSizeSpinner" pref="133" max="32767" attributes="1"/>
-                          <Component id="otherNamesFontSizeSpinner" alignment="0" pref="133" max="32767" attributes="1"/>
+                          <Component id="myNameFontSizeSpinner" pref="112" max="32767" attributes="1"/>
+                          <Component id="otherNamesFontSizeSpinner" alignment="0" pref="112" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
                   </Group>
@@ -46,7 +47,7 @@
               <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace pref="108" max="32767" attributes="0"/>
+              <EmptySpace pref="169" max="32767" attributes="0"/>
               <Component id="cancelButton" min="-2" max="-2" attributes="1"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="okButton" min="-2" max="-2" attributes="1"/>
@@ -84,13 +85,17 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="avatarNamesLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Avatar Names"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="NamePropertiesHUDPanel.avatarNamesLabel.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="showMyNameCheckBox">
       <Properties>
         <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" value="Show my name"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="NamePropertiesHUDPanel.showMyNameCheckBox.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="showMyNameCheckBoxItemStateChanged"/>
@@ -98,13 +103,17 @@
     </Component>
     <Component class="javax.swing.JLabel" name="myFontSizeLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Font size:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="NamePropertiesHUDPanel.myFontSizeLabel.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="showOtherNamesCheckBox">
       <Properties>
         <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" value="Show other&apos;s names"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="NamePropertiesHUDPanel.showOtherNamesCheckBox.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="showOtherNamesCheckBoxItemStateChanged"/>
@@ -112,12 +121,16 @@
     </Component>
     <Component class="javax.swing.JLabel" name="otherFontSizeLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Font size:"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="NamePropertiesHUDPanel.otherFontSizeLabel.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="cancelButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Cancel"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="NamePropertiesHUDPanel.cancelButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
@@ -125,36 +138,20 @@
     </Component>
     <Component class="javax.swing.JButton" name="okButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="OK"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle.properties" key="NamePropertiesHUDPanel.okButton.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="okButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JSpinner" name="myNameFontSizeSpinner">
-      <Properties>
-        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-          <SpinnerModel type="list">
-            <ListItem value="Small"/>
-            <ListItem value="Regular"/>
-            <ListItem value="Large"/>
-          </SpinnerModel>
-        </Property>
-      </Properties>
       <Events>
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="myNameFontSizeSpinnerStateChanged"/>
       </Events>
     </Component>
     <Component class="javax.swing.JSpinner" name="otherNamesFontSizeSpinner">
-      <Properties>
-        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-          <SpinnerModel type="list">
-            <ListItem value="Small"/>
-            <ListItem value="Regular"/>
-            <ListItem value="Large"/>
-          </SpinnerModel>
-        </Property>
-      </Properties>
       <Events>
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="otherNamesFontSizeSpinnerStateChanged"/>
       </Events>
