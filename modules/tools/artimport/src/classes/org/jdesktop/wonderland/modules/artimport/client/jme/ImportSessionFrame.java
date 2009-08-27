@@ -45,8 +45,10 @@ import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
@@ -64,6 +66,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -84,6 +87,7 @@ import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.modules.ModuleInfo;
+import org.jdesktop.wonderland.common.modules.ModuleList;
 import org.jdesktop.wonderland.common.modules.ModuleUploader;
 import org.jdesktop.wonderland.common.modules.utils.ModuleJarWriter;
 
@@ -97,80 +101,117 @@ import org.jdesktop.wonderland.common.modules.utils.ModuleJarWriter;
  * you must avoid characters that break URI parsing such as : _ /
  *
  * @author  paulby
+ * @author  Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-public class ImportSessionFrame extends javax.swing.JFrame
-{    
-    private static final Logger logger =
+public class ImportSessionFrame extends javax.swing.JFrame {
+
+    private static final Logger LOGGER =
             Logger.getLogger(ImportSessionFrame.class.getName());
-    
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle");
     private ArrayList<ImportedModel> imports = new ArrayList();
-    
     private DefaultTableModel tableModel = null;
-    private File compiledDir = null; // Directory in which to store the compiled model
-    private File lastModelDir = null; // Directory we last loaded a model from
+    // Directory in which to store the compiled model
+    private File compiledDir = null;
+    // Directory we last loaded a model from
+    private File lastModelDir = null;
     private ModelImporterFrame importFrame = null;
-    
     private int editingRow = -1;
-    
+
     /** Creates new form ImportSessionFrame */
     public ImportSessionFrame() {
         initComponents();
-        
-        tableModel = (DefaultTableModel) importTable.getModel();
-        importTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        
-        importTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        tableModel = new DefaultTableModel() {
 
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting())
-                    return;
-                
-                int row = importTable.getSelectedRow();
-                boolean validSelection = (row>=0);
-                editB.setEnabled(validSelection);
-                removeB.setEnabled(validSelection);
+            String[] names = new String[]{
+                BUNDLE.getString("Wonderland_Name"),
+                BUNDLE.getString("Original_Model_Name")
+            };
+            Class[] types = new Class[]{
+                String.class,
+                String.class
+            };
+            boolean[] canEdit = new boolean[]{
+                false,
+                false
+            };
+
+            @Override
+            public String getColumnName(int column) {
+                return names[column];
             }
- }
-        );
-        
+
+            @Override
+            public Class getColumnClass(int columnIndex) {
+                return types[columnIndex];
+            }
+
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        };
+        importTable.setModel(tableModel);
+
+        importTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        importTable.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+
+                    public void valueChanged(ListSelectionEvent e) {
+                        if (e.getValueIsAdjusting()) {
+                            return;
+                        }
+
+                        int row = importTable.getSelectedRow();
+                        boolean validSelection = (row >= 0);
+                        editB.setEnabled(validSelection);
+                        removeB.setEnabled(validSelection);
+                    }
+                });
+
         importTable.getModel().addTableModelListener(new TableModelListener() {
+
             public void tableChanged(TableModelEvent tme) {
                 boolean models = importTable.getModel().getRowCount() > 0;
             }
         });
-        
+
         // Load the config file which contains the directory from which we last
         // loaded a model.
         try {
             File lastModelFile = getLastModelFile();
             if (lastModelFile.exists()) {
-                DataInputStream in = new DataInputStream(new FileInputStream(lastModelFile));
+                DataInputStream in = new DataInputStream(
+                        new FileInputStream(lastModelFile));
                 String str;
                 if (in.readBoolean()) {
                     str = in.readUTF();
                     lastModelDir = new File(str);
-                } else
+                } else {
                     lastModelDir = null;
-                
+                }
+
                 if (in.readBoolean()) {
                     str = in.readUTF();
                     compiledDir = new File(str);
-                } else
-                    compiledDir=null;
+                } else {
+                    compiledDir = null;
+                }
                 in.close();
             }
         } catch (Exception ex) {
             lastModelDir = null;
-            Logger.getLogger(ModelImporterFrame.class.getName()).log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
         }
-        
+
         Collection<ServerSessionManager> servers = LoginManager.getAll();
-        for(ServerSessionManager server : servers) {
+        for (ServerSessionManager server : servers) {
             targetServerSelector.addItem(server);
         }
 
         importFrame = new ModelImporterFrame(this, lastModelDir);
- 
+
     }
 
     /**
@@ -179,18 +220,21 @@ public class ImportSessionFrame extends javax.swing.JFrame
     void writeDefaultsConfig() {
         try {
             File lastModelFile = getLastModelFile();
-            DataOutputStream out = new DataOutputStream(new FileOutputStream(lastModelFile));
-            out.writeBoolean(lastModelDir!=null);
-            if (lastModelDir!=null)
+            DataOutputStream out = new DataOutputStream(
+                    new FileOutputStream(lastModelFile));
+            out.writeBoolean(lastModelDir != null);
+            if (lastModelDir != null) {
                 out.writeUTF(lastModelDir.getAbsolutePath());
-            out.writeBoolean(compiledDir!=null);
-            if (compiledDir!=null)
+            }
+            out.writeBoolean(compiledDir != null);
+            if (compiledDir != null) {
                 out.writeUTF(compiledDir.getAbsolutePath());
+            }
             out.close();
         } catch (IOException ex) {
-            Logger.getLogger(ModelImporterFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         }
-        
+
     }
 
     private File getLastModelFile() {
@@ -249,28 +293,24 @@ public class ImportSessionFrame extends javax.swing.JFrame
         });
         jScrollPane2.setViewportView(jList1);
 
-        editPMI.setText("Edit");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle"); // NOI18N
+        editPMI.setText(bundle.getString("ImportSessionFrame.editPMI.text")); // NOI18N
         tablePopupMenu.add(editPMI);
 
-        removePMI.setText("Remove");
+        removePMI.setText(bundle.getString("ImportSessionFrame.removePMI.text")); // NOI18N
         tablePopupMenu.add(removePMI);
 
         loadingDialogPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         loadingDialogPanel.setMinimumSize(new java.awt.Dimension(215, 100));
         loadingDialogPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setText("Loading.... Please wait");
+        jLabel4.setText(bundle.getString("ImportSessionFrame.jLabel4.text")); // NOI18N
         loadingDialogPanel.add(jLabel4, new java.awt.GridBagConstraints());
 
-        setTitle("Insert Model");
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentHidden(java.awt.event.ComponentEvent evt) {
-                formComponentHidden(evt);
-            }
-        });
+        setTitle(bundle.getString("ImportSessionFrame.title")); // NOI18N
         getContentPane().add(jLabel6, java.awt.BorderLayout.CENTER);
 
-        editB.setText("Edit");
+        editB.setText(bundle.getString("ImportSessionFrame.editB.text")); // NOI18N
         editB.setEnabled(false);
         editB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -278,8 +318,8 @@ public class ImportSessionFrame extends javax.swing.JFrame
             }
         });
 
-        removeB.setText("Remove");
-        removeB.setToolTipText("Remove the model from the import");
+        removeB.setText(bundle.getString("ImportSessionFrame.removeB.text")); // NOI18N
+        removeB.setToolTipText(bundle.getString("ImportSessionFrame.removeB.toolTipText")); // NOI18N
         removeB.setEnabled(false);
         removeB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -287,7 +327,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
             }
         });
 
-        importModelB.setText("Load Model...");
+        importModelB.setText(bundle.getString("ImportSessionFrame.importModelB.text")); // NOI18N
         importModelB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 importModelBActionPerformed(evt);
@@ -315,7 +355,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
                 .add(editB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(removeB)
-                .addContainerGap(218, Short.MAX_VALUE))
+                .addContainerGap(203, Short.MAX_VALUE))
         );
 
         getContentPane().add(eastP, java.awt.BorderLayout.EAST);
@@ -324,46 +364,23 @@ public class ImportSessionFrame extends javax.swing.JFrame
         centerP.setPreferredSize(new java.awt.Dimension(600, 362));
         centerP.setVerifyInputWhenFocusTarget(false);
 
-        jLabel5.setText("Target Server :");
+        jLabel5.setText(bundle.getString("ImportSessionFrame.jLabel5.text")); // NOI18N
 
         targetServerSelector.setRenderer(new LoginManagerRenderer());
 
-        modelListL.setText("Model List");
+        modelListL.setText(bundle.getString("ImportSessionFrame.modelListL.text")); // NOI18N
 
-        targetNameL.setText("Target Name :");
+        targetNameL.setText(bundle.getString("ImportSessionFrame.targetNameL.text")); // NOI18N
 
-        descriptionL.setText("Description :");
+        descriptionL.setText(bundle.getString("ImportSessionFrame.descriptionL.text")); // NOI18N
 
-        targetModuleTF.setText("MyModule");
+        targetModuleTF.setText(bundle.getString("ImportSessionFrame.targetModuleTF.text")); // NOI18N
         targetModuleTF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 targetModuleTFActionPerformed(evt);
             }
         });
 
-        importTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Wonderland Name", "Original Model Name"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
         jScrollPane1.setViewportView(importTable);
 
         org.jdesktop.layout.GroupLayout centerPLayout = new org.jdesktop.layout.GroupLayout(centerP);
@@ -374,7 +391,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
                 .addContainerGap()
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(centerPLayout.createSequentialGroup()
-                        .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(centerPLayout.createSequentialGroup()
                                 .add(targetNameL)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -384,22 +401,27 @@ public class ImportSessionFrame extends javax.swing.JFrame
                                     .add(jLabel5)
                                     .add(descriptionL))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(targetServerSelector, 0, 260, Short.MAX_VALUE)
-                                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))))
+                                .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                    .add(targetServerSelector, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(descriptionTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 266, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                         .add(264, 264, 264))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
                     .add(centerPLayout.createSequentialGroup()
                         .add(modelListL)
-                        .addContainerGap(555, Short.MAX_VALUE))))
+                        .addContainerGap(576, Short.MAX_VALUE))))
         );
+
+        centerPLayout.linkSize(new java.awt.Component[] {descriptionL, jLabel5, targetNameL}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        centerPLayout.linkSize(new java.awt.Component[] {descriptionTF, targetModuleTF, targetServerSelector}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         centerPLayout.setVerticalGroup(
             centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(centerPLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(modelListL)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(centerPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(targetNameL)
@@ -417,16 +439,16 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         getContentPane().add(centerP, java.awt.BorderLayout.CENTER);
 
-        deployToServerB.setText("Deploy to server");
-        deployToServerB.setToolTipText("Deploy target module to server");
+        deployToServerB.setText(bundle.getString("ImportSessionFrame.deployToServerB.text")); // NOI18N
+        deployToServerB.setToolTipText(bundle.getString("ImportSessionFrame.deployToServerB.toolTipText")); // NOI18N
         deployToServerB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deployToServerBActionPerformed(evt);
             }
         });
 
-        saveAsSrcB.setText("Save as source...");
-        saveAsSrcB.setToolTipText("Create a module source base, with build.xml etc");
+        saveAsSrcB.setText(bundle.getString("ImportSessionFrame.saveAsSrcB.text")); // NOI18N
+        saveAsSrcB.setToolTipText(bundle.getString("ImportSessionFrame.saveAsSrcB.toolTipText")); // NOI18N
         saveAsSrcB.setEnabled(false);
         saveAsSrcB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -434,22 +456,22 @@ public class ImportSessionFrame extends javax.swing.JFrame
             }
         });
 
-        saveAsModuleB.setText("Save as module...");
-        saveAsModuleB.setToolTipText("Save the module jar file");
+        saveAsModuleB.setText(bundle.getString("ImportSessionFrame.saveAsModuleB.text")); // NOI18N
+        saveAsModuleB.setToolTipText(bundle.getString("ImportSessionFrame.saveAsModuleB.toolTipText")); // NOI18N
         saveAsModuleB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAsModuleBActionPerformed(evt);
             }
         });
 
-        okB.setText("OK");
+        okB.setText(bundle.getString("ImportSessionFrame.okB.text")); // NOI18N
         okB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okBActionPerformed(evt);
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("ImportSessionFrame.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -471,7 +493,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
                 .add(okB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cancelButton)
-                .addContainerGap(78, Short.MAX_VALUE))
+                .addContainerGap(237, Short.MAX_VALUE))
         );
         southPLayout.setVerticalGroup(
             southPLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -498,14 +520,14 @@ public class ImportSessionFrame extends javax.swing.JFrame
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 351, Short.MAX_VALUE)
+            .add(0, 336, Short.MAX_VALUE)
         );
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.WEST);
 
-        jMenu1.setText("File");
+        jMenu1.setText(bundle.getString("ImportSessionFrame.jMenu1.text")); // NOI18N
 
-        loadImportGroupMI.setText("Load Import Group");
+        loadImportGroupMI.setText(bundle.getString("ImportSessionFrame.loadImportGroupMI.text")); // NOI18N
         loadImportGroupMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 loadImportGroupMIActionPerformed(evt);
@@ -513,7 +535,7 @@ public class ImportSessionFrame extends javax.swing.JFrame
         });
         jMenu1.add(loadImportGroupMI);
 
-        saveImportGroupMI.setText("Save Import Group");
+        saveImportGroupMI.setText(bundle.getString("ImportSessionFrame.saveImportGroupMI.text")); // NOI18N
         saveImportGroupMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveImportGroupMIActionPerformed(evt);
@@ -523,9 +545,9 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         jMenuBar1.add(jMenu1);
 
-        jMenu2.setText("View");
+        jMenu2.setText(bundle.getString("ImportSessionFrame.jMenu2.text")); // NOI18N
 
-        sceneGraphWindowMI.setText("Scene Graph Window");
+        sceneGraphWindowMI.setText(bundle.getString("ImportSessionFrame.sceneGraphWindowMI.text")); // NOI18N
         sceneGraphWindowMI.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sceneGraphWindowMIActionPerformed(evt);
@@ -554,41 +576,44 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
     private void removeBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeBActionPerformed
         int row = importTable.getSelectedRow();
-        if (row==-1) {
-            Logger.getAnonymousLogger().warning("Remove with invalid row");
+        if (row == -1) {
+            LOGGER.warning("Remove with invalid row");
             return;
         }
-        
+
         ImportedModel ic = imports.remove(row);
         ClientContextJME.getWorldManager().removeEntity(ic.getEntity());
         tableModel.removeRow(row);
     }//GEN-LAST:event_removeBActionPerformed
-
-    private void formComponentHidden(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentHidden
-
-    }//GEN-LAST:event_formComponentHidden
 
     private void deployToServerBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deployToServerBActionPerformed
 
         String moduleName = targetModuleTF.getText();
         ArrayList<DeployedModel> deploymentInfo = new ArrayList();
         WorldManager wm = ClientContextJME.getWorldManager();
-        ServerSessionManager targetServer = (ServerSessionManager) targetServerSelector.getSelectedItem();
+        ServerSessionManager targetServer =
+                (ServerSessionManager) targetServerSelector.getSelectedItem();
 
         // Check we are not about to overwrite an existing module
-        ModuleInfo[] modules = ModuleUtils.fetchModuleList(targetServer.getServerURL()).getModuleInfos();
-        if (modules!=null) {
+        String url = targetServer.getServerURL();
+        ModuleList moduleList = ModuleUtils.fetchModuleList(url);
+        ModuleInfo[] modules = moduleList.getModuleInfos();
+        if (modules != null) {
             boolean conflict = false;
-            for(int i=0; i<modules.length && !conflict; i++) {
-                if (moduleName.equals(modules[i].getName()))
+            for (int i = 0; i < modules.length && !conflict; i++) {
+                if (moduleName.equals(modules[i].getName())) {
                     conflict = true;
+                }
             }
 
             if (conflict) {
-                int ret = JOptionPane.showConfirmDialog(this, "This module already exists,\n" +
-                        "Overwrite ?", "Module Conflict", JOptionPane.YES_NO_OPTION);
-                if (ret==JOptionPane.NO_OPTION)
+                int ret = JOptionPane.showConfirmDialog(this,
+                        BUNDLE.getString("Module_Conflict_Message"),
+                        BUNDLE.getString("Module_Conflict"),
+                        JOptionPane.YES_NO_OPTION);
+                if (ret == JOptionPane.NO_OPTION) {
                     return;
+                }
             }
         }
 
@@ -598,18 +623,19 @@ public class ImportSessionFrame extends javax.swing.JFrame
         uploadingDialog.setLayout(new BorderLayout());
         uploadingDialog.add(loadingDialogPanel, BorderLayout.CENTER);
         uploadingDialog.pack();
-        uploadingDialog.setSize(200,100);
+        uploadingDialog.setSize(200, 100);
         uploadingDialog.setVisible(true);
         uploadingDialog.setAlwaysOnTop(true);
         // Now deploy to server
         try {
-            ModuleUploader uploader = new ModuleUploader(new URL(targetServer.getServerURL()));
+            ModuleUploader uploader = new ModuleUploader(
+                    new URL(targetServer.getServerURL()));
             uploader.upload(moduleJar);
         } catch (MalformedURLException ex) {
-            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
             return;
-        } catch(IOException e) {
-            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, e);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, null, e);
             return;
         } finally {
             uploadingDialog.setVisible(false);
@@ -618,16 +644,20 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
         // Remove entities, once we create the cells on the server we
         // will be sent the client cells
-        for(ImportedModel model : imports) {
+        for (ImportedModel model : imports) {
             wm.removeEntity(model.getEntity());
         }
         // Now create the cells for the new content
-        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-        CellEditChannelConnection connection = (CellEditChannelConnection)session.getConnection(CellEditConnectionType.CLIENT_TYPE);
-        for(DeployedModel info : deploymentInfo) {
+        WonderlandSession session =
+                LoginManager.getPrimary().getPrimarySession();
+        CellEditChannelConnection connection =
+                (CellEditChannelConnection) session.getConnection(
+                CellEditConnectionType.CLIENT_TYPE);
+        for (DeployedModel info : deploymentInfo) {
 //            System.err.println("SENDING cell create "+info.getCellServerState());
             CellID parentCellID = null;
-            CellCreateMessage msg = new CellCreateMessage(parentCellID, info.getCellServerState());
+            CellCreateMessage msg = new CellCreateMessage(
+                    parentCellID, info.getCellServerState());
             connection.send(msg);
         }
 
@@ -635,9 +665,10 @@ public class ImportSessionFrame extends javax.swing.JFrame
         imports.clear();
     }
 
-    private File createModuleJar(ArrayList<DeployedModel> deploymentInfo, File targetDir) {
+    private File createModuleJar(
+            ArrayList<DeployedModel> deploymentInfo, File targetDir) {
 
-        File moduleJar=null;
+        File moduleJar = null;
         String moduleName = targetModuleTF.getText();
 
         try {
@@ -650,40 +681,49 @@ public class ImportSessionFrame extends javax.swing.JFrame
             tmpDir.mkdir();
             tmpDir = new File(tmpDir, targetModuleTF.getText());
 
-            for(ImportedModel model : imports) {
+            for (ImportedModel model : imports) {
                 try {
-                    deploymentInfo.add(model.getModelLoader().deployToModule(tmpDir, model));
+                    deploymentInfo.add(model.getModelLoader().deployToModule(
+                            tmpDir, model));
                 } catch (IOException ex) {
-                    Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOriginalURL().toExternalForm(), ex);
+                    LOGGER.log(Level.SEVERE, "Error deploying model " +
+                            model.getOriginalURL().toExternalForm(), ex);
                 }
             }
 
             ModuleJarWriter mjw = new ModuleJarWriter();
             File[] dirs = tmpDir.listFiles();
-            if (dirs!=null)
-                for(File f : dirs) {
-                    if (f.isDirectory())
+            if (dirs != null) {
+                for (File f : dirs) {
+                    if (f.isDirectory()) {
                         mjw.addDirectory(f);
+                    }
                 }
-            ModuleInfo mi = new ModuleInfo(moduleName, 1, 0, descriptionTF.getText());
+            }
+            ModuleInfo mi =
+                    new ModuleInfo(moduleName, 1, 0, descriptionTF.getText());
             mjw.setModuleInfo(mi);
             try {
-                if (targetDir==null)
+                if (targetDir == null) {
                     targetDir = tmpDir.getParentFile();
-                moduleJar = new File(targetDir, moduleName+".jar");
+                }
+                moduleJar = new File(targetDir, moduleName + ".jar");
                 mjw.writeToJar(moduleJar);
             } catch (IOException ex) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             } catch (JAXBException ex) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
 
-            if (moduleJar==null) {
-                JOptionPane.showMessageDialog(this,"Failed to create module jar", "Error", JOptionPane.ERROR_MESSAGE);
+            if (moduleJar == null) {
+                JOptionPane.showMessageDialog(this,
+                        BUNDLE.getString("Module_JAR_Creation_Error"),
+                        BUNDLE.getString("Error"),
+                        JOptionPane.ERROR_MESSAGE);
                 return null;
             }
         } catch (IOException ex) {
-            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
             return null;
         }
 
@@ -691,44 +731,47 @@ public class ImportSessionFrame extends javax.swing.JFrame
 
 }//GEN-LAST:event_deployToServerBActionPerformed
 
-
     private void saveImportGroupMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveImportGroupMIActionPerformed
-        File sessionFile = new File(ClientContext.getUserDirectory("config"), "import_session");
+        File sessionFile = new File(
+                ClientContext.getUserDirectory("config"), "import_session");
         saveImportSession(sessionFile);
 }//GEN-LAST:event_saveImportGroupMIActionPerformed
 
     private void loadImportGroupMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadImportGroupMIActionPerformed
-        File sessionFile = new File(ClientContext.getUserDirectory("config"), "import_session");
+        File sessionFile = new File(
+                ClientContext.getUserDirectory("config"), "import_session");
         for (ImportedModel m : imports) {
             m.getRootBG().getParent().detachChild(m.getRootBG());
         }
-        
+
         imports.clear();
         tableModel.setRowCount(0);
         importTable.repaint();
-        
+
         loadImportSession(sessionFile);
-        for(ImportedModel m : imports) {
+        for (ImportedModel m : imports) {
             addToTable(m);
             try {
                 loadModel(m.getImportSettings());
             } catch (FileNotFoundException ex) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Unable to load model "+m.getOriginalURL().toExternalForm(), ex);
-            } catch(IOException ioe) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Unable to load model "+m.getOriginalURL().toExternalForm(), ioe);
+                LOGGER.log(Level.SEVERE, "Unable to load model " +
+                        m.getOriginalURL().toExternalForm(), ex);
+            } catch (IOException ioe) {
+                LOGGER.log(Level.SEVERE, "Unable to load model " +
+                        m.getOriginalURL().toExternalForm(), ioe);
             }
         }
 }//GEN-LAST:event_loadImportGroupMIActionPerformed
 
 private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        WorldManager wm = ClientContextJME.getWorldManager();
-        for(ImportedModel model : imports) {
-            wm.removeEntity(model.getEntity());
-        }
-        imports.clear();
-        tableModel.setRowCount(0);
-        importTable.repaint();
-        setVisible(false);
+    WorldManager wm = ClientContextJME.getWorldManager();
+    for (ImportedModel model : imports) {
+        wm.removeEntity(model.getEntity());
+    }
+    imports.clear();
+    tableModel.setRowCount(0);
+    importTable.repaint();
+    setVisible(false);
 }//GEN-LAST:event_cancelButtonActionPerformed
 
 private void targetModuleTFActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_targetModuleTFActionPerformed
@@ -743,7 +786,7 @@ private void saveAsModuleBActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 //                chooser.setCurrentDirectory(lastModelDir);
     int returnVal = chooser.showOpenDialog(ImportSessionFrame.this);
-    if(returnVal == JFileChooser.APPROVE_OPTION) {
+    if (returnVal == JFileChooser.APPROVE_OPTION) {
         createModuleJar(deploymentInfo, chooser.getSelectedFile());
     }
 }//GEN-LAST:event_saveAsModuleBActionPerformed
@@ -752,39 +795,46 @@ private void sceneGraphWindowMIActionPerformed(java.awt.event.ActionEvent evt) {
 }//GEN-LAST:event_sceneGraphWindowMIActionPerformed
 
 private void saveAsSrcBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsSrcBActionPerformed
-        String moduleName = targetModuleTF.getText();
-        ArrayList<DeployedModel> deploymentInfo = new ArrayList();
+    String moduleName = targetModuleTF.getText();
+    ArrayList<DeployedModel> deploymentInfo = new ArrayList();
 
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int returnVal = chooser.showOpenDialog(ImportSessionFrame.this);
-        if(returnVal != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
+    JFileChooser chooser = new JFileChooser();
+    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    int returnVal = chooser.showOpenDialog(ImportSessionFrame.this);
+    if (returnVal != JFileChooser.APPROVE_OPTION) {
+        return;
+    }
 
-        File parentDir = chooser.getSelectedFile();
-        File srcDir = new File(parentDir, moduleName);
-        if (srcDir.exists()) {
-            if (srcDir.listFiles().length>0) {
-                int res = JOptionPane.showConfirmDialog(this, "Module Directory exists, replace ?", "Module exists !", JOptionPane.YES_NO_OPTION);
-                if (res==JOptionPane.NO_OPTION)
-                    return;
-                FileUtils.deleteDirContents(srcDir);
+    File parentDir = chooser.getSelectedFile();
+    File srcDir = new File(parentDir, moduleName);
+    if (srcDir.exists()) {
+        if (srcDir.listFiles().length > 0) {
+            int res = JOptionPane.showConfirmDialog(this,
+                    BUNDLE.getString("Module_Exists_Message"),
+                    BUNDLE.getString("Module_Exists"),
+                    JOptionPane.YES_NO_OPTION);
+            if (res == JOptionPane.NO_OPTION) {
+                return;
             }
-        } else {
-            srcDir.mkdir();
+            FileUtils.deleteDirContents(srcDir);
         }
+    } else {
+        srcDir.mkdir();
+    }
 
-        ModuleSourceManager moduleMgr = new ModuleSourceManager();
-        moduleMgr.createModule(moduleName, "Art Module", parentDir, true, false, false);
+    ModuleSourceManager moduleMgr = new ModuleSourceManager();
+    moduleMgr.createModule(
+            moduleName, "Art Module", parentDir, true, false, false);
 
-        for(ImportedModel model : imports) {
-            try {
-                deploymentInfo.add(model.getModelLoader().deployToModule(srcDir, model));
-            } catch (IOException ex) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, "Error deploying model "+model.getOriginalURL().toExternalForm(), ex);
-            }
+    for (ImportedModel model : imports) {
+        try {
+            deploymentInfo.add(
+                    model.getModelLoader().deployToModule(srcDir, model));
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Error deploying model " +
+                    model.getOriginalURL().toExternalForm(), ex);
         }
+    }
 
 //        NoExitAnt ant = new NoExitAnt();
 //        ant.startAnt(new String[] {"-f", targetModuleDir+File.separator+"build.xml", "dist"}, null, this.getClass().getClassLoader());
@@ -805,12 +855,13 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     tableModel.setRowCount(0);
 }//GEN-LAST:event_okBActionPerformed
 
-    synchronized void asyncLoadModel(final ImportSettings settings, final LoadCompleteListener listener) {
+    synchronized void asyncLoadModel(final ImportSettings settings,
+            final LoadCompleteListener listener) {
         final JDialog loadingDialog = new JDialog(importFrame);
         loadingDialog.setLayout(new BorderLayout());
         loadingDialog.add(loadingDialogPanel, BorderLayout.CENTER);
         loadingDialog.pack();
-        loadingDialog.setSize(200,100);
+        loadingDialog.setSize(200, 100);
         loadingDialog.setVisible(true);
         loadingDialog.setAlwaysOnTop(true);
 
@@ -821,7 +872,7 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
                     ImportedModel loadedModel = loadModel(settings);
                     listener.loadComplete(loadedModel);
                 } catch (IOException ex) {
-                    Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    LOGGER.log(Level.SEVERE, null, ex);
                 } finally {
                     loadingDialog.setVisible(false);
                     loadingDialog.dispose();
@@ -843,15 +894,20 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
         if (url.getProtocol().equalsIgnoreCase("file")) {
             lastModelDir = new File(url.getFile()).getParentFile();
         }
-        
-        Node modelBG=null;
-                
-        ModelLoader modelLoader = LoaderManager.getLoaderManager().getLoader(url);
 
-        logger.fine("Using model loader "+modelLoader);
-        
-        if (modelLoader==null) {
-            JOptionPane.showMessageDialog(null, "No Loader for "+org.jdesktop.wonderland.common.FileUtils.getFileExtension(url.toExternalForm()));
+        Node modelBG = null;
+
+        ModelLoader modelLoader =
+                LoaderManager.getLoaderManager().getLoader(url);
+
+        LOGGER.fine("Using model loader " + modelLoader);
+
+        if (modelLoader == null) {
+            String urlString = url.toExternalForm();
+            String fileExtension = FileUtils.getFileExtension(urlString);
+            String message = BUNDLE.getString("No_Loader_For");
+            message = MessageFormat.format(message, fileExtension);
+            JOptionPane.showMessageDialog(null, message);
             return null;
         }
 
@@ -859,33 +915,38 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
         modelBG = loadedModel.getModelBG();
 
         rootBG.attachChild(modelBG);
-        
+
         WorldManager wm = ClientContextJME.getWorldManager();
-        
-        ZBufferState buf = (ZBufferState) wm.getRenderManager().createRendererState(RenderState.RS_ZBUFFER);
+
+        RenderManager renderManager = wm.getRenderManager();
+        ZBufferState buf = (ZBufferState) renderManager.createRendererState(
+                RenderState.RS_ZBUFFER);
         buf.setEnabled(true);
         buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
 
-        MaterialState matState = (MaterialState) wm.getRenderManager().createRendererState(RenderState.RS_MATERIAL);
+        MaterialState matState =
+                (MaterialState) renderManager.createRendererState(
+                RenderState.RS_MATERIAL);
 //        matState.setDiffuse(color);
         rootBG.setRenderState(matState);
         rootBG.setRenderState(buf);
 
         Entity entity = new Entity(loadedModel.getWonderlandName());
-        RenderComponent scene = wm.getRenderManager().createRenderComponent(rootBG);
-        entity.addComponent(RenderComponent.class,scene);
-        
-        entity.addComponent(TransformProcessorComponent.class, new TransformProcessorComponent(wm, modelBG, rootBG));
-        
+        RenderComponent scene = renderManager.createRenderComponent(rootBG);
+        entity.addComponent(RenderComponent.class, scene);
+
+        entity.addComponent(TransformProcessorComponent.class,
+                new TransformProcessorComponent(wm, modelBG, rootBG));
+
         wm.addEntity(entity);
         loadedModel.setEntity(entity);
-        
+
 //        findTextures(modelBG);
-        
+
         return loadedModel;
     }
-      
-     // This gimble locks, but good enough for now...
+
+    // This gimble locks, but good enough for now...
     public static Matrix3f calcRotationMatrix(float x, float y, float z) {
         Matrix3f m3f = new Matrix3f();
         m3f.loadIdentity();
@@ -899,10 +960,10 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
 
         m3f.multLocal(rotY);
         m3f.multLocal(rotZ);
-        
+
         return m3f;
     }
-    
+
     /**
      * Notification from ImporterFrame that a model has been loaded. 
      * This method is called at the end of both load and edit 
@@ -913,66 +974,74 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
      * @param orientation model orientation
      */
     void loadCompleted(ImportedModel imp) {
-        
-        if (editingRow>=0) {
+
+        if (editingRow >= 0) {
             setRow(editingRow, imp);
         } else {
             imports.add(imp);
             addToTable(imp);
         }
-        
+
         writeDefaultsConfig();
     }
-    
+
     void findTextures(Node root) {
         TreeScan.findNode(root, new ProcessNodeInterface() {
 
             public boolean processNode(Spatial node) {
-                TextureState ts = (TextureState) node.getRenderState(TextureState.RS_TEXTURE);
-                if (ts!=null) {
+                TextureState ts =
+                        (TextureState) node.getRenderState(
+                        TextureState.RS_TEXTURE);
+                if (ts != null) {
                     Texture t = ts.getTexture();
-                    if (t!=null) {
+                    if (t != null) {
 //                        System.out.println("Texture "+t.getImageLocation());
                     }
                 }
                 return true;
             }
-            
         });
     }
-    
+
     /**
      * Called when the user cancels the load
      */
     void loadCancelled(ImportedModel model) {
-        if (editingRow>=0 && imports.contains(model)) {
+        if (editingRow >= 0 && imports.contains(model)) {
             // Restore Position of model
             final ImportedModel imp = model; //imports.get(editingRow);
             final Node tg = imp.getRootBG();
             final Vector3f rot = imp.getOrientation();
-            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            RenderUpdater renderUpdater = new RenderUpdater() {
 
                 public void update(Object arg0) {
-                    tg.setLocalRotation(calcRotationMatrix(rot.x, rot.y, rot.z));
+                    tg.setLocalRotation(
+                            calcRotationMatrix(rot.x, rot.y, rot.z));
                     tg.setLocalTranslation(imp.getTranslation());
                     ClientContextJME.getWorldManager().addToUpdateList(tg);
                 }
-            }, null);
+            };
+            ClientContextJME.getWorldManager().addRenderUpdater(
+                    renderUpdater, null);
         }
 
-        if (model!=null)
+        if (model != null) {
             ClientContextJME.getWorldManager().removeEntity(model.getEntity());
+        }
     }
-    
+
     void addToTable(ImportedModel config) {
-        tableModel.addRow(new Object[] { config.getWonderlandName(),config.getOriginalURL().toExternalForm() });
+        tableModel.addRow(new Object[]{
+                    config.getWonderlandName(),
+                    config.getOriginalURL().toExternalForm()
+                });
     }
-    
+
     void setRow(int row, ImportedModel config) {
-        tableModel.setValueAt(config.getWonderlandName(), row, 0);        
+        tableModel.setValueAt(config.getWonderlandName(), row, 0);
         tableModel.setValueAt(config.getOriginalURL().toExternalForm(), row, 1);
     }
-    
+
     /**
      * Save the current import session to the specified file
      * @param file
@@ -980,51 +1049,54 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     private void saveImportSession(File file) {
         ObjectOutputStream out = null;
         try {
-            out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+            out = new ObjectOutputStream(
+                    new BufferedOutputStream(new FileOutputStream(file)));
             out.writeObject(imports);
         } catch (IOException ex) {
-            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         } finally {
             try {
                 out.close();
-            } catch(IOException ex) {
+            } catch (IOException ex) {
             }
         }
     }
-    
+
     private void loadImportSession(File file) {
         ObjectInputStream in = null;
         try {
-            in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
+            in = new ObjectInputStream(
+                    new BufferedInputStream(new FileInputStream(file)));
             imports = (ArrayList<ImportedModel>) in.readObject();
         } catch (IOException ex) {
-            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         } finally {
             try {
                 in.close();
-            } catch(IOException ex) {
+            } catch (IOException ex) {
             }
         }
-        
+
     }
-    
+
     public void displayMessage(String message) {
         JOptionPane.showMessageDialog(this, message);
     }
 
     public void displayError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Error compiling model",
-                                      JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, message,
+                BUNDLE.getString("Error_Compiling_Model"),
+                JOptionPane.ERROR_MESSAGE);
     }
 
     public boolean requestConfirmation(String message) {
-        int answer = JOptionPane.showConfirmDialog(this, message, 
-                "Select an option", JOptionPane.YES_NO_OPTION);
+        int answer = JOptionPane.showConfirmDialog(this, message,
+                BUNDLE.getString("Select_An_Option"),
+                JOptionPane.YES_NO_OPTION);
         return (answer == JOptionPane.YES_OPTION);
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel centerP;
@@ -1062,88 +1134,94 @@ private void okBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:eve
     private javax.swing.JLabel targetNameL;
     private javax.swing.JComboBox targetServerSelector;
     // End of variables declaration//GEN-END:variables
-   
+
     /**
      * Filter that only accepts directories
      */
     class DirExtensionFilter extends FileFilter {
-        
+
         public DirExtensionFilter() {
-         }
-        
+        }
+
         public boolean accept(File pathname) {
-            if (pathname.isDirectory())
+            if (pathname.isDirectory()) {
                 return true;
-            
+            }
+
             return false;
         }
 
         @Override
         public String getDescription() {
-            return "Directory";
+            return BUNDLE.getString("Directory");
         }
-        
     }
-    
+
     class ImporterResourceLocator implements ResourceLocator {
 
         private String baseURL;
-        
+
         public ImporterResourceLocator(URI baseURI) {
             try {
                 this.baseURL = baseURI.toURL().toExternalForm();
             } catch (MalformedURLException ex) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         }
-        
+
         public URL locateResource(String resource) {
 //            System.out.println("*************** Looking for texture "+resource);
             try {
                 URL ret = new URL(baseURL + "/" + removePath(resource));
 //                System.out.println("Resource URL "+ret.toExternalForm());
-                
+
                 return ret;
             } catch (MalformedURLException ex) {
-                Logger.getLogger(ImportSessionFrame.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
             return null;
         }
-     
+
         private String removePath(String filename) {
             int i = filename.lastIndexOf(File.separatorChar);
-            if (i<0)
+            if (i < 0) {
                 return filename;
-            return filename.substring(i+1);
+            }
+            return filename.substring(i + 1);
         }
     }
 
     class LoginManagerRenderer extends JLabel implements ListCellRenderer {
+
         public LoginManagerRenderer() {
             setOpaque(true);
         }
+
         public Component getListCellRendererComponent(
-                                 JList list,
-                                 Object value,
-                                 int index,
-                                 boolean isSelected,
-                                 boolean cellHasFocus) {
-            if (value instanceof ServerSessionManager)
-                setText(((ServerSessionManager)value).getServerNameAndPort());
+                JList list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus) {
+            if (value instanceof ServerSessionManager) {
+                setText(((ServerSessionManager) value).getServerNameAndPort());
+            }
 //             setBackground(isSelected ? Color.red : Color.white);
 //             setForeground(isSelected ? Color.white : Color.black);
-             return this;
+            return this;
         }
     }
 
     class NoExitAnt extends org.apache.tools.ant.Main {
+
         @Override
         public void exit(int exitCode) {
-            System.err.println("Ignoring "+exitCode);
+            System.err.println("Ignoring " + exitCode);
         }
     }
 
     interface LoadCompleteListener {
+
         /**
          * Notificaton that the load is complete. Provides the entity
          * that was loaded

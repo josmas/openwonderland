@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.artimport.client.jme;
 
 import java.io.File;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -25,9 +27,12 @@ import javax.swing.JOptionPane;
 /**
  *
  * @author paulby
+ * @author  Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 public class ModuleManagerUI extends javax.swing.JFrame {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle");
     private File parentDir = null;
     private JFileChooser fc = new JFileChooser();
 
@@ -69,16 +74,17 @@ public class ModuleManagerUI extends javax.swing.JFrame {
         createModuleB = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
 
-        setTitle("New Module");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/artimport/client/jme/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("ModuleManagerUI.title")); // NOI18N
         setResizable(false);
 
-        createModulePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Create New Module"));
+        createModulePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ModuleManagerUI.createModulePanel.border.title"))); // NOI18N
 
-        jLabel1.setText("Module Name:");
+        jLabel1.setText(bundle.getString("ModuleManagerUI.jLabel1.text")); // NOI18N
 
-        jLabel2.setText("Parent Directory:");
+        jLabel2.setText(bundle.getString("ModuleManagerUI.jLabel2.text")); // NOI18N
 
-        moduleNameTF.setText("example");
+        moduleNameTF.setText(bundle.getString("ModuleManagerUI.moduleNameTF.text")); // NOI18N
         moduleNameTF.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moduleNameTFActionPerformed(evt);
@@ -92,7 +98,7 @@ public class ModuleManagerUI extends javax.swing.JFrame {
             }
         });
 
-        chooseDirB.setText("Choose...");
+        chooseDirB.setText(bundle.getString("ModuleManagerUI.chooseDirB.text")); // NOI18N
         chooseDirB.setEnabled(false);
         chooseDirB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -100,10 +106,10 @@ public class ModuleManagerUI extends javax.swing.JFrame {
             }
         });
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Module Parent Directory"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("ModuleManagerUI.jPanel2.border.title"))); // NOI18N
 
         parentDirGroup.add(toolsDirCB);
-        toolsDirCB.setText("Tools");
+        toolsDirCB.setText(bundle.getString("ModuleManagerUI.toolsDirCB.text")); // NOI18N
         toolsDirCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 parentDirButtonActionPerformed(evt);
@@ -112,7 +118,7 @@ public class ModuleManagerUI extends javax.swing.JFrame {
 
         parentDirGroup.add(worldDirCB);
         worldDirCB.setSelected(true);
-        worldDirCB.setText("World");
+        worldDirCB.setText(bundle.getString("ModuleManagerUI.worldDirCB.text")); // NOI18N
         worldDirCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 parentDirButtonActionPerformed(evt);
@@ -120,7 +126,7 @@ public class ModuleManagerUI extends javax.swing.JFrame {
         });
 
         parentDirGroup.add(foundationDirCB);
-        foundationDirCB.setText("Foundation");
+        foundationDirCB.setText(bundle.getString("ModuleManagerUI.foundationDirCB.text")); // NOI18N
         foundationDirCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 parentDirButtonActionPerformed(evt);
@@ -128,7 +134,7 @@ public class ModuleManagerUI extends javax.swing.JFrame {
         });
 
         parentDirGroup.add(samplesDirCB);
-        samplesDirCB.setText("Samples");
+        samplesDirCB.setText(bundle.getString("ModuleManagerUI.samplesDirCB.text")); // NOI18N
         samplesDirCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 parentDirButtonActionPerformed(evt);
@@ -145,7 +151,7 @@ public class ModuleManagerUI extends javax.swing.JFrame {
                     .add(worldDirCB)
                     .add(foundationDirCB)
                     .add(samplesDirCB))
-                .addContainerGap(219, Short.MAX_VALUE))
+                .addContainerGap(289, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -161,17 +167,17 @@ public class ModuleManagerUI extends javax.swing.JFrame {
         );
 
         commonPackageCB.setSelected(true);
-        commonPackageCB.setText("Common Package");
+        commonPackageCB.setText(bundle.getString("ModuleManagerUI.commonPackageCB.text")); // NOI18N
         commonPackageCB.setEnabled(false);
 
         serverPackageCB.setSelected(true);
-        serverPackageCB.setText("Server Package");
+        serverPackageCB.setText(bundle.getString("ModuleManagerUI.serverPackageCB.text")); // NOI18N
 
         clientPackageCB.setSelected(true);
-        clientPackageCB.setText("Client Package");
+        clientPackageCB.setText(bundle.getString("ModuleManagerUI.clientPackageCB.text")); // NOI18N
 
-        artCB.setText("Include Art");
-        artCB.setToolTipText("Include art resources in the module");
+        artCB.setText(bundle.getString("ModuleManagerUI.artCB.text")); // NOI18N
+        artCB.setToolTipText(bundle.getString("ModuleManagerUI.artCB.toolTipText")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -199,9 +205,9 @@ public class ModuleManagerUI extends javax.swing.JFrame {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel3.setText("Module Description:");
+        jLabel3.setText(bundle.getString("ModuleManagerUI.jLabel3.text")); // NOI18N
 
-        moduleDescriptionTF.setText("Module Description");
+        moduleDescriptionTF.setText(bundle.getString("ModuleManagerUI.moduleDescriptionTF.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout createModulePanelLayout = new org.jdesktop.layout.GroupLayout(createModulePanel);
         createModulePanel.setLayout(createModulePanelLayout);
@@ -224,11 +230,11 @@ public class ModuleManagerUI extends javax.swing.JFrame {
                             .add(org.jdesktop.layout.GroupLayout.LEADING, createModulePanelLayout.createSequentialGroup()
                                 .add(createModulePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(moduleNameTF, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(parentDirTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE))
+                                    .add(parentDirTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(chooseDirB))
                             .add(org.jdesktop.layout.GroupLayout.LEADING, createModulePanelLayout.createSequentialGroup()
-                                .add(moduleDescriptionTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                                .add(moduleDescriptionTF, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                         .add(0, 0, 0))))
         );
@@ -256,14 +262,14 @@ public class ModuleManagerUI extends javax.swing.JFrame {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        createModuleB.setText("Create Module");
+        createModuleB.setText(bundle.getString("ModuleManagerUI.createModuleB.text")); // NOI18N
         createModuleB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createModuleBActionPerformed(evt);
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("ModuleManagerUI.cancelButton.text")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -302,9 +308,13 @@ public class ModuleManagerUI extends javax.swing.JFrame {
     private void createModuleBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createModuleBActionPerformed
         ModuleSourceManager mgr = new ModuleSourceManager();
 
-        mgr.createModule(moduleNameTF.getText(), moduleDescriptionTF.getText(), parentDir, artCB.isSelected(), clientPackageCB.isSelected(), serverPackageCB.isSelected());
+        mgr.createModule(moduleNameTF.getText(), moduleDescriptionTF.getText(),
+                parentDir, artCB.isSelected(), clientPackageCB.isSelected(),
+                serverPackageCB.isSelected());
 
-        JOptionPane.showMessageDialog(this, "Module created in Directory "+parentDir);
+        String message = BUNDLE.getString("Module_Created_In_Directory");
+        message = MessageFormat.format(message, parentDir);
+        JOptionPane.showMessageDialog(this, message);
     }//GEN-LAST:event_createModuleBActionPerformed
 
     private void chooseDirBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDirBActionPerformed
@@ -326,20 +336,22 @@ public class ModuleManagerUI extends javax.swing.JFrame {
 
         String dir;
 
-        if (toolsDirCB.isSelected())
+        if (toolsDirCB.isSelected()) {
             dir = "tools";
-        else if (worldDirCB.isSelected())
+        } else if (worldDirCB.isSelected()) {
             dir = "world";
-        else if (foundationDirCB.isSelected())
+        } else if (foundationDirCB.isSelected()) {
             dir = "foundation";
-        else if (samplesDirCB.isSelected())
+        } else if (samplesDirCB.isSelected()) {
             dir = "samples";
-        else {
-            Logger.getAnonymousLogger().severe("Unknown directory selection, assuming world");
+        } else {
+            Logger.getAnonymousLogger().severe(
+                    "Unknown directory selection, assuming world");
             dir = "world";
         }
 
-        File defaultDir=new File(".."+File.separatorChar+"modules"+File.separatorChar+dir);
+        File defaultDir = new File(".." + File.separatorChar + "modules" +
+                File.separatorChar + dir);
         if (defaultDir.exists()) {
             fc.setCurrentDirectory(defaultDir);
             parentDirTF.setText(defaultDir.getAbsolutePath());
@@ -357,16 +369,16 @@ public class ModuleManagerUI extends javax.swing.JFrame {
 }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**
-    * @param args the command line arguments
-    */
+     * @param args the command line arguments
+     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 new ModuleManagerUI().setVisible(true);
             }
         });
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox artCB;
     private javax.swing.JButton cancelButton;
@@ -390,5 +402,4 @@ public class ModuleManagerUI extends javax.swing.JFrame {
     private javax.swing.JCheckBox toolsDirCB;
     private javax.swing.JCheckBox worldDirCB;
     // End of variables declaration//GEN-END:variables
-
 }
