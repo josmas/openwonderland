@@ -236,12 +236,18 @@ public class AddUserPanel extends javax.swing.JPanel implements
             }
 
 	    synchronized (members) {
-	        if (members.contains(info)) {
-	    	    if (info.equals(myPresenceInfo) == false) {
-                        addToUserList(info);
-		    }
+	        synchronized (invitedMembers) {
+	            if (members.contains(info)) {
+	    	        if (info.equals(myPresenceInfo) == false) {
+                            addToUserList(info);
+		        }
 
-		    addBystanders(info);  // add bystanders
+		        addBystanders(info);  // add bystanders
+		    } else if (invitedMembers.contains(info)) {
+	    	        if (info.equals(myPresenceInfo) == false) {
+                            addToUserList(info);
+		        }
+		    }
 		}
 	    }
 	}
@@ -352,11 +358,34 @@ public class AddUserPanel extends javax.swing.JPanel implements
     }
 
     private void animateCallAnswer() {
+	if (true) {
+	    return;
+	}
+
+	WlAvatarCharacter avatar = client.getWlAvatarCharacter();
+
+	if (avatar == null) {
+	    return;
+	}
+
+	String answerCell = null;
+
+	for (String action : avatar.getAnimationNames()) {
+	    if (action.indexOf("_AnswerCell") > 0) {
+		answerCell = action;
+		break;
+	    }
+	}
+
+	if (answerCell == null) {
+	    return;
+	}
+
 	if (chatType.equals(ChatType.PRIVATE)) {
-	    client.getWlAvatarCharacter().playAnimation("Male_AnswerCell");
+	    avatar.playAnimation(answerCell);
 	    logger.warning("Playing animation...");
 	} else {
-	    client.getWlAvatarCharacter().stop();
+	    avatar.stop();
 	    logger.warning("Stopping animation...");
 	}
     }
