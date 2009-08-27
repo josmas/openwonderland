@@ -21,6 +21,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ResourceBundle;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
@@ -36,10 +37,13 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  * Client-side plugin to activate the asset meter on the Tools menu.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @Plugin
 public class AssetMeterClientPlugin extends BaseClientPlugin {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/assetmeter/client/resources/Bundle");
     private AssetMeterJPanel assetMeterJPanel;
     private HUDComponent assetMeterHUDComponent;
     private JMenuItem item;
@@ -47,6 +51,7 @@ public class AssetMeterClientPlugin extends BaseClientPlugin {
     public AssetMeterClientPlugin() {
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
+
                 public void run() {
                     item = new JCheckBoxMenuItem("Asset Meter");
                     item.setSelected(true);
@@ -64,6 +69,7 @@ public class AssetMeterClientPlugin extends BaseClientPlugin {
         // Add the Asset Meter as a checkbox menu item to the Tools menu as a
         // Checkbox menu item. If it is selected, then show it or hide it.
         item.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 setEnabled(item.isSelected());
             }
@@ -71,16 +77,20 @@ public class AssetMeterClientPlugin extends BaseClientPlugin {
 
         // Set up the UI
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 // First create the asset meter frame
-                assetMeterJPanel = new AssetMeterJPanel(AssetMeterClientPlugin.this);
+                assetMeterJPanel =
+                        new AssetMeterJPanel(AssetMeterClientPlugin.this);
 
                 // Now create the HUD component
                 HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-                assetMeterHUDComponent = mainHUD.createComponent(assetMeterJPanel);
+                assetMeterHUDComponent =
+                        mainHUD.createComponent(assetMeterJPanel);
                 assetMeterHUDComponent.setPreferredTransparency(0.0f);
                 assetMeterHUDComponent.setPreferredLocation(Layout.SOUTHEAST);
-                assetMeterHUDComponent.setName("Downloading...");
+                assetMeterHUDComponent.setName(
+                        BUNDLE.getString("Downloading"));
                 mainHUD.addComponent(assetMeterHUDComponent);
             }
         });
