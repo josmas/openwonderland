@@ -76,8 +76,10 @@ public class ModelRenderer extends BasicRenderer {
             return modelComponent.loadModel();
         }
 
-        if (deployedModel!=null)
-            return deployedModel.getModelLoader().loadDeployedModel(deployedModel);
+        if (deployedModel!=null) {
+            Node ret = deployedModel.getModelLoader().loadDeployedModel(deployedModel);
+            return ret;
+        }
 
         ModelLoader loader = LoaderManager.getLoaderManager().getLoader(deployedModelURL);
         deployedModel = new DeployedModel(deployedModelURL, loader);

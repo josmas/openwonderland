@@ -17,28 +17,33 @@
  */
 package org.jdesktop.wonderland.common.cell.state;
 
-import java.io.Serializable;
-import javax.xml.bind.annotation.XmlRootElement;
-import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
-
 /**
- * The ModelCell is a convenience cell that uses a ModelCellComponent to
- * manage and render a deployed model.
- * 
- * @author Jordan Slott <jslott@dev.java.net>
+ * A cell component that encapsulates all the information required to load a
+ * collada model.
  */
-@XmlRootElement(name="model-cell")
-@ServerState
-public class ModelCellServerState extends CellServerState implements Serializable {
-
+public class ModelCellComponentClientState extends CellComponentClientState {
+    /* The unique URL that describes the model data */
+    private String deployedModelURL;
+    
     /** Default constructor */
-    public ModelCellServerState() {
+    public ModelCellComponentClientState() {
     }
     
-
-    @Override
-    public String getServerClassName() {
-        return "org.jdesktop.wonderland.server.cell.ModelCellMO";
+    /**
+     * Returns the unique model URI, null if none.
+     *
+     * @return The unique model URI
+     */
+    public String getDeployedModelURL() {
+        return deployedModelURL;
     }
 
+    /**
+     * Sets the unique model URI, null for none.
+     *
+     * @param modelURI The unique model URI
+     */
+    public void setDeployedModelURL(String deployedModelURL) {
+        this.deployedModelURL = deployedModelURL;
+    }
 }
