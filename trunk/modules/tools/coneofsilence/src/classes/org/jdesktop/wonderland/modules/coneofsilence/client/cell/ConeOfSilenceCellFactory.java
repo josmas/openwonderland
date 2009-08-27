@@ -17,46 +17,56 @@
  */
 package org.jdesktop.wonderland.modules.coneofsilence.client.cell;
 
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState;
-import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.coneofsilence.common.ConeOfSilenceCellServerState;
 
 /**
  * The cell factory for the sample cell.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @CellFactory
 public class ConeOfSilenceCellFactory implements CellFactorySPI {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/coneofsilence/client/cell/" +
+            "resources/Bundle");
+    private final static Logger LOGGER =
+            Logger.getLogger(ConeOfSilenceCellFactory.class.getName());
+
     public String[] getExtensions() {
-        return new String[] {};
+        return new String[]{};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+    public <T extends CellServerState> T getDefaultCellServerState(
+            Properties props) {
         // Create a setup with some default values
-        ConeOfSilenceCellServerState cellServerState = new ConeOfSilenceCellServerState();
+        ConeOfSilenceCellServerState cellServerState =
+                new ConeOfSilenceCellServerState();
 
-	cellServerState.setName("COS");
-	cellServerState.setFullVolumeRadius((float) 1.5);
+        cellServerState.setName("COS");
+        cellServerState.setFullVolumeRadius((float) 1.5);
 
-        Logger.getLogger(ConeOfSilenceCellFactory.class.getName()).fine("COS!!!!");
+        LOGGER.fine("COS!!!!");
         return (T) cellServerState;
     }
 
     public String getDisplayName() {
-        return "Cone Of Silence";
+        return BUNDLE.getString("Cone_of_Silence");
     }
 
     public Image getPreviewImage() {
-        URL url = ConeOfSilenceCellFactory.class.getResource("resources/coneofsilence_preview.png");
+        URL url = ConeOfSilenceCellFactory.class.getResource(
+                "resources/coneofsilence_preview.png");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
