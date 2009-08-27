@@ -36,8 +36,6 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 @ComponentLookupClass(ModelCellComponentMO.class)
 public class JmeColladaCellComponentMO extends ModelCellComponentMO {
 
-    private JmeColladaCellComponentServerState serverState=null;
-
     public JmeColladaCellComponentMO(CellMO cell) {
         super(cell);
     }

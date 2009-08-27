@@ -17,16 +17,19 @@
  */
 package org.jdesktop.wonderland.modules.jmecolladaloader.client;
 
+import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.scene.Geometry;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.scene.state.CullState;
 import com.jme.scene.state.RenderState;
 import com.jme.util.resource.ResourceLocator;
 import com.jme.util.resource.ResourceLocatorTool;
 import com.jme.util.resource.SimpleResourceLocator;
-import com.jmex.model.collada.ColladaImporter;
+import com.jmex.model.collada.ThreadSafeColladaImporter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -53,7 +56,10 @@ import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ImportSettings;
 import org.jdesktop.wonderland.client.jme.artimport.ImportedModel;
 import org.jdesktop.wonderland.client.jme.artimport.ModelLoader;
+import org.jdesktop.wonderland.client.jme.utils.traverser.ProcessNodeInterface;
+import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
 import org.jdesktop.wonderland.common.InternalAPI;
+import org.jdesktop.wonderland.common.cell.state.ModelCellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellComponentServerState;
@@ -110,8 +116,9 @@ public class JmeColladaLoader implements ModelLoader {
 
     private Node loadModel(InputStream in, String name, boolean applyColladaAxisAndScale) {
         Node modelNode;
-        ColladaImporter.load(in, name);
-        modelNode = ColladaImporter.getModel();
+        ThreadSafeColladaImporter importer = new ThreadSafeColladaImporter(name);
+        importer.load(in);
+        modelNode = importer.getModel();
 
         RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
         CullState culls = (CullState) rm.createRendererState(RenderState.StateType.Cull);
@@ -121,10 +128,10 @@ public class JmeColladaLoader implements ModelLoader {
         if (applyColladaAxisAndScale) {
             // Adjust the scene transform to match the scale and axis specified in
             // the collada file
-            float unitMeter = ColladaImporter.getInstance().getUnitMeter();
+            float unitMeter = importer.getInstance().getUnitMeter();
             modelNode.setLocalScale(unitMeter);
 
-            String upAxis = ColladaImporter.getInstance().getUpAxis();
+            String upAxis = importer.getInstance().getUpAxis();
             if ("Z_UP".equals(upAxis)) {
                 modelNode.setLocalRotation(new Quaternion(new float[] {-(float)Math.PI/2, 0f, 0f}));
             } else if ("X_UP".equals(upAxis)) {
@@ -132,7 +139,10 @@ public class JmeColladaLoader implements ModelLoader {
             } // Y_UP is the Wonderland default
         }
 
-        ColladaImporter.cleanUp();
+        importer.cleanUp();
+
+        setupBounds(modelNode);
+
 
 //        TreeScan.findNode(modelNode, new ProcessNodeInterface() {
 //
@@ -146,40 +156,35 @@ public class JmeColladaLoader implements ModelLoader {
         return modelNode;
     }
 
-    /**
-     * Get the url for the deployment data file associated with this model
-     * 
-     * @param model
-     * @return
-     */
-    protected String getLoaderDataURL(DeployedModel model) {
-        return model.getDeployedURL()+".ldr";
-    }
-
-    public Node loadDeployedModel(DeployedModel model) {
+    public Node loadDeployedModel(DeployedModel deployedModel) {
         InputStream in = null;
         try {
             LoaderData data=null;
-//            System.err.println("LOADING DEPLOYED MODEL "+model.getDeployedURL());
-            URL url = AssetUtils.getAssetURL(getLoaderDataURL(model));
-            in = url.openStream();
-            if (in==null) {
-                logger.severe("Unable to get deployment data "+url.toExternalForm());
+            if (deployedModel.getLoaderDataURL()==null) {
+                logger.warning("No Loader data for model "+deployedModel.getModelURL());
             } else {
-                try {
-                    data = LoaderData.decode(in);
-                } catch (JAXBException ex) {
-                    Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, "Error parsing deployment data "+url.toExternalForm(), ex);
+                URL url = AssetUtils.getAssetURL(deployedModel.getLoaderDataURL());
+                in = url.openStream();
+                if (in==null) {
+                    logger.severe("Unable to get loader data "+url.toExternalForm());
+                } else {
+                    try {
+                        data = LoaderData.decode(in);
+                    } catch (JAXBException ex) {
+                        Logger.getLogger(JmeColladaLoader.class.getName()).log(Level.SEVERE, "Error parsing loader data "+url.toExternalForm(), ex);
+                    }
+                    in.close();
                 }
-                in.close();
             }
 
-            if (model.getDeployedURL().endsWith(".gz"))
-                in = new GZIPInputStream(AssetUtils.getAssetURL(model.getDeployedURL()).openStream());
+            logger.info("LOADING DEPLOYED MODEL "+deployedModel.getModelURL());
+            
+            if (deployedModel.getModelURL().endsWith(".gz"))
+                in = new GZIPInputStream(AssetUtils.getAssetURL(deployedModel.getModelURL()).openStream());
             else
-                in = AssetUtils.getAssetURL(model.getDeployedURL()).openStream();
+                in = AssetUtils.getAssetURL(deployedModel.getModelURL()).openStream();
 
-            String baseURL = model.getDeployedURL();
+            String baseURL = deployedModel.getModelURL();
             baseURL = baseURL.substring(0, baseURL.lastIndexOf('/'));
 
             Node modelBG;
@@ -195,7 +200,8 @@ public class JmeColladaLoader implements ModelLoader {
                         resourceLocator);
             }
 
-            modelBG = loadModel(in, getFilename(model.getDeployedURL()), false);
+            modelBG = loadModel(in, getFilename(deployedModel.getModelURL()), false);
+            deployedModel.applyModelTransform(modelBG);
 
             if (resourceLocator!=null) {
                 ResourceLocatorTool.removeThreadResourceLocator(
@@ -216,6 +222,24 @@ public class JmeColladaLoader implements ModelLoader {
         }
 
         return null;
+    }
+
+    /**
+     * Traverse the graph and set the geometric bounds on all tri mesh
+     * @param node
+     */
+    protected void setupBounds(Node node) {
+        TreeScan.findNode(node, new ProcessNodeInterface() {
+
+            public boolean processNode(Spatial node) {
+                if (node instanceof Geometry) {
+                    node.setModelBound(new BoundingSphere());
+                    node.updateModelBound();
+                }
+                return true;
+            }
+        });
+        node.updateGeometricState(0, true);
     }
 
     protected ResourceLocator getDeployedResourceLocator(Map<String, String> deployedTextures, String baseURL) {
@@ -244,28 +268,19 @@ public class JmeColladaLoader implements ModelLoader {
             // Must deploy textures before models so we have the deployment url mapping
             deployTextures(targetDir, textureDeploymentMapping, importedModel);
 
-            deployModels(targetDir, moduleName, deployedModel, importedModel, textureDeploymentMapping);
- 
-//            if (modelFiles.size() > 1) {
-//                logger.warning("Multiple models not supported during deploy");
-//            }
-
             ModelCellServerState cellSetup = new ModelCellServerState();
-            JmeColladaCellComponentServerState setup = new JmeColladaCellComponentServerState();
+            ModelCellComponentServerState setup = new ModelCellComponentServerState();
             cellSetup.addComponentServerState(setup);
-
-            setup.setModel(deployedModel.getDeployedURL());
-            setup.setModelScale(importedModel.getModelBG().getLocalScale());
-            setup.setModelRotation(importedModel.getModelBG().getLocalRotation());
+            cellSetup.setName(importedModel.getWonderlandName());
 
             Vector3f offset = importedModel.getRootBG().getLocalTranslation();
             PositionComponentServerState position = new PositionComponentServerState();
             Vector3f boundsCenter = importedModel.getRootBG().getWorldBound().getCenter();
 
             offset.subtractLocal(boundsCenter);
-
-            setup.setModelTranslation(offset);
-            setup.setModelLoaderClassname(importedModel.getModelLoader().getClass().getName());
+            deployedModel.setModelTranslation(offset);
+            deployedModel.setModelRotation(importedModel.getModelBG().getLocalRotation());
+            deployedModel.setModelScale(importedModel.getModelBG().getLocalScale());
 
 //            System.err.println("BOUNDS CENTER "+boundsCenter);
 //            System.err.println("OFfset "+offset);
@@ -274,7 +289,7 @@ public class JmeColladaLoader implements ModelLoader {
 
             // The cell bounds already have the rotation and scale applied, so these
             // values must not go in the Cell transform. Instead they go in the
-            // JME cell setup so that the model is correctly oriented and thus
+            // deployedModel so that the model is correctly oriented and thus
             // matches the bounds in the cell.
 
             // Center the worldBounds on the cell (ie 0,0,0)
@@ -283,16 +298,21 @@ public class JmeColladaLoader implements ModelLoader {
             position.setBounds(worldBounds);
             cellSetup.addComponentServerState(position);
 
-            deployedModel.recordModelBGTransform(importedModel.getModelBG());
             deployedModel.addCellServerState(cellSetup);
 
-//            System.err.println("DEPLOYING "+deployedModel);
+            deployModels(targetDir, 
+                         moduleName,
+                         deployedModel,
+                         importedModel,
+                         textureDeploymentMapping, setup);
 
             return deployedModel;
     
     }
 
-    protected void deployDeploymentData(File targetDir, DeployedModel deployedModel, String filename) {
+    protected void deployDeploymentData(File targetDir, 
+            DeployedModel deployedModel,
+            String filename) {
         LoaderData data = (LoaderData) deployedModel.getLoaderData();
         File deploymentDataFile = new File(targetDir, filename+".dep");
         File loaderDataFile = new File(targetDir, filename+".ldr");
@@ -329,7 +349,8 @@ public class JmeColladaLoader implements ModelLoader {
             String moduleName,
             DeployedModel deployedModel,
             ImportedModel importedModel,
-            HashMap<String, String> deploymentMapping) {
+            HashMap<String, String> deploymentMapping,
+            ModelCellComponentServerState state) {
         URL[] source = importedModel.getAllOriginalModels();
         
         String filename = getFilename(importedModel.getOriginalURL());
@@ -339,9 +360,11 @@ public class JmeColladaLoader implements ModelLoader {
             targetFile.createNewFile();
             // TODO compress the dae file using gzip stream
             copyAsset(source[0], targetFile, true); // TODO handle multiple dae files
-            deployedModel.setDeployedURL("wla://"+moduleName+"/"+filename+"/"+filenameGZ);
+            deployedModel.setModelURL("wla://"+moduleName+"/"+filename+"/"+filenameGZ);
+            deployedModel.setLoaderDataURL(deployedModel.getModelURL()+".ldr");
 
             deployDeploymentData(targetDir, deployedModel, filenameGZ);
+            state.setDeployedModelURL(deployedModel.getModelURL()+".dep");
 
             // Decided not to do this for deployment. Instead we will create and
             // manage the binary form in the client asset cache. The binary
