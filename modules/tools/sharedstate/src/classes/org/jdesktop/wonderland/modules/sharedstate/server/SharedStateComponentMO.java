@@ -260,8 +260,8 @@ public class SharedStateComponentMO extends CellComponentMO {
 
             // if the map doesn't exist, return an empty message
             if (map == null) {
-                return new MapResponseMessage(message.getMessageID(),
-                                              0, Collections.EMPTY_LIST);
+                List<String> l = Collections.emptyList();
+                return new MapResponseMessage(message.getMessageID(), 0, l);
             }
 
             // create a list of all keys
@@ -310,8 +310,7 @@ public class SharedStateComponentMO extends CellComponentMO {
             // find the appropriate map
             SharedMapImpl map = getMap(message.getMapName(), true);
 
-            if (map.put(clientID, message.getPropertyName(),
-                        message.getPropertyValue()))
+            if (map.put(clientID, message))
             {
                 return new OKMessage(message.getMessageID());
             }
@@ -330,7 +329,7 @@ public class SharedStateComponentMO extends CellComponentMO {
             SharedMapImpl map = getMap(message.getMapName(), false);
 
             // remove the key from the map if the map exists
-            if (map == null || map.remove(clientID, message.getPropertyName())) {
+            if (map == null || map.remove(clientID, message)) {
                 return new OKMessage(message.getMessageID());
             }
 
@@ -433,18 +432,27 @@ public class SharedStateComponentMO extends CellComponentMO {
                                                     " support clear");
         }
 
+        /**
+         * A value change originated locally. Server-side listeners are not
+         * notified in this case, but a message is sent to remote clients.
+         */
         @Override
         public SharedData put(String key, SharedData value) {
             return doPut(null, key, value);
         }
 
-        public boolean put(WonderlandClientID senderID, String key,
-                           SharedData value)
+        /**
+         * A value change originated by a remote client.  Server-side listeners
+         * are notified, and a message is sent to remote clients.
+         */
+        boolean put(WonderlandClientID senderID, PutRequestMessage message)
         {
+            String key = message.getPropertyName();
+            SharedData value =  message.getPropertyValue();
             SharedData prev = get(key);
 
             // notify listeners, see if they veto
-            if (firePropertyChange(senderID, key, prev, value)) {
+            if (firePropertyChange(senderID, message, key, value, prev)) {
                 doPut(senderID, key, value);
                 return true;
             }
@@ -471,16 +479,27 @@ public class SharedStateComponentMO extends CellComponentMO {
             super.putAll(m);
         }
 
+        /**
+         * A remove request originated locally. Server-side listeners are not
+         * notified in this case, but a message is sent to remote clients.
+         */
         @Override
         public SharedData remove(Object key) {
             return doRemove(null, (String) key);
         }
 
-        public boolean remove(WonderlandClientID senderID, String key) {
+        /**
+         * A remove request originated remotely. Server-side listeners are
+         * notified in this case, and a message is sent to remote clients.
+         */
+        boolean remove(WonderlandClientID senderID,
+                       RemoveRequestMessage message)
+        {
+            String key = message.getPropertyName();
             SharedData prev = get(key);
 
             // notify listeners, see if they veto
-            if (firePropertyChange(senderID, key, prev, null)) {
+            if (firePropertyChange(senderID, message, key, null, prev)) {
                 doRemove(senderID, key);
                 return true;
             }
@@ -522,12 +541,14 @@ public class SharedStateComponentMO extends CellComponentMO {
         }
 
         protected boolean firePropertyChange(WonderlandClientID senderID,
-                String key, SharedData oldVal, SharedData newVal)
+                CellMessage message, String key, SharedData newVal,
+                SharedData oldVal)
         {
             for (SharedMapListenerSrv listener : listeners) {
-                if (!listener.propertyChanged(this, senderID, key,
-                                              oldVal, newVal))
-                {
+
+                SharedMapEventSrv event = new SharedMapEventSrv(
+                        this, senderID, message, key, newVal, oldVal);
+                if (!listener.propertyChanged(event)) {
                     return false;
                 }
             }
@@ -545,13 +566,9 @@ public class SharedStateComponentMO extends CellComponentMO {
             listenerRef = AppContext.getDataManager().createReference(listener);
         }
 
-        public boolean propertyChanged(SharedMapSrv map, WonderlandClientID senderID,
-                                       String propertyName, SharedData oldvalue,
-                                       SharedData newValue)
+        public boolean propertyChanged(SharedMapEventSrv event)
         {
-            return listenerRef.get().propertyChanged(map, senderID,
-                                                     propertyName, oldvalue,
-                                                     newValue);
+            return listenerRef.get().propertyChanged(event);
         }
 
         @Override

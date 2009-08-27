@@ -61,9 +61,12 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../core/build/lib/wonderland-server.jar:../../../core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-0.9.8.jar:../../../core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../../../core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-shared-1.3.jar:../../../core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar</classpath>
+                <classpath mode="compile">../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../core/build/lib/wonderland-server.jar:../../../core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
+        <preferences xmlns="http://www.netbeans.org/ns/auxiliary-configuration-preferences/1">
+            <module name="org-netbeans-modules-editor-indent"/>
+        </preferences>
     </configuration>
 </project>
