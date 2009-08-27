@@ -109,7 +109,7 @@ public class ModuleUploadServlet extends HttpServlet {
                      */
                     File tmpFile = null;
                     try {
-                        tmpFile = File.createTempFile(moduleName, ".jar");
+                        tmpFile = File.createTempFile(moduleName+"_tmp", ".jar");
                         tmpFile.deleteOnExit();
                         RunUtil.writeToFile(stream, tmpFile);
                         logger.info("[MODULE] UPLOAD Wrote added module to " + tmpFile.getAbsolutePath());
