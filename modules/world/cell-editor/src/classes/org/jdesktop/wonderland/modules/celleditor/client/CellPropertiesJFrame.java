@@ -156,7 +156,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                             // If there is a Node that corresponds to the Cell,
                             // then remove it from the tree.
                             if (node != null) {
-                                logger.warning("CELL IS DISK, REMOVING NODE " + cell.getName());
+                                logger.info("CELL IS DISK, REMOVING NODE " + cell.getName());
 
                                 // We need to handle a special case here: if the
                                 // node is currently selected and we have made
@@ -178,7 +178,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
                         else if (status == CellStatus.RENDERING) {
                             // If the node does not exist, then create it
                             if (node == null) {
-                                logger.warning("CELL IS RENDERING CREATING NODE " + cell.getName());
+                                logger.info("CELL IS RENDERING CREATING NODE " + cell.getName());
                                 createJTreeNode(cell);
                             }
                         }
@@ -701,7 +701,7 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             // cell or cell component dirty list
             Class clazz = factory.getClass();
             if (dirtyPanelSet.contains(clazz) == true) {
-                logger.warning("Dirty set contains " + clazz.getName());
+//                logger.warning("Dirty set contains " + clazz.getName());
                 factory.apply();
             }
         }
@@ -1278,7 +1278,6 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
             if (rootCell instanceof AvatarCell) {
                 continue;
             }
-            logger.warning("CREATING ROOT CELL TREE NODE " + rootCell.getName());
             createJTreeNode(rootCell);
         }
         cellHierarchyTree.repaint();
@@ -1306,14 +1305,12 @@ public class CellPropertiesJFrame extends javax.swing.JFrame implements CellProp
         if (parentNode == null) {
             parentNode = treeRoot;
         }
-        logger.warning("INSERT NEW NODE " + cell.getName() + " PARENT " + parentNode);
         DefaultTreeModel model = (DefaultTreeModel)cellHierarchyTree.getModel();
         model.insertNodeInto(ret, parentNode, parentNode.getChildCount());
 
         // Recursively iterate through all of the Cell's children and add to
         // the tree.
         List<Cell> children = cell.getChildren();
-        logger.warning("NUMBER OF CHILDREN " + children.size());
         for(Cell child : children) {
             createJTreeNode(child);
         }
